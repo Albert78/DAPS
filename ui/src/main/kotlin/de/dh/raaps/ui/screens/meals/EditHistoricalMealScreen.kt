@@ -220,6 +220,31 @@ fun EditHistoricalMealContent(
             } else if (!uiState.isAddMode && uiState.meal == null) {
                 Text(text = stringResource(R.string.meal_not_found))
             } else {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = stringResource(R.string.edit_historical_meal_info_message),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+
                 EditMealCard(
                     carbsKe = uiState.editedCarbsKe,
                     timestamp = uiState.editedTimestamp,
@@ -401,11 +426,19 @@ fun EditMealCard(
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary
                         )
-                        Text(
-                            text = stringResource(R.string.x_ie_insulin_already_administered, insulinValue(administeredInsulinAmount.iu, withUnit = false)),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
+                        if (pendingDeferredBoluses.isEmpty()) {
+                            Text(
+                                text = stringResource(R.string.x_ie_insulin_administered, insulinValue(administeredInsulinAmount.iu, withUnit = false)),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        } else {
+                            Text(
+                                text = stringResource(R.string.x_ie_insulin_already_administered, insulinValue(administeredInsulinAmount.iu, withUnit = false)),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
                     }
                 }
             }

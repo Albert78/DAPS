@@ -285,10 +285,12 @@
     <string name="cd_add_meal">Mahlzeit hinzufügen</string>
     <string name="meal_entry_grams_format">%1$.1f g KH</string>
 
-    <string name="x_ie_insulin_already_administered">Für diese Mahlzeit wurden %1$s I.E. Insulin abgegeben.</string>
-    <string name="bolus_plan_editor_no_deferred_boluses">Keine ausstehenden verzögerten Boli vorhanden.</string>
+    <string name="x_ie_insulin_already_administered">Für diese Mahlzeit wurden bereits %1$s I.E. Insulin abgegeben.</string>
+    <string name="x_ie_insulin_administered">Für diese Mahlzeit wurden %1$s I.E. Insulin abgegeben.</string>
+    <string name="edit_historical_meal_info_message">Du solltest dem Algorithmus deine Mahlzeiten möglichst direkt bekannt geben. Diese Funktion dient nur zur nachträglichen Korrektur.</string>
+    <string name="bolus_plan_editor_no_deferred_boluses">Keine ausstehenden verzögerten Boli</string>
     <string name="bolus_plan_editor_add_deferred_bolus">Verzögerten Bolus hinzufügen</string>
-    <string name="bolus_plan_editor_total_label">Gesamt: %1$s</string>
+    <string name="bolus_plan_editor_total_deferred_label">Gesamt ausstehend: %1$s</string>
     <string name="bolus_plan_editor_deferred_bolus_n">Verzögerter Bolus #%1$d</string>
     <string name="bolus_plan_editor_amount_label">Menge</string>
     <string name="bolus_plan_editor_time_label">Zeit / Verzögerung</string>

@@ -197,11 +197,19 @@ fun BolusPlanEditorContent(
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary
                     )
-                    Text(
-                        text = stringResource(R.string.x_ie_insulin_already_administered, insulinValue(administeredInsulinAmount.iu, withUnit = false)),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    if (plannedBoluses.isEmpty()) {
+                        Text(
+                            text = stringResource(R.string.x_ie_insulin_administered, insulinValue(administeredInsulinAmount.iu, withUnit = false)),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    } else {
+                        Text(
+                            text = stringResource(R.string.x_ie_insulin_already_administered, insulinValue(administeredInsulinAmount.iu, withUnit = false)),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
             }
         }
@@ -242,7 +250,7 @@ fun BolusPlanEditorContent(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = stringResource(R.string.bolus_plan_editor_total_label, insulinValue(totalAmount.iu)),
+                text = stringResource(R.string.bolus_plan_editor_total_deferred_label, insulinValue(totalAmount.iu)),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
