@@ -869,6 +869,8 @@ fun MealCorrectionBolusZeroKePreview() {
                 MealCorrectionBolusContent(
                     uiState = MealCorrectionBolusUiState(
                         isLoading = false,
+                        suggestedImi = Minutes(10),
+                        suggestedCarbsKe = 4.5,
                         input = MealInput(
                             carbsKe = 0.0,
                             manualBolus = InsulinAmount(0.8),
@@ -919,6 +921,8 @@ fun MealCorrectionBolusDefaultPreview() {
                 MealCorrectionBolusContent(
                     uiState = MealCorrectionBolusUiState(
                         isLoading = false,
+                        suggestedImi = Minutes(15),
+                        suggestedCarbsKe = 3.0,
                         input = MealInput(
                             carbsKe = 4.5,
                             selectedMealType = sampleMealTypes[0],
