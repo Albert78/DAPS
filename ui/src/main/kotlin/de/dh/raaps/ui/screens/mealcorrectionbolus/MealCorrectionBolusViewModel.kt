@@ -438,7 +438,7 @@ class MealCorrectionBolusViewModel(
                             treatmentLock = lock,
                             amount = immediateBolus,
                             meal = mealEntry,
-                            containsCorrectionPart = state.calculation.correctionPart > InsulinAmount.EPSILON
+                            correctionPart = state.calculation.correctionPart
                         )
                     }
 

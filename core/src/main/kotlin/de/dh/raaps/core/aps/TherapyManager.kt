@@ -298,8 +298,8 @@ class TherapyManager(
         amount: InsulinAmount,
         meal: MealEntry? = null,
         handledDeferredBoluses: List<DeferredBolus>? = null,
-        containsCorrectionPart: Boolean = false,
-        containsBasalPart: Boolean = false
+        correctionPart: InsulinAmount = InsulinAmount.ZERO,
+        basalPart: InsulinAmount = InsulinAmount.ZERO
     ) {
         checkLock(treatmentLock)
 
@@ -323,8 +323,8 @@ class TherapyManager(
             timestamp = Timestamp.now(),
             amount = amount,
             insulinType = cts.insulinProfile.insulinType,
-            basal = containsBasalPart,
-            correction = containsCorrectionPart,
+            basal = basalPart > InsulinAmount.ZERO,
+            correction = correctionPart > InsulinAmount.ZERO,
             meal = administeredMealIds.isNotEmpty()
         )
         val bolusId = if (scheduledEntry.id != 0L) scheduledEntry.id.toString() else null
