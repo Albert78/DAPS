@@ -16,7 +16,6 @@ import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.round
-import kotlin.math.roundToInt
 
 data class BolusParts(
     val mealPart: InsulinAmount,
@@ -113,6 +112,11 @@ object BolusCalculationMath {
         return suggestedCarbsKe
     }
 
+    fun roundTo5Minutes(minutes: Minutes): Minutes {
+        val rounded = (round(minutes.value / 5.0) * 5).toInt()
+        return Minutes(rounded.toShort())
+    }
+
     // TODO: Calculate better IMI
     fun calculateSuggestedImi(
         currentBg: BgValue,
@@ -127,7 +131,8 @@ object BolusCalculationMath {
         if (diff <= 0.0) return Minutes(0)
 
         // Simple rule: 5 minutes per 20 mg/dL above target, max 45 min
-        return Minutes(((diff / 20.0) * 5.0).roundToInt().coerceIn(0, 45).toShort())
+        val rawMinutes = Minutes(((diff / 20.0) * 5.0).toInt().toShort())
+        return roundTo5Minutes(rawMinutes).coerceIn(Minutes(0), Minutes(45))
     }
 
     /**

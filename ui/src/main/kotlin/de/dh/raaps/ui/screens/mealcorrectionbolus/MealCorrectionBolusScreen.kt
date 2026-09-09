@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -372,7 +373,7 @@ fun MealCorrectionBolusContextInfo(
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RectangleShape,
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             Column(
@@ -506,7 +507,7 @@ fun CloseScreenBanner(
                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
                 modifier = Modifier
                     .weight(1f, fill = false)
-                    .height(32.dp)
+                    .heightIn(min = 32.dp)
             ) {
                 Text(
                     text = stringResource(R.string.meal_correction_bolus_close_banner_button),

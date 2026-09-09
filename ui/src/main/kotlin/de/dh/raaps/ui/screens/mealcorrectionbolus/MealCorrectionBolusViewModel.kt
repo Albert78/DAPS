@@ -30,7 +30,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.math.max
-import kotlin.math.round
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -163,7 +162,7 @@ data class MealCorrectionBolusUiState(
     val isf: BgDelta = BgDelta.fromMgDl(DEFAULT_ISF_MGDL_PER_UNIT.toInt()),
     val cr: Double = DEFAULT_CR_GRAM_PER_UNIT,
     val isInsulinPlanExpanded: Boolean = false,
-    val isMealReminderEnabled: Boolean = true,
+    val isMealReminderEnabled: Boolean = false,
     val showCloseBanner: Boolean = false,
     val submissionStatus: SubmissionStatus = SubmissionStatus.NotSubmitted
 )
@@ -237,9 +236,9 @@ class MealCorrectionBolusViewModel(
 
     fun onMealTimeChange(timestamp: Timestamp) {
         val now = Timestamp.now()
-        val rawOffsetMinutes = (timestamp.ms - now.ms) / 60000.0
-        val offsetMinutes = (round(rawOffsetMinutes / 5.0) * 5).toInt().coerceIn(-30, 60)
-        val newMealTimestamp = now + Minutes(offsetMinutes.toShort())
+        val rawOffset = Minutes.timeDifference(now, timestamp)
+        val offsetMinutes = BolusCalculationMath.roundTo5Minutes(rawOffset).coerceIn(Minutes(-30), Minutes(60))
+        val newMealTimestamp = now + offsetMinutes
 
         viewModelScope.launch {
             val projections = bolusCorrectionCalculator.calculateBolusProjections(newMealTimestamp)
@@ -248,7 +247,7 @@ class MealCorrectionBolusViewModel(
                 state.copy(
                     input = state.input.copy(
                         mealTimestamp = newMealTimestamp,
-                        mealTimeFromNow = Minutes(offsetMinutes.toShort())
+                        mealTimeFromNow = offsetMinutes
                     ),
                     projections = projections,
                 )
