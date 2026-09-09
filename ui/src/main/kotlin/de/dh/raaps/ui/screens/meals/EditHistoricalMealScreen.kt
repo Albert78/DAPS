@@ -1,5 +1,6 @@
 package de.dh.raaps.ui.screens.meals
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,10 +15,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,6 +35,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -57,7 +63,7 @@ import de.dh.raaps.ui.common.carbsKeUnitLabel
 import de.dh.raaps.ui.common.composables.AbsoluteTimeStepper
 import de.dh.raaps.ui.common.composables.AppColorBlue
 import de.dh.raaps.ui.common.composables.EditableValueStepper
-import de.dh.raaps.ui.common.composables.PrimaryButton
+import de.dh.raaps.ui.common.composables.NormalTextButton
 import de.dh.raaps.ui.common.insulinValue
 import de.dh.raaps.ui.common.theme.AppTheme
 import de.dh.raaps.ui.controls.meal.BolusPlanEditorDialog
@@ -65,6 +71,13 @@ import de.dh.raaps.ui.controls.meal.FoodTypeSelector
 import de.dh.raaps.ui.controls.meal.PlannedBolusUiModel
 import java.util.Locale
 import de.dh.raaps.common.R as CommonR
+
+private data class InitialMealValues(
+    val carbsKe: Double,
+    val timestamp: Timestamp,
+    val mealType: MealType?,
+    val pendingDeferredBoluses: List<PlannedBolusUiModel>
+)
 
 @Composable
 fun EditHistoricalMealScreen(
@@ -107,6 +120,52 @@ fun EditHistoricalMealContent(
     onRemoveDeferredBolus: (Int) -> Unit,
     onSave: () -> Unit
 ) {
+    var showDiscardConfirmation by remember { mutableStateOf(false) }
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
+
+    val initialValues = remember(uiState.isLoading) {
+        if (!uiState.isLoading) {
+            InitialMealValues(
+                carbsKe = uiState.editedCarbsKe,
+                timestamp = uiState.editedTimestamp,
+                mealType = uiState.editedMealType,
+                pendingDeferredBoluses = uiState.pendingDeferredBoluses
+            )
+        } else null
+    }
+
+    val hasChanges = remember(
+        uiState.editedCarbsKe,
+        uiState.editedTimestamp,
+        uiState.editedMealType,
+        uiState.pendingDeferredBoluses,
+        initialValues,
+        uiState.isAddMode
+    ) {
+        if (initialValues == null) false
+        else if (uiState.isAddMode) {
+            uiState.editedCarbsKe > 0.0 ||
+                    uiState.editedMealType != null ||
+                    uiState.pendingDeferredBoluses.isNotEmpty() ||
+                    uiState.editedTimestamp != initialValues.timestamp
+        } else {
+            uiState.editedCarbsKe != initialValues.carbsKe ||
+                    uiState.editedTimestamp != initialValues.timestamp ||
+                    uiState.editedMealType != initialValues.mealType ||
+                    uiState.pendingDeferredBoluses != initialValues.pendingDeferredBoluses
+        }
+    }
+
+    fun handleBack() {
+        if (hasChanges) {
+            showDiscardConfirmation = true
+        } else {
+            onNavigateUp()
+        }
+    }
+
+    BackHandler(onBack = ::handleBack)
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -119,16 +178,19 @@ fun EditHistoricalMealContent(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateUp) {
+                    IconButton(onClick = ::handleBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(id = CommonR.string.cd_navigate_up)
+                            imageVector = if (hasChanges) Icons.Default.Close else Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(
+                                id = if (hasChanges) CommonR.string.cd_cancel
+                                else CommonR.string.cd_navigate_up
+                            )
                         )
                     }
                 },
                 actions = {
                     if (!uiState.isAddMode) {
-                        IconButton(onClick = onDelete) {
+                        IconButton(onClick = { showDeleteConfirmation = true }) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = stringResource(id = CommonR.string.cd_delete),
@@ -138,8 +200,8 @@ fun EditHistoricalMealContent(
                     }
                     IconButton(onClick = onSave, enabled = uiState.isFormValid && !uiState.isSaving) {
                         Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = stringResource(id = R.string.cd_save_profile)
+                            imageVector = Icons.Default.Save,
+                            contentDescription = stringResource(id = CommonR.string.action_save)
                         )
                     }
                 }
@@ -170,16 +232,6 @@ fun EditHistoricalMealContent(
                     onMealTypeChange = onMealTypeChange,
                     onOpenBolusPlanSheet = onOpenBolusPlanSheet
                 )
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                PrimaryButton(
-                    onClick = onSave,
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = uiState.isFormValid && !uiState.isSaving
-                ) {
-                    Text(text = stringResource(R.string.edit_historical_meal_save_button))
-                }
             }
         }
 
@@ -205,6 +257,54 @@ fun EditHistoricalMealContent(
                 onConfirm = onCloseBolusPlanSheet
             )
         }
+    }
+
+    if (showDiscardConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showDiscardConfirmation = false },
+            title = { Text(stringResource(id = R.string.edit_historical_meal_discard_title)) },
+            text = { Text(stringResource(id = R.string.edit_historical_meal_discard_message)) },
+            confirmButton = {
+                NormalTextButton(
+                    onClick = {
+                        showDiscardConfirmation = false
+                        onSave()
+                    },
+                    enabled = uiState.isFormValid && !uiState.isSaving
+                ) {
+                    Text(stringResource(id = CommonR.string.action_save))
+                }
+            },
+            dismissButton = {
+                NormalTextButton(onClick = {
+                    showDiscardConfirmation = false
+                    onNavigateUp()
+                }) {
+                    Text(stringResource(id = R.string.discard_confirm_button))
+                }
+            }
+        )
+    }
+
+    if (showDeleteConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false },
+            title = { Text(stringResource(id = R.string.delete_meal_title)) },
+            text = { Text(stringResource(id = R.string.delete_meal_message)) },
+            confirmButton = {
+                NormalTextButton(onClick = {
+                    showDeleteConfirmation = false
+                    onDelete()
+                }) {
+                    Text(stringResource(id = CommonR.string.action_delete))
+                }
+            },
+            dismissButton = {
+                NormalTextButton(onClick = { showDeleteConfirmation = false }) {
+                    Text(stringResource(id = android.R.string.cancel))
+                }
+            }
+        )
     }
 }
 

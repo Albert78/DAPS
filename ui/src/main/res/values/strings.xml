@@ -249,6 +249,8 @@
     <string name="edit_historical_meal_edit_screen_title">Mahlzeit bearbeiten</string>
     <string name="edit_historical_meal_add_screen_title">Mahlzeit nachtragen</string>
     <string name="edit_historical_meal_save_button">Speichern</string>
+    <string name="edit_historical_meal_discard_title">Änderungen speichern?</string>
+    <string name="edit_historical_meal_discard_message">Du hast Änderungen an der Mahlzeit vorgenommen. Möchtest du die Änderungen speichern oder verwerfen?</string>
 
     <string name="food_type_selector_food_type_label">Nahrungstyp</string>
     <string name="edit_historical_meal_meal_time_label">Zeit der Mahlzeit</string>
