@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -70,6 +71,7 @@ import de.dh.raaps.ui.common.composables.NormalTextButton
 import de.dh.raaps.ui.common.composables.PrimaryButton
 import de.dh.raaps.ui.common.composables.contentScrollIndicator
 import de.dh.raaps.ui.common.composables.screenTitle
+import de.dh.raaps.ui.common.insulinUnitLabel
 import de.dh.raaps.ui.common.theme.AppTheme
 import java.time.Instant
 import java.time.LocalDate
@@ -109,6 +111,7 @@ fun BolusHistoryContent(
 ) {
     var showAddDialog by remember { mutableStateOf(false) }
     var editingBolus by remember { mutableStateOf<InsulinApplication?>(null) }
+    var deletingBolus by remember { mutableStateOf<InsulinApplication?>(null) }
 
     Scaffold(
         topBar = {
@@ -162,6 +165,36 @@ fun BolusHistoryContent(
             )
         }
 
+        deletingBolus?.let { bolus ->
+            AlertDialog(
+                onDismissRequest = { deletingBolus = null },
+                title = {
+                    Text(text = stringResource(id = R.string.delete_bolus_title))
+                },
+                text = {
+                    Text(text = stringResource(id = R.string.delete_bolus_message))
+                },
+                confirmButton = {
+                    NormalTextButton(
+                        onClick = {
+                            onDeleteBolus(bolus)
+                            deletingBolus = null
+                        },
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error
+                        )
+                    ) {
+                        Text(text = stringResource(id = CommonR.string.action_delete))
+                    }
+                },
+                dismissButton = {
+                    NormalTextButton(onClick = { deletingBolus = null }) {
+                        Text(text = stringResource(id = CommonR.string.cd_cancel))
+                    }
+                }
+            )
+        }
+
         if (uiState.bolusEntries.isEmpty()) {
             Box(
                 modifier = Modifier
@@ -209,7 +242,7 @@ fun BolusHistoryContent(
                             entry = entry,
                             isEditable = isEditable,
                             onEditClick = { editingBolus = entry },
-                            onDeleteClick = { onDeleteBolus(entry) }
+                            onDeleteClick = { deletingBolus = entry }
                         )
                         HorizontalDivider()
                     }
@@ -301,7 +334,7 @@ fun BolusItem(
                         IconButton(onClick = onDeleteClick, modifier = Modifier.size(24.dp)) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
-                                contentDescription = stringResource(id = R.string.cd_delete_profile),
+                                contentDescription = stringResource(id = CommonR.string.action_delete),
                                 tint = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.size(16.dp)
                             )
@@ -444,7 +477,7 @@ fun AddManualBolusDialog(
                             override fun color(value: Double): Color =
                                 Color.Unspecified
                         },
-                        suffix = " U"
+                        suffix = " ${insulinUnitLabel()}"
                     )
                 }
 

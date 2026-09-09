@@ -286,7 +286,9 @@
     <string name="bolus_history_empty_list">Keine Bolus-Einträge vorhanden</string>
     <string name="bolus_history_add_manual_title">Pen-Bolus</string>
     <string name="bolus_history_edit_manual_title">Bolus bearbeiten</string>
-    <string name="bolus_history_add_manual_desc">Gib hier einen Bolus ein, den du dir manuell (Pen, Spritze) und nicht mit der Pumpe verabreicht hast.</string>
+    <string name="bolus_history_add_manual_desc">Trage hier einen Bolus ein, den du dir selbst gespritzt hast (Pen, Spritze). Der Bolus wird NICHT über die Pumpe abgegeben, aber im Algorithmus berücksichtigt.</string>
+    <string name="delete_bolus_title">Bolus-Eintrag löschen</string>
+    <string name="delete_bolus_message">Nach dem Löschen wird der Algorithmus den Bolus nicht mehr berücksichtigen.\nMöchtest du diesen Bolus-Eintrag wirklich löschen?</string>
     <string name="bolus_category_correction">Korrektur</string>
     <string name="bolus_category_basal">Basal</string>
     <string name="bolus_category_meal">Mahlzeit</string>
