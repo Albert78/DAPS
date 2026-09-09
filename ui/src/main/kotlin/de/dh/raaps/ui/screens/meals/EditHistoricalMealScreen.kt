@@ -1,18 +1,23 @@
 package de.dh.raaps.ui.screens.meals
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,6 +25,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -30,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.raaps.common.model.CARBS_KE_MAX
@@ -38,6 +45,7 @@ import de.dh.raaps.common.model.CarbCurveComponentData
 import de.dh.raaps.common.model.ID_MEAL_FAST
 import de.dh.raaps.common.model.ID_MEAL_SLOW
 import de.dh.raaps.common.model.ID_MEAL_STANDARD
+import de.dh.raaps.common.model.InsulinAmount
 import de.dh.raaps.common.model.MealEntry
 import de.dh.raaps.common.model.MealType
 import de.dh.raaps.common.model.data.Minutes
@@ -50,8 +58,11 @@ import de.dh.raaps.ui.common.composables.AbsoluteTimeStepper
 import de.dh.raaps.ui.common.composables.AppColorBlue
 import de.dh.raaps.ui.common.composables.EditableValueStepper
 import de.dh.raaps.ui.common.composables.PrimaryButton
+import de.dh.raaps.ui.common.insulinValue
 import de.dh.raaps.ui.common.theme.AppTheme
+import de.dh.raaps.ui.controls.meal.BolusPlanEditorDialog
 import de.dh.raaps.ui.controls.meal.FoodTypeSelector
+import de.dh.raaps.ui.controls.meal.PlannedBolusUiModel
 import java.util.Locale
 import de.dh.raaps.common.R as CommonR
 
@@ -69,6 +80,12 @@ fun EditHistoricalMealScreen(
         onCarbsChange = { viewModel.onCarbsChange(it) },
         onTimestampChange = { viewModel.onTimestampChange(it) },
         onMealTypeChange = { viewModel.onMealTypeChange(it) },
+        onOpenBolusPlanSheet = { viewModel.onOpenBolusPlanSheet() },
+        onCloseBolusPlanSheet = { viewModel.onCloseBolusPlanSheet() },
+        onAddDeferredBolus = { viewModel.onAddDeferredBolus() },
+        onUpdateDeferredBolusTime = { index, time -> viewModel.onUpdateDeferredBolusTime(index, time) },
+        onUpdateDeferredBolusAmount = { index, amount -> viewModel.onUpdateDeferredBolusAmount(index, amount) },
+        onRemoveDeferredBolus = { index -> viewModel.onRemoveDeferredBolus(index) },
         onSave = { viewModel.saveChanges(onNavigateUp) }
     )
 }
@@ -82,6 +99,12 @@ fun EditHistoricalMealContent(
     onCarbsChange: (Double) -> Unit,
     onTimestampChange: (Timestamp) -> Unit,
     onMealTypeChange: (MealType) -> Unit,
+    onOpenBolusPlanSheet: () -> Unit,
+    onCloseBolusPlanSheet: () -> Unit,
+    onAddDeferredBolus: () -> Unit,
+    onUpdateDeferredBolusTime: (Int, Timestamp) -> Unit,
+    onUpdateDeferredBolusAmount: (Int, InsulinAmount) -> Unit,
+    onRemoveDeferredBolus: (Int) -> Unit,
     onSave: () -> Unit
 ) {
     Scaffold(
@@ -140,9 +163,12 @@ fun EditHistoricalMealContent(
                     timestamp = uiState.editedTimestamp,
                     mealType = uiState.editedMealType,
                     mealTypes = uiState.mealTypes,
+                    pendingDeferredBoluses = uiState.pendingDeferredBoluses,
+                    insulinAdministered = uiState.insulinAdministered,
                     onCarbsChange = onCarbsChange,
                     onTimestampChange = onTimestampChange,
-                    onMealTypeChange = onMealTypeChange
+                    onMealTypeChange = onMealTypeChange,
+                    onOpenBolusPlanSheet = onOpenBolusPlanSheet
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -156,6 +182,29 @@ fun EditHistoricalMealContent(
                 }
             }
         }
+
+        if (uiState.isBolusPlanSheetOpen) {
+            val dialogTitle = stringResource(
+                if (uiState.insulinAdministered || !uiState.isAddMode) {
+                    R.string.bolus_plan_editor_title_pending
+                } else {
+                    R.string.bolus_plan_editor_title_planning
+                }
+            )
+
+            BolusPlanEditorDialog(
+                title = dialogTitle,
+                insulinAdministered = uiState.insulinAdministered,
+                plannedBoluses = uiState.pendingDeferredBoluses,
+                baseTime = uiState.editedTimestamp,
+                onUpdateBolusTime = onUpdateDeferredBolusTime,
+                onUpdateBolusAmount = onUpdateDeferredBolusAmount,
+                onAddDeferredBolus = onAddDeferredBolus,
+                onRemoveDeferredBolus = onRemoveDeferredBolus,
+                onDismissRequest = onCloseBolusPlanSheet,
+                onConfirm = onCloseBolusPlanSheet
+            )
+        }
     }
 }
 
@@ -165,9 +214,12 @@ fun EditMealCard(
     timestamp: Timestamp,
     mealType: MealType?,
     mealTypes: List<MealType>,
+    pendingDeferredBoluses: List<PlannedBolusUiModel>,
+    insulinAdministered: Boolean = false,
     onCarbsChange: (Double) -> Unit,
     onTimestampChange: (Timestamp) -> Unit,
-    onMealTypeChange: (MealType) -> Unit
+    onMealTypeChange: (MealType) -> Unit,
+    onOpenBolusPlanSheet: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -228,6 +280,74 @@ fun EditMealCard(
                 onTypeSelected = onMealTypeChange,
                 isMandatory = true
             )
+
+            HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f))
+
+            if (insulinAdministered) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = stringResource(R.string.bolus_plan_editor_insulin_already_administered),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            }
+
+            // Verzögerte Boli Sektion
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onOpenBolusPlanSheet() }
+                    .padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.bolus_plan_editor_title_pending),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    val totalAmount = pendingDeferredBoluses.fold(InsulinAmount.ZERO) { acc, next -> acc + next.amount }
+                    val count = pendingDeferredBoluses.size
+                    val text = if (count == 0) {
+                        stringResource(R.string.bolus_plan_editor_no_deferred_boluses)
+                    } else {
+                        "$count (${insulinValue(totalAmount.iu)})"
+                    }
+                    Text(
+                        text = text,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                OutlinedButton(onClick = onOpenBolusPlanSheet) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = null
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(text = stringResource(R.string.action_edit))
+                }
+            }
         }
     }
 }
@@ -244,7 +364,8 @@ private fun EditHistoricalMealContentPreview() {
     val sampleMeal = MealEntry(
         timestamp = Timestamp.now(),
         carbGrams = 40.0,
-        mealType = sampleMealType
+        mealType = sampleMealType,
+        insulinAdministered = true
     )
     val sampleUiState = EditHistoricalMealUiState(
         isLoading = false,
@@ -254,6 +375,10 @@ private fun EditHistoricalMealContentPreview() {
         editedTimestamp = Timestamp.now(),
         editedMealType = sampleMealType,
         mealTypes = sampleMealTypes,
+        pendingDeferredBoluses = listOf(
+            PlannedBolusUiModel(amount = InsulinAmount(1.5), timestamp = Timestamp.now() + Minutes(30))
+        ),
+        insulinAdministered = true,
         isSaving = false,
         isFormValid = true
     )
@@ -266,39 +391,12 @@ private fun EditHistoricalMealContentPreview() {
             onCarbsChange = {},
             onTimestampChange = {},
             onMealTypeChange = {},
-            onSave = {}
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun AddHistoricalMealContentPreview() {
-    val sampleMealTypes = listOf(
-        MealType(id = ID_MEAL_FAST, name = "Schnell", components = listOf(CarbCurveComponentData(100, Minutes(30))), cat = Minutes(120)),
-        MealType(id = ID_MEAL_STANDARD, name = "Standard", components = listOf(CarbCurveComponentData(100, Minutes(60))), cat = Minutes(180)),
-        MealType(id = ID_MEAL_SLOW, name = "Langsam", components = listOf(CarbCurveComponentData(100, Minutes(90))), cat = Minutes(240)),
-    )
-    val sampleUiState = EditHistoricalMealUiState(
-        isLoading = false,
-        isAddMode = true,
-        meal = null,
-        editedCarbsKe = 0.0,
-        editedTimestamp = Timestamp.now(),
-        editedMealType = null,
-        mealTypes = sampleMealTypes,
-        isSaving = false,
-        isFormValid = false
-    )
-
-    AppTheme {
-        EditHistoricalMealContent(
-            uiState = sampleUiState,
-            onNavigateUp = {},
-            onDelete = {},
-            onCarbsChange = {},
-            onTimestampChange = {},
-            onMealTypeChange = {},
+            onOpenBolusPlanSheet = {},
+            onCloseBolusPlanSheet = {},
+            onAddDeferredBolus = {},
+            onUpdateDeferredBolusTime = { _, _ -> },
+            onUpdateDeferredBolusAmount = { _, _ -> },
+            onRemoveDeferredBolus = {},
             onSave = {}
         )
     }

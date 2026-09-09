@@ -29,6 +29,7 @@ import de.dh.raaps.ui.common.icons.Icon_Minus
 import de.dh.raaps.ui.common.icons.Icon_Plus
 import de.dh.raaps.ui.common.relativeTimeMinutes
 import de.dh.raaps.ui.common.theme.AppTheme
+import kotlin.math.abs
 import kotlin.math.round
 import de.dh.raaps.common.R as CommonR
 
@@ -53,7 +54,14 @@ fun TimeStepper(
         } else if (forceSign) {
             stringResource(CommonR.string.duration_minutes_signed_format, diffMin)
         } else {
-            stringResource(CommonR.string.duration_minutes_format, diffMin)
+            val absMin = abs(diffMin)
+            val hours = absMin / 60
+            val mins = absMin % 60
+            when {
+                hours == 0 -> stringResource(CommonR.string.duration_minutes_format, mins)
+                mins == 0 -> stringResource(CommonR.string.duration_hours_format, hours)
+                else -> stringResource(CommonR.string.duration_hours_and_minutes_format, hours, mins)
+            }
         }
     }
 

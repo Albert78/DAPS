@@ -283,6 +283,21 @@
     <string name="cd_add_meal">Mahlzeit hinzufügen</string>
     <string name="meal_entry_grams_format">%1$.1f g KH</string>
 
+    <string name="bolus_plan_editor_insulin_already_administered">Es wurde schon Insulin für diese Mahlzeit abgegeben.</string>
+    <string name="bolus_plan_editor_no_deferred_boluses">Keine ausstehenden verzögerten Boli vorhanden.</string>
+    <string name="bolus_plan_editor_add_deferred_bolus">Verzögerten Bolus hinzufügen</string>
+    <string name="bolus_plan_editor_total_label">Gesamt: %1$s</string>
+    <string name="bolus_plan_editor_deferred_bolus_n">Verzögerter Bolus #%1$d</string>
+    <string name="bolus_plan_editor_amount_label">Menge</string>
+    <string name="bolus_plan_editor_time_label">Zeit / Verzögerung</string>
+    <string name="bolus_plan_editor_title_pending">Noch ausstehende Boli</string>
+    <string name="bolus_plan_editor_title_planning">Insulinplanung</string>
+    <string name="bolus_plan_editor_done">Fertig</string>
+    <string name="bolus_plan_editor_after_meal">nach der Mahlzeit</string>
+    <string name="bolus_plan_editor_before_meal">vor der Mahlzeit</string>
+    <string name="bolus_plan_editor_at_meal">zur Mahlzeit</string>
+    <string name="action_edit">Bearbeiten</string>
+
     <string name="food_database_screen_title">Essensdatenbank</string>
 
     <string name="bolus_history_screen_title">Bolus-History</string>
