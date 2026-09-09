@@ -90,8 +90,8 @@ fun EditHistoricalMealContent(
                 title = {
                     Text(
                         stringResource(
-                            if (uiState.isAddMode) R.string.meal_add_historical_screen_title
-                            else R.string.meal_edit_screen_title
+                            if (uiState.isAddMode) R.string.edit_historical_meal_add_screen_title
+                            else R.string.edit_historical_meal_edit_screen_title
                         )
                     )
                 },
@@ -152,7 +152,7 @@ fun EditHistoricalMealContent(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = uiState.isFormValid && !uiState.isSaving
                 ) {
-                    Text(text = stringResource(R.string.meal_edit_save_button))
+                    Text(text = stringResource(R.string.edit_historical_meal_save_button))
                 }
             }
         }
@@ -186,7 +186,7 @@ fun EditMealCard(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = stringResource(R.string.edit_meal_meal_time_label),
+                    text = stringResource(R.string.edit_historical_meal_meal_time_label),
                     style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(Modifier.height(8.dp))
@@ -202,7 +202,7 @@ fun EditMealCard(
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = stringResource(R.string.edit_meal_carbs_label),
+                    text = stringResource(R.string.edit_historical_meal_carbs_label),
                     style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(Modifier.height(8.dp))
