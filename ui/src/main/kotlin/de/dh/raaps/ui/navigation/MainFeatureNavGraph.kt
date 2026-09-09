@@ -189,10 +189,18 @@ class MainFeatureNavGraph(
                     )
                 )
 
-                // Leave MealCorrectionBolus screen to release the therapy manager lock when the user
-                // leaves the screen open.
+                // Leave MealCorrectionBolus screen and release therapy manager lock when the screen
+                // stops (display off, app minimized/home, or switching apps). Using ON_STOP
+                // ensures internal dialogs/overlays (which only trigger ON_PAUSE) keep the lock.
                 LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
+                    lockViewModel.releaseLock()
                     navViewModel.pop()
+                }
+
+                DisposableEffect(Unit) {
+                    onDispose {
+                        lockViewModel.releaseLock()
+                    }
                 }
 
                 TreatmentLockScreen(

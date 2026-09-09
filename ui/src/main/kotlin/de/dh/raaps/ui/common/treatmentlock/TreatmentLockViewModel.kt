@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import de.dh.raaps.core.SystemRegistry
 import de.dh.raaps.core.aps.LockResult
 import de.dh.raaps.core.aps.TreatmentLock
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,12 +38,15 @@ class TreatmentLockViewModel(
 
     private val therapyManager = registry.therapyManager
 
+    private var lockJob: Job? = null
+
     init {
         acquireLock()
     }
 
-    private fun acquireLock() {
-        viewModelScope.launch {
+    fun acquireLock() {
+        if (lockJob?.isActive == true) return
+        lockJob = viewModelScope.launch {
             var retryAttempt = 0
             while (retryAttempt < 2) {
                 val result = therapyManager.tryAcquire(tag) { treatmentLock ->
@@ -83,6 +87,17 @@ class TreatmentLockViewModel(
                 }
             }
         }
+    }
+
+    fun releaseLock() {
+        lockJob?.cancel()
+        lockJob = null
+        _uiState.update { it.copy(status = LockStatus.Loading, acquiredLock = null) }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        releaseLock()
     }
 
     companion object {
