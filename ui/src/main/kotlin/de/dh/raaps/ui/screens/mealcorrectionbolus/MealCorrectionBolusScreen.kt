@@ -12,12 +12,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
@@ -96,6 +98,7 @@ import de.dh.raaps.ui.common.time
 import de.dh.raaps.ui.common.withinTimeDescription
 import de.dh.raaps.ui.controls.meal.FoodTypeSelector
 import java.util.Locale
+import kotlin.math.abs
 import de.dh.raaps.common.R as CommonR
 
 @Composable
@@ -110,6 +113,8 @@ fun MealCorrectionBolusScreen(
         uiState = uiState,
         onCarbsChange = { viewModel.onCarbsChange(it) },
         onMealTimeChange = { viewModel.onMealTimeChange(it) },
+        onApplySuggestedCarbs = { viewModel.onApplySuggestedCarbs() },
+        onApplySuggestedImi = { viewModel.onApplySuggestedImi() },
         onMealTypeChange = { viewModel.onMealTypeChange(it) },
         onManualBolusChange = { viewModel.onManualBolusChange(it) },
         onPlannedInsulinTimeChange = { index, time -> viewModel.onPlannedInsulinTimeChange(index, time) },
@@ -126,6 +131,8 @@ fun MealCorrectionBolusContent(
     uiState: MealCorrectionBolusUiState,
     onCarbsChange: (Double) -> Unit,
     onMealTimeChange: (Timestamp) -> Unit,
+    onApplySuggestedCarbs: () -> Unit,
+    onApplySuggestedImi: () -> Unit,
     onMealTypeChange: (MealType) -> Unit,
     onManualBolusChange: (Double) -> Unit,
     onPlannedInsulinTimeChange: (Int, Timestamp) -> Unit,
@@ -173,6 +180,19 @@ fun MealCorrectionBolusContent(
                             text = stringResource(R.string.meal_correction_bolus_carbs_label),
                             style = MaterialTheme.typography.titleMedium
                         )
+                        if (uiState.suggestedCarbsKe > 0.0) {
+                            Spacer(Modifier.height(4.dp))
+                            val isSuggestedCarbsApplied = abs(uiState.input.carbsKe - uiState.suggestedCarbsKe) < 0.01
+                            SuggestionBadge(
+                                label = stringResource(
+                                    R.string.meal_correction_bolus_suggested_carbs_format,
+                                    uiState.suggestedCarbsKe,
+                                    carbsKeUnitLabel()
+                                ),
+                                isApplied = isSuggestedCarbsApplied,
+                                onClick = onApplySuggestedCarbs
+                            )
+                        }
                         Spacer(Modifier.height(8.dp))
                         EditableValueStepper(
                             currentValue = uiState.input.carbsKe,
@@ -206,6 +226,19 @@ fun MealCorrectionBolusContent(
                                 text = stringResource(R.string.meal_correction_bolus_meal_time_label),
                                 style = MaterialTheme.typography.titleMedium
                             )
+                            val suggestedMinutes = uiState.suggestedImi.value.toInt()
+                            if (suggestedMinutes > 0) {
+                                Spacer(Modifier.height(4.dp))
+                                val now = Timestamp.now()
+                                val suggestedTimestamp = now + Minutes(suggestedMinutes.toShort())
+                                val isSuggestedTimeApplied = abs(uiState.input.mealTimestamp.ms - suggestedTimestamp.ms) < 60000
+
+                                SuggestionBadge(
+                                    label = stringResource(R.string.meal_correction_bolus_suggested_time_format, suggestedMinutes),
+                                    isApplied = isSuggestedTimeApplied,
+                                    onClick = onApplySuggestedImi
+                                )
+                            }
                             Spacer(Modifier.height(8.dp))
                             TimeStepper(
                                 currentTime = uiState.input.mealTimestamp,
@@ -727,6 +760,47 @@ fun InsulinPlanCard(
     }
 }
 
+@Composable
+fun SuggestionBadge(
+    label: String,
+    isApplied: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(12.dp),
+        color = if (isApplied) {
+            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+        } else {
+            MaterialTheme.colorScheme.tertiaryContainer
+        },
+        contentColor = if (isApplied) {
+            MaterialTheme.colorScheme.onPrimaryContainer
+        } else {
+            MaterialTheme.colorScheme.onTertiaryContainer
+        },
+        modifier = modifier
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Lightbulb,
+                contentDescription = null,
+                modifier = Modifier.size(14.dp)
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+    }
+}
+
 
 @Preview(showBackground = true, name = "Loading State")
 @Composable
@@ -740,6 +814,8 @@ fun MealCorrectionBolusLoadingPreview() {
                     ),
                     onCarbsChange = {},
                     onMealTimeChange = {},
+                    onApplySuggestedCarbs = {},
+                    onApplySuggestedImi = {},
                     onMealTypeChange = {},
                     onManualBolusChange = {},
                     onPlannedInsulinTimeChange = { _, _ -> },
@@ -781,6 +857,8 @@ fun MealCorrectionBolusZeroKePreview() {
                     ),
                     onCarbsChange = {},
                     onMealTimeChange = {},
+                    onApplySuggestedCarbs = {},
+                    onApplySuggestedImi = {},
                     onMealTypeChange = {},
                     onManualBolusChange = {},
                     onPlannedInsulinTimeChange = { _, _ -> },
@@ -838,6 +916,8 @@ fun MealCorrectionBolusDefaultPreview() {
                     ),
                     onCarbsChange = {},
                     onMealTimeChange = {},
+                    onApplySuggestedCarbs = {},
+                    onApplySuggestedImi = {},
                     onMealTypeChange = {},
                     onManualBolusChange = {},
                     onPlannedInsulinTimeChange = { _, _ -> },

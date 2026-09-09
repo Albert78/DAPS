@@ -153,6 +153,8 @@ data class MealCorrectionBolusUiState(
     val input: MealInput = MealInput(),
     val projections: BolusProjections = BolusProjections(),
     val isProjectionsStale: Boolean = false,
+    val suggestedCarbsKe: Double = 0.0,
+    val suggestedImi: Minutes = Minutes(0),
     val calculation: BolusCalculationDetails = BolusCalculationDetails(),
     val insulinPlan: List<PlannedInsulinUiModel> = emptyList(),
     val mealTypes: List<MealType> = emptyList(),
@@ -200,6 +202,8 @@ class MealCorrectionBolusViewModel(
             _uiState.update {
                 it.copy(
                     isLoading = false,
+                    suggestedCarbsKe = suggestedCarbsKe,
+                    suggestedImi = suggestedImi,
                     input = MealInput(
                         mealTimestamp = now + Minutes(max(0, suggestedImi.value.toInt()).toShort()),
                         mealTimeFromNow = suggestedImi,
@@ -224,9 +228,17 @@ class MealCorrectionBolusViewModel(
         calculateBolus()
     }
 
+    fun onApplySuggestedCarbs() {
+        val state = _uiState.value
+        if (state.suggestedCarbsKe > 0.0) {
+            onCarbsChange(state.suggestedCarbsKe)
+        }
+    }
+
     fun onMealTimeChange(timestamp: Timestamp) {
         val now = Timestamp.now()
-        val offsetMinutes = round((timestamp.ms - now.ms) / 60000.0).toInt().coerceIn(-30, 60)
+        val rawOffsetMinutes = (timestamp.ms - now.ms) / 60000.0
+        val offsetMinutes = (round(rawOffsetMinutes / 5.0) * 5).toInt().coerceIn(-30, 60)
         val newMealTimestamp = now + Minutes(offsetMinutes.toShort())
 
         viewModelScope.launch {
@@ -245,14 +257,35 @@ class MealCorrectionBolusViewModel(
         }
     }
 
+    fun onApplySuggestedImi() {
+        val state = _uiState.value
+        val suggestedMinutes = max(0, state.suggestedImi.value.toInt())
+        if (suggestedMinutes > 0) {
+            val now = Timestamp.now()
+            val targetTimestamp = now + Minutes(suggestedMinutes.toShort())
+            onMealTimeChange(targetTimestamp)
+        }
+    }
+
     fun onRefreshProjections() {
         viewModelScope.launch {
             val state = _uiState.value
             val projections = bolusCorrectionCalculator.calculateBolusProjections(state.input.mealTimestamp)
+            val projectedBg = projections.bg
+            val suggestedImi = BolusCalculationMath.calculateSuggestedImi(
+                currentBg = projectedBg,
+                targetBg = state.targetBg,
+                lowThreshold = state.lowThreshold
+            )
+            val suggestedCarbsKe = BolusCalculationMath.calculateSuggestedCarbsKe(
+                projectedBg, state.targetBg, state.isf, state.cr, projections.futureCarbs
+            )
 
             _uiState.update {
                 it.copy(
                     projections = projections,
+                    suggestedCarbsKe = suggestedCarbsKe,
+                    suggestedImi = suggestedImi,
                 )
             }
             calculateBolus()

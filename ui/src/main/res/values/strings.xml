@@ -219,6 +219,9 @@
     <string name="meal_correction_bolus_active_carbs_format">Aktive Kohlenhydrate: %1$s</string>
     <string name="meal_correction_bolus_active_insulin_format">Aktives Insulin: %1$s</string>
     <string name="meal_correction_bolus_carbs_label">Mahlzeit</string>
+    <string name="meal_correction_bolus_suggested_carbs_format">Vorschlag: %1$.1f %2$s</string>
+    <string name="meal_correction_bolus_suggested_time_format">Vorschlag: +%1$d Min.</string>
+    <string name="meal_correction_bolus_suggested_time_zero">Vorschlag: Jetzt</string>
     <string name="meal_correction_bolus_food_type_label">Nahrungstyp</string>
     <string name="meal_correction_bolus_calculation_title">Berechnung</string>
     <string name="meal_correction_bolus_calc_factors_label">ISF: %1$s, CR: %2$s</string>
@@ -228,7 +231,7 @@
     <string name="meal_correction_bolus_calc_iob_part">IOB Abzug: %1$s</string>
     <string name="meal_correction_bolus_calc_cob_part">COB Ausgleich: %1$s</string>
     <string name="meal_correction_bolus_calc_future_carbs_part">Zukünftige KH: %1$s</string>
-    <string name="meal_correction_bolus_calc_deferred_part">Geplanter Bolus: %1$s</string>
+    <string name="meal_correction_bolus_calc_deferred_part">Verzögerte Boli: %1$s</string>
     <string name="meal_correction_bolus_calc_low_bg_warning">Blutzucker ≤ %1$s um %2$s</string>
     <string name="meal_correction_bolus_calc_no_bg_warning">Kein Blutzuckerwert</string>
     <string name="meal_correction_bolus_insulin_label">Insulinmenge</string>
@@ -239,10 +242,10 @@
     <string name="meal_correction_bolus_reminder_label">Mahlzeit-Erinnerung</string>
     <string name="meal_correction_bolus_close_banner_title">Vorgang beenden</string>
     <string name="meal_correction_bolus_close_banner_message">Der Berechnungs-Algorithmus ist blockiert, solange dieser Bildschirm angezeigt wird.</string>
-    <string name="meal_correction_bolus_close_banner_button">Schließen</string>
     <string name="meal_edit_screen_title">Mahlzeit bearbeiten</string>
     <string name="meal_add_historical_screen_title">Mahlzeit nachtragen</string>
     <string name="meal_edit_save_button">Speichern</string>
+    <string name="meal_correction_bolus_close_banner_button">Eingabe abbrechen</string>
 
     <string name="food_type_selector_food_type_label">Nahrungstyp</string>
     <string name="edit_meal_meal_time_label">Zeit der Mahlzeit</string>
