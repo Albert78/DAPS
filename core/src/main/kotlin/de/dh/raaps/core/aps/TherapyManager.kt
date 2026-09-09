@@ -178,6 +178,8 @@ class TherapyManager(
         return currentSettings.insulinProfile.insulinType
     }
 
+    suspend fun getPumpCapabilities() = pumpManager.insulinPump?.pumpCapabilities?.value
+
     suspend fun getAllInsulinProfiles() = therapyRepository.getAllInsulinProfiles()
 
     fun observeAllInsulinProfiles() = therapyRepository.observeAllInsulinProfiles()
@@ -327,7 +329,7 @@ class TherapyManager(
         )
         val bolusId = if (scheduledEntry.id != 0L) scheduledEntry.id.toString() else null
 
-        val minBolusIncrement = pumpManager.insulinPump?.pumpCapabilities?.value?.minBolusIncrement
+        val minBolusIncrement = getPumpCapabilities()?.minBolusAmount
         if (minBolusIncrement != null && amount < minBolusIncrement) {
             Log.i(TAG, "Skipping bolus which is too low for pump (amount=$amount, minBolusIncrement=$minBolusIncrement)")
             return

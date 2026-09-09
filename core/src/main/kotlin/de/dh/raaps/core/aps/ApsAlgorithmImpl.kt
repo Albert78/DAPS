@@ -553,6 +553,8 @@ class ApsAlgorithmImpl(
             val bgErrorCorrectionUnits = (convertToInsulinAmountFromBgDelta(bgErrorAtPeak, isfAtPeak) * AGGRESSIVENESS_ERROR_CORRECTION)
                 .coerceAtLeast(InsulinAmount.ZERO)
 
+            val pumpCapabilities = therapyManager.getPumpCapabilities()
+
             // Simplified calculation. We mix remaining insulin/carbs activity of now and peak.
             val futureInsulin = netIobAtPeak + dueMealBolusAmount + sumFutureDeferredBoluses
             if (futureInsulin + InsulinAmount.EPSILON >= insulinEquivalentOfCarbsAtPeak + bgErrorCorrectionUnits) {
@@ -561,6 +563,9 @@ class ApsAlgorithmImpl(
                 return if (dueDeferredBoluses.isEmpty()) {
                     CalculationResult.normalSafetyBasal().withMetrics(insight)
                 } else {
+                    if (pumpCapabilities != null && dueMealBolusAmount < pumpCapabilities.minBolusAmount) {
+                        CalculationResult.normalSafetyBasal().withMetrics(insight)
+                    }
                     // Administer due deferred bolus.
                     // It might be that this is too much for the COB but this is in the
                     // responsibility of the user.
@@ -630,6 +635,10 @@ class ApsAlgorithmImpl(
                     InsulinAmount.ZERO
                 }
                 val mealCorrectionBolusAmount = dueMealBolusAmount + correctionPart
+
+                if (pumpCapabilities != null && mealCorrectionBolusAmount < pumpCapabilities.minBolusAmount) {
+                    return CalculationResult.normalSafetyBasal().withMetrics(insight)
+                }
 
                 // We assume that the current blood glucose deviation is primarily caused by faster
                 // carbs absorption than specified in the model (just a timing issue).

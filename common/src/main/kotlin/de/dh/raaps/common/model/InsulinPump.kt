@@ -24,6 +24,7 @@ data class PumpCapabilities(
     val minBasalRate: InsulinAmount,
     val supportsZeroBasal: Boolean,
     val minBasalIncrement: InsulinAmount,
+    val minBolusAmount: InsulinAmount,
     val minBolusIncrement: InsulinAmount,
     val maxBolusSize: InsulinAmount,
     // TODO: Continue list for sensible capability values

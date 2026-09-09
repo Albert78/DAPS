@@ -68,6 +68,7 @@ class SimBodyInsulinPump(
             minBasalRate = InsulinAmount(SIM_PUMP_MIN_BASAL_RATE),
             supportsZeroBasal = true,
             minBasalIncrement = SIM_PUMP_MIN_BASAL_INCREMENT,
+            minBolusAmount = SIM_PUMP_MIN_BOLUS_INCREMENT,
             minBolusIncrement = SIM_PUMP_MIN_BOLUS_INCREMENT,
             maxBolusSize = SIM_PUMP_MAX_BOLUS_SIZE
         )

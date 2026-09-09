@@ -1,21 +1,5 @@
 package de.dh.raaps.plugin.pump
 
-import de.dh.raaps.common.model.BasalStatus
-import de.dh.raaps.common.model.BolusEvent
-import de.dh.raaps.common.model.BolusStatus
-import de.dh.raaps.common.model.InsulinAmount
-import de.dh.raaps.common.model.InsulinConcentration
-import de.dh.raaps.common.model.HardwareInformation
-import de.dh.raaps.common.model.InsulinHistory
-import de.dh.raaps.common.model.InsulinPump
-import de.dh.raaps.common.model.InsulinPumpStatus
-import de.dh.raaps.common.model.Plugin
-import de.dh.raaps.common.model.PluginManager
-import de.dh.raaps.common.model.PumpAlerts
-import de.dh.raaps.common.model.PumpCapabilities
-import de.dh.raaps.common.model.data.InsulinProfile
-import de.dh.raaps.common.model.data.Timestamp
-import de.dh.raaps.ui.screens.systemcontrol.PumpPluginUiProvider
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -26,6 +10,22 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import de.dh.raaps.common.model.BasalStatus
+import de.dh.raaps.common.model.BolusEvent
+import de.dh.raaps.common.model.BolusStatus
+import de.dh.raaps.common.model.HardwareInformation
+import de.dh.raaps.common.model.InsulinAmount
+import de.dh.raaps.common.model.InsulinConcentration
+import de.dh.raaps.common.model.InsulinHistory
+import de.dh.raaps.common.model.InsulinPump
+import de.dh.raaps.common.model.InsulinPumpStatus
+import de.dh.raaps.common.model.Plugin
+import de.dh.raaps.common.model.PluginManager
+import de.dh.raaps.common.model.PumpAlerts
+import de.dh.raaps.common.model.PumpCapabilities
+import de.dh.raaps.common.model.data.InsulinProfile
+import de.dh.raaps.common.model.data.Timestamp
+import de.dh.raaps.ui.screens.systemcontrol.PumpPluginUiProvider
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -59,6 +59,7 @@ class SampleInsulinPumpPlugin : InsulinPump, Plugin, PumpPluginUiProvider {
             minBasalRate = InsulinAmount(0.05),
             supportsZeroBasal = true,
             minBasalIncrement = InsulinAmount(0.01),
+            minBolusAmount = InsulinAmount(0.1),
             minBolusIncrement = InsulinAmount(0.1),
             maxBolusSize = InsulinAmount(25.0)
         )
