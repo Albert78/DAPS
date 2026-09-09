@@ -31,7 +31,7 @@ data class EditHistoricalMealUiState(
     val mealTypes: List<MealType> = emptyList(),
     val pendingDeferredBoluses: List<PlannedBolusUiModel> = emptyList(),
     val isBolusPlanSheetOpen: Boolean = false,
-    val insulinAdministered: Boolean = false,
+    val administeredInsulinAmount: InsulinAmount = InsulinAmount.ZERO,
     val isSaving: Boolean = false,
     val isFormValid: Boolean = false
 )
@@ -84,7 +84,7 @@ class EditHistoricalMealViewModel(
                     editedTimestamp = meal?.timestamp ?: (Timestamp.now() - Minutes(15)),
                     editedMealType = meal?.mealType,
                     pendingDeferredBoluses = pendingUiModels,
-                    insulinAdministered = meal?.insulinAdministered ?: false
+                    administeredInsulinAmount = meal?.administeredInsulinAmount ?: InsulinAmount.ZERO
                 )
             }
             validateForm()

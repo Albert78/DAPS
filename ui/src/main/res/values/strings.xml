@@ -285,7 +285,7 @@
     <string name="cd_add_meal">Mahlzeit hinzufügen</string>
     <string name="meal_entry_grams_format">%1$.1f g KH</string>
 
-    <string name="bolus_plan_editor_insulin_already_administered">Es wurde schon Insulin für diese Mahlzeit abgegeben.</string>
+    <string name="x_ie_insulin_already_administered">Für diese Mahlzeit wurden %1$s I.E. Insulin abgegeben.</string>
     <string name="bolus_plan_editor_no_deferred_boluses">Keine ausstehenden verzögerten Boli vorhanden.</string>
     <string name="bolus_plan_editor_add_deferred_bolus">Verzögerten Bolus hinzufügen</string>
     <string name="bolus_plan_editor_total_label">Gesamt: %1$s</string>

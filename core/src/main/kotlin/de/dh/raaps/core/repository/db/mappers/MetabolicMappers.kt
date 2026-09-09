@@ -54,7 +54,7 @@ fun MealEntry.toEntity() = MealEntity(
     timestamp = this.timestamp,
     carbGrams = this.carbGrams,
     description = this.description,
-    insulinAdministered = this.insulinAdministered
+    administeredInsulinAmount = this.administeredInsulinAmount
 )
 
 fun MealEntity.toModel(type: MealType) = MealEntry(
@@ -63,7 +63,7 @@ fun MealEntity.toModel(type: MealType) = MealEntry(
     carbGrams = this.carbGrams,
     mealType = type,
     description = this.description,
-    insulinAdministered = this.insulinAdministered
+    administeredInsulinAmount = this.administeredInsulinAmount
 )
 
 // Insulin Converters

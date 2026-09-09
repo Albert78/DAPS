@@ -146,8 +146,11 @@ interface MetabolicEventsDao {
     @Update
     suspend fun updateMeal(meal: MealEntity)
 
-    @Query("UPDATE meal SET insulinAdministered = 1 WHERE id IN (:mealIds)")
-    suspend fun markMealsAsInsulinAdministered(mealIds: List<Long>)
+    @Query("UPDATE meal SET administeredInsulinAmount = administeredInsulinAmount + :amount WHERE id = :mealId")
+    suspend fun addAdministeredInsulinToMeal(mealId: Long, amount: Double)
+
+    @Query("UPDATE meal SET administeredInsulinAmount = :amount WHERE id = :mealId")
+    suspend fun setAdministeredInsulinAmount(mealId: Long, amount: Double)
 
     @Query("DELETE FROM meal where id = :mealId")
     suspend fun deleteMeal(mealId: Long)

@@ -344,7 +344,7 @@
       },
       {
         "tableName": "meal",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `meal_type_id` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, `carbGrams` REAL NOT NULL, `description` TEXT NOT NULL, `insulinAdministered` INTEGER NOT NULL, FOREIGN KEY(`meal_type_id`) REFERENCES `meal_type`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `meal_type_id` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, `carbGrams` REAL NOT NULL, `description` TEXT NOT NULL, `administeredInsulinAmount` REAL NOT NULL, FOREIGN KEY(`meal_type_id`) REFERENCES `meal_type`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
         "fields": [
           {
             "fieldPath": "id",
@@ -377,9 +377,9 @@
             "notNull": true
           },
           {
-            "fieldPath": "insulinAdministered",
-            "columnName": "insulinAdministered",
-            "affinity": "INTEGER",
+            "fieldPath": "administeredInsulinAmount",
+            "columnName": "administeredInsulinAmount",
+            "affinity": "REAL",
             "notNull": true
           }
         ],

@@ -69,5 +69,5 @@ data class MealEntry(
     val carbGrams: Double,
     val mealType: MealType,
     val description: String = "",
-    val insulinAdministered: Boolean = false
+    val administeredInsulinAmount: InsulinAmount = InsulinAmount.ZERO
 )

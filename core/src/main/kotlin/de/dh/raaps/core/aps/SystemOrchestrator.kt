@@ -341,11 +341,10 @@ class SystemOrchestratorImpl(
             onAcquireBusyState = { acquireBusyState() },
             onReleaseBusyState = { releaseBusyState() },
 
-            onDeliverBolus = { treatmentLock, amount, meal, handledDeferredBoluses, correctionPart, basalPart ->
+            onDeliverBolus = { treatmentLock, amount, handledDeferredBoluses, correctionPart, basalPart ->
                 therapyManager.issueBolus(
                     treatmentLock = treatmentLock,
                     amount = amount,
-                    meal = meal,
                     handledDeferredBoluses = handledDeferredBoluses,
                     correctionPart = correctionPart,
                     basalPart = basalPart

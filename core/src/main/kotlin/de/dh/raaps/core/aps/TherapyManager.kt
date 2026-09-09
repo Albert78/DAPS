@@ -6,6 +6,7 @@ import de.dh.raaps.common.model.ApsMode
 import de.dh.raaps.common.model.BolusDeliveryState
 import de.dh.raaps.common.model.BolusStatus
 import de.dh.raaps.common.model.DeferredBolus
+import de.dh.raaps.common.model.ID_UNDEFINED
 import de.dh.raaps.common.model.InsulinAmount
 import de.dh.raaps.common.model.InsulinHistory
 import de.dh.raaps.common.model.InsulinType
@@ -304,15 +305,19 @@ class TherapyManager(
         checkLock(treatmentLock)
 
         // Record insulin administration in meals
-        val administeredMealIds: MutableSet<Long> = mutableSetOf()
-        meal?.id?.let { administeredMealIds.add(it) }
-        handledDeferredBoluses?.forEach {
-            val mealId = it.mealId
-            if (mealId != null) {
-                administeredMealIds.add(mealId)
+        val isMealBolus = meal != null || (handledDeferredBoluses?.any { it.mealId != null } == true)
+        if (meal != null && meal.id != ID_UNDEFINED) {
+            val mealInsulin = (amount - correctionPart - basalPart).coerceAtLeast(InsulinAmount.ZERO)
+            if (mealInsulin > InsulinAmount.ZERO) {
+                treatmentRepository.addAdministeredInsulinToMeal(meal.id, mealInsulin)
             }
         }
-        treatmentRepository.setInsulinAdministered(administeredMealIds)
+        handledDeferredBoluses?.forEach { deferredBolus ->
+            val mealId = deferredBolus.mealId
+            if (mealId != null && mealId != ID_UNDEFINED && (meal == null || meal.id != mealId)) {
+                treatmentRepository.addAdministeredInsulinToMeal(mealId, deferredBolus.amount)
+            }
+        }
         // Remove deferred boluses
         handledDeferredBoluses?.let {
             treatmentRepository.removeDeferredBoluses(it)
@@ -325,7 +330,7 @@ class TherapyManager(
             insulinType = cts.insulinProfile.insulinType,
             basal = basalPart > InsulinAmount.ZERO,
             correction = correctionPart > InsulinAmount.ZERO,
-            meal = administeredMealIds.isNotEmpty()
+            meal = isMealBolus
         )
         val bolusId = if (scheduledEntry.id != 0L) scheduledEntry.id.toString() else null
 

@@ -527,9 +527,17 @@ class TreatmentRepository(
         return application
     }
 
-    suspend fun setInsulinAdministered(administeredMealIds: MutableSet<Long>) {
-        if (administeredMealIds.isNotEmpty()) {
-            metabolicEventsDao.markMealsAsInsulinAdministered(administeredMealIds.toList())
+    suspend fun addAdministeredInsulinToMeal(mealId: Long, amount: InsulinAmount) {
+        if (amount <= InsulinAmount.ZERO) return
+        mutex.withLock {
+            val index = mealsHistory.indexOfFirst { it.id == mealId }
+            if (index != -1) {
+                val oldMeal = mealsHistory[index]
+                mealsHistory[index] = oldMeal.copy(
+                    administeredInsulinAmount = oldMeal.administeredInsulinAmount + amount
+                )
+            }
         }
+        metabolicEventsDao.addAdministeredInsulinToMeal(mealId, amount.iu)
     }
 }

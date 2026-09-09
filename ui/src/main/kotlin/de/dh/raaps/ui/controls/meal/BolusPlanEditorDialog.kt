@@ -66,7 +66,7 @@ import de.dh.raaps.common.R as CommonR
 @Composable
 fun BolusPlanEditorDialog(
     title: String,
-    insulinAdministered: Boolean,
+    administeredInsulinAmount: InsulinAmount = InsulinAmount.ZERO,
     plannedBoluses: List<PlannedBolusUiModel>,
     baseTime: Timestamp = Timestamp.now(),
     onUpdateBolusTime: (index: Int, newTimestamp: Timestamp) -> Unit,
@@ -106,7 +106,7 @@ fun BolusPlanEditorDialog(
                 ) {
                     BolusPlanEditorContent(
                         title = null,
-                        insulinAdministered = insulinAdministered,
+                        administeredInsulinAmount = administeredInsulinAmount,
                         plannedBoluses = plannedBoluses,
                         baseTime = baseTime,
                         onUpdateBolusTime = onUpdateBolusTime,
@@ -125,7 +125,7 @@ fun BolusPlanEditorDialog(
 @Composable
 fun BolusPlanEditorSheet(
     title: String,
-    insulinAdministered: Boolean,
+    administeredInsulinAmount: InsulinAmount = InsulinAmount.ZERO,
     plannedBoluses: List<PlannedBolusUiModel>,
     baseTime: Timestamp = Timestamp.now(),
     onUpdateBolusTime: (index: Int, newTimestamp: Timestamp) -> Unit,
@@ -141,7 +141,7 @@ fun BolusPlanEditorSheet(
     ) {
         BolusPlanEditorContent(
             title = title,
-            insulinAdministered = insulinAdministered,
+            administeredInsulinAmount = administeredInsulinAmount,
             plannedBoluses = plannedBoluses,
             baseTime = baseTime,
             onUpdateBolusTime = onUpdateBolusTime,
@@ -156,7 +156,7 @@ fun BolusPlanEditorSheet(
 @Composable
 fun BolusPlanEditorContent(
     title: String?,
-    insulinAdministered: Boolean,
+    administeredInsulinAmount: InsulinAmount = InsulinAmount.ZERO,
     plannedBoluses: List<PlannedBolusUiModel>,
     baseTime: Timestamp = Timestamp.now(),
     onUpdateBolusTime: (index: Int, newTimestamp: Timestamp) -> Unit,
@@ -179,7 +179,7 @@ fun BolusPlanEditorContent(
             )
         }
 
-        if (insulinAdministered) {
+        if (administeredInsulinAmount > InsulinAmount.ZERO) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
@@ -198,7 +198,7 @@ fun BolusPlanEditorContent(
                         tint = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = stringResource(R.string.bolus_plan_editor_insulin_already_administered),
+                        text = stringResource(R.string.x_ie_insulin_already_administered, insulinValue(administeredInsulinAmount.iu, withUnit = false)),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -420,7 +420,7 @@ private fun BolusPlanEditorContentPreview() {
     AppTheme {
         BolusPlanEditorContent(
             title = stringResource(R.string.bolus_plan_editor_title_pending),
-            insulinAdministered = true,
+            administeredInsulinAmount = InsulinAmount(2.5),
             plannedBoluses = sampleBoluses,
             baseTime = now,
             onUpdateBolusTime = { _, _ -> },
@@ -450,7 +450,7 @@ private fun BolusPlanEditorDialogPreview() {
     AppTheme {
         BolusPlanEditorDialog(
             title = stringResource(R.string.bolus_plan_editor_title_pending),
-            insulinAdministered = true,
+            administeredInsulinAmount = InsulinAmount(2.5),
             plannedBoluses = sampleBoluses,
             baseTime = now,
             onUpdateBolusTime = { _, _ -> },

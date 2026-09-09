@@ -42,7 +42,7 @@ data class MealEntity(
     val timestamp: Timestamp,
     val carbGrams: Double,
     val description: String = "",
-    val insulinAdministered: Boolean = false
+    val administeredInsulinAmount: InsulinAmount = InsulinAmount.ZERO
 )
 
 @Entity(

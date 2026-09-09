@@ -226,7 +226,7 @@ fun EditHistoricalMealContent(
                     mealType = uiState.editedMealType,
                     mealTypes = uiState.mealTypes,
                     pendingDeferredBoluses = uiState.pendingDeferredBoluses,
-                    insulinAdministered = uiState.insulinAdministered,
+                    administeredInsulinAmount = uiState.administeredInsulinAmount,
                     onCarbsChange = onCarbsChange,
                     onTimestampChange = onTimestampChange,
                     onMealTypeChange = onMealTypeChange,
@@ -237,7 +237,7 @@ fun EditHistoricalMealContent(
 
         if (uiState.isBolusPlanSheetOpen) {
             val dialogTitle = stringResource(
-                if (uiState.insulinAdministered || !uiState.isAddMode) {
+                if (uiState.administeredInsulinAmount > InsulinAmount.ZERO || !uiState.isAddMode) {
                     R.string.bolus_plan_editor_title_pending
                 } else {
                     R.string.bolus_plan_editor_title_planning
@@ -246,7 +246,7 @@ fun EditHistoricalMealContent(
 
             BolusPlanEditorDialog(
                 title = dialogTitle,
-                insulinAdministered = uiState.insulinAdministered,
+                administeredInsulinAmount = uiState.administeredInsulinAmount,
                 plannedBoluses = uiState.pendingDeferredBoluses,
                 baseTime = uiState.editedTimestamp,
                 onUpdateBolusTime = onUpdateDeferredBolusTime,
@@ -315,7 +315,7 @@ fun EditMealCard(
     mealType: MealType?,
     mealTypes: List<MealType>,
     pendingDeferredBoluses: List<PlannedBolusUiModel>,
-    insulinAdministered: Boolean = false,
+    administeredInsulinAmount: InsulinAmount = InsulinAmount.ZERO,
     onCarbsChange: (Double) -> Unit,
     onTimestampChange: (Timestamp) -> Unit,
     onMealTypeChange: (MealType) -> Unit,
@@ -383,7 +383,7 @@ fun EditMealCard(
 
             HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f))
 
-            if (insulinAdministered) {
+            if (administeredInsulinAmount > InsulinAmount.ZERO) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp),
@@ -402,7 +402,7 @@ fun EditMealCard(
                             tint = MaterialTheme.colorScheme.primary
                         )
                         Text(
-                            text = stringResource(R.string.bolus_plan_editor_insulin_already_administered),
+                            text = stringResource(R.string.x_ie_insulin_already_administered, insulinValue(administeredInsulinAmount.iu, withUnit = false)),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -465,7 +465,7 @@ private fun EditHistoricalMealContentPreview() {
         timestamp = Timestamp.now(),
         carbGrams = 40.0,
         mealType = sampleMealType,
-        insulinAdministered = true
+        administeredInsulinAmount = InsulinAmount(2.0)
     )
     val sampleUiState = EditHistoricalMealUiState(
         isLoading = false,
@@ -478,7 +478,7 @@ private fun EditHistoricalMealContentPreview() {
         pendingDeferredBoluses = listOf(
             PlannedBolusUiModel(amount = InsulinAmount(1.5), timestamp = Timestamp.now() + Minutes(30))
         ),
-        insulinAdministered = true,
+        administeredInsulinAmount = InsulinAmount(2.0),
         isSaving = false,
         isFormValid = true
     )
