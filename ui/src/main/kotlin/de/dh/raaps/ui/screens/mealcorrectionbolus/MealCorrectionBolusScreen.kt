@@ -18,13 +18,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -38,6 +41,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
@@ -297,12 +301,38 @@ fun MealCorrectionBolusContent(
                                 text = stringResource(R.string.meal_correction_bolus_insulin_label),
                                 style = MaterialTheme.typography.titleMedium
                             )
+
+                            val suggestedBolus = uiState.calculation.proposedTotal
+                            var showCalculationDialog by remember { mutableStateOf(false) }
+
+                            if (suggestedBolus.iu >= 0.0) {
+                                Spacer(Modifier.height(4.dp))
+                                val isSuggestedBolusApplied = abs(uiState.input.manualBolus.iu - suggestedBolus.iu) < 0.01
+
+                                SuggestionBadge(
+                                    label = stringResource(
+                                        R.string.meal_correction_bolus_suggested_insulin_format,
+                                        insulinValue(suggestedBolus.iu)
+                                    ),
+                                    isApplied = isSuggestedBolusApplied,
+                                    onClick = { onManualBolusChange(suggestedBolus.iu) },
+                                    onInfoClick = { showCalculationDialog = true }
+                                )
+
+                                if (showCalculationDialog) {
+                                    CalculationDetailsDialog(
+                                        uiState = uiState,
+                                        onDismiss = { showCalculationDialog = false },
+                                        onApply = {
+                                            onManualBolusChange(suggestedBolus.iu)
+                                            showCalculationDialog = false
+                                        }
+                                    )
+                                }
+                            }
+
                             Spacer(Modifier.height(8.dp))
 
-                            CalculationDetailsSelector(
-                                uiState = uiState,
-                                onResultClick = { onManualBolusChange(uiState.calculation.proposedTotal.iu) }
-                            )
                             EditableValueStepper(
                                 currentValue = uiState.input.manualBolus.iu,
                                 onValueChange = onManualBolusChange,
@@ -522,83 +552,34 @@ fun CloseScreenBanner(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CalculationDetailsSelector(
+fun CalculationDetailsDialog(
     uiState: MealCorrectionBolusUiState,
-    onResultClick: () -> Unit
+    onDismiss: () -> Unit,
+    onApply: () -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(2.dp, AppColorBlue.copy(alpha = 0.3f)),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(horizontal = 12.dp, vertical = 8.dp)
-                .fillMaxWidth()
-        ) {
-            if (!expanded) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { expanded = true }
-                ) {
-                    Text(
-                        text = stringResource(R.string.meal_correction_bolus_calc_result_label, insulinValue(uiState.calculation.proposedTotal.iu)),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable { onResultClick() }
-                    )
-
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowDown,
-                        contentDescription = stringResource(CommonR.string.cd_expand),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            } else {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { expanded = false },
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = stringResource(R.string.meal_correction_bolus_calculation_title),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowUp,
-                        contentDescription = stringResource(CommonR.string.cd_collapse),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Spacer(Modifier.height(8.dp))
-                HorizontalDivider(color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f))
-                Spacer(Modifier.height(8.dp))
-
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = stringResource(R.string.meal_correction_bolus_calculation_title),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 Text(
-                    stringResource(
+                    text = stringResource(
                         R.string.meal_correction_bolus_calc_factors_label,
                         isfValue(uiState.isf),
                         crValue(uiState.cr, withUnit = false)
                     ),
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 val lowBgProjection = uiState.projections.impendingLow ?:
@@ -623,63 +604,69 @@ fun CalculationDetailsSelector(
                     )
                 }
 
-                Spacer(Modifier.height(4.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
 
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
                         text = stringResource(R.string.meal_correction_bolus_calc_meal_part, insulinValue(uiState.calculation.mealPart.iu, signed = true)),
-                        style = MaterialTheme.typography.bodySmall
+                        style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
                         text = stringResource(R.string.meal_correction_bolus_calc_correction_part, insulinValue(uiState.calculation.correctionPart.iu, signed = true)),
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     if (uiState.calculation.iobPart > InsulinAmount.ZERO) {
                         Text(
                             text = stringResource(R.string.meal_correction_bolus_calc_iob_part, insulinValue(-uiState.calculation.iobPart.iu, signed = true)),
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.error
                         )
                     }
                     if (uiState.calculation.cobPart > InsulinAmount.ZERO) {
                         Text(
                             text = stringResource(R.string.meal_correction_bolus_calc_cob_part, insulinValue(uiState.calculation.cobPart.iu, signed = true)),
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
                     if (uiState.calculation.futureCarbsPart > InsulinAmount.ZERO) {
                         Text(
                             text = stringResource(R.string.meal_correction_bolus_calc_future_carbs_part, insulinValue(uiState.calculation.futureCarbsPart.iu, signed = true)),
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
                     if (uiState.calculation.deferredBolusPart > InsulinAmount.ZERO) {
                         Text(
                             text = stringResource(R.string.meal_correction_bolus_calc_deferred_part, insulinValue(-uiState.calculation.deferredBolusPart.iu, signed = true)),
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.error
                         )
                     }
                 }
 
-                Spacer(Modifier.height(8.dp))
-                HorizontalDivider(color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f))
-                Spacer(Modifier.height(4.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
+
                 Text(
                     text = stringResource(R.string.meal_correction_bolus_calc_result_label, insulinValue(uiState.calculation.proposedTotal.iu)),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onResultClick() }
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
+        },
+        confirmButton = {
+            Button(onClick = onApply) {
+                Text(stringResource(R.string.meal_correction_bolus_apply_button))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(CommonR.string.action_close))
+            }
         }
-    }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -795,7 +782,8 @@ fun SuggestionBadge(
     label: String,
     isApplied: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onInfoClick: (() -> Unit)? = null
 ) {
     Surface(
         onClick = onClick,
@@ -813,7 +801,12 @@ fun SuggestionBadge(
         modifier = modifier
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            modifier = Modifier.padding(
+                start = 10.dp,
+                end = if (onInfoClick != null) 4.dp else 10.dp,
+                top = 4.dp,
+                bottom = 4.dp
+            ),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
@@ -827,6 +820,21 @@ fun SuggestionBadge(
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.SemiBold
             )
+            if (onInfoClick != null) {
+                Spacer(Modifier.width(2.dp))
+                Box(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable { onInfoClick() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = stringResource(R.string.meal_correction_bolus_calculation_title),
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
         }
     }
 }
