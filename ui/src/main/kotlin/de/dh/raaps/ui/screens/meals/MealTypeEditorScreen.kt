@@ -1,5 +1,6 @@
 package de.dh.raaps.ui.screens.meals
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -45,7 +46,6 @@ import de.dh.raaps.ui.common.composables.PrimaryButton
 import de.dh.raaps.ui.common.composables.screenTitle
 import de.dh.raaps.ui.common.theme.AppTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MealTypeEditorScreen(
     viewModel: MealTypeEditorViewModel,
@@ -53,6 +53,26 @@ fun MealTypeEditorScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    MealTypeEditorContent(
+        uiState = uiState,
+        onNameChange = viewModel::onNameChange,
+        onCatChange = viewModel::onCatChange,
+        onComponentsChange = viewModel::onComponentsChange,
+        onSave = { viewModel.save(onNavigateUp) },
+        onNavigateUp = onNavigateUp
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MealTypeEditorContent(
+    uiState: MealTypeEditorUiState,
+    onNameChange: (String) -> Unit,
+    onCatChange: (String) -> Unit,
+    onComponentsChange: (List<CarbCurveComponentData>) -> Unit,
+    onSave: () -> Unit,
+    onNavigateUp: () -> Unit
+) {
     Scaffold(
         modifier = Modifier.imePadding(),
         topBar = {
@@ -71,7 +91,7 @@ fun MealTypeEditorScreen(
                 },
                 actions = {
                     IconButton(
-                        onClick = { viewModel.save(onNavigateUp) },
+                        onClick = onSave,
                         enabled = uiState.isValid && !uiState.isSaving
                     ) {
                         Icon(imageVector = Icons.Default.Save, contentDescription = "Speichern")
@@ -89,7 +109,7 @@ fun MealTypeEditorScreen(
         ) {
             OutlinedTextField(
                 value = uiState.name,
-                onValueChange = { viewModel.onNameChange(it) },
+                onValueChange = onNameChange,
                 label = { Text(stringResource(R.string.meal_type_name_label)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
@@ -100,7 +120,7 @@ fun MealTypeEditorScreen(
                 value = uiState.cat,
                 onValueChange = { newVal ->
                     if (newVal.all { it.isDigit() }) {
-                        viewModel.onCatChange(newVal)
+                        onCatChange(newVal)
                     }
                 },
                 label = { Text(stringResource(R.string.meal_type_cat_label)) },
@@ -134,12 +154,12 @@ fun MealTypeEditorScreen(
                         onUpdate = { updated ->
                             val newList = uiState.components.toMutableList()
                             newList[index] = updated
-                            viewModel.onComponentsChange(newList)
+                            onComponentsChange(newList)
                         },
                         onDelete = {
                             val newList = uiState.components.toMutableList()
                             newList.removeAt(index)
-                            viewModel.onComponentsChange(newList)
+                            onComponentsChange(newList)
                         }
                     )
                 }
@@ -148,7 +168,7 @@ fun MealTypeEditorScreen(
                         onClick = {
                             val newList = uiState.components.toMutableList()
                             newList.add(CarbCurveComponentData(0, Minutes(60)))
-                            viewModel.onComponentsChange(newList)
+                            onComponentsChange(newList)
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -205,10 +225,25 @@ fun ComponentItem(
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "Light Mode")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
 fun MealTypeEditorPreview() {
     AppTheme {
-        // No easy way to preview with VM, but can preview content if extracted
+        MealTypeEditorContent(
+            uiState = MealTypeEditorUiState(
+                name = "Normale Mahlzeit",
+                cat = "180",
+                components = listOf(
+                    CarbCurveComponentData(60, Minutes(30)),
+                    CarbCurveComponentData(40, Minutes(90))
+                )
+            ),
+            onNameChange = {},
+            onCatChange = {},
+            onComponentsChange = {},
+            onSave = {},
+            onNavigateUp = {}
+        )
     }
 }
