@@ -281,7 +281,7 @@
     <string name="meal_type_name_label">Bezeichnung</string>
     <string name="meal_type_symbol_label">Optionales Zeichen</string>
     <string name="meal_type_symbol_subtitle">Buchstabe oder Ziffer</string>
-    <string name="meal_type_symbol_standard_is_fixed">Das Symbol für Standard&#173;-&#173;Mahlzeiten&#173;typen ist fest vorgegeben</string>
+    <string name="meal_type_standard_label_format">Standard-Mahlzeitentyp %1$s</string>
     <string name="meal_type_cat_label">Resorptionsdauer (Min.)</string>
     <string name="meal_type_components_title">Komponenten</string>
     <string name="meal_type_weight_label">Gewicht (%)</string>

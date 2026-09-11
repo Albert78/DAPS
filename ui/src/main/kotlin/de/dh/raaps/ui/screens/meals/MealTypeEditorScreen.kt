@@ -229,9 +229,10 @@ fun MealTypeEditorContent(
                             }
                         }
 
-                        if (previewMealType.isStandardMealType()) {
+                        val standardLabel = previewMealType.getStandardMealTypeLabel()
+                        if (standardLabel != null) {
                             Text(
-                                text = stringResource(R.string.meal_type_symbol_standard_is_fixed),
+                                text = standardLabel,
                                 style = MaterialTheme.typography.bodyMedium.copy(
                                     hyphens = Hyphens.Auto
                                 ),
