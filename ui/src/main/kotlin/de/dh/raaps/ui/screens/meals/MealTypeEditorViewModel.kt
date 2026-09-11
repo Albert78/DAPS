@@ -77,7 +77,8 @@ class MealTypeEditorViewModel(
     }
 
     fun onSymbolChange(symbol: String) {
-        _uiState.update { it.copy(symbol = symbol.ifBlank { null }) }
+        val singleChar = symbol.take(1)
+        _uiState.update { it.copy(symbol = singleChar.ifBlank { null }) }
     }
 
     fun onCatChange(cat: String) {
