@@ -509,7 +509,7 @@ class ApsAlgorithmImpl(
                 // When our IOB contains 100% basal deliveries,
                 val lowTempBasalEffectUntilPeak = insulinEffectUntilPeak - normalBasalEffectUntilPeak
 
-                if (bgErrorAtPeak + lowTempBasalEffectUntilPeak < BgDelta.fromMgDl(-20)) {
+                if (bgErrorAtPeak + lowTempBasalEffectUntilPeak < ZERO_TEMP_BASAL_TRIGGER) {
                     // Prediction is too low, even without basal -> Zero temp and defer ongoing meal boluses
                     return CalculationResult.zeroTemp(durationInHours = 1).withMetrics(insight)
                 }
