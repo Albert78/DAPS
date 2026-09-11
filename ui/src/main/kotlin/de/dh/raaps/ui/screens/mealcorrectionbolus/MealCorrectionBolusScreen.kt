@@ -20,9 +20,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Refresh
@@ -33,12 +32,11 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -106,7 +104,9 @@ import de.dh.raaps.ui.common.isfValue
 import de.dh.raaps.ui.common.theme.AppTheme
 import de.dh.raaps.ui.common.time
 import de.dh.raaps.ui.common.withinTimeDescription
+import de.dh.raaps.ui.controls.meal.BolusPlanEditorDialog
 import de.dh.raaps.ui.controls.meal.FoodTypeSelector
+import de.dh.raaps.ui.controls.meal.PlannedBolusUiModel
 import java.util.Locale
 import kotlin.math.abs
 import de.dh.raaps.common.R as CommonR
@@ -127,8 +127,12 @@ fun MealCorrectionBolusScreen(
         onApplySuggestedImi = { viewModel.onApplySuggestedImi() },
         onMealTypeChange = { viewModel.onMealTypeChange(it) },
         onManualBolusChange = { viewModel.onManualBolusChange(it) },
-        onPlannedInsulinTimeChange = { index, time -> viewModel.onPlannedInsulinTimeChange(index, time) },
-        onToggleInsulinPlan = { viewModel.toggleInsulinPlanExpanded() },
+        onOpenBolusPlanDialog = { viewModel.onOpenBolusPlanDialog() },
+        onCloseBolusPlanDialog = { viewModel.onCloseBolusPlanDialog() },
+        onUpdateBolusTime = { index, time -> viewModel.onUpdateBolusTime(index, time) },
+        onUpdateBolusAmount = { index, amount -> viewModel.onUpdateBolusAmount(index, amount) },
+        onAddDeferredBolus = { viewModel.onAddDeferredBolus() },
+        onRemoveDeferredBolus = { viewModel.onRemoveDeferredBolus(it) },
         onToggleMealReminder = { viewModel.onToggleMealReminder() },
         onRefreshProjections = { viewModel.onRefreshProjections() },
         onClose = onNavigateUp,
@@ -145,8 +149,12 @@ fun MealCorrectionBolusContent(
     onApplySuggestedImi: () -> Unit,
     onMealTypeChange: (MealType) -> Unit,
     onManualBolusChange: (Double) -> Unit,
-    onPlannedInsulinTimeChange: (Int, Timestamp) -> Unit,
-    onToggleInsulinPlan: () -> Unit,
+    onOpenBolusPlanDialog: () -> Unit,
+    onCloseBolusPlanDialog: () -> Unit,
+    onUpdateBolusTime: (Int, Timestamp) -> Unit,
+    onUpdateBolusAmount: (Int, InsulinAmount) -> Unit,
+    onAddDeferredBolus: () -> Unit,
+    onRemoveDeferredBolus: (Int) -> Unit,
     onToggleMealReminder: () -> Unit,
     onRefreshProjections: () -> Unit,
     onClose: () -> Unit,
@@ -353,12 +361,32 @@ fun MealCorrectionBolusContent(
                 }
 
                 // Insulin Plan Card
-                if (uiState.insulinPlan.isNotEmpty()) {
+                if (uiState.input.manualBolus > InsulinAmount.ZERO || uiState.insulinPlan.isNotEmpty()) {
                     InsulinPlanCard(
                         plan = uiState.insulinPlan,
-                        isExpanded = uiState.isInsulinPlanExpanded,
-                        onToggleExpanded = onToggleInsulinPlan,
-                        onTimeChange = onPlannedInsulinTimeChange
+                        onOpenBolusPlanDialog = onOpenBolusPlanDialog
+                    )
+                }
+
+                if (uiState.isBolusPlanDialogOpen) {
+                    BolusPlanEditorDialog(
+                        title = stringResource(R.string.bolus_plan_editor_title_planning),
+                        administeredInsulinAmount = InsulinAmount.ZERO,
+                        plannedBoluses = uiState.insulinPlan.map { item ->
+                            PlannedBolusUiModel(
+                                amount = item.amount,
+                                timestamp = item.timestamp,
+                                timeFromMeal = item.timeFromMeal,
+                                label = ""
+                            )
+                        },
+                        baseTime = uiState.input.mealTimestamp,
+                        onUpdateBolusTime = onUpdateBolusTime,
+                        onUpdateBolusAmount = onUpdateBolusAmount,
+                        onAddDeferredBolus = onAddDeferredBolus,
+                        onRemoveDeferredBolus = onRemoveDeferredBolus,
+                        onDismissRequest = onCloseBolusPlanDialog,
+                        onConfirm = onCloseBolusPlanDialog
                     )
                 }
 
@@ -669,109 +697,64 @@ fun CalculationDetailsDialog(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InsulinPlanCard(
     plan: List<PlannedInsulinUiModel>,
-    isExpanded: Boolean,
-    onToggleExpanded: () -> Unit,
-    onTimeChange: (Int, Timestamp) -> Unit
+    onOpenBolusPlanDialog: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onToggleExpanded,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onOpenBolusPlanDialog() },
         shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(2.dp, AppColorBlue.copy(alpha = 0.3f)),
+        border = BorderStroke(1.dp, AppColorBlue.copy(alpha = 0.3f)),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
         )
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = stringResource(R.string.meal_correction_bolus_insulin_plan_title),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    if (!isExpanded) {
-                        val planSummary = buildString {
-                            plan.forEachIndexed { index, item ->
-                                append(insulinValue(item.amount.iu))
-                                if (index < plan.size - 1) append(" + ")
-                            }
-
-                            val lastOffset = plan.lastOrNull()?.timeFromNow ?: Minutes(0)
-                            append(" (")
-                            append(withinTimeDescription(lastOffset))
-                            append(")")
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.meal_correction_bolus_insulin_plan_title),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                val planSummary = if (plan.isEmpty()) {
+                    stringResource(R.string.bolus_plan_editor_no_deferred_boluses)
+                } else {
+                    buildString {
+                        plan.forEachIndexed { index, item ->
+                            append(insulinValue(item.amount.iu))
+                            if (index < plan.size - 1) append(" + ")
                         }
-                        Text(
-                            text = planSummary,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+
+                        val lastOffset = plan.lastOrNull()?.timeFromNow ?: Minutes(0)
+                        append(" (")
+                        append(withinTimeDescription(lastOffset))
+                        append(")")
                     }
                 }
-                Icon(
-                    imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
+                Text(
+                    text = planSummary,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
-            if (isExpanded) {
-                Spacer(Modifier.height(16.dp))
-                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    plan.forEachIndexed { index, item ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = if (item.partWeight == null)
-                                        stringResource(R.string.insulin_part_none)
-                                    else
-                                        stringResource(R.string.insulin_part_n, index + 1, item.partWeight),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Text(
-                                    text = insulinValue(item.amount.iu),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                TimeStepper(
-                                    currentTime = item.timestamp,
-                                    onTimeChange = { onTimeChange(index, it) },
-                                    showPreposition = true,
-                                    forceSign = false,
-                                    style = TimeStepperDefaults.smallStyle()
-                                )
-                                Text(
-                                    text = time(item.timestamp),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
-                                )
-                            }
-                        }
-                        if (index < plan.size - 1) {
-                            HorizontalDivider(
-                                modifier = Modifier.padding(vertical = 4.dp),
-                                color = LocalContentColor.current.copy(alpha = 0.12f)
-                            )
-                        }
-                    }
-                }
+            OutlinedButton(onClick = onOpenBolusPlanDialog) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = null
+                )
+                Spacer(Modifier.width(4.dp))
+                Text(text = stringResource(R.string.action_edit))
             }
         }
     }
@@ -856,8 +839,12 @@ fun MealCorrectionBolusLoadingPreview() {
                     onApplySuggestedImi = {},
                     onMealTypeChange = {},
                     onManualBolusChange = {},
-                    onPlannedInsulinTimeChange = { _, _ -> },
-                    onToggleInsulinPlan = {},
+                    onOpenBolusPlanDialog = {},
+                    onCloseBolusPlanDialog = {},
+                    onUpdateBolusTime = { _, _ -> },
+                    onUpdateBolusAmount = { _, _ -> },
+                    onAddDeferredBolus = {},
+                    onRemoveDeferredBolus = {},
                     onToggleMealReminder = {},
                     onRefreshProjections = {},
                     onClose = {},
@@ -901,8 +888,12 @@ fun MealCorrectionBolusZeroKePreview() {
                     onApplySuggestedImi = {},
                     onMealTypeChange = {},
                     onManualBolusChange = {},
-                    onPlannedInsulinTimeChange = { _, _ -> },
-                    onToggleInsulinPlan = {},
+                    onOpenBolusPlanDialog = {},
+                    onCloseBolusPlanDialog = {},
+                    onUpdateBolusTime = { _, _ -> },
+                    onUpdateBolusAmount = { _, _ -> },
+                    onAddDeferredBolus = {},
+                    onRemoveDeferredBolus = {},
                     onToggleMealReminder = {},
                     onRefreshProjections = {},
                     onClose = {},
@@ -962,8 +953,12 @@ fun MealCorrectionBolusDefaultPreview() {
                     onApplySuggestedImi = {},
                     onMealTypeChange = {},
                     onManualBolusChange = {},
-                    onPlannedInsulinTimeChange = { _, _ -> },
-                    onToggleInsulinPlan = {},
+                    onOpenBolusPlanDialog = {},
+                    onCloseBolusPlanDialog = {},
+                    onUpdateBolusTime = { _, _ -> },
+                    onUpdateBolusAmount = { _, _ -> },
+                    onAddDeferredBolus = {},
+                    onRemoveDeferredBolus = {},
                     onToggleMealReminder = {},
                     onRefreshProjections = {},
                     onClose = {},

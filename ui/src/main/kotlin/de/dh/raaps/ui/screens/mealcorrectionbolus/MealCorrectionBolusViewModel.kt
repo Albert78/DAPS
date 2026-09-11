@@ -161,7 +161,7 @@ data class MealCorrectionBolusUiState(
     val lowThreshold: BgValue = BgValue.fromMgDl(DEFAULT_BG_LOW_THRESHOLD_MGDL),
     val isf: BgDelta = BgDelta.fromMgDl(DEFAULT_ISF_MGDL_PER_UNIT.toInt()),
     val cr: Double = DEFAULT_CR_GRAM_PER_UNIT,
-    val isInsulinPlanExpanded: Boolean = false,
+    val isBolusPlanDialogOpen: Boolean = false,
     val isMealReminderEnabled: Boolean = false,
     val showCloseBanner: Boolean = false,
     val submissionStatus: SubmissionStatus = SubmissionStatus.NotSubmitted
@@ -301,7 +301,15 @@ class MealCorrectionBolusViewModel(
         recalculateInsulinPlanTimes() // Re-calculate distribution if manual amount changes
     }
 
-    fun onPlannedInsulinTimeChange(index: Int, newTimestamp: Timestamp) {
+    fun onOpenBolusPlanDialog() {
+        _uiState.update { it.copy(isBolusPlanDialogOpen = true) }
+    }
+
+    fun onCloseBolusPlanDialog() {
+        _uiState.update { it.copy(isBolusPlanDialogOpen = false) }
+    }
+
+    fun onUpdateBolusTime(index: Int, newTimestamp: Timestamp) {
         val now = Timestamp.now()
 
         _uiState.update { s ->
@@ -313,8 +321,54 @@ class MealCorrectionBolusViewModel(
         }
     }
 
-    fun toggleInsulinPlanExpanded() {
-        _uiState.update { it.copy(isInsulinPlanExpanded = !it.isInsulinPlanExpanded) }
+    fun onUpdateBolusAmount(index: Int, newAmount: InsulinAmount) {
+        val coercedAmount = newAmount.coerceAtLeast(InsulinAmount.ZERO)
+        _uiState.update { s ->
+            val newPlan = s.insulinPlan.toMutableList()
+            if (index in newPlan.indices) {
+                newPlan[index] = newPlan[index].copy(amount = coercedAmount)
+            }
+            val totalInsulin = newPlan.fold(InsulinAmount.ZERO) { acc, next -> acc + next.amount }
+            s.copy(
+                insulinPlan = newPlan,
+                input = s.input.copy(manualBolus = totalInsulin)
+            )
+        }
+    }
+
+    fun onAddDeferredBolus() {
+        val now = Timestamp.now()
+        _uiState.update { s ->
+            val lastTimestamp = s.insulinPlan.lastOrNull()?.timestamp ?: s.input.mealTimestamp
+            val newTimestamp = if (lastTimestamp < now) now + Minutes(30) else lastTimestamp + Minutes(30)
+            val defaultAmount = InsulinAmount(1.0)
+            val newModel = PlannedInsulinUiModel.create(
+                amount = defaultAmount,
+                timeFromMeal = Minutes.timeDifference(s.input.mealTimestamp, newTimestamp),
+                mealTimestamp = s.input.mealTimestamp,
+                now = now
+            )
+            val newPlan = s.insulinPlan + newModel
+            val totalInsulin = newPlan.fold(InsulinAmount.ZERO) { acc, next -> acc + next.amount }
+            s.copy(
+                insulinPlan = newPlan,
+                input = s.input.copy(manualBolus = totalInsulin)
+            )
+        }
+    }
+
+    fun onRemoveDeferredBolus(index: Int) {
+        _uiState.update { s ->
+            val newPlan = s.insulinPlan.toMutableList()
+            if (index in newPlan.indices) {
+                newPlan.removeAt(index)
+            }
+            val totalInsulin = newPlan.fold(InsulinAmount.ZERO) { acc, next -> acc + next.amount }
+            s.copy(
+                insulinPlan = newPlan,
+                input = s.input.copy(manualBolus = totalInsulin)
+            )
+        }
     }
 
     fun onToggleMealReminder() {
