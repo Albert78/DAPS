@@ -276,6 +276,8 @@
     <string name="meal_type_label">Mahlzeit-Typ</string>
     <string name="meal_type_editor_title_new">Neuer Mahlzeitentyp</string>
     <string name="meal_type_editor_title_edit">Mahlzeitentyp bearbeiten</string>
+    <string name="meal_type_editor_discard_title">Änderungen speichern?</string>
+    <string name="meal_type_editor_discard_message">Du hast Änderungen am Mahlzeitentyp vorgenommen. Möchtest du die Änderungen speichern oder verwerfen?</string>
     <string name="meal_type_name_label">Bezeichnung</string>
     <string name="meal_type_symbol_label">Optionales Zeichen</string>
     <string name="meal_type_symbol_subtitle">Buchstabe oder Ziffer</string>

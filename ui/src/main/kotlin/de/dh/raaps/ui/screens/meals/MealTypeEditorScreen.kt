@@ -48,16 +48,30 @@ import androidx.compose.ui.text.style.Hyphens
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.activity.compose.BackHandler
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.AlertDialog
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import de.dh.raaps.common.model.CarbCurveComponentData
 import de.dh.raaps.common.model.ID_MEAL_STANDARD
 import de.dh.raaps.common.model.MealType
 import de.dh.raaps.common.model.data.Minutes
 import de.dh.raaps.ui.R
+import de.dh.raaps.ui.common.composables.NormalTextButton
 import de.dh.raaps.ui.common.composables.PrimaryButton
 import de.dh.raaps.ui.common.composables.contentScrollIndicator
 import de.dh.raaps.ui.common.composables.screenTitle
 import de.dh.raaps.ui.common.theme.AppTheme
 import de.dh.raaps.common.R as CommonR
+
+private data class InitialMealTypeValues(
+    val id: String?,
+    val name: String,
+    val symbol: String?,
+    val cat: String,
+    val components: List<CarbCurveComponentData>
+)
 
 @Composable
 fun MealTypeEditorScreen(
@@ -88,6 +102,46 @@ fun MealTypeEditorContent(
     onSave: () -> Unit,
     onNavigateUp: () -> Unit
 ) {
+    var showDiscardConfirmation by remember { mutableStateOf(false) }
+
+    val initialValues = remember(uiState.isLoading) {
+        if (!uiState.isLoading) {
+            InitialMealTypeValues(
+                id = uiState.id,
+                name = uiState.name,
+                symbol = uiState.symbol,
+                cat = uiState.cat,
+                components = uiState.components
+            )
+        } else null
+    }
+
+    val hasChanges = remember(
+        uiState.name,
+        uiState.symbol,
+        uiState.cat,
+        uiState.components,
+        initialValues
+    ) {
+        if (initialValues == null) false
+        else {
+            uiState.name != initialValues.name ||
+                    uiState.symbol != initialValues.symbol ||
+                    uiState.cat != initialValues.cat ||
+                    uiState.components != initialValues.components
+        }
+    }
+
+    fun handleBack() {
+        if (hasChanges) {
+            showDiscardConfirmation = true
+        } else {
+            onNavigateUp()
+        }
+    }
+
+    BackHandler(onBack = ::handleBack)
+
     Scaffold(
         modifier = Modifier.imePadding(),
         topBar = {
@@ -97,10 +151,13 @@ fun MealTypeEditorContent(
                     else stringResource(R.string.meal_type_editor_title_edit)
                 ),
                 navigationIcon = {
-                    IconButton(onClick = onNavigateUp) {
+                    IconButton(onClick = ::handleBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(id = CommonR.string.cd_navigate_up)
+                            imageVector = if (hasChanges) Icons.Default.Close else Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(
+                                id = if (hasChanges) CommonR.string.cd_cancel
+                                else CommonR.string.cd_navigate_up
+                            )
                         )
                     }
                 },
@@ -279,6 +336,33 @@ fun MealTypeEditorContent(
                 }
             }
         }
+    }
+
+    if (showDiscardConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showDiscardConfirmation = false },
+            title = { Text(stringResource(id = R.string.meal_type_editor_discard_title)) },
+            text = { Text(stringResource(id = R.string.meal_type_editor_discard_message)) },
+            confirmButton = {
+                NormalTextButton(
+                    onClick = {
+                        showDiscardConfirmation = false
+                        onSave()
+                    },
+                    enabled = uiState.isValid && !uiState.isSaving
+                ) {
+                    Text(stringResource(id = CommonR.string.action_save))
+                }
+            },
+            dismissButton = {
+                NormalTextButton(onClick = {
+                    showDiscardConfirmation = false
+                    onNavigateUp()
+                }) {
+                    Text(stringResource(id = R.string.discard_confirm_button))
+                }
+            }
+        )
     }
 }
 
