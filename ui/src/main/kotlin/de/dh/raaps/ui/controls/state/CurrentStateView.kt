@@ -19,13 +19,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.HourglassEmpty
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,23 +44,24 @@ import androidx.compose.ui.unit.dp
 import de.dh.raaps.common.model.InsulinAmount
 import de.dh.raaps.common.model.data.BgDelta
 import de.dh.raaps.common.model.data.BgValue
+import de.dh.raaps.common.model.data.GlucoseUnit
 import de.dh.raaps.common.model.data.Timestamp
-import de.dh.raaps.ui.R
-import androidx.compose.material.icons.filled.Warning
 import de.dh.raaps.core.aps.CoreState
-import de.dh.raaps.ui.common.icons.CarbsBlood
-import de.dh.raaps.ui.common.icons.InsulinBlood
+import de.dh.raaps.ui.R
+import de.dh.raaps.ui.common.LocalGlucoseUnit
+import de.dh.raaps.ui.common.carbsGramsValue
 import de.dh.raaps.ui.common.composables.AppColorBlue
 import de.dh.raaps.ui.common.composables.LightGreenA700
 import de.dh.raaps.ui.common.composables.Red
 import de.dh.raaps.ui.common.composables.Yellow
-import de.dh.raaps.ui.common.shortRelativeTimeAgo
-import de.dh.raaps.ui.common.theme.AppTheme
-import de.dh.raaps.ui.common.glucoseValue
 import de.dh.raaps.ui.common.deltaValue
 import de.dh.raaps.ui.common.glucoseUnitLabel
+import de.dh.raaps.ui.common.glucoseValue
+import de.dh.raaps.ui.common.icons.CarbsBlood
+import de.dh.raaps.ui.common.icons.InsulinBlood
 import de.dh.raaps.ui.common.insulinValue
-import de.dh.raaps.ui.common.carbsGramsValue
+import de.dh.raaps.ui.common.shortRelativeTimeAgo
+import de.dh.raaps.ui.common.theme.AppTheme
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -382,13 +384,15 @@ fun CurrentStateViewPreview() {
         apsIssues = emptySet()
     )
     AppTheme {
-        Surface {
-            Box(Modifier.padding(16.dp)) {
-                CurrentStateView(
-                    currentBgUiState = state,
-                    iob = InsulinAmount(1.57),
-                    cob = 12.0
-                )
+        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
+            Surface {
+                Box(Modifier.padding(16.dp)) {
+                    CurrentStateView(
+                        currentBgUiState = state,
+                        iob = InsulinAmount(1.57),
+                        cob = 12.0
+                    )
+                }
             }
         }
     }

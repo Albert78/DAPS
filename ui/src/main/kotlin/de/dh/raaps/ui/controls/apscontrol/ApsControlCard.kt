@@ -45,8 +45,10 @@ import de.dh.raaps.common.model.ApsMode
 import de.dh.raaps.common.model.InsulinAmount
 import de.dh.raaps.common.model.data.BgDelta
 import de.dh.raaps.common.model.data.BgValue
+import de.dh.raaps.common.model.data.GlucoseUnit
 import de.dh.raaps.common.model.data.Minutes
 import de.dh.raaps.ui.R
+import de.dh.raaps.ui.common.LocalGlucoseUnit
 import de.dh.raaps.ui.common.glucoseValue
 import de.dh.raaps.ui.common.isfValue
 import de.dh.raaps.ui.common.crValue
@@ -301,37 +303,39 @@ private fun ApsMode.toDisplayStringShort(): String = stringResource(id = when (t
 @Composable
 private fun PreviewApsControlCard() {
     AppTheme {
-        Surface {
-            ApsControlCard(
-                modifier = Modifier.padding(16.dp),
-                insulinProfileUiState = InsulinProfileUiState(
-                    name = "Standard",
-                    activeProfileId = null,
-                    currentIsf = BgDelta.fromMgDl(50),
-                    currentCr = 12.0,
-                    currentBasal = InsulinAmount(0.8),
-                    isfRange = "50",
-                    crRange = "12.0",
-                    basalRange = "0.80",
-                    target = BgValue.fromMgDl(100),
-                    lowThreshold = BgValue.fromMgDl(70),
+        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
+            Surface {
+                ApsControlCard(
+                    modifier = Modifier.padding(16.dp),
+                    insulinProfileUiState = InsulinProfileUiState(
+                        name = "Standard",
+                        activeProfileId = null,
+                        currentIsf = BgDelta.fromMgDl(50),
+                        currentCr = 12.0,
+                        currentBasal = InsulinAmount(0.8),
+                        isfRange = "50",
+                        crRange = "12.0",
+                        basalRange = "0.80",
+                        target = BgValue.fromMgDl(100),
+                        lowThreshold = BgValue.fromMgDl(70),
+                        insulinAdjustmentPercentage = 0,
+                        targetBgOverride = null,
+                        lowThresholdOverride = null,
+                        adjustmentHint = null,
+                        dia = Minutes(300),
+                        peak = Minutes(75),
+                        baseLow = BgValue.fromMgDl(70),
+                        baseTarget = BgValue.fromMgDl(110)
+                    ),
+                    selectedMode = ApsMode.AutoCorrection,
+                    availableModes = ApsMode.entries,
+                    onModeChange = {},
                     insulinAdjustmentPercentage = 0,
-                    targetBgOverride = null,
-                    lowThresholdOverride = null,
                     adjustmentHint = null,
-                    dia = Minutes(300),
-                    peak = Minutes(75),
-                    baseLow = BgValue.fromMgDl(70),
-                    baseTarget = BgValue.fromMgDl(110)
-                ),
-                selectedMode = ApsMode.AutoCorrection,
-                availableModes = ApsMode.entries,
-                onModeChange = {},
-                insulinAdjustmentPercentage = 0,
-                adjustmentHint = null,
-                onAdjustmentClick = {},
-                onProfileClick = {}
-            )
+                    onAdjustmentClick = {},
+                    onProfileClick = {}
+                )
+            }
         }
     }
 }

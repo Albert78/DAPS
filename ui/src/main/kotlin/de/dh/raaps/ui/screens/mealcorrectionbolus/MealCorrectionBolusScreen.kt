@@ -34,7 +34,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -205,14 +204,14 @@ fun MealCorrectionBolusContent(
                             )
                             if (uiState.suggestedCarbsKe > 0.0) {
                                 Spacer(Modifier.height(4.dp))
-                                val isSuggestedCarbsApplied = abs(uiState.input.carbsKe - uiState.suggestedCarbsKe) < 0.01
+                                val isCarbsBelowSuggestion = uiState.input.carbsKe < uiState.suggestedCarbsKe - 0.01
                                 SuggestionBadge(
                                     label = stringResource(
                                         R.string.meal_correction_bolus_suggested_carbs_format,
                                         uiState.suggestedCarbsKe,
                                         carbsKeUnitLabel()
                                     ),
-                                    isApplied = isSuggestedCarbsApplied,
+                                    isHighlighted = isCarbsBelowSuggestion,
                                     onClick = onApplySuggestedCarbs
                                 )
                             }
@@ -258,7 +257,7 @@ fun MealCorrectionBolusContent(
 
                                     SuggestionBadge(
                                         label = stringResource(R.string.meal_correction_bolus_suggested_time_format, suggestedMinutes),
-                                        isApplied = isSuggestedTimeApplied,
+                                        isHighlighted = !isSuggestedTimeApplied,
                                         onClick = onApplySuggestedImi
                                     )
                                 }
@@ -322,7 +321,7 @@ fun MealCorrectionBolusContent(
                                         R.string.meal_correction_bolus_suggested_insulin_format,
                                         insulinValue(suggestedBolus.iu)
                                     ),
-                                    isApplied = isSuggestedBolusApplied,
+                                    isHighlighted = !isSuggestedBolusApplied,
                                     onClick = { onManualBolusChange(suggestedBolus.iu) },
                                     onInfoClick = { showCalculationDialog = true }
                                 )
@@ -440,7 +439,7 @@ fun MealCorrectionBolusContextInfo(
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     if (uiState.projections.isProjected) {
                         Text(
@@ -495,16 +494,22 @@ fun MealCorrectionBolusContextInfo(
             }
 
             if (uiState.isProjectionsStale) {
-                IconButton(
+                Surface(
                     onClick = onRefresh,
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f)),
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(4.dp)
+                        .padding(8.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
                         contentDescription = stringResource(R.string.cd_refresh_calculations),
-                        tint = MaterialTheme.colorScheme.primary
+                        modifier = Modifier
+                            .padding(6.dp)
+                            .size(20.dp),
+                        tint = MaterialTheme.colorScheme.error
                     )
                 }
             }
@@ -763,7 +768,7 @@ fun InsulinPlanCard(
 @Composable
 fun SuggestionBadge(
     label: String,
-    isApplied: Boolean,
+    isHighlighted: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     onInfoClick: (() -> Unit)? = null
@@ -771,15 +776,15 @@ fun SuggestionBadge(
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(12.dp),
-        color = if (isApplied) {
-            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-        } else {
+        color = if (isHighlighted) {
             MaterialTheme.colorScheme.tertiaryContainer
-        },
-        contentColor = if (isApplied) {
-            MaterialTheme.colorScheme.onPrimaryContainer
         } else {
+            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+        },
+        contentColor = if (isHighlighted) {
             MaterialTheme.colorScheme.onTertiaryContainer
+        } else {
+            MaterialTheme.colorScheme.onPrimaryContainer
         },
         modifier = modifier
     ) {
