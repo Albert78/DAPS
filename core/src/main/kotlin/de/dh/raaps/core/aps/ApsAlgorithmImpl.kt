@@ -168,6 +168,7 @@ class ApsAlgorithmImpl(
             deferredBolusAmount: InsulinAmount
         ) = BolusCalculationMath.calculateBolusParts(
             carbsKe = carbsKe,
+            mealTimestamp = mealTimestamp,
             bg = projectedBg,
             cr = therapyManager.getCrFactor(mealTimestamp),
             isf = therapyManager.getIsfFactor(mealTimestamp),

@@ -123,24 +123,28 @@ object BolusCalculationMath {
     fun calculateSuggestedImi(
         currentBg: BgValue,
         targetBg: BgValue,
-        lowThreshold: BgValue
+        lowThreshold: BgValue,
+        allowPast: Boolean = false
     ): Minutes {
         if (currentBg.isInvalid() || targetBg.isInvalid() || lowThreshold.isInvalid()) return Minutes(DEFAULT_IMI_MINUTES)
 
-        if (currentBg.mgdl <= lowThreshold.mgdl) return Minutes(-15) // Suggest 15-min delay for bolus if low
+        if (currentBg.mgdl <= lowThreshold.mgdl) {
+            return if (allowPast) Minutes(-15) else Minutes(0)
+        }
 
         val diff = currentBg.mgdl - targetBg.mgdl
         if (diff <= 0.0) return Minutes(0)
 
         // Simple rule: 5 minutes per 20 mg/dL above target, max 45 min
         val rawMinutes = Minutes(((diff / 20.0) * 5.0).toInt().toShort())
-        return roundTo5Minutes(rawMinutes).coerceIn(Minutes(0), Minutes(45))
+        val minMinutes = if (allowPast) -15 else 0
+        return roundTo5Minutes(rawMinutes).coerceIn(Minutes(minMinutes.toShort()), Minutes(45))
     }
 
     /**
      * Calculates the individual insulin components for a bolus proposal.
      *
-     * IMPORTANT: This calculation is anchored at [mealTimestamp]. All time-dependent therapy factors
+     * IMPORTANT: This calculation is anchored at the time of the meal. All time-dependent therapy factors
      * (CR, ISF) and all projected values (BG, IOB, COB, Future Carbs, Deferred Bolus) must be
      * valid/calculated for this specific point in time.
      *
@@ -153,10 +157,12 @@ object BolusCalculationMath {
      * - Deferred Bolus: Already planned insulin amounts that should not be double-dosed.
      *
      * @param carbsKe The amount of carbohydrates in KE (1 KE = 10g).
+     * @param mealTimestamp The planned time of the meal.
      * @param bg The projected blood glucose value.
      * @param cr The Carb Ratio (CR) factor.
      * @param isf The Insulin Sensitivity Factor (ISF).
      * @param targetBg The target blood glucose value.
+     * @param impendingLow If available, the next projected low value.
      * @param iob The projected active insulin on board.
      * @param cob The projected active carbohydrates on board (in grams).
      * @param futureCarbs Carbohydrates pre-announced for the future.
@@ -165,6 +171,7 @@ object BolusCalculationMath {
      */
     fun calculateBolusParts(
         carbsKe: Double,
+        mealTimestamp: Timestamp,
         bg: BgValue,
         cr: Double,
         isf: BgDelta,
@@ -186,7 +193,7 @@ object BolusCalculationMath {
 
         // Calculate correction, COB and future carb parts using meal-time factors
 
-        val correctionPart = if (impendingLow != null) {
+        val correctionPart = if (impendingLow != null && impendingLow.timestamp < mealTimestamp.plusMinutes(60)) {
             InsulinAmount.ZERO
         } else {
             convertToInsulinAmountFromBgDelta(BgDelta.fromMgDl(bgDiff), isf)
@@ -321,6 +328,7 @@ class SimpleBolusCorrectionCalculator(
         deferredBolusAmount: InsulinAmount
     ) = BolusCalculationMath.calculateBolusParts(
             carbsKe = carbsKe,
+            mealTimestamp = mealTimestamp,
             bg = projectedBg,
             cr = therapyManager.getCrFactor(mealTimestamp),
             isf = therapyManager.getIsfFactor(mealTimestamp),
