@@ -93,6 +93,10 @@ fun BadgedStarIcon(
     modifier: Modifier = Modifier,
     tint: Color = LocalContentColor.current,
 ) {
+    // Boost text alpha relative to tint alpha so unselected symbols stay legible
+    val textAlpha = (tint.alpha * 1.25f).coerceAtMost(1f)
+    val starAlpha = (tint.alpha * 0.25f).coerceAtMost(0.25f)
+
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier.size(24.dp)
@@ -100,7 +104,7 @@ fun BadgedStarIcon(
         Icon(
             imageVector = Icon_Meal_Custom,
             contentDescription = null,
-            tint = tint.copy(alpha = 0.20f),
+            tint = tint.copy(alpha = starAlpha),
             modifier = Modifier.fillMaxSize()
         )
         Text(
@@ -109,7 +113,7 @@ fun BadgedStarIcon(
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Black,
             ),
-            color = tint,
+            color = tint.copy(alpha = textAlpha),
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 1.dp)
         )
