@@ -154,6 +154,7 @@ class Core(
         busyWork {
             val now = Timestamp.now()
             val res = therapyManager.tryAcquire(TAG ?: "Core") { treatmentLock ->
+                val issuesWithoutLock = currentCoreState.issues.filterNot { it is CoreIssue.TherapyLockBusy }.toSet()
                 try {
                     if (!isReadOnly) {
                         val pendingCount = onWaitForPumpSync(treatmentLock)
@@ -179,7 +180,7 @@ class Core(
                                     )
                                 )
                             }
-                            setCoreState(CoreState.Active(currentCoreState.issues + CoreIssue.NoPumpConnection(lastCompletion)))
+                            setCoreState(CoreState.Active(issuesWithoutLock + CoreIssue.NoPumpConnection(lastCompletion)))
                             return@tryAcquire
                         }
                     }
@@ -241,7 +242,7 @@ class Core(
                     if (!isReadOnly) {
                         val pendingCount2 = onWaitForPumpSync(treatmentLock)
                         if (pendingCount2 > 0) {
-                            setCoreState(CoreState.Active(currentCoreState.issues + CoreIssue.NoPumpConnection(lastCompletion)))
+                            setCoreState(CoreState.Active(issuesWithoutLock + CoreIssue.NoPumpConnection(lastCompletion)))
                             return@tryAcquire
                         }
                     }
@@ -254,7 +255,7 @@ class Core(
                     setCoreState(CoreState.Active(result.coreIssues ?: emptySet()))
                 } catch (e: Exception) {
                     Log.e(TAG, "Error during core execution", e)
-                    setCoreState(CoreState.Active(CoreIssue.InternalError(
+                    setCoreState(CoreState.Active(issuesWithoutLock + CoreIssue.InternalError(
                         formatErrorMessage("Error during core execution", e)
                     )))
                     scope.launch {
@@ -281,7 +282,7 @@ class Core(
                     TAG,
                     "Core skipping tick since therapy manager is busy (lock owner: ${res.owner})"
                 )
-                setCoreState(CoreState.Active(CoreIssue.TherapyLockBusy))
+                setCoreState(CoreState.Active(currentCoreState.issues.filterNot { it is CoreIssue.TherapyLockBusy }.toSet() + CoreIssue.TherapyLockBusy(now)))
 
                 scope.launch {
                     systemMetricsRepository.saveInsight(

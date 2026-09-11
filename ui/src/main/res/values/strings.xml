@@ -140,7 +140,7 @@
     <string name="core_issue_no_recent_values">Keine aktuellen Glukosewerte seit %1$d Minuten.</string>
     <string name="core_issue_noisy_values">Die Glukosewerte sind zu verrauscht für eine sichere Berechnung.</string>
     <string name="core_issue_internal_error">Interner Fehler im Algorithmus: %1$s</string>
-    <string name="core_issue_therapy_lock_busy">Therapie-Sperre aktiv (Nutzer-Aktion)</string>
+    <string name="core_issue_therapy_lock_busy">%1$s: Therapie-Sperre aktiv (Nutzer-Aktion)</string>
     <string name="core_issue_no_pump_connection">Pumpen-Kommunikation ist fehlgeschlagen</string>
 
     <string name="pump_issue_title">Pumpen-Problem</string>

@@ -10,9 +10,11 @@ import de.dh.raaps.common.model.data.BgValue
 import de.dh.raaps.common.model.data.GlucoseUnit
 import de.dh.raaps.common.model.data.Minutes
 import de.dh.raaps.common.model.data.Timestamp
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.abs
@@ -56,8 +58,8 @@ fun rememberAppFormatters(): AppFormatters {
 /////////////////////////////////////////////// Time ///////////////////////////////////////////////
 
 fun time(timestamp: Timestamp): String {
-    val localTime = java.time.Instant.ofEpochMilli(timestamp.ms)
-        .atZone(java.time.ZoneId.systemDefault())
+    val localTime = Instant.ofEpochMilli(timestamp.ms)
+        .atZone(ZoneId.systemDefault())
         .toLocalTime()
     return time(localTime)
 }

@@ -22,6 +22,7 @@ import de.dh.raaps.core.repository.GlucoseRepository
 import de.dh.raaps.core.system.AndroidNotifications
 import de.dh.raaps.core.system.RegistryProvider
 import de.dh.raaps.ui.activities.MainActivity
+import de.dh.raaps.ui.common.time
 import de.dh.raaps.ui.screens.permissions.canPostNotifications
 import de.dh.raaps.common.R as CommonR
 import de.dh.raaps.ui.R as UiR
@@ -230,7 +231,10 @@ class AndroidNotificationsImpl(
                 UiR.string.core_issue_internal_error,
                 coreIssue.message ?: context.getString(UiR.string.unknown_label)
             )
-            CoreIssue.TherapyLockBusy -> context.getString(UiR.string.core_issue_therapy_lock_busy)
+            is CoreIssue.TherapyLockBusy -> context.getString(
+                UiR.string.core_issue_therapy_lock_busy,
+                time(coreIssue.since)
+            )
             is CoreIssue.NoPumpConnection -> context.getString(UiR.string.core_issue_no_pump_connection)
         }
         is ApsIssue.Pump -> when (issue.issue) {

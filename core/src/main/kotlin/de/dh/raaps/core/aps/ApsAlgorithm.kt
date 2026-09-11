@@ -14,7 +14,7 @@ sealed class CoreIssue {
     data class NoRecentValues(val minutes: Int) : CoreIssue()
     data object NoisyValues : CoreIssue()
     data class InternalError(val message: String?) : CoreIssue()
-    data object TherapyLockBusy : CoreIssue()
+    data class TherapyLockBusy(val since: Timestamp = Timestamp.now()) : CoreIssue()
     data class NoPumpConnection(val since: Timestamp): CoreIssue()
 }
 
