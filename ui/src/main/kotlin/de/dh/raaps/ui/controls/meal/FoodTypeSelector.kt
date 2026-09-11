@@ -51,9 +51,10 @@ fun FoodTypeSelector(
     mealTypes: List<MealType>,
     selectedType: MealType?,
     onTypeSelected: (MealType) -> Unit,
-    isMandatory: Boolean = false
+    isMandatory: Boolean = false,
+    initialExpanded: Boolean = false
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(initialExpanded) }
 
     val isError = isMandatory && selectedType == null
 
@@ -170,45 +171,46 @@ fun FoodTypeSelector(
     }
 }
 
+private fun getPreviewMealTypes(): List<MealType> = listOf(
+    MealType(
+        id = ID_MEAL_STANDARD,
+        name = "Standard",
+        components = listOf(CarbCurveComponentData(100, Minutes(60))),
+        cat = Minutes(180)
+    ),
+    MealType(
+        id = ID_MEAL_FAST,
+        name = "Schnell",
+        components = listOf(CarbCurveComponentData(100, Minutes(30))),
+        cat = Minutes(120)
+    ),
+    MealType(
+        id = ID_MEAL_SLOW,
+        name = "Langsam",
+        components = listOf(CarbCurveComponentData(100, Minutes(90))),
+        cat = Minutes(240)
+    ),
+    MealType(
+        id = "custom_m",
+        name = "Müsli",
+        symbol = "M",
+        components = listOf(CarbCurveComponentData(100, Minutes(45))),
+        cat = Minutes(150)
+    ),
+    MealType(
+        id = "custom_4",
+        name = "Pizza",
+        symbol = "4",
+        components = listOf(CarbCurveComponentData(100, Minutes(120))),
+        cat = Minutes(300)
+    )
+)
+
 @Preview(name = "Light Mode", showBackground = true)
 @Preview(name = "Dark Mode", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun FoodTypeSelectorPreview() {
-    val sampleMealTypes = listOf(
-        MealType(
-            id = ID_MEAL_STANDARD,
-            name = "Standard",
-            components = listOf(CarbCurveComponentData(100, Minutes(60))),
-            cat = Minutes(180)
-        ),
-        MealType(
-            id = ID_MEAL_FAST,
-            name = "Schnell",
-            components = listOf(CarbCurveComponentData(100, Minutes(30))),
-            cat = Minutes(120)
-        ),
-        MealType(
-            id = ID_MEAL_SLOW,
-            name = "Langsam",
-            components = listOf(CarbCurveComponentData(100, Minutes(90))),
-            cat = Minutes(240)
-        ),
-        MealType(
-            id = "custom_m",
-            name = "Müsli",
-            symbol = "M",
-            components = listOf(CarbCurveComponentData(100, Minutes(45))),
-            cat = Minutes(150)
-        ),
-        MealType(
-            id = "custom_4",
-            name = "Pizza",
-            symbol = "4",
-            components = listOf(CarbCurveComponentData(100, Minutes(120))),
-            cat = Minutes(300)
-        )
-    )
-
+    val sampleMealTypes = getPreviewMealTypes()
     var selectedType by remember { mutableStateOf<MealType?>(sampleMealTypes[3]) }
 
     AppTheme {
@@ -221,6 +223,29 @@ private fun FoodTypeSelectorPreview() {
                     mealTypes = sampleMealTypes,
                     selectedType = selectedType,
                     onTypeSelected = { selectedType = it }
+                )
+            }
+        }
+    }
+}
+
+@Preview(name = "Expanded State", showBackground = true)
+@Composable
+private fun FoodTypeSelectorExpandedPreview() {
+    val sampleMealTypes = getPreviewMealTypes()
+    var selectedType by remember { mutableStateOf<MealType?>(sampleMealTypes[3]) }
+
+    AppTheme {
+        Surface {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                FoodTypeSelector(
+                    mealTypes = sampleMealTypes,
+                    selectedType = selectedType,
+                    onTypeSelected = { selectedType = it },
+                    initialExpanded = true
                 )
             }
         }

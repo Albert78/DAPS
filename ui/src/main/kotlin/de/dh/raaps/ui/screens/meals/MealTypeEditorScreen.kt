@@ -42,17 +42,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.Hyphens
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.common.R as CommonR
 import de.dh.raaps.common.model.CarbCurveComponentData
+import de.dh.raaps.common.model.ID_MEAL_STANDARD
 import de.dh.raaps.common.model.MealType
 import de.dh.raaps.common.model.data.Minutes
 import de.dh.raaps.ui.R
 import de.dh.raaps.ui.common.composables.PrimaryButton
 import de.dh.raaps.ui.common.composables.screenTitle
 import de.dh.raaps.ui.common.theme.AppTheme
+import de.dh.raaps.common.R as CommonR
 
 @Composable
 fun MealTypeEditorScreen(
@@ -160,32 +162,43 @@ fun MealTypeEditorContent(
                         }
                     }
 
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    OutlinedTextField(
-                        value = uiState.symbol ?: "",
-                        onValueChange = { newValue ->
-                            if (newValue.length <= 1) {
-                                onSymbolChange(newValue)
-                            }
-                        },
-                        textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-                        singleLine = true,
-                        modifier = Modifier.width(64.dp),
-                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters)
-                    )
-
-                    Column(modifier = Modifier.weight(1f)) {
+                    if (previewMealType.isStandardMealType()) {
                         Text(
-                            text = stringResource(R.string.meal_type_symbol_label),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold
+                            text = stringResource(R.string.meal_type_symbol_standard_is_fixed),
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                hyphens = Hyphens.Auto
+                            ),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.weight(1f)
                         )
-                        Text(
-                            text = stringResource(R.string.meal_type_symbol_subtitle),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                    } else {
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        OutlinedTextField(
+                            value = uiState.symbol ?: "",
+                            onValueChange = { newValue ->
+                                if (newValue.length <= 1) {
+                                    onSymbolChange(newValue)
+                                }
+                            },
+                            textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                            singleLine = true,
+                            modifier = Modifier.width(64.dp),
+                            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters)
                         )
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(R.string.meal_type_symbol_label),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = stringResource(R.string.meal_type_symbol_subtitle),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
             }
@@ -311,6 +324,30 @@ fun MealTypeEditorPreview() {
                 components = listOf(
                     CarbCurveComponentData(60, Minutes(30)),
                     CarbCurveComponentData(40, Minutes(90))
+                )
+            ),
+            onNameChange = {},
+            onSymbolChange = {},
+            onCatChange = {},
+            onComponentsChange = {},
+            onSave = {},
+            onNavigateUp = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Standard Meal Type Editor")
+@Composable
+fun StandardMealTypeEditorPreview() {
+    AppTheme {
+        MealTypeEditorContent(
+            uiState = MealTypeEditorUiState(
+                id = ID_MEAL_STANDARD,
+                name = "Standard Mahlzeit",
+                cat = "240",
+                components = listOf(
+                    CarbCurveComponentData(70, Minutes(75)),
+                    CarbCurveComponentData(30, Minutes(150))
                 )
             ),
             onNameChange = {},

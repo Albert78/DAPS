@@ -28,6 +28,13 @@ import de.dh.raaps.ui.common.icons.Icon_Meal_Slow
 import de.dh.raaps.ui.common.icons.Icon_Meal_Standard
 
 /**
+ * Returns true if this [MealType] is one of the built-in standard meal types.
+ */
+fun MealType.isStandardMealType(): Boolean {
+    return id in setOf(ID_MEAL_FAST, ID_MEAL_STANDARD, ID_MEAL_HIGH_FAT, ID_MEAL_SLOW)
+}
+
+/**
  * Renders the icon for a [MealType].
  * Standard meal types use their default icon.
  * Custom meal types with a symbol render a [BadgedStarIcon] using the symbol.
