@@ -1,11 +1,13 @@
 package de.dh.raaps.ui.screens.meals
 
 import android.content.res.Configuration
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -27,6 +29,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -51,9 +54,10 @@ import de.dh.raaps.ui.common.composables.screenTitle
 import de.dh.raaps.ui.common.icons.Icon_Menu_Meal_Types
 import de.dh.raaps.ui.common.theme.AppTheme
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
+import java.util.Locale
 import de.dh.raaps.common.R as CommonR
 
 @Composable
@@ -75,7 +79,7 @@ fun MealsScreen(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun MealsContent(
     uiState: MealsUiState,
@@ -145,27 +149,64 @@ fun MealsContent(
             }
         } else {
             val listState = rememberLazyListState()
+            val groupedMeals = remember(uiState.meals) {
+                uiState.meals
+                    .sortedByDescending { it.timestamp }
+                    .groupBy {
+                        Instant.ofEpochMilli(it.timestamp.ms)
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate()
+                    }
+            }
+
             LazyColumn(
                 state = listState,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .contentScrollIndicator(listState)
-            ) {
-                items(uiState.meals.sortedByDescending { it.timestamp }) { meal ->
-                    val isEditable = remember(meal.timestamp, uiState.editThresholdHours) {
-                        meal.timestamp >= Timestamp.now().minusHours(uiState.editThresholdHours)
-                    }
-
-                    MealItem(
-                        meal = meal,
-                        isEditable = isEditable,
-                        onEditClick = { onEditMeal(meal) },
+                    .contentScrollIndicator(
+                        scrollableState = listState,
+                        showTopGradient = false,
+                        topIconPadding = 48.dp
                     )
-                    HorizontalDivider()
+            ) {
+                groupedMeals.forEach { (date, meals) ->
+                    stickyHeader {
+                        DateHeader(date)
+                    }
+                    items(meals) { meal ->
+                        val isEditable = remember(meal.timestamp, uiState.editThresholdHours) {
+                            meal.timestamp >= Timestamp.now().minusHours(uiState.editThresholdHours)
+                        }
+
+                        MealItem(
+                            meal = meal,
+                            isEditable = isEditable,
+                            onEditClick = { onEditMeal(meal) },
+                        )
+                        HorizontalDivider()
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun DateHeader(date: LocalDate) {
+    val formatter = remember { DateTimeFormatter.ofPattern("EEEE, dd. MMMM yyyy", Locale.getDefault()) }
+    val dateString = remember(date) { date.format(formatter) }
+
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = dateString,
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
@@ -175,11 +216,10 @@ fun MealItem(
     isEditable: Boolean,
     onEditClick: () -> Unit,
 ) {
-    val timeFormatter = remember { DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT) }
+    val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm", Locale.getDefault()) }
     val timeString = remember(meal.timestamp) {
         Instant.ofEpochMilli(meal.timestamp.ms)
             .atZone(ZoneId.systemDefault())
-            .toLocalDateTime()
             .format(timeFormatter)
     }
 
@@ -240,7 +280,7 @@ fun MealsWithDataPreview() {
     val sampleMeals = listOf(
         MealEntry(id = 1, timestamp = Timestamp.now().minusHours(8), carbGrams = 45.0, mealType = sampleMealType),
         MealEntry(id = 2, timestamp = Timestamp.now().minusHours(5), carbGrams = 15.0, mealType = sampleMealType),
-        MealEntry(id = 3, timestamp = Timestamp.now().minusHours(1), carbGrams = 60.0, mealType = sampleMealType)
+        MealEntry(id = 3, timestamp = Timestamp.now().minusHours(26), carbGrams = 60.0, mealType = sampleMealType)
     )
 
     AppTheme {

@@ -40,6 +40,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -62,22 +63,24 @@ import de.dh.raaps.common.model.LOW_THRESHOLD_MIN
 import de.dh.raaps.common.model.TARGET_MAX
 import de.dh.raaps.common.model.TARGET_MIN
 import de.dh.raaps.common.model.data.BgValue
-import de.dh.raaps.common.R as CommonR
+import de.dh.raaps.common.model.data.GlucoseUnit
 import de.dh.raaps.ui.R
-import de.dh.raaps.ui.common.glucoseValue
-import de.dh.raaps.ui.common.glucoseUnitLabel
 import de.dh.raaps.ui.common.ConfigurableDisplayStrategy
+import de.dh.raaps.ui.common.LocalGlucoseUnit
 import de.dh.raaps.ui.common.ModuloSteppingStrategy
 import de.dh.raaps.ui.common.composables.EditableValueStepper
 import de.dh.raaps.ui.common.composables.StepperDefaults
 import de.dh.raaps.ui.common.composables.contentScrollIndicator
 import de.dh.raaps.ui.common.composables.screenTitle
+import de.dh.raaps.ui.common.glucoseUnitLabel
+import de.dh.raaps.ui.common.glucoseValue
 import de.dh.raaps.ui.common.theme.AppTheme
 import de.dh.raaps.ui.common.theme.NeutralGrey
 import de.dh.raaps.ui.common.theme.SoftBlue
 import de.dh.raaps.ui.common.theme.SoftRed
 import de.dh.raaps.ui.controls.profile.CurrentTherapyViewModel
 import de.dh.raaps.ui.controls.profile.TherapyAdjustment
+import de.dh.raaps.common.R as CommonR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -94,12 +97,14 @@ fun TherapyAdjustmentScreen(
         currentLow = activeProfile.lowThresholdOverride,
         baseTarget = activeProfile.baseTarget,
         baseLow = activeProfile.baseLow,
-        onValuesChange = { p, t, l, h ->
-            viewModel.setTherapyAdjustment(p, t, l, h)
+        onValuesChange = { p, t, l ->
+            viewModel.setTherapyAdjustment(p, t, l, null)
         },
         presets = uiState.therapyAdjustmentPresets,
-        onPresetApplied = { p, t, l, h ->
-            viewModel.setTherapyAdjustment(p, t, l, h)
+        onPresetApplied = { p, t, l, n ->
+            // Avoid "neutral" adjustment hint for neutral settings
+            val hint = if (p == 0 && t == null && l == null) null else n
+            viewModel.setTherapyAdjustment(p, t, l, hint)
             onNavigateUp()
         },
         onNavigateUp = onNavigateUp
@@ -114,7 +119,7 @@ fun TherapyAdjustmentContent(
     currentLow: BgValue?,
     baseTarget: BgValue,
     baseLow: BgValue,
-    onValuesChange: (Int, BgValue?, BgValue?, String?) -> Unit,
+    onValuesChange: (Int, BgValue?, BgValue?) -> Unit,
     onPresetApplied: (Int, BgValue?, BgValue?, String?) -> Unit,
     onNavigateUp: () -> Unit,
     presets: List<TherapyAdjustment> = emptyList()
@@ -185,7 +190,7 @@ fun TherapyAdjustmentContent(
                 ) {
                     EditableValueStepper(
                         currentValue = currentPercentage.toDouble(),
-                        onValueChange = { onValuesChange(it.toInt(), currentTarget, currentLow, null) },
+                        onValueChange = { onValuesChange(it.toInt(), currentTarget, currentLow) },
                         minValue = ADJUSTMENT_PERCENTAGE_MIN.toDouble(),
                         maxValue = ADJUSTMENT_PERCENTAGE_MAX.toDouble(),
                         steppingStrategy = steppingStrategyInsulin,
@@ -215,9 +220,9 @@ fun TherapyAdjustmentContent(
                             active = currentTarget != null,
                             onActiveChange = { active ->
                                 if (active) {
-                                    onValuesChange(currentPercentage, baseTarget, currentLow, null)
+                                    onValuesChange(currentPercentage, baseTarget, currentLow)
                                 } else {
-                                    onValuesChange(currentPercentage, null, currentLow, null)
+                                    onValuesChange(currentPercentage, null, currentLow)
                                 }
                             },
                             accentColor = MaterialTheme.colorScheme.primary
@@ -227,7 +232,7 @@ fun TherapyAdjustmentContent(
                                     currentValue = currentTarget.mgdl.toDouble(),
                                     onValueChange = {
                                         val newValue = if (it == 0.0) null else BgValue.fromMgDl(it.toInt())
-                                        onValuesChange(currentPercentage, newValue, currentLow, null)
+                                        onValuesChange(currentPercentage, newValue, currentLow)
                                     },
                                     minValue = TARGET_MIN.toDouble(),
                                     maxValue = TARGET_MAX.toDouble(),
@@ -248,9 +253,9 @@ fun TherapyAdjustmentContent(
                             active = currentLow != null,
                             onActiveChange = { active ->
                                 if (active) {
-                                    onValuesChange(currentPercentage, currentTarget, baseLow, null)
+                                    onValuesChange(currentPercentage, currentTarget, baseLow)
                                 } else {
-                                    onValuesChange(currentPercentage, currentTarget, null, null)
+                                    onValuesChange(currentPercentage, currentTarget, null)
                                 }
                             },
                             accentColor = MaterialTheme.colorScheme.error
@@ -260,7 +265,7 @@ fun TherapyAdjustmentContent(
                                     currentValue = currentLow.mgdl.toDouble(),
                                     onValueChange = {
                                         val newValue = if (it == 0.0) null else BgValue.fromMgDl(it.toInt())
-                                        onValuesChange(currentPercentage, currentTarget, newValue, null)
+                                        onValuesChange(currentPercentage, currentTarget, newValue)
                                     },
                                     minValue = LOW_THRESHOLD_MIN.toDouble(),
                                     maxValue = LOW_THRESHOLD_MAX.toDouble(),
@@ -367,13 +372,14 @@ private fun AdjustmentSection(
         )
         Spacer(modifier = Modifier.height(12.dp))
         if (useCardWrapper) {
-            val containerColor = if (isActive) accentColor.copy(alpha = 0.05f) else MaterialTheme.colorScheme.surface
-            val borderColor = if (isActive) Color.White else MaterialTheme.colorScheme.outlineVariant
+            val containerColor = if (isActive) accentColor.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surface.copy(alpha = 0.4f)
+            val borderColor = if (isActive) accentColor else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+            val borderWidth = if (isActive) 2.dp else 1.dp
 
             OutlinedCard(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.outlinedCardColors(containerColor = containerColor),
-                border = BorderStroke(1.dp, borderColor)
+                border = BorderStroke(borderWidth, borderColor)
             ) {
                 Box(
                     modifier = Modifier
@@ -400,10 +406,11 @@ private fun AdjustmentTile(
     accentColor: Color = MaterialTheme.colorScheme.primary,
     content: @Composable () -> Unit
 ) {
-    val containerColor = if (active) accentColor.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surface
-    val borderColor = if (active) Color.White else MaterialTheme.colorScheme.outlineVariant
-    val contentColor = if (active) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
-    val iconTint = if (active) accentColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+    val containerColor = if (active) accentColor.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surface.copy(alpha = 0.4f)
+    val borderColor = if (active) accentColor else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+    val borderWidth = if (active) 2.dp else 1.dp
+    val contentColor = if (active) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+    val iconTint = if (active) accentColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
 
     OutlinedCard(
         modifier = modifier.clickable(
@@ -415,7 +422,7 @@ private fun AdjustmentTile(
         colors = CardDefaults.outlinedCardColors(
             containerColor = containerColor,
         ),
-        border = BorderStroke(1.dp, borderColor)
+        border = BorderStroke(borderWidth, borderColor)
     ) {
         Column(
             modifier = Modifier
@@ -484,21 +491,23 @@ private fun StandardValueDisplay(
 @Composable
 private fun TherapyAdjustmentPreviewValues() {
     AppTheme {
-        Surface {
-            TherapyAdjustmentContent(
-                currentPercentage = -10,
-                currentTarget = BgValue.fromMgDl(120),
-                currentLow = BgValue.fromMgDl(80),
-                baseTarget = BgValue.fromMgDl(100),
-                baseLow = BgValue.fromMgDl(70),
-                onValuesChange = { _, _, _, _ -> },
-                onPresetApplied = { _, _, _, _ -> },
-                onNavigateUp = {},
-                presets = listOf(
-                    TherapyAdjustment("Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
-                    TherapyAdjustment("Stress", percentage = 20, targetBgMgDl = 115, lowThresholdMgDl = 75)
+        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
+            Surface {
+                TherapyAdjustmentContent(
+                    currentPercentage = -10,
+                    currentTarget = BgValue.fromMgDl(120),
+                    currentLow = BgValue.fromMgDl(80),
+                    baseTarget = BgValue.fromMgDl(100),
+                    baseLow = BgValue.fromMgDl(70),
+                    onValuesChange = { _, _, _ -> },
+                    onPresetApplied = { _, _, _, _ -> },
+                    onNavigateUp = {},
+                    presets = listOf(
+                        TherapyAdjustment("Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
+                        TherapyAdjustment("Stress", percentage = 20, targetBgMgDl = 115, lowThresholdMgDl = 75)
+                    )
                 )
-            )
+            }
         }
     }
 }
@@ -508,21 +517,23 @@ private fun TherapyAdjustmentPreviewValues() {
 @Composable
 private fun TherapyAdjustmentPreviewEmpty() {
     AppTheme {
-        Surface {
-            TherapyAdjustmentContent(
-                currentPercentage = 0,
-                currentTarget = null,
-                currentLow = null,
-                baseTarget = BgValue.fromMgDl(100),
-                baseLow = BgValue.fromMgDl(70),
-                onValuesChange = { _, _, _, _ -> },
-                onPresetApplied = { _, _, _, _ -> },
-                onNavigateUp = {},
-                presets = listOf(
-                    TherapyAdjustment("Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
-                    TherapyAdjustment("Stress", percentage = 20, targetBgMgDl = 115, lowThresholdMgDl = 75)
+        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
+            Surface {
+                TherapyAdjustmentContent(
+                    currentPercentage = 0,
+                    currentTarget = null,
+                    currentLow = null,
+                    baseTarget = BgValue.fromMgDl(100),
+                    baseLow = BgValue.fromMgDl(70),
+                    onValuesChange = { _, _, _ -> },
+                    onPresetApplied = { _, _, _, _ -> },
+                    onNavigateUp = {},
+                    presets = listOf(
+                        TherapyAdjustment("Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
+                        TherapyAdjustment("Stress", percentage = 20, targetBgMgDl = 115, lowThresholdMgDl = 75)
+                    )
                 )
-            )
+            }
         }
     }
 }
