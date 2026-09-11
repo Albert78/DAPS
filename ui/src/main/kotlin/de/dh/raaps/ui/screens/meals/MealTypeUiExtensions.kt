@@ -6,6 +6,7 @@ import de.dh.raaps.common.model.ID_MEAL_HIGH_FAT
 import de.dh.raaps.common.model.ID_MEAL_SLOW
 import de.dh.raaps.common.model.ID_MEAL_STANDARD
 import de.dh.raaps.common.model.MealType
+import de.dh.raaps.ui.common.icons.Icon_Meal_Custom
 import de.dh.raaps.ui.common.icons.Icon_Meal_Fast
 import de.dh.raaps.ui.common.icons.Icon_Meal_High_Fat
 import de.dh.raaps.ui.common.icons.Icon_Meal_Slow
@@ -21,6 +22,6 @@ fun MealType.getIcon(): ImageVector {
         ID_MEAL_STANDARD -> Icon_Meal_Standard
         ID_MEAL_HIGH_FAT -> Icon_Meal_High_Fat
         ID_MEAL_SLOW -> Icon_Meal_Slow
-        else -> Icon_Meal_Standard
+        else -> Icon_Meal_Custom
     }
 }

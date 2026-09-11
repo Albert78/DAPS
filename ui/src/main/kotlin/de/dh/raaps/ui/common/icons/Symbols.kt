@@ -36,6 +36,7 @@ import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Snooze
+import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Icon
@@ -100,6 +101,7 @@ val Icon_Meal_Fast = Icons.Outlined.Bolt
 val Icon_Meal_Standard = Icons.Outlined.Restaurant
 val Icon_Meal_High_Fat = Icons.Outlined.Fastfood
 val Icon_Meal_Slow = Icons.Outlined.Timer
+val Icon_Meal_Custom = Icons.Outlined.StarOutline
 
 private data class IconPreview(
     val name: String,
@@ -118,6 +120,7 @@ private val iconsForPreview = listOf(
     IconPreview("Meal_Standard", Icon_Meal_Standard),
     IconPreview("Meal_High_Fat", Icon_Meal_High_Fat),
     IconPreview("Meal_Slow", Icon_Meal_Slow),
+    IconPreview("Meal_Custom", Icon_Meal_Custom),
     IconPreview("Menu_More", Menu_More),
     IconPreview("Menu_Delete", Menu_Delete),
     IconPreview("Icon_Screen_Back", Icon_Screen_Back),

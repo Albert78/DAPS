@@ -31,11 +31,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.common.R as CommonR
-import de.dh.raaps.common.model.ID_MEAL_STANDARD
 import de.dh.raaps.common.model.MealType
 import de.dh.raaps.ui.R
 import de.dh.raaps.ui.screens.meals.getIcon
+import de.dh.raaps.common.R as CommonR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

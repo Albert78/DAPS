@@ -248,6 +248,7 @@
 
     <string name="edit_historical_meal_edit_screen_title">Mahlzeit bearbeiten</string>
     <string name="edit_historical_meal_add_screen_title">Mahlzeit nachtragen</string>
+    <string name="edit_historical_meal_info_message">Du solltest dem Algorithmus deine Mahlzeiten möglichst direkt bekannt geben. Diese Funktion dient nur zur nachträglichen Korrektur.</string>
     <string name="edit_historical_meal_save_button">Speichern</string>
     <string name="edit_historical_meal_discard_title">Änderungen speichern?</string>
     <string name="edit_historical_meal_discard_message">Du hast Änderungen an der Mahlzeit vorgenommen. Möchtest du die Änderungen speichern oder verwerfen?</string>
@@ -287,10 +288,9 @@
 
     <string name="x_ie_insulin_already_administered">Für diese Mahlzeit wurden bereits %1$s I.E. Insulin abgegeben.</string>
     <string name="x_ie_insulin_administered">Für diese Mahlzeit wurden %1$s I.E. Insulin abgegeben.</string>
-    <string name="edit_historical_meal_info_message">Du solltest dem Algorithmus deine Mahlzeiten möglichst direkt bekannt geben. Diese Funktion dient nur zur nachträglichen Korrektur.</string>
     <string name="bolus_plan_editor_no_deferred_boluses">Keine ausstehenden verzögerten Boli</string>
     <string name="bolus_plan_editor_add_deferred_bolus">Verzögerten Bolus hinzufügen</string>
-    <string name="bolus_plan_editor_total_deferred_label">Gesamt ausstehend: %1$s</string>
+    <string name="bolus_plan_editor_total_deferred_label">Gesamt geplant: %1$s</string>
     <string name="bolus_plan_editor_deferred_bolus_n">Verzögerter Bolus #%1$d</string>
     <string name="bolus_plan_editor_amount_label">Menge</string>
     <string name="bolus_plan_editor_time_label">Zeit / Verzögerung</string>
@@ -390,6 +390,4 @@
     <string name="core_insight_action_temp_basal">Aktion: Temp-Basal %1$d%% für %2$d h</string>
 
     <string name="alarms_screen_title">Warnungen und Alarme</string>
-    <string name="insulin_part_none">Bolus</string>
-    <string name="insulin_part_n">Teil %1$d (%2$d%%)</string>
 </resources>
