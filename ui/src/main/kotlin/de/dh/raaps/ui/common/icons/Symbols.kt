@@ -53,6 +53,13 @@ import androidx.compose.ui.unit.dp
 import de.dh.raaps.ui.common.theme.AppTheme
 import de.dh.raaps.ui.screens.meals.BadgedStarIcon
 
+// Meal Type Icons
+val Icon_Meal_Fast = Icons.Outlined.Bolt
+val Icon_Meal_Standard = Icons.Outlined.Restaurant
+val Icon_Meal_High_Fat = Icons.Outlined.Fastfood
+val Icon_Meal_Slow = Icons.Outlined.Timer
+val Icon_Meal_Custom = Icons.Outlined.StarOutline
+
 // Menu and header icons
 val Menu_More = Icons.Default.MoreVert
 val Menu_Delete = Icons.Default.Delete
@@ -97,14 +104,7 @@ val Icon_Menu_Food_Database = Icons.AutoMirrored.Outlined.MenuBook
 val Icon_Menu_System_Control = Icons.Outlined.Build
 val Icon_Menu_Alarms = Icons.Outlined.NotificationsActive
 val Icon_Menu_Permissions = Icons.Outlined.Security
-val Icon_Menu_Meal_Types = Icons.Outlined.Category
-
-// Meal Type Icons
-val Icon_Meal_Fast = Icons.Outlined.Bolt
-val Icon_Meal_Standard = Icons.Outlined.Restaurant
-val Icon_Meal_High_Fat = Icons.Outlined.Fastfood
-val Icon_Meal_Slow = Icons.Outlined.Timer
-val Icon_Meal_Custom = Icons.Outlined.StarOutline
+val Icon_Menu_Meal_Types = Icon_Meal_Custom
 
 private data class IconPreview(
     val name: String,
