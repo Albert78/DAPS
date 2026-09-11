@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -52,6 +54,7 @@ import de.dh.raaps.common.model.MealType
 import de.dh.raaps.common.model.data.Minutes
 import de.dh.raaps.ui.R
 import de.dh.raaps.ui.common.composables.PrimaryButton
+import de.dh.raaps.ui.common.composables.contentScrollIndicator
 import de.dh.raaps.ui.common.composables.screenTitle
 import de.dh.raaps.ui.common.theme.AppTheme
 import de.dh.raaps.common.R as CommonR
@@ -112,157 +115,167 @@ fun MealTypeEditorContent(
             )
         }
     ) { innerPadding ->
-        Column(
+        val listState = rememberLazyListState()
+
+        LazyColumn(
+            state = listState,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp),
+                .contentScrollIndicator(listState),
+            contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            OutlinedTextField(
-                value = uiState.name,
-                onValueChange = onNameChange,
-                label = { Text(stringResource(R.string.meal_type_name_label)) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
-            )
-
-            OutlinedCard(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    val previewMealType = remember(uiState.id, uiState.name, uiState.symbol) {
-                        MealType(
-                            id = uiState.id ?: "",
-                            name = uiState.name,
-                            symbol = uiState.symbol,
-                            components = listOf(CarbCurveComponentData(100, Minutes(30))),
-                            cat = Minutes(180)
-                        )
-                    }
-
-                    Surface(
-                        shape = MaterialTheme.shapes.medium,
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        modifier = Modifier.size(56.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            MealTypeIcon(
-                                mealType = previewMealType,
-                                modifier = Modifier.size(32.dp),
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        }
-                    }
-
-                    if (previewMealType.isStandardMealType()) {
-                        Text(
-                            text = stringResource(R.string.meal_type_symbol_standard_is_fixed),
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                hyphens = Hyphens.Auto
-                            ),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.weight(1f)
-                        )
-                    } else {
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        OutlinedTextField(
-                            value = uiState.symbol ?: "",
-                            onValueChange = { newValue ->
-                                if (newValue.length <= 1) {
-                                    onSymbolChange(newValue)
-                                }
-                            },
-                            textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-                            singleLine = true,
-                            modifier = Modifier.width(64.dp),
-                            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters)
-                        )
-
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = stringResource(R.string.meal_type_symbol_label),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                text = stringResource(R.string.meal_type_symbol_subtitle),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
-            }
-
-            OutlinedTextField(
-                value = uiState.cat,
-                onValueChange = { newVal ->
-                    if (newVal.all { it.isDigit() }) {
-                        onCatChange(newVal)
-                    }
-                },
-                label = { Text(stringResource(R.string.meal_type_cat_label)) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-            )
-
-            Text(
-                text = stringResource(R.string.meal_type_components_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-
-            val totalWeight = uiState.components.sumOf { it.weight }
-            if (totalWeight != 100) {
-                Text(
-                    text = stringResource(R.string.error_meal_type_weights_sum),
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
+            item {
+                OutlinedTextField(
+                    value = uiState.name,
+                    onValueChange = onNameChange,
+                    label = { Text(stringResource(R.string.meal_type_name_label)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
                 )
             }
 
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                itemsIndexed(uiState.components) { index, component ->
-                    ComponentItem(
-                        component = component,
-                        onUpdate = { updated ->
-                            val newList = uiState.components.toMutableList()
-                            newList[index] = updated
-                            onComponentsChange(newList)
-                        },
-                        onDelete = {
-                            val newList = uiState.components.toMutableList()
-                            newList.removeAt(index)
-                            onComponentsChange(newList)
-                        }
-                    )
-                }
-                item {
-                    PrimaryButton(
-                        onClick = {
-                            val newList = uiState.components.toMutableList()
-                            newList.add(CarbCurveComponentData(0, Minutes(60)))
-                            onComponentsChange(newList)
-                        },
-                        modifier = Modifier.fillMaxWidth()
+            item {
+                OutlinedCard(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Icon(Icons.Default.Add, contentDescription = null)
-                        Spacer(Modifier.width(8.dp))
-                        Text("Komponente hinzufügen")
+                        val previewMealType = remember(uiState.id, uiState.name, uiState.symbol) {
+                            MealType(
+                                id = uiState.id ?: "",
+                                name = uiState.name,
+                                symbol = uiState.symbol,
+                                components = listOf(CarbCurveComponentData(100, Minutes(30))),
+                                cat = Minutes(180)
+                            )
+                        }
+
+                        Surface(
+                            shape = MaterialTheme.shapes.medium,
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            modifier = Modifier.size(56.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                MealTypeIcon(
+                                    mealType = previewMealType,
+                                    modifier = Modifier.size(32.dp),
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
+                        }
+
+                        if (previewMealType.isStandardMealType()) {
+                            Text(
+                                text = stringResource(R.string.meal_type_symbol_standard_is_fixed),
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    hyphens = Hyphens.Auto
+                                ),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.weight(1f)
+                            )
+                        } else {
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            OutlinedTextField(
+                                value = uiState.symbol ?: "",
+                                onValueChange = { newValue ->
+                                    if (newValue.length <= 1) {
+                                        onSymbolChange(newValue)
+                                    }
+                                },
+                                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                                singleLine = true,
+                                modifier = Modifier.width(64.dp),
+                                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters)
+                            )
+
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = stringResource(R.string.meal_type_symbol_label),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Text(
+                                    text = stringResource(R.string.meal_type_symbol_subtitle),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
                     }
+                }
+            }
+
+            item {
+                OutlinedTextField(
+                    value = uiState.cat,
+                    onValueChange = { newVal ->
+                        if (newVal.all { it.isDigit() }) {
+                            onCatChange(newVal)
+                        }
+                    },
+                    label = { Text(stringResource(R.string.meal_type_cat_label)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
+            }
+
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        text = stringResource(R.string.meal_type_components_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    val totalWeight = uiState.components.sumOf { it.weight }
+                    if (totalWeight != 100) {
+                        Text(
+                            text = stringResource(R.string.error_meal_type_weights_sum),
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            }
+
+            itemsIndexed(uiState.components) { index, component ->
+                ComponentItem(
+                    component = component,
+                    onUpdate = { updated ->
+                        val newList = uiState.components.toMutableList()
+                        newList[index] = updated
+                        onComponentsChange(newList)
+                    },
+                    onDelete = {
+                        val newList = uiState.components.toMutableList()
+                        newList.removeAt(index)
+                        onComponentsChange(newList)
+                    }
+                )
+            }
+
+            item {
+                PrimaryButton(
+                    onClick = {
+                        val newList = uiState.components.toMutableList()
+                        newList.add(CarbCurveComponentData(0, Minutes(60)))
+                        onComponentsChange(newList)
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Komponente hinzufügen")
                 }
             }
         }
@@ -284,10 +297,11 @@ fun ComponentItem(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             OutlinedTextField(
-                value = component.weight.toString(),
+                value = if (component.weight == 0) "" else component.weight.toString(),
                 onValueChange = { newVal ->
                     if (newVal.all { it.isDigit() }) {
-                        newVal.toIntOrNull()?.let { onUpdate(component.copy(weight = it)) }
+                        val weight = if (newVal.isEmpty()) 0 else (newVal.toIntOrNull() ?: component.weight)
+                        onUpdate(component.copy(weight = weight))
                     }
                 },
                 label = { Text(stringResource(R.string.meal_type_weight_label)) },
@@ -295,10 +309,11 @@ fun ComponentItem(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
             OutlinedTextField(
-                value = component.peakMinutes.value.toString(),
+                value = if (component.peakMinutes.value == 0.toShort()) "" else component.peakMinutes.value.toString(),
                 onValueChange = { newVal ->
                     if (newVal.all { it.isDigit() }) {
-                        newVal.toIntOrNull()?.let { onUpdate(component.copy(peakMinutes = Minutes(it.toShort()))) }
+                        val peak = if (newVal.isEmpty()) 0 else (newVal.toIntOrNull() ?: component.peakMinutes.value.toInt())
+                        onUpdate(component.copy(peakMinutes = Minutes(peak.toShort())))
                     }
                 },
                 label = { Text(stringResource(R.string.meal_type_peak_label)) },
