@@ -21,6 +21,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -211,15 +212,17 @@ private fun FoodTypeSelectorPreview() {
     var selectedType by remember { mutableStateOf<MealType?>(sampleMealTypes[3]) }
 
     AppTheme {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            FoodTypeSelector(
-                mealTypes = sampleMealTypes,
-                selectedType = selectedType,
-                onTypeSelected = { selectedType = it }
-            )
+        Surface {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                FoodTypeSelector(
+                    mealTypes = sampleMealTypes,
+                    selectedType = selectedType,
+                    onTypeSelected = { selectedType = it }
+                )
+            }
         }
     }
 }

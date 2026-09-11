@@ -100,14 +100,14 @@ fun BadgedStarIcon(
         Icon(
             imageVector = Icon_Meal_Custom,
             contentDescription = null,
-            tint = tint.copy(alpha = 0.45f),
+            tint = tint.copy(alpha = 0.20f),
             modifier = Modifier.fillMaxSize()
         )
         Text(
             text = text.take(1).uppercase(),
             style = MaterialTheme.typography.labelSmall.copy(
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Black,
             ),
             color = tint,
             textAlign = TextAlign.Center,
