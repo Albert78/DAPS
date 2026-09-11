@@ -99,6 +99,8 @@ interface BolusCorrectionCalculator {
  * Shared calculation logic for bolus correction.
  */
 object BolusCalculationMath {
+    const val MIN_PLANNED_BOLUS_AMOUNT = 0.05
+
     fun calculateSuggestedCarbsKe(bg: BgValue, targetBg: BgValue, isf: BgDelta, cr: Double, futureCarbs: Double): Double {
         var suggestedCarbsKe = 0.0
         if (bg.isValid() && bg < targetBg) {
@@ -272,6 +274,16 @@ object BolusCalculationMath {
             }
         }
         val roundedAmounts = rawAmounts.map { round(max(0.0, it) * 100.0) / 100.0 }.toDoubleArray()
+
+        // Consolidate deferred components that are smaller than MIN_PLANNED_BOLUS_AMOUNT
+        // into the primary (immediate) component (index 0) so no tiny or 0-amount deferred boli are created.
+        for (i in 1 until roundedAmounts.size) {
+            if (roundedAmounts[i] > 0.0 && roundedAmounts[i] < MIN_PLANNED_BOLUS_AMOUNT) {
+                roundedAmounts[0] += roundedAmounts[i]
+                roundedAmounts[i] = 0.0
+            }
+        }
+        roundedAmounts[0] = round(roundedAmounts[0] * 100.0) / 100.0
 
         // Adjust sum to match totalAmount due to rounding
         val targetSum = round(totalAmount * 100.0) / 100.0

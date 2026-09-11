@@ -41,7 +41,7 @@ const val CARBS_KE_MIN = 0.0
 const val CARBS_KE_MAX = 30.0
 const val CARBS_GRAMS_MAX = CARBS_KE_MAX * 10.0
 
-const val BOLUS_MIN = 0.0
+const val BOLUS_MIN = 0.05
 const val BOLUS_MAX = 50.0
 
 const val BG_DELTA_MAX = 1000.0

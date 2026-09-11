@@ -15,10 +15,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
@@ -58,7 +58,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.raaps.common.model.BOLUS_MAX
-import de.dh.raaps.common.model.BOLUS_MIN
 import de.dh.raaps.common.model.CARBS_KE_MAX
 import de.dh.raaps.common.model.CARBS_KE_MIN
 import de.dh.raaps.common.model.CarbCurveComponentData
@@ -343,7 +342,7 @@ fun MealCorrectionBolusContent(
                             EditableValueStepper(
                                 currentValue = uiState.input.manualBolus.iu,
                                 onValueChange = onManualBolusChange,
-                                minValue = BOLUS_MIN,
+                                minValue = 0.0,
                                 maxValue = BOLUS_MAX,
                                 steppingStrategy = ModuloSteppingStrategy(0.1), // 0.1 U steps
                                 displayStrategy = object : ValueDisplayStrategy {
