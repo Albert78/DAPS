@@ -5,9 +5,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import de.dh.raaps.common.model.MealType
 import de.dh.raaps.core.SystemRegistry
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class MealTypesUiState(
@@ -16,29 +17,22 @@ data class MealTypesUiState(
 )
 
 class MealTypesViewModel(
-    private val registry: SystemRegistry
+    registry: SystemRegistry
 ) : ViewModel() {
 
     private val treatmentRepository = registry.treatmentRepository
-    private val _uiState = MutableStateFlow(MealTypesUiState())
-    val uiState: StateFlow<MealTypesUiState> = _uiState.asStateFlow()
 
-    init {
-        loadMealTypes()
-    }
-
-    private fun loadMealTypes() {
-        viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
-            val types = treatmentRepository.getAllMealTypes()
-            _uiState.value = MealTypesUiState(mealTypes = types, isLoading = false)
-        }
-    }
+    val uiState: StateFlow<MealTypesUiState> = treatmentRepository.observeMealTypes()
+        .map { MealTypesUiState(mealTypes = it, isLoading = false) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = MealTypesUiState(isLoading = true)
+        )
 
     fun deleteMealType(mealType: MealType) {
         viewModelScope.launch {
             treatmentRepository.deleteMealType(mealType)
-            loadMealTypes()
         }
     }
 

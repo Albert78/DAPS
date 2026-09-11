@@ -115,10 +115,13 @@ interface MetabolicEventsDao {
     @Query("SELECT * FROM meal_type")
     suspend fun getAllMealTypes(): List<MealTypeEntity>
 
+    @Query("SELECT * FROM meal_type ORDER BY name ASC")
+    fun observeAllMealTypes(): Flow<List<MealTypeEntity>>
+
     @Query("SELECT * FROM meal_type WHERE id = :id")
     suspend fun getMealTypeById(id: String): MealTypeEntity?
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMealType(mealType: MealTypeEntity)
 
     @Update

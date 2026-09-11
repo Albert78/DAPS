@@ -404,6 +404,12 @@ class TreatmentRepository(
     // --- Meal Types ---
 
     /**
+     * Observes all available meal types as a reactive stream.
+     */
+    fun observeMealTypes(): Flow<List<MealType>> = metabolicEventsDao.observeAllMealTypes()
+        .map { entities -> entities.map { it.toModel() }.sortedBy { it.name } }
+
+    /**
      * Returns all available meal types.
      */
     suspend fun getAllMealTypes(): List<MealType> = mutex.withLock {
