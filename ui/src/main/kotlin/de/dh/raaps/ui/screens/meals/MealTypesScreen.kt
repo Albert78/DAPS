@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -25,6 +26,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -32,6 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.raaps.common.model.MealType
 import de.dh.raaps.ui.R
+import de.dh.raaps.ui.common.composables.NormalTextButton
 import de.dh.raaps.ui.common.composables.screenTitle
 import de.dh.raaps.ui.common.theme.AppTheme
 import de.dh.raaps.common.R as CommonR
@@ -62,6 +67,8 @@ fun MealTypesContent(
     onEditMealType: (MealType) -> Unit,
     onNavigateUp: () -> Unit
 ) {
+    var mealTypeToDelete by remember { mutableStateOf<MealType?>(null) }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -98,13 +105,35 @@ fun MealTypesContent(
                 items(uiState.mealTypes) { mealType ->
                     MealTypeItem(
                         mealType = mealType,
-                        onDelete = { onDeleteMealType(mealType) },
+                        onDelete = { mealTypeToDelete = mealType },
                         onClick = { onEditMealType(mealType) }
                     )
                     HorizontalDivider()
                 }
             }
         }
+    }
+
+    val targetMealType = mealTypeToDelete
+    if (targetMealType != null) {
+        AlertDialog(
+            onDismissRequest = { mealTypeToDelete = null },
+            title = { Text(stringResource(id = R.string.delete_meal_type_title)) },
+            text = { Text(stringResource(id = R.string.delete_meal_type_message, targetMealType.name)) },
+            confirmButton = {
+                NormalTextButton(onClick = {
+                    mealTypeToDelete = null
+                    onDeleteMealType(targetMealType)
+                }) {
+                    Text(stringResource(id = CommonR.string.action_delete))
+                }
+            },
+            dismissButton = {
+                NormalTextButton(onClick = { mealTypeToDelete = null }) {
+                    Text(stringResource(id = android.R.string.cancel))
+                }
+            }
+        )
     }
 }
 
@@ -121,8 +150,13 @@ fun MealTypeItem(mealType: MealType, onDelete: () -> Unit, onClick: () -> Unit) 
             )
         },
         trailingContent = {
-            IconButton(onClick = onDelete) {
-                Icon(imageVector = Icons.Default.Delete, contentDescription = "Löschen")
+            if (!mealType.isStandardMealType()) {
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = stringResource(id = CommonR.string.action_delete)
+                    )
+                }
             }
         },
         modifier = Modifier.clickable(onClick = onClick)

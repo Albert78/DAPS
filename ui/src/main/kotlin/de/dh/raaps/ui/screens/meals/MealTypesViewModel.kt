@@ -31,6 +31,7 @@ class MealTypesViewModel(
         )
 
     fun deleteMealType(mealType: MealType) {
+        if (mealType.isStandardMealType()) return
         viewModelScope.launch {
             treatmentRepository.deleteMealType(mealType)
         }
