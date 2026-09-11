@@ -20,6 +20,7 @@ data class MealTypeEntity(
     @PrimaryKey
     val id: String,
     val name: String,
+    val symbol: String? = null,
     val curve_components: String,
     val cat: Minutes
 )

@@ -32,6 +32,7 @@ data class CarbCurveComponentData(
 data class MealType(
     val id: String = UUID.randomUUID().toString(),
     val name: String,
+    val symbol: String? = null,
     val components: List<CarbCurveComponentData>,
 
     /**

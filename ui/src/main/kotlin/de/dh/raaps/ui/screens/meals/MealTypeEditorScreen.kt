@@ -56,6 +56,7 @@ fun MealTypeEditorScreen(
     MealTypeEditorContent(
         uiState = uiState,
         onNameChange = viewModel::onNameChange,
+        onSymbolChange = viewModel::onSymbolChange,
         onCatChange = viewModel::onCatChange,
         onComponentsChange = viewModel::onComponentsChange,
         onSave = { viewModel.save(onNavigateUp) },
@@ -68,6 +69,7 @@ fun MealTypeEditorScreen(
 fun MealTypeEditorContent(
     uiState: MealTypeEditorUiState,
     onNameChange: (String) -> Unit,
+    onSymbolChange: (String) -> Unit,
     onCatChange: (String) -> Unit,
     onComponentsChange: (List<CarbCurveComponentData>) -> Unit,
     onSave: () -> Unit,
@@ -111,6 +113,15 @@ fun MealTypeEditorContent(
                 value = uiState.name,
                 onValueChange = onNameChange,
                 label = { Text(stringResource(R.string.meal_type_name_label)) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
+            )
+
+            OutlinedTextField(
+                value = uiState.symbol ?: "",
+                onValueChange = onSymbolChange,
+                label = { Text(stringResource(R.string.meal_type_symbol_label)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
@@ -240,6 +251,7 @@ fun MealTypeEditorPreview() {
                 )
             ),
             onNameChange = {},
+            onSymbolChange = {},
             onCatChange = {},
             onComponentsChange = {},
             onSave = {},

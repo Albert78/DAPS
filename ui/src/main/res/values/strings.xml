@@ -277,6 +277,7 @@
     <string name="meal_type_editor_title_new">Neuer Mahlzeitentyp</string>
     <string name="meal_type_editor_title_edit">Mahlzeitentyp bearbeiten</string>
     <string name="meal_type_name_label">Bezeichnung</string>
+    <string name="meal_type_symbol_label">Symbol (optional)</string>
     <string name="meal_type_cat_label">Resorptionsdauer (Min.)</string>
     <string name="meal_type_components_title">Komponenten</string>
     <string name="meal_type_weight_label">Gewicht (%)</string>

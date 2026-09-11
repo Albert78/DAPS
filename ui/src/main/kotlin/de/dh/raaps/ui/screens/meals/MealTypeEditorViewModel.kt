@@ -19,6 +19,7 @@ import kotlin.math.abs
 data class MealTypeEditorUiState(
     val id: String? = null,
     val name: String = "",
+    val symbol: String? = null,
     val cat: String = "180",
     val components: List<CarbCurveComponentData> = listOf(CarbCurveComponentData(100, Minutes(30))),
     val isSaving: Boolean = false,
@@ -59,6 +60,7 @@ class MealTypeEditorViewModel(
                     it.copy(
                         id = mealType.id,
                         name = mealType.name,
+                        symbol = mealType.symbol,
                         cat = mealType.cat.value.toString(),
                         components = mealType.components,
                         isLoading = false
@@ -72,6 +74,10 @@ class MealTypeEditorViewModel(
 
     fun onNameChange(name: String) {
         _uiState.update { it.copy(name = name) }
+    }
+
+    fun onSymbolChange(symbol: String) {
+        _uiState.update { it.copy(symbol = symbol.ifBlank { null }) }
     }
 
     fun onCatChange(cat: String) {
@@ -91,6 +97,7 @@ class MealTypeEditorViewModel(
             val mealType = MealType(
                 id = state.id ?: UUID.randomUUID().toString(),
                 name = state.name,
+                symbol = state.symbol,
                 cat = Minutes((state.cat.toIntOrNull() ?: 180).toShort()),
                 components = state.components
             )

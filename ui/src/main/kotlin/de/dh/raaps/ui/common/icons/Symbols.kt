@@ -1,6 +1,8 @@
 package de.dh.raaps.ui.common.icons
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -49,6 +51,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.raaps.ui.common.theme.AppTheme
+import de.dh.raaps.ui.screens.meals.BadgedStarIcon
 
 // Menu and header icons
 val Menu_More = Icons.Default.MoreVert
@@ -157,7 +160,7 @@ private val iconsForPreview = listOf(
     IconPreview("Minus", Icon_Minus)
 )
 
-@Preview(showBackground = true, widthDp = 320, heightDp = 1400, name = "Icon Catalog")
+@Preview(showBackground = true, widthDp = 320, heightDp = 1600, name = "Icon Catalog")
 @Composable
 fun IconCatalogPreview() {
     AppTheme {
@@ -173,6 +176,29 @@ fun IconCatalogPreview() {
                     ) {
                         Text("Icon", modifier = Modifier.weight(1f))
                         Text("Name", modifier = Modifier.weight(3f))
+                    }
+                }
+                item {
+                    Column(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        listOf("M" to "Custom Meal M", "3" to "Custom Meal 3").forEach { (label, name) ->
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier.weight(1f),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    BadgedStarIcon(text = label)
+                                }
+                                Text(
+                                    text = name,
+                                    modifier = Modifier
+                                        .weight(3f)
+                                        .padding(start = 16.dp)
+                                )
+                            }
+                        }
                     }
                 }
                 items(iconsForPreview) { preview ->

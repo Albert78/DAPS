@@ -30,11 +30,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.common.R as CommonR
 import de.dh.raaps.common.model.MealType
 import de.dh.raaps.ui.R
 import de.dh.raaps.ui.common.composables.screenTitle
 import de.dh.raaps.ui.common.theme.AppTheme
+import de.dh.raaps.common.R as CommonR
 
 @Composable
 fun MealTypesScreen(
@@ -114,9 +114,8 @@ fun MealTypeItem(mealType: MealType, onDelete: () -> Unit, onClick: () -> Unit) 
         headlineContent = { Text(mealType.name) },
         supportingContent = { Text("${mealType.cat.value} Min.") },
         leadingContent = {
-            Icon(
-                imageVector = mealType.getIcon(),
-                contentDescription = null,
+            MealTypeIcon(
+                mealType = mealType,
                 modifier = Modifier.size(24.dp),
                 tint = MaterialTheme.colorScheme.primary
             )

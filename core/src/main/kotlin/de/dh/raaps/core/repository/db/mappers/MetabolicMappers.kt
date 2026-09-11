@@ -37,6 +37,7 @@ fun stringToCarbCurveComponentList(value: String): List<CarbCurveComponentData> 
 fun MealType.toEntity() = MealTypeEntity(
     id = this.id,
     name = this.name,
+    symbol = this.symbol,
     curve_components = carbCurveComponentListToString(this.components),
     cat = this.cat
 )
@@ -44,6 +45,7 @@ fun MealType.toEntity() = MealTypeEntity(
 fun MealTypeEntity.toModel() = MealType(
     id = this.id,
     name = this.name,
+    symbol = this.symbol,
     components = stringToCarbCurveComponentList(this.curve_components),
     cat = this.cat
 )
