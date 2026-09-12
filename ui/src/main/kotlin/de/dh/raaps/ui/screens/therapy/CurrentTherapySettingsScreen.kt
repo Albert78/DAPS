@@ -42,6 +42,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -63,15 +64,20 @@ import de.dh.raaps.common.model.data.BgBlock
 import de.dh.raaps.common.model.data.BgDelta
 import de.dh.raaps.common.model.data.BgValue
 import de.dh.raaps.common.model.data.Block
+import de.dh.raaps.common.model.data.GlucoseUnit
 import de.dh.raaps.common.model.data.InsulinProfile
 import de.dh.raaps.common.model.data.Minutes
 import de.dh.raaps.ui.R
 import de.dh.raaps.ui.common.ConfigurableDisplayStrategy
+import de.dh.raaps.ui.common.LocalGlucoseUnit
 import de.dh.raaps.ui.common.composables.AppColorBlue
 import de.dh.raaps.ui.common.composables.InsulinProfileSelectionDialog
 import de.dh.raaps.ui.common.composables.NormalTextButton
 import de.dh.raaps.ui.common.composables.contentScrollIndicator
 import de.dh.raaps.ui.common.composables.screenTitle
+import de.dh.raaps.ui.common.glucoseUnitLabel
+import de.dh.raaps.ui.common.glucoseValue
+import de.dh.raaps.ui.common.isfUnitLabel
 import de.dh.raaps.ui.common.theme.AppTheme
 import de.dh.raaps.ui.common.theme.NeutralGrey
 import de.dh.raaps.ui.common.theme.SoftBlue
@@ -391,7 +397,7 @@ private fun ActiveInsulinProfileCard(
                             text = stringResource(
                                 id = R.string.current_therapy_isf_label_format,
                                 profile.isfRange,
-                                stringResource(id = CommonR.string.unit_mgdl_per_u)
+                                isfUnitLabel()
                             ),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -457,26 +463,34 @@ private fun BgTargetCard(
     isTargetOverridden: Boolean = false,
     isLowOverridden: Boolean = false
 ) {
-    val targets = bgBlocks.map { it.target.mgdl }.distinct()
-    val lows = bgBlocks.map { it.lowThreshold.mgdl }.distinct()
+    val targets = bgBlocks.map { it.target }.distinct()
+    val lows = bgBlocks.map { it.lowThreshold }.distinct()
 
-    val targetValue = if (targets.size == 1) {
-        targets.first().toString()
-    } else if (targets.isNotEmpty()) {
-        "${targets.minOrNull() ?: 0}–${targets.maxOrNull() ?: 0}"
-    } else {
-        "-"
+    val minTarget = targets.minOrNull()
+    val maxTarget = targets.maxOrNull()
+    val targetValue = when (minTarget) {
+        null -> "-"
+        maxTarget -> glucoseValue(minTarget)
+        else -> {
+            val minStr = glucoseValue(minTarget)
+            val maxStr = glucoseValue(maxTarget)
+            if (minStr == maxStr) minStr else "$minStr–$maxStr"
+        }
     }
 
-    val lowValue = if (lows.size == 1) {
-        lows.first().toString()
-    } else if (lows.isNotEmpty()) {
-        "${lows.minOrNull() ?: 0}–${lows.maxOrNull() ?: 0}"
-    } else {
-        "-"
+    val minLow = lows.minOrNull()
+    val maxLow = lows.maxOrNull()
+    val lowValue = when (minLow) {
+        null -> "-"
+        maxLow -> glucoseValue(minLow)
+        else -> {
+            val minStr = glucoseValue(minLow)
+            val maxStr = glucoseValue(maxLow)
+            if (minStr == maxStr) minStr else "$minStr–$maxStr"
+        }
     }
 
-    val unit = stringResource(id = CommonR.string.glucose_unit_mgdl)
+    val unit = glucoseUnitLabel()
 
     Card(
         modifier = modifier
@@ -692,10 +706,10 @@ private fun TemporaryAdjustmentCard(
                     icon = Icons.Default.Adjust,
                     label = stringResource(R.string.current_therapy_target_label),
                     value = if (insulinProfile.targetBgOverride != null)
-                        insulinProfile.targetBgOverride.mgdl.toString()
+                        glucoseValue(insulinProfile.targetBgOverride)
                     else
                         stringResource(R.string.aps_control_adjustment_standard),
-                    unit = if (insulinProfile.targetBgOverride != null) stringResource(CommonR.string.glucose_unit_mgdl) else null,
+                    unit = if (insulinProfile.targetBgOverride != null) glucoseUnitLabel() else null,
                     valueColor = if (insulinProfile.targetBgOverride != null)
                         MaterialTheme.colorScheme.primary
                     else
@@ -714,10 +728,10 @@ private fun TemporaryAdjustmentCard(
                     icon = Icons.Default.VerticalAlignBottom,
                     label = stringResource(R.string.current_therapy_low_threshold_label),
                     value = if (insulinProfile.lowThresholdOverride != null)
-                        insulinProfile.lowThresholdOverride.mgdl.toString()
+                        glucoseValue(insulinProfile.lowThresholdOverride)
                     else
                         stringResource(R.string.aps_control_adjustment_standard),
-                    unit = if (insulinProfile.lowThresholdOverride != null) stringResource(CommonR.string.glucose_unit_mgdl) else null,
+                    unit = if (insulinProfile.lowThresholdOverride != null) glucoseUnitLabel() else null,
                     valueColor = if (insulinProfile.lowThresholdOverride != null)
                         MaterialTheme.colorScheme.error
                     else
@@ -881,13 +895,15 @@ fun CurrentTherapySettingsPreview() {
     )
 
     AppTheme {
-        CurrentTherapySettingsContent(
-            uiState = mockUiState,
-            onNavigateUp = {},
-            onNavigateToInsulinProfileEditor = {},
-            onNavigateToBgEditor = {},
-            onNavigateToTherapyAdjustment = {},
-            onSelectProfile = {}
-        )
+        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
+            CurrentTherapySettingsContent(
+                uiState = mockUiState,
+                onNavigateUp = {},
+                onNavigateToInsulinProfileEditor = {},
+                onNavigateToBgEditor = {},
+                onNavigateToTherapyAdjustment = {},
+                onSelectProfile = {}
+            )
+        }
     }
 }
