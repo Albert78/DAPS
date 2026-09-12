@@ -247,16 +247,16 @@ fun MealCorrectionBolusContent(
                                     text = stringResource(R.string.meal_correction_bolus_meal_time_label),
                                     style = MaterialTheme.typography.titleMedium
                                 )
-                                val suggestedMinutes = uiState.suggestedImi.value.toInt()
+                                val suggestedMinutes = uiState.suggestedImi?.value?.toInt() ?: 0
                                 if (suggestedMinutes > 0) {
                                     Spacer(Modifier.height(4.dp))
                                     val now = Timestamp.now()
                                     val suggestedTimestamp = now + Minutes(suggestedMinutes.toShort())
-                                    val isSuggestedTimeApplied = abs(uiState.input.mealTimestamp.ms - suggestedTimestamp.ms) < 60000
+                                    val isTimeBeforeSuggestion = uiState.input.mealTimestamp < suggestedTimestamp
 
                                     SuggestionBadge(
                                         label = stringResource(R.string.meal_correction_bolus_suggested_time_format, suggestedMinutes),
-                                        isHighlighted = !isSuggestedTimeApplied,
+                                        isHighlighted = isTimeBeforeSuggestion,
                                         onClick = onApplySuggestedImi
                                     )
                                 }

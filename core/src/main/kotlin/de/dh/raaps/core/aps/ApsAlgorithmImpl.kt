@@ -184,12 +184,12 @@ class ApsAlgorithmImpl(
             manualBolus: InsulinAmount,
             correctionPart: InsulinAmount,
             mealType: MealType?,
-            suggestedImi: Minutes
+            imi: Minutes
         ) = BolusCalculationMath.distributeInsulinPlan(
             manualBolus,
             correctionPart,
             mealType,
-            suggestedImi
+            imi
         )
     }
 

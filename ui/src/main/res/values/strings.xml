@@ -219,9 +219,9 @@
     <string name="meal_correction_bolus_active_carbs_format">Aktive Kohlenhydrate: %1$s</string>
     <string name="meal_correction_bolus_active_insulin_format">Aktives Insulin: %1$s</string>
     <string name="meal_correction_bolus_carbs_label">Mahlzeit</string>
-    <string name="meal_correction_bolus_suggested_carbs_format">Vorschlag: %1$.1f %2$s</string>
+    <string name="meal_correction_bolus_suggested_carbs_format">Vorschlag: mind. %1$.1f %2$s</string>
     <string name="meal_correction_bolus_suggested_insulin_format">Vorschlag: %1$s</string>
-    <string name="meal_correction_bolus_suggested_time_format">Vorschlag: +%1$d Min.</string>
+    <string name="meal_correction_bolus_suggested_time_format">Vorschlag: mind. +%1$d Min.</string>
     <string name="meal_correction_bolus_suggested_time_zero">Vorschlag: Jetzt</string>
     <string name="meal_correction_bolus_food_type_label">Nahrungstyp</string>
     <string name="meal_correction_bolus_calculation_title">Berechnung</string>

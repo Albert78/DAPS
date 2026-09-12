@@ -254,7 +254,7 @@ class NoopAlgorithm: ApsAlgorithm {
                 manualBolus: InsulinAmount,
                 correctionPart: InsulinAmount,
                 mealType: MealType?,
-                suggestedImi: Minutes
+                imi: Minutes
             ): List<PlannedInsulin> = emptyList()
         }
     }

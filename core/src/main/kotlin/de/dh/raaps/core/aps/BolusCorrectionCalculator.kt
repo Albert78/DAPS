@@ -1,6 +1,5 @@
 package de.dh.raaps.core.aps
 
-import de.dh.raaps.common.model.DEFAULT_IMI_MINUTES
 import de.dh.raaps.common.model.InsulinAmount
 import de.dh.raaps.common.model.MealType
 import de.dh.raaps.common.model.PlannedInsulin
@@ -91,7 +90,7 @@ interface BolusCorrectionCalculator {
         manualBolus: InsulinAmount,
         correctionPart: InsulinAmount,
         mealType: MealType?,
-        suggestedImi: Minutes
+        imi: Minutes
     ): List<PlannedInsulin>
 }
 
@@ -125,8 +124,10 @@ object BolusCalculationMath {
         targetBg: BgValue,
         lowThreshold: BgValue,
         allowPast: Boolean = false
-    ): Minutes {
-        if (currentBg.isInvalid() || targetBg.isInvalid() || lowThreshold.isInvalid()) return Minutes(DEFAULT_IMI_MINUTES)
+    ): Minutes? {
+        if (currentBg.isInvalid() || targetBg.isInvalid() || lowThreshold.isInvalid()) return null
+
+        if (currentBg.mgdl <= targetBg.mgdl + 15 && currentBg.mgdl >= targetBg.mgdl - 15) return null
 
         if (currentBg.mgdl <= lowThreshold.mgdl) {
             return if (allowPast) Minutes(-15) else Minutes(0)
@@ -226,13 +227,13 @@ object BolusCalculationMath {
         manualBolus: InsulinAmount,
         correctionPart: InsulinAmount,
         mealType: MealType?,
-        suggestedImi: Minutes
+        imi: Minutes
     ): List<PlannedInsulin> {
         if (manualBolus <= InsulinAmount.ZERO) return emptyList()
 
         // IMI (Injection-Meal Interval) > 0 means wait time between bolus and meal -> Bolus before meal.
         // IMI < 0 means a negative wait time (delay) -> Bolus after meal.
-        val defaultTimeFromMeal = if (suggestedImi.value >= 0) Minutes((-suggestedImi.value).toShort()) else Minutes(abs(suggestedImi.value.toInt()).toShort())
+        val defaultTimeFromMeal = if (imi.value >= 0) Minutes((-imi.value).toShort()) else Minutes(abs(imi.value.toInt()).toShort())
 
         if (mealType == null) {
             return listOf(
@@ -344,11 +345,11 @@ class SimpleBolusCorrectionCalculator(
         manualBolus: InsulinAmount,
         correctionPart: InsulinAmount,
         mealType: MealType?,
-        suggestedImi: Minutes
+        imi: Minutes
     ) = BolusCalculationMath.distributeInsulinPlan(
         manualBolus = manualBolus,
         correctionPart = correctionPart,
         mealType = mealType,
-        suggestedImi = suggestedImi
+        imi = imi
     )
 }

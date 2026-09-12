@@ -382,13 +382,13 @@ class Core(
             manualBolus: InsulinAmount,
             correctionPart: InsulinAmount,
             mealType: MealType?,
-            suggestedImi: Minutes
+            imi: Minutes
         ): List<PlannedInsulin> = mutex.withLock {
             delegate.distributeInsulinPlan(
                 manualBolus,
                 correctionPart,
                 mealType,
-                suggestedImi
+                imi
             )
         }
     }

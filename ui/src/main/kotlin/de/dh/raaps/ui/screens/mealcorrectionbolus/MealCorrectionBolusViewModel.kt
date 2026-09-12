@@ -18,6 +18,7 @@ import de.dh.raaps.common.model.data.BgDelta
 import de.dh.raaps.common.model.data.BgValue
 import de.dh.raaps.common.model.data.Minutes
 import de.dh.raaps.common.model.data.Timestamp
+import de.dh.raaps.common.model.data.max
 import de.dh.raaps.common.model.getDefaultStandardMealType
 import de.dh.raaps.core.SystemRegistry
 import de.dh.raaps.core.aps.BolusCalculationMath
@@ -153,7 +154,7 @@ data class MealCorrectionBolusUiState(
     val projections: BolusProjections = BolusProjections(),
     val isProjectionsStale: Boolean = false,
     val suggestedCarbsKe: Double = 0.0,
-    val suggestedImi: Minutes = Minutes(0),
+    val suggestedImi: Minutes? = null,
     val calculation: BolusCalculationDetails = BolusCalculationDetails(),
     val insulinPlan: List<PlannedInsulinUiModel> = emptyList(),
     val mealTypes: List<MealType> = emptyList(),
@@ -199,13 +200,14 @@ class MealCorrectionBolusViewModel(
             val suggestedCarbsKe = BolusCalculationMath.calculateSuggestedCarbsKe(projectedBg, targetBg, isf, cr, projections.futureCarbs)
 
             _uiState.update {
+                val mealTimeFromNow = max(Minutes.ZERO, suggestedImi ?: Minutes.ZERO)
                 it.copy(
                     isLoading = false,
                     suggestedCarbsKe = suggestedCarbsKe,
                     suggestedImi = suggestedImi,
                     input = MealInput(
-                        mealTimestamp = now + Minutes(max(0, suggestedImi.value.toInt()).toShort()),
-                        mealTimeFromNow = suggestedImi,
+                        mealTimestamp = now + mealTimeFromNow,
+                        mealTimeFromNow = mealTimeFromNow,
                         carbsKe = suggestedCarbsKe,
                     ),
                     mealTypes = mealTypes,
@@ -258,7 +260,7 @@ class MealCorrectionBolusViewModel(
 
     fun onApplySuggestedImi() {
         val state = _uiState.value
-        val suggestedMinutes = max(0, state.suggestedImi.value.toInt())
+        val suggestedMinutes = max(0, (state.suggestedImi ?: return).value.toInt())
         if (suggestedMinutes > 0) {
             val now = Timestamp.now()
             val targetTimestamp = now + Minutes(suggestedMinutes.toShort())
@@ -433,7 +435,7 @@ class MealCorrectionBolusViewModel(
             manualBolus = state.input.manualBolus,
             correctionPart = state.calculation.correctionPart,
             mealType = state.input.selectedMealType,
-            suggestedImi = suggestedImi
+            imi = suggestedImi ?: Minutes.ZERO
         )
 
         val uiPlan = newPlan.map { core ->

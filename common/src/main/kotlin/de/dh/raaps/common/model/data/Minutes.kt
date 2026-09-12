@@ -12,6 +12,7 @@ value class Minutes(val value: Short) : Comparable<Minutes> {
     override fun compareTo(other: Minutes): Int = value.compareTo(other.value)
 
     operator fun plus(other: Minutes) = Minutes((value + other.value).toShort())
+    operator fun minus(other: Minutes) = Minutes((value - other.value).toShort())
     operator fun times(factor: Int): Minutes = Minutes((value * factor).toShort())
     operator fun times(factor: Double): Minutes = Minutes((value * factor).toInt().toShort())
 
@@ -19,10 +20,42 @@ value class Minutes(val value: Short) : Comparable<Minutes> {
         return value * 60L * 1000L
     }
 
+    fun max(other: Minutes): Minutes = if (this >= other) this else other
+    fun min(other: Minutes): Minutes = if (this <= other) this else other
+
+    fun coerceAtLeast(minimumValue: Minutes): Minutes = if (this < minimumValue) minimumValue else this
+    fun coerceAtMost(maximumValue: Minutes): Minutes = if (this > maximumValue) maximumValue else this
+    fun coerceIn(minimumValue: Minutes, maximumValue: Minutes): Minutes =
+        this.coerceAtLeast(minimumValue).coerceAtMost(maximumValue)
+
     companion object {
         val ZERO = Minutes(0)
         val ONE_HOUR = Minutes(MINUTES_PER_HOUR.toShort())
         val ONE_DAY = Minutes(MINUTES_PER_DAY.toShort())
+
+        fun max(a: Minutes, b: Minutes): Minutes = if (a >= b) a else b
+
+        fun max(first: Minutes, others: Iterable<Minutes>): Minutes {
+            var result = first
+            for (other in others) {
+                if (other > result) {
+                    result = other
+                }
+            }
+            return result
+        }
+
+        fun min(a: Minutes, b: Minutes): Minutes = if (a <= b) a else b
+
+        fun min(first: Minutes, others: Iterable<Minutes>): Minutes {
+            var result = first
+            for (other in others) {
+                if (other < result) {
+                    result = other
+                }
+            }
+            return result
+        }
 
         fun timeDifference(ts1: Timestamp, ts2: Timestamp) =
             Minutes(((ts2.ms - ts1.ms) / 60_000.0).toInt().toShort())
@@ -36,3 +69,6 @@ value class Minutes(val value: Short) : Comparable<Minutes> {
         }
     }
 }
+
+fun max(a: Minutes, b: Minutes): Minutes = Minutes.max(a, b)
+fun min(a: Minutes, b: Minutes): Minutes = Minutes.min(a, b)
