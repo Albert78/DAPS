@@ -873,7 +873,7 @@ private fun InsulinProfileDetailEditorPreview() {
     AppTheme {
         InsulinProfileDetailEditor(
             profile = sampleProfile,
-            insulinTypes = listOf(sampleInsulinType, InsulinType(name = "Novorapid", dia = Minutes.ofHours(5), peak = Minutes.ofHours(1))),
+            insulinTypes = listOf(sampleInsulinType, InsulinType(name = "NovoRapid", dia = Minutes.ofHours(5), peak = Minutes.ofHours(1))),
             onSave = {},
             onCancel = {}
         )

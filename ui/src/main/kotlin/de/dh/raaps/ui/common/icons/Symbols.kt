@@ -38,6 +38,7 @@ import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Snooze
 import androidx.compose.material.icons.outlined.StarOutline
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Icon
@@ -104,6 +105,7 @@ val Icon_Menu_System_Control = Icons.Outlined.Build
 val Icon_Menu_Alarms = Icons.Outlined.NotificationsActive
 val Icon_Menu_Permissions = Icons.Outlined.Security
 val Icon_Menu_Meal_Types = Icon_Meal_Custom
+val Icon_Menu_Master_Data = Icons.Outlined.Tune
 
 private data class IconPreview(
     val name: String,

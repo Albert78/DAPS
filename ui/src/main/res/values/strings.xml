@@ -4,7 +4,32 @@
     <string name="dashboard_screen_title">RAAPS</string>
     <string name="menu_item_permissions_label">App-Berechtigungen</string>
     <string name="menu_item_preferences_label">Einstellungen</string>
-    <string name="menu_item_profile_editor_label">Insulin-Profile</string>
+    <string name="menu_master_data_label">Stammdaten</string>
+
+    <string name="master_data_screen_title">Stammdaten</string>
+    <string name="master_data_item_insulin_types_title">Insulintypen</string>
+    <string name="master_data_item_insulin_types_desc">Insulintypen verwalten (NovoRapid, Fiasp, …)</string>
+    <string name="master_data_item_insulin_profiles_title">Insulinprofile</string>
+    <string name="master_data_item_insulin_profiles_desc">Basalraten, ISF und CR-Faktoren verwalten</string>
+    <string name="master_data_item_bg_targets_title">Ziel-BZ &amp; Niedrig-Schwelle</string>
+    <string name="master_data_item_bg_targets_desc">Zielbereich und Hypo-Schwelle festlegen</string>
+    <string name="master_data_item_meal_types_title">Mahlzeitentypen</string>
+    <string name="master_data_item_meal_types_desc">Kategorien, Icons und Absorptionszeiten</string>
+    <string name="master_data_item_alarm_profiles_title">Alarmprofile</string>
+    <string name="master_data_item_alarm_profiles_desc">Grenzwerte und Benachrichtigungsprofile</string>
+
+    <string name="insulin_types_screen_title">Insulintypen</string>
+    <string name="insulin_type_editor_title_edit">Insulintyp bearbeiten</string>
+    <string name="insulin_type_editor_title_new">Neuer Insulintyp</string>
+    <string name="insulin_type_editor_name_label">Name des Insulintyps</string>
+    <string name="insulin_type_editor_peak_label">Peak-Zeit (Minuten)</string>
+    <string name="insulin_type_editor_dia_label">Wirkdauer DIA (Minuten)</string>
+    <string name="insulin_type_editor_concentration_label">Standard-Konzentration</string>
+    <string name="cd_add_insulin_type">Insulintyp hinzufügen</string>
+    <string name="delete_insulin_type_title">Insulintyp löschen</string>
+    <string name="delete_insulin_type_message">Möchtest du den Insulintyp \"%1$s\" wirklich löschen?</string>
+
+    <string name="alarm_profiles_screen_title">Alarmprofile</string>
 
     <string name="theme_system">Systemstandard</string>
     <string name="theme_light">Hell</string>

@@ -38,7 +38,7 @@
 
     <string name="selection_mode_num_items_selected">%d ausgewählt</string>
 
-    <string name="insulin_type_aspart_name">Aspart</string>
+    <string name="insulin_type_novorapid_name">NovoRapid</string>
     <string name="insulin_type_fiasp_name">Fiasp</string>
     <string name="meal_type_fast_carbs_name">Schnelle Kohlenhydrate</string>
     <string name="meal_type_standard_meal_name">Standard Mahlzeit</string>

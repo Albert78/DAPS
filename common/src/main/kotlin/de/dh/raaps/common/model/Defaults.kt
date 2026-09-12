@@ -10,18 +10,18 @@ val FAST_KE_DEFAULT_PEAK = Minutes(25)
 
 fun getDefaultInsulinTypes(context: Context): List<InsulinType> = listOf(
     InsulinType(
-        id = ID_INSULIN_ASPART,
-        name = context.getString(R.string.insulin_type_aspart_name),
+        id = ID_INSULIN_NOVORAPID,
+        name = context.getString(R.string.insulin_type_novorapid_name),
         dia = Minutes.ofHours(5),
         peak = Minutes(75),
-        defaultConcentration = InsulinConcentration.U100
+        defaultConcentration = InsulinConcentration.U100,
     ),
     InsulinType(
         id = ID_INSULIN_FIASP,
         name = context.getString(R.string.insulin_type_fiasp_name),
         dia = Minutes.ofHours(4),
         peak = Minutes(55),
-        defaultConcentration = InsulinConcentration.U100
+        defaultConcentration = InsulinConcentration.U100,
     )
 )
 

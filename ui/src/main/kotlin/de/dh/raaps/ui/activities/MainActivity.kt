@@ -61,6 +61,7 @@ import de.dh.raaps.common.navigation.BolusHistoryRoute
 import de.dh.raaps.common.navigation.DashboardRoute
 import de.dh.raaps.common.navigation.FeatureNavGraph
 import de.dh.raaps.common.navigation.FoodDatabaseRoute
+import de.dh.raaps.common.navigation.MasterDataRoute
 import de.dh.raaps.common.navigation.MealsRoute
 import de.dh.raaps.common.navigation.NavigationViewModel
 import de.dh.raaps.common.navigation.SystemControlRoute
@@ -72,6 +73,7 @@ import de.dh.raaps.ui.R
 import de.dh.raaps.ui.common.composables.EdgeToEdgeHandler
 import de.dh.raaps.ui.common.icons.Icon_Menu_Bolus_History
 import de.dh.raaps.ui.common.icons.Icon_Menu_Food_Database
+import de.dh.raaps.ui.common.icons.Icon_Menu_Master_Data
 import de.dh.raaps.ui.common.icons.Icon_Menu_Meals
 import de.dh.raaps.ui.common.icons.Icon_Menu_System_Control
 import de.dh.raaps.ui.common.theme.AppTheme
@@ -325,6 +327,13 @@ fun RaapsDrawerContent(
                     icon = Icon_Menu_System_Control,
                     selected = currentRoute is SystemControlRoute,
                     onClick = { onRouteSelected(SystemControlRoute()) }
+                )
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                RaapsDrawerItem(
+                    label = stringResource(id = R.string.menu_master_data_label),
+                    icon = Icon_Menu_Master_Data,
+                    selected = currentRoute == MasterDataRoute,
+                    onClick = { onRouteSelected(MasterDataRoute) }
                 )
             }
         }

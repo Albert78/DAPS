@@ -15,6 +15,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import de.dh.raaps.common.model.ID_UNDEFINED
+import de.dh.raaps.common.navigation.AlarmProfilesRoute
 import de.dh.raaps.common.navigation.AlarmsRoute
 import de.dh.raaps.common.navigation.BgEditorRoute
 import de.dh.raaps.common.navigation.BolusHistoryRoute
@@ -26,6 +27,9 @@ import de.dh.raaps.common.navigation.FoodDatabaseRoute
 import de.dh.raaps.common.navigation.HistoricalMealRoute
 import de.dh.raaps.common.navigation.HistoryRoute
 import de.dh.raaps.common.navigation.InsulinProfileEditorRoute
+import de.dh.raaps.common.navigation.InsulinTypeEditorRoute
+import de.dh.raaps.common.navigation.InsulinTypesRoute
+import de.dh.raaps.common.navigation.MasterDataRoute
 import de.dh.raaps.common.navigation.MealCorrectionBolusRoute
 import de.dh.raaps.common.navigation.MealTypeEditorRoute
 import de.dh.raaps.common.navigation.MealTypesRoute
@@ -42,6 +46,7 @@ import de.dh.raaps.ui.common.treatmentlock.TreatmentLockScreen
 import de.dh.raaps.ui.common.treatmentlock.TreatmentLockViewModel
 import de.dh.raaps.ui.controls.history.HistoryViewModel
 import de.dh.raaps.ui.controls.state.SystemViewModel
+import de.dh.raaps.ui.screens.alarmprofiles.AlarmProfilesScreen
 import de.dh.raaps.ui.screens.alarms.AlarmsScreen
 import de.dh.raaps.ui.screens.bolushistory.BolusHistoryScreen
 import de.dh.raaps.ui.screens.bolushistory.BolusHistoryViewModel
@@ -51,6 +56,11 @@ import de.dh.raaps.ui.screens.fooddatabase.FoodDatabaseScreen
 import de.dh.raaps.ui.screens.history.HistoryScreen
 import de.dh.raaps.ui.screens.insulinprofile.InsulinProfileEditorScreen
 import de.dh.raaps.ui.screens.insulinprofile.InsulinProfileSettingsViewModel
+import de.dh.raaps.ui.screens.insulintypes.InsulinTypeEditorScreen
+import de.dh.raaps.ui.screens.insulintypes.InsulinTypeEditorViewModel
+import de.dh.raaps.ui.screens.insulintypes.InsulinTypesScreen
+import de.dh.raaps.ui.screens.insulintypes.InsulinTypesViewModel
+import de.dh.raaps.ui.screens.masterdata.MasterDataScreen
 import de.dh.raaps.ui.screens.mealcorrectionbolus.MealCorrectionBolusScreen
 import de.dh.raaps.ui.screens.mealcorrectionbolus.MealCorrectionBolusViewModel
 import de.dh.raaps.ui.screens.meals.EditHistoricalMealScreen
@@ -365,6 +375,44 @@ class MainFeatureNavGraph(
 
             is AlarmsRoute -> NavEntry(key) {
                 AlarmsScreen(onNavigateUp = { navViewModel.pop() })
+            }
+
+            is MasterDataRoute -> NavEntry(key) {
+                MasterDataScreen(
+                    onNavigateToInsulinTypes = { navViewModel.push(InsulinTypesRoute) },
+                    onNavigateToInsulinProfileEditor = { navViewModel.push(InsulinProfileEditorRoute) },
+                    onNavigateToBgEditor = { navViewModel.push(BgEditorRoute) },
+                    onNavigateToMealTypes = { navViewModel.push(MealTypesRoute) },
+                    onNavigateToAlarmProfiles = { navViewModel.push(AlarmProfilesRoute) },
+                    onNavigateUp = { navViewModel.pop() }
+                )
+            }
+
+            is InsulinTypesRoute -> NavEntry(key) {
+                val vm: InsulinTypesViewModel = viewModel(
+                    factory = InsulinTypesViewModel.Companion.Factory(registry)
+                )
+                InsulinTypesScreen(
+                    viewModel = vm,
+                    onNavigateToEditor = { id -> navViewModel.push(InsulinTypeEditorRoute(insulinTypeId = id)) },
+                    onNavigateUp = { navViewModel.pop() }
+                )
+            }
+
+            is InsulinTypeEditorRoute -> NavEntry(key) {
+                val vm: InsulinTypeEditorViewModel = viewModel(
+                    factory = InsulinTypeEditorViewModel.Companion.Factory(registry, key.insulinTypeId)
+                )
+                InsulinTypeEditorScreen(
+                    viewModel = vm,
+                    onNavigateUp = { navViewModel.pop() }
+                )
+            }
+
+            is AlarmProfilesRoute -> NavEntry(key) {
+                AlarmProfilesScreen(
+                    onNavigateUp = { navViewModel.pop() }
+                )
             }
 
             else -> null

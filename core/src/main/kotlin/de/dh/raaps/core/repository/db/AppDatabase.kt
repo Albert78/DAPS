@@ -159,8 +159,11 @@ interface MetabolicEventsDao {
     suspend fun deleteMeal(mealId: Long)
 
     // Insulin Types
-    @Query("SELECT * FROM insulin_type")
+    @Query("SELECT * FROM insulin_type ORDER BY name ASC")
     suspend fun getAllInsulinTypes(): List<InsulinTypeEntity>
+
+    @Query("SELECT * FROM insulin_type ORDER BY name ASC")
+    fun observeAllInsulinTypes(): Flow<List<InsulinTypeEntity>>
 
     @Query("SELECT * FROM insulin_type WHERE id = :id")
     suspend fun getInsulinTypeById(id: String): InsulinTypeEntity?
@@ -168,7 +171,7 @@ interface MetabolicEventsDao {
     @Query("SELECT * FROM insulin_type WHERE name = :name")
     suspend fun getInsulinTypeByName(name: String): InsulinTypeEntity?
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertInsulinType(insulinType: InsulinTypeEntity)
 
     @Update

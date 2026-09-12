@@ -446,6 +446,13 @@ class TreatmentRepository(
     }
 
     /**
+     * Observes all available insulin types as a reactive stream.
+     */
+    fun observeInsulinTypes(): Flow<List<InsulinType>> = metabolicEventsDao.observeAllInsulinTypes().map { list ->
+        list.map { it.toModel() }
+    }
+
+    /**
      * Inserts or updates an insulin type in the database and updates the in-memory list.
      */
     suspend fun insertInsulinType(insulinType: InsulinType) {

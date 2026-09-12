@@ -22,3 +22,7 @@ import kotlinx.serialization.Serializable
 @Serializable object PumpManagementRoute : NavKey
 @Serializable object CoreDecisionsRoute : NavKey
 @Serializable object AlarmsRoute : NavKey
+@Serializable object MasterDataRoute : NavKey
+@Serializable object InsulinTypesRoute : NavKey
+@Serializable data class InsulinTypeEditorRoute(val insulinTypeId: String? = null) : NavKey
+@Serializable object AlarmProfilesRoute : NavKey
