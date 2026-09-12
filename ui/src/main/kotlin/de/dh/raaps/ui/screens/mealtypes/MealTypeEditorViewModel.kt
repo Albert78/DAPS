@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.screens.meals
+package de.dh.raaps.ui.screens.mealtypes
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

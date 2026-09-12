@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.screens.meals
+package de.dh.raaps.ui.screens.mealtypes
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize

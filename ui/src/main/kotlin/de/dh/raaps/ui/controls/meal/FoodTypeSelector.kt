@@ -42,7 +42,7 @@ import de.dh.raaps.common.model.MealType
 import de.dh.raaps.common.model.data.Minutes
 import de.dh.raaps.ui.R
 import de.dh.raaps.ui.common.theme.AppTheme
-import de.dh.raaps.ui.screens.meals.MealTypeIcon
+import de.dh.raaps.ui.screens.mealtypes.MealTypeIcon
 import de.dh.raaps.common.R as CommonR
 
 @OptIn(ExperimentalMaterial3Api::class)

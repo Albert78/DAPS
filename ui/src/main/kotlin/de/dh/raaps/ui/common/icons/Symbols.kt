@@ -21,7 +21,6 @@ import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.Build
-import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.Close
@@ -51,7 +50,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.raaps.ui.common.theme.AppTheme
-import de.dh.raaps.ui.screens.meals.BadgedStarIcon
+import de.dh.raaps.ui.screens.mealtypes.BadgedStarIcon
 
 // Meal Type Icons
 val Icon_Meal_Fast = Icons.Outlined.Bolt

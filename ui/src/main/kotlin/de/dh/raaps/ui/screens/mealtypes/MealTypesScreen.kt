@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.screens.meals
+package de.dh.raaps.ui.screens.mealtypes
 
 import android.content.res.Configuration
 import androidx.compose.foundation.clickable

@@ -55,10 +55,10 @@ import de.dh.raaps.ui.screens.mealcorrectionbolus.MealCorrectionBolusScreen
 import de.dh.raaps.ui.screens.mealcorrectionbolus.MealCorrectionBolusViewModel
 import de.dh.raaps.ui.screens.meals.EditHistoricalMealScreen
 import de.dh.raaps.ui.screens.meals.EditHistoricalMealViewModel
-import de.dh.raaps.ui.screens.meals.MealTypeEditorScreen
-import de.dh.raaps.ui.screens.meals.MealTypeEditorViewModel
-import de.dh.raaps.ui.screens.meals.MealTypesScreen
-import de.dh.raaps.ui.screens.meals.MealTypesViewModel
+import de.dh.raaps.ui.screens.mealtypes.MealTypeEditorScreen
+import de.dh.raaps.ui.screens.mealtypes.MealTypeEditorViewModel
+import de.dh.raaps.ui.screens.mealtypes.MealTypesScreen
+import de.dh.raaps.ui.screens.mealtypes.MealTypesViewModel
 import de.dh.raaps.ui.screens.meals.MealsScreen
 import de.dh.raaps.ui.screens.meals.MealsViewModel
 import de.dh.raaps.ui.screens.permissions.PermissionsScreen
