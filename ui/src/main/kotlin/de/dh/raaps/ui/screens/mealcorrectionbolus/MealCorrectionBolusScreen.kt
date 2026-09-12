@@ -273,6 +273,13 @@ fun MealCorrectionBolusContent(
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.primary
                                 )
+
+                                uiState.conflictingMealTime?.let { conflictingTime ->
+                                    Spacer(Modifier.height(8.dp))
+                                    ConflictingMealBadge(
+                                        label = stringResource(R.string.meal_correction_bolus_conflicting_meal_info, conflictingTime)
+                                    )
+                                }
                             }
 
                             ImageCaptionWithSwitch(
@@ -822,6 +829,41 @@ fun SuggestionBadge(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun ConflictingMealBadge(
+    label: String,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.tertiaryContainer,
+        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+        modifier = modifier
+    ) {
+        Row(
+            modifier = Modifier.padding(
+                start = 10.dp,
+                end = 10.dp,
+                top = 6.dp,
+                bottom = 6.dp
+            ),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp)
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold
+            )
         }
     }
 }

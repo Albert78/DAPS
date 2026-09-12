@@ -238,6 +238,7 @@
     <string name="meal_correction_bolus_calc_no_bg_warning">Kein Blutzuckerwert</string>
     <string name="meal_correction_bolus_insulin_label">Insulinmenge</string>
     <string name="meal_correction_bolus_meal_time_label">Zeit der Mahlzeit</string>
+    <string name="meal_correction_bolus_conflicting_meal_info">Um %1$s wurde bereits eine Mahlzeit eingetragen</string>
     <string name="meal_correction_bolus_insulin_plan_title">Insulin-Planung</string>
     <string name="meal_correction_bolus_administer_button">Bestätigen</string>
     <string name="meal_correction_bolus_administer_button_submitted">Gespeichert</string>

@@ -24,12 +24,14 @@ import de.dh.raaps.core.SystemRegistry
 import de.dh.raaps.core.aps.BolusCalculationMath
 import de.dh.raaps.core.aps.BolusProjections
 import de.dh.raaps.core.aps.TreatmentLock
+import de.dh.raaps.ui.common.time
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -165,7 +167,8 @@ data class MealCorrectionBolusUiState(
     val isBolusPlanDialogOpen: Boolean = false,
     val isMealReminderEnabled: Boolean = false,
     val showCloseBanner: Boolean = false,
-    val submissionStatus: SubmissionStatus = SubmissionStatus.NotSubmitted
+    val submissionStatus: SubmissionStatus = SubmissionStatus.NotSubmitted,
+    val conflictingMealTime: String? = null
 )
 
 class MealCorrectionBolusViewModel(
@@ -179,10 +182,12 @@ class MealCorrectionBolusViewModel(
     private val bolusCorrectionCalculator = registry.systemOrchestrator.getBolusCorrectionCalculator()
 
     private var calculationJob: kotlinx.coroutines.Job? = null
+    private var existingMeals: List<MealEntry> = emptyList()
 
     init {
         viewModelScope.launch {
             val now = Timestamp.now()
+            existingMeals = treatmentRepository.getMeals(from = now.minusHours(10), to = now.plusHours(3))
             val isf = therapyManager.getIsfFactor(now)
             val cr = therapyManager.getCrFactor(now)
             val bgSettings = therapyManager.getBgSettings(now)
@@ -218,10 +223,25 @@ class MealCorrectionBolusViewModel(
                     cr = if (cr == 0.0) DEFAULT_CR_GRAM_PER_UNIT else cr,
                 )
             }
+            checkMealTimeConflict(_uiState.value.input.mealTimestamp)
             calculateBolus()
             startTicker()
             startCloseBannerTimer()
         }
+    }
+
+    private fun findConflictingMealTime(mealTimestamp: Timestamp): String? {
+        val fiveMinutesMs = 5 * 60 * 1000L
+        val conflictingMeal = existingMeals
+            .filter { abs(mealTimestamp.ms - it.timestamp.ms) < fiveMinutesMs }
+            .minByOrNull { abs(mealTimestamp.ms - it.timestamp.ms) }
+
+        return conflictingMeal?.let { time(it.timestamp) }
+    }
+
+    private fun checkMealTimeConflict(mealTimestamp: Timestamp) {
+        val conflictingTime = findConflictingMealTime(mealTimestamp)
+        _uiState.update { it.copy(conflictingMealTime = conflictingTime) }
     }
 
     fun onCarbsChange(ke: Double) {
@@ -254,6 +274,7 @@ class MealCorrectionBolusViewModel(
                     projections = projections,
                 )
             }
+            checkMealTimeConflict(newMealTimestamp)
             calculateBolus()
         }
     }
@@ -533,10 +554,14 @@ class MealCorrectionBolusViewModel(
                         item.updateForMealTime(newMealTimestamp, now)
                     }
 
+                    // 4. Check for conflicting meal time
+                    val conflictingTime = findConflictingMealTime(newMealTimestamp)
+
                     state.copy(
                         input = state.input.copy(mealTimestamp = newMealTimestamp),
                         insulinPlan = updatedPlan,
-                        isProjectionsStale = isStale
+                        isProjectionsStale = isStale,
+                        conflictingMealTime = conflictingTime
                     )
                 }
             }
