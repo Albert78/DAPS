@@ -78,8 +78,6 @@ import de.dh.raaps.ui.common.theme.AppTheme
 import de.dh.raaps.ui.common.theme.NeutralGrey
 import de.dh.raaps.ui.common.theme.SoftBlue
 import de.dh.raaps.ui.common.theme.SoftRed
-import de.dh.raaps.ui.controls.profile.CurrentTherapyViewModel
-import de.dh.raaps.ui.controls.profile.TherapyAdjustment
 import de.dh.raaps.common.R as CommonR
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -46,9 +46,6 @@ class DashboardViewModel(
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DashboardUiState())
 
-    private val glucoseRepository = systemRegistry.glucoseRepository
-    private val treatmentRepository = systemRegistry.treatmentRepository
-
     init {
         reload()
     }

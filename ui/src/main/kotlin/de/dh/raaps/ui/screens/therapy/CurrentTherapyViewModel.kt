@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.controls.profile
+package de.dh.raaps.ui.screens.therapy
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 data class InsulinProfileUiState(
     val name: String,
@@ -171,10 +172,10 @@ class CurrentTherapyViewModel(
         val min = values.minOrNull() ?: 0.0
         val max = values.maxOrNull() ?: 0.0
         return if (min == max) {
-            String.format(java.util.Locale.getDefault(), format, min)
+            String.format(Locale.getDefault(), format, min)
         } else {
-            val fMin = String.format(java.util.Locale.getDefault(), format, min)
-            val fMax = String.format(java.util.Locale.getDefault(), format, max)
+            val fMin = String.format(Locale.getDefault(), format, min)
+            val fMax = String.format(Locale.getDefault(), format, max)
             "$fMin – $fMax"
         }
     }

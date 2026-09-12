@@ -41,8 +41,6 @@ import de.dh.raaps.setUserDeclinedPermissions
 import de.dh.raaps.ui.common.treatmentlock.TreatmentLockScreen
 import de.dh.raaps.ui.common.treatmentlock.TreatmentLockViewModel
 import de.dh.raaps.ui.controls.history.HistoryViewModel
-import de.dh.raaps.ui.controls.profile.CurrentTherapyViewModel
-import de.dh.raaps.ui.controls.profile.InsulinProfileSettingsViewModel
 import de.dh.raaps.ui.controls.state.SystemViewModel
 import de.dh.raaps.ui.screens.alarms.AlarmsScreen
 import de.dh.raaps.ui.screens.bolushistory.BolusHistoryScreen
@@ -52,6 +50,7 @@ import de.dh.raaps.ui.screens.dashboard.DashboardViewModel
 import de.dh.raaps.ui.screens.fooddatabase.FoodDatabaseScreen
 import de.dh.raaps.ui.screens.history.HistoryScreen
 import de.dh.raaps.ui.screens.insulinprofile.InsulinProfileEditorScreen
+import de.dh.raaps.ui.screens.insulinprofile.InsulinProfileSettingsViewModel
 import de.dh.raaps.ui.screens.mealcorrectionbolus.MealCorrectionBolusScreen
 import de.dh.raaps.ui.screens.mealcorrectionbolus.MealCorrectionBolusViewModel
 import de.dh.raaps.ui.screens.meals.EditHistoricalMealScreen
@@ -76,6 +75,7 @@ import de.dh.raaps.ui.screens.systemcontrol.SystemControlScreen
 import de.dh.raaps.ui.screens.systemcontrol.SystemControlViewModel
 import de.dh.raaps.ui.screens.therapy.BgEditorScreen
 import de.dh.raaps.ui.screens.therapy.CurrentTherapySettingsScreen
+import de.dh.raaps.ui.screens.therapy.CurrentTherapyViewModel
 import de.dh.raaps.ui.screens.therapy.TherapyAdjustmentScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

@@ -57,9 +57,6 @@ import de.dh.raaps.ui.controls.history.HistoryAndImpactDiagramData
 import de.dh.raaps.ui.controls.history.HistoryUiState
 import de.dh.raaps.ui.controls.history.HistoryViewModel
 import de.dh.raaps.ui.controls.history.rememberBgHistoryChartState
-import de.dh.raaps.ui.controls.profile.CurrentTherapyUiState
-import de.dh.raaps.ui.controls.profile.CurrentTherapyViewModel
-import de.dh.raaps.ui.controls.profile.InsulinProfileUiState
 import de.dh.raaps.ui.controls.state.CurrentBgUiState
 import de.dh.raaps.ui.controls.state.CurrentStateView
 import de.dh.raaps.ui.controls.state.SystemViewModel
@@ -68,6 +65,9 @@ import de.dh.raaps.ui.screens.history.createSampleHistoryUiState
 import de.dh.raaps.ui.screens.permissions.PermissionStatus
 import de.dh.raaps.ui.screens.permissions.PermissionsUiModel
 import de.dh.raaps.ui.screens.permissions.PermissionsViewModel
+import de.dh.raaps.ui.screens.therapy.CurrentTherapyUiState
+import de.dh.raaps.ui.screens.therapy.CurrentTherapyViewModel
+import de.dh.raaps.ui.screens.therapy.InsulinProfileUiState
 import de.dh.raaps.common.R as CommonR
 
 @Composable

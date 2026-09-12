@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.controls.profile
+package de.dh.raaps.ui.screens.insulinprofile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

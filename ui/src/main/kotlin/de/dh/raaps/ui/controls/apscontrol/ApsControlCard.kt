@@ -48,20 +48,20 @@ import de.dh.raaps.common.model.data.BgValue
 import de.dh.raaps.common.model.data.GlucoseUnit
 import de.dh.raaps.common.model.data.Minutes
 import de.dh.raaps.ui.R
-import de.dh.raaps.ui.common.LocalGlucoseUnit
-import de.dh.raaps.ui.common.glucoseValue
-import de.dh.raaps.ui.common.isfValue
-import de.dh.raaps.ui.common.crValue
 import de.dh.raaps.ui.common.ConfigurableDisplayStrategy
+import de.dh.raaps.ui.common.LocalGlucoseUnit
 import de.dh.raaps.ui.common.composables.AppColorBlue
 import de.dh.raaps.ui.common.composables.NormalButton
 import de.dh.raaps.ui.common.composables.PrimaryButton
+import de.dh.raaps.ui.common.crValue
+import de.dh.raaps.ui.common.glucoseValue
+import de.dh.raaps.ui.common.isfValue
 import de.dh.raaps.ui.common.theme.AppTheme
 import de.dh.raaps.ui.common.theme.NeutralGrey
 import de.dh.raaps.ui.common.theme.SoftBlue
 import de.dh.raaps.ui.common.theme.SoftGreen
 import de.dh.raaps.ui.common.theme.SoftRed
-import de.dh.raaps.ui.controls.profile.InsulinProfileUiState
+import de.dh.raaps.ui.screens.therapy.InsulinProfileUiState
 
 @Composable
 fun ApsControlCard(

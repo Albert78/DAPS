@@ -65,7 +65,6 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.common.R as CommonR
 import de.dh.raaps.common.model.BASAL_MAX
 import de.dh.raaps.common.model.BASAL_MIN
 import de.dh.raaps.common.model.CR_MAX
@@ -78,25 +77,24 @@ import de.dh.raaps.common.model.ISF_MAX
 import de.dh.raaps.common.model.ISF_MIN
 import de.dh.raaps.common.model.InsulinConcentration
 import de.dh.raaps.common.model.InsulinType
+import de.dh.raaps.common.model.data.BgDelta
 import de.dh.raaps.common.model.data.Block
 import de.dh.raaps.common.model.data.GlucoseUnit
 import de.dh.raaps.common.model.data.InsulinProfile
 import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.common.model.data.BgDelta
 import de.dh.raaps.ui.R
 import de.dh.raaps.ui.common.DefaultSteppingStrategy
-import de.dh.raaps.ui.common.ValueDisplayStrategy
 import de.dh.raaps.ui.common.LocalGlucoseUnit
-import de.dh.raaps.ui.common.isfUnitLabel
+import de.dh.raaps.ui.common.ValueDisplayStrategy
 import de.dh.raaps.ui.common.composables.EditableValueStepper
 import de.dh.raaps.ui.common.composables.NormalTextButton
 import de.dh.raaps.ui.common.composables.StepperDefaults
 import de.dh.raaps.ui.common.composables.TimeHourSelector
 import de.dh.raaps.ui.common.composables.contentScrollIndicator
 import de.dh.raaps.ui.common.composables.screenTitle
+import de.dh.raaps.ui.common.isfUnitLabel
 import de.dh.raaps.ui.common.theme.AppTheme
-import de.dh.raaps.ui.controls.profile.InsulinProfileSettingsUiState
-import de.dh.raaps.ui.controls.profile.InsulinProfileSettingsViewModel
+import de.dh.raaps.common.R as CommonR
 
 @Composable
 fun InsulinProfileEditorScreen(

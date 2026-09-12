@@ -65,7 +65,6 @@ import de.dh.raaps.common.model.data.BgValue
 import de.dh.raaps.common.model.data.Block
 import de.dh.raaps.common.model.data.InsulinProfile
 import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.common.R as CommonR
 import de.dh.raaps.ui.R
 import de.dh.raaps.ui.common.ConfigurableDisplayStrategy
 import de.dh.raaps.ui.common.composables.AppColorBlue
@@ -77,10 +76,7 @@ import de.dh.raaps.ui.common.theme.AppTheme
 import de.dh.raaps.ui.common.theme.NeutralGrey
 import de.dh.raaps.ui.common.theme.SoftBlue
 import de.dh.raaps.ui.common.theme.SoftRed
-import de.dh.raaps.ui.controls.profile.CurrentTherapyUiState
-import de.dh.raaps.ui.controls.profile.CurrentTherapyViewModel
-import de.dh.raaps.ui.controls.profile.InsulinProfileUiState
-import de.dh.raaps.ui.controls.profile.TherapyAdjustment
+import de.dh.raaps.common.R as CommonR
 
 @Composable
 fun CurrentTherapySettingsScreen(
