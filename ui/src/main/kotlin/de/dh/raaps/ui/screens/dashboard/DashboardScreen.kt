@@ -24,6 +24,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +40,7 @@ import de.dh.raaps.common.model.ApsMode
 import de.dh.raaps.common.model.InsulinAmount
 import de.dh.raaps.common.model.data.BgDelta
 import de.dh.raaps.common.model.data.BgValue
+import de.dh.raaps.common.model.data.GlucoseUnit
 import de.dh.raaps.common.model.data.Minutes
 import de.dh.raaps.core.aps.ApsRecommendation
 import de.dh.raaps.ui.R
@@ -245,7 +247,7 @@ fun DashboardContent(
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Text(
                 text = stringResource(R.string.dashboard_history_title),
@@ -279,7 +281,7 @@ fun DashboardContent(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             ApsControlCard(
                 modifier = Modifier.fillMaxWidth(),
@@ -293,7 +295,7 @@ fun DashboardContent(
                 onProfileClick = onNavigateToTherapySettings
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             PrimaryButton(
                 onClick = onNavigateToMealCorrectionBolus,
@@ -318,54 +320,56 @@ fun DashboardContent(
 @Composable
 fun DashboardPreview() {
     AppTheme {
-        DashboardContent(
-            dashboardUiState = DashboardUiState(isLoading = false, isError = false),
-            currentBgUiState = createSampleGoodBgUiState(),
-            historyUiState = createSampleHistoryUiState(),
-            iob = InsulinAmount(1.57),
-            cob = 12.0,
-            currentTherapyUiState = CurrentTherapyUiState(
-                activeInsulinProfile = InsulinProfileUiState(
-                    name = "Normal",
-                    activeProfileId = null,
-                    currentIsf = BgDelta.fromMgDl(50),
-                    currentCr = 10.0,
-                    currentBasal = InsulinAmount(0.5),
-                    isfRange = "50",
-                    crRange = "10.0",
-                    basalRange = "0.50",
-                    target = BgValue.fromMgDl(110),
-                    lowThreshold = BgValue.fromMgDl(70),
-                    baseTarget = BgValue.fromMgDl(110),
-                    baseLow = BgValue.fromMgDl(70),
-                    insulinAdjustmentPercentage = 0,
-                    targetBgOverride = null,
-                    lowThresholdOverride = null,
-                    adjustmentHint = null,
-                    dia = Minutes(300),
-                    peak = Minutes(75)
+        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
+            DashboardContent(
+                dashboardUiState = DashboardUiState(isLoading = false, isError = false),
+                currentBgUiState = createSampleGoodBgUiState(),
+                historyUiState = createSampleHistoryUiState(),
+                iob = InsulinAmount(1.57),
+                cob = 12.0,
+                currentTherapyUiState = CurrentTherapyUiState(
+                    activeInsulinProfile = InsulinProfileUiState(
+                        name = "Normal",
+                        activeProfileId = null,
+                        currentIsf = BgDelta.fromMgDl(50),
+                        currentCr = 10.0,
+                        currentBasal = InsulinAmount(0.5),
+                        isfRange = "50",
+                        crRange = "10.0",
+                        basalRange = "0.50",
+                        target = BgValue.fromMgDl(110),
+                        lowThreshold = BgValue.fromMgDl(70),
+                        baseTarget = BgValue.fromMgDl(110),
+                        baseLow = BgValue.fromMgDl(70),
+                        insulinAdjustmentPercentage = 0,
+                        targetBgOverride = null,
+                        lowThresholdOverride = null,
+                        adjustmentHint = null,
+                        dia = Minutes(300),
+                        peak = Minutes(75)
+                    ),
                 ),
-            ),
-            permissionsUiState = PermissionsUiModel(
-                isLoading = false,
-                notificationPermissionStatus = PermissionStatus.Granted,
-                ignoreBatteryOptimizationPermissionStatus = PermissionStatus.Granted,
-                autoRevokePermissionsPermissionStatus = PermissionStatus.Granted,
-                numPermissionsMissing = 0,
-                permissionsMissingText = ""
-            ),
-            onFixPermissionsClick = {},
-            onNavigateToPermissions = {},
-            onNavigateToPreferences = {},
-            onNavigateToAlarms = {},
-            onNavigateToTherapySettings = {},
-            onNavigateToSystemControl = {},
-            onHistoryChartClick = {},
-            onApsModeSelect = {},
-            onAdjustmentClick = {},
-            onNavigateToMealCorrectionBolus = {},
-            isMealCorrectionBolusAllowed = true
-        )
+                permissionsUiState = PermissionsUiModel(
+                    isLoading = false,
+                    notificationPermissionStatus = PermissionStatus.Granted,
+                    ignoreBatteryOptimizationPermissionStatus = PermissionStatus.Granted,
+                    autoRevokePermissionsPermissionStatus = PermissionStatus.Granted,
+                    numPermissionsMissing = 0,
+                    permissionsMissingText = ""
+                ),
+                onFixPermissionsClick = {},
+                onNavigateToPermissions = {},
+                onNavigateToPreferences = {},
+                onNavigateToAlarms = {},
+                onNavigateToTherapySettings = {},
+                onNavigateToSystemControl = {},
+                onHistoryChartClick = {},
+                onApsModeSelect = {},
+                onAdjustmentClick = {},
+                onNavigateToMealCorrectionBolus = {},
+                isMealCorrectionBolusAllowed = true
+            )
+        }
     }
 }
 
@@ -374,53 +378,55 @@ fun DashboardPreview() {
 @Composable
 fun DashboardPermissionsWarningPreview() {
     AppTheme {
-        DashboardContent(
-            dashboardUiState = DashboardUiState(isLoading = false, isError = false),
-            currentBgUiState = createSampleGoodBgUiState(),
-            historyUiState = createSampleHistoryUiState(),
-            iob = InsulinAmount(1.57),
-            cob = 12.0,
-            currentTherapyUiState = CurrentTherapyUiState(
-                activeInsulinProfile = InsulinProfileUiState(
-                    name = "Normal",
-                    activeProfileId = null,
-                    currentIsf = BgDelta.fromMgDl(50),
-                    currentCr = 10.0,
-                    currentBasal = InsulinAmount(0.5),
-                    isfRange = "50",
-                    crRange = "10.0",
-                    basalRange = "0.50",
-                    target = BgValue.fromMgDl(110),
-                    lowThreshold = BgValue.fromMgDl(70),
-                    baseTarget = BgValue.fromMgDl(110),
-                    baseLow = BgValue.fromMgDl(70),
-                    insulinAdjustmentPercentage = 0,
-                    targetBgOverride = null,
-                    lowThresholdOverride = null,
-                    adjustmentHint = null,
-                    dia = Minutes(300),
-                    peak = Minutes(75)
+        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
+            DashboardContent(
+                dashboardUiState = DashboardUiState(isLoading = false, isError = false),
+                currentBgUiState = createSampleGoodBgUiState(),
+                historyUiState = createSampleHistoryUiState(),
+                iob = InsulinAmount(1.57),
+                cob = 12.0,
+                currentTherapyUiState = CurrentTherapyUiState(
+                    activeInsulinProfile = InsulinProfileUiState(
+                        name = "Normal",
+                        activeProfileId = null,
+                        currentIsf = BgDelta.fromMgDl(50),
+                        currentCr = 10.0,
+                        currentBasal = InsulinAmount(0.5),
+                        isfRange = "50",
+                        crRange = "10.0",
+                        basalRange = "0.50",
+                        target = BgValue.fromMgDl(110),
+                        lowThreshold = BgValue.fromMgDl(70),
+                        baseTarget = BgValue.fromMgDl(110),
+                        baseLow = BgValue.fromMgDl(70),
+                        insulinAdjustmentPercentage = 0,
+                        targetBgOverride = null,
+                        lowThresholdOverride = null,
+                        adjustmentHint = null,
+                        dia = Minutes(300),
+                        peak = Minutes(75)
+                    ),
                 ),
-            ),
-            permissionsUiState = PermissionsUiModel(
-                isLoading = false,
-                notificationPermissionStatus = PermissionStatus.Denied,
-                ignoreBatteryOptimizationPermissionStatus = PermissionStatus.Granted,
-                autoRevokePermissionsPermissionStatus = PermissionStatus.Granted,
-                numPermissionsMissing = 1,
-                permissionsMissingText = "1 permission missing"
-            ),
-            onFixPermissionsClick = {},
-            onNavigateToPermissions = {},
-            onNavigateToPreferences = {},
-            onNavigateToAlarms = {},
-            onNavigateToTherapySettings = {},
-            onNavigateToSystemControl = {},
-            onHistoryChartClick = {},
-            onApsModeSelect = {},
-            onAdjustmentClick = {},
-            onNavigateToMealCorrectionBolus = {},
-            isMealCorrectionBolusAllowed = true
-        )
+                permissionsUiState = PermissionsUiModel(
+                    isLoading = false,
+                    notificationPermissionStatus = PermissionStatus.Denied,
+                    ignoreBatteryOptimizationPermissionStatus = PermissionStatus.Granted,
+                    autoRevokePermissionsPermissionStatus = PermissionStatus.Granted,
+                    numPermissionsMissing = 1,
+                    permissionsMissingText = "1 permission missing"
+                ),
+                onFixPermissionsClick = {},
+                onNavigateToPermissions = {},
+                onNavigateToPreferences = {},
+                onNavigateToAlarms = {},
+                onNavigateToTherapySettings = {},
+                onNavigateToSystemControl = {},
+                onHistoryChartClick = {},
+                onApsModeSelect = {},
+                onAdjustmentClick = {},
+                onNavigateToMealCorrectionBolus = {},
+                isMealCorrectionBolusAllowed = true
+            )
+        }
     }
 }
