@@ -25,7 +25,7 @@ object DatabaseInitializer {
         initializeMealTypes(context, treatmentRepository)
         initializeDefaultInsulinProfileAndCurrentTherapy(context, therapyRepository)
         initializeSettings(settingsRepository)
-        initializeDefaultAlarmProfiles(alarmRepository)
+        initializeDefaultAlarmProfiles(context, alarmRepository)
     }
 
     private suspend fun initializeInsulinTypes(context: Context, repository: TreatmentRepository) {
@@ -82,11 +82,11 @@ object DatabaseInitializer {
         }
     }
 
-    private suspend fun initializeDefaultAlarmProfiles(repository: AlarmRepository) {
+    private suspend fun initializeDefaultAlarmProfiles(context: Context, repository: AlarmRepository) {
         if (repository.getAllAlarmProfiles().isNotEmpty()) {
             return
         }
-        getDefaultAlarmProfiles().forEach { profile ->
+        getDefaultAlarmProfiles(context).forEach { profile ->
             val id = repository.insertAlarmProfile(profile)
             if (profile.isDefault) {
                 repository.setActiveAlarmProfile(id)

@@ -45,6 +45,9 @@
     <string name="meal_type_high_fat_meal_name">Fettreiche Mahlzeit</string>
     <string name="meal_type_slow_meal_name">Langsame Mahlzeit</string>
     <string name="profile_default_normal_name">Normal</string>
+    <string name="alarm_profile_default_standard_name">Standard</string>
+    <string name="alarm_profile_default_quiet_name">Kino / Diskret</string>
+    <string name="alarm_profile_default_loud_name">Laut / Draußen</string>
 
     <string name="therapy_insulin_profile_selection_title">Insulinprofil wählen</string>
     <string name="therapy_target_label">Zielwert</string>
