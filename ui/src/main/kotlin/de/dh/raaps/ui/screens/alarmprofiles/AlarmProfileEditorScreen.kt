@@ -301,6 +301,22 @@ fun SeverityEditorSectionCard(
                     onCheckedChange = { onConfigChanged(config.copy(overrideDnd = it)) }
                 )
             }
+
+            // Full Screen Alarm Switch
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(id = R.string.alarm_profile_show_full_screen),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Switch(
+                    checked = config.showFullScreen,
+                    onCheckedChange = { onConfigChanged(config.copy(showFullScreen = it)) }
+                )
+            }
         }
     }
 }

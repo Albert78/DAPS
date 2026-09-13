@@ -442,6 +442,7 @@
     <string name="alarm_profile_vibration_long">Lang</string>
     <string name="alarm_profile_vibration_continuous">Kontinuierlich</string>
     <string name="alarm_profile_override_dnd">„Bitte nicht stören“ umgehen</string>
+    <string name="alarm_profile_show_full_screen">Als Vollbildalarm anzeigen</string>
     <string name="alarm_profile_delete_title">Alarmprofil löschen</string>
     <string name="alarm_profile_delete_message">Möchtest du das Alarmprofil „%1$s“ wirklich löschen?</string>
     <string name="alarm_profile_cannot_delete_default">Das Standard-Profil kann nicht gelöscht werden.</string>

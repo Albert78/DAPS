@@ -14,5 +14,6 @@ data class AlarmSoundConfig(
     val volume: Int = 80, // 0..100 %
     val soundUri: String? = null, // null = system default or silent if volume is 0
     val vibrationMode: VibrationMode = VibrationMode.SHORT,
-    val overrideDnd: Boolean = false
+    val overrideDnd: Boolean = false,
+    val showFullScreen: Boolean = false,
 )

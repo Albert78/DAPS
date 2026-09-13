@@ -35,6 +35,7 @@ private fun AlarmSoundConfig.toJson(): JSONObject {
     json.put("soundUri", soundUri ?: JSONObject.NULL)
     json.put("vibrationMode", vibrationMode.name)
     json.put("overrideDnd", overrideDnd)
+    json.put("showFullScreen", showFullScreen)
     return json
 }
 
@@ -44,11 +45,13 @@ private fun JSONObject.toAlarmSoundConfig(): AlarmSoundConfig {
     val vibModeStr = optString("vibrationMode", VibrationMode.SHORT.name)
     val vibrationMode = try { VibrationMode.valueOf(vibModeStr) } catch (_: Exception) { VibrationMode.SHORT }
     val overrideDnd = optBoolean("overrideDnd", false)
+    val showFullScreen = optBoolean("showFullScreen", false)
     return AlarmSoundConfig(
         volume = volume,
         soundUri = soundUri,
         vibrationMode = vibrationMode,
-        overrideDnd = overrideDnd
+        overrideDnd = overrideDnd,
+        showFullScreen = showFullScreen
     )
 }
 
