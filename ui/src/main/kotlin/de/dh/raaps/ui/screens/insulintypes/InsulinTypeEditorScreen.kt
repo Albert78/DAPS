@@ -1,6 +1,7 @@
 package de.dh.raaps.ui.screens.insulintypes
 
 import android.content.res.Configuration
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,13 +13,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -36,10 +39,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.raaps.common.model.InsulinConcentration
 import de.dh.raaps.ui.R
+import de.dh.raaps.ui.common.composables.NormalTextButton
 import de.dh.raaps.ui.common.composables.contentScrollIndicator
 import de.dh.raaps.ui.common.composables.screenTitle
 import de.dh.raaps.ui.common.theme.AppTheme
 import de.dh.raaps.common.R as CommonR
+
+private data class InitialInsulinTypeValues(
+    val id: String?,
+    val name: String,
+    val peak: String,
+    val dia: String,
+    val concentration: InsulinConcentration
+)
 
 @Composable
 fun InsulinTypeEditorScreen(
@@ -72,6 +84,46 @@ fun InsulinTypeEditorContent(
     onSave: () -> Unit,
     onNavigateUp: () -> Unit
 ) {
+    var showDiscardConfirmation by remember { mutableStateOf(false) }
+
+    val initialValues = remember(uiState.isLoading) {
+        if (!uiState.isLoading) {
+            InitialInsulinTypeValues(
+                id = uiState.id,
+                name = uiState.name,
+                peak = uiState.peak,
+                dia = uiState.dia,
+                concentration = uiState.concentration
+            )
+        } else null
+    }
+
+    val hasChanges = remember(
+        uiState.name,
+        uiState.peak,
+        uiState.dia,
+        uiState.concentration,
+        initialValues
+    ) {
+        if (initialValues == null) false
+        else {
+            uiState.name != initialValues.name ||
+                    uiState.peak != initialValues.peak ||
+                    uiState.dia != initialValues.dia ||
+                    uiState.concentration != initialValues.concentration
+        }
+    }
+
+    fun handleBack() {
+        if (hasChanges) {
+            showDiscardConfirmation = true
+        } else {
+            onNavigateUp()
+        }
+    }
+
+    BackHandler(onBack = ::handleBack)
+
     val scrollState = rememberScrollState()
     var expandedConc by remember { mutableStateOf(false) }
 
@@ -93,10 +145,13 @@ fun InsulinTypeEditorContent(
             TopAppBar(
                 title = screenTitle(stringResource(id = titleRes)),
                 navigationIcon = {
-                    IconButton(onClick = onNavigateUp) {
+                    IconButton(onClick = ::handleBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(id = CommonR.string.cd_navigate_up)
+                            imageVector = if (hasChanges) Icons.Default.Close else Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(
+                                id = if (hasChanges) CommonR.string.cd_cancel
+                                else CommonR.string.cd_navigate_up
+                            )
                         )
                     }
                 },
@@ -180,6 +235,33 @@ fun InsulinTypeEditorContent(
                 }
             }
         }
+    }
+
+    if (showDiscardConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showDiscardConfirmation = false },
+            title = { Text(stringResource(id = R.string.insulin_type_editor_discard_title)) },
+            text = { Text(stringResource(id = R.string.insulin_type_editor_discard_message)) },
+            confirmButton = {
+                NormalTextButton(
+                    onClick = {
+                        showDiscardConfirmation = false
+                        onSave()
+                    },
+                    enabled = uiState.isValid && !uiState.isSaving
+                ) {
+                    Text(stringResource(id = CommonR.string.action_save))
+                }
+            },
+            dismissButton = {
+                NormalTextButton(onClick = {
+                    showDiscardConfirmation = false
+                    onNavigateUp()
+                }) {
+                    Text(stringResource(id = R.string.discard_confirm_button))
+                }
+            }
+        )
     }
 }
 

@@ -25,6 +25,8 @@
     <string name="insulin_type_editor_peak_label">Peak-Zeit (Minuten)</string>
     <string name="insulin_type_editor_dia_label">Wirkdauer DIA (Minuten)</string>
     <string name="insulin_type_editor_concentration_label">Standard-Konzentration</string>
+    <string name="insulin_type_editor_discard_title">Änderungen speichern?</string>
+    <string name="insulin_type_editor_discard_message">Du hast Änderungen am Insulintyp vorgenommen. Möchtest du diese vor dem Beenden speichern?</string>
     <string name="cd_add_insulin_type">Insulintyp hinzufügen</string>
     <string name="delete_insulin_type_title">Insulintyp löschen</string>
     <string name="delete_insulin_type_message">Möchtest du den Insulintyp \"%1$s\" wirklich löschen?</string>
