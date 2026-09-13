@@ -4,13 +4,13 @@ import android.content.Context
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.Transaction
 import androidx.room.TypeConverters
 import androidx.room.Update
+import androidx.room.Upsert
 import de.dh.raaps.common.model.InsulinOrigin
 import de.dh.raaps.core.repository.db.entities.CoreInsightEntity
 import de.dh.raaps.core.repository.db.entities.CurrentSettingsEntity
@@ -121,7 +121,7 @@ interface MetabolicEventsDao {
     @Query("SELECT * FROM meal_type WHERE id = :id")
     suspend fun getMealTypeById(id: String): MealTypeEntity?
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun insertMealType(mealType: MealTypeEntity)
 
     @Update
@@ -171,7 +171,7 @@ interface MetabolicEventsDao {
     @Query("SELECT * FROM insulin_type WHERE name = :name")
     suspend fun getInsulinTypeByName(name: String): InsulinTypeEntity?
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun insertInsulinType(insulinType: InsulinTypeEntity)
 
     @Update
