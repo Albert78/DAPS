@@ -8,6 +8,7 @@ import de.dh.raaps.common.model.data.AlarmProfile
 import de.dh.raaps.core.SystemRegistry
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -22,26 +23,30 @@ class AlarmProfilesViewModel(
     systemRegistry: SystemRegistry
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(AlarmProfilesUiState())
+    private val _uiState = MutableStateFlow(AlarmProfilesUiState(isLoading = true))
     val uiState = _uiState.asStateFlow()
 
     private val alarmRepository = systemRegistry.alarmRepository
 
     init {
-        loadData()
+        observeData()
     }
 
-    fun loadData() {
+    private fun observeData() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            val profiles = alarmRepository.getAllAlarmProfiles()
-            val active = alarmRepository.getActiveAlarmProfile()
-            _uiState.update {
-                it.copy(
-                    profiles = profiles,
-                    activeProfile = active,
-                    isLoading = false
-                )
+            combine(
+                alarmRepository.observeAllAlarmProfiles(),
+                alarmRepository.observeActiveAlarmProfile()
+            ) { profiles, active ->
+                profiles to active
+            }.collect { (profiles, active) ->
+                _uiState.update {
+                    it.copy(
+                        profiles = profiles,
+                        activeProfile = active,
+                        isLoading = false
+                    )
+                }
             }
         }
     }
@@ -49,7 +54,6 @@ class AlarmProfilesViewModel(
     fun setActiveProfile(profile: AlarmProfile) {
         viewModelScope.launch {
             alarmRepository.setActiveAlarmProfile(profile.id)
-            loadData()
         }
     }
 
@@ -64,7 +68,6 @@ class AlarmProfilesViewModel(
     fun deleteProfile(profile: AlarmProfile) {
         viewModelScope.launch {
             alarmRepository.deleteAlarmProfile(profile.id)
-            loadData()
             cancelDelete()
         }
     }

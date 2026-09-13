@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -45,7 +46,6 @@ import de.dh.raaps.common.model.data.AlarmSeverity
 import de.dh.raaps.common.model.data.AlarmSoundConfig
 import de.dh.raaps.common.model.data.VibrationMode
 import de.dh.raaps.ui.R
-import de.dh.raaps.ui.common.composables.contentScrollIndicator
 import de.dh.raaps.ui.common.composables.NormalTextButton
 import de.dh.raaps.ui.common.composables.contentScrollIndicator
 import de.dh.raaps.ui.common.composables.screenTitle
@@ -267,9 +267,10 @@ fun SeverityEditorSectionCard(
                 text = stringResource(id = R.string.alarm_profile_vibration_label),
                 style = MaterialTheme.typography.bodyMedium
             )
-            Row(
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 VibrationMode.entries.forEach { mode ->
                     FilterChip(
