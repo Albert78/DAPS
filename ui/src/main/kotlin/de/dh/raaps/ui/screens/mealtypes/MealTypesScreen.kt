@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -37,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import de.dh.raaps.common.model.MealType
 import de.dh.raaps.ui.R
 import de.dh.raaps.ui.common.composables.NormalTextButton
+import de.dh.raaps.ui.common.composables.contentScrollIndicator
 import de.dh.raaps.ui.common.composables.screenTitle
 import de.dh.raaps.ui.common.theme.AppTheme
 import de.dh.raaps.common.R as CommonR
@@ -94,13 +96,19 @@ fun MealTypesContent(
     ) { innerPadding ->
         if (uiState.mealTypes.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
-                Text(text = "Keine Mahlzeitentypen definiert", style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    text = stringResource(id = R.string.meal_types_empty_list),
+                    style = MaterialTheme.typography.bodyLarge
+                )
             }
         } else {
+            val listState = rememberLazyListState()
             LazyColumn(
+                state = listState,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
+                    .contentScrollIndicator(listState)
             ) {
                 items(uiState.mealTypes) { mealType ->
                     MealTypeItem(
@@ -141,7 +149,9 @@ fun MealTypesContent(
 fun MealTypeItem(mealType: MealType, onDelete: () -> Unit, onClick: () -> Unit) {
     ListItem(
         headlineContent = { Text(mealType.name) },
-        supportingContent = { Text("${mealType.cat.value} Min.") },
+        supportingContent = {
+            Text(stringResource(id = CommonR.string.duration_minutes_format, mealType.cat.value))
+        },
         leadingContent = {
             MealTypeIcon(
                 mealType = mealType,

@@ -300,6 +300,7 @@
     <string name="delete_meal_message">Möchtest du diese Mahlzeit wirklich löschen?</string>
     <string name="menu_meal_types_label">Mahlzeitentypen</string>
     <string name="meal_types_screen_title">Mahlzeitentypen</string>
+    <string name="meal_types_empty_list">Keine Mahlzeitentypen definiert</string>
     <string name="meal_type_label">Mahlzeit-Typ</string>
     <string name="meal_type_editor_title_new">Neuer Mahlzeitentyp</string>
     <string name="meal_type_editor_title_edit">Mahlzeitentyp bearbeiten</string>
