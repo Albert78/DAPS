@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "b33f420a50490ca63d49a91979ae23c6",
+    "identityHash": "07707d3f0c57e0d4a61f94d7ba7c14ab",
     "entities": [
       {
         "tableName": "sensor_type",
@@ -295,6 +295,54 @@
           {
             "fieldPath": "aps_mode",
             "columnName": "aps_mode",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "alarm_profiles",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `is_default` INTEGER NOT NULL, `is_active` INTEGER NOT NULL, `severity_defaults_json` TEXT NOT NULL, `custom_overrides_json` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "is_default",
+            "columnName": "is_default",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "is_active",
+            "columnName": "is_active",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "severity_defaults_json",
+            "columnName": "severity_defaults_json",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "custom_overrides_json",
+            "columnName": "custom_overrides_json",
             "affinity": "TEXT",
             "notNull": true
           }
@@ -799,7 +847,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b33f420a50490ca63d49a91979ae23c6')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '07707d3f0c57e0d4a61f94d7ba7c14ab')"
     ]
   }
 }

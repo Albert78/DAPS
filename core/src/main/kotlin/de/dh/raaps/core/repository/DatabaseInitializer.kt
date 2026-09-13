@@ -8,6 +8,7 @@ import de.dh.raaps.common.model.data.BgValue
 import de.dh.raaps.common.model.data.CurrentSettings
 import de.dh.raaps.common.model.data.CurrentTherapySettings
 import de.dh.raaps.common.model.data.Minutes
+import de.dh.raaps.common.model.getDefaultAlarmProfiles
 import de.dh.raaps.common.model.getDefaultInsulinProfile
 import de.dh.raaps.common.model.getDefaultInsulinTypes
 import de.dh.raaps.common.model.getDefaultMealTypes
@@ -17,12 +18,14 @@ object DatabaseInitializer {
         context: Context,
         treatmentRepository: TreatmentRepository,
         therapyRepository: TherapyRepository,
-        settingsRepository: SettingsRepository
+        settingsRepository: SettingsRepository,
+        alarmRepository: AlarmRepository
     ) {
         initializeInsulinTypes(context, treatmentRepository)
         initializeMealTypes(context, treatmentRepository)
         initializeDefaultInsulinProfileAndCurrentTherapy(context, therapyRepository)
         initializeSettings(settingsRepository)
+        initializeDefaultAlarmProfiles(alarmRepository)
     }
 
     private suspend fun initializeInsulinTypes(context: Context, repository: TreatmentRepository) {
@@ -76,6 +79,18 @@ object DatabaseInitializer {
     private suspend fun initializeSettings(repository: SettingsRepository) {
         if (repository.getCurrentSettings() == null) {
             repository.updateCurrentSettings(CurrentSettings())
+        }
+    }
+
+    private suspend fun initializeDefaultAlarmProfiles(repository: AlarmRepository) {
+        if (repository.getAllAlarmProfiles().isNotEmpty()) {
+            return
+        }
+        getDefaultAlarmProfiles().forEach { profile ->
+            val id = repository.insertAlarmProfile(profile)
+            if (profile.isDefault) {
+                repository.setActiveAlarmProfile(id)
+            }
         }
     }
 }

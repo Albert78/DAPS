@@ -49,7 +49,6 @@ import de.dh.raaps.ui.common.composables.ExpandableInfoCard
 import de.dh.raaps.ui.common.composables.PrimaryButton
 import de.dh.raaps.ui.common.composables.WarningBanner
 import de.dh.raaps.ui.common.composables.screenTitle
-import de.dh.raaps.ui.common.icons.Icon_Menu_Alarms
 import de.dh.raaps.ui.common.icons.Icon_Menu_Permissions
 import de.dh.raaps.ui.common.icons.Icon_Settings
 import de.dh.raaps.ui.common.theme.AppTheme
@@ -82,7 +81,6 @@ fun DashboardScreen(
     onFixPermissions: () -> Unit,
     onNavigateToPermissions: () -> Unit,
     onNavigateToPreferences: () -> Unit,
-    onNavigateToAlarms: () -> Unit,
     onNavigateToTherapySettings: () -> Unit,
     onNavigateToMealCorrectionBolus: () -> Unit,
     onNavigateToSystemControl: () -> Unit,
@@ -109,7 +107,6 @@ fun DashboardScreen(
         onFixPermissionsClick = onFixPermissions,
         onNavigateToPermissions = onNavigateToPermissions,
         onNavigateToPreferences = onNavigateToPreferences,
-        onNavigateToAlarms = onNavigateToAlarms,
         onNavigateToTherapySettings = onNavigateToTherapySettings,
         onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus,
         isMealCorrectionBolusAllowed = uiState.isMealCorrectionBolusAllowed,
@@ -134,7 +131,6 @@ fun DashboardContent(
     onFixPermissionsClick: () -> Unit,
     onNavigateToPermissions: () -> Unit,
     onNavigateToPreferences: () -> Unit,
-    onNavigateToAlarms: () -> Unit,
     onNavigateToTherapySettings: () -> Unit,
     onNavigateToMealCorrectionBolus: () -> Unit,
     isMealCorrectionBolusAllowed: Boolean,
@@ -174,14 +170,6 @@ fun DashboardContent(
                                 onClick = {
                                     menuExpanded = false
                                     onNavigateToPermissions()
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(id = R.string.menu_alarms_label)) },
-                                leadingIcon = { Icon(imageVector = Icon_Menu_Alarms, contentDescription = null) },
-                                onClick = {
-                                    menuExpanded = false
-                                    onNavigateToAlarms()
                                 }
                             )
                             DropdownMenuItem(
@@ -360,7 +348,6 @@ fun DashboardPreview() {
                 onFixPermissionsClick = {},
                 onNavigateToPermissions = {},
                 onNavigateToPreferences = {},
-                onNavigateToAlarms = {},
                 onNavigateToTherapySettings = {},
                 onNavigateToSystemControl = {},
                 onHistoryChartClick = {},
@@ -418,7 +405,6 @@ fun DashboardPermissionsWarningPreview() {
                 onFixPermissionsClick = {},
                 onNavigateToPermissions = {},
                 onNavigateToPreferences = {},
-                onNavigateToAlarms = {},
                 onNavigateToTherapySettings = {},
                 onNavigateToSystemControl = {},
                 onHistoryChartClick = {},

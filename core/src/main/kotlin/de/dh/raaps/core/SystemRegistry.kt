@@ -10,6 +10,7 @@ import de.dh.raaps.core.aps.GlucoseSourceManager
 import de.dh.raaps.core.aps.SystemOrchestrator
 import de.dh.raaps.core.aps.TherapyManager
 import de.dh.raaps.core.pump.PumpManager
+import de.dh.raaps.core.repository.AlarmRepository
 import de.dh.raaps.core.repository.DeviceManagementRepository
 import de.dh.raaps.core.repository.FoodRepository
 import de.dh.raaps.core.repository.GlucoseRepository
@@ -52,6 +53,11 @@ interface SystemRegistry {
      * Repository for therapy settings, profiles, and active therapy configurations.
      */
     val therapyRepository: TherapyRepository
+
+    /**
+     * Repository for alarm configurations and active alarm profile.
+     */
+    val alarmRepository: AlarmRepository
 
     /**
      * Repository for active metabolic treatments, including insulin applications and carb intake.

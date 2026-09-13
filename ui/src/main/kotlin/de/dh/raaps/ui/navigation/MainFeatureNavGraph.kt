@@ -15,8 +15,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import de.dh.raaps.common.model.ID_UNDEFINED
+import de.dh.raaps.common.navigation.AlarmProfileEditorRoute
 import de.dh.raaps.common.navigation.AlarmProfilesRoute
-import de.dh.raaps.common.navigation.AlarmsRoute
+import de.dh.raaps.ui.screens.alarmprofiles.AlarmProfileEditorScreen
+import de.dh.raaps.ui.screens.alarmprofiles.AlarmProfileEditorViewModel
+import de.dh.raaps.ui.screens.alarmprofiles.AlarmProfilesViewModel
 import de.dh.raaps.common.navigation.BgEditorRoute
 import de.dh.raaps.common.navigation.BolusHistoryRoute
 import de.dh.raaps.common.navigation.CoreDecisionsRoute
@@ -47,7 +50,6 @@ import de.dh.raaps.ui.common.treatmentlock.TreatmentLockViewModel
 import de.dh.raaps.ui.controls.history.HistoryViewModel
 import de.dh.raaps.ui.controls.state.SystemViewModel
 import de.dh.raaps.ui.screens.alarmprofiles.AlarmProfilesScreen
-import de.dh.raaps.ui.screens.alarms.AlarmsScreen
 import de.dh.raaps.ui.screens.bolushistory.BolusHistoryScreen
 import de.dh.raaps.ui.screens.bolushistory.BolusHistoryViewModel
 import de.dh.raaps.ui.screens.dashboard.DashboardScreen
@@ -124,7 +126,6 @@ class MainFeatureNavGraph(
                     onFixPermissions = { navViewModel.push(PermissionsRoute) },
                     onNavigateToPermissions = { navViewModel.push(PermissionsRoute) },
                     onNavigateToPreferences = { navViewModel.push(PreferencesMainRoute) },
-                    onNavigateToAlarms = { navViewModel.push(AlarmsRoute) },
                     onNavigateToTherapySettings = { navViewModel.push(CurrentTherapySettingsRoute) },
                     onNavigateToMealCorrectionBolus = { navViewModel.push(MealCorrectionBolusRoute) },
                     onNavigateToSystemControl = { navViewModel.push(SystemControlRoute()) },
@@ -373,10 +374,6 @@ class MainFeatureNavGraph(
                 )
             }
 
-            is AlarmsRoute -> NavEntry(key) {
-                AlarmsScreen(onNavigateUp = { navViewModel.pop() })
-            }
-
             is MasterDataRoute -> NavEntry(key) {
                 MasterDataScreen(
                     onNavigateToInsulinTypes = { navViewModel.push(InsulinTypesRoute) },
@@ -410,7 +407,22 @@ class MainFeatureNavGraph(
             }
 
             is AlarmProfilesRoute -> NavEntry(key) {
+                val vm: AlarmProfilesViewModel = viewModel(
+                    factory = AlarmProfilesViewModel.Companion.Factory(registry)
+                )
                 AlarmProfilesScreen(
+                    viewModel = vm,
+                    onNavigateToEditor = { id -> navViewModel.push(AlarmProfileEditorRoute(profileId = id)) },
+                    onNavigateUp = { navViewModel.pop() }
+                )
+            }
+
+            is AlarmProfileEditorRoute -> NavEntry(key) {
+                val vm: AlarmProfileEditorViewModel = viewModel(
+                    factory = AlarmProfileEditorViewModel.Companion.Factory(registry, key.profileId)
+                )
+                AlarmProfileEditorScreen(
+                    viewModel = vm,
                     onNavigateUp = { navViewModel.pop() }
                 )
             }

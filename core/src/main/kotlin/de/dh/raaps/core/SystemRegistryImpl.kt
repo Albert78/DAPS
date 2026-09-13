@@ -15,6 +15,8 @@ import de.dh.raaps.core.aps.SystemOrchestratorImpl
 import de.dh.raaps.core.aps.TherapyManager
 import de.dh.raaps.core.pump.PumpManager
 import de.dh.raaps.core.pump.PumpManagerImpl
+import de.dh.raaps.core.repository.AlarmRepository
+import de.dh.raaps.core.repository.AlarmRepositoryImpl
 import de.dh.raaps.core.repository.DatabaseInitializer
 import de.dh.raaps.core.repository.DeviceManagementRepository
 import de.dh.raaps.core.repository.FoodRepository
@@ -39,6 +41,7 @@ class SystemRegistryImpl(
     override val appContext: Context,
     override val glucoseRepository: GlucoseRepository,
     override val therapyRepository: TherapyRepository,
+    override val alarmRepository: AlarmRepository,
     override val treatmentRepository: TreatmentRepository,
     override val foodRepository: FoodRepository,
     override val deviceManagementRepository: DeviceManagementRepository,
@@ -75,6 +78,7 @@ class SystemRegistryImpl(
             // Initialize repositories
             val glucoseRepository = GlucoseRepository(appDatabase)
             val therapyRepository = TherapyRepository(appDatabase)
+            val alarmRepository = AlarmRepositoryImpl(appDatabase.alarmProfileDao())
             val treatmentRepository = TreatmentRepository(
                 historySize = Minutes.ofHours(METABOLIC_EVENTS_HISTORY_HOURS),
                 appDatabase = appDatabase
@@ -127,7 +131,7 @@ class SystemRegistryImpl(
 
             runBlocking {
                 treatmentRepository.load()
-                DatabaseInitializer.initialize(application, treatmentRepository, therapyRepository, settingsRepository)
+                DatabaseInitializer.initialize(application, treatmentRepository, therapyRepository, settingsRepository, alarmRepository)
             }
 
             therapyManager.startInitialization()
@@ -151,6 +155,7 @@ class SystemRegistryImpl(
                 appContext = application,
                 glucoseRepository = glucoseRepository,
                 therapyRepository = therapyRepository,
+                alarmRepository = alarmRepository,
                 treatmentRepository = treatmentRepository,
                 foodRepository = foodRepository,
                 deviceManagementRepository = deviceManagementRepository,

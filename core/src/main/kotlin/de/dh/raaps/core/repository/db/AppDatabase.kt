@@ -12,6 +12,8 @@ import androidx.room.TypeConverters
 import androidx.room.Update
 import androidx.room.Upsert
 import de.dh.raaps.common.model.InsulinOrigin
+import de.dh.raaps.core.repository.db.dao.AlarmProfileDao
+import de.dh.raaps.core.repository.db.entities.AlarmProfileEntity
 import de.dh.raaps.core.repository.db.entities.CoreInsightEntity
 import de.dh.raaps.core.repository.db.entities.CurrentSettingsEntity
 import de.dh.raaps.core.repository.db.entities.CurrentTherapySettingsEntity
@@ -271,6 +273,7 @@ interface SystemMetricsDao {
     InsulinProfileEntity::class,
     CurrentTherapySettingsEntity::class,
     CurrentSettingsEntity::class,
+    AlarmProfileEntity::class,
 
     // Metabolic events
     MealTypeEntity::class,
@@ -291,6 +294,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun metabolicEventsDao(): MetabolicEventsDao
     abstract fun settingsDao(): SettingsDao
     abstract fun systemMetricsDao(): SystemMetricsDao
+    abstract fun alarmProfileDao(): AlarmProfileDao
 
     companion object {
         const val CURRENT_DATABASE_VERSION = "1.0"

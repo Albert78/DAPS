@@ -287,7 +287,6 @@
     <string name="menu_meals_label">Mahlzeiten</string>
     <string name="menu_food_database_label">Essensdatenbank</string>
     <string name="menu_system_control_label">Systemsteuerung</string>
-    <string name="menu_alarms_label">Warnungen und Alarme</string>
     <string name="cd_open_navigation_drawer">Hauptmenü öffnen</string>
     <string name="cd_close">Schließen</string>
 
@@ -422,5 +421,28 @@
     <string name="core_insight_action_bolus">Aktion: Bolus %1$s</string>
     <string name="core_insight_action_temp_basal">Aktion: Temp-Basal %1$d%% für %2$d h</string>
 
-    <string name="alarms_screen_title">Warnungen und Alarme</string>
+    <!-- Alarm Profiles -->
+    <string name="alarm_profile_active_label">Aktiv</string>
+    <string name="alarm_profile_set_active">Als aktives Profil festlegen</string>
+    <string name="alarm_profile_editor_title_new">Neues Alarmprofil</string>
+    <string name="alarm_profile_editor_title_edit">Alarmprofil bearbeiten</string>
+    <string name="alarm_profile_editor_discard_title">Änderungen speichern?</string>
+    <string name="alarm_profile_editor_discard_message">Du hast Änderungen am Alarmprofil vorgenommen. Möchtest du die Änderungen speichern oder verwerfen?</string>
+    <string name="alarm_profile_name_label">Name des Profils</string>
+    <string name="alarm_profile_severity_critical">Kritische Alarme</string>
+    <string name="alarm_profile_severity_warning">Warnungen</string>
+    <string name="alarm_profile_severity_info">Hinweise</string>
+    <string name="alarm_profile_volume_label">Lautstärke: %1$d%%</string>
+    <string name="alarm_profile_vibration_label">Vibration</string>
+    <string name="alarm_profile_vibration_off">Aus</string>
+    <string name="alarm_profile_vibration_short">Kurz</string>
+    <string name="alarm_profile_vibration_long">Lang</string>
+    <string name="alarm_profile_vibration_continuous">Kontinuierlich</string>
+    <string name="alarm_profile_override_dnd">„Bitte nicht stören“ umgehen</string>
+    <string name="alarm_profile_delete_title">Alarmprofil löschen</string>
+    <string name="alarm_profile_delete_message">Möchtest du das Alarmprofil „%1$s“ wirklich löschen?</string>
+    <string name="alarm_profile_cannot_delete_default">Das Standard-Profil kann nicht gelöscht werden.</string>
+    <string name="cd_add_alarm_profile">Alarmprofil hinzufügen</string>
+    <string name="action_set_active">Aktivieren</string>
+
 </resources>
