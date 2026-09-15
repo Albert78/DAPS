@@ -1,9 +1,9 @@
-package de.dh.raaps.core.repository
+package de.dh.daps.core.repository
 
-import de.dh.raaps.common.model.data.AlarmProfile
-import de.dh.raaps.core.repository.db.dao.AlarmProfileDao
-import de.dh.raaps.core.repository.db.mappers.toEntity
-import de.dh.raaps.core.repository.db.mappers.toModel
+import de.dh.daps.common.model.data.AlarmProfile
+import de.dh.daps.core.repository.db.dao.AlarmProfileDao
+import de.dh.daps.core.repository.db.mappers.toEntity
+import de.dh.daps.core.repository.db.mappers.toModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

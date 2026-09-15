@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.common
+package de.dh.daps.ui.common
 
 import androidx.compose.ui.graphics.Color
 import kotlin.math.ceil

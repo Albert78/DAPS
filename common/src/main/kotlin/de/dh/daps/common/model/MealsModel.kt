@@ -1,7 +1,7 @@
-package de.dh.raaps.common.model
+package de.dh.daps.common.model
 
-import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.common.model.data.Timestamp
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.Timestamp
 import java.util.UUID
 import kotlin.math.abs
 

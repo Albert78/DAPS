@@ -1,13 +1,13 @@
-package de.dh.raaps.ui.screens.insulinprofile
+package de.dh.daps.ui.screens.insulinprofile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import de.dh.raaps.common.model.ID_UNDEFINED
-import de.dh.raaps.common.model.InsulinType
-import de.dh.raaps.common.model.data.InsulinProfile
-import de.dh.raaps.core.SystemRegistry
+import de.dh.daps.common.model.ID_UNDEFINED
+import de.dh.daps.common.model.InsulinType
+import de.dh.daps.common.model.data.InsulinProfile
+import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update

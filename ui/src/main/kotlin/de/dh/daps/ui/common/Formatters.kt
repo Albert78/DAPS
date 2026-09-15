@@ -1,15 +1,15 @@
-package de.dh.raaps.ui.common
+package de.dh.daps.ui.common
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.stringResource
-import de.dh.raaps.common.model.data.BgDelta
-import de.dh.raaps.common.model.data.BgValue
-import de.dh.raaps.common.model.data.GlucoseUnit
-import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.common.model.data.Timestamp
+import de.dh.daps.common.model.data.BgDelta
+import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.Timestamp
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -18,7 +18,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.abs
-import de.dh.raaps.common.R as CommonR
+import de.dh.daps.common.R as CommonR
 
 data class AppFormatters(
     val shortDateTime: DateTimeFormatter,
@@ -176,9 +176,9 @@ fun shortRelativeTimeUntil(timestamp: Timestamp): String {
 @Composable
 fun relativeTimeMinutes(minutes: Int): String {
     return when {
-        minutes == 0 -> stringResource(de.dh.raaps.ui.R.string.relative_time_now)
-        minutes > 0 -> stringResource(de.dh.raaps.ui.R.string.relative_time_minutes_positive, minutes)
-        else -> stringResource(de.dh.raaps.ui.R.string.relative_time_minutes_negative, abs(minutes))
+        minutes == 0 -> stringResource(de.dh.daps.ui.R.string.relative_time_now)
+        minutes > 0 -> stringResource(de.dh.daps.ui.R.string.relative_time_minutes_positive, minutes)
+        else -> stringResource(de.dh.daps.ui.R.string.relative_time_minutes_negative, abs(minutes))
     }
 }
 
@@ -195,7 +195,7 @@ fun withinTimeDescription(minutes: Minutes): String {
         else -> stringResource(CommonR.string.duration_hours_and_minutes_format, hours, mins)
     }
 
-    return stringResource(de.dh.raaps.ui.R.string.within_time_format, timeStr)
+    return stringResource(de.dh.daps.ui.R.string.within_time_format, timeStr)
 }
 
 /////////////////////////////////////////////// Glucose & Therapy //////////////////////////////////////
@@ -275,7 +275,7 @@ fun crValue(value: Double?, default: String = "-", withUnit: Boolean = true): St
 
 @Composable
 fun insulinUnitLabel(): String {
-    return stringResource(de.dh.raaps.ui.R.string.history_impact_ie_label)
+    return stringResource(de.dh.daps.ui.R.string.history_impact_ie_label)
 }
 
 @Composable
@@ -290,7 +290,7 @@ fun insulinValue(value: Double?, default: String = "-", withUnit: Boolean = true
 
 @Composable
 fun carbsKeUnitLabel(): String {
-    return stringResource(de.dh.raaps.ui.R.string.history_impact_ke_label)
+    return stringResource(de.dh.daps.ui.R.string.history_impact_ke_label)
 }
 
 @Composable

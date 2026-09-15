@@ -1,11 +1,11 @@
-package de.dh.raaps.ui.screens.alarmprofiles
+package de.dh.daps.ui.screens.alarmprofiles
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import de.dh.raaps.common.model.data.AlarmProfile
-import de.dh.raaps.core.SystemRegistry
+import de.dh.daps.common.model.data.AlarmProfile
+import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine

@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.screens.systemcontrol
+package de.dh.daps.ui.screens.systemcontrol
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,17 +23,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.common.model.data.BgReadingsInterval
-import de.dh.raaps.common.model.data.GlucoseUnit
-import de.dh.raaps.common.model.data.Timestamp
-import de.dh.raaps.ui.R
-import de.dh.raaps.ui.common.LocalGlucoseUnit
-import de.dh.raaps.ui.common.glucoseValue
-import de.dh.raaps.ui.common.icons.Icon_Next
-import de.dh.raaps.ui.common.icons.Icon_Previous
-import de.dh.raaps.ui.common.shortRelativeTimeAgo
-import de.dh.raaps.ui.common.shortRelativeTimeUntil
-import de.dh.raaps.ui.common.theme.AppTheme
+import de.dh.daps.common.model.data.BgReadingsInterval
+import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.ui.R
+import de.dh.daps.ui.common.LocalGlucoseUnit
+import de.dh.daps.ui.common.glucoseValue
+import de.dh.daps.ui.common.icons.Icon_Next
+import de.dh.daps.ui.common.icons.Icon_Previous
+import de.dh.daps.ui.common.shortRelativeTimeAgo
+import de.dh.daps.ui.common.shortRelativeTimeUntil
+import de.dh.daps.ui.common.theme.AppTheme
 import java.text.SimpleDateFormat
 import java.util.Date
 import androidx.compose.ui.platform.LocalLocale

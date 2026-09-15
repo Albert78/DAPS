@@ -1,11 +1,11 @@
-package de.dh.raaps.core.repository.db.dao
+package de.dh.daps.core.repository.db.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import de.dh.raaps.core.repository.db.entities.AlarmProfileEntity
+import de.dh.daps.core.repository.db.entities.AlarmProfileEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao

@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.screens.bolushistory
+package de.dh.daps.ui.screens.bolushistory
 
 import android.content.res.Configuration
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -54,31 +54,31 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.common.model.BOLUS_MAX
-import de.dh.raaps.common.model.BOLUS_MIN
-import de.dh.raaps.common.model.InsulinAmount
-import de.dh.raaps.common.model.InsulinApplication
-import de.dh.raaps.common.model.InsulinOrigin
-import de.dh.raaps.common.model.InsulinStatus
-import de.dh.raaps.common.model.InsulinType
-import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.common.model.data.Timestamp
-import de.dh.raaps.ui.R
-import de.dh.raaps.ui.common.DefaultSteppingStrategy
-import de.dh.raaps.ui.common.ValueDisplayStrategy
-import de.dh.raaps.ui.common.composables.EditableValueStepper
-import de.dh.raaps.ui.common.composables.NormalTextButton
-import de.dh.raaps.ui.common.composables.PrimaryButton
-import de.dh.raaps.ui.common.composables.contentScrollIndicator
-import de.dh.raaps.ui.common.composables.screenTitle
-import de.dh.raaps.ui.common.insulinUnitLabel
-import de.dh.raaps.ui.common.theme.AppTheme
+import de.dh.daps.common.model.BOLUS_MAX
+import de.dh.daps.common.model.BOLUS_MIN
+import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.InsulinApplication
+import de.dh.daps.common.model.InsulinOrigin
+import de.dh.daps.common.model.InsulinStatus
+import de.dh.daps.common.model.InsulinType
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.ui.R
+import de.dh.daps.ui.common.DefaultSteppingStrategy
+import de.dh.daps.ui.common.ValueDisplayStrategy
+import de.dh.daps.ui.common.composables.EditableValueStepper
+import de.dh.daps.ui.common.composables.NormalTextButton
+import de.dh.daps.ui.common.composables.PrimaryButton
+import de.dh.daps.ui.common.composables.contentScrollIndicator
+import de.dh.daps.ui.common.composables.screenTitle
+import de.dh.daps.ui.common.insulinUnitLabel
+import de.dh.daps.ui.common.theme.AppTheme
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
-import de.dh.raaps.common.R as CommonR
+import de.dh.daps.common.R as CommonR
 
 @Composable
 fun BolusHistoryScreen(

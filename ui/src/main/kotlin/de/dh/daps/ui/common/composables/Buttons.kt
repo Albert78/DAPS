@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.common.composables
+package de.dh.daps.ui.common.composables
 
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
@@ -18,7 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppTheme
 
 fun smallPaddingValues(): PaddingValues = PaddingValues(
     start = 16.dp,

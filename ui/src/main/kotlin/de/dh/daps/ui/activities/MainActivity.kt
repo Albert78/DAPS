@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.activities
+package de.dh.daps.ui.activities
 
 import android.content.Context
 import android.content.Intent
@@ -57,31 +57,31 @@ import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDe
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import de.dh.raaps.common.navigation.BolusHistoryRoute
-import de.dh.raaps.common.navigation.DashboardRoute
-import de.dh.raaps.common.navigation.FeatureNavGraph
-import de.dh.raaps.common.navigation.FoodDatabaseRoute
-import de.dh.raaps.common.navigation.MasterDataRoute
-import de.dh.raaps.common.navigation.MealsRoute
-import de.dh.raaps.common.navigation.NavigationViewModel
-import de.dh.raaps.common.navigation.SystemControlRoute
-import de.dh.raaps.common.navigation.combineEntryProviders
-import de.dh.raaps.core.SystemRegistry
-import de.dh.raaps.core.system.RegistryProvider
-import de.dh.raaps.ui.GlobalViewModel
-import de.dh.raaps.ui.R
-import de.dh.raaps.ui.common.composables.EdgeToEdgeHandler
-import de.dh.raaps.ui.common.icons.Icon_Menu_Bolus_History
-import de.dh.raaps.ui.common.icons.Icon_Menu_Food_Database
-import de.dh.raaps.ui.common.icons.Icon_Menu_Master_Data
-import de.dh.raaps.ui.common.icons.Icon_Menu_Meals
-import de.dh.raaps.ui.common.icons.Icon_Menu_System_Control
-import de.dh.raaps.ui.common.theme.AppTheme
-import de.dh.raaps.ui.common.theme.rememberUseDarkTheme
-import de.dh.raaps.ui.navigation.MainFeatureNavGraph
-import de.dh.raaps.ui.common.LocalGlucoseUnit
-import de.dh.raaps.ui.common.rememberAppFormatters
-import de.dh.raaps.ui.common.LocalAppFormatters
+import de.dh.daps.common.navigation.BolusHistoryRoute
+import de.dh.daps.common.navigation.DashboardRoute
+import de.dh.daps.common.navigation.FeatureNavGraph
+import de.dh.daps.common.navigation.FoodDatabaseRoute
+import de.dh.daps.common.navigation.MasterDataRoute
+import de.dh.daps.common.navigation.MealsRoute
+import de.dh.daps.common.navigation.NavigationViewModel
+import de.dh.daps.common.navigation.SystemControlRoute
+import de.dh.daps.common.navigation.combineEntryProviders
+import de.dh.daps.core.SystemRegistry
+import de.dh.daps.core.system.RegistryProvider
+import de.dh.daps.ui.GlobalViewModel
+import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.EdgeToEdgeHandler
+import de.dh.daps.ui.common.icons.Icon_Menu_Bolus_History
+import de.dh.daps.ui.common.icons.Icon_Menu_Food_Database
+import de.dh.daps.ui.common.icons.Icon_Menu_Master_Data
+import de.dh.daps.ui.common.icons.Icon_Menu_Meals
+import de.dh.daps.ui.common.icons.Icon_Menu_System_Control
+import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.rememberUseDarkTheme
+import de.dh.daps.ui.navigation.MainFeatureNavGraph
+import de.dh.daps.ui.common.LocalGlucoseUnit
+import de.dh.daps.ui.common.rememberAppFormatters
+import de.dh.daps.ui.common.LocalAppFormatters
 import androidx.compose.runtime.CompositionLocalProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -139,7 +139,7 @@ class MainActivity : ComponentActivity() {
     private fun handleIntent(intent: Intent?) {
         if (intent?.action == Intent.ACTION_VIEW) {
             val data = intent.data
-            if (data?.scheme == "app" && data.host == "raaps.dh.de") {
+            if (data?.scheme == "app" && data.host == "daps.dh.de") {
                 if (data.path == "/dashboard") {
                     navViewModel.reset(listOf(DashboardRoute))
                 }
@@ -196,7 +196,7 @@ class MainActivity : ComponentActivity() {
                 drawerState = drawerState,
                 gesturesEnabled = isTopLevel,
                 drawerContent = {
-                    RaapsDrawerContent(
+                    DapsDrawerContent(
                         currentRoute = currentRoute,
                         onRouteSelected = { route ->
                             scope.launch { drawerState.close() }
@@ -254,14 +254,14 @@ class MainActivity : ComponentActivity() {
         fun createStartDashboardIntent(context: Context): Intent {
             return Intent(context, MainActivity::class.java).apply {
                 action = Intent.ACTION_VIEW
-                data = "app://raaps.dh.de/dashboard".toUri()
+                data = "app://daps.dh.de/dashboard".toUri()
             }
         }
     }
 }
 
 @Composable
-fun RaapsDrawerContent(
+fun DapsDrawerContent(
     currentRoute: NavKey?,
     onRouteSelected: (NavKey) -> Unit,
     drawerWidth: androidx.compose.ui.unit.Dp = 320.dp,
@@ -304,32 +304,32 @@ fun RaapsDrawerContent(
                 }
                 HorizontalDivider()
 
-                RaapsDrawerItem(
+                DapsDrawerItem(
                     label = stringResource(id = R.string.menu_meals_label),
                     icon = Icon_Menu_Meals,
                     selected = currentRoute == MealsRoute,
                     onClick = { onRouteSelected(MealsRoute) }
                 )
-                RaapsDrawerItem(
+                DapsDrawerItem(
                     label = stringResource(id = R.string.menu_bolus_history_label),
                     icon = Icon_Menu_Bolus_History,
                     selected = currentRoute == BolusHistoryRoute,
                     onClick = { onRouteSelected(BolusHistoryRoute) }
                 )
-                RaapsDrawerItem(
+                DapsDrawerItem(
                     label = stringResource(id = R.string.menu_food_database_label),
                     icon = Icon_Menu_Food_Database,
                     selected = currentRoute == FoodDatabaseRoute,
                     onClick = { onRouteSelected(FoodDatabaseRoute) }
                 )
-                RaapsDrawerItem(
+                DapsDrawerItem(
                     label = stringResource(id = R.string.menu_system_control_label),
                     icon = Icon_Menu_System_Control,
                     selected = currentRoute is SystemControlRoute,
                     onClick = { onRouteSelected(SystemControlRoute()) }
                 )
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                RaapsDrawerItem(
+                DapsDrawerItem(
                     label = stringResource(id = R.string.menu_master_data_label),
                     icon = Icon_Menu_Master_Data,
                     selected = currentRoute == MasterDataRoute,
@@ -341,7 +341,7 @@ fun RaapsDrawerContent(
 }
 
 @Composable
-private fun RaapsDrawerItem(
+private fun DapsDrawerItem(
     label: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     selected: Boolean,
@@ -358,9 +358,9 @@ private fun RaapsDrawerItem(
 
 @androidx.compose.ui.tooling.preview.Preview(showBackground = true, widthDp = 320)
 @Composable
-fun RaapsDrawerPreview() {
+fun DapsDrawerPreview() {
     AppTheme {
-        RaapsDrawerContent(
+        DapsDrawerContent(
             currentRoute = DashboardRoute,
             onRouteSelected = {},
             statusBarHeight = 24.dp,

@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.common.composables
+package de.dh.daps.ui.common.composables
 
 import android.content.res.Configuration
 import androidx.compose.foundation.clickable
@@ -11,8 +11,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import de.dh.raaps.ui.common.icons.Icon_Minus
-import de.dh.raaps.ui.common.icons.Icon_Plus
+import de.dh.daps.ui.common.icons.Icon_Minus
+import de.dh.daps.ui.common.icons.Icon_Plus
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -43,12 +43,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.ui.R
-import de.dh.raaps.ui.common.DefaultSteppingStrategy
-import de.dh.raaps.ui.common.DefaultValueDisplayStrategy
-import de.dh.raaps.ui.common.SteppingStrategy
-import de.dh.raaps.ui.common.ValueDisplayStrategy
-import de.dh.raaps.ui.common.theme.AppTheme
+import de.dh.daps.ui.R
+import de.dh.daps.ui.common.DefaultSteppingStrategy
+import de.dh.daps.ui.common.DefaultValueDisplayStrategy
+import de.dh.daps.ui.common.SteppingStrategy
+import de.dh.daps.ui.common.ValueDisplayStrategy
+import de.dh.daps.ui.common.theme.AppTheme
 
 @Composable
 fun EditableValueStepper(

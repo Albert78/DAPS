@@ -1,4 +1,4 @@
-package de.dh.raaps.core.pump
+package de.dh.daps.core.pump
 
 import de.dh.pump.PumpStatus
 

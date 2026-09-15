@@ -1,7 +1,7 @@
-package de.dh.raaps.common.model.calculation
+package de.dh.daps.common.model.calculation
 
-import de.dh.raaps.common.model.InsulinAmount
-import de.dh.raaps.common.model.data.Minutes
+import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.data.Minutes
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.exp
 

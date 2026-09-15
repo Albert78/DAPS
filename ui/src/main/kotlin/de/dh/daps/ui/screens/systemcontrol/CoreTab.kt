@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.screens.systemcontrol
+package de.dh.daps.ui.screens.systemcontrol
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -17,9 +17,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.ui.R
-import de.dh.raaps.ui.common.composables.PrimaryButton
-import de.dh.raaps.ui.common.theme.AppTheme
+import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.PrimaryButton
+import de.dh.daps.ui.common.theme.AppTheme
 
 @Composable
 fun CoreTabContent(

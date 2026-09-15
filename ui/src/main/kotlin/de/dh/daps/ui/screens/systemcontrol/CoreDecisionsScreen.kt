@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.screens.systemcontrol
+package de.dh.daps.ui.screens.systemcontrol
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,20 +32,20 @@ import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.common.model.InsulinAmount
-import de.dh.raaps.common.model.data.GlucoseUnit
-import de.dh.raaps.core.aps.CoreInsight
-import de.dh.raaps.core.aps.CoreReasoning
-import de.dh.raaps.ui.R
-import de.dh.raaps.ui.common.LocalGlucoseUnit
-import de.dh.raaps.ui.common.composables.screenTitle
-import de.dh.raaps.ui.common.crValue
-import de.dh.raaps.ui.common.glucoseValue
-import de.dh.raaps.ui.common.insulinValue
-import de.dh.raaps.ui.common.isfValue
+import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.core.aps.CoreInsight
+import de.dh.daps.core.aps.CoreReasoning
+import de.dh.daps.ui.R
+import de.dh.daps.ui.common.LocalGlucoseUnit
+import de.dh.daps.ui.common.composables.screenTitle
+import de.dh.daps.ui.common.crValue
+import de.dh.daps.ui.common.glucoseValue
+import de.dh.daps.ui.common.insulinValue
+import de.dh.daps.ui.common.isfValue
 import java.text.SimpleDateFormat
 import java.util.Date
-import de.dh.raaps.common.R as CommonR
+import de.dh.daps.common.R as CommonR
 
 @Composable
 fun CoreDecisionsScreen(

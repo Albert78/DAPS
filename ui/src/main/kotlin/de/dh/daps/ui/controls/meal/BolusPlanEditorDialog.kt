@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.controls.meal
+package de.dh.daps.ui.controls.meal
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -44,23 +44,23 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import de.dh.raaps.common.model.InsulinAmount
-import de.dh.raaps.common.model.data.Timestamp
-import de.dh.raaps.ui.R
-import de.dh.raaps.ui.common.DefaultSteppingStrategy
-import de.dh.raaps.ui.common.ValueDisplayStrategy
-import de.dh.raaps.ui.common.composables.AppColorBlue
-import de.dh.raaps.ui.common.composables.EditableValueStepper
-import de.dh.raaps.ui.common.composables.PrimaryButton
-import de.dh.raaps.ui.common.composables.StepperDefaults
-import de.dh.raaps.ui.common.composables.TimeStepper
-import de.dh.raaps.ui.common.composables.contentScrollIndicator
-import de.dh.raaps.ui.common.insulinValue
-import de.dh.raaps.ui.common.theme.AppTheme
-import de.dh.raaps.ui.common.time
+import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.ui.R
+import de.dh.daps.ui.common.DefaultSteppingStrategy
+import de.dh.daps.ui.common.ValueDisplayStrategy
+import de.dh.daps.ui.common.composables.AppColorBlue
+import de.dh.daps.ui.common.composables.EditableValueStepper
+import de.dh.daps.ui.common.composables.PrimaryButton
+import de.dh.daps.ui.common.composables.StepperDefaults
+import de.dh.daps.ui.common.composables.TimeStepper
+import de.dh.daps.ui.common.composables.contentScrollIndicator
+import de.dh.daps.ui.common.insulinValue
+import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.time
 import java.util.Locale
 import kotlin.math.round
-import de.dh.raaps.common.R as CommonR
+import de.dh.daps.common.R as CommonR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -1,13 +1,13 @@
-package de.dh.raaps.plugin.glucose.receiver
+package de.dh.daps.plugin.glucose.receiver
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import de.dh.raaps.common.model.data.BgReading
-import de.dh.raaps.common.model.data.BgSampleKind
-import de.dh.raaps.common.model.data.BgValue
-import de.dh.raaps.common.model.data.RawBg
-import de.dh.raaps.common.model.data.Timestamp
+import de.dh.daps.common.model.data.BgReading
+import de.dh.daps.common.model.data.BgSampleKind
+import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.RawBg
+import de.dh.daps.common.model.data.Timestamp
 import kotlin.math.round
 import kotlin.time.Duration.Companion.days
 

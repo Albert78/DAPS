@@ -1,4 +1,4 @@
-package de.dh.raaps.plugin.simbody.ui.components
+package de.dh.daps.plugin.simbody.ui.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,14 +25,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.common.model.data.Block
-import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.plugin.simbody.BodyModel
-import de.dh.raaps.plugin.simbody.R
-import de.dh.raaps.plugin.simbody.model.BodyProfile
-import de.dh.raaps.ui.common.composables.NormalTextButton
-import de.dh.raaps.ui.common.composables.PrimaryButton
-import de.dh.raaps.ui.common.theme.AppTheme
+import de.dh.daps.common.model.data.Block
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.plugin.simbody.BodyModel
+import de.dh.daps.plugin.simbody.R
+import de.dh.daps.plugin.simbody.model.BodyProfile
+import de.dh.daps.ui.common.composables.NormalTextButton
+import de.dh.daps.ui.common.composables.PrimaryButton
+import de.dh.daps.ui.common.theme.AppTheme
 import java.util.Locale
 
 @Composable

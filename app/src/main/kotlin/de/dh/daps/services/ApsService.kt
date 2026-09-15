@@ -1,19 +1,19 @@
-package de.dh.raaps.services
+package de.dh.daps.services
 
 import android.app.Notification
 import android.app.Service
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.IBinder
-import de.dh.raaps.MainApplication
-import de.dh.raaps.core.system.AndroidNotifications
+import de.dh.daps.MainApplication
+import de.dh.daps.core.system.AndroidNotifications
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 
 /**
- * Foreground service for the RAAPS system. Makes the RAAPS process remain active with a high priority.
+ * Foreground service for the DAPS system. Makes the DAPS process remain active with a high priority.
  */
 class ApsService : Service() {
     private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())

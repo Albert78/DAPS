@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.common.theme
+package de.dh.daps.ui.common.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -9,8 +9,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
-import de.dh.raaps.ui.common.LocalAppFormatters
-import de.dh.raaps.ui.common.rememberAppFormatters
+import de.dh.daps.ui.common.LocalAppFormatters
+import de.dh.daps.ui.common.rememberAppFormatters
 
 @Immutable
 data class StatusColors(

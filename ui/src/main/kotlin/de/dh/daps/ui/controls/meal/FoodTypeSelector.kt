@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.controls.meal
+package de.dh.daps.ui.controls.meal
 
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
@@ -34,16 +34,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.common.model.CarbCurveComponentData
-import de.dh.raaps.common.model.ID_MEAL_FAST
-import de.dh.raaps.common.model.ID_MEAL_SLOW
-import de.dh.raaps.common.model.ID_MEAL_STANDARD
-import de.dh.raaps.common.model.MealType
-import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.ui.R
-import de.dh.raaps.ui.common.theme.AppTheme
-import de.dh.raaps.ui.screens.mealtypes.MealTypeIcon
-import de.dh.raaps.common.R as CommonR
+import de.dh.daps.common.model.CarbCurveComponentData
+import de.dh.daps.common.model.ID_MEAL_FAST
+import de.dh.daps.common.model.ID_MEAL_SLOW
+import de.dh.daps.common.model.ID_MEAL_STANDARD
+import de.dh.daps.common.model.MealType
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.ui.R
+import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.screens.mealtypes.MealTypeIcon
+import de.dh.daps.common.R as CommonR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

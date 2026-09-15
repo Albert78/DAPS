@@ -1,11 +1,11 @@
-package de.dh.raaps.services
+package de.dh.daps.services
 
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import de.dh.raaps.common.model.ToDo
+import de.dh.daps.common.model.ToDo
 
 /**
  * This receiver is called when the device is rebooted.

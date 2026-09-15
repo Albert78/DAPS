@@ -1,4 +1,4 @@
-package de.dh.raaps.core.system
+package de.dh.daps.core.system
 
 import android.content.BroadcastReceiver
 import android.content.Context

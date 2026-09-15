@@ -1,17 +1,17 @@
-package de.dh.raaps.ui.screens.preferences
+package de.dh.daps.ui.screens.preferences
 
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import de.dh.raaps.common.model.data.GlucoseUnit
-import de.dh.raaps.core.SystemRegistry
-import de.dh.raaps.glucoseUnit
-import de.dh.raaps.setGlucoseUnit
-import de.dh.raaps.ui.common.ThemeMode
-import de.dh.raaps.ui.common.setThemeMode
-import de.dh.raaps.ui.common.themeMode
+import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.core.SystemRegistry
+import de.dh.daps.glucoseUnit
+import de.dh.daps.setGlucoseUnit
+import de.dh.daps.ui.common.ThemeMode
+import de.dh.daps.ui.common.setThemeMode
+import de.dh.daps.ui.common.themeMode
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.screens.alarmprofiles
+package de.dh.daps.ui.screens.alarmprofiles
 
 import android.content.Context
 import android.content.res.Configuration
@@ -47,16 +47,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import de.dh.raaps.common.model.data.AlarmSeverity
-import de.dh.raaps.common.model.data.AlarmSoundConfig
-import de.dh.raaps.common.model.data.VibrationMode
-import de.dh.raaps.ui.R
-import de.dh.raaps.ui.common.composables.NormalTextButton
-import de.dh.raaps.ui.common.composables.contentScrollIndicator
-import de.dh.raaps.ui.common.composables.screenTitle
-import de.dh.raaps.ui.common.theme.AppTheme
+import de.dh.daps.common.model.data.AlarmSeverity
+import de.dh.daps.common.model.data.AlarmSoundConfig
+import de.dh.daps.common.model.data.VibrationMode
+import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.NormalTextButton
+import de.dh.daps.ui.common.composables.contentScrollIndicator
+import de.dh.daps.ui.common.composables.screenTitle
+import de.dh.daps.ui.common.theme.AppTheme
 import kotlin.math.roundToInt
-import de.dh.raaps.common.R as CommonR
+import de.dh.daps.common.R as CommonR
 
 private data class InitialAlarmProfileValues(
     val name: String,

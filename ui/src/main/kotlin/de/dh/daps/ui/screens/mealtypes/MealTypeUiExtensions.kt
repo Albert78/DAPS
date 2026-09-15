@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.screens.mealtypes
+package de.dh.daps.ui.screens.mealtypes
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,18 +17,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import de.dh.raaps.common.model.ID_MEAL_FAST
-import de.dh.raaps.common.model.ID_MEAL_HIGH_FAT
-import de.dh.raaps.common.model.ID_MEAL_SLOW
-import de.dh.raaps.common.model.ID_MEAL_STANDARD
-import de.dh.raaps.common.model.MealType
-import de.dh.raaps.ui.R
-import de.dh.raaps.ui.common.icons.Icon_Meal_Custom
-import de.dh.raaps.ui.common.icons.Icon_Meal_Fast
-import de.dh.raaps.ui.common.icons.Icon_Meal_High_Fat
-import de.dh.raaps.ui.common.icons.Icon_Meal_Slow
-import de.dh.raaps.ui.common.icons.Icon_Meal_Standard
-import de.dh.raaps.common.R as CommonR
+import de.dh.daps.common.model.ID_MEAL_FAST
+import de.dh.daps.common.model.ID_MEAL_HIGH_FAT
+import de.dh.daps.common.model.ID_MEAL_SLOW
+import de.dh.daps.common.model.ID_MEAL_STANDARD
+import de.dh.daps.common.model.MealType
+import de.dh.daps.ui.R
+import de.dh.daps.ui.common.icons.Icon_Meal_Custom
+import de.dh.daps.ui.common.icons.Icon_Meal_Fast
+import de.dh.daps.ui.common.icons.Icon_Meal_High_Fat
+import de.dh.daps.ui.common.icons.Icon_Meal_Slow
+import de.dh.daps.ui.common.icons.Icon_Meal_Standard
+import de.dh.daps.common.R as CommonR
 
 /**
  * Returns true if this [MealType] is one of the built-in standard meal types.

@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.common.composables
+package de.dh.daps.ui.common.composables
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -17,8 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.ui.common.icons.Icon_Warning
-import de.dh.raaps.ui.common.theme.ExtendedTheme
+import de.dh.daps.ui.common.icons.Icon_Warning
+import de.dh.daps.ui.common.theme.ExtendedTheme
 
 @Composable
 fun WarningBanner(

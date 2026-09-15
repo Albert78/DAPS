@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.screens.meals
+package de.dh.daps.ui.screens.meals
 
 import android.content.res.Configuration
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -43,22 +43,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.common.model.CarbCurveComponentData
-import de.dh.raaps.common.model.MealEntry
-import de.dh.raaps.common.model.MealType
-import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.common.model.data.Timestamp
-import de.dh.raaps.ui.R
-import de.dh.raaps.ui.common.composables.contentScrollIndicator
-import de.dh.raaps.ui.common.composables.screenTitle
-import de.dh.raaps.ui.common.icons.Icon_Menu_Meal_Types
-import de.dh.raaps.ui.common.theme.AppTheme
+import de.dh.daps.common.model.CarbCurveComponentData
+import de.dh.daps.common.model.MealEntry
+import de.dh.daps.common.model.MealType
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.contentScrollIndicator
+import de.dh.daps.ui.common.composables.screenTitle
+import de.dh.daps.ui.common.icons.Icon_Menu_Meal_Types
+import de.dh.daps.ui.common.theme.AppTheme
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
-import de.dh.raaps.common.R as CommonR
+import de.dh.daps.common.R as CommonR
 
 @Composable
 fun MealsScreen(

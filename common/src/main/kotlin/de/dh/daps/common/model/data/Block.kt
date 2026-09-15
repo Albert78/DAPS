@@ -1,6 +1,6 @@
-package de.dh.raaps.common.model.data
+package de.dh.daps.common.model.data
 
-import de.dh.raaps.common.model.MINUTES_PER_DAY
+import de.dh.daps.common.model.MINUTES_PER_DAY
 
 data class Block(val duration: Minutes, val amount: Double)
 

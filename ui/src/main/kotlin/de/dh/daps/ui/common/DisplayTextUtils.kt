@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.common
+package de.dh.daps.ui.common
 
 import android.content.res.Resources
 

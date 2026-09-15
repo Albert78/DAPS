@@ -1,4 +1,4 @@
-package de.dh.raaps.core.repository.db
+package de.dh.daps.core.repository.db
 
 import android.content.Context
 import androidx.room.Dao
@@ -11,23 +11,23 @@ import androidx.room.Transaction
 import androidx.room.TypeConverters
 import androidx.room.Update
 import androidx.room.Upsert
-import de.dh.raaps.common.model.InsulinOrigin
-import de.dh.raaps.core.repository.db.dao.AlarmProfileDao
-import de.dh.raaps.core.repository.db.entities.AlarmProfileEntity
-import de.dh.raaps.core.repository.db.entities.CoreInsightEntity
-import de.dh.raaps.core.repository.db.entities.CurrentSettingsEntity
-import de.dh.raaps.core.repository.db.entities.CurrentTherapySettingsEntity
-import de.dh.raaps.core.repository.db.entities.DataProviderEntity
-import de.dh.raaps.core.repository.db.entities.DeferredBolusEntity
-import de.dh.raaps.core.repository.db.entities.GlucoseReadingEntity
-import de.dh.raaps.core.repository.db.entities.InsulinEntity
-import de.dh.raaps.core.repository.db.entities.InsulinProfileEntity
-import de.dh.raaps.core.repository.db.entities.InsulinTypeEntity
-import de.dh.raaps.core.repository.db.entities.MealEntity
-import de.dh.raaps.core.repository.db.entities.MealTypeEntity
-import de.dh.raaps.core.repository.db.entities.SensorTypeEntity
-import de.dh.raaps.core.repository.db.entities.TickMetricEntity
-import de.dh.raaps.core.repository.db.entities.WakeupMetricEntity
+import de.dh.daps.common.model.InsulinOrigin
+import de.dh.daps.core.repository.db.dao.AlarmProfileDao
+import de.dh.daps.core.repository.db.entities.AlarmProfileEntity
+import de.dh.daps.core.repository.db.entities.CoreInsightEntity
+import de.dh.daps.core.repository.db.entities.CurrentSettingsEntity
+import de.dh.daps.core.repository.db.entities.CurrentTherapySettingsEntity
+import de.dh.daps.core.repository.db.entities.DataProviderEntity
+import de.dh.daps.core.repository.db.entities.DeferredBolusEntity
+import de.dh.daps.core.repository.db.entities.GlucoseReadingEntity
+import de.dh.daps.core.repository.db.entities.InsulinEntity
+import de.dh.daps.core.repository.db.entities.InsulinProfileEntity
+import de.dh.daps.core.repository.db.entities.InsulinTypeEntity
+import de.dh.daps.core.repository.db.entities.MealEntity
+import de.dh.daps.core.repository.db.entities.MealTypeEntity
+import de.dh.daps.core.repository.db.entities.SensorTypeEntity
+import de.dh.daps.core.repository.db.entities.TickMetricEntity
+import de.dh.daps.core.repository.db.entities.WakeupMetricEntity
 import kotlinx.coroutines.flow.Flow
 import java.util.concurrent.Executors
 

@@ -1,7 +1,7 @@
-package de.dh.raaps.core.system
+package de.dh.daps.core.system
 
 import android.content.Intent
-import de.dh.raaps.common.model.data.Timestamp
+import de.dh.daps.common.model.data.Timestamp
 
 /**
  * Interface for components that want to be notified when a system wakeup occurs.

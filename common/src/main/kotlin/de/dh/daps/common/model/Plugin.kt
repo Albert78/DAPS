@@ -1,4 +1,4 @@
-package de.dh.raaps.common.model
+package de.dh.daps.common.model
 
 /**
  * Abstraction of functionality which is maintained independently of the main app.

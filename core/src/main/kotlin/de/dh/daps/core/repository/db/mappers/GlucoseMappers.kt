@@ -1,13 +1,13 @@
-package de.dh.raaps.core.repository.db.mappers
+package de.dh.daps.core.repository.db.mappers
 
-import de.dh.raaps.common.model.DataProvider
-import de.dh.raaps.common.model.data.BgReading
-import de.dh.raaps.common.model.data.BgValue
-import de.dh.raaps.common.model.data.SensorType
-import de.dh.raaps.common.model.data.Timestamp
-import de.dh.raaps.core.repository.db.entities.DataProviderEntity
-import de.dh.raaps.core.repository.db.entities.GlucoseReadingEntity
-import de.dh.raaps.core.repository.db.entities.SensorTypeEntity
+import de.dh.daps.common.model.DataProvider
+import de.dh.daps.common.model.data.BgReading
+import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.SensorType
+import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.core.repository.db.entities.DataProviderEntity
+import de.dh.daps.core.repository.db.entities.GlucoseReadingEntity
+import de.dh.daps.core.repository.db.entities.SensorTypeEntity
 
 // BgReading Converters
 fun BgReading.toEntity(dataProviderId: Long, sourceSensorId: Long) = GlucoseReadingEntity(

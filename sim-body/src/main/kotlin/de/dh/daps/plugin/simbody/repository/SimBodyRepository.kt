@@ -1,10 +1,10 @@
-package de.dh.raaps.plugin.simbody.repository
+package de.dh.daps.plugin.simbody.repository
 
-import de.dh.raaps.common.model.data.Block
-import de.dh.raaps.plugin.simbody.model.BodyProfile
-import de.dh.raaps.plugin.simbody.repository.db.BodyProfileEntity
-import de.dh.raaps.plugin.simbody.repository.db.SimBodyDao
-import de.dh.raaps.plugin.simbody.repository.db.SimulationStateEntity
+import de.dh.daps.common.model.data.Block
+import de.dh.daps.plugin.simbody.model.BodyProfile
+import de.dh.daps.plugin.simbody.repository.db.BodyProfileEntity
+import de.dh.daps.plugin.simbody.repository.db.SimBodyDao
+import de.dh.daps.plugin.simbody.repository.db.SimulationStateEntity
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -43,7 +43,7 @@ class SimBodyRepository(private val simBodyDao: SimBodyDao) {
         for (i in 0 until array.length()) {
             val obj = array.getJSONObject(i)
             list.add(Block(
-                duration = de.dh.raaps.common.model.data.Minutes(obj.getInt("duration").toShort()),
+                duration = de.dh.daps.common.model.data.Minutes(obj.getInt("duration").toShort()),
                 amount = obj.getDouble("amount")
             ))
         }

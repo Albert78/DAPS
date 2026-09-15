@@ -1,7 +1,7 @@
-package de.dh.raaps.core.aps
+package de.dh.daps.core.aps
 
-import de.dh.raaps.common.model.data.BgDelta
-import de.dh.raaps.common.model.data.Minutes
+import de.dh.daps.common.model.data.BgDelta
+import de.dh.daps.common.model.data.Minutes
 
 /**
  * Timespan until last BG value when the Core will mark the BG as stale.

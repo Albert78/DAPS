@@ -1,4 +1,4 @@
-package de.dh.raaps.common.navigation
+package de.dh.daps.common.navigation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

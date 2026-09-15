@@ -1,12 +1,12 @@
-package de.dh.raaps.ui.controls.state
+package de.dh.daps.ui.controls.state
 
-import de.dh.raaps.common.model.data.BgDelta
-import de.dh.raaps.common.model.data.BgValue
-import de.dh.raaps.common.model.data.GlucoseUnit
-import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.common.model.data.Timestamp
-import de.dh.raaps.core.aps.ApsIssue
-import de.dh.raaps.core.aps.CoreState
+import de.dh.daps.common.model.data.BgDelta
+import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.core.aps.ApsIssue
+import de.dh.daps.core.aps.CoreState
 
 enum class BgTrend {
     DoubleUp,

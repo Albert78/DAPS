@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.screens.therapy
+package de.dh.daps.ui.screens.therapy
 
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
@@ -44,23 +44,23 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.common.model.TARGET_MAX
-import de.dh.raaps.common.model.TARGET_MIN
-import de.dh.raaps.common.model.data.BgBlock
-import de.dh.raaps.common.model.data.BgValue
-import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.ui.R
-import de.dh.raaps.ui.common.DefaultSteppingStrategy
-import de.dh.raaps.ui.common.composables.EditableValueStepper
-import de.dh.raaps.ui.common.composables.NormalTextButton
-import de.dh.raaps.ui.common.composables.StepperDefaults
-import de.dh.raaps.ui.common.composables.TimeHourSelector
-import de.dh.raaps.ui.common.composables.contentScrollIndicator
-import de.dh.raaps.ui.common.composables.screenTitle
-import de.dh.raaps.ui.common.theme.AppTheme
-import de.dh.raaps.ui.screens.insulinprofile.InsertButton
+import de.dh.daps.common.model.TARGET_MAX
+import de.dh.daps.common.model.TARGET_MIN
+import de.dh.daps.common.model.data.BgBlock
+import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.ui.R
+import de.dh.daps.ui.common.DefaultSteppingStrategy
+import de.dh.daps.ui.common.composables.EditableValueStepper
+import de.dh.daps.ui.common.composables.NormalTextButton
+import de.dh.daps.ui.common.composables.StepperDefaults
+import de.dh.daps.ui.common.composables.TimeHourSelector
+import de.dh.daps.ui.common.composables.contentScrollIndicator
+import de.dh.daps.ui.common.composables.screenTitle
+import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.screens.insulinprofile.InsertButton
 import kotlin.math.roundToInt
-import de.dh.raaps.common.R as CommonR
+import de.dh.daps.common.R as CommonR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

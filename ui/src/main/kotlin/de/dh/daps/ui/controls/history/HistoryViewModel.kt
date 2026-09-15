@@ -1,15 +1,15 @@
-package de.dh.raaps.ui.controls.history
+package de.dh.daps.ui.controls.history
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import de.dh.raaps.common.model.InsulinApplication
-import de.dh.raaps.common.model.MealEntry
-import de.dh.raaps.common.model.data.BgReading
-import de.dh.raaps.common.model.data.Timestamp
-import de.dh.raaps.core.SystemRegistry
+import de.dh.daps.common.model.InsulinApplication
+import de.dh.daps.common.model.MealEntry
+import de.dh.daps.common.model.data.BgReading
+import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.SharingStarted

@@ -1,9 +1,9 @@
-package de.dh.raaps.core.aps
+package de.dh.daps.core.aps
 
-import de.dh.raaps.common.model.InsulinAmount
-import de.dh.raaps.common.model.data.BgDelta
-import de.dh.raaps.common.model.data.BgValue
-import de.dh.raaps.common.model.data.Tick
+import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.data.BgDelta
+import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.Tick
 
 /**
  * Read-only view of the prediction data for a specific time tick.

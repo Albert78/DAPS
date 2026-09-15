@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.screens.masterdata
+package de.dh.daps.ui.screens.masterdata
 
 import android.content.res.Configuration
 import androidx.compose.foundation.clickable
@@ -24,14 +24,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import de.dh.raaps.common.R as CommonR
-import de.dh.raaps.ui.R
-import de.dh.raaps.ui.common.composables.screenTitle
-import de.dh.raaps.ui.common.icons.Icon_Config
-import de.dh.raaps.ui.common.icons.Icon_Insulin
-import de.dh.raaps.ui.common.icons.Icon_Menu_Alarms
-import de.dh.raaps.ui.common.icons.Icon_Menu_Meal_Types
-import de.dh.raaps.ui.common.theme.AppTheme
+import de.dh.daps.common.R as CommonR
+import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.screenTitle
+import de.dh.daps.ui.common.icons.Icon_Config
+import de.dh.daps.ui.common.icons.Icon_Insulin
+import de.dh.daps.ui.common.icons.Icon_Menu_Alarms
+import de.dh.daps.ui.common.icons.Icon_Menu_Meal_Types
+import de.dh.daps.ui.common.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -1,4 +1,4 @@
-package de.dh.raaps.plugin.simbody.ui.screens
+package de.dh.daps.plugin.simbody.ui.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -41,13 +41,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.plugin.simbody.BodyModel
-import de.dh.raaps.plugin.simbody.R
-import de.dh.raaps.plugin.simbody.ui.components.SimBodyEatMealDialog
-import de.dh.raaps.ui.common.composables.NormalTextButton
-import de.dh.raaps.ui.common.composables.PrimaryButton
+import de.dh.daps.plugin.simbody.BodyModel
+import de.dh.daps.plugin.simbody.R
+import de.dh.daps.plugin.simbody.ui.components.SimBodyEatMealDialog
+import de.dh.daps.ui.common.composables.NormalTextButton
+import de.dh.daps.ui.common.composables.PrimaryButton
 import java.util.Locale
-import de.dh.raaps.common.R as CommonR
+import de.dh.daps.common.R as CommonR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -1,8 +1,8 @@
-package de.dh.raaps.common.model.calculation
+package de.dh.daps.common.model.calculation
 
-import de.dh.raaps.common.model.CarbCurveComponentData
-import de.dh.raaps.common.model.MealType
-import de.dh.raaps.common.model.data.Minutes
+import de.dh.daps.common.model.CarbCurveComponentData
+import de.dh.daps.common.model.MealType
+import de.dh.daps.common.model.data.Minutes
 import org.junit.Assert.assertTrue
 import org.junit.Test
 

@@ -1,9 +1,9 @@
-package de.dh.raaps.ui.screens.permissions
+package de.dh.daps.ui.screens.permissions
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
-import de.dh.raaps.core.SystemRegistry
+import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update

@@ -1,11 +1,11 @@
-package de.dh.raaps.core.repository.db.mappers
+package de.dh.daps.core.repository.db.mappers
 
-import de.dh.raaps.core.aps.CoreInsight
-import de.dh.raaps.core.repository.TickHandlerMetric
-import de.dh.raaps.core.repository.WakeupMetric
-import de.dh.raaps.core.repository.db.entities.CoreInsightEntity
-import de.dh.raaps.core.repository.db.entities.TickMetricEntity
-import de.dh.raaps.core.repository.db.entities.WakeupMetricEntity
+import de.dh.daps.core.aps.CoreInsight
+import de.dh.daps.core.repository.TickHandlerMetric
+import de.dh.daps.core.repository.WakeupMetric
+import de.dh.daps.core.repository.db.entities.CoreInsightEntity
+import de.dh.daps.core.repository.db.entities.TickMetricEntity
+import de.dh.daps.core.repository.db.entities.WakeupMetricEntity
 
 fun WakeupMetric.toEntity() = WakeupMetricEntity(
     tag = tag,

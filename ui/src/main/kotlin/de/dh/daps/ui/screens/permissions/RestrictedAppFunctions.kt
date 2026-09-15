@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.screens.permissions
+package de.dh.daps.ui.screens.permissions
 
 /**
  * Enumerates the permissions used by the app that are required for specific functions.

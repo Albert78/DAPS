@@ -1,10 +1,10 @@
-package de.dh.raaps.common.model
+package de.dh.daps.common.model
 
 import android.content.Context
-import de.dh.raaps.common.R
-import de.dh.raaps.common.model.data.Block
-import de.dh.raaps.common.model.data.InsulinProfile
-import de.dh.raaps.common.model.data.Minutes
+import de.dh.daps.common.R
+import de.dh.daps.common.model.data.Block
+import de.dh.daps.common.model.data.InsulinProfile
+import de.dh.daps.common.model.data.Minutes
 
 val FAST_KE_DEFAULT_PEAK = Minutes(25)
 

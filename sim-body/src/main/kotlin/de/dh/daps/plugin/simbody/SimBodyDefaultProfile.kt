@@ -1,10 +1,10 @@
-package de.dh.raaps.plugin.simbody
+package de.dh.daps.plugin.simbody
 
-import de.dh.raaps.common.model.InsulinType
-import de.dh.raaps.common.model.data.Block
-import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.common.model.data.InsulinProfile
-import de.dh.raaps.plugin.simbody.model.BodyProfile
+import de.dh.daps.common.model.InsulinType
+import de.dh.daps.common.model.data.Block
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.InsulinProfile
+import de.dh.daps.plugin.simbody.model.BodyProfile
 
 /**
  * A standard insulin type for simulation.

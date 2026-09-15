@@ -1,9 +1,9 @@
-package de.dh.raaps.common.model.mock
+package de.dh.daps.common.model.mock
 
-import de.dh.raaps.common.model.InsulinType
-import de.dh.raaps.common.model.data.Block
-import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.common.model.data.InsulinProfile
+import de.dh.daps.common.model.InsulinType
+import de.dh.daps.common.model.data.Block
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.InsulinProfile
 
 fun mockInsulinType() = InsulinType(
     name = "Mock Insulin",
@@ -33,7 +33,7 @@ fun mockSimpleInsulinProfile() =
             )
         ),
         insulinType = mockInsulinType(),
-        insulinConcentration = de.dh.raaps.common.model.InsulinConcentration.U100,
+        insulinConcentration = de.dh.daps.common.model.InsulinConcentration.U100,
         dia = Minutes.ofHours(5),
         peak = Minutes(75)
     )

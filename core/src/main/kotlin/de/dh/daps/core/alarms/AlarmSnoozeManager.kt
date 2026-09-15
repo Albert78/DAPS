@@ -1,8 +1,8 @@
-package de.dh.raaps.core.alarms
+package de.dh.daps.core.alarms
 
-import de.dh.raaps.common.model.data.AlarmType
-import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.common.model.data.Timestamp
+import de.dh.daps.common.model.data.AlarmType
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.Timestamp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

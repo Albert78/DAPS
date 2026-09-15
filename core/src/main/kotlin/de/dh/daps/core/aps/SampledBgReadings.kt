@@ -1,9 +1,9 @@
-package de.dh.raaps.core.aps
+package de.dh.daps.core.aps
 
-import de.dh.raaps.common.model.data.BgReading
-import de.dh.raaps.common.model.data.BgValue
-import de.dh.raaps.common.model.data.Tick
-import de.dh.raaps.common.model.data.Timeline
+import de.dh.daps.common.model.data.BgReading
+import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.Tick
+import de.dh.daps.common.model.data.Timeline
 
 /**
  * Provides a sampled view of the blood glucose history, aligned to discrete time ticks.

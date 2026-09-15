@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.common.composables
+package de.dh.daps.ui.common.composables
 
 import android.graphics.Color
 import androidx.activity.ComponentActivity

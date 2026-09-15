@@ -1,9 +1,9 @@
-package de.dh.raaps.core.system
+package de.dh.daps.core.system
 
 import android.app.Notification
-import de.dh.raaps.core.aps.ApsIssue
-import de.dh.raaps.core.aps.ApsRecommendation
-import de.dh.raaps.core.repository.GlucoseRepository
+import de.dh.daps.core.aps.ApsIssue
+import de.dh.daps.core.aps.ApsRecommendation
+import de.dh.daps.core.repository.GlucoseRepository
 
 interface AndroidNotifications {
     fun createNotificationChannels()

@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.common.composables
+package de.dh.daps.ui.common.composables
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,15 +23,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.common.model.data.Timestamp
-import de.dh.raaps.ui.common.icons.Icon_Minus
-import de.dh.raaps.ui.common.icons.Icon_Plus
-import de.dh.raaps.ui.common.relativeTimeMinutes
-import de.dh.raaps.ui.common.theme.AppTheme
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.ui.common.icons.Icon_Minus
+import de.dh.daps.ui.common.icons.Icon_Plus
+import de.dh.daps.ui.common.relativeTimeMinutes
+import de.dh.daps.ui.common.theme.AppTheme
 import kotlin.math.abs
 import kotlin.math.round
-import de.dh.raaps.common.R as CommonR
+import de.dh.daps.common.R as CommonR
 
 @Composable
 fun TimeStepper(

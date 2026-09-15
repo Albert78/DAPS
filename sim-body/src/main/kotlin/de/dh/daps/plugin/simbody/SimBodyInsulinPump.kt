@@ -1,23 +1,23 @@
-package de.dh.raaps.plugin.simbody
+package de.dh.daps.plugin.simbody
 
 import de.dh.pump.PumpConnectionException
-import de.dh.raaps.common.model.BasalStatus
-import de.dh.raaps.common.model.BolusDeliveryState
-import de.dh.raaps.common.model.BolusEvent
-import de.dh.raaps.common.model.BolusStatus
-import de.dh.raaps.common.model.HardwareInformation
-import de.dh.raaps.common.model.InsulinAmount
-import de.dh.raaps.common.model.InsulinCategory
-import de.dh.raaps.common.model.InsulinConcentration
-import de.dh.raaps.common.model.InsulinHistory
-import de.dh.raaps.common.model.InsulinHistoryPoint
-import de.dh.raaps.common.model.InsulinPump
-import de.dh.raaps.common.model.InsulinPumpStatus
-import de.dh.raaps.common.model.PumpAlerts
-import de.dh.raaps.common.model.PumpCapabilities
-import de.dh.raaps.common.model.data.InsulinProfile
-import de.dh.raaps.common.model.data.Timestamp
-import de.dh.raaps.common.model.data.getAmountForMinute
+import de.dh.daps.common.model.BasalStatus
+import de.dh.daps.common.model.BolusDeliveryState
+import de.dh.daps.common.model.BolusEvent
+import de.dh.daps.common.model.BolusStatus
+import de.dh.daps.common.model.HardwareInformation
+import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.InsulinCategory
+import de.dh.daps.common.model.InsulinConcentration
+import de.dh.daps.common.model.InsulinHistory
+import de.dh.daps.common.model.InsulinHistoryPoint
+import de.dh.daps.common.model.InsulinPump
+import de.dh.daps.common.model.InsulinPumpStatus
+import de.dh.daps.common.model.PumpAlerts
+import de.dh.daps.common.model.PumpCapabilities
+import de.dh.daps.common.model.data.InsulinProfile
+import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.model.data.getAmountForMinute
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -56,10 +56,10 @@ class SimBodyInsulinPump(
 
     override val hardwareInformation: StateFlow<HardwareInformation?> = MutableStateFlow(
         HardwareInformation(
-            manufacturer = "RAAPS",
+            manufacturer = "DAPS",
             model = "Simulator",
             serialNumber = "SIM-001",
-            pumpDescription = "RAAPS Body Simulator Pump"
+            pumpDescription = "DAPS Body Simulator Pump"
         )
     )
 

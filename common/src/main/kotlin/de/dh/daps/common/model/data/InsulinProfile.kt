@@ -1,8 +1,8 @@
-package de.dh.raaps.common.model.data
+package de.dh.daps.common.model.data
 
-import de.dh.raaps.common.model.ID_UNDEFINED
-import de.dh.raaps.common.model.InsulinConcentration
-import de.dh.raaps.common.model.InsulinType
+import de.dh.daps.common.model.ID_UNDEFINED
+import de.dh.daps.common.model.InsulinConcentration
+import de.dh.daps.common.model.InsulinType
 
 /**
  * A therapy profile that defines a set of therapy factors.

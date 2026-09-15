@@ -1,12 +1,12 @@
-package de.dh.raaps.ui.common.theme
+package de.dh.daps.ui.common.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import de.dh.raaps.AppPreferencesRepository
-import de.dh.raaps.ui.common.ThemeMode
-import de.dh.raaps.ui.common.themeMode
+import de.dh.daps.AppPreferencesRepository
+import de.dh.daps.ui.common.ThemeMode
+import de.dh.daps.ui.common.themeMode
 
 @Composable
 fun rememberUseDarkTheme(appPreferencesRepository: AppPreferencesRepository): Boolean {

@@ -1,7 +1,7 @@
-package de.dh.raaps.core.alarms
+package de.dh.daps.core.alarms
 
-import de.dh.raaps.common.model.data.AlarmType
-import de.dh.raaps.common.model.data.Timestamp
+import de.dh.daps.common.model.data.AlarmType
+import de.dh.daps.common.model.data.Timestamp
 
 /**
  * Encapsulates the active snooze state of a specific [AlarmType].

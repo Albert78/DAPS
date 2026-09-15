@@ -1,4 +1,4 @@
-package de.dh.raaps.common.model
+package de.dh.daps.common.model
 
 import android.util.Log
 

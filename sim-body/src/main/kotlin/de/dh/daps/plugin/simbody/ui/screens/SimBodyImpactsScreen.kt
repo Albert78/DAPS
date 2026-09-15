@@ -1,4 +1,4 @@
-package de.dh.raaps.plugin.simbody.ui.screens
+package de.dh.daps.plugin.simbody.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,12 +26,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.common.R as CommonR
-import de.dh.raaps.common.model.data.Timestamp
-import de.dh.raaps.plugin.simbody.BodyModel
-import de.dh.raaps.plugin.simbody.DEFAULT_SIM_BODY_PROFILE
-import de.dh.raaps.plugin.simbody.Impacts
-import de.dh.raaps.plugin.simbody.R
+import de.dh.daps.common.R as CommonR
+import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.plugin.simbody.BodyModel
+import de.dh.daps.plugin.simbody.DEFAULT_SIM_BODY_PROFILE
+import de.dh.daps.plugin.simbody.Impacts
+import de.dh.daps.plugin.simbody.R
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale

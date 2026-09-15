@@ -1,10 +1,10 @@
-package de.dh.raaps.core.aps
+package de.dh.daps.core.aps
 
-import de.dh.raaps.common.model.data.BgReading
-import de.dh.raaps.common.model.data.BgSampleKind
-import de.dh.raaps.common.model.data.BgValue
-import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.common.model.data.Timestamp
+import de.dh.daps.common.model.data.BgReading
+import de.dh.daps.common.model.data.BgSampleKind
+import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.Timestamp
 
 /**
  * Stores a limited history of blood glucose readings.

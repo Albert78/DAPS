@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.common.composables
+package de.dh.daps.ui.common.composables
 
 import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.material3.MaterialTheme
@@ -15,8 +15,8 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.ui.common.icons.Icon_Scrollview_Arrow_Down
-import de.dh.raaps.ui.common.icons.Icon_Scrollview_Arrow_Up
+import de.dh.daps.ui.common.icons.Icon_Scrollview_Arrow_Down
+import de.dh.daps.ui.common.icons.Icon_Scrollview_Arrow_Up
 
 /**
  * Modifier showing arrow up and down overlays over the scrollable content

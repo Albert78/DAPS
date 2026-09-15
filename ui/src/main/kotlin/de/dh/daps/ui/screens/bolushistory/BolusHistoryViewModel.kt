@@ -1,15 +1,15 @@
-package de.dh.raaps.ui.screens.bolushistory
+package de.dh.daps.ui.screens.bolushistory
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import de.dh.raaps.common.model.InsulinAmount
-import de.dh.raaps.common.model.InsulinApplication
-import de.dh.raaps.common.model.InsulinOrigin
-import de.dh.raaps.common.model.InsulinType
-import de.dh.raaps.common.model.MEAL_EDIT_THRESHOLD_HOURS
-import de.dh.raaps.common.model.data.Timestamp
-import de.dh.raaps.core.SystemRegistry
+import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.InsulinApplication
+import de.dh.daps.common.model.InsulinOrigin
+import de.dh.daps.common.model.InsulinType
+import de.dh.daps.common.model.MEAL_EDIT_THRESHOLD_HOURS
+import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

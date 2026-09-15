@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.screens.meals
+package de.dh.daps.ui.screens.meals
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
@@ -45,32 +45,32 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.common.model.CARBS_KE_MAX
-import de.dh.raaps.common.model.CARBS_KE_MIN
-import de.dh.raaps.common.model.CarbCurveComponentData
-import de.dh.raaps.common.model.ID_MEAL_FAST
-import de.dh.raaps.common.model.ID_MEAL_SLOW
-import de.dh.raaps.common.model.ID_MEAL_STANDARD
-import de.dh.raaps.common.model.InsulinAmount
-import de.dh.raaps.common.model.MealEntry
-import de.dh.raaps.common.model.MealType
-import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.common.model.data.Timestamp
-import de.dh.raaps.ui.R
-import de.dh.raaps.ui.common.DefaultSteppingStrategy
-import de.dh.raaps.ui.common.ValueDisplayStrategy
-import de.dh.raaps.ui.common.carbsKeUnitLabel
-import de.dh.raaps.ui.common.composables.AbsoluteTimeStepper
-import de.dh.raaps.ui.common.composables.AppColorBlue
-import de.dh.raaps.ui.common.composables.EditableValueStepper
-import de.dh.raaps.ui.common.composables.NormalTextButton
-import de.dh.raaps.ui.common.insulinValue
-import de.dh.raaps.ui.common.theme.AppTheme
-import de.dh.raaps.ui.controls.meal.BolusPlanEditorDialog
-import de.dh.raaps.ui.controls.meal.FoodTypeSelector
-import de.dh.raaps.ui.controls.meal.PlannedBolusUiModel
+import de.dh.daps.common.model.CARBS_KE_MAX
+import de.dh.daps.common.model.CARBS_KE_MIN
+import de.dh.daps.common.model.CarbCurveComponentData
+import de.dh.daps.common.model.ID_MEAL_FAST
+import de.dh.daps.common.model.ID_MEAL_SLOW
+import de.dh.daps.common.model.ID_MEAL_STANDARD
+import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.MealEntry
+import de.dh.daps.common.model.MealType
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.ui.R
+import de.dh.daps.ui.common.DefaultSteppingStrategy
+import de.dh.daps.ui.common.ValueDisplayStrategy
+import de.dh.daps.ui.common.carbsKeUnitLabel
+import de.dh.daps.ui.common.composables.AbsoluteTimeStepper
+import de.dh.daps.ui.common.composables.AppColorBlue
+import de.dh.daps.ui.common.composables.EditableValueStepper
+import de.dh.daps.ui.common.composables.NormalTextButton
+import de.dh.daps.ui.common.insulinValue
+import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.controls.meal.BolusPlanEditorDialog
+import de.dh.daps.ui.controls.meal.FoodTypeSelector
+import de.dh.daps.ui.controls.meal.PlannedBolusUiModel
 import java.util.Locale
-import de.dh.raaps.common.R as CommonR
+import de.dh.daps.common.R as CommonR
 
 private data class InitialMealValues(
     val carbsKe: Double,

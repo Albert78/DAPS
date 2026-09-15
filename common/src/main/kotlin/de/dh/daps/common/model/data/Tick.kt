@@ -1,4 +1,4 @@
-package de.dh.raaps.common.model.data
+package de.dh.daps.common.model.data
 
 /**
  * A memory-efficient representation of a discrete point in time on a fixed grid.

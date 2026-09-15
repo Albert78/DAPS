@@ -1,6 +1,6 @@
-package de.dh.raaps.common.model.data
+package de.dh.daps.common.model.data
 
-import de.dh.raaps.common.model.ID_UNDEFINED
+import de.dh.daps.common.model.ID_UNDEFINED
 
 enum class BgSampleKind {
     Value, High, Low, Invalid

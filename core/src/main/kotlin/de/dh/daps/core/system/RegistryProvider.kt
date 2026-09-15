@@ -1,6 +1,6 @@
-package de.dh.raaps.core.system
+package de.dh.daps.core.system
 
-import de.dh.raaps.core.SystemRegistry
+import de.dh.daps.core.SystemRegistry
 
 /**
  * Interface to be implemented by the Application class to provide access to the registry.

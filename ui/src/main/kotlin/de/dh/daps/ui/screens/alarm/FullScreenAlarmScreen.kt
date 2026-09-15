@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.screens.alarm
+package de.dh.daps.ui.screens.alarm
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -29,13 +29,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import de.dh.raaps.common.model.data.AlarmSeverity
-import de.dh.raaps.common.model.data.AlarmType
-import de.dh.raaps.common.model.data.BgValue
-import de.dh.raaps.common.model.data.GlucoseUnit
-import de.dh.raaps.ui.R
-import de.dh.raaps.ui.common.composables.PrimaryButton
-import de.dh.raaps.ui.common.theme.AppTheme
+import de.dh.daps.common.model.data.AlarmSeverity
+import de.dh.daps.common.model.data.AlarmType
+import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.PrimaryButton
+import de.dh.daps.ui.common.theme.AppTheme
 
 @Composable
 fun FullScreenAlarmScreen(

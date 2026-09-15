@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.common.theme
+package de.dh.daps.ui.common.theme
 
 import androidx.compose.ui.graphics.Color
 

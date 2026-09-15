@@ -1,11 +1,11 @@
-package de.dh.raaps.ui
+package de.dh.daps.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
-import de.dh.raaps.common.model.data.GlucoseUnit
-import de.dh.raaps.core.SystemRegistry
-import de.dh.raaps.glucoseUnit
+import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.core.SystemRegistry
+import de.dh.daps.glucoseUnit
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map

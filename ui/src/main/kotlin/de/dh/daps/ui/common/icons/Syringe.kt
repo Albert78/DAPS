@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.common.icons
+package de.dh.daps.ui.common.icons
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -12,7 +12,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.group
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppTheme
 
 /**
  * Ein maßgeschneidertes Spritzen-Icon im Material-Stil, um 45 Grad gedreht.

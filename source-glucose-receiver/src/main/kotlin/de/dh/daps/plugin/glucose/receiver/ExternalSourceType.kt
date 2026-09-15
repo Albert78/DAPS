@@ -1,7 +1,7 @@
-package de.dh.raaps.plugin.glucose.receiver
+package de.dh.daps.plugin.glucose.receiver
 
-import de.dh.raaps.common.model.data.BgReadingsInterval
-import de.dh.raaps.common.model.data.Minutes
+import de.dh.daps.common.model.data.BgReadingsInterval
+import de.dh.daps.common.model.data.Minutes
 
 /**
  * Enum which determines a type of external glucose source.

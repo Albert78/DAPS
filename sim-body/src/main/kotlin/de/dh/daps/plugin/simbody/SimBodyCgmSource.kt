@@ -1,10 +1,10 @@
-package de.dh.raaps.plugin.simbody
+package de.dh.daps.plugin.simbody
 
 import android.app.Application
-import de.dh.raaps.common.model.GlucoseSource
-import de.dh.raaps.common.model.data.BgReading
-import de.dh.raaps.common.model.data.BgReadingsInterval
-import de.dh.raaps.common.model.data.Minutes
+import de.dh.daps.common.model.GlucoseSource
+import de.dh.daps.common.model.data.BgReading
+import de.dh.daps.common.model.data.BgReadingsInterval
+import de.dh.daps.common.model.data.Minutes
 import kotlinx.coroutines.flow.Flow
 
 class SimBodyCgmSource(

@@ -1,12 +1,12 @@
-package de.dh.raaps.ui.common.treatmentlock
+package de.dh.daps.ui.common.treatmentlock
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import de.dh.raaps.core.SystemRegistry
-import de.dh.raaps.core.aps.LockResult
-import de.dh.raaps.core.aps.TreatmentLock
+import de.dh.daps.core.SystemRegistry
+import de.dh.daps.core.aps.LockResult
+import de.dh.daps.core.aps.TreatmentLock
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay

@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.screens.insulinprofile
+package de.dh.daps.ui.screens.insulinprofile
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -65,36 +65,36 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.common.model.BASAL_MAX
-import de.dh.raaps.common.model.BASAL_MIN
-import de.dh.raaps.common.model.CR_MAX
-import de.dh.raaps.common.model.CR_MIN
-import de.dh.raaps.common.model.DEFAULT_BASAL_UNITS_PER_HOUR
-import de.dh.raaps.common.model.DEFAULT_CR_GRAM_PER_UNIT
-import de.dh.raaps.common.model.DEFAULT_ISF_MGDL_PER_UNIT
-import de.dh.raaps.common.model.ID_UNDEFINED
-import de.dh.raaps.common.model.ISF_MAX
-import de.dh.raaps.common.model.ISF_MIN
-import de.dh.raaps.common.model.InsulinConcentration
-import de.dh.raaps.common.model.InsulinType
-import de.dh.raaps.common.model.data.BgDelta
-import de.dh.raaps.common.model.data.Block
-import de.dh.raaps.common.model.data.GlucoseUnit
-import de.dh.raaps.common.model.data.InsulinProfile
-import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.ui.R
-import de.dh.raaps.ui.common.DefaultSteppingStrategy
-import de.dh.raaps.ui.common.LocalGlucoseUnit
-import de.dh.raaps.ui.common.ValueDisplayStrategy
-import de.dh.raaps.ui.common.composables.EditableValueStepper
-import de.dh.raaps.ui.common.composables.NormalTextButton
-import de.dh.raaps.ui.common.composables.StepperDefaults
-import de.dh.raaps.ui.common.composables.TimeHourSelector
-import de.dh.raaps.ui.common.composables.contentScrollIndicator
-import de.dh.raaps.ui.common.composables.screenTitle
-import de.dh.raaps.ui.common.isfUnitLabel
-import de.dh.raaps.ui.common.theme.AppTheme
-import de.dh.raaps.common.R as CommonR
+import de.dh.daps.common.model.BASAL_MAX
+import de.dh.daps.common.model.BASAL_MIN
+import de.dh.daps.common.model.CR_MAX
+import de.dh.daps.common.model.CR_MIN
+import de.dh.daps.common.model.DEFAULT_BASAL_UNITS_PER_HOUR
+import de.dh.daps.common.model.DEFAULT_CR_GRAM_PER_UNIT
+import de.dh.daps.common.model.DEFAULT_ISF_MGDL_PER_UNIT
+import de.dh.daps.common.model.ID_UNDEFINED
+import de.dh.daps.common.model.ISF_MAX
+import de.dh.daps.common.model.ISF_MIN
+import de.dh.daps.common.model.InsulinConcentration
+import de.dh.daps.common.model.InsulinType
+import de.dh.daps.common.model.data.BgDelta
+import de.dh.daps.common.model.data.Block
+import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.common.model.data.InsulinProfile
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.ui.R
+import de.dh.daps.ui.common.DefaultSteppingStrategy
+import de.dh.daps.ui.common.LocalGlucoseUnit
+import de.dh.daps.ui.common.ValueDisplayStrategy
+import de.dh.daps.ui.common.composables.EditableValueStepper
+import de.dh.daps.ui.common.composables.NormalTextButton
+import de.dh.daps.ui.common.composables.StepperDefaults
+import de.dh.daps.ui.common.composables.TimeHourSelector
+import de.dh.daps.ui.common.composables.contentScrollIndicator
+import de.dh.daps.ui.common.composables.screenTitle
+import de.dh.daps.ui.common.isfUnitLabel
+import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.common.R as CommonR
 
 @Composable
 fun InsulinProfileEditorScreen(

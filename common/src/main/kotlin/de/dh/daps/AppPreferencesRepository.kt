@@ -1,4 +1,4 @@
-package de.dh.raaps
+package de.dh.daps
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -8,7 +8,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import de.dh.raaps.common.model.data.GlucoseUnit
+import de.dh.daps.common.model.data.GlucoseUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

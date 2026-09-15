@@ -1,9 +1,9 @@
-package de.dh.raaps.notifications
+package de.dh.daps.notifications
 
-import de.dh.raaps.common.model.data.BgReading
-import de.dh.raaps.common.model.data.BgSampleKind
-import de.dh.raaps.common.model.data.BgValue
-import de.dh.raaps.core.repository.GlucoseRepository
+import de.dh.daps.common.model.data.BgReading
+import de.dh.daps.common.model.data.BgSampleKind
+import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.core.repository.GlucoseRepository
 
 data class MainAppNotificationData(
     val lastBgSample: BgReading?,

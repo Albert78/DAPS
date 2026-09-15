@@ -1,11 +1,11 @@
-package de.dh.raaps.core.repository.db.mappers
+package de.dh.daps.core.repository.db.mappers
 
-import de.dh.raaps.common.model.data.AlarmProfile
-import de.dh.raaps.common.model.data.AlarmSeverity
-import de.dh.raaps.common.model.data.AlarmSoundConfig
-import de.dh.raaps.common.model.data.AlarmType
-import de.dh.raaps.common.model.data.VibrationMode
-import de.dh.raaps.core.repository.db.entities.AlarmProfileEntity
+import de.dh.daps.common.model.data.AlarmProfile
+import de.dh.daps.common.model.data.AlarmSeverity
+import de.dh.daps.common.model.data.AlarmSoundConfig
+import de.dh.daps.common.model.data.AlarmType
+import de.dh.daps.common.model.data.VibrationMode
+import de.dh.daps.core.repository.db.entities.AlarmProfileEntity
 import org.json.JSONObject
 
 fun AlarmProfileEntity.toModel(): AlarmProfile {

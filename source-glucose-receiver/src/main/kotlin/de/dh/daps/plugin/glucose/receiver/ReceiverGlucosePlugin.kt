@@ -1,13 +1,13 @@
-package de.dh.raaps.plugin.glucose.receiver
+package de.dh.daps.plugin.glucose.receiver
 
 import android.app.Application
 import android.content.Context
 import android.content.IntentFilter
 import android.util.Log
-import de.dh.raaps.common.model.GlucoseSource
-import de.dh.raaps.common.model.Plugin
-import de.dh.raaps.common.model.PluginManager
-import de.dh.raaps.common.model.data.BgReading
+import de.dh.daps.common.model.GlucoseSource
+import de.dh.daps.common.model.Plugin
+import de.dh.daps.common.model.PluginManager
+import de.dh.daps.common.model.data.BgReading
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow

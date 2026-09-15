@@ -1,13 +1,13 @@
-package de.dh.raaps.ui.screens.insulintypes
+package de.dh.daps.ui.screens.insulintypes
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import de.dh.raaps.common.model.InsulinConcentration
-import de.dh.raaps.common.model.InsulinType
-import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.core.SystemRegistry
+import de.dh.daps.common.model.InsulinConcentration
+import de.dh.daps.common.model.InsulinType
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

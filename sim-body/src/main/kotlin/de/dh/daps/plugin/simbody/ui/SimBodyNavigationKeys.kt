@@ -1,4 +1,4 @@
-package de.dh.raaps.plugin.simbody.ui
+package de.dh.daps.plugin.simbody.ui
 
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable

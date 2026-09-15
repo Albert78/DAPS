@@ -1,6 +1,6 @@
-package de.dh.raaps.plugin.simbody.model
+package de.dh.daps.plugin.simbody.model
 
-import de.dh.raaps.common.model.data.Block
+import de.dh.daps.common.model.data.Block
 
 /**
  * Metabolic profile of a body for simulation.

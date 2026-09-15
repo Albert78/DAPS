@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.controls.history
+package de.dh.daps.ui.controls.history
 
 import android.content.res.Configuration
 import androidx.compose.foundation.Canvas
@@ -61,22 +61,22 @@ import com.patrykandpatrick.vico.compose.common.Fill
 import com.patrykandpatrick.vico.compose.common.Position
 import com.patrykandpatrick.vico.compose.common.component.rememberShapeComponent
 import com.patrykandpatrick.vico.compose.common.data.ExtraStore
-import de.dh.raaps.common.model.MS_PER_HOUR
-import de.dh.raaps.common.model.MS_PER_MINUTE
-import de.dh.raaps.common.model.data.BgReading
-import de.dh.raaps.common.model.data.BgSampleKind
-import de.dh.raaps.common.model.data.GlucoseUnit
-import de.dh.raaps.common.model.data.Timestamp
-import de.dh.raaps.ui.common.LocalGlucoseUnit
-import de.dh.raaps.ui.common.composables.BlueA200
-import de.dh.raaps.ui.common.composables.DeepOrangeA700
-import de.dh.raaps.ui.common.composables.RedA700
-import de.dh.raaps.ui.common.theme.AppTheme
-import de.dh.raaps.ui.common.theme.ExtendedTheme
+import de.dh.daps.common.model.MS_PER_HOUR
+import de.dh.daps.common.model.MS_PER_MINUTE
+import de.dh.daps.common.model.data.BgReading
+import de.dh.daps.common.model.data.BgSampleKind
+import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.ui.common.LocalGlucoseUnit
+import de.dh.daps.ui.common.composables.BlueA200
+import de.dh.daps.ui.common.composables.DeepOrangeA700
+import de.dh.daps.ui.common.composables.RedA700
+import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.ExtendedTheme
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Locale
-import de.dh.raaps.common.R as CommonR
+import de.dh.daps.common.R as CommonR
 
 private const val INITIAL_SHOW_HOURS = 4.0
 

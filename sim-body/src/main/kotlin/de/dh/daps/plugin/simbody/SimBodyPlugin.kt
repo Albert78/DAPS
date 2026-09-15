@@ -1,13 +1,13 @@
-package de.dh.raaps.plugin.simbody
+package de.dh.daps.plugin.simbody
 
 import android.app.Application
-import de.dh.raaps.common.model.GlucoseSource
-import de.dh.raaps.common.model.InsulinPump
-import de.dh.raaps.common.model.Plugin
-import de.dh.raaps.common.model.PluginManager
-import de.dh.raaps.common.model.data.BgReading
-import de.dh.raaps.core.system.SystemWakeService
-import de.dh.raaps.plugin.simbody.repository.db.SimBodyDatabase
+import de.dh.daps.common.model.GlucoseSource
+import de.dh.daps.common.model.InsulinPump
+import de.dh.daps.common.model.Plugin
+import de.dh.daps.common.model.PluginManager
+import de.dh.daps.common.model.data.BgReading
+import de.dh.daps.core.system.SystemWakeService
+import de.dh.daps.plugin.simbody.repository.db.SimBodyDatabase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 

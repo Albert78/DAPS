@@ -1,8 +1,8 @@
-package de.dh.raaps.common.model.data
+package de.dh.daps.common.model.data
 
-import de.dh.raaps.common.model.DEFAULT_BG_LOW_THRESHOLD_MGDL
-import de.dh.raaps.common.model.DEFAULT_BG_TARGET_MGDL
-import de.dh.raaps.common.model.MINUTES_PER_DAY
+import de.dh.daps.common.model.DEFAULT_BG_LOW_THRESHOLD_MGDL
+import de.dh.daps.common.model.DEFAULT_BG_TARGET_MGDL
+import de.dh.daps.common.model.MINUTES_PER_DAY
 
 data class BgBlock(val duration: Minutes, val target: BgValue, val lowThreshold: BgValue)
 

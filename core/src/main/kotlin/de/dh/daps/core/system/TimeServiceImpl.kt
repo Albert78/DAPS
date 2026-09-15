@@ -1,15 +1,15 @@
-package de.dh.raaps.core.system
+package de.dh.daps.core.system
 
 import android.content.Intent
 import android.util.Log
-import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.common.model.data.Tick
-import de.dh.raaps.common.model.data.TickHandler
-import de.dh.raaps.common.model.data.TimeService
-import de.dh.raaps.common.model.data.Timeline
-import de.dh.raaps.common.model.data.Timestamp
-import de.dh.raaps.core.repository.SystemMetricsRepository
-import de.dh.raaps.core.repository.TickHandlerMetric
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.Tick
+import de.dh.daps.common.model.data.TickHandler
+import de.dh.daps.common.model.data.TimeService
+import de.dh.daps.common.model.data.Timeline
+import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.core.repository.SystemMetricsRepository
+import de.dh.daps.core.repository.TickHandlerMetric
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow

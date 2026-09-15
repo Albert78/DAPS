@@ -1,16 +1,16 @@
-package de.dh.raaps.core.repository
+package de.dh.daps.core.repository
 
 import android.content.Context
-import de.dh.raaps.common.model.DEFAULT_BG_LOW_THRESHOLD_MGDL
-import de.dh.raaps.common.model.DEFAULT_BG_TARGET_MGDL
-import de.dh.raaps.common.model.data.BgBlock
-import de.dh.raaps.common.model.data.BgValue
-import de.dh.raaps.common.model.data.CurrentSettings
-import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.common.model.getDefaultAlarmProfiles
-import de.dh.raaps.common.model.getDefaultInsulinProfile
-import de.dh.raaps.common.model.getDefaultInsulinTypes
-import de.dh.raaps.common.model.getDefaultMealTypes
+import de.dh.daps.common.model.DEFAULT_BG_LOW_THRESHOLD_MGDL
+import de.dh.daps.common.model.DEFAULT_BG_TARGET_MGDL
+import de.dh.daps.common.model.data.BgBlock
+import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.CurrentSettings
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.getDefaultAlarmProfiles
+import de.dh.daps.common.model.getDefaultInsulinProfile
+import de.dh.daps.common.model.getDefaultInsulinTypes
+import de.dh.daps.common.model.getDefaultMealTypes
 
 object DatabaseInitializer {
     suspend fun initialize(

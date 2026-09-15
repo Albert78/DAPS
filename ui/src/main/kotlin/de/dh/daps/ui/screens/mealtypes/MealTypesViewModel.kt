@@ -1,10 +1,10 @@
-package de.dh.raaps.ui.screens.mealtypes
+package de.dh.daps.ui.screens.mealtypes
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import de.dh.raaps.common.model.MealType
-import de.dh.raaps.core.SystemRegistry
+import de.dh.daps.common.model.MealType
+import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map

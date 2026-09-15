@@ -1,7 +1,7 @@
-package de.dh.raaps.core.repository
+package de.dh.daps.core.repository
 
-import de.dh.raaps.common.model.data.Tick
-import de.dh.raaps.common.model.data.Timestamp
+import de.dh.daps.common.model.data.Tick
+import de.dh.daps.common.model.data.Timestamp
 
 data class WakeupMetric(
     val tag: String,

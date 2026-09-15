@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.screens.preferences
+package de.dh.daps.ui.screens.preferences
 
 import android.content.res.Configuration
 import androidx.compose.foundation.clickable
@@ -39,17 +39,17 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import de.dh.raaps.common.R as CommonR
-import de.dh.raaps.common.model.data.GlucoseUnit
-import de.dh.raaps.ui.R
-import de.dh.raaps.ui.common.ThemeMode
-import de.dh.raaps.ui.common.composables.DialogDismissButton
-import de.dh.raaps.ui.common.composables.DialogSurface
-import de.dh.raaps.ui.common.composables.DialogTitle
-import de.dh.raaps.ui.common.composables.screenTitle
-import de.dh.raaps.ui.common.glucoseUnitLabel
-import de.dh.raaps.ui.common.icons.Icon_Screen_Back
-import de.dh.raaps.ui.common.theme.AppTheme
+import de.dh.daps.common.R as CommonR
+import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.ui.R
+import de.dh.daps.ui.common.ThemeMode
+import de.dh.daps.ui.common.composables.DialogDismissButton
+import de.dh.daps.ui.common.composables.DialogSurface
+import de.dh.daps.ui.common.composables.DialogTitle
+import de.dh.daps.ui.common.composables.screenTitle
+import de.dh.daps.ui.common.glucoseUnitLabel
+import de.dh.daps.ui.common.icons.Icon_Screen_Back
+import de.dh.daps.ui.common.theme.AppTheme
 import androidx.compose.material.icons.filled.Science
 
 @OptIn(ExperimentalMaterial3Api::class)

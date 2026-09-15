@@ -1,14 +1,14 @@
-package de.dh.raaps.core.aps
+package de.dh.daps.core.aps
 
-import de.dh.raaps.common.model.DeferredBolus
-import de.dh.raaps.common.model.InsulinAmount
-import de.dh.raaps.common.model.MealType
-import de.dh.raaps.common.model.PlannedInsulin
-import de.dh.raaps.common.model.data.BgDelta
-import de.dh.raaps.common.model.data.BgReading
-import de.dh.raaps.common.model.data.BgValue
-import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.common.model.data.Timestamp
+import de.dh.daps.common.model.DeferredBolus
+import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.MealType
+import de.dh.daps.common.model.PlannedInsulin
+import de.dh.daps.common.model.data.BgDelta
+import de.dh.daps.common.model.data.BgReading
+import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.Timestamp
 
 sealed class CoreIssue {
     data class NoRecentValues(val minutes: Int) : CoreIssue()

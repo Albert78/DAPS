@@ -1,11 +1,11 @@
-package de.dh.raaps.common.model
+package de.dh.daps.common.model
 
 import android.content.Context
-import de.dh.raaps.common.R
-import de.dh.raaps.common.model.data.AlarmProfile
-import de.dh.raaps.common.model.data.AlarmSeverity
-import de.dh.raaps.common.model.data.AlarmSoundConfig
-import de.dh.raaps.common.model.data.VibrationMode
+import de.dh.daps.common.R
+import de.dh.daps.common.model.data.AlarmProfile
+import de.dh.daps.common.model.data.AlarmSeverity
+import de.dh.daps.common.model.data.AlarmSoundConfig
+import de.dh.daps.common.model.data.VibrationMode
 
 /**
  * Provides default alarm profiles for initial system population.

@@ -1,4 +1,4 @@
-package de.dh.raaps.notifications
+package de.dh.daps.notifications
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -10,24 +10,24 @@ import android.content.Intent
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
-import de.dh.raaps.R
-import de.dh.raaps.common.model.data.BgDelta
-import de.dh.raaps.common.model.data.BgValue
-import de.dh.raaps.common.model.data.GlucoseUnit
-import de.dh.raaps.core.aps.ApsIssue
-import de.dh.raaps.core.aps.ApsRecommendation
-import de.dh.raaps.core.aps.CoreIssue
-import de.dh.raaps.core.aps.STALE_BG_THRESHOLD
-import de.dh.raaps.core.pump.PumpIssue
-import de.dh.raaps.core.repository.GlucoseRepository
-import de.dh.raaps.core.system.AndroidNotifications
-import de.dh.raaps.core.system.RegistryProvider
-import de.dh.raaps.ui.activities.AlarmActivity
-import de.dh.raaps.ui.activities.MainActivity
-import de.dh.raaps.ui.common.time
-import de.dh.raaps.ui.screens.permissions.canPostNotifications
-import de.dh.raaps.common.R as CommonR
-import de.dh.raaps.ui.R as UiR
+import de.dh.daps.R
+import de.dh.daps.common.model.data.BgDelta
+import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.core.aps.ApsIssue
+import de.dh.daps.core.aps.ApsRecommendation
+import de.dh.daps.core.aps.CoreIssue
+import de.dh.daps.core.aps.STALE_BG_THRESHOLD
+import de.dh.daps.core.pump.PumpIssue
+import de.dh.daps.core.repository.GlucoseRepository
+import de.dh.daps.core.system.AndroidNotifications
+import de.dh.daps.core.system.RegistryProvider
+import de.dh.daps.ui.activities.AlarmActivity
+import de.dh.daps.ui.activities.MainActivity
+import de.dh.daps.ui.common.time
+import de.dh.daps.ui.screens.permissions.canPostNotifications
+import de.dh.daps.common.R as CommonR
+import de.dh.daps.ui.R as UiR
 
 /**
  * Low-level notification manager for communicating with the Android system.

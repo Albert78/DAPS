@@ -1,11 +1,11 @@
-package de.dh.raaps.notifications
+package de.dh.daps.notifications
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import de.dh.raaps.common.model.data.AlarmType
-import de.dh.raaps.core.system.RegistryProvider
+import de.dh.daps.common.model.data.AlarmType
+import de.dh.daps.core.system.RegistryProvider
 
 class AlarmBroadcastReceiver : BroadcastReceiver() {
 
@@ -49,8 +49,8 @@ class AlarmBroadcastReceiver : BroadcastReceiver() {
 
     companion object {
         private const val TAG = "AlarmBroadcastReceiver"
-        const val ACTION_SNOOZE_ALARM = "de.dh.raaps.ACTION_SNOOZE_ALARM"
-        const val ACTION_DISMISS_ALARM = "de.dh.raaps.ACTION_DISMISS_ALARM"
+        const val ACTION_SNOOZE_ALARM = "de.dh.daps.ACTION_SNOOZE_ALARM"
+        const val ACTION_DISMISS_ALARM = "de.dh.daps.ACTION_DISMISS_ALARM"
         const val EXTRA_ALARM_TYPE = "extra_alarm_type"
         const val EXTRA_SNOOZE_MINUTES = "extra_snooze_minutes"
 

@@ -1,4 +1,4 @@
-package de.dh.raaps.common.navigation
+package de.dh.daps.common.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation3.runtime.NavEntry

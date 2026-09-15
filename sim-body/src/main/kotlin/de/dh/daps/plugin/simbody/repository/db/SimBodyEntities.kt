@@ -1,9 +1,9 @@
-package de.dh.raaps.plugin.simbody.repository.db
+package de.dh.daps.plugin.simbody.repository.db
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import de.dh.raaps.common.model.InsulinAmount
-import de.dh.raaps.common.model.InsulinOrigin
+import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.InsulinOrigin
 
 @Entity(tableName = "sim_history")
 data class SimHistoryEntity(

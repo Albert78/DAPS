@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.common.composables
+package de.dh.daps.ui.common.composables
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,8 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import de.dh.raaps.common.R as CommonR
-import de.dh.raaps.common.model.data.InsulinProfile
+import de.dh.daps.common.R as CommonR
+import de.dh.daps.common.model.data.InsulinProfile
 
 @Composable
 fun InsulinProfileSelectionDialog(

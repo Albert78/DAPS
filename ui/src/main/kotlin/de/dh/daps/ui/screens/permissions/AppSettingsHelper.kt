@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.screens.permissions
+package de.dh.daps.ui.screens.permissions
 
 import android.Manifest
 import android.app.AlarmManager
@@ -14,7 +14,7 @@ import android.widget.Toast
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
-import de.dh.raaps.ui.R
+import de.dh.daps.ui.R
 
 fun canScheduleExactAlarms(context: Context): Boolean {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {

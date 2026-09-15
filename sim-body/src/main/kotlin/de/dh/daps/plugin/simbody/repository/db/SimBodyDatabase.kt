@@ -1,4 +1,4 @@
-package de.dh.raaps.plugin.simbody.repository.db
+package de.dh.daps.plugin.simbody.repository.db
 
 import android.content.Context
 import androidx.room.Database

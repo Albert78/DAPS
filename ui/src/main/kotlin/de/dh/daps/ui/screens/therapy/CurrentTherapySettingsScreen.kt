@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.screens.therapy
+package de.dh.daps.ui.screens.therapy
 
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
@@ -59,31 +59,31 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.common.model.InsulinAmount
-import de.dh.raaps.common.model.InsulinType
-import de.dh.raaps.common.model.data.BgBlock
-import de.dh.raaps.common.model.data.BgDelta
-import de.dh.raaps.common.model.data.BgValue
-import de.dh.raaps.common.model.data.Block
-import de.dh.raaps.common.model.data.GlucoseUnit
-import de.dh.raaps.common.model.data.InsulinProfile
-import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.ui.R
-import de.dh.raaps.ui.common.ConfigurableDisplayStrategy
-import de.dh.raaps.ui.common.LocalGlucoseUnit
-import de.dh.raaps.ui.common.composables.AppColorBlue
-import de.dh.raaps.ui.common.composables.InsulinProfileSelectionDialog
-import de.dh.raaps.ui.common.composables.NormalTextButton
-import de.dh.raaps.ui.common.composables.contentScrollIndicator
-import de.dh.raaps.ui.common.composables.screenTitle
-import de.dh.raaps.ui.common.glucoseUnitLabel
-import de.dh.raaps.ui.common.glucoseValue
-import de.dh.raaps.ui.common.isfUnitLabel
-import de.dh.raaps.ui.common.theme.AppTheme
-import de.dh.raaps.ui.common.theme.NeutralGrey
-import de.dh.raaps.ui.common.theme.SoftBlue
-import de.dh.raaps.ui.common.theme.SoftRed
-import de.dh.raaps.common.R as CommonR
+import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.InsulinType
+import de.dh.daps.common.model.data.BgBlock
+import de.dh.daps.common.model.data.BgDelta
+import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.Block
+import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.common.model.data.InsulinProfile
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.ui.R
+import de.dh.daps.ui.common.ConfigurableDisplayStrategy
+import de.dh.daps.ui.common.LocalGlucoseUnit
+import de.dh.daps.ui.common.composables.AppColorBlue
+import de.dh.daps.ui.common.composables.InsulinProfileSelectionDialog
+import de.dh.daps.ui.common.composables.NormalTextButton
+import de.dh.daps.ui.common.composables.contentScrollIndicator
+import de.dh.daps.ui.common.composables.screenTitle
+import de.dh.daps.ui.common.glucoseUnitLabel
+import de.dh.daps.ui.common.glucoseValue
+import de.dh.daps.ui.common.isfUnitLabel
+import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.NeutralGrey
+import de.dh.daps.ui.common.theme.SoftBlue
+import de.dh.daps.ui.common.theme.SoftRed
+import de.dh.daps.common.R as CommonR
 
 @Composable
 fun CurrentTherapySettingsScreen(

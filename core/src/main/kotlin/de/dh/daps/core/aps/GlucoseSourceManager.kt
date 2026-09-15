@@ -1,11 +1,11 @@
-package de.dh.raaps.core.aps
+package de.dh.daps.core.aps
 
 import android.util.Log
-import de.dh.raaps.common.model.GlucoseSource
-import de.dh.raaps.common.model.data.BgReadingsInterval
-import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.common.model.data.Timestamp
-import de.dh.raaps.core.repository.GlucoseRepository
+import de.dh.daps.common.model.GlucoseSource
+import de.dh.daps.common.model.data.BgReadingsInterval
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.core.repository.GlucoseRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

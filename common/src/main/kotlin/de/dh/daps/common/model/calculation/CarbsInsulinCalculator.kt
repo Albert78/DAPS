@@ -1,12 +1,12 @@
-package de.dh.raaps.common.model.calculation
+package de.dh.daps.common.model.calculation
 
-import de.dh.raaps.common.model.InsulinAmount
-import de.dh.raaps.common.model.InsulinDose
-import de.dh.raaps.common.model.MealEntry
-import de.dh.raaps.common.model.convertToBgDeltaFromUnits
-import de.dh.raaps.common.model.data.BgDelta
-import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.common.model.data.Timestamp
+import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.InsulinDose
+import de.dh.daps.common.model.MealEntry
+import de.dh.daps.common.model.convertToBgDeltaFromUnits
+import de.dh.daps.common.model.data.BgDelta
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.Timestamp
 
 
 /**

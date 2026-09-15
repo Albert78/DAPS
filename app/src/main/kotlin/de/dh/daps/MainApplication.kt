@@ -1,17 +1,17 @@
-package de.dh.raaps
+package de.dh.daps
 
 import android.app.Application
 import android.app.ForegroundServiceStartNotAllowedException
 import android.content.Intent
 import androidx.core.content.ContextCompat
-import de.dh.raaps.core.SystemRegistry
-import de.dh.raaps.core.SystemRegistryImpl
-import de.dh.raaps.core.system.RegistryProvider
-import de.dh.raaps.notifications.AndroidNotificationsImpl
-import de.dh.raaps.pluginmanager.PluginManagerImpl
-import de.dh.raaps.services.ApsService
-import de.dh.raaps.services.BootReceiver
-import de.dh.raaps.ui.activities.MainActivity
+import de.dh.daps.core.SystemRegistry
+import de.dh.daps.core.SystemRegistryImpl
+import de.dh.daps.core.system.RegistryProvider
+import de.dh.daps.notifications.AndroidNotificationsImpl
+import de.dh.daps.pluginmanager.PluginManagerImpl
+import de.dh.daps.services.ApsService
+import de.dh.daps.services.BootReceiver
+import de.dh.daps.ui.activities.MainActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /**
- * Main application class for RAAPS.
+ * Main application class for DAPS.
  * Responsibility is limited to system entry points and lifecycle management.
  */
 class MainApplication : Application(), RegistryProvider {

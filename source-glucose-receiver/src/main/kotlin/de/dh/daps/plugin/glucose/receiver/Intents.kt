@@ -1,4 +1,4 @@
-package de.dh.raaps.plugin.glucose.receiver
+package de.dh.daps.plugin.glucose.receiver
 
 class Intents {
     companion object {

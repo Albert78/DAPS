@@ -1,4 +1,4 @@
-package de.dh.raaps.core.alarms
+package de.dh.daps.core.alarms
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -16,11 +16,11 @@ import android.os.Vibrator
 import android.os.VibratorManager
 import android.util.Log
 import androidx.core.net.toUri
-import de.dh.raaps.common.model.data.AlarmSoundConfig
-import de.dh.raaps.common.model.data.VibrationMode
+import de.dh.daps.common.model.data.AlarmSoundConfig
+import de.dh.daps.common.model.data.VibrationMode
 
 /**
- * Central engine for audio playback, haptics/vibration, and safety audio focus handling in RAAPS.
+ * Central engine for audio playback, haptics/vibration, and safety audio focus handling in DAPS.
  */
 interface AlarmPlayerManager {
     /**

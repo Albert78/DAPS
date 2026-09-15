@@ -1,13 +1,13 @@
-package de.dh.raaps.plugin.simbody
+package de.dh.daps.plugin.simbody
 
 import android.content.Intent
 import android.util.Log
-import de.dh.raaps.common.model.data.BgReading
-import de.dh.raaps.common.model.data.BgSampleKind
-import de.dh.raaps.common.model.data.BgValue
-import de.dh.raaps.common.model.data.Timestamp
-import de.dh.raaps.core.system.SystemWakeService
-import de.dh.raaps.core.system.WakeupHandler
+import de.dh.daps.common.model.data.BgReading
+import de.dh.daps.common.model.data.BgSampleKind
+import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.core.system.SystemWakeService
+import de.dh.daps.core.system.WakeupHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay

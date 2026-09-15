@@ -1,19 +1,19 @@
-package de.dh.raaps.core.repository.db.mappers
+package de.dh.daps.core.repository.db.mappers
 
-import de.dh.raaps.common.model.InsulinConcentration
-import de.dh.raaps.common.model.InsulinType
-import de.dh.raaps.common.model.data.BgBlock
-import de.dh.raaps.common.model.data.BgValue
-import de.dh.raaps.common.model.data.Block
-import de.dh.raaps.common.model.data.CurrentTherapySettings
-import de.dh.raaps.common.model.data.InsulinProfile
-import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.core.repository.db.entities.CurrentTherapySettingsEntity
-import de.dh.raaps.core.repository.db.entities.DBBgBlock
-import de.dh.raaps.core.repository.db.entities.DBBlock
-import de.dh.raaps.core.repository.db.entities.InsulinProfileEntity
+import de.dh.daps.common.model.InsulinConcentration
+import de.dh.daps.common.model.InsulinType
+import de.dh.daps.common.model.data.BgBlock
+import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.Block
+import de.dh.daps.common.model.data.CurrentTherapySettings
+import de.dh.daps.common.model.data.InsulinProfile
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.core.repository.db.entities.CurrentTherapySettingsEntity
+import de.dh.daps.core.repository.db.entities.DBBgBlock
+import de.dh.daps.core.repository.db.entities.DBBlock
+import de.dh.daps.core.repository.db.entities.InsulinProfileEntity
 
-import de.dh.raaps.common.model.data.AlarmProfile
+import de.dh.daps.common.model.data.AlarmProfile
 
 // Therapy Converters
 fun Block.toDb() = DBBlock(

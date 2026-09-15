@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.controls.apscontrol
+package de.dh.daps.ui.controls.apscontrol
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -19,14 +19,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.common.model.ApsMode
-import de.dh.raaps.ui.R
-import de.dh.raaps.ui.common.composables.NormalTextButton
-import de.dh.raaps.ui.common.composables.PrimaryButton
-import de.dh.raaps.ui.common.theme.AppTheme
-import de.dh.raaps.ui.common.theme.SoftBlue
-import de.dh.raaps.ui.common.theme.SoftGreen
-import de.dh.raaps.ui.common.theme.SoftRed
+import de.dh.daps.common.model.ApsMode
+import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.NormalTextButton
+import de.dh.daps.ui.common.composables.PrimaryButton
+import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.SoftBlue
+import de.dh.daps.ui.common.theme.SoftGreen
+import de.dh.daps.ui.common.theme.SoftRed
 
 @Composable
 fun ApsModeSelectionDialog(

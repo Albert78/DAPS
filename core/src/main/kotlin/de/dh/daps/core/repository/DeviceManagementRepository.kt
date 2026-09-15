@@ -1,6 +1,6 @@
-package de.dh.raaps.core.repository
+package de.dh.daps.core.repository
 
-import de.dh.raaps.core.repository.db.AppDatabase
+import de.dh.daps.core.repository.db.AppDatabase
 
 /**
  * Repository for managing device-related events like cannula or reservoir changes.

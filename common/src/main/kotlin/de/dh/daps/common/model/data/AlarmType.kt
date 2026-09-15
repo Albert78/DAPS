@@ -1,4 +1,4 @@
-package de.dh.raaps.common.model.data
+package de.dh.daps.common.model.data
 
 /**
  * Concrete types of alarms supported by the system.

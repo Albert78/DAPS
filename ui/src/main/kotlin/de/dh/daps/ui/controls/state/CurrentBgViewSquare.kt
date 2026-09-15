@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.controls.state
+package de.dh.daps.ui.controls.state
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -28,20 +28,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.common.model.data.BgDelta
-import de.dh.raaps.common.model.data.BgValue
-import de.dh.raaps.common.model.data.GlucoseUnit
-import de.dh.raaps.common.model.data.Timestamp
-import de.dh.raaps.ui.common.LocalGlucoseUnit
-import de.dh.raaps.ui.common.composables.AppColorBlue
-import de.dh.raaps.ui.common.composables.LightGreenA700
-import de.dh.raaps.ui.common.composables.Red
-import de.dh.raaps.ui.common.composables.Yellow
-import de.dh.raaps.ui.common.deltaValue
-import de.dh.raaps.ui.common.glucoseValue
-import de.dh.raaps.ui.common.shortRelativeTimeAgo
-import de.dh.raaps.ui.common.theme.AppTheme
-import de.dh.raaps.ui.common.theme.ExtendedTheme
+import de.dh.daps.common.model.data.BgDelta
+import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.ui.common.LocalGlucoseUnit
+import de.dh.daps.ui.common.composables.AppColorBlue
+import de.dh.daps.ui.common.composables.LightGreenA700
+import de.dh.daps.ui.common.composables.Red
+import de.dh.daps.ui.common.composables.Yellow
+import de.dh.daps.ui.common.deltaValue
+import de.dh.daps.ui.common.glucoseValue
+import de.dh.daps.ui.common.shortRelativeTimeAgo
+import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.ExtendedTheme
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 

@@ -1,7 +1,7 @@
-package de.dh.raaps.core.repository.db.mappers
+package de.dh.daps.core.repository.db.mappers
 
-import de.dh.raaps.common.model.data.CurrentSettings
-import de.dh.raaps.core.repository.db.entities.CurrentSettingsEntity
+import de.dh.daps.common.model.data.CurrentSettings
+import de.dh.daps.core.repository.db.entities.CurrentSettingsEntity
 
 // Settings Converters
 fun CurrentSettings.toEntity() = CurrentSettingsEntity(

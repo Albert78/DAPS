@@ -1,7 +1,7 @@
-package de.dh.raaps.core.aps
+package de.dh.daps.core.aps
 
-import de.dh.raaps.common.model.data.Tick
-import de.dh.raaps.common.model.data.Timeline
+import de.dh.daps.common.model.data.Tick
+import de.dh.daps.common.model.data.Timeline
 
 class RollingPredictionWindow(
     val predictionWindowHours: Int,

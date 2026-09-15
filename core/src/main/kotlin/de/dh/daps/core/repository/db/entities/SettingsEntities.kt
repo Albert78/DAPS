@@ -1,9 +1,9 @@
-package de.dh.raaps.core.repository.db.entities
+package de.dh.daps.core.repository.db.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import de.dh.raaps.common.model.ApsMode
-import de.dh.raaps.common.model.ID_UNDEFINED
+import de.dh.daps.common.model.ApsMode
+import de.dh.daps.common.model.ID_UNDEFINED
 
 /**
  * Entity for the current system settings.

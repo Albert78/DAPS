@@ -1,8 +1,8 @@
-package de.dh.raaps.core.pump
+package de.dh.daps.core.pump
 
-import de.dh.raaps.common.model.BolusStatus
-import de.dh.raaps.common.model.InsulinHistory
-import de.dh.raaps.common.model.InsulinPump
+import de.dh.daps.common.model.BolusStatus
+import de.dh.daps.common.model.InsulinHistory
+import de.dh.daps.common.model.InsulinPump
 import kotlinx.coroutines.flow.StateFlow
 
 import kotlin.time.Duration

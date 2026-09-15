@@ -1,4 +1,4 @@
-# Concurrency Strategy in RAAPS
+# Concurrency Strategy in DAPS
 
 To prevent `ConcurrentModificationException` and ensure data integrity across UI and Core threads, the following strategy is enforced:
 

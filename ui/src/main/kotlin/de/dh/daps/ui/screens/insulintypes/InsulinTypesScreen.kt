@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.screens.insulintypes
+package de.dh.daps.ui.screens.insulintypes
 
 import android.content.res.Configuration
 import androidx.compose.foundation.clickable
@@ -32,14 +32,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import de.dh.raaps.common.model.InsulinType
-import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.ui.R
-import de.dh.raaps.ui.common.composables.NormalTextButton
-import de.dh.raaps.ui.common.composables.screenTitle
-import de.dh.raaps.ui.common.icons.Icon_Insulin
-import de.dh.raaps.ui.common.theme.AppTheme
-import de.dh.raaps.common.R as CommonR
+import de.dh.daps.common.model.InsulinType
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.NormalTextButton
+import de.dh.daps.ui.common.composables.screenTitle
+import de.dh.daps.ui.common.icons.Icon_Insulin
+import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.common.R as CommonR
 
 @Composable
 fun InsulinTypesScreen(

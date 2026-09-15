@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.screens.systemcontrol
+package de.dh.daps.ui.screens.systemcontrol
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row

@@ -1,9 +1,9 @@
-package de.dh.raaps.ui.controls.history
+package de.dh.daps.ui.controls.history
 
-import de.dh.raaps.common.model.data.BgReading
-import de.dh.raaps.common.model.data.BgSampleKind
-import de.dh.raaps.common.model.data.BgValue
-import de.dh.raaps.common.model.data.Timestamp
+import de.dh.daps.common.model.data.BgReading
+import de.dh.daps.common.model.data.BgSampleKind
+import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.Timestamp
 import kotlin.math.sin
 import kotlin.random.Random
 

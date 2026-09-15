@@ -1,4 +1,4 @@
-package de.dh.raaps.plugin.simbody.ui
+package de.dh.daps.plugin.simbody.ui
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -10,14 +10,14 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.compose.ui.res.stringResource
-import de.dh.raaps.plugin.simbody.R
-import de.dh.raaps.common.navigation.FeatureNavGraph
-import de.dh.raaps.common.navigation.NavigationViewModel
-import de.dh.raaps.plugin.simbody.BodyModel
-import de.dh.raaps.plugin.simbody.ui.components.SimBodyDashboardCard
-import de.dh.raaps.plugin.simbody.ui.screens.SimBodyHistoryScreen
-import de.dh.raaps.plugin.simbody.ui.screens.SimBodyImpactsScreen
-import de.dh.raaps.plugin.simbody.ui.screens.SimBodyMainScreen
+import de.dh.daps.plugin.simbody.R
+import de.dh.daps.common.navigation.FeatureNavGraph
+import de.dh.daps.common.navigation.NavigationViewModel
+import de.dh.daps.plugin.simbody.BodyModel
+import de.dh.daps.plugin.simbody.ui.components.SimBodyDashboardCard
+import de.dh.daps.plugin.simbody.ui.screens.SimBodyHistoryScreen
+import de.dh.daps.plugin.simbody.ui.screens.SimBodyImpactsScreen
+import de.dh.daps.plugin.simbody.ui.screens.SimBodyMainScreen
 
 /**
  * Navigation graph for the Sim-Body plugin.

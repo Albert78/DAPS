@@ -1,4 +1,4 @@
-# AI Project Rules - RAAPS
+# AI Project Rules - DAPS
 
 ## Kotlin / Compose Coding Style
 
@@ -12,7 +12,7 @@
 
 ### Code Cleanliness
 - **Avoid fully qualified names**: Always prefer importing the symbol and using its simple name.
-- **Exceptions**: Use fully qualified names only when there is a naming conflict that cannot be easily resolved with an import alias (e.g., two different `R` classes or two different `Color` classes used in the same file). Even in these cases, consider using an import alias (e.g., `import de.dh.raaps.common.R as CommonR`).
+- **Exceptions**: Use fully qualified names only when there is a naming conflict that cannot be easily resolved with an import alias (e.g., two different `R` classes or two different `Color` classes used in the same file). Even in these cases, consider using an import alias (e.g., `import de.dh.daps.common.R as CommonR`).
 
 ### Jetpack Compose Previews
 - **Use `AppTheme`**: Always wrap Jetpack Compose Previews in `AppTheme { ... }` instead of the generic `MaterialTheme { ... }` to ensure the correct project styling is applied.

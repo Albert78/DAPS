@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.screens.systemcontrol
+package de.dh.daps.ui.screens.systemcontrol
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,9 +32,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.common.R as CommonR
-import de.dh.raaps.ui.R
-import de.dh.raaps.ui.common.composables.screenTitle
+import de.dh.daps.common.R as CommonR
+import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.screenTitle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

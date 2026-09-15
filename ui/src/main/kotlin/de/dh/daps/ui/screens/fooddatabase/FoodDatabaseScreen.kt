@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.screens.fooddatabase
+package de.dh.daps.ui.screens.fooddatabase
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
@@ -18,10 +18,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import de.dh.raaps.common.R as CommonR
-import de.dh.raaps.ui.common.composables.screenTitle
-import de.dh.raaps.ui.common.theme.AppTheme
-import de.dh.raaps.ui.R
+import de.dh.daps.common.R as CommonR
+import de.dh.daps.ui.common.composables.screenTitle
+import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.R
 
 @Composable
 fun FoodDatabaseScreen(

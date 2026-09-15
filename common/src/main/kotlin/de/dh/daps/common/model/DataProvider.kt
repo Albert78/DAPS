@@ -1,4 +1,4 @@
-package de.dh.raaps.common.model
+package de.dh.daps.common.model
 
 data class DataProvider(
     var id: Long = ID_UNDEFINED,

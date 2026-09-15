@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.activities
+package de.dh.daps.ui.activities
 
 import android.os.Build
 import android.os.Bundle
@@ -7,11 +7,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import de.dh.raaps.common.model.data.AlarmType
-import de.dh.raaps.common.model.data.GlucoseUnit
-import de.dh.raaps.core.system.RegistryProvider
-import de.dh.raaps.ui.common.theme.AppTheme
-import de.dh.raaps.ui.screens.alarm.FullScreenAlarmScreen
+import de.dh.daps.common.model.data.AlarmType
+import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.core.system.RegistryProvider
+import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.screens.alarm.FullScreenAlarmScreen
 
 class AlarmActivity : ComponentActivity() {
 

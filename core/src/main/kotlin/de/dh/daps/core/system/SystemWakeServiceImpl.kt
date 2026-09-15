@@ -1,4 +1,4 @@
-package de.dh.raaps.core.system
+package de.dh.daps.core.system
 
 import android.annotation.SuppressLint
 import android.app.AlarmManager
@@ -8,9 +8,9 @@ import android.content.Intent
 import android.os.Build
 import android.os.PowerManager
 import android.util.Log
-import de.dh.raaps.common.model.data.Timestamp
-import de.dh.raaps.core.repository.SystemMetricsRepository
-import de.dh.raaps.core.repository.WakeupMetric
+import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.core.repository.SystemMetricsRepository
+import de.dh.daps.core.repository.WakeupMetric
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.util.concurrent.ConcurrentHashMap
@@ -31,7 +31,7 @@ class SystemWakeServiceImpl(
     private val busyCount = AtomicInteger(0)
 
     private val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-    private val wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "raaps:GlobalWakeLock")
+    private val wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "daps:GlobalWakeLock")
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
     override fun registerHandler(tag: String, handler: WakeupHandler) {
@@ -154,7 +154,7 @@ class SystemWakeServiceImpl(
 
     companion object {
         private const val TAG = "SystemWakeService"
-        private const val ACTION_WAKEUP = "de.dh.raaps.core.system.ACTION_WAKEUP"
+        private const val ACTION_WAKEUP = "de.dh.daps.core.system.ACTION_WAKEUP"
         private const val EXTRA_TAG = "extra_tag"
         private const val EXTRA_WAKEUP_ID = "extra_wakeup_id"
         private const val EXTRA_SCHEDULED_TIME = "extra_scheduled_time"

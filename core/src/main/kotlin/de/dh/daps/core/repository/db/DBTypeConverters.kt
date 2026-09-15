@@ -1,15 +1,15 @@
-package de.dh.raaps.core.repository.db
+package de.dh.daps.core.repository.db
 
 import androidx.room.TypeConverter
-import de.dh.raaps.common.model.ApsMode
-import de.dh.raaps.common.model.InsulinStatus
-import de.dh.raaps.common.model.data.BgDelta
-import de.dh.raaps.common.model.data.BgValue
-import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.common.model.data.Timestamp
-import de.dh.raaps.core.aps.CoreReasoning
-import de.dh.raaps.core.repository.db.entities.DBBlock
-import de.dh.raaps.core.repository.db.entities.DBBgBlock
+import de.dh.daps.common.model.ApsMode
+import de.dh.daps.common.model.InsulinStatus
+import de.dh.daps.common.model.data.BgDelta
+import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.core.aps.CoreReasoning
+import de.dh.daps.core.repository.db.entities.DBBlock
+import de.dh.daps.core.repository.db.entities.DBBgBlock
 import org.json.JSONArray
 import org.json.JSONObject
 

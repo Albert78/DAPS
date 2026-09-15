@@ -1,12 +1,12 @@
-package de.dh.raaps
+package de.dh.daps
 
 import android.app.Application
-import de.dh.raaps.common.model.PluginManager
-import de.dh.raaps.common.navigation.FeatureNavGraph
-import de.dh.raaps.common.navigation.NavigationViewModel
-import de.dh.raaps.core.SystemRegistry
-import de.dh.raaps.plugin.simbody.SimBodyPlugin
-import de.dh.raaps.plugin.simbody.ui.SimBodyNavGraph
+import de.dh.daps.common.model.PluginManager
+import de.dh.daps.common.navigation.FeatureNavGraph
+import de.dh.daps.common.navigation.NavigationViewModel
+import de.dh.daps.core.SystemRegistry
+import de.dh.daps.plugin.simbody.SimBodyPlugin
+import de.dh.daps.plugin.simbody.ui.SimBodyNavGraph
 
 private var simBodyPlugin: SimBodyPlugin? = null
 

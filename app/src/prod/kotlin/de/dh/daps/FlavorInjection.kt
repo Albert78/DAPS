@@ -1,13 +1,13 @@
-package de.dh.raaps
+package de.dh.daps
 
 import android.app.Application
-import de.dh.raaps.common.model.PluginManager
-import de.dh.raaps.common.navigation.FeatureNavGraph
-import de.dh.raaps.common.navigation.NavigationViewModel
-import de.dh.raaps.core.SystemRegistry
-import de.dh.raaps.plugin.glucose.receiver.ExternalSourceType
-import de.dh.raaps.plugin.glucose.receiver.ReceiverGlucosePlugin
-import de.dh.raaps.plugin.pump.SampleInsulinPumpPlugin
+import de.dh.daps.common.model.PluginManager
+import de.dh.daps.common.navigation.FeatureNavGraph
+import de.dh.daps.common.navigation.NavigationViewModel
+import de.dh.daps.core.SystemRegistry
+import de.dh.daps.plugin.glucose.receiver.ExternalSourceType
+import de.dh.daps.plugin.glucose.receiver.ReceiverGlucosePlugin
+import de.dh.daps.plugin.pump.SampleInsulinPumpPlugin
 
 fun setupSystem(registry: SystemRegistry, pluginManager: PluginManager, application: Application) {
     val pumpManager = registry.pumpManager

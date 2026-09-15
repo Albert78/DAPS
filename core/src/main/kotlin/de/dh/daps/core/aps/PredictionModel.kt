@@ -1,18 +1,18 @@
-package de.dh.raaps.core.aps
+package de.dh.daps.core.aps
 
-import de.dh.raaps.common.model.InsulinAmount
-import de.dh.raaps.common.model.InsulinDose
-import de.dh.raaps.common.model.MealEntry
-import de.dh.raaps.common.model.calculation.CarbsInsulinCalculator
-import de.dh.raaps.common.model.convertToBgDeltaFromUnits
-import de.dh.raaps.common.model.convertToInsulinAmountFromCarbs
-import de.dh.raaps.common.model.data.BgDelta
-import de.dh.raaps.common.model.data.BgValue
-import de.dh.raaps.common.model.data.Minutes
-import de.dh.raaps.common.model.data.Tick
-import de.dh.raaps.common.model.data.Timeline
-import de.dh.raaps.common.model.data.Timestamp
-import de.dh.raaps.core.aps.ApsAlgorithmImpl.Companion.DEVIATION_DECAY_FACTOR_PER_TICK
+import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.InsulinDose
+import de.dh.daps.common.model.MealEntry
+import de.dh.daps.common.model.calculation.CarbsInsulinCalculator
+import de.dh.daps.common.model.convertToBgDeltaFromUnits
+import de.dh.daps.common.model.convertToInsulinAmountFromCarbs
+import de.dh.daps.common.model.data.BgDelta
+import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.Tick
+import de.dh.daps.common.model.data.Timeline
+import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.core.aps.ApsAlgorithmImpl.Companion.DEVIATION_DECAY_FACTOR_PER_TICK
 
 /**
  * Predicts future blood glucose levels based on current blood glucose, treatment history

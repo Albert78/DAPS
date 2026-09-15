@@ -1,10 +1,10 @@
-package de.dh.raaps.pluginmanager
+package de.dh.daps.pluginmanager
 
 import android.content.Context
 import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
-import de.dh.raaps.common.model.Plugin
-import de.dh.raaps.common.model.PluginManager
+import de.dh.daps.common.model.Plugin
+import de.dh.daps.common.model.PluginManager
 
 class PluginManagerImpl(
     val context: Context

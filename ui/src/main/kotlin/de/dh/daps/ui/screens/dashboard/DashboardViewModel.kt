@@ -1,15 +1,15 @@
-package de.dh.raaps.ui.screens.dashboard
+package de.dh.daps.ui.screens.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import de.dh.raaps.common.model.ApsMode
-import de.dh.raaps.common.model.data.AlarmSoundConfig
-import de.dh.raaps.common.model.data.AlarmType
-import de.dh.raaps.core.SystemRegistry
-import de.dh.raaps.core.alarms.AlarmSnoozeState
-import de.dh.raaps.core.aps.ApsRecommendation
+import de.dh.daps.common.model.ApsMode
+import de.dh.daps.common.model.data.AlarmSoundConfig
+import de.dh.daps.common.model.data.AlarmType
+import de.dh.daps.core.SystemRegistry
+import de.dh.daps.core.alarms.AlarmSnoozeState
+import de.dh.daps.core.aps.ApsRecommendation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

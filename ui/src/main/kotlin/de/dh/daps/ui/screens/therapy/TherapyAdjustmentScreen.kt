@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.screens.therapy
+package de.dh.daps.ui.screens.therapy
 
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
@@ -58,30 +58,30 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.FilterChip
-import de.dh.raaps.common.model.data.AlarmProfile
-import de.dh.raaps.common.model.ADJUSTMENT_PERCENTAGE_MAX
-import de.dh.raaps.common.model.ADJUSTMENT_PERCENTAGE_MIN
-import de.dh.raaps.common.model.LOW_THRESHOLD_MAX
-import de.dh.raaps.common.model.LOW_THRESHOLD_MIN
-import de.dh.raaps.common.model.TARGET_MAX
-import de.dh.raaps.common.model.TARGET_MIN
-import de.dh.raaps.common.model.data.BgValue
-import de.dh.raaps.common.model.data.GlucoseUnit
-import de.dh.raaps.ui.R
-import de.dh.raaps.ui.common.ConfigurableDisplayStrategy
-import de.dh.raaps.ui.common.LocalGlucoseUnit
-import de.dh.raaps.ui.common.ModuloSteppingStrategy
-import de.dh.raaps.ui.common.composables.EditableValueStepper
-import de.dh.raaps.ui.common.composables.StepperDefaults
-import de.dh.raaps.ui.common.composables.contentScrollIndicator
-import de.dh.raaps.ui.common.composables.screenTitle
-import de.dh.raaps.ui.common.glucoseUnitLabel
-import de.dh.raaps.ui.common.glucoseValue
-import de.dh.raaps.ui.common.theme.AppTheme
-import de.dh.raaps.ui.common.theme.NeutralGrey
-import de.dh.raaps.ui.common.theme.SoftBlue
-import de.dh.raaps.ui.common.theme.SoftRed
-import de.dh.raaps.common.R as CommonR
+import de.dh.daps.common.model.data.AlarmProfile
+import de.dh.daps.common.model.ADJUSTMENT_PERCENTAGE_MAX
+import de.dh.daps.common.model.ADJUSTMENT_PERCENTAGE_MIN
+import de.dh.daps.common.model.LOW_THRESHOLD_MAX
+import de.dh.daps.common.model.LOW_THRESHOLD_MIN
+import de.dh.daps.common.model.TARGET_MAX
+import de.dh.daps.common.model.TARGET_MIN
+import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.ui.R
+import de.dh.daps.ui.common.ConfigurableDisplayStrategy
+import de.dh.daps.ui.common.LocalGlucoseUnit
+import de.dh.daps.ui.common.ModuloSteppingStrategy
+import de.dh.daps.ui.common.composables.EditableValueStepper
+import de.dh.daps.ui.common.composables.StepperDefaults
+import de.dh.daps.ui.common.composables.contentScrollIndicator
+import de.dh.daps.ui.common.composables.screenTitle
+import de.dh.daps.ui.common.glucoseUnitLabel
+import de.dh.daps.ui.common.glucoseValue
+import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.NeutralGrey
+import de.dh.daps.ui.common.theme.SoftBlue
+import de.dh.daps.ui.common.theme.SoftRed
+import de.dh.daps.common.R as CommonR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -1,4 +1,4 @@
-package de.dh.raaps.ui.screens.history
+package de.dh.daps.ui.screens.history
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,17 +20,17 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.ui.R
-import de.dh.raaps.ui.common.LocalGlucoseUnit
-import de.dh.raaps.ui.common.composables.screenTitle
-import de.dh.raaps.ui.common.theme.AppTheme
-import de.dh.raaps.ui.controls.history.BgHistoryChartOrDefault
-import de.dh.raaps.ui.controls.history.BgOverviewChart
-import de.dh.raaps.ui.controls.history.HistoryDiagramData
-import de.dh.raaps.ui.controls.history.HistoryUiState
-import de.dh.raaps.ui.controls.history.HistoryViewModel
-import de.dh.raaps.ui.controls.history.createSampleReadings
-import de.dh.raaps.ui.controls.history.rememberBgHistoryChartState
+import de.dh.daps.ui.R
+import de.dh.daps.ui.common.LocalGlucoseUnit
+import de.dh.daps.ui.common.composables.screenTitle
+import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.controls.history.BgHistoryChartOrDefault
+import de.dh.daps.ui.controls.history.BgOverviewChart
+import de.dh.daps.ui.controls.history.HistoryDiagramData
+import de.dh.daps.ui.controls.history.HistoryUiState
+import de.dh.daps.ui.controls.history.HistoryViewModel
+import de.dh.daps.ui.controls.history.createSampleReadings
+import de.dh.daps.ui.controls.history.rememberBgHistoryChartState
 
 @Composable
 fun HistoryScreen(

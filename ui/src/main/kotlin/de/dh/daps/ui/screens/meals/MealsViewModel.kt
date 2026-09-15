@@ -1,11 +1,11 @@
-package de.dh.raaps.ui.screens.meals
+package de.dh.daps.ui.screens.meals
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import de.dh.raaps.common.model.MEAL_EDIT_THRESHOLD_HOURS
-import de.dh.raaps.common.model.MealEntry
-import de.dh.raaps.core.SystemRegistry
+import de.dh.daps.common.model.MEAL_EDIT_THRESHOLD_HOURS
+import de.dh.daps.common.model.MealEntry
+import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
