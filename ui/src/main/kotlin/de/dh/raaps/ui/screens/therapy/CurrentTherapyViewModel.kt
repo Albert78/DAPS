@@ -26,48 +26,33 @@ import kotlinx.coroutines.launch
 import java.util.Locale
 
 data class InsulinProfileUiState(
-    val name: String,
-    val activeProfileId: Long?,
-    val currentIsf: BgDelta,
-    val currentCr: Double,
-    val currentBasal: InsulinAmount,
-    val isfRange: String,
-    val crRange: String,
-    val basalRange: String,
-    val target: BgValue,
-    val lowThreshold: BgValue,
-    val baseTarget: BgValue,
-    val baseLow: BgValue,
-    val insulinAdjustmentPercentage: Int,
-    val targetBgOverride: BgValue?,
-    val lowThresholdOverride: BgValue?,
-    val adjustmentHint: String?,
-    val dia: Minutes,
-    val peak: Minutes
-) {
-    companion object {
-        fun empty() = InsulinProfileUiState(
-            name = "",
-            activeProfileId = null,
-            currentIsf = BgDelta.ZERO,
-            currentCr = 0.0,
-            currentBasal = InsulinAmount.ZERO,
-            isfRange = "",
-            crRange = "",
-            basalRange = "",
-            target = BgValue.fromMgDl(0),
-            lowThreshold = BgValue.fromMgDl(0),
-            baseTarget = BgValue.fromMgDl(0),
-            baseLow = BgValue.fromMgDl(0),
-            insulinAdjustmentPercentage = 0,
-            targetBgOverride = null,
-            lowThresholdOverride = null,
-            adjustmentHint = null,
-            dia = Minutes(0),
-            peak = Minutes(0)
-        )
-    }
-}
+    val name: String = "",
+    val activeProfileId: Long? = null,
+    val isfRange: String = "",
+    val crRange: String = "",
+    val basalRange: String = "",
+    val dia: Minutes = Minutes(0),
+    val peak: Minutes = Minutes(0)
+)
+
+data class TherapyAdjustmentUiState(
+    val percentage: Int = 0,
+    val targetBgOverride: BgValue? = null,
+    val lowThresholdOverride: BgValue? = null,
+    val adjustmentHint: String? = null
+)
+
+data class ActiveTherapyStatusUiState(
+    val profile: InsulinProfileUiState = InsulinProfileUiState(),
+    val adjustment: TherapyAdjustmentUiState = TherapyAdjustmentUiState(),
+    val currentIsf: BgDelta = BgDelta.ZERO,
+    val currentCr: Double = 0.0,
+    val currentBasal: InsulinAmount = InsulinAmount.ZERO,
+    val target: BgValue = BgValue.fromMgDl(0),
+    val lowThreshold: BgValue = BgValue.fromMgDl(0),
+    val baseTarget: BgValue = BgValue.fromMgDl(0),
+    val baseLow: BgValue = BgValue.fromMgDl(0)
+)
 
 data class TherapyAdjustment(
     val name: String,
@@ -78,7 +63,7 @@ data class TherapyAdjustment(
 
 data class CurrentTherapyUiState(
     val isLoading: Boolean = true,
-    val activeInsulinProfile: InsulinProfileUiState = InsulinProfileUiState.empty(),
+    val activeTherapyStatus: ActiveTherapyStatusUiState = ActiveTherapyStatusUiState(),
     val glucoseUnit: GlucoseUnit = GlucoseUnit.MG_DL,
     val availableInsulinProfiles: List<InsulinProfile> = emptyList(),
     val defaultBgBlocks: List<BgBlock> = emptyList(),
@@ -133,32 +118,39 @@ class CurrentTherapyViewModel(
         val minuteSinceMidnight = now.minutesSinceMidnight()
         val baseBg = currentSettings.defaultBgBlocks.getBgForMinute(minuteSinceMidnight)
 
-        val activeProfileName = currentSettings.insulinProfile.name
         val profileUiState = InsulinProfileUiState(
-            name = activeProfileName,
+            name = currentSettings.insulinProfile.name,
             activeProfileId = currentSettings.insulinProfile.id,
-            currentIsf = isf,
-            currentCr = cr,
-            currentBasal = basal,
             isfRange = formatIsfRange(isfValues, unit),
             crRange = formatRange(crValues, "%.1f"),
             basalRange = formatRange(basalValues, "%.2f"),
+            dia = currentSettings.insulinProfile.dia,
+            peak = currentSettings.insulinProfile.peak
+        )
+
+        val adjustmentUiState = TherapyAdjustmentUiState(
+            percentage = currentSettings.insulinAdjustmentPercentage,
+            targetBgOverride = currentSettings.targetBgOverride,
+            lowThresholdOverride = currentSettings.lowThresholdOverride,
+            adjustmentHint = currentSettings.adjustmentHint
+        )
+
+        val activeTherapyStatus = ActiveTherapyStatusUiState(
+            profile = profileUiState,
+            adjustment = adjustmentUiState,
+            currentIsf = isf,
+            currentCr = cr,
+            currentBasal = basal,
             target = bgSettings.first,
             lowThreshold = bgSettings.second,
             baseTarget = baseBg.first,
-            baseLow = baseBg.second,
-            insulinAdjustmentPercentage = currentSettings.insulinAdjustmentPercentage,
-            targetBgOverride = currentSettings.targetBgOverride,
-            lowThresholdOverride = currentSettings.lowThresholdOverride,
-            adjustmentHint = currentSettings.adjustmentHint,
-            dia = currentSettings.insulinProfile.dia,
-            peak = currentSettings.insulinProfile.peak
+            baseLow = baseBg.second
         )
 
         _uiState.update {
             it.copy(
                 isLoading = false,
-                activeInsulinProfile = profileUiState,
+                activeTherapyStatus = activeTherapyStatus,
                 glucoseUnit = unit,
                 availableInsulinProfiles = profiles,
                 defaultBgBlocks = currentSettings.defaultBgBlocks,

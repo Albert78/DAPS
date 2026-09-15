@@ -79,9 +79,11 @@ import de.dh.raaps.ui.screens.history.createSampleHistoryUiState
 import de.dh.raaps.ui.screens.permissions.PermissionStatus
 import de.dh.raaps.ui.screens.permissions.PermissionsUiModel
 import de.dh.raaps.ui.screens.permissions.PermissionsViewModel
+import de.dh.raaps.ui.screens.therapy.ActiveTherapyStatusUiState
 import de.dh.raaps.ui.screens.therapy.CurrentTherapyUiState
 import de.dh.raaps.ui.screens.therapy.CurrentTherapyViewModel
 import de.dh.raaps.ui.screens.therapy.InsulinProfileUiState
+import de.dh.raaps.ui.screens.therapy.TherapyAdjustmentUiState
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -295,8 +297,8 @@ fun DashboardContent(
                             glucoseUnit = glucoseUnit,
                             insulinApplications = historyUiState.insulinApplications,
                             meals = historyUiState.meals,
-                            dia = currentTherapyUiState.activeInsulinProfile.dia,
-                            peak = currentTherapyUiState.activeInsulinProfile.peak
+                            dia = currentTherapyUiState.activeTherapyStatus.profile.dia,
+                            peak = currentTherapyUiState.activeTherapyStatus.profile.peak
                         ),
                         state = chartState,
                         onChartClick = onHistoryChartClick,
@@ -310,12 +312,10 @@ fun DashboardContent(
 
             ApsControlCard(
                 modifier = Modifier.fillMaxWidth(),
-                insulinProfileUiState = currentTherapyUiState.activeInsulinProfile,
+                activeTherapyStatus = currentTherapyUiState.activeTherapyStatus,
                 selectedMode = dashboardUiState.apsMode,
                 availableModes = dashboardUiState.availableApsModes,
                 onModeChange = onApsModeSelect,
-                insulinAdjustmentPercentage = currentTherapyUiState.activeInsulinProfile.insulinAdjustmentPercentage,
-                adjustmentHint = currentTherapyUiState.activeInsulinProfile.adjustmentHint,
                 onAdjustmentClick = onAdjustmentClick,
                 onProfileClick = onNavigateToTherapySettings
             )
@@ -353,26 +353,30 @@ fun DashboardPreview() {
                 iob = InsulinAmount(1.57),
                 cob = 12.0,
                 currentTherapyUiState = CurrentTherapyUiState(
-                    activeInsulinProfile = InsulinProfileUiState(
-                        name = "Normal",
-                        activeProfileId = null,
+                    activeTherapyStatus = ActiveTherapyStatusUiState(
+                        profile = InsulinProfileUiState(
+                            name = "Normal",
+                            activeProfileId = null,
+                            isfRange = "50",
+                            crRange = "10.0",
+                            basalRange = "0.50",
+                            dia = Minutes(300),
+                            peak = Minutes(75)
+                        ),
+                        adjustment = TherapyAdjustmentUiState(
+                            percentage = 0,
+                            targetBgOverride = null,
+                            lowThresholdOverride = null,
+                            adjustmentHint = null
+                        ),
                         currentIsf = BgDelta.fromMgDl(50),
                         currentCr = 10.0,
                         currentBasal = InsulinAmount(0.5),
-                        isfRange = "50",
-                        crRange = "10.0",
-                        basalRange = "0.50",
                         target = BgValue.fromMgDl(110),
                         lowThreshold = BgValue.fromMgDl(70),
                         baseTarget = BgValue.fromMgDl(110),
-                        baseLow = BgValue.fromMgDl(70),
-                        insulinAdjustmentPercentage = 0,
-                        targetBgOverride = null,
-                        lowThresholdOverride = null,
-                        adjustmentHint = null,
-                        dia = Minutes(300),
-                        peak = Minutes(75)
-                    ),
+                        baseLow = BgValue.fromMgDl(70)
+                    )
                 ),
                 permissionsUiState = PermissionsUiModel(
                     isLoading = false,
@@ -412,26 +416,30 @@ fun DashboardPermissionsWarningPreview() {
                 iob = InsulinAmount(1.57),
                 cob = 12.0,
                 currentTherapyUiState = CurrentTherapyUiState(
-                    activeInsulinProfile = InsulinProfileUiState(
-                        name = "Normal",
-                        activeProfileId = null,
+                    activeTherapyStatus = ActiveTherapyStatusUiState(
+                        profile = InsulinProfileUiState(
+                            name = "Normal",
+                            activeProfileId = null,
+                            isfRange = "50",
+                            crRange = "10.0",
+                            basalRange = "0.50",
+                            dia = Minutes(300),
+                            peak = Minutes(75)
+                        ),
+                        adjustment = TherapyAdjustmentUiState(
+                            percentage = 0,
+                            targetBgOverride = null,
+                            lowThresholdOverride = null,
+                            adjustmentHint = null
+                        ),
                         currentIsf = BgDelta.fromMgDl(50),
                         currentCr = 10.0,
                         currentBasal = InsulinAmount(0.5),
-                        isfRange = "50",
-                        crRange = "10.0",
-                        basalRange = "0.50",
                         target = BgValue.fromMgDl(110),
                         lowThreshold = BgValue.fromMgDl(70),
                         baseTarget = BgValue.fromMgDl(110),
-                        baseLow = BgValue.fromMgDl(70),
-                        insulinAdjustmentPercentage = 0,
-                        targetBgOverride = null,
-                        lowThresholdOverride = null,
-                        adjustmentHint = null,
-                        dia = Minutes(300),
-                        peak = Minutes(75)
-                    ),
+                        baseLow = BgValue.fromMgDl(70)
+                    )
                 ),
                 permissionsUiState = PermissionsUiModel(
                     isLoading = false,

@@ -87,14 +87,14 @@ fun TherapyAdjustmentScreen(
     onNavigateUp: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val activeProfile = uiState.activeInsulinProfile
+    val activeTherapyStatus = uiState.activeTherapyStatus
 
     TherapyAdjustmentContent(
-        currentPercentage = activeProfile.insulinAdjustmentPercentage,
-        currentTarget = activeProfile.targetBgOverride,
-        currentLow = activeProfile.lowThresholdOverride,
-        baseTarget = activeProfile.baseTarget,
-        baseLow = activeProfile.baseLow,
+        currentPercentage = activeTherapyStatus.adjustment.percentage,
+        currentTarget = activeTherapyStatus.adjustment.targetBgOverride,
+        currentLow = activeTherapyStatus.adjustment.lowThresholdOverride,
+        baseTarget = activeTherapyStatus.baseTarget,
+        baseLow = activeTherapyStatus.baseLow,
         onValuesChange = { p, t, l ->
             viewModel.setTherapyAdjustment(p, t, l, null)
         },
@@ -227,7 +227,7 @@ fun TherapyAdjustmentContent(
                         ) {
                             if (currentTarget != null) {
                                 EditableValueStepper(
-                                    currentValue = currentTarget.mgdl.toDouble(),
+                                    currentValue = currentTarget.mgdl,
                                     onValueChange = {
                                         val newValue = if (it == 0.0) null else BgValue.fromMgDl(it.toInt())
                                         onValuesChange(currentPercentage, newValue, currentLow)
@@ -260,7 +260,7 @@ fun TherapyAdjustmentContent(
                         ) {
                             if (currentLow != null) {
                                 EditableValueStepper(
-                                    currentValue = currentLow.mgdl.toDouble(),
+                                    currentValue = currentLow.mgdl,
                                     onValueChange = {
                                         val newValue = if (it == 0.0) null else BgValue.fromMgDl(it.toInt())
                                         onValuesChange(currentPercentage, currentTarget, newValue)

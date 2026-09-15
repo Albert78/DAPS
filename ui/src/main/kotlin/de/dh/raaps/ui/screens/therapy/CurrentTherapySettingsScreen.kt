@@ -168,7 +168,7 @@ fun CurrentTherapySettingsContent(
                 )
 
                 ActiveInsulinProfileCard(
-                    profile = uiState.activeInsulinProfile,
+                    profile = uiState.activeTherapyStatus.profile,
                     onSwitchInsulinProfileClick = { showInsulinProfileDialog = true },
                     onManageInsulinProfilesClick = onNavigateToInsulinProfileEditor
                 )
@@ -176,8 +176,8 @@ fun CurrentTherapySettingsContent(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 // BG Target & Low Threshold Card
-                val isTargetOverridden = uiState.activeInsulinProfile.targetBgOverride != null
-                val isLowOverridden = uiState.activeInsulinProfile.lowThresholdOverride != null
+                val isTargetOverridden = uiState.activeTherapyStatus.adjustment.targetBgOverride != null
+                val isLowOverridden = uiState.activeTherapyStatus.adjustment.lowThresholdOverride != null
                 val isBgOverridden = isTargetOverridden || isLowOverridden
 
                 SectionHeader(
@@ -202,7 +202,9 @@ fun CurrentTherapySettingsContent(
                 )
 
                 TemporaryAdjustmentCard(
-                    insulinProfile = uiState.activeInsulinProfile,
+                    adjustment = uiState.activeTherapyStatus.adjustment,
+                    baseTarget = uiState.activeTherapyStatus.baseTarget,
+                    baseLow = uiState.activeTherapyStatus.baseLow,
                     onClick = onNavigateToTherapyAdjustment
                 )
             }
@@ -212,7 +214,7 @@ fun CurrentTherapySettingsContent(
     if (showInsulinProfileDialog) {
         InsulinProfileSelectionDialog(
             profiles = uiState.availableInsulinProfiles,
-            activeProfileId = uiState.activeInsulinProfile.activeProfileId,
+            activeProfileId = uiState.activeTherapyStatus.profile.activeProfileId,
             onProfileSelected = {
                 onSelectProfile(it)
                 showInsulinProfileDialog = false
@@ -634,7 +636,9 @@ private fun BgTargetCard(
 
 @Composable
 private fun TemporaryAdjustmentCard(
-    insulinProfile: InsulinProfileUiState,
+    adjustment: TherapyAdjustmentUiState,
+    baseTarget: BgValue,
+    baseLow: BgValue,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -668,7 +672,7 @@ private fun TemporaryAdjustmentCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = insulinProfile.adjustmentHint ?: stringResource(R.string.aps_control_therapy_adjustment_custom),
+                    text = adjustment.adjustmentHint ?: stringResource(R.string.aps_control_therapy_adjustment_custom),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -690,12 +694,12 @@ private fun TemporaryAdjustmentCard(
                 AdjustmentItem(
                     icon = Icons.Default.UnfoldMore,
                     label = stringResource(R.string.aps_control_therapy_adjustment_dialog_insulin_adjustment_label),
-                    value = displayStrategy.format(insulinProfile.insulinAdjustmentPercentage.toDouble()),
-                    valueColor = if (insulinProfile.insulinAdjustmentPercentage == 0)
+                    value = displayStrategy.format(adjustment.percentage.toDouble()),
+                    valueColor = if (adjustment.percentage == 0)
                         MaterialTheme.colorScheme.onSurfaceVariant
                     else
-                        displayStrategy.color(insulinProfile.insulinAdjustmentPercentage.toDouble()),
-                    status = if (insulinProfile.insulinAdjustmentPercentage == 0)
+                        displayStrategy.color(adjustment.percentage.toDouble()),
+                    status = if (adjustment.percentage == 0)
                         stringResource(R.string.aps_control_adjustment_neutral)
                     else
                         stringResource(R.string.label_active)
@@ -705,17 +709,17 @@ private fun TemporaryAdjustmentCard(
                 AdjustmentItem(
                     icon = Icons.Default.Adjust,
                     label = stringResource(R.string.current_therapy_target_label),
-                    value = if (insulinProfile.targetBgOverride != null)
-                        glucoseValue(insulinProfile.targetBgOverride)
+                    value = if (adjustment.targetBgOverride != null)
+                        glucoseValue(adjustment.targetBgOverride)
                     else
                         stringResource(R.string.aps_control_adjustment_standard),
-                    unit = if (insulinProfile.targetBgOverride != null) glucoseUnitLabel() else null,
-                    valueColor = if (insulinProfile.targetBgOverride != null)
+                    unit = if (adjustment.targetBgOverride != null) glucoseUnitLabel() else null,
+                    valueColor = if (adjustment.targetBgOverride != null)
                         MaterialTheme.colorScheme.primary
                     else
                         MaterialTheme.colorScheme.onSurfaceVariant,
-                    status = if (insulinProfile.targetBgOverride != null)
-                        if (insulinProfile.targetBgOverride > insulinProfile.baseTarget)
+                    status = if (adjustment.targetBgOverride != null)
+                        if (adjustment.targetBgOverride > baseTarget)
                             stringResource(R.string.label_increased)
                         else
                             stringResource(R.string.label_decreased)
@@ -727,17 +731,17 @@ private fun TemporaryAdjustmentCard(
                 AdjustmentItem(
                     icon = Icons.Default.VerticalAlignBottom,
                     label = stringResource(R.string.current_therapy_low_threshold_label),
-                    value = if (insulinProfile.lowThresholdOverride != null)
-                        glucoseValue(insulinProfile.lowThresholdOverride)
+                    value = if (adjustment.lowThresholdOverride != null)
+                        glucoseValue(adjustment.lowThresholdOverride)
                     else
                         stringResource(R.string.aps_control_adjustment_standard),
-                    unit = if (insulinProfile.lowThresholdOverride != null) glucoseUnitLabel() else null,
-                    valueColor = if (insulinProfile.lowThresholdOverride != null)
+                    unit = if (adjustment.lowThresholdOverride != null) glucoseUnitLabel() else null,
+                    valueColor = if (adjustment.lowThresholdOverride != null)
                         MaterialTheme.colorScheme.error
                     else
                         MaterialTheme.colorScheme.onSurfaceVariant,
-                    status = if (insulinProfile.lowThresholdOverride != null)
-                        if (insulinProfile.lowThresholdOverride > insulinProfile.baseLow)
+                    status = if (adjustment.lowThresholdOverride != null)
+                        if (adjustment.lowThresholdOverride > baseLow)
                             stringResource(R.string.label_increased)
                         else
                             stringResource(R.string.label_decreased)
@@ -863,25 +867,29 @@ fun CurrentTherapySettingsPreview() {
 
     val mockUiState = CurrentTherapyUiState(
         isLoading = false,
-        activeInsulinProfile = InsulinProfileUiState(
-            name = "Normal",
-            activeProfileId = 1L,
+        activeTherapyStatus = ActiveTherapyStatusUiState(
+            profile = InsulinProfileUiState(
+                name = "Normal",
+                activeProfileId = 1L,
+                isfRange = "40 - 50",
+                crRange = "10.0 - 12.0",
+                basalRange = "0.50 - 0.55",
+                dia = Minutes(300),
+                peak = Minutes(75)
+            ),
+            adjustment = TherapyAdjustmentUiState(
+                percentage = -30,
+                targetBgOverride = BgValue.fromMgDl(160),
+                lowThresholdOverride = BgValue.fromMgDl(90),
+                adjustmentHint = "Fahrrad fahren"
+            ),
             currentIsf = BgDelta.fromMgDl(40),
             currentCr = 10.0,
             currentBasal = InsulinAmount(0.5),
-            isfRange = "40 - 50",
-            crRange = "10.0 - 12.0",
-            basalRange = "0.50 - 0.55",
             target = BgValue.fromMgDl(100),
             lowThreshold = BgValue.fromMgDl(70),
             baseTarget = BgValue.fromMgDl(100),
-            baseLow = BgValue.fromMgDl(70),
-            insulinAdjustmentPercentage = -30,
-            targetBgOverride = BgValue.fromMgDl(160),
-            lowThresholdOverride = BgValue.fromMgDl(90),
-            adjustmentHint = "Fahrrad fahren",
-            dia = Minutes(300),
-            peak = Minutes(75)
+            baseLow = BgValue.fromMgDl(70)
         ),
         availableInsulinProfiles = listOf(mockProfile1, mockProfile2),
         defaultBgBlocks = listOf(
