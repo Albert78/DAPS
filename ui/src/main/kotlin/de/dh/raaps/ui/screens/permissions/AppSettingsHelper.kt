@@ -78,6 +78,26 @@ fun canShowFullscreenActivity(context: Context): Boolean {
     return sysManager?.canUseFullScreenIntent() ?: false
 }
 
+/**
+ * Opens the app fullscreen settings screen in a new activity.
+ */
+fun openAppUseFullScreenSettings(context: Context) {
+    try {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            val intent = Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT).apply {
+                putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+        } else {
+            // Fallback for older Android version
+            openAppSettings(context)
+        }
+    } catch (e: Exception) {
+        Toast.makeText(context, R.string.error_app_fullscreen_settings_could_not_be_opened_message, Toast.LENGTH_LONG).show()
+    }
+}
+
 fun isIgnoringBatteryOptimizations(context: Context): Boolean {
     val pm = context.getSystemService<PowerManager>()
     return pm?.isIgnoringBatteryOptimizations(context.packageName) == true

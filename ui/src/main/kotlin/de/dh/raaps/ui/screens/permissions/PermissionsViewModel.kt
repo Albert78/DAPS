@@ -2,13 +2,10 @@ package de.dh.raaps.ui.screens.permissions
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import de.dh.raaps.core.SystemRegistry
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 
 /**
@@ -24,26 +21,11 @@ import kotlinx.coroutines.flow.update
 class PermissionsViewModel(
     private val systemRegistry: SystemRegistry
 ) : ViewModel() {
-    private val appStateRepository = systemRegistry.appPreferencesRepository
-
     private val _uiState = MutableStateFlow(PermissionsUiModel.loading())
     val uiState = _uiState.asStateFlow()
 
-    private var functionSwitch1: Int = 5
-    private var functionSwitch2: Boolean = false
-
     init {
-        observeAppSettings()
-    }
-
-    private fun observeAppSettings() {
-        appStateRepository.cachedPreferences
-            .onEach { preferences ->
-                // Fill functionSwitches
-                functionSwitch1 = 9
-                updateAppPermissions()
-            }
-            .launchIn(viewModelScope)
+        updateAppPermissions()
     }
 
     /**
@@ -51,11 +33,14 @@ class PermissionsViewModel(
      */
     fun updateAppPermissions() {
         val appContext = systemRegistry.appContext
+
+        val canSchedule = canScheduleExactAlarms(appContext)
+        val canShowFullscreen = canShowFullscreenActivity(appContext)
         val canPost = canPostNotifications(appContext)
         val isIgnoring = isIgnoringBatteryOptimizations(appContext)
         val isAutoRevoke = isAutoRevokePermissions(appContext)
 
-        val activeFunctions = RestrictedAppFunctions.Companion.getActiveAppFunctions(functionSwitch1, functionSwitch2)
+        val activeFunctions = RestrictedAppFunctions.getActiveAppFunctions()
 
         val allNeededPermissions = activeFunctions.flatMap { it.neededPermissions }.toSet()
 
@@ -67,26 +52,34 @@ class PermissionsViewModel(
             }
         }
 
+        val alarmPermissionStatus = getStatus(NeededPermission.SCHEDULE_EXACT_ALARMS, canSchedule)
         val notificationPermissionStatus = getStatus(NeededPermission.POST_NOTIFICATIONS, canPost)
+        val fullscreenPermissionStatus = getStatus(NeededPermission.SHOW_FULLSCREEN_ACTIVITY, canShowFullscreen)
         val ignoreBatteryOptimizationPermissionStatus = getStatus(NeededPermission.IGNORE_BATTERY_OPTIMIZATIONS, isIgnoring)
         // For auto-revoke, the permission status is "granted" if the app is exempted, which means isAutoRevokePermissions() is false.
         val autoRevokePermissionsPermissionStatus = getStatus(NeededPermission.MANAGE_AUTO_REVOKE, !isAutoRevoke)
 
         updateUiModel(
+            alarmPermissionStatus = alarmPermissionStatus,
             notificationPermissionStatus = notificationPermissionStatus,
+            fullscreenPermissionStatus = fullscreenPermissionStatus,
             ignoreBatteryOptimizationPermissionStatus = ignoreBatteryOptimizationPermissionStatus,
             autoRevokePermissionsPermissionStatus = autoRevokePermissionsPermissionStatus
         )
     }
 
     private fun updateUiModel(
+        alarmPermissionStatus: PermissionStatus,
         notificationPermissionStatus: PermissionStatus,
+        fullscreenPermissionStatus: PermissionStatus,
         ignoreBatteryOptimizationPermissionStatus: PermissionStatus,
         autoRevokePermissionsPermissionStatus: PermissionStatus
     ) {
         _uiState.update {
             PermissionsUiModel.create(
+                alarmPermissionStatus,
                 notificationPermissionStatus,
+                fullscreenPermissionStatus,
                 ignoreBatteryOptimizationPermissionStatus,
                 autoRevokePermissionsPermissionStatus,
                 resources = systemRegistry.appContext.resources

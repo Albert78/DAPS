@@ -34,7 +34,6 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.raaps.common.R as CommonR
 import de.dh.raaps.ui.R
 import de.dh.raaps.ui.common.composables.contentScrollIndicator
 import de.dh.raaps.ui.common.composables.screenTitle
@@ -43,12 +42,14 @@ import de.dh.raaps.ui.common.icons.Icon_Check_Yes
 import de.dh.raaps.ui.common.icons.Icon_Info
 import de.dh.raaps.ui.common.icons.Icon_Screen_Back
 import de.dh.raaps.ui.common.theme.AppTheme
+import de.dh.raaps.common.R as CommonR
 
 @Composable
 fun PermissionsScreen(
     viewModel: PermissionsViewModel,
     onNavigateUp: () -> Unit,
     onOpenNotificationSettings: () -> Unit,
+    onOpenFullscreenSettings: () -> Unit,
     onOpenBatteryOptimizationSettings: () -> Unit,
     onOpenAutoRevokeSettings: () -> Unit
 ) {
@@ -63,6 +64,7 @@ fun PermissionsScreen(
         uiModel = uiState,
         onNavigateUp = onNavigateUp,
         onOpenNotificationSettings = onOpenNotificationSettings,
+        onOpenFullscreenSettings = onOpenFullscreenSettings,
         onOpenBatteryOptimizationSettings = onOpenBatteryOptimizationSettings,
         onOpenAutoRevokeSettings = onOpenAutoRevokeSettings
     )
@@ -74,6 +76,7 @@ fun PermissionsScreenContent(
     uiModel: PermissionsUiModel,
     onNavigateUp: () -> Unit,
     onOpenNotificationSettings: () -> Unit,
+    onOpenFullscreenSettings: () -> Unit,
     onOpenBatteryOptimizationSettings: () -> Unit,
     onOpenAutoRevokeSettings: () -> Unit
 ) {
@@ -140,6 +143,17 @@ fun PermissionsScreenContent(
                     notGrantedText = stringResource(id = R.string.permission_not_granted_text),
                     status = uiModel.notificationPermissionStatus,
                     onClick = onOpenNotificationSettings
+                )
+
+                HorizontalDivider()
+
+                // Fullscreen Intent
+                PermissionItem(
+                    description = stringResource(id = R.string.permission_can_show_fullscreen_activity_desc),
+                    grantedText = stringResource(id = R.string.permission_granted_text),
+                    notGrantedText = stringResource(id = R.string.permission_not_granted_text),
+                    status = uiModel.fullscreenPermissionStatus,
+                    onClick = onOpenFullscreenSettings
                 )
 
                 HorizontalDivider()

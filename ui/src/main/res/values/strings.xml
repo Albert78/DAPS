@@ -92,6 +92,7 @@
     <string name="dashboard_history_title">Aktueller Verlauf</string>
 
     <string name="error_app_settings_could_not_be_opened_message">Die App-Einstellungen konnten nicht geöffnet werden. Bitte öffne sie aus den Geräteeinstellungen.</string>
+    <string name="error_app_fullscreen_settings_could_not_be_opened_message">Die App-Vollbild-Einstellungen konnten nicht geöffnet werden. Bitte öffnen Sie sie aus den Geräteeinstellungen.</string>
     <string name="error_battery_optimization_settings_could_not_be_opened_message">Die App-Einstellungen für die Batterie-Optimierung konnten nicht geöffnet werden. Bitte öffne sie aus den Geräteeinstellungen.</string>
 
     <string name="permissions_title">App-Berechtigungen</string>
@@ -107,6 +108,7 @@
     <string name="cd_permission_not_granted">Berechtigung nicht erteilt</string>
     <string name="cd_permission_not_needed">Berechtigung aktuell nicht benötigt</string>
     <string name="permission_notifications_desc">Systembenachrichtigung anzeigen</string>
+    <string name="permission_can_show_fullscreen_activity_desc">Alarmbildschirm über anderen Apps anzeigen</string>
     <string name="ignore_battery_optimization_permissions_desc">Der Energiesparmodus kann die Funktion der App blockieren</string>
     <string name="ignore_battery_optimization_permissions_label">Die App kann von Android in den Energiesparmodus versetzt werden</string>
     <string name="ignore_battery_optimization_permissions_off_label">Die App wird nicht in den Energiesparmodus versetzt</string>

@@ -39,7 +39,9 @@ sealed class PermissionStatus {
 
 data class PermissionsUiModel(
     val isLoading: Boolean,
+    val alarmPermissionStatus: PermissionStatus,
     val notificationPermissionStatus: PermissionStatus,
+    val fullscreenPermissionStatus: PermissionStatus,
     val ignoreBatteryOptimizationPermissionStatus: PermissionStatus,
     val autoRevokePermissionsPermissionStatus: PermissionStatus,
     val numPermissionsMissing: Int,
@@ -49,13 +51,17 @@ data class PermissionsUiModel(
 
     companion object {
         fun create(
+            alarmPermissionStatus: PermissionStatus,
             notificationPermissionStatus: PermissionStatus,
+            fullscreenPermissionStatus: PermissionStatus,
             ignoreBatteryOptimizationPermissionStatus: PermissionStatus,
             autoRevokePermissionsPermissionStatus: PermissionStatus,
             resources: Resources
         ): PermissionsUiModel {
             val numMissing = getNumPermissionsMissing(
+                alarmPermissionStatus,
                 notificationPermissionStatus,
+                fullscreenPermissionStatus,
                 ignoreBatteryOptimizationPermissionStatus,
                 autoRevokePermissionsPermissionStatus
             )
@@ -70,7 +76,9 @@ data class PermissionsUiModel(
 
             return PermissionsUiModel(
                 isLoading = false,
+                alarmPermissionStatus = alarmPermissionStatus,
                 notificationPermissionStatus = notificationPermissionStatus,
+                fullscreenPermissionStatus = fullscreenPermissionStatus,
                 ignoreBatteryOptimizationPermissionStatus = ignoreBatteryOptimizationPermissionStatus,
                 autoRevokePermissionsPermissionStatus = autoRevokePermissionsPermissionStatus,
                 numPermissionsMissing = numMissing,
@@ -81,7 +89,9 @@ data class PermissionsUiModel(
         fun loading(): PermissionsUiModel {
             return PermissionsUiModel(
                 isLoading = true,
+                alarmPermissionStatus = PermissionStatus.NotNeeded,
                 notificationPermissionStatus = PermissionStatus.NotNeeded,
+                fullscreenPermissionStatus = PermissionStatus.NotNeeded,
                 ignoreBatteryOptimizationPermissionStatus = PermissionStatus.NotNeeded,
                 autoRevokePermissionsPermissionStatus = PermissionStatus.NotNeeded,
                 numPermissionsMissing = 0,
@@ -89,22 +99,22 @@ data class PermissionsUiModel(
             )
         }
 
-        fun allMissing(
-            resources: Resources
-        ): PermissionsUiModel {
-            return create(
+        fun allMissing(resources: Resources): PermissionsUiModel {
+            return PermissionsUiModel.Companion.create(
+                alarmPermissionStatus = PermissionStatus.Denied,
                 notificationPermissionStatus = PermissionStatus.Denied,
+                fullscreenPermissionStatus = PermissionStatus.Denied,
                 ignoreBatteryOptimizationPermissionStatus = PermissionStatus.Denied,
                 autoRevokePermissionsPermissionStatus = PermissionStatus.Denied,
                 resources = resources
             )
         }
 
-        fun allGranted(
-            resources: Resources
-        ): PermissionsUiModel {
+        fun allGranted(resources: Resources): PermissionsUiModel {
             return create(
+                alarmPermissionStatus = PermissionStatus.Granted,
                 notificationPermissionStatus = PermissionStatus.Granted,
+                fullscreenPermissionStatus = PermissionStatus.Granted,
                 ignoreBatteryOptimizationPermissionStatus = PermissionStatus.Granted,
                 autoRevokePermissionsPermissionStatus = PermissionStatus.Granted,
                 resources = resources
@@ -112,12 +122,16 @@ data class PermissionsUiModel(
         }
 
         private fun getNumPermissionsMissing(
+            alarmPermissionStatus: PermissionStatus,
             notificationPermissionStatus: PermissionStatus,
+            fullscreenPermissionStatus: PermissionStatus,
             ignoreBatteryOptimizationPermissionStatus: PermissionStatus,
             autoRevokePermissionsPermissionStatus: PermissionStatus
         ): Int {
             val permissions = listOf(
+                alarmPermissionStatus,
                 notificationPermissionStatus,
+                fullscreenPermissionStatus,
                 ignoreBatteryOptimizationPermissionStatus,
                 autoRevokePermissionsPermissionStatus
             )

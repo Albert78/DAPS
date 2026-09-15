@@ -29,11 +29,6 @@ enum class NeededPermission {
      * If the user has "granted" this (i.e., exempted the app), the permissions will not be revoked.
      */
     MANAGE_AUTO_REVOKE,
-
-    /**
-     * Allows reading and writing calendar entries.
-     */
-    READ_WRITE_CALENDAR
 }
 
 /**
@@ -49,6 +44,9 @@ data class RestrictedAppFunction(
 
 /**
  * Declares all functions of the app that depend on one or more permissions.
+ * This structure was adopted from another app where individual features can be toggled on and off,
+ * where this pattern makes more sense. However, we retain it here for future extensibility,
+ * well aware that this model is not the best fit for our current use case.
  */
 class RestrictedAppFunctions {
     companion object {
@@ -68,21 +66,15 @@ class RestrictedAppFunctions {
             onPermissionsGranted = { /* TODO: Implement action when alarm permissions have been granted */ }
         )
 
-        val WriteCalendar = RestrictedAppFunction(
-            neededPermissions = setOf(NeededPermission.READ_WRITE_CALENDAR),
-            onPermissionsGranted = { /* TODO: Implement action when calendar permissions have been granted */ }
-        )
-
         val ManageAutoRevoke = RestrictedAppFunction(
             neededPermissions = setOf(NeededPermission.MANAGE_AUTO_REVOKE),
             onPermissionsGranted = { /* TODO: Implement action when auto-revoke permission has been granted */ }
         )
 
-        fun getActiveAppFunctions(para1: Int, para2: Boolean): List<RestrictedAppFunction> {
+        fun getActiveAppFunctions(): List<RestrictedAppFunction> {
             val allFunctions = listOf(
                 Alarms,
                 FullscreenAlarms,
-                WriteCalendar,
                 ManageAutoRevoke
             )
 
@@ -91,11 +83,8 @@ class RestrictedAppFunctions {
             // code around the functions would listen to the app settings and whatever data it needs
             // to decide if that function is active.
             val activeFunctions = allFunctions.filter { function ->
-                when (function) {
-                    WriteCalendar -> para1 > 5
-                    FullscreenAlarms -> para2
-                    else -> true
-                }
+                // We could check if the function is active here...
+                true
             }
             return activeFunctions
         }

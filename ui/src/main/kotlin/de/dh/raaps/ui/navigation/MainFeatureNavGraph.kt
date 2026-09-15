@@ -17,9 +17,6 @@ import androidx.navigation3.runtime.NavKey
 import de.dh.raaps.common.model.ID_UNDEFINED
 import de.dh.raaps.common.navigation.AlarmProfileEditorRoute
 import de.dh.raaps.common.navigation.AlarmProfilesRoute
-import de.dh.raaps.ui.screens.alarmprofiles.AlarmProfileEditorScreen
-import de.dh.raaps.ui.screens.alarmprofiles.AlarmProfileEditorViewModel
-import de.dh.raaps.ui.screens.alarmprofiles.AlarmProfilesViewModel
 import de.dh.raaps.common.navigation.BgEditorRoute
 import de.dh.raaps.common.navigation.BolusHistoryRoute
 import de.dh.raaps.common.navigation.CoreDecisionsRoute
@@ -49,7 +46,10 @@ import de.dh.raaps.ui.common.treatmentlock.TreatmentLockScreen
 import de.dh.raaps.ui.common.treatmentlock.TreatmentLockViewModel
 import de.dh.raaps.ui.controls.history.HistoryViewModel
 import de.dh.raaps.ui.controls.state.SystemViewModel
+import de.dh.raaps.ui.screens.alarmprofiles.AlarmProfileEditorScreen
+import de.dh.raaps.ui.screens.alarmprofiles.AlarmProfileEditorViewModel
 import de.dh.raaps.ui.screens.alarmprofiles.AlarmProfilesScreen
+import de.dh.raaps.ui.screens.alarmprofiles.AlarmProfilesViewModel
 import de.dh.raaps.ui.screens.bolushistory.BolusHistoryScreen
 import de.dh.raaps.ui.screens.bolushistory.BolusHistoryViewModel
 import de.dh.raaps.ui.screens.dashboard.DashboardScreen
@@ -67,15 +67,16 @@ import de.dh.raaps.ui.screens.mealcorrectionbolus.MealCorrectionBolusScreen
 import de.dh.raaps.ui.screens.mealcorrectionbolus.MealCorrectionBolusViewModel
 import de.dh.raaps.ui.screens.meals.EditHistoricalMealScreen
 import de.dh.raaps.ui.screens.meals.EditHistoricalMealViewModel
+import de.dh.raaps.ui.screens.meals.MealsScreen
+import de.dh.raaps.ui.screens.meals.MealsViewModel
 import de.dh.raaps.ui.screens.mealtypes.MealTypeEditorScreen
 import de.dh.raaps.ui.screens.mealtypes.MealTypeEditorViewModel
 import de.dh.raaps.ui.screens.mealtypes.MealTypesScreen
 import de.dh.raaps.ui.screens.mealtypes.MealTypesViewModel
-import de.dh.raaps.ui.screens.meals.MealsScreen
-import de.dh.raaps.ui.screens.meals.MealsViewModel
 import de.dh.raaps.ui.screens.permissions.PermissionsScreen
 import de.dh.raaps.ui.screens.permissions.PermissionsViewModel
 import de.dh.raaps.ui.screens.permissions.isPermissionsMissing
+import de.dh.raaps.ui.screens.permissions.openAppUseFullScreenSettings
 import de.dh.raaps.ui.screens.permissions.openAutoRevokeSettings
 import de.dh.raaps.ui.screens.permissions.openNotificationSettings
 import de.dh.raaps.ui.screens.permissions.requestIgnoreBatteryOptimizations
@@ -277,6 +278,7 @@ class MainFeatureNavGraph(
                             openNotificationSettings(activity)
                         }
                     },
+                    onOpenFullscreenSettings = { openAppUseFullScreenSettings(activity) },
                     onOpenBatteryOptimizationSettings = { requestIgnoreBatteryOptimizations(activity) },
                     onOpenAutoRevokeSettings = { openAutoRevokeSettings(activity) }
                 )
