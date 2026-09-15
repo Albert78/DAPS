@@ -40,6 +40,11 @@ interface AlarmPlayerManager {
     fun playPreview(config: AlarmSoundConfig, durationMs: Long = 3000L)
 
     /**
+     * Updates the audio playback volume in real-time (0..100%).
+     */
+    fun updateVolume(volume: Int)
+
+    /**
      * Stops any currently active alarm sound, preview, or vibration.
      */
     fun stopAlarm()
@@ -142,6 +147,19 @@ class AlarmPlayerManagerImpl(
             startAlarmInternal(config, isLooping = true)
 
             handler.postDelayed(stopPreviewRunnable, durationMs)
+        }
+    }
+
+    override fun updateVolume(volume: Int) {
+        synchronized(mutex) {
+            val roundedVol = volume.coerceIn(0, 100)
+            currentConfig = currentConfig?.copy(volume = roundedVol)
+            val floatVol = roundedVol / 100f
+            try {
+                mediaPlayer?.setVolume(floatVol, floatVol)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error updating volume on MediaPlayer", e)
+            }
         }
     }
 

@@ -75,6 +75,7 @@ fun AlarmProfileEditorScreen(
         onNameChange = viewModel::onNameChange,
         onSeverityConfigChange = viewModel::onSeverityConfigChange,
         onPlayPreview = viewModel::playPreviewSound,
+        onUpdateVolume = viewModel::updatePreviewVolume,
         onStopPreview = viewModel::stopPreviewSound,
         onSave = {
             viewModel.save(onSuccess = onNavigateUp)
@@ -90,6 +91,7 @@ fun AlarmProfileEditorContent(
     onNameChange: (String) -> Unit,
     onSeverityConfigChange: (AlarmSeverity, AlarmSoundConfig) -> Unit,
     onPlayPreview: (AlarmSoundConfig) -> Unit,
+    onUpdateVolume: (Int) -> Unit,
     onStopPreview: () -> Unit,
     onSave: () -> Unit,
     onNavigateUp: () -> Unit
@@ -211,7 +213,8 @@ fun AlarmProfileEditorContent(
                     },
                     onSelectSound = {
                         launchSoundPicker(severity)
-                    }
+                    },
+                    onUpdateVolume = onUpdateVolume
                 )
             }
         }
@@ -249,12 +252,14 @@ fun AlarmProfileEditorContent(
         val currentConfig = uiState.severityDefaults[targetSeverity] ?: AlarmSoundConfig()
         RingtonePickerDialog(
             currentUri = currentConfig.soundUri,
-            onSoundSelected = { selectedUri ->
-                onSeverityConfigChange(targetSeverity, currentConfig.copy(soundUri = selectedUri))
+            currentVolume = currentConfig.volume,
+            onSoundSelected = { selectedUri, selectedVolume ->
+                onSeverityConfigChange(targetSeverity, currentConfig.copy(soundUri = selectedUri, volume = selectedVolume))
             },
-            onPlayPreview = { soundUri ->
-                onPlayPreview(currentConfig.copy(soundUri = soundUri))
+            onPlayPreview = { soundUri, volume ->
+                onPlayPreview(currentConfig.copy(soundUri = soundUri, volume = volume))
             },
+            onUpdateVolume = onUpdateVolume,
             onStopPreview = onStopPreview,
             onDismiss = {
                 showRingtonePickerDialog = false
@@ -270,7 +275,8 @@ fun SeverityEditorSectionCard(
     config: AlarmSoundConfig,
     onConfigChanged: (AlarmSoundConfig) -> Unit,
     onPlayPreview: () -> Unit,
-    onSelectSound: () -> Unit
+    onSelectSound: () -> Unit,
+    onUpdateVolume: (Int) -> Unit
 ) {
     val context = LocalContext.current
     val soundTitle = remember(config.soundUri) {
@@ -321,6 +327,7 @@ fun SeverityEditorSectionCard(
                 onValueChange = { floatValue ->
                     val roundedVolume = ((floatValue / 5f).roundToInt() * 5).coerceIn(0, 100)
                     onConfigChanged(config.copy(volume = roundedVolume))
+                    onUpdateVolume(roundedVolume)
                 },
                 valueRange = 0f..100f,
                 steps = 19
@@ -449,6 +456,7 @@ fun AlarmProfileEditorPreview() {
             onNameChange = {},
             onSeverityConfigChange = { _, _ -> },
             onPlayPreview = {},
+            onUpdateVolume = {},
             onStopPreview = {},
             onSave = {},
             onNavigateUp = {}
