@@ -33,6 +33,7 @@
     <string name="cd_delete_selected_items">Selektierte Einträge löschen</string>
 
     <string name="action_delete">Löschen</string>
+    <string name="action_cancel">Abbrechen</string>
     <string name="action_save">Speichern</string>
     <string name="action_close">Schließen</string>
 

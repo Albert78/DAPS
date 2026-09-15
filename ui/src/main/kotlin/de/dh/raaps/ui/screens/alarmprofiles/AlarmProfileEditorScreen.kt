@@ -1,14 +1,9 @@
 package de.dh.raaps.ui.screens.alarmprofiles
 
-import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.content.res.Configuration
 import android.media.RingtoneManager
-import android.net.Uri
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -52,7 +47,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import kotlin.math.roundToInt
 import de.dh.raaps.common.model.data.AlarmSeverity
 import de.dh.raaps.common.model.data.AlarmSoundConfig
 import de.dh.raaps.common.model.data.VibrationMode
@@ -61,6 +55,7 @@ import de.dh.raaps.ui.common.composables.NormalTextButton
 import de.dh.raaps.ui.common.composables.contentScrollIndicator
 import de.dh.raaps.ui.common.composables.screenTitle
 import de.dh.raaps.ui.common.theme.AppTheme
+import kotlin.math.roundToInt
 import de.dh.raaps.common.R as CommonR
 
 private data class InitialAlarmProfileValues(
@@ -80,6 +75,7 @@ fun AlarmProfileEditorScreen(
         onNameChange = viewModel::onNameChange,
         onSeverityConfigChange = viewModel::onSeverityConfigChange,
         onPlayPreview = viewModel::playPreviewSound,
+        onStopPreview = viewModel::stopPreviewSound,
         onSave = {
             viewModel.save(onSuccess = onNavigateUp)
         },
@@ -94,47 +90,17 @@ fun AlarmProfileEditorContent(
     onNameChange: (String) -> Unit,
     onSeverityConfigChange: (AlarmSeverity, AlarmSoundConfig) -> Unit,
     onPlayPreview: (AlarmSoundConfig) -> Unit,
+    onStopPreview: () -> Unit,
     onSave: () -> Unit,
     onNavigateUp: () -> Unit
 ) {
     var showDiscardConfirmation by remember { mutableStateOf(false) }
     var activeSeverityForSoundPicker by remember { mutableStateOf<AlarmSeverity?>(null) }
-    val pickerTitle = stringResource(id = R.string.alarm_profile_sound_picker_title)
-
-    val soundPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val pickedUri = result.data?.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI, Uri::class.java)
-            val severity = activeSeverityForSoundPicker
-            if (severity != null) {
-                val currentConfig = uiState.severityDefaults[severity] ?: AlarmSoundConfig()
-                val defaultAlarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-                val soundUriString = if (pickedUri == null || pickedUri == defaultAlarmUri) {
-                    null
-                } else {
-                    pickedUri.toString()
-                }
-                onSeverityConfigChange(severity, currentConfig.copy(soundUri = soundUriString))
-            }
-        }
-        activeSeverityForSoundPicker = null
-    }
+    var showRingtonePickerDialog by remember { mutableStateOf(false) }
 
     fun launchSoundPicker(severity: AlarmSeverity) {
         activeSeverityForSoundPicker = severity
-        val currentConfig = uiState.severityDefaults[severity] ?: AlarmSoundConfig()
-        val existingUri = currentConfig.soundUri?.toUri()
-            ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-
-        val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER).apply {
-            putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)
-            putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, pickerTitle)
-            putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true)
-            putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
-            putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, existingUri)
-        }
-        soundPickerLauncher.launch(intent)
+        showRingtonePickerDialog = true
     }
 
     val initialValues = remember(uiState.isLoading) {
@@ -274,6 +240,25 @@ fun AlarmProfileEditorContent(
                 }) {
                     Text(stringResource(id = R.string.discard_confirm_button))
                 }
+            }
+        )
+    }
+
+    val targetSeverity = activeSeverityForSoundPicker
+    if (showRingtonePickerDialog && targetSeverity != null) {
+        val currentConfig = uiState.severityDefaults[targetSeverity] ?: AlarmSoundConfig()
+        RingtonePickerDialog(
+            currentUri = currentConfig.soundUri,
+            onSoundSelected = { selectedUri ->
+                onSeverityConfigChange(targetSeverity, currentConfig.copy(soundUri = selectedUri))
+            },
+            onPlayPreview = { soundUri ->
+                onPlayPreview(currentConfig.copy(soundUri = soundUri))
+            },
+            onStopPreview = onStopPreview,
+            onDismiss = {
+                showRingtonePickerDialog = false
+                activeSeverityForSoundPicker = null
             }
         )
     }
@@ -464,6 +449,7 @@ fun AlarmProfileEditorPreview() {
             onNameChange = {},
             onSeverityConfigChange = { _, _ -> },
             onPlayPreview = {},
+            onStopPreview = {},
             onSave = {},
             onNavigateUp = {}
         )

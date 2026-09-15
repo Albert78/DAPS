@@ -447,6 +447,7 @@
     <string name="alarm_profile_sound_select">Auswählen</string>
     <string name="alarm_profile_sound_reset">Auf Standard zurücksetzen</string>
     <string name="alarm_profile_sound_picker_title">Alarmton auswählen</string>
+    <string name="alarm_profile_sound_select_custom_file">Eigene Audio-Datei auswählen…</string>
     <string name="alarm_profile_vibration_label">Vibration</string>
     <string name="alarm_profile_vibration_off">Aus</string>
     <string name="alarm_profile_vibration_short">Kurz</string>

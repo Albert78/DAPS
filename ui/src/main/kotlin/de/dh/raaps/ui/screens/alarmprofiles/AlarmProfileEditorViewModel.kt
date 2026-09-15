@@ -124,6 +124,10 @@ class AlarmProfileEditorViewModel(
         alarmPlayerManager.playPreview(config, durationMs = 3000L)
     }
 
+    fun stopPreviewSound() {
+        alarmPlayerManager.stopAlarm()
+    }
+
     override fun onCleared() {
         alarmPlayerManager.stopAlarm()
     }
