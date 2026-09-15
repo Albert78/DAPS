@@ -13,10 +13,15 @@ data class CurrentTherapySettings(
     val insulinAdjustmentPercentage: Int = 0,
     val targetBgOverride: BgValue? = null,
     val lowThresholdOverride: BgValue? = null,
-    val activeAlarmProfileId: Long? = null,
     val activeAlarmProfile: AlarmProfile? = null,
     val adjustmentHint: String? = null,
 ) {
+    /**
+     * Resolves the ID of the active alarm profile, if one is set.
+     */
+    val activeAlarmProfileId: Long?
+        get() = activeAlarmProfile?.id
+
     /**
      * Calculates and caches the effective insulin profile considering [insulinAdjustmentPercentage].
      * Evaluated lazily once per instance.
