@@ -1,27 +1,35 @@
 package de.dh.raaps.ui.screens.alarmprofiles
 
 import android.content.Context
+import android.content.res.Configuration
 import android.media.RingtoneManager
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -32,13 +40,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import de.dh.raaps.common.R as CommonR
 import de.dh.raaps.ui.R
 import de.dh.raaps.ui.common.composables.NormalTextButton
+import de.dh.raaps.ui.common.composables.contentScrollIndicator
+import de.dh.raaps.ui.common.theme.AppTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -124,94 +137,174 @@ fun RingtonePickerDialog(
         }
     }
 
-    AlertDialog(
-        onDismissRequest = {
+    RingtonePickerDialogContent(
+        selectedUri = selectedUri,
+        ringtones = ringtones,
+        isLoading = isLoading,
+        onSelectUri = { uri ->
+            selectedUri = uri
+            onPlayPreview(uri)
+        },
+        onPickCustomFile = {
+            customAudioLauncher.launch("audio/*")
+        },
+        onConfirm = {
             onStopPreview()
+            onSoundSelected(selectedUri)
             onDismiss()
         },
+        onDismiss = {
+            onStopPreview()
+            onDismiss()
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RingtonePickerDialogContent(
+    selectedUri: String?,
+    ringtones: List<RingtoneItem>,
+    isLoading: Boolean,
+    onSelectUri: (String?) -> Unit,
+    onPickCustomFile: () -> Unit,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary
+            )
+        },
         title = {
-            Text(text = stringResource(id = R.string.alarm_profile_sound_picker_title))
+            Text(
+                text = stringResource(id = R.string.alarm_profile_sound_picker_title),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
         },
         text = {
             if (isLoading) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(150.dp),
+                        .height(180.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator()
                 }
             } else {
+                val listState = rememberLazyListState()
                 LazyColumn(
+                    state = listState,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(max = 350.dp)
+                        .heightIn(max = 360.dp)
+                        .contentScrollIndicator(listState),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    items(ringtones) { item ->
+                    items(
+                        items = ringtones,
+                        key = { it.uri ?: "default_sound" }
+                    ) { item ->
                         if (item.isCustomAction) {
-                            HorizontalDivider()
-                            ListItem(
-                                headlineContent = {
-                                    Text(
-                                        text = item.title,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                },
-                                leadingContent = {
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 4.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable { onPickCustomFile() },
+                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
+                                border = BorderStroke(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
                                     Icon(
                                         imageVector = Icons.Default.Add,
                                         contentDescription = null,
                                         tint = MaterialTheme.colorScheme.primary
                                     )
-                                },
-                                modifier = Modifier.clickable {
-                                    customAudioLauncher.launch("audio/*")
+                                    Text(
+                                        text = item.title,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
                                 }
-                            )
+                            }
                         } else {
                             val isSelected = (item.uri == selectedUri)
-                            val displayTitle = if (isSelected && !item.uri.isNullOrEmpty() && item.uri == selectedUri) {
-                                getRingtoneTitle(context, item.uri)
+                            val containerColor = if (isSelected) {
+                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
                             } else {
-                                item.title
+                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f)
                             }
-                            ListItem(
-                                headlineContent = { Text(displayTitle) },
-                                leadingContent = {
-                                    RadioButton(
-                                        selected = isSelected,
-                                        onClick = null
-                                    )
-                                },
-                                modifier = Modifier.clickable {
-                                    selectedUri = item.uri
-                                    onPlayPreview(item.uri)
+
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable { onSelectUri(item.uri) },
+                                color = containerColor,
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Row(
+                                        modifier = Modifier.weight(1f),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
+                                        RadioButton(
+                                            selected = isSelected,
+                                            onClick = null
+                                        )
+                                        Text(
+                                            text = item.title,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                            color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                    if (isSelected) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.padding(end = 4.dp)
+                                        )
+                                    }
                                 }
-                            )
+                            }
                         }
                     }
                 }
             }
         },
         confirmButton = {
-            NormalTextButton(
-                onClick = {
-                    onStopPreview()
-                    onSoundSelected(selectedUri)
-                    onDismiss()
-                }
-            ) {
-                Text(stringResource(id = CommonR.string.action_save))
+            NormalTextButton(onClick = onConfirm) {
+                Text(
+                    text = stringResource(id = CommonR.string.action_save),
+                    fontWeight = FontWeight.Bold
+                )
             }
         },
         dismissButton = {
-            NormalTextButton(
-                onClick = {
-                    onStopPreview()
-                    onDismiss()
-                }
-            ) {
+            NormalTextButton(onClick = onDismiss) {
                 Text(stringResource(id = CommonR.string.action_cancel))
             }
         }
@@ -229,5 +322,27 @@ private fun getRingtoneTitle(context: Context, soundUriString: String?): String 
         if (!title.isNullOrEmpty()) title else context.getString(R.string.alarm_profile_sound_custom)
     } catch (_: Exception) {
         context.getString(R.string.alarm_profile_sound_custom)
+    }
+}
+
+@Preview(showBackground = true, name = "Light Mode")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
+@Composable
+fun RingtonePickerDialogPreview() {
+    AppTheme {
+        RingtonePickerDialogContent(
+            selectedUri = "content://media/internal/audio/media/1",
+            ringtones = listOf(
+                RingtoneItem("Standard System-Alarmton", null),
+                RingtoneItem("Sanftes Erwachen", "content://media/internal/audio/media/1"),
+                RingtoneItem("Digitaler Alarm", "content://media/internal/audio/media/2"),
+                RingtoneItem("Eigene Audio-Datei auswählen…", "ACTION_CUSTOM_FILE", isCustomAction = true)
+            ),
+            isLoading = false,
+            onSelectUri = {},
+            onPickCustomFile = {},
+            onConfirm = {},
+            onDismiss = {}
+        )
     }
 }
