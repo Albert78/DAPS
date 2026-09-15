@@ -36,6 +36,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -47,9 +48,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModelProvider
@@ -70,19 +73,18 @@ import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.system.RegistryProvider
 import de.dh.daps.ui.GlobalViewModel
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.LocalAppFormatters
+import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.EdgeToEdgeHandler
 import de.dh.daps.ui.common.icons.Icon_Menu_Bolus_History
 import de.dh.daps.ui.common.icons.Icon_Menu_Food_Database
 import de.dh.daps.ui.common.icons.Icon_Menu_Master_Data
 import de.dh.daps.ui.common.icons.Icon_Menu_Meals
 import de.dh.daps.ui.common.icons.Icon_Menu_System_Control
+import de.dh.daps.ui.common.rememberAppFormatters
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.rememberUseDarkTheme
 import de.dh.daps.ui.navigation.MainFeatureNavGraph
-import de.dh.daps.ui.common.LocalGlucoseUnit
-import de.dh.daps.ui.common.rememberAppFormatters
-import de.dh.daps.ui.common.LocalAppFormatters
-import androidx.compose.runtime.CompositionLocalProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -196,7 +198,7 @@ class MainActivity : ComponentActivity() {
                 drawerState = drawerState,
                 gesturesEnabled = isTopLevel,
                 drawerContent = {
-                    DapsDrawerContent(
+                    DrawerContent(
                         currentRoute = currentRoute,
                         onRouteSelected = { route ->
                             scope.launch { drawerState.close() }
@@ -261,12 +263,12 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun DapsDrawerContent(
+fun DrawerContent(
     currentRoute: NavKey?,
     onRouteSelected: (NavKey) -> Unit,
-    drawerWidth: androidx.compose.ui.unit.Dp = 320.dp,
-    statusBarHeight: androidx.compose.ui.unit.Dp = 0.dp,
-    verticalPadding: androidx.compose.ui.unit.Dp = 0.dp
+    drawerWidth: Dp = 320.dp,
+    statusBarHeight: Dp = 0.dp,
+    verticalPadding: Dp = 0.dp
 ) {
     ModalDrawerSheet(
         modifier = Modifier.width(drawerWidth),
@@ -304,32 +306,32 @@ fun DapsDrawerContent(
                 }
                 HorizontalDivider()
 
-                DapsDrawerItem(
+                DrawerItem(
                     label = stringResource(id = R.string.menu_meals_label),
                     icon = Icon_Menu_Meals,
                     selected = currentRoute == MealsRoute,
                     onClick = { onRouteSelected(MealsRoute) }
                 )
-                DapsDrawerItem(
+                DrawerItem(
                     label = stringResource(id = R.string.menu_bolus_history_label),
                     icon = Icon_Menu_Bolus_History,
                     selected = currentRoute == BolusHistoryRoute,
                     onClick = { onRouteSelected(BolusHistoryRoute) }
                 )
-                DapsDrawerItem(
+                DrawerItem(
                     label = stringResource(id = R.string.menu_food_database_label),
                     icon = Icon_Menu_Food_Database,
                     selected = currentRoute == FoodDatabaseRoute,
                     onClick = { onRouteSelected(FoodDatabaseRoute) }
                 )
-                DapsDrawerItem(
+                DrawerItem(
                     label = stringResource(id = R.string.menu_system_control_label),
                     icon = Icon_Menu_System_Control,
                     selected = currentRoute is SystemControlRoute,
                     onClick = { onRouteSelected(SystemControlRoute()) }
                 )
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                DapsDrawerItem(
+                DrawerItem(
                     label = stringResource(id = R.string.menu_master_data_label),
                     icon = Icon_Menu_Master_Data,
                     selected = currentRoute == MasterDataRoute,
@@ -341,9 +343,9 @@ fun DapsDrawerContent(
 }
 
 @Composable
-private fun DapsDrawerItem(
+private fun DrawerItem(
     label: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     selected: Boolean,
     onClick: () -> Unit
 ) {
@@ -358,9 +360,9 @@ private fun DapsDrawerItem(
 
 @androidx.compose.ui.tooling.preview.Preview(showBackground = true, widthDp = 320)
 @Composable
-fun DapsDrawerPreview() {
+fun DrawerPreview() {
     AppTheme {
-        DapsDrawerContent(
+        DrawerContent(
             currentRoute = DashboardRoute,
             onRouteSelected = {},
             statusBarHeight = 24.dp,
