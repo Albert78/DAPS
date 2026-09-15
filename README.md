@@ -1,7 +1,7 @@
-# RAAPS
+# DAPS
 [[Deutsche Version]](#deutsch)
 
-RAAPS is an open-source project focused on developing a modern, full-featured Automated Insulin Delivery (AID/APS) app for Android.
+DAPS is an open-source project focused on developing a modern, full-featured Automated Insulin Delivery (AID/APS) app for Android.
 
 **Note on UI & Localization:** The UI is currently only available in German. If needed, localization can be performed using an AI tool like Gemini. Furthermore, the interface is currently optimized for the Samsung Galaxy S26.
 
@@ -16,7 +16,7 @@ Updates might need a database clean (long click on app symbol, force stop, delet
 
 ## Project Goal
 
-The goal of RAAPS is to provide a full-featured APS app based on a modern architecture. It is a **greenfield development** that consistently utilizes current technologies to avoid legacy architectural burdens.
+The goal of DAPS is to provide a full-featured APS app based on a modern architecture. It is a **greenfield development** that consistently utilizes current technologies to avoid legacy architectural burdens.
 
 As a person with diabetes, I am developing this app primarily for my own needs to create a solution that meets my expectations for performance and user-friendliness.
 
@@ -36,15 +36,15 @@ The project is actively **under development**.
 
 ## Development with the Sim-Body Module
 
-Since working on an AID system without hardware connectivity is difficult, RAAPS includes a specialized simulation module. **To use the simulation features, the `app` module must be built using the `simDebug` build flavor.**
+Since working on an AID system without hardware connectivity is difficult, DAPS includes a specialized simulation module. **To use the simulation features, the `app` module must be built using the `simDebug` build flavor.**
 
 *   **Simulated Body:** The `sim-body` module simulates the glucose response to insulin and carbohydrates.
 *   **Scenarios:** Various influences (meals, exercise, stress) can be simulated to test control algorithms under controlled conditions.
-*   **Interactive UI:** Meals can be entered and simulations controlled via special dialogs in the app.
+*   **Interactive UI:** The overview is in the Dashboard at the bottom. Meals can be entered and simulations controlled via special dialogs in the app.
 
 ## Architecture & Plugins
 
-RAAPS relies on a strict separation of concerns through a modular system:
+DAPS relies on a strict separation of concerns through a modular system:
 
 *   **Core Engine:** Handles the central processing of glucose data and the calculation of therapy adjustments.
 *   **Plugins for CGM Sources and Pumps:** Hardware interfaces are completely decoupled from the core. This allows for flexible integration of different pump models and CGM sources.
@@ -61,9 +61,9 @@ RAAPS relies on a strict separation of concerns through a modular system:
 ---
 
 <a id="deutsch"></a>
-# RAAPS (Deutsche Version)
+# DAPS (Deutsche Version)
 
-RAAPS ist ein Open-Source-Projekt zur Entwicklung einer modernen, vollumfänglichen Automated Insulin Delivery (AID/APS) App für Android.
+DAPS ist ein Open-Source-Projekt zur Entwicklung einer modernen, vollumfänglichen Automated Insulin Delivery (AID/APS) App für Android.
 
 **Hinweis zu UI & Lokalisierung:** Die Benutzeroberfläche existiert aktuell nur auf Deutsch. Die Lokalisierung kann bei Bedarf mithilfe von Gemini übersetzt werden. Zudem ist die UI derzeit auf das Samsung Galaxy S26 optimiert.
 
@@ -79,7 +79,7 @@ Bei Aktualisierungen kann es notwendig sein, die lokale Datenbank zu löschen (L
 
 ## Projektziel
 
-Das Ziel von RAAPS ist die Bereitstellung einer Full-Featured APS-App, die auf einer modernen Architektur basiert. Es handelt sich um eine **Greenfield-Entwicklung**, die konsequent auf aktuelle Technologien setzt, um architektonische Altlasten zu vermeiden.
+Das Ziel von DAPS ist die Bereitstellung einer Full-Featured APS-App, die auf einer modernen Architektur basiert. Es handelt sich um eine **Greenfield-Entwicklung**, die konsequent auf aktuelle Technologien setzt, um architektonische Altlasten zu vermeiden.
 
 Als Diabetiker entwickle ich diese App primär für den eigenen Bedarf, um eine Lösung zu schaffen, die meinen Vorstellungen von Performance und Benutzerfreundlichkeit entspricht. 
 
@@ -99,15 +99,15 @@ Das Projekt befindet sich aktiv **in der Entwicklung**.
 
 ## Entwicklung mit dem Sim-Body-Modul
 
-Da die Arbeit an einem AID-System ohne Hardware-Anbindung schwierig ist, enthält RAAPS ein spezialisiertes Simulations-Modul. **Um die Simulationsfunktionen nutzen zu können, muss das `app`-Modul im Build-Flavor `simDebug` gebaut werden.**
+Da die Arbeit an einem AID-System ohne Hardware-Anbindung schwierig ist, enthält DAPS ein spezialisiertes Simulations-Modul. **Um die Simulationsfunktionen nutzen zu können, muss das `app`-Modul im Build-Flavor `simDebug` gebaut werden.**
 
 *   **Simulierter Körper:** Das `sim-body`-Modul simuliert die Glukose-Reaktion auf Insulin und Kohlenhydrate.
 *   **Szenarien:** Es können verschiedene Einflüsse (Mahlzeiten, Sport, Stress) simuliert werden, um die Regelalgorithmen unter kontrollierten Bedingungen zu testen.
-*   **Interaktive UI:** Über spezielle Dialoge in der App können Mahlzeiten eingegeben und Simulationen gesteuert werden.
+*   **Interaktive UI:** Im Dashboard unten findet man die Übersicht. Über spezielle Dialoge in der App können Mahlzeiten eingegeben und Simulationen gesteuert werden.
 
 ## Architektur & Plugins
 
-RAAPS setzt auf eine strikte Trennung der Verantwortlichkeiten durch ein modulares System:
+DAPS setzt auf eine strikte Trennung der Verantwortlichkeiten durch ein modulares System:
 
 *   **Core Engine:** Übernimmt die zentrale Verarbeitung von Glukosedaten und die Berechnung von Therapieanpassungen.
 *   **Plugins für CGM-Quellen und Pumpen:** Die Schnittstellen für Hardware sind vollständig vom Kern entkoppelt. Dies ermöglicht es, verschiedene Pumpenmodelle und CGM-Quellen flexibel zu integrieren.

@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "de.dh.raaps.plugin.glucose.receiver"
+    namespace = "de.dh.daps.plugin.glucose.receiver"
     compileSdk = libs.versions.sdkCompile.get().toInt()
 
     defaultConfig {

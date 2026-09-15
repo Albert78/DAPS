@@ -10,7 +10,7 @@ room {
 }
 
 android {
-    namespace = "de.dh.raaps.core"
+    namespace = "de.dh.daps.core"
     compileSdk = libs.versions.sdkCompile.get().toInt()
 
     defaultConfig {

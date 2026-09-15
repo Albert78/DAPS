@@ -22,7 +22,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "RAAPS"
+rootProject.name = "DAPS"
 include(":common")
 include(":core")
 include(":ui")

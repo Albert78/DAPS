@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "de.dh.raaps.plugin.simbody"
+    namespace = "de.dh.daps.plugin.simbody"
     compileSdk = libs.versions.sdkCompile.get().toInt()
 
     defaultConfig {

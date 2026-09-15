@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">RAAPS (Simulation)</string>
+    <string name="app_name">DAPS (Simulation)</string>
 
-    <string name="dashboard_screen_title">RAAPS (Simulation)</string>
+    <string name="dashboard_screen_title">DAPS (Simulation)</string>
 </resources>

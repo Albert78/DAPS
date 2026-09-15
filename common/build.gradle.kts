@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "de.dh.raaps.common"
+    namespace = "de.dh.daps.common"
     compileSdk = libs.versions.sdkCompile.get().toInt()
 
     defaultConfig {

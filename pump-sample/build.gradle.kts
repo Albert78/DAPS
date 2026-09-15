@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "de.dh.raaps.plugin.pump"
+    namespace = "de.dh.daps.plugin.pump"
     compileSdk = libs.versions.sdkCompile.get().toInt()
 
     defaultConfig {

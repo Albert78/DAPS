@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "de.dh.raaps"
+    namespace = "de.dh.daps"
     compileSdk = libs.versions.sdkCompile.get().toInt()
 
     defaultConfig {
-        applicationId = "de.dh.raaps"
+        applicationId = "de.dh.daps"
         minSdk = libs.versions.sdkMin.get().toInt()
         targetSdk = libs.versions.sdkTarget.get().toInt()
         versionCode = 1

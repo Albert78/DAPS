@@ -41,7 +41,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
                     android:scheme="app"
-                    android:host="raaps.dh.de"
+                    android:host="daps.dh.de"
                     android:pathPrefix="/dashboard" />
             </intent-filter>
         </activity>
@@ -60,25 +60,25 @@
         </receiver>
 
         <activity
-            android:name="de.dh.raaps.ui.activities.AlarmActivity"
+            android:name="de.dh.daps.ui.activities.AlarmActivity"
             android:exported="false"
             android:showOnLockScreen="true"
             android:turnScreenOn="true"
             android:launchMode="singleTop"
             android:theme="@style/AppTheme" />
 
-        <receiver android:name="de.dh.raaps.notifications.AlarmBroadcastReceiver"
+        <receiver android:name="de.dh.daps.notifications.AlarmBroadcastReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="de.dh.raaps.ACTION_SNOOZE_ALARM" />
-                <action android:name="de.dh.raaps.ACTION_DISMISS_ALARM" />
+                <action android:name="de.dh.daps.ACTION_SNOOZE_ALARM" />
+                <action android:name="de.dh.daps.ACTION_DISMISS_ALARM" />
             </intent-filter>
         </receiver>
 
-        <receiver android:name="de.dh.raaps.core.system.SystemWakeReceiver"
+        <receiver android:name="de.dh.daps.core.system.SystemWakeReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="de.dh.raaps.core.system.ACTION_WAKEUP" />
+                <action android:name="de.dh.daps.core.system.ACTION_WAKEUP" />
             </intent-filter>
         </receiver>
 

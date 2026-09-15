@@ -133,7 +133,7 @@
     <string name="pref_glucose_unit_title">Glukose-Einheit</string>
     <string name="pref_glucose_unit_dialog_title">Einheit wählen</string>
 
-    <string name="aps_service_notification_channel_name">RAAPS Service</string>
+    <string name="aps_service_notification_channel_name">DAPS Service</string>
     <string name="aps_service_notification_content_no_value_yet">Kein Glukosewert</string>
 
     <string name="history_screen_title">Historie</string>
