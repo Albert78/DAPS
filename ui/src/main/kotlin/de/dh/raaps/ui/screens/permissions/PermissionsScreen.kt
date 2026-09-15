@@ -295,13 +295,16 @@ fun PermissionsScreenPreview() {
     AppTheme {
         PermissionsScreenContent(
             uiModel = PermissionsUiModel.create(
+                alarmPermissionStatus = PermissionStatus.create(isGranted = true, isNeeded = true),
                 notificationPermissionStatus = PermissionStatus.create(isGranted = false, isNeeded = true),
+                fullscreenPermissionStatus = PermissionStatus.create(isGranted = false, isNeeded = true),
                 ignoreBatteryOptimizationPermissionStatus = PermissionStatus.create(isGranted = true, isNeeded = true),
                 autoRevokePermissionsPermissionStatus = PermissionStatus.create(isGranted = true, isNeeded = true),
                 resources = LocalResources.current
             ),
             onNavigateUp = {},
             onOpenNotificationSettings = {},
+            onOpenFullscreenSettings = {},
             onOpenBatteryOptimizationSettings = {},
             onOpenAutoRevokeSettings = {}
         )

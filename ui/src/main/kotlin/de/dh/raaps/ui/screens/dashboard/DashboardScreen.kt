@@ -339,7 +339,9 @@ fun DashboardPreview() {
                 ),
                 permissionsUiState = PermissionsUiModel(
                     isLoading = false,
+                    alarmPermissionStatus = PermissionStatus.Granted,
                     notificationPermissionStatus = PermissionStatus.Granted,
+                    fullscreenPermissionStatus = PermissionStatus.Granted,
                     ignoreBatteryOptimizationPermissionStatus = PermissionStatus.Granted,
                     autoRevokePermissionsPermissionStatus = PermissionStatus.Granted,
                     numPermissionsMissing = 0,
@@ -396,7 +398,9 @@ fun DashboardPermissionsWarningPreview() {
                 ),
                 permissionsUiState = PermissionsUiModel(
                     isLoading = false,
+                    alarmPermissionStatus = PermissionStatus.Granted,
                     notificationPermissionStatus = PermissionStatus.Denied,
+                    fullscreenPermissionStatus = PermissionStatus.Granted,
                     ignoreBatteryOptimizationPermissionStatus = PermissionStatus.Granted,
                     autoRevokePermissionsPermissionStatus = PermissionStatus.Granted,
                     numPermissionsMissing = 1,
