@@ -74,8 +74,12 @@ fun openAppSettings(context: Context) {
 }
 
 fun canShowFullscreenActivity(context: Context): Boolean {
-    val sysManager = context.getSystemService<NotificationManager>()
-    return sysManager?.canUseFullScreenIntent() ?: false
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        val sysManager = context.getSystemService<NotificationManager>()
+        sysManager?.canUseFullScreenIntent() ?: false
+    } else {
+        true
+    }
 }
 
 /**
