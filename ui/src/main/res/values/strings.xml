@@ -203,18 +203,18 @@
     <string name="therapy_settings_help_insulin_desc">Enthält deine grundlegenden Therapieparameter wie z.B. Basalrate, Kohlenhydratfaktor (CR) und Korrekturfaktor (ISF). Diese Werte bestimmen die Basis deiner automatisierten Therapie. Es kann Sinn machen, für Krankheit, veränderte Tagesrhythmen, mehrtägige Sportevents, aber auch Sommer/Winter unterschiedliche Insulinprofile zu verwenden.</string>
     <string name="therapy_settings_help_bg_title">Ziel-BZ &amp; Niedrig-Schwelle</string>
     <string name="therapy_settings_help_bg_desc">Hier definierst du deinen gewünschten Blutzucker-Bereich über den gesamten Tag. Das System versucht, dich im Zielbereich zu halten und warnt, wenn die Niedrig-Schwelle unterschritten wird.</string>
-    <string name="therapy_settings_help_adjustment_title">Temporäre Anpassung</string>
-    <string name="therapy_settings_help_adjustment_desc">Ermöglicht es dir, die Therapie kurzfristig an besondere Situationen wie Sport, Schlaf, Alkohol oder Stress anzupassen, indem Insulinmengen prozentual verändert oder Zielwerte verschoben werden.</string>
+    <string name="therapy_settings_help_adjustment_title">Therapie-Anpassung</string>
+    <string name="therapy_settings_help_adjustment_desc">Ermöglicht es dir, die Therapie kurzfristig an besondere Situationen wie Sport, Schlaf, Alkohol oder Stress anzupassen, indem Insulinmengen prozentual verändert, Zielwerte verschoben oder das Alarmprofil angepasst werden.</string>
 
-    <string name="aps_control_therapy_adjustment_label">Temporäre Anpassung</string>
-    <string name="aps_control_therpay_adjustment_dialog_title">Temporäre Therapie-Anpassung</string>
+    <string name="aps_control_therapy_adjustment_label">Therapie-Anpassung</string>
+    <string name="aps_control_therpay_adjustment_dialog_title">Therapie-Anpassung</string>
     <string name="aps_control_therapy_adjustment_custom">Individuell</string>
     <string name="aps_control_therapy_adjustment_dialog_insulin_adjustment_label">Insulin-Anpassung</string>
     <string name="aps_control_therapy_adjustment_dialog_insulin_adjustment_description">Passt die abgegebene Insulinmenge für einen begrenzten Zeitraum prozentual an.</string>
     <string name="aps_control_therapy_adjustment_dialog_bg_adjustment_label">Werte-Anpassung</string>
     <string name="aps_control_therapy_adjustment_dialog_bg_adjustment_description">Überschreibt Zielwert und Niedrig-&#173;Schwelle für einen begrenzten Zeitraum.</string>
     <string name="aps_control_therapy_adjustment_alarm_profile_label">Alarmprofil</string>
-    <string name="aps_control_therapy_adjustment_alarm_profile_description">Schaltet während dieser temporären Anpassung automatisch auf das gewählte Alarmprofil um.</string>
+    <string name="aps_control_therapy_adjustment_alarm_profile_description">Schaltet während dieser Therapie-Anpassung automatisch auf das gewählte Alarmprofil um.</string>
     <string name="aps_control_therapy_adjustment_alarm_profile_unchanged">Unverändert</string>
     <string name="aps_control_therapy_adjustment_dialog_presets_title">Schnellauswahl</string>
 
