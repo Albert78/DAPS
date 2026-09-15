@@ -24,6 +24,16 @@ sealed interface PumpIssue {
     data class CommandFailed(val status: PumpStatus) : PumpIssue
 
     /**
+     * The pump reservoir level is low.
+     */
+    data object LowInsulin : PumpIssue
+
+    /**
+     * The pump battery level is low.
+     */
+    data object LowBattery : PumpIssue
+
+    /**
      * Any other issue that prevents the pump communication from working.
      */
     data object Other : PumpIssue

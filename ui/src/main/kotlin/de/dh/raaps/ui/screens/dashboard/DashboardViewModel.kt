@@ -5,7 +5,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import de.dh.raaps.common.model.ApsMode
+import de.dh.raaps.common.model.data.AlarmSoundConfig
+import de.dh.raaps.common.model.data.AlarmType
 import de.dh.raaps.core.SystemRegistry
+import de.dh.raaps.core.alarms.AlarmSnoozeState
 import de.dh.raaps.core.aps.ApsRecommendation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -22,7 +25,10 @@ data class DashboardUiState(
     // TODO: Get selectable modes from core
     val availableApsModes: List<ApsMode> = ApsMode.entries,
     val recommendations: List<ApsRecommendation> = emptyList(),
-    val isMealCorrectionBolusAllowed: Boolean = false
+    val isMealCorrectionBolusAllowed: Boolean = false,
+    val activeFiringAlarm: AlarmType? = null,
+    val activeFiringConfig: AlarmSoundConfig? = null,
+    val snoozedAlarms: Map<AlarmType, AlarmSnoozeState> = emptyMap()
 )
 
 /**
@@ -32,22 +38,48 @@ class DashboardViewModel(
     private val systemRegistry: SystemRegistry
 ) : ViewModel() {
     private val systemOrchestrator = systemRegistry.systemOrchestrator
+    private val alarmEvaluator = systemRegistry.alarmEvaluator
+    private val alarmSnoozeManager = systemRegistry.alarmSnoozeManager
     private val _uiState = MutableStateFlow(DashboardUiState())
 
     val uiState: StateFlow<DashboardUiState> = combine(
         _uiState,
         systemOrchestrator.apsMode,
-        systemRegistry.therapyManager.recommendations
-    ) { state, mode, recommendations ->
+        systemRegistry.therapyManager.recommendations,
+        alarmEvaluator.activeFiringAlarm,
+        alarmEvaluator.activeFiringConfig,
+        alarmSnoozeManager.snoozedAlarms
+    ) { flows ->
+        val state = flows[0] as DashboardUiState
+        val mode = flows[1] as ApsMode
+        @Suppress("UNCHECKED_CAST")
+        val recommendations = flows[2] as List<ApsRecommendation>
+        val activeFiring = flows[3] as AlarmType?
+        val config = flows[4] as AlarmSoundConfig?
+        @Suppress("UNCHECKED_CAST")
+        val snoozedMap = flows[5] as Map<AlarmType, AlarmSnoozeState>
+
         state.copy(
             apsMode = mode,
             recommendations = recommendations,
-            isMealCorrectionBolusAllowed = systemOrchestrator.canOpenMealCorrectionBolus()
+            isMealCorrectionBolusAllowed = systemOrchestrator.canOpenMealCorrectionBolus(),
+            activeFiringAlarm = activeFiring,
+            activeFiringConfig = config,
+            snoozedAlarms = snoozedMap
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DashboardUiState())
 
     init {
         reload()
+    }
+
+    fun snoozeAlarm(alarmType: AlarmType, minutes: Int) {
+        alarmSnoozeManager.snoozeAlarm(alarmType, minutes)
+        systemRegistry.alarmPlayerManager.stopAlarm()
+    }
+
+    fun cancelSnooze(alarmType: AlarmType) {
+        alarmSnoozeManager.clearSnooze(alarmType)
     }
 
     fun reload() {

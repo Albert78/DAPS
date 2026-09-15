@@ -3,6 +3,7 @@ package de.dh.raaps.core.pump
 import android.content.Intent
 import android.util.Log
 import de.dh.raaps.common.model.BolusStatus
+import de.dh.raaps.common.model.InsulinAmount
 import de.dh.raaps.common.model.InsulinHistory
 import de.dh.raaps.common.model.InsulinPump
 import de.dh.raaps.common.model.data.Timestamp
@@ -71,16 +72,43 @@ class PumpManagerImpl(
                     launch {
                         pc.pumpCommunicationErrorSince.collect { time ->
                             if (time != Timestamp.INVALID) {
-                                addIssue(PumpIssue.ConnectionMissing)
+                                setIssue(PumpIssue.ConnectionMissing)
                             }
                         }
                     }
                     launch {
                         pc.pump.pumpStatus.collect { status ->
                             if (status.pumpSuspended) {
-                                addIssue(PumpIssue.Inoperative)
+                                setIssue(PumpIssue.Inoperative)
                             } else {
                                 removeIssue(PumpIssue.Inoperative)
+                            }
+
+                            if (status.batteryRemainingPercent in 1..15) {
+                                setIssue(PumpIssue.LowBattery)
+                            } else if (!pc.pump.alerts.value.batteryLow) {
+                                removeIssue(PumpIssue.LowBattery)
+                            }
+
+                            if (status.reservoirRemainingUnits > InsulinAmount.ZERO && status.reservoirRemainingUnits <= InsulinAmount(10.0)) {
+                                setIssue(PumpIssue.LowInsulin)
+                            } else if (!pc.pump.alerts.value.reservoirLow) {
+                                removeIssue(PumpIssue.LowInsulin)
+                            }
+                        }
+                    }
+                    launch {
+                        pc.pump.alerts.collect { alerts ->
+                            if (alerts.batteryLow) {
+                                setIssue(PumpIssue.LowBattery)
+                            } else if (pc.pump.pumpStatus.value.batteryRemainingPercent > 15 || pc.pump.pumpStatus.value.batteryRemainingPercent <= 0) {
+                                removeIssue(PumpIssue.LowBattery)
+                            }
+
+                            if (alerts.reservoirLow) {
+                                setIssue(PumpIssue.LowInsulin)
+                            } else if (pc.pump.pumpStatus.value.reservoirRemainingUnits > InsulinAmount(10.0) || pc.pump.pumpStatus.value.reservoirRemainingUnits <= InsulinAmount.ZERO) {
+                                removeIssue(PumpIssue.LowInsulin)
                             }
                         }
                     }
@@ -152,7 +180,7 @@ class PumpManagerImpl(
         }
     }
 
-    private fun addIssue(issue: PumpIssue) {
+    private fun setIssue(issue: PumpIssue) {
         if (issue !in _pumpIssues.value) {
             _pumpIssues.value += issue
         }
@@ -167,14 +195,14 @@ class PumpManagerImpl(
     private fun handleJobError(job: PumpJob, jobErrorCode: JobErrorCode) {
         when (jobErrorCode) {
             JobErrorCode.Expired,
-            is JobErrorCode.ConnectionFailed -> addIssue(PumpIssue.ConnectionMissing)
+            is JobErrorCode.ConnectionFailed -> setIssue(PumpIssue.ConnectionMissing)
             is JobErrorCode.CommandFailed -> {
                 Log.e(TAG, "Pump command failed with status ${jobErrorCode.status} for job $job")
-                addIssue(PumpIssue.CommandFailed(jobErrorCode.status))
+                setIssue(PumpIssue.CommandFailed(jobErrorCode.status))
             }
             is JobErrorCode.TechnicalError -> {
                 Log.e(TAG, "Pump technical error: ${jobErrorCode.message} for job $job")
-                addIssue(PumpIssue.Other)
+                setIssue(PumpIssue.Other)
             }
         }
     }

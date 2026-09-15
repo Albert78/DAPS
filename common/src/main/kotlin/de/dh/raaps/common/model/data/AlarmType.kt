@@ -30,6 +30,10 @@ enum class AlarmType(
         defaultSeverity = AlarmSeverity.WARNING,
         category = AlarmCategory.PUMP
     ),
+    PUMP_LOW_BATTERY(
+        defaultSeverity = AlarmSeverity.WARNING,
+        category = AlarmCategory.PUMP
+    ),
     CGM_SIGNAL_LOSS(
         defaultSeverity = AlarmSeverity.WARNING,
         category = AlarmCategory.CGM

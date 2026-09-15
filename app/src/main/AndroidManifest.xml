@@ -59,6 +59,22 @@
             </intent-filter>
         </receiver>
 
+        <activity
+            android:name="de.dh.raaps.ui.activities.AlarmActivity"
+            android:exported="false"
+            android:showOnLockScreen="true"
+            android:turnScreenOn="true"
+            android:launchMode="singleTop"
+            android:theme="@style/AppTheme" />
+
+        <receiver android:name="de.dh.raaps.notifications.AlarmBroadcastReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="de.dh.raaps.ACTION_SNOOZE_ALARM" />
+                <action android:name="de.dh.raaps.ACTION_DISMISS_ALARM" />
+            </intent-filter>
+        </receiver>
+
         <receiver android:name="de.dh.raaps.core.system.SystemWakeReceiver"
             android:exported="false">
             <intent-filter>

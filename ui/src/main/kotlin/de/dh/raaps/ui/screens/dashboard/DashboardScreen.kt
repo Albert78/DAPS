@@ -1,18 +1,24 @@
 package de.dh.raaps.ui.screens.dashboard
 
 import android.content.res.Configuration
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -20,9 +26,15 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.ui.text.font.FontWeight
+import de.dh.raaps.common.model.data.AlarmSeverity
+import de.dh.raaps.common.model.data.Timestamp
+import de.dh.raaps.ui.screens.alarm.getAlarmTypeTitle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
@@ -38,6 +50,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.raaps.common.model.ApsMode
 import de.dh.raaps.common.model.InsulinAmount
+import de.dh.raaps.common.model.data.AlarmType
 import de.dh.raaps.common.model.data.BgDelta
 import de.dh.raaps.common.model.data.BgValue
 import de.dh.raaps.common.model.data.GlucoseUnit
@@ -69,6 +82,9 @@ import de.dh.raaps.ui.screens.permissions.PermissionsViewModel
 import de.dh.raaps.ui.screens.therapy.CurrentTherapyUiState
 import de.dh.raaps.ui.screens.therapy.CurrentTherapyViewModel
 import de.dh.raaps.ui.screens.therapy.InsulinProfileUiState
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import de.dh.raaps.common.R as CommonR
 
 @Composable
@@ -114,6 +130,8 @@ fun DashboardScreen(
         onHistoryChartClick = onHistoryChartClick,
         onApsModeSelect = { viewModel.setApsMode(it) },
         onAdjustmentClick = onAdjustmentClick,
+        onSnoozeAlarm = { type, min -> viewModel.snoozeAlarm(type, min) },
+        onCancelSnooze = { type -> viewModel.cancelSnooze(type) },
         extraContent = extraContent
     )
 }
@@ -138,6 +156,8 @@ fun DashboardContent(
     onHistoryChartClick: (() -> Unit)?,
     onApsModeSelect: (ApsMode) -> Unit,
     onAdjustmentClick: () -> Unit,
+    onSnoozeAlarm: (AlarmType, Int) -> Unit = { _, _ -> },
+    onCancelSnooze: (AlarmType) -> Unit = {},
     extraContent: @Composable () -> Unit = {}
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
@@ -199,6 +219,23 @@ fun DashboardContent(
                     warningText = stringResource(id = R.string.dashboard_permissions_missing),
                     actionText = stringResource(id = R.string.dashboard_fix_permissions_link),
                     onActionClick = onFixPermissionsClick
+                )
+            }
+
+            // Active firing alarm banner
+            dashboardUiState.activeFiringAlarm?.let { firingAlarm ->
+                ActiveFiringAlarmBanner(
+                    alarmType = firingAlarm,
+                    onSnooze = { minutes -> onSnoozeAlarm(firingAlarm, minutes) }
+                )
+            }
+
+            // Snoozed alarms banners
+            dashboardUiState.snoozedAlarms.forEach { (alarmType, snoozeState) ->
+                SnoozedAlarmBanner(
+                    alarmType = alarmType,
+                    snoozedUntil = snoozeState.snoozedUntil,
+                    onCancelSnooze = { onCancelSnooze(alarmType) }
                 )
             }
 
@@ -417,6 +454,98 @@ fun DashboardPermissionsWarningPreview() {
                 onNavigateToMealCorrectionBolus = {},
                 isMealCorrectionBolusAllowed = true
             )
+        }
+    }
+}
+
+@Composable
+fun ActiveFiringAlarmBanner(
+    alarmType: AlarmType,
+    onSnooze: (Int) -> Unit
+) {
+    val isCritical = alarmType.defaultSeverity == AlarmSeverity.CRITICAL
+    val containerColor = if (isCritical) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.tertiaryContainer
+    val contentColor = if (isCritical) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onTertiaryContainer
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 12.dp),
+        colors = CardDefaults.cardColors(containerColor = containerColor)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Warning,
+                    contentDescription = null,
+                    tint = contentColor,
+                    modifier = Modifier.size(28.dp)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = getAlarmTypeTitle(alarmType),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = contentColor
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                OutlinedButton(onClick = { onSnooze(15) }) {
+                    Text(stringResource(R.string.alarm_action_snooze_15))
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                OutlinedButton(onClick = { onSnooze(30) }) {
+                    Text(stringResource(R.string.alarm_action_snooze_30))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SnoozedAlarmBanner(
+    alarmType: AlarmType,
+    snoozedUntil: Timestamp,
+    onCancelSnooze: () -> Unit
+) {
+    val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+    val timeStr = timeFormat.format(Date(snoozedUntil.ms))
+    val text = stringResource(
+        R.string.alarm_snoozed_until_format,
+        getAlarmTypeTitle(alarmType),
+        timeStr
+    )
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "⚠️ $text",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f)
+            )
+            TextButton(onClick = onCancelSnooze) {
+                Text(stringResource(R.string.alarm_action_unsnooze))
+            }
         }
     }
 }

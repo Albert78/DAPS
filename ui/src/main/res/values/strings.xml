@@ -453,4 +453,24 @@
     <string name="cd_add_alarm_profile">Alarmprofil hinzufügen</string>
     <string name="action_set_active">Aktivieren</string>
 
+    <!-- Alarm Trigger & Snooze -->
+    <string name="pump_issue_low_insulin">Wenig Insulin in der Pumpe.</string>
+    <string name="pump_issue_low_battery">Akku der Insulinpumpe ist schwach.</string>
+    <string name="alarm_action_snooze">Stummschalten</string>
+    <string name="alarm_action_snooze_15">15 Min stumm</string>
+    <string name="alarm_action_snooze_30">30 Min stumm</string>
+    <string name="alarm_action_snooze_60">60 Min stumm</string>
+    <string name="alarm_action_dismiss">Quittieren</string>
+    <string name="alarm_action_unsnooze">Aktivieren</string>
+    <string name="alarm_type_critical_low_bg">KRITISCH NIEDRIGER BLUTZUCKER!</string>
+    <string name="alarm_type_low_bg">Niedriger Blutzucker</string>
+    <string name="alarm_type_high_bg">Hoher Blutzucker</string>
+    <string name="alarm_type_pump_occlusion">PUMPEN-VERSTOPFUNG / UNTERBRECHUNG</string>
+    <string name="alarm_type_pump_low_insulin">Wenig Insulin in der Pumpe</string>
+    <string name="alarm_type_pump_low_battery">Pumpen-Akku schwach</string>
+    <string name="alarm_type_cgm_signal_loss">CGM-Signal verloren</string>
+    <string name="alarm_type_system_battery_low">Akkustand niedrig</string>
+    <string name="alarm_snoozed_until_format">%1$s stummgeschaltet bis %2$s</string>
+    <string name="full_screen_alarm_title">ACHTUNG: SICHERHEITS-ALARM</string>
+
 </resources>

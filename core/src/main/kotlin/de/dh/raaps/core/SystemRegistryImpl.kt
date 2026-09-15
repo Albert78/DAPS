@@ -9,8 +9,10 @@ import de.dh.raaps.common.model.PluginManager
 import de.dh.raaps.common.model.calculation.CarbsInsulinCalculator
 import de.dh.raaps.common.model.data.Minutes
 import de.dh.raaps.common.model.data.TimeService
+import de.dh.raaps.core.alarms.AlarmEvaluator
 import de.dh.raaps.core.alarms.AlarmPlayerManager
 import de.dh.raaps.core.alarms.AlarmPlayerManagerImpl
+import de.dh.raaps.core.alarms.AlarmSnoozeManager
 import de.dh.raaps.core.aps.GlucoseSourceManager
 import de.dh.raaps.core.aps.SystemOrchestrator
 import de.dh.raaps.core.aps.SystemOrchestratorImpl
@@ -45,6 +47,8 @@ class SystemRegistryImpl(
     override val therapyRepository: TherapyRepository,
     override val alarmRepository: AlarmRepository,
     override val alarmPlayerManager: AlarmPlayerManager,
+    override val alarmSnoozeManager: AlarmSnoozeManager,
+    override val alarmEvaluator: AlarmEvaluator,
     override val treatmentRepository: TreatmentRepository,
     override val foodRepository: FoodRepository,
     override val deviceManagementRepository: DeviceManagementRepository,
@@ -150,6 +154,19 @@ class SystemRegistryImpl(
                 context = application
             )
 
+            val alarmSnoozeManager = AlarmSnoozeManager()
+            val alarmEvaluator = AlarmEvaluator(
+                context = application,
+                glucoseRepository = glucoseRepository,
+                systemOrchestrator = systemOrchestrator,
+                alarmRepository = alarmRepository,
+                alarmSnoozeManager = alarmSnoozeManager,
+                alarmPlayerManager = alarmPlayerManager,
+                androidNotifications = androidNotifications,
+                scope = scope
+            )
+            alarmEvaluator.start()
+
             val permissionsHandler = PermissionsChangedHandler {
                 pluginManager.triggerUpdatesAfterPermissionsChange()
                 onPermissionsChanged()
@@ -161,6 +178,8 @@ class SystemRegistryImpl(
                 therapyRepository = therapyRepository,
                 alarmRepository = alarmRepository,
                 alarmPlayerManager = alarmPlayerManager,
+                alarmSnoozeManager = alarmSnoozeManager,
+                alarmEvaluator = alarmEvaluator,
                 treatmentRepository = treatmentRepository,
                 foodRepository = foodRepository,
                 deviceManagementRepository = deviceManagementRepository,

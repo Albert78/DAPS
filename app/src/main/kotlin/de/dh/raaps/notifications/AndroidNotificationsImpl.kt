@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Context.NOTIFICATION_SERVICE
+import android.content.Intent
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
@@ -21,6 +22,7 @@ import de.dh.raaps.core.pump.PumpIssue
 import de.dh.raaps.core.repository.GlucoseRepository
 import de.dh.raaps.core.system.AndroidNotifications
 import de.dh.raaps.core.system.RegistryProvider
+import de.dh.raaps.ui.activities.AlarmActivity
 import de.dh.raaps.ui.activities.MainActivity
 import de.dh.raaps.ui.common.time
 import de.dh.raaps.ui.screens.permissions.canPostNotifications
@@ -201,9 +203,22 @@ class AndroidNotificationsImpl(
             dashboardIntent, PendingIntent.FLAG_IMMUTABLE
         )
 
+        val alarmActivityIntent = Intent(context, AlarmActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
         val fullScreenPendingIntent = PendingIntent.getActivity(
             context, 0,
-            dashboardIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            alarmActivityIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val snooze15Intent = AlarmBroadcastReceiver.createSnoozeIntent(context, null, 15)
+        val snooze15PendingIntent = PendingIntent.getBroadcast(
+            context, 15, snooze15Intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val snooze30Intent = AlarmBroadcastReceiver.createSnoozeIntent(context, null, 30)
+        val snooze30PendingIntent = PendingIntent.getBroadcast(
+            context, 30, snooze30Intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         val notification = NotificationCompat.Builder(context, ALGORITHM_ISSUE_CHANNEL_ID)
@@ -213,6 +228,16 @@ class AndroidNotificationsImpl(
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentIntent(pendingIntent)
             .setFullScreenIntent(fullScreenPendingIntent, true)
+            .addAction(
+                R.mipmap.ic_launcher,
+                context.getString(UiR.string.alarm_action_snooze_15),
+                snooze15PendingIntent
+            )
+            .addAction(
+                R.mipmap.ic_launcher,
+                context.getString(UiR.string.alarm_action_snooze_30),
+                snooze30PendingIntent
+            )
             .setAutoCancel(false) // Keep it until resolved
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -246,6 +271,8 @@ class AndroidNotificationsImpl(
         is ApsIssue.Pump -> when (issue.issue) {
             PumpIssue.ConnectionMissing -> context.getString(UiR.string.pump_issue_connection_missing)
             PumpIssue.Inoperative -> context.getString(UiR.string.pump_issue_inoperative)
+            PumpIssue.LowInsulin -> context.getString(UiR.string.pump_issue_low_insulin)
+            PumpIssue.LowBattery -> context.getString(UiR.string.pump_issue_low_battery)
             is PumpIssue.CommandFailed -> context.getString(UiR.string.pump_issue_command_failed)
             PumpIssue.Other -> context.getString(UiR.string.pump_issue_other)
         }
