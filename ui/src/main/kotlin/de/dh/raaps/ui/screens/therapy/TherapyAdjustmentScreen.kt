@@ -304,7 +304,7 @@ fun TherapyAdjustmentContent(
                         FilterChip(
                             selected = (currentAlarmProfileId == null),
                             onClick = { onValuesChange(currentPercentage, currentTarget, currentLow, null) },
-                            label = { Text(stringResource(R.string.aps_control_therapy_adjustment_alarm_profile_unchanged)) }
+                            label = { Text(stringResource(R.string.aps_control_adjustment_standard)) }
                         )
                         availableAlarmProfiles.forEach { profile ->
                             FilterChip(

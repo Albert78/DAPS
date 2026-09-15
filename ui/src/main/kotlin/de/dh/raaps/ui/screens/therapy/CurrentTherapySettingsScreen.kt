@@ -754,7 +754,7 @@ private fun TemporaryAdjustmentCard(
                 AdjustmentItem(
                     icon = Icons.Default.Notifications,
                     label = stringResource(R.string.aps_control_therapy_adjustment_alarm_profile_label),
-                    value = adjustment.activeAlarmProfileName ?: stringResource(R.string.aps_control_therapy_adjustment_alarm_profile_unchanged),
+                    value = adjustment.activeAlarmProfileName ?: stringResource(R.string.aps_control_adjustment_standard),
                     valueColor = if (adjustment.activeAlarmProfileId != null)
                         MaterialTheme.colorScheme.primary
                     else
@@ -794,7 +794,7 @@ private fun AdjustmentItem(
             )
         }
 
-        Column(modifier = Modifier.weight(2f)) {
+        Column(modifier = Modifier.weight(3f)) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelMedium,
@@ -813,7 +813,7 @@ private fun AdjustmentItem(
         Row(
             verticalAlignment = Alignment.Bottom,
             horizontalArrangement = Arrangement.spacedBy(4.dp),
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(2f)
         ) {
             Text(
                 text = value,

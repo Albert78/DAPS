@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import de.dh.raaps.common.model.data.AlarmSeverity
@@ -34,6 +35,7 @@ import de.dh.raaps.common.model.data.BgValue
 import de.dh.raaps.common.model.data.GlucoseUnit
 import de.dh.raaps.ui.R
 import de.dh.raaps.ui.common.composables.PrimaryButton
+import de.dh.raaps.ui.common.theme.AppTheme
 
 @Composable
 fun FullScreenAlarmScreen(
@@ -213,4 +215,32 @@ fun getAlarmTypeDescription(alarmType: AlarmType): String = when (alarmType) {
     AlarmType.PUMP_LOW_BATTERY -> stringResource(id = R.string.pump_issue_low_battery)
     AlarmType.CGM_SIGNAL_LOSS -> stringResource(id = R.string.core_issue_no_recent_values, 15)
     AlarmType.SYSTEM_BATTERY_LOW -> stringResource(id = R.string.alarm_type_system_battery_low)
+}
+
+@Preview(showBackground = true, name = "Critical Low BG Alarm")
+@Composable
+fun FullScreenAlarmScreenCriticalPreview() {
+    AppTheme {
+        FullScreenAlarmScreen(
+            alarmType = AlarmType.CRITICAL_LOW_BG,
+            bgValue = BgValue.fromMgDl(55),
+            glucoseUnit = GlucoseUnit.MG_DL,
+            onSnooze = {},
+            onDismiss = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "High BG Alarm")
+@Composable
+fun FullScreenAlarmScreenHighBgPreview() {
+    AppTheme {
+        FullScreenAlarmScreen(
+            alarmType = AlarmType.HIGH_BG,
+            bgValue = BgValue.fromMgDl(240),
+            glucoseUnit = GlucoseUnit.MG_DL,
+            onSnooze = {},
+            onDismiss = {}
+        )
+    }
 }
