@@ -1,7 +1,14 @@
 package de.dh.raaps.ui.screens.alarmprofiles
 
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import android.content.res.Configuration
+import android.media.RingtoneManager
+import android.net.Uri
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -39,10 +46,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import kotlin.math.roundToInt
 import de.dh.raaps.common.model.data.AlarmSeverity
 import de.dh.raaps.common.model.data.AlarmSoundConfig
@@ -89,6 +98,44 @@ fun AlarmProfileEditorContent(
     onNavigateUp: () -> Unit
 ) {
     var showDiscardConfirmation by remember { mutableStateOf(false) }
+    var activeSeverityForSoundPicker by remember { mutableStateOf<AlarmSeverity?>(null) }
+    val pickerTitle = stringResource(id = R.string.alarm_profile_sound_picker_title)
+
+    val soundPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val pickedUri = result.data?.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI, Uri::class.java)
+            val severity = activeSeverityForSoundPicker
+            if (severity != null) {
+                val currentConfig = uiState.severityDefaults[severity] ?: AlarmSoundConfig()
+                val defaultAlarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                val soundUriString = if (pickedUri == null || pickedUri == defaultAlarmUri) {
+                    null
+                } else {
+                    pickedUri.toString()
+                }
+                onSeverityConfigChange(severity, currentConfig.copy(soundUri = soundUriString))
+            }
+        }
+        activeSeverityForSoundPicker = null
+    }
+
+    fun launchSoundPicker(severity: AlarmSeverity) {
+        activeSeverityForSoundPicker = severity
+        val currentConfig = uiState.severityDefaults[severity] ?: AlarmSoundConfig()
+        val existingUri = currentConfig.soundUri?.toUri()
+            ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+
+        val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER).apply {
+            putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)
+            putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, pickerTitle)
+            putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true)
+            putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
+            putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, existingUri)
+        }
+        soundPickerLauncher.launch(intent)
+    }
 
     val initialValues = remember(uiState.isLoading) {
         if (!uiState.isLoading) {
@@ -195,6 +242,9 @@ fun AlarmProfileEditorContent(
                     },
                     onPlayPreview = {
                         onPlayPreview(currentConfig)
+                    },
+                    onSelectSound = {
+                        launchSoundPicker(severity)
                     }
                 )
             }
@@ -234,8 +284,14 @@ fun SeverityEditorSectionCard(
     title: String,
     config: AlarmSoundConfig,
     onConfigChanged: (AlarmSoundConfig) -> Unit,
-    onPlayPreview: () -> Unit
+    onPlayPreview: () -> Unit,
+    onSelectSound: () -> Unit
 ) {
+    val context = LocalContext.current
+    val soundTitle = remember(config.soundUri) {
+        getRingtoneTitle(context, config.soundUri)
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -284,6 +340,43 @@ fun SeverityEditorSectionCard(
                 valueRange = 0f..100f,
                 steps = 19
             )
+
+            // Sound Selection
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(id = R.string.alarm_profile_sound_label),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = soundTitle,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (!config.soundUri.isNullOrEmpty()) {
+                        IconButton(
+                            onClick = { onConfigChanged(config.copy(soundUri = null)) }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = stringResource(id = R.string.alarm_profile_sound_reset)
+                            )
+                        }
+                    }
+                    NormalTextButton(onClick = onSelectSound) {
+                        Text(text = stringResource(id = R.string.alarm_profile_sound_select))
+                    }
+                }
+            }
 
             // Vibration Mode
             Text(
@@ -341,6 +434,20 @@ fun SeverityEditorSectionCard(
                 )
             }
         }
+    }
+}
+
+private fun getRingtoneTitle(context: Context, soundUriString: String?): String {
+    if (soundUriString.isNullOrEmpty()) {
+        return context.getString(R.string.alarm_profile_sound_default)
+    }
+    return try {
+        val uri = soundUriString.toUri()
+        val ringtone = RingtoneManager.getRingtone(context, uri)
+        val title = ringtone?.getTitle(context)
+        if (!title.isNullOrEmpty()) title else context.getString(R.string.alarm_profile_sound_custom)
+    } catch (_: Exception) {
+        context.getString(R.string.alarm_profile_sound_custom)
     }
 }
 

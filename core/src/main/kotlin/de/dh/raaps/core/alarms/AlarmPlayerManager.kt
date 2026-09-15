@@ -177,16 +177,43 @@ class AlarmPlayerManagerImpl(
                         .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                         .build()
 
-                    val player = MediaPlayer().apply {
-                        setDataSource(appContext, soundUri)
-                        setAudioAttributes(audioAttributes)
+                    val player = MediaPlayer()
+                    var preparedSuccessfully = false
+                    try {
+                        player.setDataSource(appContext, soundUri)
+                        player.setAudioAttributes(audioAttributes)
                         val floatVol = config.volume.coerceIn(0, 100) / 100f
-                        setVolume(floatVol, floatVol)
-                        this.isLooping = isLooping
-                        prepare()
-                        start()
+                        player.setVolume(floatVol, floatVol)
+                        player.isLooping = isLooping
+                        player.prepare()
+                        player.start()
+                        preparedSuccessfully = true
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Failed to play custom soundUri '$soundUri', falling back to system default alarm sound", e)
+                        val defaultUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                            ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+                        if (defaultUri != null) {
+                            try {
+                                player.reset()
+                                player.setDataSource(appContext, defaultUri)
+                                player.setAudioAttributes(audioAttributes)
+                                val floatVol = config.volume.coerceIn(0, 100) / 100f
+                                player.setVolume(floatVol, floatVol)
+                                player.isLooping = isLooping
+                                player.prepare()
+                                player.start()
+                                preparedSuccessfully = true
+                            } catch (fallbackEx: Exception) {
+                                Log.e(TAG, "Fallback to system alarm sound also failed", fallbackEx)
+                            }
+                        }
                     }
-                    mediaPlayer = player
+
+                    if (preparedSuccessfully) {
+                        mediaPlayer = player
+                    } else {
+                        player.release()
+                    }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error starting MediaPlayer for alarm sound", e)
