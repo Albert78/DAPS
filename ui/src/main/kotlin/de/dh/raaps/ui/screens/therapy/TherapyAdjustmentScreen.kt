@@ -56,6 +56,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.FilterChip
+import de.dh.raaps.common.model.data.AlarmProfile
 import de.dh.raaps.common.model.ADJUSTMENT_PERCENTAGE_MAX
 import de.dh.raaps.common.model.ADJUSTMENT_PERCENTAGE_MIN
 import de.dh.raaps.common.model.LOW_THRESHOLD_MAX
@@ -93,16 +96,18 @@ fun TherapyAdjustmentScreen(
         currentPercentage = activeTherapyStatus.adjustment.percentage,
         currentTarget = activeTherapyStatus.adjustment.targetBgOverride,
         currentLow = activeTherapyStatus.adjustment.lowThresholdOverride,
+        currentAlarmProfileId = activeTherapyStatus.adjustment.activeAlarmProfileId,
         baseTarget = activeTherapyStatus.baseTarget,
         baseLow = activeTherapyStatus.baseLow,
-        onValuesChange = { p, t, l ->
-            viewModel.setTherapyAdjustment(p, t, l, null)
+        onValuesChange = { p, t, l, a ->
+            viewModel.setTherapyAdjustment(p, t, l, a, null)
         },
+        availableAlarmProfiles = uiState.availableAlarmProfiles,
         presets = uiState.therapyAdjustmentPresets,
-        onPresetApplied = { p, t, l, n ->
+        onPresetApplied = { p, t, l, a, n ->
             // Avoid "neutral" adjustment hint for neutral settings
-            val hint = if (p == 0 && t == null && l == null) null else n
-            viewModel.setTherapyAdjustment(p, t, l, hint)
+            val hint = if (p == 0 && t == null && l == null && a == null) null else n
+            viewModel.setTherapyAdjustment(p, t, l, a, hint)
             onNavigateUp()
         },
         onNavigateUp = onNavigateUp
@@ -115,11 +120,13 @@ fun TherapyAdjustmentContent(
     currentPercentage: Int,
     currentTarget: BgValue?,
     currentLow: BgValue?,
+    currentAlarmProfileId: Long?,
     baseTarget: BgValue,
     baseLow: BgValue,
-    onValuesChange: (Int, BgValue?, BgValue?) -> Unit,
-    onPresetApplied: (Int, BgValue?, BgValue?, String?) -> Unit,
+    onValuesChange: (Int, BgValue?, BgValue?, Long?) -> Unit,
+    onPresetApplied: (Int, BgValue?, BgValue?, Long?, String?) -> Unit,
     onNavigateUp: () -> Unit,
+    availableAlarmProfiles: List<AlarmProfile> = emptyList(),
     presets: List<TherapyAdjustment> = emptyList()
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -188,7 +195,7 @@ fun TherapyAdjustmentContent(
                 ) {
                     EditableValueStepper(
                         currentValue = currentPercentage.toDouble(),
-                        onValueChange = { onValuesChange(it.toInt(), currentTarget, currentLow) },
+                        onValueChange = { onValuesChange(it.toInt(), currentTarget, currentLow, currentAlarmProfileId) },
                         minValue = ADJUSTMENT_PERCENTAGE_MIN.toDouble(),
                         maxValue = ADJUSTMENT_PERCENTAGE_MAX.toDouble(),
                         steppingStrategy = steppingStrategyInsulin,
@@ -218,9 +225,9 @@ fun TherapyAdjustmentContent(
                             active = currentTarget != null,
                             onActiveChange = { active ->
                                 if (active) {
-                                    onValuesChange(currentPercentage, baseTarget, currentLow)
+                                    onValuesChange(currentPercentage, baseTarget, currentLow, currentAlarmProfileId)
                                 } else {
-                                    onValuesChange(currentPercentage, null, currentLow)
+                                    onValuesChange(currentPercentage, null, currentLow, currentAlarmProfileId)
                                 }
                             },
                             accentColor = MaterialTheme.colorScheme.primary
@@ -230,7 +237,7 @@ fun TherapyAdjustmentContent(
                                     currentValue = currentTarget.mgdl,
                                     onValueChange = {
                                         val newValue = if (it == 0.0) null else BgValue.fromMgDl(it.toInt())
-                                        onValuesChange(currentPercentage, newValue, currentLow)
+                                        onValuesChange(currentPercentage, newValue, currentLow, currentAlarmProfileId)
                                     },
                                     minValue = TARGET_MIN.toDouble(),
                                     maxValue = TARGET_MAX.toDouble(),
@@ -251,9 +258,9 @@ fun TherapyAdjustmentContent(
                             active = currentLow != null,
                             onActiveChange = { active ->
                                 if (active) {
-                                    onValuesChange(currentPercentage, currentTarget, baseLow)
+                                    onValuesChange(currentPercentage, currentTarget, baseLow, currentAlarmProfileId)
                                 } else {
-                                    onValuesChange(currentPercentage, currentTarget, null)
+                                    onValuesChange(currentPercentage, currentTarget, null, currentAlarmProfileId)
                                 }
                             },
                             accentColor = MaterialTheme.colorScheme.error
@@ -263,7 +270,7 @@ fun TherapyAdjustmentContent(
                                     currentValue = currentLow.mgdl,
                                     onValueChange = {
                                         val newValue = if (it == 0.0) null else BgValue.fromMgDl(it.toInt())
-                                        onValuesChange(currentPercentage, currentTarget, newValue)
+                                        onValuesChange(currentPercentage, currentTarget, newValue, currentAlarmProfileId)
                                     },
                                     minValue = LOW_THRESHOLD_MIN.toDouble(),
                                     maxValue = LOW_THRESHOLD_MAX.toDouble(),
@@ -274,6 +281,37 @@ fun TherapyAdjustmentContent(
                             } else {
                                 StandardValueDisplay(baseLow)
                             }
+                        }
+                    }
+                }
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+                // Alarm Profile Section
+                val alarmProfileActive = currentAlarmProfileId != null
+                AdjustmentSection(
+                    icon = Icons.Default.Notifications,
+                    title = stringResource(R.string.aps_control_therapy_adjustment_alarm_profile_label),
+                    description = stringResource(R.string.aps_control_therapy_adjustment_alarm_profile_description),
+                    isActive = alarmProfileActive,
+                    useCardWrapper = false
+                ) {
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        FilterChip(
+                            selected = (currentAlarmProfileId == null),
+                            onClick = { onValuesChange(currentPercentage, currentTarget, currentLow, null) },
+                            label = { Text(stringResource(R.string.aps_control_therapy_adjustment_alarm_profile_unchanged)) }
+                        )
+                        availableAlarmProfiles.forEach { profile ->
+                            FilterChip(
+                                selected = (currentAlarmProfileId == profile.id),
+                                onClick = { onValuesChange(currentPercentage, currentTarget, currentLow, profile.id) },
+                                label = { Text(profile.name) }
+                            )
                         }
                     }
                 }
@@ -300,6 +338,7 @@ fun TherapyAdjustmentContent(
                                             preset.percentage,
                                             preset.targetBgMgDl?.let { BgValue.fromMgDl(it.toInt()) },
                                             preset.lowThresholdMgDl?.let { BgValue.fromMgDl(it.toInt()) },
+                                            preset.activeAlarmProfileId,
                                             preset.name
                                         )
                                     },
@@ -495,10 +534,11 @@ private fun TherapyAdjustmentPreviewValues() {
                     currentPercentage = -10,
                     currentTarget = BgValue.fromMgDl(120),
                     currentLow = BgValue.fromMgDl(80),
+                    currentAlarmProfileId = null,
                     baseTarget = BgValue.fromMgDl(100),
                     baseLow = BgValue.fromMgDl(70),
-                    onValuesChange = { _, _, _ -> },
-                    onPresetApplied = { _, _, _, _ -> },
+                    onValuesChange = { _, _, _, _ -> },
+                    onPresetApplied = { _, _, _, _, _ -> },
                     onNavigateUp = {},
                     presets = listOf(
                         TherapyAdjustment("Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
@@ -521,10 +561,11 @@ private fun TherapyAdjustmentPreviewEmpty() {
                     currentPercentage = 0,
                     currentTarget = null,
                     currentLow = null,
+                    currentAlarmProfileId = null,
                     baseTarget = BgValue.fromMgDl(100),
                     baseLow = BgValue.fromMgDl(70),
-                    onValuesChange = { _, _, _ -> },
-                    onPresetApplied = { _, _, _, _ -> },
+                    onValuesChange = { _, _, _, _ -> },
+                    onPresetApplied = { _, _, _, _, _ -> },
                     onNavigateUp = {},
                     presets = listOf(
                         TherapyAdjustment("Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),

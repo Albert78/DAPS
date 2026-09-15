@@ -13,6 +13,8 @@ data class CurrentTherapySettings(
     val insulinAdjustmentPercentage: Int = 0,
     val targetBgOverride: BgValue? = null,
     val lowThresholdOverride: BgValue? = null,
+    val activeAlarmProfileId: Long? = null,
+    val activeAlarmProfile: AlarmProfile? = null,
     val adjustmentHint: String? = null,
 ) {
     /**

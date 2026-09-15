@@ -89,6 +89,8 @@ class TherapyRepository(
         clearCache()
     }
 
+    private val alarmProfileDao = appDatabase.alarmProfileDao()
+
     // --- Current Therapy Settings Operations ---
 
     /**
@@ -100,8 +102,9 @@ class TherapyRepository(
 
     fun observeCurrentTherapySettings(): Flow<CurrentTherapySettings> = combine(
         therapyDao.observeCurrentTherapySettings(),
-        therapyDao.observeAllInsulinProfiles()
-    ) { _, _ ->
+        therapyDao.observeAllInsulinProfiles(),
+        alarmProfileDao.observeAllAlarmProfiles()
+    ) { _, _, _ ->
         fetchCurrentTherapySettingsFromDb()?.also { fresh ->
             cachedCurrentTherapySettings = fresh
         }
@@ -124,7 +127,10 @@ class TherapyRepository(
     private suspend fun fetchCurrentTherapySettingsFromDb(): CurrentTherapySettings? {
         val entity = therapyDao.getCurrentTherapySettings() ?: return null
         val profile = getInsulinProfileById(entity.insulin_profile_id) ?: return null
-        val settings = entity.toModel(profile)
+        val alarmProfile = entity.active_alarm_profile_id?.let { alarmProfileId ->
+            alarmProfileDao.getAlarmProfileById(alarmProfileId)?.toModel()
+        }
+        val settings = entity.toModel(profile, alarmProfile)
 
         return if (settings.defaultBgBlocks.isEmpty()) {
             settings.copy(

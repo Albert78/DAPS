@@ -22,6 +22,7 @@ import de.dh.raaps.common.model.data.getAmountForMinute
 import de.dh.raaps.common.model.data.getBgForMinute
 import de.dh.raaps.core.pump.PumpCommand
 import de.dh.raaps.core.pump.PumpManager
+import de.dh.raaps.core.repository.AlarmRepository
 import de.dh.raaps.core.repository.TherapyRepository
 import de.dh.raaps.core.repository.TreatmentRepository
 import kotlinx.coroutines.CoroutineScope
@@ -81,6 +82,7 @@ class TherapyManager(
     private val appPreferencesRepository: AppPreferencesRepository,
     private val pumpManager: PumpManager,
     private val systemOrchestrator: SystemOrchestrator,
+    private val alarmRepository: AlarmRepository,
     private val scope: CoroutineScope
 ) {
     private val mutex = Mutex()
@@ -200,16 +202,32 @@ class TherapyManager(
         }
     }
 
-    suspend fun setTherapyAdjustment(percentage: Int, targetBg: BgValue?, lowThreshold: BgValue?, adjustmentHint: String?) {
+    suspend fun setTherapyAdjustment(
+        percentage: Int,
+        targetBg: BgValue?,
+        lowThreshold: BgValue?,
+        activeAlarmProfileId: Long? = null,
+        adjustmentHint: String? = null
+    ) {
         mutex.withLock {
             val currentSettings = getCurrentTherapySettings()
+            val previousAlarmProfileId = currentSettings.activeAlarmProfileId
+
             val newSettings = currentSettings.copy(
                 insulinAdjustmentPercentage = percentage,
                 targetBgOverride = targetBg,
                 lowThresholdOverride = lowThreshold,
+                activeAlarmProfileId = activeAlarmProfileId,
                 adjustmentHint = adjustmentHint
             )
             therapyRepository.updateCurrentTherapySettings(newSettings)
+
+            if (activeAlarmProfileId != null) {
+                alarmRepository.setActiveAlarmProfile(activeAlarmProfileId)
+            } else if (previousAlarmProfileId != null) {
+                val defaultProfile = alarmRepository.getAllAlarmProfiles().find { it.isDefault }
+                defaultProfile?.let { alarmRepository.setActiveAlarmProfile(it.id) }
+            }
         }
     }
 

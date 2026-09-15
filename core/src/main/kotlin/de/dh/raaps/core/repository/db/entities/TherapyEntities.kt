@@ -49,5 +49,6 @@ data class CurrentTherapySettingsEntity(
     val insulin_adjustment_percentage: Int,
     val target_bg_override: Short? = null,
     val low_threshold_override: Short? = null,
+    val active_alarm_profile_id: Long? = null,
     val adjustment_hint: String? = null,
 )

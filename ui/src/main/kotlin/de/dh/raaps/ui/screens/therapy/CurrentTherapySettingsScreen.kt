@@ -24,6 +24,7 @@ import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Adjust
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material.icons.filled.VerticalAlignBottom
@@ -747,6 +748,18 @@ private fun TemporaryAdjustmentCard(
                             stringResource(R.string.label_decreased)
                     else
                         null
+                )
+
+                // Alarm Profile Override
+                AdjustmentItem(
+                    icon = Icons.Default.Notifications,
+                    label = stringResource(R.string.aps_control_therapy_adjustment_alarm_profile_label),
+                    value = adjustment.activeAlarmProfileName ?: stringResource(R.string.aps_control_therapy_adjustment_alarm_profile_unchanged),
+                    valueColor = if (adjustment.activeAlarmProfileId != null)
+                        MaterialTheme.colorScheme.primary
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant,
+                    status = if (adjustment.activeAlarmProfileId != null) stringResource(R.string.label_active) else null
                 )
             }
         }

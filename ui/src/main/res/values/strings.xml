@@ -213,6 +213,9 @@
     <string name="aps_control_therapy_adjustment_dialog_insulin_adjustment_description">Passt die abgegebene Insulinmenge für einen begrenzten Zeitraum prozentual an.</string>
     <string name="aps_control_therapy_adjustment_dialog_bg_adjustment_label">Werte-Anpassung</string>
     <string name="aps_control_therapy_adjustment_dialog_bg_adjustment_description">Überschreibt Zielwert und Niedrig-&#173;Schwelle für einen begrenzten Zeitraum.</string>
+    <string name="aps_control_therapy_adjustment_alarm_profile_label">Alarmprofil</string>
+    <string name="aps_control_therapy_adjustment_alarm_profile_description">Schaltet während dieser temporären Anpassung automatisch auf das gewählte Alarmprofil um.</string>
+    <string name="aps_control_therapy_adjustment_alarm_profile_unchanged">Unverändert</string>
     <string name="aps_control_therapy_adjustment_dialog_presets_title">Schnellauswahl</string>
 
     <string name="approx_prefix">ca.</string>

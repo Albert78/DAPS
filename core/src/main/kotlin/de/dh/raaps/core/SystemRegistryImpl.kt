@@ -133,6 +133,7 @@ class SystemRegistryImpl(
                 appPreferencesRepository = appPreferencesRepository,
                 pumpManager = pumpManager,
                 systemOrchestrator = systemOrchestrator,
+                alarmRepository = alarmRepository,
                 scope = scope
             )
             val carbsInsulinCalculator = CarbsInsulinCalculator(timeService.tickInterval)

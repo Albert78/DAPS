@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import de.dh.raaps.common.model.InsulinAmount
+import de.dh.raaps.common.model.data.AlarmProfile
 import de.dh.raaps.common.model.data.BgBlock
 import de.dh.raaps.common.model.data.BgDelta
 import de.dh.raaps.common.model.data.BgValue
@@ -39,6 +40,8 @@ data class TherapyAdjustmentUiState(
     val percentage: Int = 0,
     val targetBgOverride: BgValue? = null,
     val lowThresholdOverride: BgValue? = null,
+    val activeAlarmProfileId: Long? = null,
+    val activeAlarmProfileName: String? = null,
     val adjustmentHint: String? = null
 )
 
@@ -58,7 +61,8 @@ data class TherapyAdjustment(
     val name: String,
     val percentage: Int = 0,
     val targetBgMgDl: Short? = null,
-    val lowThresholdMgDl: Short? = null
+    val lowThresholdMgDl: Short? = null,
+    val activeAlarmProfileId: Long? = null
 )
 
 data class CurrentTherapyUiState(
@@ -66,6 +70,7 @@ data class CurrentTherapyUiState(
     val activeTherapyStatus: ActiveTherapyStatusUiState = ActiveTherapyStatusUiState(),
     val glucoseUnit: GlucoseUnit = GlucoseUnit.MG_DL,
     val availableInsulinProfiles: List<InsulinProfile> = emptyList(),
+    val availableAlarmProfiles: List<AlarmProfile> = emptyList(),
     val defaultBgBlocks: List<BgBlock> = emptyList(),
     val therapyAdjustmentPresets: List<TherapyAdjustment> = emptyList()
 )
@@ -98,13 +103,19 @@ class CurrentTherapyViewModel(
         combine(
             therapyManager.currentTherapySettingsFlow,
             therapyManager.observeAllInsulinProfiles(),
+            systemRegistry.alarmRepository.observeAllAlarmProfiles(),
             glucoseUnitFlow
-        ) { currentSettings, profiles, unit ->
-            updateState(currentSettings, profiles, unit)
+        ) { currentSettings, profiles, alarmProfiles, unit ->
+            updateState(currentSettings, profiles, alarmProfiles, unit)
         }.launchIn(viewModelScope)
     }
 
-    private suspend fun updateState(currentSettings: CurrentTherapySettings, profiles: List<InsulinProfile>, unit: GlucoseUnit) {
+    private suspend fun updateState(
+        currentSettings: CurrentTherapySettings,
+        profiles: List<InsulinProfile>,
+        alarmProfiles: List<AlarmProfile>,
+        unit: GlucoseUnit
+    ) {
         val now = Timestamp.now()
         val isf = therapyManager.getIsfFactor(now)
         val cr = therapyManager.getCrFactor(now)
@@ -132,6 +143,8 @@ class CurrentTherapyViewModel(
             percentage = currentSettings.insulinAdjustmentPercentage,
             targetBgOverride = currentSettings.targetBgOverride,
             lowThresholdOverride = currentSettings.lowThresholdOverride,
+            activeAlarmProfileId = currentSettings.activeAlarmProfileId,
+            activeAlarmProfileName = currentSettings.activeAlarmProfile?.name,
             adjustmentHint = currentSettings.adjustmentHint
         )
 
@@ -153,6 +166,7 @@ class CurrentTherapyViewModel(
                 activeTherapyStatus = activeTherapyStatus,
                 glucoseUnit = unit,
                 availableInsulinProfiles = profiles,
+                availableAlarmProfiles = alarmProfiles,
                 defaultBgBlocks = currentSettings.defaultBgBlocks,
                 therapyAdjustmentPresets = hardcodedPresets
             )
@@ -200,9 +214,21 @@ class CurrentTherapyViewModel(
         }
     }
 
-    fun setTherapyAdjustment(percentage: Int, targetBg: BgValue?, lowThreshold: BgValue?, adjustmentHint: String?) {
+    fun setTherapyAdjustment(
+        percentage: Int,
+        targetBg: BgValue?,
+        lowThreshold: BgValue?,
+        activeAlarmProfileId: Long? = null,
+        adjustmentHint: String? = null
+    ) {
         viewModelScope.launch {
-            therapyManager.setTherapyAdjustment(percentage, targetBg, lowThreshold, adjustmentHint)
+            therapyManager.setTherapyAdjustment(
+                percentage = percentage,
+                targetBg = targetBg,
+                lowThreshold = lowThreshold,
+                activeAlarmProfileId = activeAlarmProfileId,
+                adjustmentHint = adjustmentHint
+            )
         }
     }
 
