@@ -2,6 +2,7 @@ package de.dh.raaps.core.repository
 
 import de.dh.raaps.common.model.DEFAULT_BG_LOW_THRESHOLD_MGDL
 import de.dh.raaps.common.model.DEFAULT_BG_TARGET_MGDL
+import de.dh.raaps.common.model.ID_UNDEFINED
 import de.dh.raaps.common.model.InsulinType
 import de.dh.raaps.common.model.data.BgBlock
 import de.dh.raaps.common.model.data.BgValue
@@ -11,6 +12,8 @@ import de.dh.raaps.common.model.data.Minutes
 import de.dh.raaps.core.repository.db.AppDatabase
 import de.dh.raaps.core.repository.db.MetabolicEventsDao
 import de.dh.raaps.core.repository.db.TherapyDao
+import de.dh.raaps.core.repository.db.entities.CurrentTherapySettingsEntity
+import de.dh.raaps.core.repository.db.mappers.toDb
 import de.dh.raaps.core.repository.db.mappers.toEntity
 import de.dh.raaps.core.repository.db.mappers.toModel
 import kotlinx.coroutines.flow.Flow
@@ -147,18 +150,31 @@ class TherapyRepository(
         }
     }
 
-    suspend fun updateCurrentTherapySettings(currentTherapySettings: CurrentTherapySettings) {
-        val entity = currentTherapySettings.toEntity()
+    suspend fun updateCurrentTherapySettings(
+        insulinProfileId: Long,
+        defaultBgBlocks: List<BgBlock> = emptyList(),
+        insulinAdjustmentPercentage: Int = 0,
+        targetBgOverride: BgValue? = null,
+        lowThresholdOverride: BgValue? = null,
+        activeAlarmProfileId: Long? = null,
+        adjustmentHint: String? = null
+    ) {
         val existing = therapyDao.getCurrentTherapySettings()
+        val entity = CurrentTherapySettingsEntity(
+            id = existing?.id ?: ID_UNDEFINED,
+            insulin_profile_id = insulinProfileId,
+            default_bg_blocks = defaultBgBlocks.map { it.toDb() },
+            insulin_adjustment_percentage = insulinAdjustmentPercentage,
+            target_bg_override = targetBgOverride?.mgdlInt?.toShort(),
+            low_threshold_override = lowThresholdOverride?.mgdlInt?.toShort(),
+            active_alarm_profile_id = activeAlarmProfileId,
+            adjustment_hint = adjustmentHint
+        )
         if (existing == null) {
-            val id = therapyDao.insertCurrentTherapySettings(entity)
-            if (id != -1L) {
-                currentTherapySettings.id = id
-            }
+            therapyDao.insertCurrentTherapySettings(entity)
         } else {
-            therapyDao.updateCurrentTherapySettings(entity.copy(id = existing.id))
-            currentTherapySettings.id = existing.id
+            therapyDao.updateCurrentTherapySettings(entity)
         }
-        cachedCurrentTherapySettings = currentTherapySettings
+        clearCache()
     }
 }

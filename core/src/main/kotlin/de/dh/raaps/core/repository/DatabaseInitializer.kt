@@ -6,7 +6,6 @@ import de.dh.raaps.common.model.DEFAULT_BG_TARGET_MGDL
 import de.dh.raaps.common.model.data.BgBlock
 import de.dh.raaps.common.model.data.BgValue
 import de.dh.raaps.common.model.data.CurrentSettings
-import de.dh.raaps.common.model.data.CurrentTherapySettings
 import de.dh.raaps.common.model.data.Minutes
 import de.dh.raaps.common.model.getDefaultAlarmProfiles
 import de.dh.raaps.common.model.getDefaultInsulinProfile
@@ -62,8 +61,8 @@ object DatabaseInitializer {
         if (repository.getCurrentTherapySettingsOrNull() == null) {
             val activeProfile = profiles.first()
 
-            val currentTherapySettings = CurrentTherapySettings(
-                insulinProfile = activeProfile,
+            repository.updateCurrentTherapySettings(
+                insulinProfileId = activeProfile.id,
                 defaultBgBlocks = listOf(
                     BgBlock(
                         Minutes.ofHours(24),
@@ -72,7 +71,6 @@ object DatabaseInitializer {
                     )
                 )
             )
-            repository.updateCurrentTherapySettings(currentTherapySettings)
         }
     }
 
