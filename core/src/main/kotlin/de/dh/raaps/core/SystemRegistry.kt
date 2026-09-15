@@ -6,6 +6,7 @@ import de.dh.raaps.AppPreferencesRepository
 import de.dh.raaps.common.model.PluginManager
 import de.dh.raaps.common.model.calculation.CarbsInsulinCalculator
 import de.dh.raaps.common.model.data.TimeService
+import de.dh.raaps.core.alarms.AlarmPlayerManager
 import de.dh.raaps.core.aps.GlucoseSourceManager
 import de.dh.raaps.core.aps.SystemOrchestrator
 import de.dh.raaps.core.aps.TherapyManager
@@ -58,6 +59,11 @@ interface SystemRegistry {
      * Repository for alarm configurations and active alarm profile.
      */
     val alarmRepository: AlarmRepository
+
+    /**
+     * Central engine for audio playback, haptics/vibration, and safety audio focus handling.
+     */
+    val alarmPlayerManager: AlarmPlayerManager
 
     /**
      * Repository for active metabolic treatments, including insulin applications and carb intake.

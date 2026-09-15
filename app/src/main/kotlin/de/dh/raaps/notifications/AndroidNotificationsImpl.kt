@@ -201,12 +201,18 @@ class AndroidNotificationsImpl(
             dashboardIntent, PendingIntent.FLAG_IMMUTABLE
         )
 
+        val fullScreenPendingIntent = PendingIntent.getActivity(
+            context, 0,
+            dashboardIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
         val notification = NotificationCompat.Builder(context, ALGORITHM_ISSUE_CHANNEL_ID)
             .setContentTitle(title)
             .setContentText(contentText)
             .setStyle(NotificationCompat.BigTextStyle().bigText(bigText))
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentIntent(pendingIntent)
+            .setFullScreenIntent(fullScreenPendingIntent, true)
             .setAutoCancel(false) // Keep it until resolved
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -248,6 +254,8 @@ class AndroidNotificationsImpl(
 
     override fun cancelApsIssueNotification() {
         manager.cancel(ALGORITHM_ISSUE_NOTIFICATION_ID)
+        val registry = (context.applicationContext as? RegistryProvider)?.registry
+        registry?.alarmPlayerManager?.stopAlarm()
     }
 
     private fun notify(notificationId: Int, notification: Notification) {

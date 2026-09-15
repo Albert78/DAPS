@@ -9,6 +9,8 @@ import de.dh.raaps.common.model.PluginManager
 import de.dh.raaps.common.model.calculation.CarbsInsulinCalculator
 import de.dh.raaps.common.model.data.Minutes
 import de.dh.raaps.common.model.data.TimeService
+import de.dh.raaps.core.alarms.AlarmPlayerManager
+import de.dh.raaps.core.alarms.AlarmPlayerManagerImpl
 import de.dh.raaps.core.aps.GlucoseSourceManager
 import de.dh.raaps.core.aps.SystemOrchestrator
 import de.dh.raaps.core.aps.SystemOrchestratorImpl
@@ -42,6 +44,7 @@ class SystemRegistryImpl(
     override val glucoseRepository: GlucoseRepository,
     override val therapyRepository: TherapyRepository,
     override val alarmRepository: AlarmRepository,
+    override val alarmPlayerManager: AlarmPlayerManager,
     override val treatmentRepository: TreatmentRepository,
     override val foodRepository: FoodRepository,
     override val deviceManagementRepository: DeviceManagementRepository,
@@ -79,6 +82,7 @@ class SystemRegistryImpl(
             val glucoseRepository = GlucoseRepository(appDatabase)
             val therapyRepository = TherapyRepository(appDatabase)
             val alarmRepository = AlarmRepositoryImpl(appDatabase.alarmProfileDao())
+            val alarmPlayerManager = AlarmPlayerManagerImpl(application)
             val treatmentRepository = TreatmentRepository(
                 historySize = Minutes.ofHours(METABOLIC_EVENTS_HISTORY_HOURS),
                 appDatabase = appDatabase
@@ -156,6 +160,7 @@ class SystemRegistryImpl(
                 glucoseRepository = glucoseRepository,
                 therapyRepository = therapyRepository,
                 alarmRepository = alarmRepository,
+                alarmPlayerManager = alarmPlayerManager,
                 treatmentRepository = treatmentRepository,
                 foodRepository = foodRepository,
                 deviceManagementRepository = deviceManagementRepository,

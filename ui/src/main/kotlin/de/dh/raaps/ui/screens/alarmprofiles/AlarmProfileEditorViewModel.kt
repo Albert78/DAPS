@@ -44,6 +44,7 @@ class AlarmProfileEditorViewModel(
 ) : ViewModel() {
 
     private val alarmRepository = registry.alarmRepository
+    private val alarmPlayerManager = registry.alarmPlayerManager
     private val _uiState = MutableStateFlow(AlarmProfileEditorUiState(profileId = profileId))
     val uiState: StateFlow<AlarmProfileEditorUiState> = _uiState.asStateFlow()
 
@@ -117,6 +118,14 @@ class AlarmProfileEditorViewModel(
             }
             onSuccess()
         }
+    }
+
+    fun playPreviewSound(config: AlarmSoundConfig) {
+        alarmPlayerManager.playPreview(config, durationMs = 3000L)
+    }
+
+    override fun onCleared() {
+        alarmPlayerManager.stopAlarm()
     }
 
     companion object {

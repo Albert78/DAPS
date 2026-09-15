@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
@@ -68,6 +69,7 @@ fun AlarmProfileEditorScreen(
         uiState = uiState,
         onNameChange = viewModel::onNameChange,
         onSeverityConfigChange = viewModel::onSeverityConfigChange,
+        onPlayPreview = viewModel::playPreviewSound,
         onSave = {
             viewModel.save(onSuccess = onNavigateUp)
         },
@@ -81,6 +83,7 @@ fun AlarmProfileEditorContent(
     uiState: AlarmProfileEditorUiState,
     onNameChange: (String) -> Unit,
     onSeverityConfigChange: (AlarmSeverity, AlarmSoundConfig) -> Unit,
+    onPlayPreview: (AlarmSoundConfig) -> Unit,
     onSave: () -> Unit,
     onNavigateUp: () -> Unit
 ) {
@@ -188,6 +191,9 @@ fun AlarmProfileEditorContent(
                     config = currentConfig,
                     onConfigChanged = { updated ->
                         onSeverityConfigChange(severity, updated)
+                    },
+                    onPlayPreview = {
+                        onPlayPreview(currentConfig)
                     }
                 )
             }
@@ -226,7 +232,8 @@ fun AlarmProfileEditorContent(
 fun SeverityEditorSectionCard(
     title: String,
     config: AlarmSoundConfig,
-    onConfigChanged: (AlarmSoundConfig) -> Unit
+    onConfigChanged: (AlarmSoundConfig) -> Unit,
+    onPlayPreview: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -238,11 +245,23 @@ fun SeverityEditorSectionCard(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                IconButton(onClick = onPlayPreview) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                        contentDescription = stringResource(id = R.string.cd_test_alarm_sound)
+                    )
+                }
+            }
 
             // Volume Slider
             Row(
@@ -333,6 +352,7 @@ fun AlarmProfileEditorPreview() {
             ),
             onNameChange = {},
             onSeverityConfigChange = { _, _ -> },
+            onPlayPreview = {},
             onSave = {},
             onNavigateUp = {}
         )
