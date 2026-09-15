@@ -43,6 +43,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlin.math.roundToInt
 import de.dh.raaps.common.model.data.AlarmSeverity
 import de.dh.raaps.common.model.data.AlarmSoundConfig
 import de.dh.raaps.common.model.data.VibrationMode
@@ -276,7 +277,10 @@ fun SeverityEditorSectionCard(
             }
             Slider(
                 value = config.volume.toFloat(),
-                onValueChange = { onConfigChanged(config.copy(volume = it.toInt())) },
+                onValueChange = { floatValue ->
+                    val roundedVolume = ((floatValue / 5f).roundToInt() * 5).coerceIn(0, 100)
+                    onConfigChanged(config.copy(volume = roundedVolume))
+                },
                 valueRange = 0f..100f,
                 steps = 19
             )
