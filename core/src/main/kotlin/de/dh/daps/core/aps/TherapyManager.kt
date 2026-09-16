@@ -122,6 +122,10 @@ class TherapyManager(
         })
 
         scope.launch {
+            checkAndApplyTherapyAdjustmentTiming()
+        }
+
+        scope.launch {
             currentTherapySettingsFlow
                 .map { it.effectiveInsulinProfile }
                 .distinctUntilChanged()
@@ -135,10 +139,12 @@ class TherapyManager(
 
     suspend fun checkAndApplyTherapyAdjustmentTiming() {
         mutex.withLock {
-            val currentSettings = runCatching { getCurrentTherapySettings() }.getOrNull() ?: return@withLock
-            val endTime = currentSettings.adjustmentEndTime
+            var currentSettings = runCatching { getCurrentTherapySettings() }.getOrNull() ?: return@withLock
             val now = Timestamp.now()
-            if (endTime != null && now >= endTime) {
+
+            // 1. Check active therapy adjustment expiration
+            val activeEndTime = currentSettings.adjustmentEndTime
+            if (activeEndTime != null && now >= activeEndTime) {
                 // Adjustment expired -> reset to neutral / standard
                 therapyRepository.updateCurrentTherapySettings(
                     insulinProfileId = currentSettings.insulinProfile.id,
@@ -151,10 +157,40 @@ class TherapyManager(
                     adjustmentEndTime = null
                 )
                 Log.d(TAG, "Therapy adjustment expired and reset to neutral")
-            } else if (endTime != null && now < endTime) {
+                currentSettings = getCurrentTherapySettings()
+            } else if (activeEndTime != null && now < activeEndTime) {
                 // Adjustment is active -> schedule end wakeup if needed
-                wakeService?.scheduleWakeup(WAKEUP_TAG_ADJUSTMENT, WAKEUP_ID_END, endTime)
-                Log.d(TAG, "Therapy adjustment is active, scheduled end wakeup for $endTime")
+                wakeService?.scheduleWakeup(WAKEUP_TAG_ADJUSTMENT, WAKEUP_ID_END, activeEndTime)
+                Log.d(TAG, "Therapy adjustment is active, scheduled end wakeup for $activeEndTime")
+            }
+
+            // 2. Check scheduled therapy adjustment timing & transition
+            val scheduled = runCatching { getScheduledTherapyAdjustment() }.getOrNull()
+            if (scheduled != null) {
+                if (now >= scheduled.endTime) {
+                    // Scheduled adjustment expired before activation
+                    therapyRepository.deleteAllScheduledTherapyAdjustments()
+                    Log.d(TAG, "Scheduled therapy adjustment expired before activation and was removed")
+                } else if (now >= scheduled.startTime) {
+                    // Start time reached -> activate scheduled adjustment as current adjustment
+                    therapyRepository.updateCurrentTherapySettings(
+                        insulinProfileId = currentSettings.insulinProfile.id,
+                        defaultBgBlocks = currentSettings.defaultBgBlocks,
+                        insulinAdjustmentPercentage = scheduled.percentage,
+                        targetBgOverride = scheduled.targetBgOverride,
+                        lowThresholdOverride = scheduled.lowThresholdOverride,
+                        alarmProfileOverrideId = scheduled.effectiveAlarmProfileOverrideId,
+                        adjustmentHint = scheduled.adjustmentHint,
+                        adjustmentEndTime = scheduled.endTime
+                    )
+                    therapyRepository.deleteAllScheduledTherapyAdjustments()
+                    wakeService?.scheduleWakeup(WAKEUP_TAG_ADJUSTMENT, WAKEUP_ID_END, scheduled.endTime)
+                    Log.d(TAG, "Scheduled therapy adjustment activated (valid until ${scheduled.endTime})")
+                } else {
+                    // Scheduled adjustment is pending in the future -> schedule start wakeup
+                    wakeService?.scheduleWakeup(WAKEUP_TAG_ADJUSTMENT, WAKEUP_ID_START, scheduled.startTime)
+                    Log.d(TAG, "Scheduled therapy adjustment pending, scheduled start wakeup for ${scheduled.startTime}")
+                }
             }
         }
     }
@@ -342,12 +378,7 @@ class TherapyManager(
         therapyRepository.deleteAllScheduledTherapyAdjustments()
         val newAdjustment = adjustment.copy(id = ID_UNDEFINED)
         val id = therapyRepository.saveScheduledTherapyAdjustment(newAdjustment)
-        val now = Timestamp.now()
-        if (adjustment.startTime > now) {
-            wakeService?.scheduleWakeup(WAKEUP_TAG_ADJUSTMENT, WAKEUP_ID_START, adjustment.startTime)
-        } else if (adjustment.endTime > now) {
-            wakeService?.scheduleWakeup(WAKEUP_TAG_ADJUSTMENT, WAKEUP_ID_END, adjustment.endTime)
-        }
+        checkAndApplyTherapyAdjustmentTiming()
         return id
     }
 
