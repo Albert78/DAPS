@@ -166,6 +166,8 @@ class CurrentTherapyViewModel(
             baseLow = baseBg.second
         )
 
+        val isInitialLoad = _uiState.value.isLoading
+
         _uiState.update {
             it.copy(
                 isLoading = false,
@@ -176,6 +178,10 @@ class CurrentTherapyViewModel(
                 defaultBgBlocks = currentSettings.defaultBgBlocks,
                 therapyAdjustmentPresets = hardcodedPresets
             )
+        }
+
+        if (isInitialLoad) {
+            initDraftAdjustment()
         }
     }
 

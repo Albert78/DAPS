@@ -220,8 +220,8 @@
     <string name="therapy_adjustment_description_placeholder">z. B. Sport, Spaziergang, Stress…</string>
     <string name="therapy_adjustment_presets_title">Schnellauswahl</string>
 
-    <string name="therapy_adjustment_unlimited">Jetzt festlegen</string>
-    <string name="therapy_adjustment_duration">Dauer</string>
+    <string name="therapy_adjustment_unlimited">Festlegen</string>
+    <string name="therapy_adjustment_duration">Begrenzte Dauer</string>
     <string name="therapy_adjustment_adhoc_info">Die Einstellung gilt sofort und unbegrenzt, bis sie manuell beendet wird.</string>
     <string name="therapy_adjustment_duration_select_label">Dauer wählen</string>
     <string name="therapy_adjustment_duration_active_until">Gilt ab sofort bis %s Uhr</string>

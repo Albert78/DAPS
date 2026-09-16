@@ -35,7 +35,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -76,10 +75,6 @@ fun TherapyAdjustmentScreen(
     val uiState by viewModel.uiState.collectAsState()
     val activeTherapyStatus = uiState.activeTherapyStatus
     val draftAdjustment by viewModel.draftAdjustment.collectAsState()
-
-    LaunchedEffect(Unit) {
-        viewModel.initDraftAdjustment()
-    }
 
     val currentDraft = draftAdjustment ?: activeTherapyStatus.adjustment
     val isDirty = viewModel.isDraftDirty()
