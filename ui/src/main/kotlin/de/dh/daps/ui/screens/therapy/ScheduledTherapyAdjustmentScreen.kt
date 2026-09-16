@@ -3,6 +3,7 @@ package de.dh.daps.ui.screens.therapy
 import android.app.TimePickerDialog
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -16,11 +17,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -31,7 +34,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -231,68 +233,106 @@ fun ScheduledTherapyAdjustmentContent(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         // Start Time Selector
-                        OutlinedButton(
-                            modifier = Modifier.weight(1f),
-                            onClick = {
-                                TimePickerDialog(
-                                    context,
-                                    { _, hourOfDay, minute ->
-                                        val newCal = Calendar.getInstance().apply {
-                                            timeInMillis = startTime.ms
-                                            set(Calendar.HOUR_OF_DAY, hourOfDay)
-                                            set(Calendar.MINUTE, minute)
-                                        }
-                                        onStartTimeChange(Timestamp(newCal.timeInMillis))
-                                    },
-                                    startCal.get(Calendar.HOUR_OF_DAY),
-                                    startCal.get(Calendar.MINUTE),
-                                    true
-                                ).show()
-                            }
+                        Surface(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable {
+                                    TimePickerDialog(
+                                        context,
+                                        { _, hourOfDay, minute ->
+                                            val newCal = Calendar.getInstance().apply {
+                                                timeInMillis = startTime.ms
+                                                set(Calendar.HOUR_OF_DAY, hourOfDay)
+                                                set(Calendar.MINUTE, minute)
+                                            }
+                                            onStartTimeChange(Timestamp(newCal.timeInMillis))
+                                        },
+                                        startCal.get(Calendar.HOUR_OF_DAY),
+                                        startCal.get(Calendar.MINUTE),
+                                        true
+                                    ).show()
+                                },
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                            border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.6f))
                         ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(
-                                    text = stringResource(R.string.therapy_adjustment_start_time_label),
-                                    style = MaterialTheme.typography.labelSmall
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.AccessTime,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(20.dp)
                                 )
-                                Text(
-                                    text = timeFormat.format(startTime.ms),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
+                                Column {
+                                    Text(
+                                        text = stringResource(R.string.therapy_adjustment_start_time_label),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Text(
+                                        text = timeFormat.format(startTime.ms),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                }
                             }
                         }
 
                         // End Time Selector
-                        OutlinedButton(
-                            modifier = Modifier.weight(1f),
-                            onClick = {
-                                TimePickerDialog(
-                                    context,
-                                    { _, hourOfDay, minute ->
-                                        val newCal = Calendar.getInstance().apply {
-                                            timeInMillis = endTime.ms
-                                            set(Calendar.HOUR_OF_DAY, hourOfDay)
-                                            set(Calendar.MINUTE, minute)
-                                        }
-                                        onEndTimeChange(Timestamp(newCal.timeInMillis))
-                                    },
-                                    endCal.get(Calendar.HOUR_OF_DAY),
-                                    endCal.get(Calendar.MINUTE),
-                                    true
-                                ).show()
-                            }
+                        Surface(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable {
+                                    TimePickerDialog(
+                                        context,
+                                        { _, hourOfDay, minute ->
+                                            val newCal = Calendar.getInstance().apply {
+                                                timeInMillis = endTime.ms
+                                                set(Calendar.HOUR_OF_DAY, hourOfDay)
+                                                set(Calendar.MINUTE, minute)
+                                            }
+                                            onEndTimeChange(Timestamp(newCal.timeInMillis))
+                                        },
+                                        endCal.get(Calendar.HOUR_OF_DAY),
+                                        endCal.get(Calendar.MINUTE),
+                                        true
+                                    ).show()
+                                },
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                            border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.6f))
                         ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(
-                                    text = stringResource(R.string.therapy_adjustment_end_time_label),
-                                    style = MaterialTheme.typography.labelSmall
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.AccessTime,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(20.dp)
                                 )
-                                Text(
-                                    text = timeFormat.format(endTime.ms),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
+                                Column {
+                                    Text(
+                                        text = stringResource(R.string.therapy_adjustment_end_time_label),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Text(
+                                        text = timeFormat.format(endTime.ms),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                }
                             }
                         }
                     }
