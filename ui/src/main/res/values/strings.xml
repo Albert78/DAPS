@@ -215,6 +215,9 @@
     <string name="aps_control_therapy_adjustment_dialog_bg_adjustment_description">Überschreibt Zielwert und Niedrig-&#173;Schwelle für einen begrenzten Zeitraum.</string>
     <string name="aps_control_therapy_adjustment_alarm_profile_label">Alarmprofil</string>
     <string name="aps_control_therapy_adjustment_alarm_profile_description">Schaltet während dieser Therapie-Anpassung automatisch auf das gewählte Alarmprofil um.</string>
+    <string name="aps_control_therapy_adjustment_description_label">Beschreibung</string>
+    <string name="aps_control_therapy_adjustment_description_description">Optionale, kurze Beschreibung oder Grund für diese Therapie-Anpassung.</string>
+    <string name="aps_control_therapy_adjustment_description_placeholder">z. B. Sport, Spaziergang, Stress…</string>
     <string name="aps_control_therapy_adjustment_dialog_presets_title">Schnellauswahl</string>
 
     <string name="therapy_adjustment_time_dialog_title">Zeitsteuerung</string>

@@ -99,8 +99,8 @@ fun TherapyAdjustmentScreen(
         baseTarget = activeTherapyStatus.baseTarget,
         baseLow = activeTherapyStatus.baseLow,
         isDirty = isDirty,
-        onValuesChange = { p, t, l, a ->
-            viewModel.setDraftValues(p, t, l, a)
+        onValuesChange = { p, t, l, a, h ->
+            viewModel.setDraftValues(p, t, l, a, h)
         },
         onTimingChange = { timing ->
             viewModel.setDraftTiming(timing)
@@ -129,7 +129,7 @@ fun TherapyAdjustmentContent(
     baseTarget: BgValue,
     baseLow: BgValue,
     isDirty: Boolean,
-    onValuesChange: (percentage: Int, targetBg: BgValue?, lowThreshold: BgValue?, alarmProfileId: Long?) -> Unit,
+    onValuesChange: (percentage: Int, targetBg: BgValue?, lowThreshold: BgValue?, alarmProfileId: Long?, adjustmentHint: String?) -> Unit,
     onTimingChange: (TherapyAdjustmentTiming) -> Unit,
     onPresetApplied: (TherapyAdjustment) -> Unit,
     onApplyClicked: () -> Unit,
@@ -355,7 +355,7 @@ private fun TherapyAdjustmentPreviewValues() {
                     baseTarget = BgValue.fromMgDl(100),
                     baseLow = BgValue.fromMgDl(70),
                     isDirty = false,
-                    onValuesChange = { _, _, _, _ -> },
+                    onValuesChange = { _, _, _, _, _ -> },
                     onTimingChange = {},
                     onPresetApplied = {},
                     onApplyClicked = {},

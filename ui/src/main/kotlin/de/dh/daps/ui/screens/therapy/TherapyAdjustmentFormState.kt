@@ -48,8 +48,8 @@ class TherapyAdjustmentFormStateHolder {
                 targetBgOverride = targetBg,
                 lowThresholdOverride = lowThreshold,
                 activeAlarmProfileId = activeAlarmProfileId,
-                activeAlarmProfileName = alarmProfileName ?: current.activeAlarmProfileName,
-                adjustmentHint = hint ?: current.adjustmentHint
+                activeAlarmProfileName = if (activeAlarmProfileId == null) null else (alarmProfileName ?: current.activeAlarmProfileName),
+                adjustmentHint = hint
             )
         }
     }

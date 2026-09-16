@@ -17,8 +17,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Adjust
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material.icons.filled.VerticalAlignBottom
@@ -28,9 +30,13 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SuggestionChip
+import android.content.res.Configuration
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,6 +46,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.ADJUSTMENT_PERCENTAGE_MAX
 import de.dh.daps.common.model.ADJUSTMENT_PERCENTAGE_MIN
@@ -49,13 +56,16 @@ import de.dh.daps.common.model.TARGET_MAX
 import de.dh.daps.common.model.TARGET_MIN
 import de.dh.daps.common.model.data.AlarmProfile
 import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
+import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.ModuloSteppingStrategy
 import de.dh.daps.ui.common.composables.EditableValueStepper
 import de.dh.daps.ui.common.composables.StepperDefaults
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.glucoseValue
+import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.NeutralGrey
 import de.dh.daps.ui.common.theme.SoftBlue
 import de.dh.daps.ui.common.theme.SoftRed
@@ -72,7 +82,7 @@ fun TherapyAdjustmentUpperForm(
     baseLow: BgValue,
     availableAlarmProfiles: List<AlarmProfile>,
     presets: List<TherapyAdjustment>,
-    onValuesChange: (percentage: Int, targetBg: BgValue?, lowThreshold: BgValue?, alarmProfileId: Long?) -> Unit,
+    onValuesChange: (percentage: Int, targetBg: BgValue?, lowThreshold: BgValue?, alarmProfileId: Long?, adjustmentHint: String?) -> Unit,
     onPresetApplied: (TherapyAdjustment) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -91,6 +101,7 @@ fun TherapyAdjustmentUpperForm(
     val currentTarget = formState.targetBgOverride
     val currentLow = formState.lowThresholdOverride
     val currentAlarmProfileId = formState.activeAlarmProfileId
+    val currentHint = formState.adjustmentHint
 
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -107,7 +118,7 @@ fun TherapyAdjustmentUpperForm(
         ) {
             EditableValueStepper(
                 currentValue = currentPercentage.toDouble(),
-                onValueChange = { onValuesChange(it.toInt(), currentTarget, currentLow, currentAlarmProfileId) },
+                onValueChange = { onValuesChange(it.toInt(), currentTarget, currentLow, currentAlarmProfileId, currentHint) },
                 minValue = ADJUSTMENT_PERCENTAGE_MIN.toDouble(),
                 maxValue = ADJUSTMENT_PERCENTAGE_MAX.toDouble(),
                 steppingStrategy = steppingStrategyInsulin,
@@ -141,9 +152,9 @@ fun TherapyAdjustmentUpperForm(
                     active = currentTarget != null,
                     onActiveChange = { active ->
                         if (active) {
-                            onValuesChange(currentPercentage, baseTarget, currentLow, currentAlarmProfileId)
+                            onValuesChange(currentPercentage, baseTarget, currentLow, currentAlarmProfileId, currentHint)
                         } else {
-                            onValuesChange(currentPercentage, null, currentLow, currentAlarmProfileId)
+                            onValuesChange(currentPercentage, null, currentLow, currentAlarmProfileId, currentHint)
                         }
                     },
                     accentColor = MaterialTheme.colorScheme.primary
@@ -153,7 +164,7 @@ fun TherapyAdjustmentUpperForm(
                             currentValue = currentTarget.mgdl,
                             onValueChange = {
                                 val newValue = if (it == 0.0) null else BgValue.fromMgDl(it.toInt())
-                                onValuesChange(currentPercentage, newValue, currentLow, currentAlarmProfileId)
+                                onValuesChange(currentPercentage, newValue, currentLow, currentAlarmProfileId, currentHint)
                             },
                             minValue = TARGET_MIN.toDouble(),
                             maxValue = TARGET_MAX.toDouble(),
@@ -176,9 +187,9 @@ fun TherapyAdjustmentUpperForm(
                     active = currentLow != null,
                     onActiveChange = { active ->
                         if (active) {
-                            onValuesChange(currentPercentage, currentTarget, baseLow, currentAlarmProfileId)
+                            onValuesChange(currentPercentage, currentTarget, baseLow, currentAlarmProfileId, currentHint)
                         } else {
-                            onValuesChange(currentPercentage, currentTarget, null, currentAlarmProfileId)
+                            onValuesChange(currentPercentage, currentTarget, null, currentAlarmProfileId, currentHint)
                         }
                     },
                     accentColor = MaterialTheme.colorScheme.error
@@ -188,7 +199,7 @@ fun TherapyAdjustmentUpperForm(
                             currentValue = currentLow.mgdl,
                             onValueChange = {
                                 val newValue = if (it == 0.0) null else BgValue.fromMgDl(it.toInt())
-                                onValuesChange(currentPercentage, currentTarget, newValue, currentAlarmProfileId)
+                                onValuesChange(currentPercentage, currentTarget, newValue, currentAlarmProfileId, currentHint)
                             },
                             minValue = LOW_THRESHOLD_MIN.toDouble(),
                             maxValue = LOW_THRESHOLD_MAX.toDouble(),
@@ -221,17 +232,43 @@ fun TherapyAdjustmentUpperForm(
             ) {
                 FilterChip(
                     selected = (currentAlarmProfileId == null),
-                    onClick = { onValuesChange(currentPercentage, currentTarget, currentLow, null) },
+                    onClick = { onValuesChange(currentPercentage, currentTarget, currentLow, null, currentHint) },
                     label = { Text(stringResource(R.string.aps_control_adjustment_standard)) }
                 )
                 availableAlarmProfiles.forEach { profile ->
                     FilterChip(
                         selected = (currentAlarmProfileId == profile.id),
-                        onClick = { onValuesChange(currentPercentage, currentTarget, currentLow, profile.id) },
+                        onClick = { onValuesChange(currentPercentage, currentTarget, currentLow, profile.id, currentHint) },
                         label = { Text(profile.name) }
                     )
                 }
             }
+        }
+
+        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+        // Description / Reason Section
+        val hintActive = !currentHint.isNullOrBlank()
+        AdjustmentSection(
+            icon = Icons.Default.Edit,
+            title = stringResource(R.string.aps_control_therapy_adjustment_description_label),
+            description = stringResource(R.string.aps_control_therapy_adjustment_description_description),
+            isActive = hintActive,
+            useCardWrapper = false
+        ) {
+            OutlinedTextField(
+                value = currentHint ?: "",
+                onValueChange = { text ->
+                    val newHint = text.ifBlank { null }
+                    onValuesChange(currentPercentage, currentTarget, currentLow, currentAlarmProfileId, newHint)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = {
+                    Text(stringResource(R.string.aps_control_therapy_adjustment_description_placeholder))
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp)
+            )
         }
 
         if (presets.isNotEmpty()) {
@@ -428,5 +465,38 @@ private fun StandardValueDisplay(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
+    }
+}
+
+@Preview(showBackground = true, name = "Light Mode")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
+@Composable
+private fun TherapyAdjustmentUpperFormPreview() {
+    AppTheme {
+        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
+            Surface(modifier = Modifier.padding(16.dp)) {
+                TherapyAdjustmentUpperForm(
+                    formState = TherapyAdjustmentFormState(
+                        percentage = -15,
+                        targetBgOverride = BgValue.fromMgDl(130),
+                        lowThresholdOverride = BgValue.fromMgDl(85),
+                        activeAlarmProfileId = 1L,
+                        adjustmentHint = "Fahrrad fahren"
+                    ),
+                    baseTarget = BgValue.fromMgDl(100),
+                    baseLow = BgValue.fromMgDl(70),
+                    availableAlarmProfiles = listOf(
+                        AlarmProfile(id = 1L, name = "Sport"),
+                        AlarmProfile(id = 2L, name = "Schlafen")
+                    ),
+                    presets = listOf(
+                        TherapyAdjustment("Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
+                        TherapyAdjustment("Stress", percentage = 20, targetBgMgDl = 115, lowThresholdMgDl = 75)
+                    ),
+                    onValuesChange = { _, _, _, _, _ -> },
+                    onPresetApplied = {}
+                )
+            }
+        }
     }
 }

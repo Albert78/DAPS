@@ -90,8 +90,8 @@ fun ScheduledTherapyAdjustmentScreen(
         baseTarget = uiState.baseTarget,
         baseLow = uiState.baseLow,
         isDirty = isDirty,
-        onValuesChange = { p, t, l, a ->
-            viewModel.setFormValues(p, t, l, a)
+        onValuesChange = { p, t, l, a, h ->
+            viewModel.setFormValues(p, t, l, a, h)
         },
         onStartTimeChange = { viewModel.setStartTime(it) },
         onEndTimeChange = { viewModel.setEndTime(it) },
@@ -122,7 +122,7 @@ fun ScheduledTherapyAdjustmentContent(
     baseTarget: BgValue,
     baseLow: BgValue,
     isDirty: Boolean,
-    onValuesChange: (percentage: Int, targetBg: BgValue?, lowThreshold: BgValue?, alarmProfileId: Long?) -> Unit,
+    onValuesChange: (percentage: Int, targetBg: BgValue?, lowThreshold: BgValue?, alarmProfileId: Long?, adjustmentHint: String?) -> Unit,
     onStartTimeChange: (Timestamp) -> Unit,
     onEndTimeChange: (Timestamp) -> Unit,
     onPresetApplied: (TherapyAdjustment) -> Unit,
@@ -425,7 +425,7 @@ private fun ScheduledTherapyAdjustmentPreview() {
                     baseTarget = BgValue.fromMgDl(100),
                     baseLow = BgValue.fromMgDl(70),
                     isDirty = true,
-                    onValuesChange = { _, _, _, _ -> },
+                    onValuesChange = { _, _, _, _, _ -> },
                     onStartTimeChange = {},
                     onEndTimeChange = {},
                     onPresetApplied = {},
