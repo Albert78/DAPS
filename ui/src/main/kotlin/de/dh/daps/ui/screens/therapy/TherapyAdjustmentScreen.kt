@@ -424,94 +424,123 @@ fun TherapyAdjustmentContent(
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-                // Timing Section
-                AdjustmentSection(
-                    icon = Icons.Default.AccessTime,
-                    title = stringResource(R.string.therapy_adjustment_timing_summary_title),
-                    description = stringResource(R.string.therapy_adjustment_time_dialog_title),
-                    useCardWrapper = true
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
-                        val summaryText = when (currentTiming.mode) {
-                            AdjustmentTimeMode.AD_HOC -> "Aktiv (unbegrenzt)"
-                            AdjustmentTimeMode.DURATION -> {
-                                val endStr = currentTiming.endTime?.let { timeFormat.format(it.ms) } ?: ""
-                                if (endStr.isNotEmpty()) "Aktiv (bis $endStr Uhr)" else "Aktiv (unbegrenzt)"
-                            }
-                            AdjustmentTimeMode.TIME_WINDOW -> {
-                                val startStr = currentTiming.startTime?.let { timeFormat.format(it.ms) } ?: ""
-                                val endStr = currentTiming.endTime?.let { timeFormat.format(it.ms) } ?: ""
-                                "Geplant ($startStr – $endStr Uhr)"
-                            }
+                // Active Timing Status Card
+                val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+                val summaryText = when (currentTiming.mode) {
+                    AdjustmentTimeMode.AD_HOC -> stringResource(R.string.therapy_adjustment_timing_active_unlimited)
+                    AdjustmentTimeMode.DURATION -> {
+                        val endStr = currentTiming.endTime?.let { timeFormat.format(it.ms) } ?: ""
+                        if (endStr.isNotEmpty()) {
+                            stringResource(R.string.therapy_adjustment_timing_active_until, endStr)
+                        } else {
+                            stringResource(R.string.therapy_adjustment_timing_active_unlimited)
                         }
+                    }
+                    AdjustmentTimeMode.TIME_WINDOW -> {
+                        val startStr = currentTiming.startTime?.let { timeFormat.format(it.ms) } ?: ""
+                        val endStr = currentTiming.endTime?.let { timeFormat.format(it.ms) } ?: ""
+                        stringResource(R.string.therapy_adjustment_timing_scheduled_format, startStr, endStr)
+                    }
+                }
 
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AccessTime,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = stringResource(R.string.therapy_adjustment_timing_summary_title),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
                         Text(
                             text = summaryText,
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
                         )
+                    }
+                }
 
-                        // 3 Primary Buttons: "Jetzt festlegen", "Dauer", "Planen"
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Button(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(48.dp),
-                                shape = RoundedCornerShape(12.dp),
-                                onClick = {
-                                    onTimingChange(TherapyAdjustmentTiming(mode = AdjustmentTimeMode.AD_HOC))
-                                    onApplyClicked()
-                                }
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.therapy_adjustment_mode_adhoc),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
+                Spacer(modifier = Modifier.height(4.dp))
 
-                            Button(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(48.dp),
-                                shape = RoundedCornerShape(12.dp),
-                                onClick = { openTimeDialogMode = AdjustmentTimeMode.DURATION }
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.therapy_adjustment_mode_duration),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-
-                            Button(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(48.dp),
-                                shape = RoundedCornerShape(12.dp),
-                                onClick = { openTimeDialogMode = AdjustmentTimeMode.TIME_WINDOW }
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.therapy_adjustment_mode_timewindow),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
+                // 3 Main Primary Buttons: "Jetzt festlegen", "Dauer", "Planen"
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(52.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        onClick = {
+                            onTimingChange(TherapyAdjustmentTiming(mode = AdjustmentTimeMode.AD_HOC))
+                            onApplyClicked()
                         }
+                    ) {
+                        Text(
+                            text = stringResource(R.string.therapy_adjustment_mode_adhoc),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+
+                    Button(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(52.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        onClick = { openTimeDialogMode = AdjustmentTimeMode.DURATION }
+                    ) {
+                        Text(
+                            text = stringResource(R.string.therapy_adjustment_mode_duration),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+
+                    Button(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(52.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        onClick = { openTimeDialogMode = AdjustmentTimeMode.TIME_WINDOW }
+                    ) {
+                        Text(
+                            text = stringResource(R.string.therapy_adjustment_mode_timewindow),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
                     }
                 }
 

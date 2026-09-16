@@ -30,6 +30,7 @@ import de.dh.daps.common.model.data.AdjustmentTimeMode
 import de.dh.daps.common.model.data.TherapyAdjustmentTiming
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.R
+import de.dh.daps.common.R as CommonR
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import java.text.SimpleDateFormat
@@ -177,9 +178,12 @@ fun TherapyAdjustmentTimeDialog(
                                         selected = (durationMinutes == mins),
                                         onClick = { durationMinutes = mins },
                                         label = {
-                                            Text(
-                                                if (mins < 60) "$mins Min" else "${mins / 60} Std${if (mins % 60 > 0) " ${mins % 60}m" else ""}"
-                                            )
+                                            val labelText = when {
+                                                mins < 60 -> stringResource(id = CommonR.string.duration_minutes_format, mins)
+                                                mins % 60 == 0 -> stringResource(id = CommonR.string.duration_hours_format, mins / 60)
+                                                else -> stringResource(id = CommonR.string.duration_hours_and_minutes_format, mins / 60, mins % 60)
+                                            }
+                                            Text(labelText)
                                         }
                                     )
                                 }

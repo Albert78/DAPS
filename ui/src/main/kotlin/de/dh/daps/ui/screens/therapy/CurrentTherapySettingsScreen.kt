@@ -769,15 +769,19 @@ private fun TemporaryAdjustmentCard(
                 // Timing Status
                 val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
                 val timingText = when (adjustment.timing.mode) {
-                    AdjustmentTimeMode.AD_HOC -> stringResource(R.string.therapy_adjustment_mode_adhoc)
+                    AdjustmentTimeMode.AD_HOC -> stringResource(R.string.therapy_adjustment_timing_active_unlimited)
                     AdjustmentTimeMode.DURATION -> {
                         val endStr = adjustment.timing.endTime?.let { timeFormat.format(it.ms) } ?: ""
-                        if (endStr.isNotEmpty()) "Aktiv bis $endStr Uhr" else "Aktiv"
+                        if (endStr.isNotEmpty()) {
+                            stringResource(R.string.therapy_adjustment_timing_active_until, endStr)
+                        } else {
+                            stringResource(R.string.label_active)
+                        }
                     }
                     AdjustmentTimeMode.TIME_WINDOW -> {
                         val startStr = adjustment.timing.startTime?.let { timeFormat.format(it.ms) } ?: ""
                         val endStr = adjustment.timing.endTime?.let { timeFormat.format(it.ms) } ?: ""
-                        "Geplant: $startStr – $endStr Uhr"
+                        stringResource(R.string.therapy_adjustment_timing_scheduled_format, startStr, endStr)
                     }
                 }
 
