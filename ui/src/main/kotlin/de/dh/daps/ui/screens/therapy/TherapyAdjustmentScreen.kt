@@ -141,7 +141,7 @@ fun TherapyAdjustmentContent(
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     var showDiscardDialog by remember { mutableStateOf(false) }
-    var openTimeDialogMode by remember { mutableStateOf<AdjustmentTimeMode?>(null) }
+    var showDurationDialog by remember { mutableStateOf(false) }
 
     fun handleBack() {
         if (isDirty) {
@@ -299,7 +299,7 @@ fun TherapyAdjustmentContent(
                             .weight(1f)
                             .height(52.dp),
                         shape = RoundedCornerShape(12.dp),
-                        onClick = { openTimeDialogMode = AdjustmentTimeMode.DURATION }
+                        onClick = { showDurationDialog = true }
                     ) {
                         Text(
                             text = stringResource(R.string.therapy_adjustment_mode_duration),
@@ -344,16 +344,15 @@ fun TherapyAdjustmentContent(
         )
     }
 
-    openTimeDialogMode?.let { mode ->
-        TherapyAdjustmentTimeDialog(
+    if (showDurationDialog) {
+        TherapyAdjustmentDurationDialog(
             initialTiming = formState.timing,
-            initialMode = mode,
             onTimingSelected = { newTiming ->
                 onTimingChange(newTiming)
-                openTimeDialogMode = null
+                showDurationDialog = false
                 onApplyClicked()
             },
-            onDismiss = { openTimeDialogMode = null }
+            onDismiss = { showDurationDialog = false }
         )
     }
 }

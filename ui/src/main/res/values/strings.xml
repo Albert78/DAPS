@@ -224,6 +224,10 @@
     <string name="therapy_adjustment_adhoc_info">Die Einstellung gilt sofort und unbegrenzt, bis sie manuell beendet wird.</string>
     <string name="therapy_adjustment_duration_select_label">Dauer wählen</string>
     <string name="therapy_adjustment_duration_active_until">Gilt ab sofort bis %s Uhr</string>
+    <string name="therapy_adjustment_duration_dialog_title">Dauer festlegen</string>
+    <string name="therapy_adjustment_duration_mode_relative">Relativ</string>
+    <string name="therapy_adjustment_duration_mode_absolute">Uhrzeit</string>
+    <string name="therapy_adjustment_duration_label">Dauer: %s</string>
     <string name="therapy_adjustment_start_time_label">Startzeit</string>
     <string name="therapy_adjustment_end_time_label">Endzeit</string>
     <string name="therapy_adjustment_discard_dialog_title">Änderungen verwerfen?</string>

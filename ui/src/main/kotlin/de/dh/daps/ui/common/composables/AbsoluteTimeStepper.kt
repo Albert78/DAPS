@@ -36,28 +36,27 @@ fun AbsoluteTimeStepper(
     onTimeChange: (Timestamp) -> Unit,
     modifier: Modifier = Modifier,
     stepMinutes: Int = 5,
+    minTime: Timestamp? = null,
+    maxTime: Timestamp? = null,
     style: StepperStyle = StepperDefaults.defaultStyle()
 ) {
     var showPickerDialog by remember { mutableStateOf(false) }
 
     val now = Timestamp.now()
-    val minTime = now - Minutes(120)
-    val maxTime = now + Minutes(30)
+    val effectiveMinTime = minTime ?: (now - Minutes(120))
+    val effectiveMaxTime = maxTime ?: (now + Minutes(30))
 
-    val allowedTimestamps = remember(now) {
+    val allowedTimestamps = remember(now, effectiveMinTime, effectiveMaxTime) {
         val stepMs = stepMinutes * 60000L
-        // Align baseNow to the nearest multiple of 5 minutes relative to epoch
-        // (Works for most timezones as they are offset by multiples of 5 mins)
-        val baseNow = (now.ms / stepMs) * stepMs
-        val startMs = baseNow - 120 * 60000
-        val endMs = baseNow + 30 * 60000
-        (startMs..endMs step stepMs).map { Timestamp(it) }
+        val baseStart = (effectiveMinTime.ms / stepMs) * stepMs
+        val baseEnd = (effectiveMaxTime.ms / stepMs) * stepMs
+        (baseStart..baseEnd step stepMs).map { Timestamp(it) }
     }
 
     if (showPickerDialog) {
         // Find nearest allowed timestamp for initial selection
         val initialSelection = allowedTimestamps.minByOrNull { kotlin.math.abs(it.ms - currentTime.ms) } ?: currentTime
-        
+
         WheelPickerDialog(
             initialValue = initialSelection,
             options = allowedTimestamps,
@@ -75,16 +74,18 @@ fun AbsoluteTimeStepper(
     ) {
         IconButton(
             onClick = {
-                // Snap to previous multiple of 5
+                // Snap to previous multiple of stepMinutes
                 val currentMs = currentTime.ms
                 val stepMs = stepMinutes * 60000L
                 val remainder = currentMs % stepMs
-                val nextTime = if (remainder == 0L) currentTime - Minutes(stepMinutes.toShort()) 
+                val nextTime = if (remainder == 0L) currentTime - Minutes(stepMinutes.toShort())
                                else Timestamp(currentMs - remainder)
-                onTimeChange(nextTime)
+                if (nextTime >= effectiveMinTime) {
+                    onTimeChange(nextTime)
+                }
             },
             modifier = Modifier.size(style.buttonSize),
-            enabled = currentTime > minTime
+            enabled = currentTime > effectiveMinTime
         ) {
             Icon(Icon_Minus, contentDescription = null, modifier = Modifier.size(style.buttonSize * 0.5f))
         }
@@ -106,16 +107,18 @@ fun AbsoluteTimeStepper(
 
         IconButton(
             onClick = {
-                // Snap to next multiple of 5
+                // Snap to next multiple of stepMinutes
                 val currentMs = currentTime.ms
                 val stepMs = stepMinutes * 60000L
                 val remainder = currentMs % stepMs
                 val nextTime = if (remainder == 0L) currentTime + Minutes(stepMinutes.toShort())
                                else Timestamp(currentMs + (stepMs - remainder))
-                onTimeChange(nextTime)
+                if (nextTime <= effectiveMaxTime) {
+                    onTimeChange(nextTime)
+                }
             },
             modifier = Modifier.size(style.buttonSize),
-            enabled = currentTime < maxTime
+            enabled = currentTime < effectiveMaxTime
         ) {
             Icon(Icon_Plus, contentDescription = null, modifier = Modifier.size(style.buttonSize * 0.5f))
         }

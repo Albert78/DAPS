@@ -42,6 +42,8 @@ fun TimeStepper(
     baseTime: Timestamp = Timestamp.now(),
     showPreposition: Boolean = true,
     forceSign: Boolean = false,
+    minTime: Timestamp? = null,
+    maxTime: Timestamp? = null,
     style: StepperStyle = TimeStepperDefaults.defaultStyle()
 ) {
     val diffMin = round((currentTime.ms - baseTime.ms) / 60000.0).toInt()
@@ -65,14 +67,23 @@ fun TimeStepper(
         }
     }
 
+    val canStepDown = minTime == null || (currentTime - Minutes(stepMinutes.toShort())) >= minTime
+    val canStepUp = maxTime == null || (currentTime + Minutes(stepMinutes.toShort())) <= maxTime
+
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
         IconButton(
-            onClick = { onTimeChange(currentTime - Minutes(stepMinutes.toShort())) },
-            modifier = Modifier.size(style.buttonSize)
+            onClick = {
+                val nextTime = currentTime - Minutes(stepMinutes.toShort())
+                if (minTime == null || nextTime >= minTime) {
+                    onTimeChange(nextTime)
+                }
+            },
+            modifier = Modifier.size(style.buttonSize),
+            enabled = canStepDown
         ) {
             Icon(Icon_Minus, contentDescription = null, modifier = Modifier.size(style.buttonSize * 0.5f))
         }
@@ -89,8 +100,14 @@ fun TimeStepper(
         Spacer(Modifier.width(style.spacing))
 
         IconButton(
-            onClick = { onTimeChange(currentTime + Minutes(stepMinutes.toShort())) },
-            modifier = Modifier.size(style.buttonSize)
+            onClick = {
+                val nextTime = currentTime + Minutes(stepMinutes.toShort())
+                if (maxTime == null || nextTime <= maxTime) {
+                    onTimeChange(nextTime)
+                }
+            },
+            modifier = Modifier.size(style.buttonSize),
+            enabled = canStepUp
         ) {
             Icon(Icon_Plus, contentDescription = null, modifier = Modifier.size(style.buttonSize * 0.5f))
         }
