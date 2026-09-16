@@ -203,10 +203,17 @@ fun ScheduledTherapyAdjustmentContent(
                     baseTarget = baseTarget,
                     baseLow = baseLow,
                     availableAlarmProfiles = availableAlarmProfiles,
-                    presets = presets,
-                    onValuesChange = onValuesChange,
-                    onPresetApplied = onPresetApplied
+                    onValuesChange = onValuesChange
                 )
+
+                if (presets.isNotEmpty()) {
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+                    TherapyAdjustmentPresetsSection(
+                        presets = presets,
+                        onPresetApplied = onPresetApplied
+                    )
+                }
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 

@@ -33,7 +33,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SuggestionChip
 import android.content.res.Configuration
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -79,7 +78,7 @@ import de.dh.daps.ui.common.theme.SoftRed
 
 /**
  * Shared reusable form component for the top section of therapy adjustments
- * (Insulin percentage adjustment, BG target/low overrides, alarm profile, presets).
+ * (Insulin percentage adjustment, BG target/low overrides, alarm profile).
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -88,9 +87,7 @@ fun TherapyAdjustmentUpperForm(
     baseTarget: BgValue,
     baseLow: BgValue,
     availableAlarmProfiles: List<AlarmProfile>,
-    presets: List<TherapyAdjustment>,
     onValuesChange: (percentage: Int, targetBg: BgValue?, lowThreshold: BgValue?, alarmProfileId: Long?, adjustmentHint: String?) -> Unit,
-    onPresetApplied: (TherapyAdjustment) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val steppingStrategyInsulin = remember { ModuloSteppingStrategy(5.0) }
@@ -288,53 +285,6 @@ fun TherapyAdjustmentUpperForm(
                         onClick = { onValuesChange(currentPercentage, currentTarget, currentLow, profile.id, currentHint) },
                         label = { Text(profile.name) }
                     )
-                }
-            }
-        }
-
-        if (presets.isNotEmpty()) {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-                Text(
-                    text = stringResource(R.string.therapy_adjustment_presets_title),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    presets.forEach { preset ->
-                        SuggestionChip(
-                            onClick = { onPresetApplied(preset) },
-                            label = {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(
-                                        text = preset.name,
-                                        style = MaterialTheme.typography.bodyLarge
-                                    )
-                                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                        Text(
-                                            text = displayStrategyInsulin.format(preset.percentage.toDouble()),
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = displayStrategyInsulin.color(preset.percentage.toDouble())
-                                        )
-                                        if (preset.targetBgMgDl != null) {
-                                            val targetValue = BgValue.fromMgDl(preset.targetBgMgDl.toInt())
-                                            Text(
-                                                text = "• ${glucoseValue(targetValue, withUnit = true)}",
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        )
-                    }
                 }
             }
         }
@@ -544,12 +494,7 @@ private fun TherapyAdjustmentUpperFormPreview() {
                         AlarmProfile(id = 1L, name = "Sport"),
                         AlarmProfile(id = 2L, name = "Schlafen")
                     ),
-                    presets = listOf(
-                        TherapyAdjustment("Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
-                        TherapyAdjustment("Stress", percentage = 20, targetBgMgDl = 115, lowThresholdMgDl = 75)
-                    ),
-                    onValuesChange = { _, _, _, _, _ -> },
-                    onPresetApplied = {}
+                    onValuesChange = { _, _, _, _, _ -> }
                 )
             }
         }
@@ -575,11 +520,7 @@ private fun TherapyAdjustmentUpperFormCollapsedPreview() {
                     availableAlarmProfiles = listOf(
                         AlarmProfile(id = 1L, name = "Sport")
                     ),
-                    presets = listOf(
-                        TherapyAdjustment("Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100)
-                    ),
-                    onValuesChange = { _, _, _, _, _ -> },
-                    onPresetApplied = {}
+                    onValuesChange = { _, _, _, _, _ -> }
                 )
             }
         }
