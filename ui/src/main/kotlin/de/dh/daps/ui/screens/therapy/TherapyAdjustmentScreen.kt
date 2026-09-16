@@ -82,8 +82,8 @@ fun TherapyAdjustmentScreen(
         percentage = currentDraft.percentage,
         targetBgOverride = currentDraft.targetBgOverride,
         lowThresholdOverride = currentDraft.lowThresholdOverride,
-        activeAlarmProfileId = currentDraft.activeAlarmProfileId,
-        activeAlarmProfileName = currentDraft.activeAlarmProfileName,
+        alarmProfileOverrideId = currentDraft.alarmProfileOverrideId,
+        alarmProfileOverrideName = currentDraft.alarmProfileOverrideName,
         adjustmentHint = currentDraft.adjustmentHint,
         timing = currentDraft.timing
     )
@@ -175,7 +175,7 @@ fun TherapyAdjustmentContent(
                 formState.percentage != 0 ||
                 formState.targetBgOverride != null ||
                 formState.lowThresholdOverride != null ||
-                formState.activeAlarmProfileId != null
+                formState.alarmProfileOverrideId != null
             }
 
             Box(

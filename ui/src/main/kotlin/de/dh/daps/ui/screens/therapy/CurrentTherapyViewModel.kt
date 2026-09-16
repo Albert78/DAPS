@@ -43,8 +43,8 @@ data class TherapyAdjustmentUiState(
     val percentage: Int = 0,
     val targetBgOverride: BgValue? = null,
     val lowThresholdOverride: BgValue? = null,
-    val activeAlarmProfileId: Long? = null,
-    val activeAlarmProfileName: String? = null,
+    val alarmProfileOverrideId: Long? = null,
+    val alarmProfileOverrideName: String? = null,
     val adjustmentHint: String? = null,
     val timing: TherapyAdjustmentTiming = TherapyAdjustmentTiming()
 )
@@ -66,7 +66,7 @@ data class TherapyAdjustment(
     val percentage: Int = 0,
     val targetBgMgDl: Short? = null,
     val lowThresholdMgDl: Short? = null,
-    val activeAlarmProfileId: Long? = null
+    val alarmProfileOverrideId: Long? = null
 )
 
 data class CurrentTherapyUiState(
@@ -148,8 +148,8 @@ class CurrentTherapyViewModel(
             percentage = currentSettings.insulinAdjustmentPercentage,
             targetBgOverride = currentSettings.targetBgOverride,
             lowThresholdOverride = currentSettings.lowThresholdOverride,
-            activeAlarmProfileId = currentSettings.activeAlarmProfileId,
-            activeAlarmProfileName = currentSettings.activeAlarmProfile?.name,
+            alarmProfileOverrideId = currentSettings.alarmProfileOverrideId,
+            alarmProfileOverrideName = currentSettings.alarmProfileOverride?.name,
             adjustmentHint = currentSettings.adjustmentHint,
             timing = currentSettings.adjustmentTiming
         )
@@ -233,8 +233,8 @@ class CurrentTherapyViewModel(
             percentage = form.percentage,
             targetBgOverride = form.targetBgOverride,
             lowThresholdOverride = form.lowThresholdOverride,
-            activeAlarmProfileId = form.activeAlarmProfileId,
-            activeAlarmProfileName = form.activeAlarmProfileName,
+            alarmProfileOverrideId = form.alarmProfileOverrideId,
+            alarmProfileOverrideName = form.alarmProfileOverrideName,
             adjustmentHint = form.adjustmentHint,
             timing = form.timing
         )
@@ -247,8 +247,8 @@ class CurrentTherapyViewModel(
                 percentage = active.percentage,
                 targetBgOverride = active.targetBgOverride,
                 lowThresholdOverride = active.lowThresholdOverride,
-                activeAlarmProfileId = active.activeAlarmProfileId,
-                activeAlarmProfileName = active.activeAlarmProfileName,
+                alarmProfileOverrideId = active.alarmProfileOverrideId,
+                alarmProfileOverrideName = active.alarmProfileOverrideName,
                 adjustmentHint = active.adjustmentHint,
                 timing = active.timing
             )
@@ -259,17 +259,17 @@ class CurrentTherapyViewModel(
         percentage: Int,
         targetBg: BgValue?,
         lowThreshold: BgValue?,
-        activeAlarmProfileId: Long?,
+        alarmProfileOverrideId: Long?,
         adjustmentHint: String? = null,
         timing: TherapyAdjustmentTiming? = null
     ) {
         val alarmProfiles = _uiState.value.availableAlarmProfiles
-        val alarmProfileName = alarmProfiles.find { it.id == activeAlarmProfileId }?.name
+        val alarmProfileName = alarmProfiles.find { it.id == alarmProfileOverrideId }?.name
         formStateHolder.updateValues(
             percentage = percentage,
             targetBg = targetBg,
             lowThreshold = lowThreshold,
-            activeAlarmProfileId = activeAlarmProfileId,
+            alarmProfileOverrideId = alarmProfileOverrideId,
             alarmProfileName = alarmProfileName,
             hint = adjustmentHint
         )
@@ -293,7 +293,7 @@ class CurrentTherapyViewModel(
                 percentage = form.percentage,
                 targetBg = form.targetBgOverride,
                 lowThreshold = form.lowThresholdOverride,
-                activeAlarmProfileId = form.activeAlarmProfileId,
+                alarmProfileOverrideId = form.alarmProfileOverrideId,
                 adjustmentHint = form.adjustmentHint,
                 timing = form.timing
             )
@@ -312,7 +312,7 @@ class CurrentTherapyViewModel(
         percentage: Int,
         targetBg: BgValue?,
         lowThreshold: BgValue?,
-        activeAlarmProfileId: Long? = null,
+        alarmProfileOverrideId: Long? = null,
         adjustmentHint: String? = null,
         timing: TherapyAdjustmentTiming = TherapyAdjustmentTiming()
     ) {
@@ -321,7 +321,7 @@ class CurrentTherapyViewModel(
                 percentage = percentage,
                 targetBg = targetBg,
                 lowThreshold = lowThreshold,
-                activeAlarmProfileId = activeAlarmProfileId,
+                alarmProfileOverrideId = alarmProfileOverrideId,
                 adjustmentHint = adjustmentHint,
                 timing = timing
             )

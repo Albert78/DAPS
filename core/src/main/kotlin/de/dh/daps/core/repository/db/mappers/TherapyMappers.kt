@@ -73,7 +73,7 @@ fun CurrentTherapySettings.toEntity() = CurrentTherapySettingsEntity(
     insulin_adjustment_percentage = this.insulinAdjustmentPercentage,
     target_bg_override = this.targetBgOverride?.mgdlInt?.toShort(),
     low_threshold_override = this.lowThresholdOverride?.mgdlInt?.toShort(),
-    alarm_profile_override_id = this.alarmProfileOverride?.id ?: this.activeAlarmProfile?.id,
+    alarm_profile_override_id = this.alarmProfileOverrideId,
     adjustment_hint = this.adjustmentHint,
     adjustment_time_mode = this.adjustmentTiming.mode.name,
     adjustment_start_time_ms = this.adjustmentTiming.startTime?.ms,
@@ -116,7 +116,7 @@ fun ScheduledTherapyAdjustment.toEntity() = ScheduledTherapyAdjustmentEntity(
     insulin_adjustment_percentage = this.percentage,
     target_bg_override = this.targetBgOverride?.mgdlInt?.toShort(),
     low_threshold_override = this.lowThresholdOverride?.mgdlInt?.toShort(),
-    alarm_profile_override_id = this.alarmProfileOverrideId ?: this.activeAlarmProfileId,
+    alarm_profile_override_id = this.effectiveAlarmProfileOverrideId,
     adjustment_hint = this.adjustmentHint
 )
 

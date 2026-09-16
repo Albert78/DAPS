@@ -106,16 +106,16 @@ class ScheduledTherapyViewModel(
         percentage: Int,
         targetBg: BgValue?,
         lowThreshold: BgValue?,
-        activeAlarmProfileId: Long?,
+        alarmProfileOverrideId: Long?,
         hint: String? = null
     ) {
         val alarmProfiles = _uiState.value.availableAlarmProfiles
-        val alarmProfileName = alarmProfiles.find { it.id == activeAlarmProfileId }?.name
+        val alarmProfileName = alarmProfiles.find { it.id == alarmProfileOverrideId }?.name
         formStateHolder.updateValues(
             percentage = percentage,
             targetBg = targetBg,
             lowThreshold = lowThreshold,
-            activeAlarmProfileId = activeAlarmProfileId,
+            alarmProfileOverrideId = alarmProfileOverrideId,
             alarmProfileName = alarmProfileName,
             hint = hint
         )
@@ -134,7 +134,7 @@ class ScheduledTherapyViewModel(
                 percentage = form.percentage,
                 targetBgOverride = form.targetBgOverride,
                 lowThresholdOverride = form.lowThresholdOverride,
-                alarmProfileOverrideId = form.activeAlarmProfileId,
+                alarmProfileOverrideId = form.alarmProfileOverrideId,
                 adjustmentHint = form.adjustmentHint
             )
             therapyManager.saveScheduledTherapyAdjustment(adjustment)

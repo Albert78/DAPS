@@ -14,8 +14,8 @@ data class TherapyAdjustmentFormState(
     val percentage: Int = 0,
     val targetBgOverride: BgValue? = null,
     val lowThresholdOverride: BgValue? = null,
-    val activeAlarmProfileId: Long? = null,
-    val activeAlarmProfileName: String? = null,
+    val alarmProfileOverrideId: Long? = null,
+    val alarmProfileOverrideName: String? = null,
     val adjustmentHint: String? = null,
     val timing: TherapyAdjustmentTiming = TherapyAdjustmentTiming()
 )
@@ -38,7 +38,7 @@ class TherapyAdjustmentFormStateHolder {
         percentage: Int,
         targetBg: BgValue?,
         lowThreshold: BgValue?,
-        activeAlarmProfileId: Long?,
+        alarmProfileOverrideId: Long?,
         alarmProfileName: String? = null,
         hint: String? = null
     ) {
@@ -47,8 +47,8 @@ class TherapyAdjustmentFormStateHolder {
                 percentage = percentage,
                 targetBgOverride = targetBg,
                 lowThresholdOverride = lowThreshold,
-                activeAlarmProfileId = activeAlarmProfileId,
-                activeAlarmProfileName = if (activeAlarmProfileId == null) null else (alarmProfileName ?: current.activeAlarmProfileName),
+                alarmProfileOverrideId = alarmProfileOverrideId,
+                alarmProfileOverrideName = if (alarmProfileOverrideId == null) null else (alarmProfileName ?: current.alarmProfileOverrideName),
                 adjustmentHint = hint
             )
         }
@@ -60,12 +60,12 @@ class TherapyAdjustmentFormStateHolder {
 
     fun applyPreset(preset: TherapyAdjustment) {
         _formState.update { current ->
-            val hint = if (preset.percentage == 0 && preset.targetBgMgDl == null && preset.lowThresholdMgDl == null && preset.activeAlarmProfileId == null) null else preset.name
+            val hint = if (preset.percentage == 0 && preset.targetBgMgDl == null && preset.lowThresholdMgDl == null && preset.alarmProfileOverrideId == null) null else preset.name
             current.copy(
                 percentage = preset.percentage,
                 targetBgOverride = preset.targetBgMgDl?.let { BgValue.fromMgDl(it.toInt()) },
                 lowThresholdOverride = preset.lowThresholdMgDl?.let { BgValue.fromMgDl(it.toInt()) },
-                activeAlarmProfileId = preset.activeAlarmProfileId,
+                alarmProfileOverrideId = preset.alarmProfileOverrideId,
                 adjustmentHint = hint
             )
         }

@@ -783,12 +783,12 @@ private fun TemporaryAdjustmentCard(
                 AdjustmentItem(
                     icon = Icons.Default.Notifications,
                     label = stringResource(R.string.therapy_adjustment_alarm_profile_label),
-                    value = adjustment.activeAlarmProfileName ?: stringResource(R.string.aps_control_adjustment_standard),
-                    valueColor = if (adjustment.activeAlarmProfileId != null)
+                    value = adjustment.alarmProfileOverrideName ?: stringResource(R.string.aps_control_adjustment_standard),
+                    valueColor = if (adjustment.alarmProfileOverrideId != null)
                         MaterialTheme.colorScheme.primary
                     else
                         MaterialTheme.colorScheme.onSurfaceVariant,
-                    status = if (adjustment.activeAlarmProfileId != null) stringResource(R.string.label_active) else null
+                    status = if (adjustment.alarmProfileOverrideId != null) stringResource(R.string.label_active) else null
                 )
             }
         }

@@ -16,19 +16,9 @@ data class ScheduledTherapyAdjustment(
     val alarmProfileOverride: AlarmProfile? = null,
     val adjustmentHint: String? = null
 ) {
-    fun isCurrentlyActive(now: Timestamp = Timestamp.now()): Boolean {
-        return now >= startTime && now < endTime
-    }
-
     /**
-     * Backwards-compatible alias for the alarm profile override ID.
+     * Resolves the alarm profile override ID for this scheduled adjustment.
      */
-    val activeAlarmProfileId: Long?
+    val effectiveAlarmProfileOverrideId: Long?
         get() = alarmProfileOverrideId ?: alarmProfileOverride?.id
-
-    /**
-     * Backwards-compatible alias for the alarm profile override.
-     */
-    val activeAlarmProfile: AlarmProfile?
-        get() = alarmProfileOverride
 }

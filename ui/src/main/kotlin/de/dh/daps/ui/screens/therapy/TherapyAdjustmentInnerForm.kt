@@ -104,7 +104,7 @@ fun TherapyAdjustmentInnerForm(
     val currentPercentage = formState.percentage
     val currentTarget = formState.targetBgOverride
     val currentLow = formState.lowThresholdOverride
-    val currentAlarmProfileId = formState.activeAlarmProfileId
+    val currentAlarmProfileId = formState.alarmProfileOverrideId
     val currentHint = formState.adjustmentHint
 
     Column(
@@ -485,7 +485,7 @@ private fun TherapyAdjustmentInnerFormPreview() {
                         percentage = -15,
                         targetBgOverride = BgValue.fromMgDl(130),
                         lowThresholdOverride = BgValue.fromMgDl(85),
-                        activeAlarmProfileId = 1L,
+                        alarmProfileOverrideId = 1L,
                         adjustmentHint = "Fahrrad fahren"
                     ),
                     baseTarget = BgValue.fromMgDl(100),
@@ -512,7 +512,7 @@ private fun TherapyAdjustmentInnerFormCollapsedPreview() {
                         percentage = 0,
                         targetBgOverride = null,
                         lowThresholdOverride = null,
-                        activeAlarmProfileId = null,
+                        alarmProfileOverrideId = null,
                         adjustmentHint = null
                     ),
                     baseTarget = BgValue.fromMgDl(100),

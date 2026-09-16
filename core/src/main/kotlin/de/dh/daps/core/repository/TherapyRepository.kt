@@ -164,7 +164,7 @@ class TherapyRepository(
         insulinAdjustmentPercentage: Int = 0,
         targetBgOverride: BgValue? = null,
         lowThresholdOverride: BgValue? = null,
-        activeAlarmProfileId: Long? = null,
+        alarmProfileOverrideId: Long? = null,
         adjustmentHint: String? = null,
         timing: TherapyAdjustmentTiming = TherapyAdjustmentTiming()
     ) {
@@ -176,7 +176,7 @@ class TherapyRepository(
             insulin_adjustment_percentage = insulinAdjustmentPercentage,
             target_bg_override = targetBgOverride?.mgdlInt?.toShort(),
             low_threshold_override = lowThresholdOverride?.mgdlInt?.toShort(),
-            alarm_profile_override_id = activeAlarmProfileId,
+            alarm_profile_override_id = alarmProfileOverrideId,
             adjustment_hint = adjustmentHint,
             adjustment_time_mode = timing.mode.name,
             adjustment_start_time_ms = timing.startTime?.ms,
