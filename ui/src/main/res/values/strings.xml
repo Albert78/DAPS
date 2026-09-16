@@ -223,7 +223,6 @@
     <string name="therapy_adjustment_unlimited">Festlegen</string>
     <string name="therapy_adjustment_duration">Begrenzte Dauer</string>
     <string name="therapy_adjustment_adhoc_info">Die Einstellung gilt sofort und unbegrenzt, bis sie manuell beendet wird.</string>
-    <string name="therapy_adjustment_duration_select_label">Dauer wählen</string>
     <string name="therapy_adjustment_duration_active_until">Gilt ab sofort bis %s Uhr</string>
     <string name="therapy_adjustment_duration_dialog_title">Ende festlegen</string>
     <string name="therapy_adjustment_duration_mode_relative">Dauer</string>
@@ -238,7 +237,6 @@
     <string name="therapy_adjustment_active_now">Aktuell aktiv</string>
     <string name="therapy_adjustment_active_until_format">Aktiv bis %s Uhr</string>
     <string name="therapy_adjustment_timing_summary_title">Zeitplanung</string>
-    <string name="therapy_adjustment_timing_scheduled_format">Geplant (%1$s – %2$s Uhr)</string>
     <string name="therapy_adjustment_schedule_button">Anpassung planen</string>
     <string name="scheduled_therapy_adjustment_screen_title">Therapie-Anpassung planen</string>
 

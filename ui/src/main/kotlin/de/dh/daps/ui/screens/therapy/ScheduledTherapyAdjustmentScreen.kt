@@ -3,7 +3,6 @@ package de.dh.daps.ui.screens.therapy
 import android.app.TimePickerDialog
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -17,13 +16,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -321,52 +318,6 @@ fun ScheduledTherapyAdjustmentContent(
                             )
                         }
                     }
-
-                    // Summary Card
-                    val durationMins = ((endTime.ms - startTime.ms) / 60_000L).coerceAtLeast(0)
-                    val durationText = if (durationMins >= 60) {
-                        "${durationMins / 60} h ${durationMins % 60} min"
-                    } else {
-                        "$durationMins min"
-                    }
-
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
-                        shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.AccessTime,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Text(
-                                    text = stringResource(R.string.therapy_adjustment_timing_summary_title),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                            Text(
-                                text = "${timeFormat.format(startTime.ms)} - ${timeFormat.format(endTime.ms)} ($durationText)",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
                 }
             }
 
@@ -376,19 +327,43 @@ fun ScheduledTherapyAdjustmentContent(
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
+                val durationMins = remember(startTime, endTime) {
+                    ((endTime.ms - startTime.ms) / 60_000L).coerceAtLeast(0)
+                }
+                val durationText = remember(durationMins) {
+                    if (durationMins >= 60) {
+                        "${durationMins / 60}h ${durationMins % 60} min"
+                    } else {
+                        "$durationMins min"
+                    }
+                }
+                val timeRangeText = remember(startTime, endTime, durationText) {
+                    "${timeFormat.format(startTime.ms)} - ${timeFormat.format(endTime.ms)} ($durationText)"
+                }
+
                 Button(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(52.dp),
+                        .height(56.dp),
                     shape = RoundedCornerShape(12.dp),
                     onClick = onScheduleClicked
                 ) {
-                    Text(
-                        text = stringResource(R.string.therapy_adjustment_schedule_button),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = stringResource(R.string.therapy_adjustment_schedule_button),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = timeRangeText,
+                            style = MaterialTheme.typography.bodySmall,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
         }
