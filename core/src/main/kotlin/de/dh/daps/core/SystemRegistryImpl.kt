@@ -164,7 +164,6 @@ class SystemRegistryImpl(
                 alarmRepository = alarmRepository,
                 therapyRepository = therapyRepository,
                 alarmSnoozeManager = alarmSnoozeManager,
-                alarmPlayerManager = alarmPlayerManager,
                 androidNotifications = androidNotifications,
                 scope = scope
             )

@@ -33,7 +33,6 @@ class AlarmEvaluator(
     private val alarmRepository: AlarmRepository,
     private val therapyRepository: TherapyRepository,
     private val alarmSnoozeManager: AlarmSnoozeManager,
-    private val alarmPlayerManager: AlarmPlayerManager,
     private val androidNotifications: AndroidNotifications,
     private val scope: CoroutineScope
 ) {
@@ -116,20 +115,16 @@ class AlarmEvaluator(
             val activeProfile = input.activeProfile
             val config = activeProfile?.getConfigFor(primaryAlarm) ?: AlarmSoundConfig()
 
-            val previousFiring = _activeFiringAlarm.value
             _activeFiringAlarm.value = primaryAlarm
             _activeFiringConfig.value = config
 
-            // Play audio/vibration if not already playing or if primary alarm changed
-            if (previousFiring != primaryAlarm || !alarmPlayerManager.isPlaying()) {
-                Log.d(TAG, "Triggering alarm playback for $primaryAlarm with config $config")
-                alarmPlayerManager.playAlarm(config, isSafetyCritical = primaryAlarm.isSafetyCritical)
-            }
+            Log.d(TAG, "Posting notification for active alarm $primaryAlarm")
+            androidNotifications.showAlarmNotification(primaryAlarm, input.bgReading?.value)
         } else {
             // No unsnoozed alarms active
             if (_activeFiringAlarm.value != null) {
-                Log.d(TAG, "Stopping active alarm sound/vibration: all alarms cleared or snoozed")
-                alarmPlayerManager.stopAlarm()
+                Log.d(TAG, "Cancelling alarm notification: all alarms cleared or snoozed")
+                androidNotifications.cancelAlarmNotification()
             }
             _activeFiringAlarm.value = null
             _activeFiringConfig.value = null

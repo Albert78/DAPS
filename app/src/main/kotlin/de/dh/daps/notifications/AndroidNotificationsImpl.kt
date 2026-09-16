@@ -11,10 +11,10 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
 import de.dh.daps.R
+import de.dh.daps.common.model.data.AlarmType
 import de.dh.daps.common.model.data.BgDelta
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.GlucoseUnit
-import de.dh.daps.core.aps.ApsIssue
 import de.dh.daps.core.aps.ApsRecommendation
 import de.dh.daps.core.aps.CoreIssue
 import de.dh.daps.core.aps.STALE_BG_THRESHOLD
@@ -167,35 +167,10 @@ class AndroidNotificationsImpl(
         manager.cancel(RECOMMENDATION_NOTIFICATION_ID)
     }
 
-    override fun showApsIssueNotification(issues: Set<ApsIssue>) {
-        if (issues.isEmpty()) {
-            cancelApsIssueNotification()
-            return
-        }
-
-        val title = if (issues.size == 1) {
-            when (issues.first()) {
-                is ApsIssue.Core -> context.getString(UiR.string.core_issue_title)
-                is ApsIssue.Pump -> context.getString(UiR.string.pump_issue_title)
-                ApsIssue.StaleBG -> context.getString(UiR.string.core_issue_title)
-                is ApsIssue.Other -> context.getString(UiR.string.core_issue_title)
-            }
-        } else {
-            context.getString(UiR.string.multiple_issues_title, issues.size)
-        }
-
-        val messages = issues.map { getIssueMessage(it) }
-        val contentText = if (messages.size == 1) {
-            messages.first()
-        } else {
-            messages.joinToString("; ")
-        }
-
-        val bigText = if (messages.size == 1) {
-            messages.first()
-        } else {
-            messages.joinToString("\n") { "• $it" }
-        }
+    override fun showAlarmNotification(alarmType: AlarmType, bgValue: BgValue?) {
+        val unit = getGlucoseUnit()
+        val title = getAlarmTitle(alarmType)
+        val contentText = getAlarmContentText(alarmType, bgValue, unit)
 
         val dashboardIntent = MainActivity.createStartDashboardIntent(context)
         val pendingIntent = PendingIntent.getActivity(
@@ -211,12 +186,12 @@ class AndroidNotificationsImpl(
             alarmActivityIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        val snooze15Intent = AlarmBroadcastReceiver.createSnoozeIntent(context, null, 15)
+        val snooze15Intent = AlarmBroadcastReceiver.createSnoozeIntent(context, alarmType, 15)
         val snooze15PendingIntent = PendingIntent.getBroadcast(
             context, 15, snooze15Intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val snooze30Intent = AlarmBroadcastReceiver.createSnoozeIntent(context, null, 30)
+        val snooze30Intent = AlarmBroadcastReceiver.createSnoozeIntent(context, alarmType, 30)
         val snooze30PendingIntent = PendingIntent.getBroadcast(
             context, 30, snooze30Intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -224,7 +199,6 @@ class AndroidNotificationsImpl(
         val notification = NotificationCompat.Builder(context, ALGORITHM_ISSUE_CHANNEL_ID)
             .setContentTitle(title)
             .setContentText(contentText)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(bigText))
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentIntent(pendingIntent)
             .setFullScreenIntent(fullScreenPendingIntent, true)
@@ -238,7 +212,7 @@ class AndroidNotificationsImpl(
                 context.getString(UiR.string.alarm_action_snooze_30),
                 snooze30PendingIntent
             )
-            .setAutoCancel(false) // Keep it until resolved
+            .setAutoCancel(false)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
@@ -247,42 +221,34 @@ class AndroidNotificationsImpl(
         notify(ALGORITHM_ISSUE_NOTIFICATION_ID, notification)
     }
 
-    private fun getIssueMessage(issue: ApsIssue): String = when (issue) {
-        ApsIssue.StaleBG -> context.getString(
-            UiR.string.core_issue_no_recent_values,
-            STALE_BG_THRESHOLD.value.toInt()
-        )
-        is ApsIssue.Core -> when (val coreIssue = issue.issue) {
-            is CoreIssue.NoRecentValues -> context.getString(
-                UiR.string.core_issue_no_recent_values,
-                coreIssue.minutes
-            )
-            is CoreIssue.NoisyValues -> context.getString(UiR.string.core_issue_noisy_values)
-            is CoreIssue.InternalError -> context.getString(
-                UiR.string.core_issue_internal_error,
-                coreIssue.message ?: context.getString(UiR.string.unknown_label)
-            )
-            is CoreIssue.TherapyLockBusy -> context.getString(
-                UiR.string.core_issue_therapy_lock_busy,
-                time(coreIssue.since)
-            )
-            is CoreIssue.NoPumpConnection -> context.getString(UiR.string.core_issue_no_pump_connection)
-        }
-        is ApsIssue.Pump -> when (issue.issue) {
-            PumpIssue.ConnectionMissing -> context.getString(UiR.string.pump_issue_connection_missing)
-            PumpIssue.Inoperative -> context.getString(UiR.string.pump_issue_inoperative)
-            PumpIssue.LowInsulin -> context.getString(UiR.string.pump_issue_low_insulin)
-            PumpIssue.LowBattery -> context.getString(UiR.string.pump_issue_low_battery)
-            is PumpIssue.CommandFailed -> context.getString(UiR.string.pump_issue_command_failed)
-            PumpIssue.Other -> context.getString(UiR.string.pump_issue_other)
-        }
-        is ApsIssue.Other -> issue.message ?: context.getString(UiR.string.unknown_label)
+    private fun getAlarmTitle(alarmType: AlarmType): String = when (alarmType) {
+        AlarmType.CRITICAL_LOW_BG -> context.getString(UiR.string.alarm_type_critical_low_bg)
+        AlarmType.LOW_BG -> context.getString(UiR.string.alarm_type_low_bg)
+        AlarmType.HIGH_BG -> context.getString(UiR.string.alarm_type_high_bg)
+        AlarmType.PUMP_OCCLUSION -> context.getString(UiR.string.alarm_type_pump_occlusion)
+        AlarmType.PUMP_LOW_INSULIN -> context.getString(UiR.string.alarm_type_pump_low_insulin)
+        AlarmType.PUMP_LOW_BATTERY -> context.getString(UiR.string.alarm_type_pump_low_battery)
+        AlarmType.CGM_SIGNAL_LOSS -> context.getString(UiR.string.alarm_type_cgm_signal_loss)
+        AlarmType.SYSTEM_BATTERY_LOW -> context.getString(UiR.string.alarm_type_system_battery_low)
     }
 
-    override fun cancelApsIssueNotification() {
+    private fun getAlarmContentText(alarmType: AlarmType, bgValue: BgValue?, unit: GlucoseUnit): String = when (alarmType) {
+        AlarmType.CRITICAL_LOW_BG, AlarmType.LOW_BG, AlarmType.HIGH_BG -> {
+            if (bgValue != null) {
+                getBgValueString(bgValue, unit, false) ?: ""
+            } else {
+                ""
+            }
+        }
+        AlarmType.CGM_SIGNAL_LOSS -> context.getString(UiR.string.core_issue_no_recent_values, 15)
+        AlarmType.PUMP_OCCLUSION -> context.getString(UiR.string.pump_issue_inoperative)
+        AlarmType.PUMP_LOW_INSULIN -> context.getString(UiR.string.pump_issue_low_insulin)
+        AlarmType.PUMP_LOW_BATTERY -> context.getString(UiR.string.pump_issue_low_battery)
+        AlarmType.SYSTEM_BATTERY_LOW -> context.getString(UiR.string.alarm_type_system_battery_low)
+    }
+
+    override fun cancelAlarmNotification() {
         manager.cancel(ALGORITHM_ISSUE_NOTIFICATION_ID)
-        val registry = (context.applicationContext as? RegistryProvider)?.registry
-        registry?.alarmPlayerManager?.stopAlarm()
     }
 
     private fun notify(notificationId: Int, notification: Notification) {

@@ -320,16 +320,6 @@ class SystemOrchestratorImpl(
             }
         }
 
-        scope.launch {
-            apsIssues.collect { issues ->
-                if (issues.isNotEmpty()) {
-                    androidNotifications.showApsIssueNotification(issues)
-                } else {
-                    androidNotifications.cancelApsIssueNotification()
-                }
-            }
-        }
-
         core = Core.createProductiveCore(
             therapyManager = therapyManager,
             treatmentRepository = treatmentRepository,

@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import de.dh.daps.common.model.data.AlarmType
@@ -27,6 +28,12 @@ class AlarmActivity : ComponentActivity() {
             val currentBgReading by registry.glucoseRepository.currentBg.collectAsState()
             val glucoseUnit by registry.appPreferencesRepository.glucoseUnit.collectAsState()
 
+            LaunchedEffect(activeFiringAlarm) {
+                if (activeFiringAlarm == null) {
+                    finish()
+                }
+            }
+
             val alarmType = activeFiringAlarm ?: AlarmType.CRITICAL_LOW_BG
 
             AppTheme(darkTheme = true) {
@@ -36,17 +43,31 @@ class AlarmActivity : ComponentActivity() {
                     glucoseUnit = glucoseUnit ?: GlucoseUnit.MG_DL,
                     onSnooze = { minutes ->
                         registry.alarmSnoozeManager.snoozeAlarm(alarmType, minutes)
-                        registry.alarmPlayerManager.stopAlarm()
                         finish()
                     },
                     onDismiss = {
                         registry.alarmSnoozeManager.snoozeAlarm(alarmType, 15)
-                        registry.alarmPlayerManager.stopAlarm()
                         finish()
                     }
                 )
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val registry = (application as RegistryProvider).registry
+        val activeAlarm = registry.alarmEvaluator.activeFiringAlarm.value
+        val activeConfig = registry.alarmEvaluator.activeFiringConfig.value
+        if (activeAlarm != null && activeConfig != null) {
+            registry.alarmPlayerManager.playAlarm(activeConfig, isSafetyCritical = activeAlarm.isSafetyCritical)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        val registry = (application as RegistryProvider).registry
+        registry.alarmPlayerManager.stopAlarm()
     }
 
     private fun turnOnScreenAndShowOnLock() {
