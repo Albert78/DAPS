@@ -322,12 +322,12 @@ fun TherapyAdjustmentContent(
                         onDiscardClicked()
                     }
                 ) {
-                    Text(text = stringResource(android.R.string.ok))
+                    Text(text = stringResource(R.string.discard_confirm_button))
                 }
             },
             dismissButton = {
                 NormalTextButton(onClick = { showDiscardDialog = false }) {
-                    Text(text = stringResource(android.R.string.cancel))
+                    Text(text = stringResource(R.string.discard_dismiss_button))
                 }
             }
         )
