@@ -22,14 +22,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Adjust
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material.icons.filled.VerticalAlignBottom
-import de.dh.daps.common.model.data.AdjustmentTimeMode
 import java.text.SimpleDateFormat
 import java.util.Locale
 import androidx.compose.material3.AlertDialog
@@ -225,7 +223,7 @@ fun CurrentTherapySettingsContent(
                         onClick = onNavigateToScheduledTherapyAdjustment
                     ) {
                         Text(
-                            text = stringResource(R.string.therapy_adjustment_mode_timewindow),
+                            text = stringResource(R.string.therapy_adjustment_schedule_button),
                             style = MaterialTheme.typography.labelLarge
                         )
                     }
@@ -689,13 +687,22 @@ private fun TemporaryAdjustmentCard(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Header: Hint and Arrow
+            val baseHint = adjustment.adjustmentHint ?: stringResource(R.string.aps_control_therapy_adjustment_custom)
+            val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+            val endTimeStr = adjustment.timing.endTime?.let { timeFormat.format(it.ms) }
+            val hintText = if (!endTimeStr.isNullOrEmpty()) {
+                stringResource(R.string.therapy_adjustment_hint_until_format, baseHint, endTimeStr)
+            } else {
+                baseHint
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = adjustment.adjustmentHint ?: stringResource(R.string.aps_control_therapy_adjustment_custom),
+                    text = hintText,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -782,33 +789,6 @@ private fun TemporaryAdjustmentCard(
                     else
                         MaterialTheme.colorScheme.onSurfaceVariant,
                     status = if (adjustment.activeAlarmProfileId != null) stringResource(R.string.label_active) else null
-                )
-
-                // Timing Status
-                val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
-                val timingText = when (adjustment.timing.mode) {
-                    AdjustmentTimeMode.AD_HOC -> stringResource(R.string.therapy_adjustment_timing_active_unlimited)
-                    AdjustmentTimeMode.DURATION -> {
-                        val endStr = adjustment.timing.endTime?.let { timeFormat.format(it.ms) } ?: ""
-                        if (endStr.isNotEmpty()) {
-                            stringResource(R.string.therapy_adjustment_timing_active_until, endStr)
-                        } else {
-                            stringResource(R.string.label_active)
-                        }
-                    }
-                    AdjustmentTimeMode.TIME_WINDOW -> {
-                        val startStr = adjustment.timing.startTime?.let { timeFormat.format(it.ms) } ?: ""
-                        val endStr = adjustment.timing.endTime?.let { timeFormat.format(it.ms) } ?: ""
-                        stringResource(R.string.therapy_adjustment_timing_scheduled_format, startStr, endStr)
-                    }
-                }
-
-                AdjustmentItem(
-                    icon = Icons.Default.AccessTime,
-                    label = stringResource(R.string.therapy_adjustment_timing_summary_title),
-                    value = timingText,
-                    valueColor = MaterialTheme.colorScheme.primary,
-                    status = if (adjustment.timing.mode != AdjustmentTimeMode.AD_HOC) stringResource(R.string.label_active) else null
                 )
             }
         }

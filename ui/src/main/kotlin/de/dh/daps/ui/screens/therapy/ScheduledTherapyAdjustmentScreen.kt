@@ -368,7 +368,7 @@ fun ScheduledTherapyAdjustmentContent(
                     onClick = onScheduleClicked
                 ) {
                     Text(
-                        text = stringResource(R.string.therapy_adjustment_mode_timewindow),
+                        text = stringResource(R.string.therapy_adjustment_schedule_button),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center

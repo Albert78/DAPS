@@ -229,6 +229,8 @@
     <string name="therapy_adjustment_discard_dialog_title">Änderungen verwerfen?</string>
     <string name="therapy_adjustment_discard_dialog_message">Es wurden Änderungen gemacht. Möchtest du sie verwerfen?</string>
     <string name="therapy_adjustment_apply_button">Übernehmen</string>
+    <string name="therapy_adjustment_schedule_button">Anpassung planen</string>
+    <string name="therapy_adjustment_hint_until_format">%1$s (bis %2$s)</string>
     <string name="therapy_adjustment_timing_summary_title">Zeitplanung</string>
     <string name="therapy_adjustment_timing_active_unlimited">Aktiv (unbegrenzt)</string>
     <string name="therapy_adjustment_timing_active_until">Aktiv (bis %s Uhr)</string>
