@@ -131,7 +131,7 @@ class ScheduledTherapyViewModel(
                 percentage = form.percentage,
                 targetBgOverride = form.targetBgOverride,
                 lowThresholdOverride = form.lowThresholdOverride,
-                activeAlarmProfileId = form.activeAlarmProfileId,
+                alarmProfileOverrideId = form.activeAlarmProfileId,
                 adjustmentHint = form.adjustmentHint
             )
             therapyManager.saveScheduledTherapyAdjustment(adjustment)

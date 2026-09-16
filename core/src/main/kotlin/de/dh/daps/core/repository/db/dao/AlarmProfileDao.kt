@@ -19,6 +19,12 @@ interface AlarmProfileDao {
     @Query("SELECT * FROM alarm_profiles WHERE id = :id")
     suspend fun getAlarmProfileById(id: Long): AlarmProfileEntity?
 
+    @Query("SELECT * FROM alarm_profiles WHERE is_default = 1 LIMIT 1")
+    suspend fun getDefaultAlarmProfile(): AlarmProfileEntity?
+
+    @Query("SELECT * FROM alarm_profiles WHERE is_default = 1 LIMIT 1")
+    fun observeDefaultAlarmProfile(): Flow<AlarmProfileEntity?>
+
     @Query("SELECT * FROM alarm_profiles WHERE is_active = 1 LIMIT 1")
     suspend fun getActiveAlarmProfile(): AlarmProfileEntity?
 
@@ -33,6 +39,18 @@ interface AlarmProfileDao {
 
     @Query("DELETE FROM alarm_profiles WHERE id = :id")
     suspend fun deleteAlarmProfile(id: Long)
+
+    @Query("UPDATE alarm_profiles SET is_default = 0")
+    suspend fun clearDefaultFlag()
+
+    @Query("UPDATE alarm_profiles SET is_default = 1 WHERE id = :id")
+    suspend fun setDefaultFlag(id: Long)
+
+    @Transaction
+    suspend fun setDefaultAlarmProfile(id: Long) {
+        clearDefaultFlag()
+        setDefaultFlag(id)
+    }
 
     @Query("UPDATE alarm_profiles SET is_active = 0")
     suspend fun clearActiveFlag()

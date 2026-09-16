@@ -7,10 +7,13 @@ interface AlarmRepository {
     suspend fun getAllAlarmProfiles(): List<AlarmProfile>
     fun observeAllAlarmProfiles(): Flow<List<AlarmProfile>>
     suspend fun getAlarmProfileById(id: Long): AlarmProfile?
+    suspend fun getDefaultAlarmProfile(): AlarmProfile?
+    fun observeDefaultAlarmProfile(): Flow<AlarmProfile?>
     suspend fun getActiveAlarmProfile(): AlarmProfile?
     fun observeActiveAlarmProfile(): Flow<AlarmProfile?>
     suspend fun insertAlarmProfile(profile: AlarmProfile): Long
     suspend fun updateAlarmProfile(profile: AlarmProfile)
     suspend fun deleteAlarmProfile(id: Long)
+    suspend fun setDefaultAlarmProfile(id: Long)
     suspend fun setActiveAlarmProfile(id: Long)
 }

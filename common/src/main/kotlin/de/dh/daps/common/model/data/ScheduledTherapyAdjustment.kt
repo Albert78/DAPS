@@ -12,11 +12,23 @@ data class ScheduledTherapyAdjustment(
     val percentage: Int = 0,
     val targetBgOverride: BgValue? = null,
     val lowThresholdOverride: BgValue? = null,
-    val activeAlarmProfileId: Long? = null,
-    val activeAlarmProfile: AlarmProfile? = null,
+    val alarmProfileOverrideId: Long? = null,
+    val alarmProfileOverride: AlarmProfile? = null,
     val adjustmentHint: String? = null
 ) {
     fun isCurrentlyActive(now: Timestamp = Timestamp.now()): Boolean {
         return now >= startTime && now < endTime
     }
+
+    /**
+     * Backwards-compatible alias for the alarm profile override ID.
+     */
+    val activeAlarmProfileId: Long?
+        get() = alarmProfileOverrideId ?: alarmProfileOverride?.id
+
+    /**
+     * Backwards-compatible alias for the alarm profile override.
+     */
+    val activeAlarmProfile: AlarmProfile?
+        get() = alarmProfileOverride
 }

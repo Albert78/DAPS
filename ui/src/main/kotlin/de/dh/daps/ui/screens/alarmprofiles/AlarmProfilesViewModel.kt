@@ -14,10 +14,14 @@ import kotlinx.coroutines.launch
 
 data class AlarmProfilesUiState(
     val profiles: List<AlarmProfile> = emptyList(),
-    val activeProfile: AlarmProfile? = null,
+    val defaultProfile: AlarmProfile? = null,
+    val alarmProfileOverride: AlarmProfile? = null,
     val isLoading: Boolean = false,
     val showDeleteConfirmation: AlarmProfile? = null
-)
+) {
+    val activeProfile: AlarmProfile?
+        get() = alarmProfileOverride ?: defaultProfile
+}
 
 class AlarmProfilesViewModel(
     systemRegistry: SystemRegistry
@@ -27,6 +31,7 @@ class AlarmProfilesViewModel(
     val uiState = _uiState.asStateFlow()
 
     private val alarmRepository = systemRegistry.alarmRepository
+    private val therapyManager = systemRegistry.therapyManager
 
     init {
         observeData()
@@ -36,14 +41,16 @@ class AlarmProfilesViewModel(
         viewModelScope.launch {
             combine(
                 alarmRepository.observeAllAlarmProfiles(),
-                alarmRepository.observeActiveAlarmProfile()
-            ) { profiles, active ->
-                profiles to active
-            }.collect { (profiles, active) ->
+                alarmRepository.observeDefaultAlarmProfile(),
+                therapyManager.currentTherapySettingsFlow
+            ) { profiles, defaultProf, currentSettings ->
+                Triple(profiles, defaultProf, currentSettings.alarmProfileOverride)
+            }.collect { (profiles, defaultProf, overrideProf) ->
                 _uiState.update {
                     it.copy(
                         profiles = profiles,
-                        activeProfile = active,
+                        defaultProfile = defaultProf,
+                        alarmProfileOverride = overrideProf,
                         isLoading = false
                     )
                 }
@@ -51,10 +58,14 @@ class AlarmProfilesViewModel(
         }
     }
 
-    fun setActiveProfile(profile: AlarmProfile) {
+    fun setDefaultProfile(profile: AlarmProfile) {
         viewModelScope.launch {
-            alarmRepository.setActiveAlarmProfile(profile.id)
+            alarmRepository.setDefaultAlarmProfile(profile.id)
         }
+    }
+
+    fun setActiveProfile(profile: AlarmProfile) {
+        setDefaultProfile(profile)
     }
 
     fun confirmDelete(profile: AlarmProfile) {

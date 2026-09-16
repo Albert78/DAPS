@@ -131,11 +131,13 @@ fun AlarmProfilesContent(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(uiState.profiles, key = { it.id }) { profile ->
-                    val isActive = uiState.activeProfile?.id == profile.id
+                    val isDefault = profile.isDefault || uiState.defaultProfile?.id == profile.id
+                    val isOverride = uiState.alarmProfileOverride?.id == profile.id
                     AlarmProfileCard(
                         profile = profile,
-                        isActive = isActive,
-                        onSetActive = { onSetActiveProfile(profile) },
+                        isDefault = isDefault,
+                        isOverride = isOverride,
+                        onSetDefault = { onSetActiveProfile(profile) },
                         onEdit = { onEditProfile(profile) },
                         onDelete = { onDeleteProfile(profile) }
                     )
@@ -169,8 +171,9 @@ fun AlarmProfilesContent(
 @Composable
 fun AlarmProfileCard(
     profile: AlarmProfile,
-    isActive: Boolean,
-    onSetActive: () -> Unit,
+    isDefault: Boolean,
+    isOverride: Boolean,
+    onSetDefault: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
@@ -179,7 +182,9 @@ fun AlarmProfileCard(
             .fillMaxWidth()
             .clickable(onClick = onEdit),
         colors = CardDefaults.cardColors(
-            containerColor = if (isActive) {
+            containerColor = if (isOverride) {
+                MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.4f)
+            } else if (isDefault) {
                 MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
             } else {
                 MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
@@ -203,7 +208,24 @@ fun AlarmProfileCard(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
-                    if (isActive) {
+                    if (isOverride) {
+                        Surface(
+                            color = MaterialTheme.colorScheme.tertiary,
+                            shape = MaterialTheme.shapes.small
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    text = stringResource(id = R.string.alarm_profile_override_active_label),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onTertiary
+                                )
+                            }
+                        }
+                    } else if (isDefault) {
                         Surface(
                             color = MaterialTheme.colorScheme.primary,
                             shape = MaterialTheme.shapes.small
@@ -220,7 +242,7 @@ fun AlarmProfileCard(
                                     tint = MaterialTheme.colorScheme.onPrimary
                                 )
                                 Text(
-                                    text = stringResource(id = R.string.alarm_profile_active_label),
+                                    text = stringResource(id = R.string.alarm_profile_default_label),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onPrimary
                                 )
@@ -230,11 +252,11 @@ fun AlarmProfileCard(
                 }
 
                 Row {
-                    if (!isActive) {
-                        IconButton(onClick = onSetActive) {
+                    if (!isDefault) {
+                        IconButton(onClick = onSetDefault) {
                             Icon(
                                 imageVector = Icons.Default.Check,
-                                contentDescription = stringResource(id = R.string.alarm_profile_set_active)
+                                contentDescription = stringResource(id = R.string.alarm_profile_set_default)
                             )
                         }
                     }
@@ -244,7 +266,7 @@ fun AlarmProfileCard(
                             contentDescription = stringResource(id = R.string.action_edit)
                         )
                     }
-                    if (!profile.isDefault) {
+                    if (!isDefault) {
                         IconButton(onClick = onDelete) {
                             Icon(
                                 imageVector = Icons.Default.Delete,

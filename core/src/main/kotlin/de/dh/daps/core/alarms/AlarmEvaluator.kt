@@ -13,11 +13,13 @@ import de.dh.daps.core.pump.PumpIssue
 import de.dh.daps.core.repository.AlarmRepository
 import de.dh.daps.core.repository.GlucoseRepository
 import de.dh.daps.core.system.AndroidNotifications
+import de.dh.daps.core.repository.TherapyRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 /**
@@ -29,6 +31,7 @@ class AlarmEvaluator(
     private val glucoseRepository: GlucoseRepository,
     private val systemOrchestrator: SystemOrchestrator,
     private val alarmRepository: AlarmRepository,
+    private val therapyRepository: TherapyRepository,
     private val alarmSnoozeManager: AlarmSnoozeManager,
     private val alarmPlayerManager: AlarmPlayerManager,
     private val androidNotifications: AndroidNotifications,
@@ -49,7 +52,7 @@ class AlarmEvaluator(
             combine(
                 glucoseRepository.currentBg,
                 systemOrchestrator.apsIssues,
-                alarmRepository.observeActiveAlarmProfile(),
+                therapyRepository.observeCurrentTherapySettings().map { it.effectiveAlarmProfile },
                 alarmSnoozeManager.snoozedAlarms
             ) { currentBgReading, apsIssues, activeProfile, snoozedMap ->
                 EvaluationInput(

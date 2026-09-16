@@ -49,7 +49,7 @@ data class CurrentTherapySettingsEntity(
     val insulin_adjustment_percentage: Int,
     val target_bg_override: Short? = null,
     val low_threshold_override: Short? = null,
-    val active_alarm_profile_id: Long? = null,
+    val alarm_profile_override_id: Long? = null,
     val adjustment_hint: String? = null,
     val adjustment_time_mode: String? = null,
     val adjustment_start_time_ms: Long? = null,
@@ -70,6 +70,6 @@ data class ScheduledTherapyAdjustmentEntity(
     val insulin_adjustment_percentage: Int = 0,
     val target_bg_override: Short? = null,
     val low_threshold_override: Short? = null,
-    val active_alarm_profile_id: Long? = null,
+    val alarm_profile_override_id: Long? = null,
     val adjustment_hint: String? = null
 )

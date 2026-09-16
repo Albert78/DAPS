@@ -73,7 +73,7 @@ fun CurrentTherapySettings.toEntity() = CurrentTherapySettingsEntity(
     insulin_adjustment_percentage = this.insulinAdjustmentPercentage,
     target_bg_override = this.targetBgOverride?.mgdlInt?.toShort(),
     low_threshold_override = this.lowThresholdOverride?.mgdlInt?.toShort(),
-    active_alarm_profile_id = this.activeAlarmProfile?.id,
+    alarm_profile_override_id = this.alarmProfileOverride?.id ?: this.activeAlarmProfile?.id,
     adjustment_hint = this.adjustmentHint,
     adjustment_time_mode = this.adjustmentTiming.mode.name,
     adjustment_start_time_ms = this.adjustmentTiming.startTime?.ms,
@@ -82,7 +82,8 @@ fun CurrentTherapySettings.toEntity() = CurrentTherapySettingsEntity(
 
 fun CurrentTherapySettingsEntity.toModel(
     profile: InsulinProfile,
-    alarmProfile: AlarmProfile? = null
+    defaultAlarmProfile: AlarmProfile? = null,
+    alarmProfileOverride: AlarmProfile? = null
 ): CurrentTherapySettings {
     val timeMode = this.adjustment_time_mode?.let {
         runCatching { AdjustmentTimeMode.valueOf(it) }.getOrDefault(AdjustmentTimeMode.AD_HOC)
@@ -101,7 +102,8 @@ fun CurrentTherapySettingsEntity.toModel(
         insulinAdjustmentPercentage = this.insulin_adjustment_percentage,
         targetBgOverride = this.target_bg_override?.let { BgValue.fromMgDl(it) },
         lowThresholdOverride = this.low_threshold_override?.let { BgValue.fromMgDl(it) },
-        activeAlarmProfile = alarmProfile,
+        defaultAlarmProfile = defaultAlarmProfile,
+        alarmProfileOverride = alarmProfileOverride,
         adjustmentHint = this.adjustment_hint,
         adjustmentTiming = timing
     )
@@ -114,7 +116,7 @@ fun ScheduledTherapyAdjustment.toEntity() = ScheduledTherapyAdjustmentEntity(
     insulin_adjustment_percentage = this.percentage,
     target_bg_override = this.targetBgOverride?.mgdlInt?.toShort(),
     low_threshold_override = this.lowThresholdOverride?.mgdlInt?.toShort(),
-    active_alarm_profile_id = this.activeAlarmProfileId,
+    alarm_profile_override_id = this.alarmProfileOverrideId ?: this.activeAlarmProfileId,
     adjustment_hint = this.adjustmentHint
 )
 
@@ -125,7 +127,7 @@ fun ScheduledTherapyAdjustmentEntity.toModel(alarmProfile: AlarmProfile? = null)
     percentage = this.insulin_adjustment_percentage,
     targetBgOverride = this.target_bg_override?.let { BgValue.fromMgDl(it) },
     lowThresholdOverride = this.low_threshold_override?.let { BgValue.fromMgDl(it) },
-    activeAlarmProfileId = this.active_alarm_profile_id,
-    activeAlarmProfile = alarmProfile,
+    alarmProfileOverrideId = this.alarm_profile_override_id,
+    alarmProfileOverride = alarmProfile,
     adjustmentHint = this.adjustment_hint
 )

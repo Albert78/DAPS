@@ -143,7 +143,6 @@ class TherapyManager(
             val endTime = timing.endTime
             if (endTime != null && now >= endTime) {
                 // Adjustment expired -> reset to neutral / standard
-                val previousAlarmProfileId = currentSettings.activeAlarmProfileId
                 therapyRepository.updateCurrentTherapySettings(
                     insulinProfileId = currentSettings.insulinProfile.id,
                     defaultBgBlocks = currentSettings.defaultBgBlocks,
@@ -154,10 +153,6 @@ class TherapyManager(
                     adjustmentHint = null,
                     timing = TherapyAdjustmentTiming()
                 )
-                if (previousAlarmProfileId != null) {
-                    val defaultProfile = alarmRepository.getAllAlarmProfiles().find { it.isDefault }
-                    defaultProfile?.let { alarmRepository.setActiveAlarmProfile(it.id) }
-                }
                 Log.d(TAG, "Therapy adjustment expired and reset to neutral")
             } else if (startTime != null && endTime != null && now >= startTime && now < endTime) {
                 // Adjustment became active -> schedule end wakeup if needed
@@ -268,7 +263,6 @@ class TherapyManager(
     ) {
         mutex.withLock {
             val currentSettings = getCurrentTherapySettings()
-            val previousAlarmProfileId = currentSettings.activeAlarmProfileId
 
             therapyRepository.updateCurrentTherapySettings(
                 insulinProfileId = currentSettings.insulinProfile.id,
@@ -280,13 +274,6 @@ class TherapyManager(
                 adjustmentHint = adjustmentHint,
                 timing = timing
             )
-
-            if (activeAlarmProfileId != null) {
-                alarmRepository.setActiveAlarmProfile(activeAlarmProfileId)
-            } else if (previousAlarmProfileId != null) {
-                val defaultProfile = alarmRepository.getAllAlarmProfiles().find { it.isDefault }
-                defaultProfile?.let { alarmRepository.setActiveAlarmProfile(it.id) }
-            }
 
             // Schedule system wakeup if needed
             val now = Timestamp.now()

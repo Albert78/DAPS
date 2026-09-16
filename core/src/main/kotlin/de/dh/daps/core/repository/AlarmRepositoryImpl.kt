@@ -25,8 +25,18 @@ class AlarmRepositoryImpl(
         return alarmProfileDao.getAlarmProfileById(id)?.toModel()
     }
 
+    override suspend fun getDefaultAlarmProfile(): AlarmProfile? {
+        return (alarmProfileDao.getDefaultAlarmProfile() ?: alarmProfileDao.getAllAlarmProfiles().firstOrNull())?.toModel()
+    }
+
+    override fun observeDefaultAlarmProfile(): Flow<AlarmProfile?> {
+        return alarmProfileDao.observeDefaultAlarmProfile().map { entity ->
+            entity?.toModel() ?: alarmProfileDao.getAllAlarmProfiles().firstOrNull()?.toModel()
+        }
+    }
+
     override suspend fun getActiveAlarmProfile(): AlarmProfile? {
-        return alarmProfileDao.getActiveAlarmProfile()?.toModel()
+        return alarmProfileDao.getActiveAlarmProfile()?.toModel() ?: getDefaultAlarmProfile()
     }
 
     override fun observeActiveAlarmProfile(): Flow<AlarmProfile?> {
@@ -40,14 +50,20 @@ class AlarmRepositoryImpl(
     override suspend fun updateAlarmProfile(profile: AlarmProfile) {
         val existing = alarmProfileDao.getAlarmProfileById(profile.id)
         val isActive = existing?.is_active ?: false
-        alarmProfileDao.updateAlarmProfile(profile.toEntity(isActive = isActive))
+        val isDefault = profile.isDefault || (existing?.is_default ?: false)
+        alarmProfileDao.updateAlarmProfile(profile.copy(isDefault = isDefault).toEntity(isActive = isActive))
     }
 
     override suspend fun deleteAlarmProfile(id: Long) {
         alarmProfileDao.deleteAlarmProfile(id)
     }
 
+    override suspend fun setDefaultAlarmProfile(id: Long) {
+        alarmProfileDao.setDefaultAlarmProfile(id)
+    }
+
     override suspend fun setActiveAlarmProfile(id: Long) {
+        alarmProfileDao.setDefaultAlarmProfile(id)
         alarmProfileDao.setActiveAlarmProfile(id)
     }
 }

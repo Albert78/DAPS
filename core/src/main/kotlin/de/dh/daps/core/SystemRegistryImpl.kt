@@ -162,6 +162,7 @@ class SystemRegistryImpl(
                 glucoseRepository = glucoseRepository,
                 systemOrchestrator = systemOrchestrator,
                 alarmRepository = alarmRepository,
+                therapyRepository = therapyRepository,
                 alarmSnoozeManager = alarmSnoozeManager,
                 alarmPlayerManager = alarmPlayerManager,
                 androidNotifications = androidNotifications,

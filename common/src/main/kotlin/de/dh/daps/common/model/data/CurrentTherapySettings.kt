@@ -31,15 +31,28 @@ data class CurrentTherapySettings(
     val insulinAdjustmentPercentage: Int = 0,
     val targetBgOverride: BgValue? = null,
     val lowThresholdOverride: BgValue? = null,
-    val activeAlarmProfile: AlarmProfile? = null,
+    val defaultAlarmProfile: AlarmProfile? = null,
+    val alarmProfileOverride: AlarmProfile? = null,
     val adjustmentHint: String? = null,
     val adjustmentTiming: TherapyAdjustmentTiming = TherapyAdjustmentTiming()
 ) {
     /**
-     * Resolves the ID of the active alarm profile, if one is set.
+     * Alias for temporary alarm profile override (for backwards compatibility).
+     */
+    val activeAlarmProfile: AlarmProfile?
+        get() = alarmProfileOverride
+
+    /**
+     * Resolves the ID of the temporary alarm profile override, if one is set.
      */
     val activeAlarmProfileId: Long?
-        get() = activeAlarmProfile?.id
+        get() = alarmProfileOverride?.id
+
+    /**
+     * Resolves the effective alarm profile: the temporary override if set, otherwise the default alarm profile.
+     */
+    val effectiveAlarmProfile: AlarmProfile?
+        get() = alarmProfileOverride ?: defaultAlarmProfile
 
     /**
      * Calculates and caches the effective insulin profile considering [insulinAdjustmentPercentage].
