@@ -508,7 +508,7 @@ class MealCorrectionBolusViewModel(
                         .fold(InsulinAmount.ZERO) { acc, next -> acc + next.amount }
 
                     val deferredBoluses = state.insulinPlan.filter { it.timestamp > now + Minutes(1) }
-                        .map { DeferredBolus(id = ID_UNDEFINED, amount = it.amount, timestamp = it.timestamp) }
+                        .map { DeferredBolus(id = ID_UNDEFINED, amount = it.amount, timestamp = it.timestamp, mealId = mealEntry?.id) }
 
                     if (immediateBolus > InsulinAmount.ZERO) {
                         therapyManager.issueBolus(
