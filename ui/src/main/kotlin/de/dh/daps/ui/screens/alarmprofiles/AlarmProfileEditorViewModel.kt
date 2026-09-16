@@ -103,6 +103,10 @@ class AlarmProfileEditorViewModel(
         _uiState.update { it.copy(name = name) }
     }
 
+    fun onIsDefaultChange(isDefault: Boolean) {
+        _uiState.update { it.copy(isDefault = isDefault) }
+    }
+
     fun onSeverityConfigChange(severity: AlarmSeverity, config: AlarmSignalConfig) {
         _uiState.update { state ->
             val updatedMap = state.severityDefaults.toMutableMap().apply {
@@ -125,11 +129,17 @@ class AlarmProfileEditorViewModel(
                 severityDefaults = state.severityDefaults
             )
 
-            if (profile.id == ID_UNDEFINED) {
+            val savedId = if (profile.id == ID_UNDEFINED) {
                 alarmRepository.insertAlarmProfile(profile)
             } else {
                 alarmRepository.updateAlarmProfile(profile)
+                profile.id
             }
+
+            if (state.isDefault) {
+                alarmRepository.setDefaultAlarmProfile(savedId)
+            }
+
             onSuccess()
         }
     }

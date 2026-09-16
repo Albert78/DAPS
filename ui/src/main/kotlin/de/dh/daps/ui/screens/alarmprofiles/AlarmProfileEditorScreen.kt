@@ -65,6 +65,7 @@ import de.dh.daps.common.R as CommonR
 
 private data class InitialAlarmProfileValues(
     val name: String,
+    val isDefault: Boolean,
     val severityDefaults: Map<AlarmSeverity, AlarmSignalConfig>
 )
 
@@ -78,6 +79,7 @@ fun AlarmProfileEditorScreen(
     AlarmProfileEditorContent(
         uiState = uiState,
         onNameChange = viewModel::onNameChange,
+        onIsDefaultChange = viewModel::onIsDefaultChange,
         onSeverityConfigChange = viewModel::onSeverityConfigChange,
         onPlayPreview = viewModel::playPreviewSound,
         onUpdateVolume = viewModel::updatePreviewVolume,
@@ -94,6 +96,7 @@ fun AlarmProfileEditorScreen(
 fun AlarmProfileEditorContent(
     uiState: AlarmProfileEditorUiState,
     onNameChange: (String) -> Unit,
+    onIsDefaultChange: (Boolean) -> Unit,
     onSeverityConfigChange: (AlarmSeverity, AlarmSignalConfig) -> Unit,
     onPlayPreview: (AlarmSignalConfig) -> Unit,
     onUpdateVolume: (Int) -> Unit,
@@ -114,6 +117,7 @@ fun AlarmProfileEditorContent(
         if (!uiState.isLoading) {
             InitialAlarmProfileValues(
                 name = uiState.name,
+                isDefault = uiState.isDefault,
                 severityDefaults = uiState.severityDefaults
             )
         } else null
@@ -121,12 +125,14 @@ fun AlarmProfileEditorContent(
 
     val hasChanges = remember(
         uiState.name,
+        uiState.isDefault,
         uiState.severityDefaults,
         initialValues
     ) {
         if (initialValues == null) false
         else {
             uiState.name != initialValues.name ||
+                    uiState.isDefault != initialValues.isDefault ||
                     uiState.severityDefaults != initialValues.severityDefaults
         }
     }
@@ -202,6 +208,44 @@ fun AlarmProfileEditorContent(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
+            }
+
+            // Default Profile Switch
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(id = R.string.alarm_profile_set_default),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            if (uiState.isDefault) {
+                                Text(
+                                    text = stringResource(id = R.string.alarm_profile_is_default_description),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                        Switch(
+                            checked = uiState.isDefault,
+                            onCheckedChange = onIsDefaultChange,
+                            enabled = initialValues?.isDefault != true
+                        )
+                    }
+                }
             }
 
             // Severity Sections
@@ -493,6 +537,7 @@ fun AlarmProfileEditorPreview() {
                 name = "Standard"
             ),
             onNameChange = {},
+            onIsDefaultChange = {},
             onSeverityConfigChange = { _, _ -> },
             onPlayPreview = {},
             onUpdateVolume = {},

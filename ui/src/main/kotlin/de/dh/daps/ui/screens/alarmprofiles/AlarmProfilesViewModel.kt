@@ -58,16 +58,6 @@ class AlarmProfilesViewModel(
         }
     }
 
-    fun setDefaultProfile(profile: AlarmProfile) {
-        viewModelScope.launch {
-            alarmRepository.setDefaultAlarmProfile(profile.id)
-        }
-    }
-
-    fun setActiveProfile(profile: AlarmProfile) {
-        setDefaultProfile(profile)
-    }
-
     fun confirmDelete(profile: AlarmProfile) {
         _uiState.update { it.copy(showDeleteConfirmation = profile) }
     }

@@ -460,6 +460,7 @@
     <string name="alarm_profile_override_active_label">Aktiv (Anpassung)</string>
     <string name="alarm_profile_set_active">Als Standard-Profil festlegen</string>
     <string name="alarm_profile_set_default">Als Standard-Profil festlegen</string>
+    <string name="alarm_profile_is_default_description">Dieses Profil wird als Standard für Alarme verwendet.</string>
     <string name="alarm_profile_editor_title_new">Neues Alarmprofil</string>
     <string name="alarm_profile_editor_title_edit">Alarmprofil bearbeiten</string>
     <string name="alarm_profile_editor_discard_title">Änderungen speichern?</string>

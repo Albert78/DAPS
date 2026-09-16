@@ -44,14 +44,20 @@ class AlarmRepositoryImpl(
     }
 
     override suspend fun insertAlarmProfile(profile: AlarmProfile): Long {
-        return alarmProfileDao.insertAlarmProfile(profile.toEntity())
+        val id = alarmProfileDao.insertAlarmProfile(profile.toEntity())
+        if (profile.isDefault) {
+            alarmProfileDao.setDefaultAlarmProfile(id)
+        }
+        return id
     }
 
     override suspend fun updateAlarmProfile(profile: AlarmProfile) {
         val existing = alarmProfileDao.getAlarmProfileById(profile.id)
         val isActive = existing?.is_active ?: false
-        val isDefault = profile.isDefault || (existing?.is_default ?: false)
-        alarmProfileDao.updateAlarmProfile(profile.copy(isDefault = isDefault).toEntity(isActive = isActive))
+        if (profile.isDefault) {
+            alarmProfileDao.setDefaultAlarmProfile(profile.id)
+        }
+        alarmProfileDao.updateAlarmProfile(profile.toEntity(isActive = isActive))
     }
 
     override suspend fun deleteAlarmProfile(id: Long) {

@@ -67,7 +67,6 @@ fun AlarmProfilesScreen(
 
     AlarmProfilesContent(
         uiState = uiState,
-        onSetActiveProfile = { viewModel.setActiveProfile(it) },
         onAddProfile = { onNavigateToEditor(null) },
         onEditProfile = { profile -> onNavigateToEditor(profile.id) },
         onDeleteProfile = { viewModel.confirmDelete(it) },
@@ -81,7 +80,6 @@ fun AlarmProfilesScreen(
 @Composable
 fun AlarmProfilesContent(
     uiState: AlarmProfilesUiState,
-    onSetActiveProfile: (AlarmProfile) -> Unit,
     onAddProfile: () -> Unit,
     onEditProfile: (AlarmProfile) -> Unit,
     onDeleteProfile: (AlarmProfile) -> Unit,
@@ -142,7 +140,6 @@ fun AlarmProfilesContent(
                         profile = profile,
                         isDefault = isDefault,
                         isOverride = isOverride,
-                        onSetDefault = { onSetActiveProfile(profile) },
                         onEdit = { onEditProfile(profile) },
                         onDelete = { onDeleteProfile(profile) }
                     )
@@ -178,7 +175,6 @@ fun AlarmProfileCard(
     profile: AlarmProfile,
     isDefault: Boolean,
     isOverride: Boolean,
-    onSetDefault: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
@@ -257,14 +253,6 @@ fun AlarmProfileCard(
                 }
 
                 Row {
-                    if (!isDefault) {
-                        IconButton(onClick = onSetDefault) {
-                            Icon(
-                                imageVector = Icons.Default.Check,
-                                contentDescription = stringResource(id = R.string.alarm_profile_set_default)
-                            )
-                        }
-                    }
                     IconButton(onClick = onEdit) {
                         Icon(
                             imageVector = Icons.Default.Edit,
@@ -369,7 +357,6 @@ fun AlarmProfilesPreview() {
     AppTheme {
         AlarmProfilesContent(
             uiState = AlarmProfilesUiState(),
-            onSetActiveProfile = {},
             onAddProfile = {},
             onEditProfile = {},
             onDeleteProfile = {},
