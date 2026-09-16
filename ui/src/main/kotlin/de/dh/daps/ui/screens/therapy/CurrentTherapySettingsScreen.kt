@@ -95,7 +95,7 @@ fun CurrentTherapySettingsScreen(
     onNavigateToInsulinProfileEditor: () -> Unit,
     onNavigateToBgEditor: () -> Unit,
     onNavigateToTherapyAdjustment: () -> Unit,
-    onNavigateToScheduledTherapyAdjustment: (() -> Unit)? = null
+    onNavigateToScheduledTherapyAdjustment: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -118,7 +118,7 @@ fun CurrentTherapySettingsContent(
     onNavigateToInsulinProfileEditor: () -> Unit,
     onNavigateToBgEditor: () -> Unit,
     onNavigateToTherapyAdjustment: () -> Unit,
-    onNavigateToScheduledTherapyAdjustment: (() -> Unit)? = null,
+    onNavigateToScheduledTherapyAdjustment: () -> Unit,
     onSelectProfile: (InsulinProfile) -> Unit
 ) {
     var showInsulinProfileDialog by remember { mutableStateOf(false) }
@@ -215,18 +215,16 @@ fun CurrentTherapySettingsContent(
                     onClick = onNavigateToTherapyAdjustment
                 )
 
-                if (onNavigateToScheduledTherapyAdjustment != null) {
-                    OutlinedButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 4.dp),
-                        onClick = onNavigateToScheduledTherapyAdjustment
-                    ) {
-                        Text(
-                            text = stringResource(R.string.therapy_adjustment_schedule_button),
-                            style = MaterialTheme.typography.labelLarge
-                        )
-                    }
+                OutlinedButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp),
+                    onClick = onNavigateToScheduledTherapyAdjustment
+                ) {
+                    Text(
+                        text = stringResource(R.string.therapy_adjustment_schedule_button),
+                        style = MaterialTheme.typography.labelLarge
+                    )
                 }
             }
         }
@@ -875,8 +873,8 @@ private fun formatMinutes(minutes: Minutes): String {
     }
 }
 
-@Preview(showBackground = true, name = "Light Mode")
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
+@Preview(showBackground = true, name = "Light Mode", heightDp = 900)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode", heightDp = 900)
 @Composable
 fun CurrentTherapySettingsPreview() {
     val mockInsulinType = InsulinType(
@@ -952,6 +950,7 @@ fun CurrentTherapySettingsPreview() {
                 onNavigateToInsulinProfileEditor = {},
                 onNavigateToBgEditor = {},
                 onNavigateToTherapyAdjustment = {},
+                onNavigateToScheduledTherapyAdjustment = {},
                 onSelectProfile = {}
             )
         }
