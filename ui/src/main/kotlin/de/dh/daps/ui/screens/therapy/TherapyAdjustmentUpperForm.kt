@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Adjust
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.UnfoldMore
@@ -28,6 +29,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
@@ -37,7 +39,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -48,6 +54,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.R as CommonR
 import de.dh.daps.common.model.ADJUSTMENT_PERCENTAGE_MAX
 import de.dh.daps.common.model.ADJUSTMENT_PERCENTAGE_MIN
 import de.dh.daps.common.model.LOW_THRESHOLD_MAX
@@ -114,6 +121,9 @@ fun TherapyAdjustmentUpperForm(
             title = stringResource(R.string.therapy_adjustment_description_label),
             description = stringResource(R.string.therapy_adjustment_description_description),
             isActive = hintActive,
+            onClear = {
+                onValuesChange(currentPercentage, currentTarget, currentLow, currentAlarmProfileId, null)
+            },
             useCardWrapper = false
         ) {
             OutlinedTextField(
@@ -140,6 +150,9 @@ fun TherapyAdjustmentUpperForm(
             title = stringResource(R.string.therapy_adjustment_insulin_adjustment_label),
             description = stringResource(R.string.therapy_adjustment_insulin_adjustment_description),
             isActive = insulinAdjustmentActive,
+            onClear = {
+                onValuesChange(0, currentTarget, currentLow, currentAlarmProfileId, currentHint)
+            },
             accentColor = if (currentPercentage > 0) SoftRed else SoftBlue
         ) {
             EditableValueStepper(
@@ -156,10 +169,15 @@ fun TherapyAdjustmentUpperForm(
         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
         // BG Override Section
+        val bgOverrideActive = currentTarget != null || currentLow != null
         AdjustmentSection(
             icon = Icons.Default.Adjust,
             title = stringResource(R.string.therapy_adjustment_bg_adjustment_label),
             description = stringResource(R.string.therapy_adjustment_bg_adjustment_description),
+            isActive = bgOverrideActive,
+            onClear = {
+                onValuesChange(currentPercentage, null, null, currentAlarmProfileId, currentHint)
+            },
             useCardWrapper = false
         ) {
             Row(
@@ -249,6 +267,9 @@ fun TherapyAdjustmentUpperForm(
             title = stringResource(R.string.therapy_adjustment_alarm_profile_label),
             description = stringResource(R.string.therapy_adjustment_alarm_profile_description),
             isActive = alarmProfileActive,
+            onClear = {
+                onValuesChange(currentPercentage, currentTarget, currentLow, null, currentHint)
+            },
             useCardWrapper = false
         ) {
             FlowRow(
@@ -325,17 +346,35 @@ private fun AdjustmentSection(
     icon: ImageVector,
     title: String,
     description: String,
-    useCardWrapper: Boolean = true,
     isActive: Boolean = false,
+    onClear: (() -> Unit)? = null,
+    useCardWrapper: Boolean = true,
     accentColor: Color = MaterialTheme.colorScheme.primary,
     content: @Composable () -> Unit
 ) {
-    Column {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+    var isExpanded by remember { mutableStateOf(isActive) }
+
+    LaunchedEffect(isActive) {
+        isExpanded = isActive
+    }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null
+                ) {
+                    isExpanded = !isExpanded
+                }
+                .padding(vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = if (isActive) accentColor else MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
@@ -345,35 +384,51 @@ private fun AdjustmentSection(
                 fontWeight = FontWeight.Bold,
                 color = if (isActive) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
             )
-        }
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = description,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        if (useCardWrapper) {
-            val containerColor = if (isActive) accentColor.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surface.copy(alpha = 0.4f)
-            val borderColor = if (isActive) accentColor else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-            val borderWidth = if (isActive) 2.dp else 1.dp
-
-            OutlinedCard(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.outlinedCardColors(containerColor = containerColor),
-                border = BorderStroke(borderWidth, borderColor)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 12.dp, horizontal = 16.dp),
-                    contentAlignment = Alignment.Center
+            Spacer(modifier = Modifier.weight(1f))
+            if (isActive && isExpanded && onClear != null) {
+                IconButton(
+                    onClick = onClear,
+                    modifier = Modifier.size(24.dp)
                 ) {
-                    content()
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = stringResource(CommonR.string.cd_delete),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp)
+                    )
                 }
             }
-        } else {
-            content()
+        }
+        if (isExpanded) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            if (useCardWrapper) {
+                val containerColor = if (isActive) accentColor.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surface.copy(alpha = 0.4f)
+                val borderColor = if (isActive) accentColor else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                val borderWidth = if (isActive) 2.dp else 1.dp
+
+                OutlinedCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.outlinedCardColors(containerColor = containerColor),
+                    border = BorderStroke(borderWidth, borderColor)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 12.dp, horizontal = 16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        content()
+                    }
+                }
+            } else {
+                content()
+            }
         }
     }
 }
@@ -468,8 +523,8 @@ private fun StandardValueDisplay(
     }
 }
 
-@Preview(showBackground = true, name = "Light Mode")
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
+@Preview(showBackground = true, name = "Light Mode - All Active")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode - All Active")
 @Composable
 private fun TherapyAdjustmentUpperFormPreview() {
     AppTheme {
@@ -492,6 +547,36 @@ private fun TherapyAdjustmentUpperFormPreview() {
                     presets = listOf(
                         TherapyAdjustment("Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
                         TherapyAdjustment("Stress", percentage = 20, targetBgMgDl = 115, lowThresholdMgDl = 75)
+                    ),
+                    onValuesChange = { _, _, _, _, _ -> },
+                    onPresetApplied = {}
+                )
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Light Mode - Collapsed Inactive")
+@Composable
+private fun TherapyAdjustmentUpperFormCollapsedPreview() {
+    AppTheme {
+        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
+            Surface(modifier = Modifier.padding(16.dp)) {
+                TherapyAdjustmentUpperForm(
+                    formState = TherapyAdjustmentFormState(
+                        percentage = 0,
+                        targetBgOverride = null,
+                        lowThresholdOverride = null,
+                        activeAlarmProfileId = null,
+                        adjustmentHint = null
+                    ),
+                    baseTarget = BgValue.fromMgDl(100),
+                    baseLow = BgValue.fromMgDl(70),
+                    availableAlarmProfiles = listOf(
+                        AlarmProfile(id = 1L, name = "Sport")
+                    ),
+                    presets = listOf(
+                        TherapyAdjustment("Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100)
                     ),
                     onValuesChange = { _, _, _, _, _ -> },
                     onPresetApplied = {}
