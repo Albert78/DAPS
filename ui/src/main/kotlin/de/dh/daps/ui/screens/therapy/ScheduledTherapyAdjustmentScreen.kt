@@ -1,5 +1,6 @@
 package de.dh.daps.ui.screens.therapy
 
+import android.app.TimePickerDialog
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
@@ -8,6 +9,8 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,18 +28,19 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,18 +49,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.model.data.AdjustmentTimeMode
 import de.dh.daps.common.model.data.AlarmProfile
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.GlucoseUnit
-import de.dh.daps.common.model.data.TherapyAdjustmentTiming
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.LocalGlucoseUnit
@@ -65,75 +67,66 @@ import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppTheme
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Locale
 import de.dh.daps.common.R as CommonR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TherapyAdjustmentScreen(
-    viewModel: CurrentTherapyViewModel,
+fun ScheduledTherapyAdjustmentScreen(
+    viewModel: ScheduledTherapyViewModel,
     onNavigateUp: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val activeTherapyStatus = uiState.activeTherapyStatus
-    val draftAdjustment by viewModel.draftAdjustment.collectAsState()
+    val formState by viewModel.formStateHolder.formState.collectAsState()
+    val startTime by viewModel.startTime.collectAsState()
+    val endTime by viewModel.endTime.collectAsState()
+    val isDirty = viewModel.formStateHolder.isDirty()
 
-    LaunchedEffect(Unit) {
-        viewModel.initDraftAdjustment()
-    }
-
-    val currentDraft = draftAdjustment ?: activeTherapyStatus.adjustment
-    val isDirty = viewModel.isDraftDirty()
-
-    val formState = TherapyAdjustmentFormState(
-        percentage = currentDraft.percentage,
-        targetBgOverride = currentDraft.targetBgOverride,
-        lowThresholdOverride = currentDraft.lowThresholdOverride,
-        activeAlarmProfileId = currentDraft.activeAlarmProfileId,
-        activeAlarmProfileName = currentDraft.activeAlarmProfileName,
-        adjustmentHint = currentDraft.adjustmentHint,
-        timing = currentDraft.timing
-    )
-
-    TherapyAdjustmentContent(
+    ScheduledTherapyAdjustmentContent(
         formState = formState,
-        baseTarget = activeTherapyStatus.baseTarget,
-        baseLow = activeTherapyStatus.baseLow,
+        startTime = startTime,
+        endTime = endTime,
+        baseTarget = uiState.baseTarget,
+        baseLow = uiState.baseLow,
         isDirty = isDirty,
         onValuesChange = { p, t, l, a ->
-            viewModel.setDraftValues(p, t, l, a)
+            viewModel.setFormValues(p, t, l, a)
         },
-        onTimingChange = { timing ->
-            viewModel.setDraftTiming(timing)
-        },
-        availableAlarmProfiles = uiState.availableAlarmProfiles,
-        presets = uiState.therapyAdjustmentPresets,
+        onStartTimeChange = { viewModel.setStartTime(it) },
+        onEndTimeChange = { viewModel.setEndTime(it) },
         onPresetApplied = { preset ->
             viewModel.applyPreset(preset)
         },
-        onApplyClicked = {
-            viewModel.applyDraftAdjustment()
-            onNavigateUp()
+        onScheduleClicked = {
+            viewModel.saveScheduledAdjustment {
+                onNavigateUp()
+            }
         },
         onDiscardClicked = {
-            viewModel.resetDraft()
+            viewModel.reset()
             onNavigateUp()
         },
-        onNavigateUp = onNavigateUp
+        onNavigateUp = onNavigateUp,
+        availableAlarmProfiles = uiState.availableAlarmProfiles,
+        presets = uiState.therapyAdjustmentPresets
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun TherapyAdjustmentContent(
+fun ScheduledTherapyAdjustmentContent(
     formState: TherapyAdjustmentFormState,
+    startTime: Timestamp,
+    endTime: Timestamp,
     baseTarget: BgValue,
     baseLow: BgValue,
     isDirty: Boolean,
     onValuesChange: (percentage: Int, targetBg: BgValue?, lowThreshold: BgValue?, alarmProfileId: Long?) -> Unit,
-    onTimingChange: (TherapyAdjustmentTiming) -> Unit,
+    onStartTimeChange: (Timestamp) -> Unit,
+    onEndTimeChange: (Timestamp) -> Unit,
     onPresetApplied: (TherapyAdjustment) -> Unit,
-    onApplyClicked: () -> Unit,
+    onScheduleClicked: () -> Unit,
     onDiscardClicked: () -> Unit,
     onNavigateUp: () -> Unit,
     availableAlarmProfiles: List<AlarmProfile> = emptyList(),
@@ -141,7 +134,7 @@ fun TherapyAdjustmentContent(
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     var showDiscardDialog by remember { mutableStateOf(false) }
-    var openTimeDialogMode by remember { mutableStateOf<AdjustmentTimeMode?>(null) }
+    val context = LocalContext.current
 
     fun handleBack() {
         if (isDirty) {
@@ -153,11 +146,20 @@ fun TherapyAdjustmentContent(
 
     BackHandler(onBack = ::handleBack)
 
+    val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+
+    val startCal = remember(startTime) {
+        Calendar.getInstance().apply { timeInMillis = startTime.ms }
+    }
+    val endCal = remember(endTime) {
+        Calendar.getInstance().apply { timeInMillis = endTime.ms }
+    }
+
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
-                title = screenTitle(stringResource(id = R.string.aps_control_therpay_adjustment_dialog_title)),
+                title = screenTitle(stringResource(id = R.string.therapy_adjustment_mode_timewindow)),
                 navigationIcon = {
                     IconButton(onClick = ::handleBack) {
                         Icon(
@@ -195,7 +197,7 @@ fun TherapyAdjustmentContent(
             ) {
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Reusable Upper Form Section
+                // Shared Upper Form
                 TherapyAdjustmentUpperForm(
                     formState = formState,
                     baseTarget = baseTarget,
@@ -208,24 +210,113 @@ fun TherapyAdjustmentContent(
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-                // Active Timing Status Card
-                val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
-                val currentTiming = formState.timing
-                val summaryText = when (currentTiming.mode) {
-                    AdjustmentTimeMode.AD_HOC -> stringResource(R.string.therapy_adjustment_timing_active_unlimited)
-                    AdjustmentTimeMode.DURATION -> {
-                        val endStr = currentTiming.endTime?.let { timeFormat.format(it.ms) } ?: ""
-                        if (endStr.isNotEmpty()) {
-                            stringResource(R.string.therapy_adjustment_timing_active_until, endStr)
-                        } else {
-                            stringResource(R.string.therapy_adjustment_timing_active_unlimited)
+                // Time Range Picker Section for Scheduled Activity
+                Text(
+                    text = stringResource(R.string.therapy_adjustment_timing_summary_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Start Time Selector
+                    OutlinedButton(
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            TimePickerDialog(
+                                context,
+                                { _, hourOfDay, minute ->
+                                    val newCal = Calendar.getInstance().apply {
+                                        timeInMillis = startTime.ms
+                                        set(Calendar.HOUR_OF_DAY, hourOfDay)
+                                        set(Calendar.MINUTE, minute)
+                                    }
+                                    onStartTimeChange(Timestamp(newCal.timeInMillis))
+                                },
+                                startCal.get(Calendar.HOUR_OF_DAY),
+                                startCal.get(Calendar.MINUTE),
+                                true
+                            ).show()
+                        }
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = stringResource(R.string.therapy_adjustment_start_time_label),
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                            Text(
+                                text = timeFormat.format(startTime.ms),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
-                    AdjustmentTimeMode.TIME_WINDOW -> {
-                        val startStr = currentTiming.startTime?.let { timeFormat.format(it.ms) } ?: ""
-                        val endStr = currentTiming.endTime?.let { timeFormat.format(it.ms) } ?: ""
-                        stringResource(R.string.therapy_adjustment_timing_scheduled_format, startStr, endStr)
+
+                    // End Time Selector
+                    OutlinedButton(
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            TimePickerDialog(
+                                context,
+                                { _, hourOfDay, minute ->
+                                    val newCal = Calendar.getInstance().apply {
+                                        timeInMillis = endTime.ms
+                                        set(Calendar.HOUR_OF_DAY, hourOfDay)
+                                        set(Calendar.MINUTE, minute)
+                                    }
+                                    onEndTimeChange(Timestamp(newCal.timeInMillis))
+                                },
+                                endCal.get(Calendar.HOUR_OF_DAY),
+                                endCal.get(Calendar.MINUTE),
+                                true
+                            ).show()
+                        }
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = stringResource(R.string.therapy_adjustment_end_time_label),
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                            Text(
+                                text = timeFormat.format(endTime.ms),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
+                }
+
+                // Quick Duration Preset Chips
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+                ) {
+                    val durationOptions = listOf(30, 60, 120, 180, 240)
+                    durationOptions.forEach { mins ->
+                        val durationMs = mins * 60_000L
+                        val isSelected = (endTime.ms - startTime.ms) == durationMs
+                        FilterChip(
+                            selected = isSelected,
+                            onClick = {
+                                onEndTimeChange(Timestamp(startTime.ms + durationMs))
+                            },
+                            label = {
+                                val label = if (mins >= 60) "${mins / 60} h" else "$mins min"
+                                Text(label)
+                            }
+                        )
+                    }
+                }
+
+                // Summary Card
+                val durationMins = ((endTime.ms - startTime.ms) / 60_000L).coerceAtLeast(0)
+                val durationText = if (durationMins >= 60) {
+                    "${durationMins / 60} h ${durationMins % 60} min"
+                } else {
+                    "$durationMins min"
                 }
 
                 Surface(
@@ -254,12 +345,11 @@ fun TherapyAdjustmentContent(
                             Text(
                                 text = stringResource(R.string.therapy_adjustment_timing_summary_title),
                                 style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
+                                fontWeight = FontWeight.Bold
                             )
                         }
                         Text(
-                            text = summaryText,
+                            text = "${timeFormat.format(startTime.ms)} - ${timeFormat.format(endTime.ms)} ($durationText)",
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
@@ -267,49 +357,22 @@ fun TherapyAdjustmentContent(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-                // Action Buttons for Current Therapy Settings: "Jetzt übernehmen" & "Dauer"
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                // Single Primary "Planen" Action Button
+                Button(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    onClick = onScheduleClicked
                 ) {
-                    Button(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(52.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        onClick = {
-                            onTimingChange(TherapyAdjustmentTiming(mode = AdjustmentTimeMode.AD_HOC))
-                            onApplyClicked()
-                        }
-                    ) {
-                        Text(
-                            text = stringResource(R.string.therapy_adjustment_mode_adhoc),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-
-                    Button(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(52.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        onClick = { openTimeDialogMode = AdjustmentTimeMode.DURATION }
-                    ) {
-                        Text(
-                            text = stringResource(R.string.therapy_adjustment_mode_duration),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
+                    Text(
+                        text = stringResource(R.string.therapy_adjustment_mode_timewindow),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -343,51 +406,32 @@ fun TherapyAdjustmentContent(
             }
         )
     }
-
-    openTimeDialogMode?.let { mode ->
-        TherapyAdjustmentTimeDialog(
-            initialTiming = formState.timing,
-            initialMode = mode,
-            onTimingSelected = { newTiming ->
-                onTimingChange(newTiming)
-                openTimeDialogMode = null
-                onApplyClicked()
-            },
-            onDismiss = { openTimeDialogMode = null }
-        )
-    }
 }
 
 @Preview(showBackground = true, name = "Light Mode")
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
-private fun TherapyAdjustmentPreviewValues() {
+private fun ScheduledTherapyAdjustmentPreview() {
     AppTheme {
         CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
             Surface {
-                TherapyAdjustmentContent(
+                ScheduledTherapyAdjustmentContent(
                     formState = TherapyAdjustmentFormState(
-                        percentage = -10,
-                        targetBgOverride = BgValue.fromMgDl(120),
-                        lowThresholdOverride = BgValue.fromMgDl(80),
-                        timing = TherapyAdjustmentTiming(
-                            mode = AdjustmentTimeMode.DURATION,
-                            endTime = Timestamp(System.currentTimeMillis() + 3600_000)
-                        )
+                        percentage = -20,
+                        targetBgOverride = BgValue.fromMgDl(130)
                     ),
+                    startTime = Timestamp.now(),
+                    endTime = Timestamp(System.currentTimeMillis() + 3600_000),
                     baseTarget = BgValue.fromMgDl(100),
                     baseLow = BgValue.fromMgDl(70),
                     isDirty = true,
                     onValuesChange = { _, _, _, _ -> },
-                    onTimingChange = {},
+                    onStartTimeChange = {},
+                    onEndTimeChange = {},
                     onPresetApplied = {},
-                    onApplyClicked = {},
+                    onScheduleClicked = {},
                     onDiscardClicked = {},
-                    onNavigateUp = {},
-                    presets = listOf(
-                        TherapyAdjustment("Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
-                        TherapyAdjustment("Stress", percentage = 20, targetBgMgDl = 115, lowThresholdMgDl = 75)
-                    )
+                    onNavigateUp = {}
                 )
             }
         }

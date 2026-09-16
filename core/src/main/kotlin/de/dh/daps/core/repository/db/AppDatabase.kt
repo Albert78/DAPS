@@ -17,6 +17,7 @@ import de.dh.daps.core.repository.db.entities.AlarmProfileEntity
 import de.dh.daps.core.repository.db.entities.CoreInsightEntity
 import de.dh.daps.core.repository.db.entities.CurrentSettingsEntity
 import de.dh.daps.core.repository.db.entities.CurrentTherapySettingsEntity
+import de.dh.daps.core.repository.db.entities.ScheduledTherapyAdjustmentEntity
 import de.dh.daps.core.repository.db.entities.DataProviderEntity
 import de.dh.daps.core.repository.db.entities.DeferredBolusEntity
 import de.dh.daps.core.repository.db.entities.GlucoseReadingEntity
@@ -94,6 +95,28 @@ interface TherapyDao {
 
     @Update
     suspend fun updateCurrentTherapySettings(data: CurrentTherapySettingsEntity)
+
+    // Scheduled Therapy Adjustments
+    @Query("SELECT * FROM scheduled_therapy_adjustments ORDER BY start_time_ms ASC")
+    suspend fun getAllScheduledTherapyAdjustments(): List<ScheduledTherapyAdjustmentEntity>
+
+    @Query("SELECT * FROM scheduled_therapy_adjustments ORDER BY start_time_ms ASC")
+    fun observeAllScheduledTherapyAdjustments(): Flow<List<ScheduledTherapyAdjustmentEntity>>
+
+    @Query("SELECT * FROM scheduled_therapy_adjustments WHERE id = :id")
+    suspend fun getScheduledTherapyAdjustmentById(id: Long): ScheduledTherapyAdjustmentEntity?
+
+    @Insert
+    suspend fun insertScheduledTherapyAdjustment(data: ScheduledTherapyAdjustmentEntity): Long
+
+    @Update
+    suspend fun updateScheduledTherapyAdjustment(data: ScheduledTherapyAdjustmentEntity)
+
+    @Query("DELETE FROM scheduled_therapy_adjustments WHERE id = :id")
+    suspend fun deleteScheduledTherapyAdjustment(id: Long)
+
+    @Query("DELETE FROM scheduled_therapy_adjustments")
+    suspend fun deleteAllScheduledTherapyAdjustments()
 }
 
 @Dao
@@ -272,6 +295,7 @@ interface SystemMetricsDao {
     // Therapy
     InsulinProfileEntity::class,
     CurrentTherapySettingsEntity::class,
+    ScheduledTherapyAdjustmentEntity::class,
     CurrentSettingsEntity::class,
     AlarmProfileEntity::class,
 

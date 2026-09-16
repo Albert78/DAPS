@@ -19,10 +19,12 @@ import de.dh.daps.common.model.data.getBgForMinute
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.glucoseUnit
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -217,11 +219,33 @@ class CurrentTherapyViewModel(
         }
     }
 
-    private val _draftAdjustment = MutableStateFlow<TherapyAdjustmentUiState?>(null)
-    val draftAdjustment: StateFlow<TherapyAdjustmentUiState?> = _draftAdjustment
+    val formStateHolder = TherapyAdjustmentFormStateHolder()
+
+    val draftAdjustment: StateFlow<TherapyAdjustmentUiState?> = formStateHolder.formState.map { form ->
+        TherapyAdjustmentUiState(
+            percentage = form.percentage,
+            targetBgOverride = form.targetBgOverride,
+            lowThresholdOverride = form.lowThresholdOverride,
+            activeAlarmProfileId = form.activeAlarmProfileId,
+            activeAlarmProfileName = form.activeAlarmProfileName,
+            adjustmentHint = form.adjustmentHint,
+            timing = form.timing
+        )
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     fun initDraftAdjustment() {
-        _draftAdjustment.value = _uiState.value.activeTherapyStatus.adjustment
+        val active = _uiState.value.activeTherapyStatus.adjustment
+        formStateHolder.initFormState(
+            TherapyAdjustmentFormState(
+                percentage = active.percentage,
+                targetBgOverride = active.targetBgOverride,
+                lowThresholdOverride = active.lowThresholdOverride,
+                activeAlarmProfileId = active.activeAlarmProfileId,
+                activeAlarmProfileName = active.activeAlarmProfileName,
+                adjustmentHint = active.adjustmentHint,
+                timing = active.timing
+            )
+        )
     }
 
     fun setDraftValues(
@@ -232,48 +256,49 @@ class CurrentTherapyViewModel(
         adjustmentHint: String? = null,
         timing: TherapyAdjustmentTiming? = null
     ) {
-        val currentDraft = _draftAdjustment.value ?: _uiState.value.activeTherapyStatus.adjustment
         val alarmProfiles = _uiState.value.availableAlarmProfiles
         val alarmProfileName = alarmProfiles.find { it.id == activeAlarmProfileId }?.name
-        _draftAdjustment.value = currentDraft.copy(
+        formStateHolder.updateValues(
             percentage = percentage,
-            targetBgOverride = targetBg,
-            lowThresholdOverride = lowThreshold,
+            targetBg = targetBg,
+            lowThreshold = lowThreshold,
             activeAlarmProfileId = activeAlarmProfileId,
-            activeAlarmProfileName = if (activeAlarmProfileId != null) alarmProfileName else null,
-            adjustmentHint = adjustmentHint ?: currentDraft.adjustmentHint,
-            timing = timing ?: currentDraft.timing
+            alarmProfileName = alarmProfileName,
+            hint = adjustmentHint
         )
+        if (timing != null) {
+            formStateHolder.updateTiming(timing)
+        }
+    }
+
+    fun applyPreset(preset: TherapyAdjustment) {
+        formStateHolder.applyPreset(preset)
     }
 
     fun setDraftTiming(timing: TherapyAdjustmentTiming) {
-        val currentDraft = _draftAdjustment.value ?: _uiState.value.activeTherapyStatus.adjustment
-        _draftAdjustment.value = currentDraft.copy(timing = timing)
+        formStateHolder.updateTiming(timing)
     }
 
     fun applyDraftAdjustment() {
-        val draft = _draftAdjustment.value ?: return
+        val form = formStateHolder.formState.value
         viewModelScope.launch {
             therapyManager.setTherapyAdjustment(
-                percentage = draft.percentage,
-                targetBg = draft.targetBgOverride,
-                lowThreshold = draft.lowThresholdOverride,
-                activeAlarmProfileId = draft.activeAlarmProfileId,
-                adjustmentHint = draft.adjustmentHint,
-                timing = draft.timing
+                percentage = form.percentage,
+                targetBg = form.targetBgOverride,
+                lowThreshold = form.lowThresholdOverride,
+                activeAlarmProfileId = form.activeAlarmProfileId,
+                adjustmentHint = form.adjustmentHint,
+                timing = form.timing
             )
-            _draftAdjustment.value = null
         }
     }
 
     fun resetDraft() {
-        _draftAdjustment.value = null
+        formStateHolder.reset()
     }
 
     fun isDraftDirty(): Boolean {
-        val draft = _draftAdjustment.value ?: return false
-        val active = _uiState.value.activeTherapyStatus.adjustment
-        return draft != active
+        return formStateHolder.isDirty()
     }
 
     fun setTherapyAdjustment(

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "91c9442659cfaf78b7a6f0d1ccb317f4",
+    "identityHash": "ccecccf7b46e275aaa8eb928dfc97cfb",
     "entities": [
       {
         "tableName": "sensor_type",
@@ -301,6 +301,62 @@
             ]
           }
         ]
+      },
+      {
+        "tableName": "scheduled_therapy_adjustments",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `start_time_ms` INTEGER NOT NULL, `end_time_ms` INTEGER NOT NULL, `insulin_adjustment_percentage` INTEGER NOT NULL, `target_bg_override` INTEGER, `low_threshold_override` INTEGER, `active_alarm_profile_id` INTEGER, `adjustment_hint` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "start_time_ms",
+            "columnName": "start_time_ms",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "end_time_ms",
+            "columnName": "end_time_ms",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "insulin_adjustment_percentage",
+            "columnName": "insulin_adjustment_percentage",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "target_bg_override",
+            "columnName": "target_bg_override",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "low_threshold_override",
+            "columnName": "low_threshold_override",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "active_alarm_profile_id",
+            "columnName": "active_alarm_profile_id",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "adjustment_hint",
+            "columnName": "adjustment_hint",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
       },
       {
         "tableName": "current_settings",
@@ -867,7 +923,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '91c9442659cfaf78b7a6f0d1ccb317f4')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ccecccf7b46e275aaa8eb928dfc97cfb')"
     ]
   }
 }

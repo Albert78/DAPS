@@ -18,6 +18,7 @@ import de.dh.daps.common.model.data.BgDelta
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.CurrentTherapySettings
 import de.dh.daps.common.model.data.InsulinProfile
+import de.dh.daps.common.model.data.ScheduledTherapyAdjustment
 import de.dh.daps.common.model.data.TherapyAdjustmentTiming
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.data.getAmountForMinute
@@ -344,6 +345,26 @@ class TherapyManager(
                 adjustmentHint = currentSettings.adjustmentHint
             )
         }
+    }
+
+    // --- Scheduled Therapy Adjustments ---
+
+    fun observeScheduledTherapyAdjustments(): Flow<List<ScheduledTherapyAdjustment>> =
+        therapyRepository.observeAllScheduledTherapyAdjustments()
+
+    suspend fun saveScheduledTherapyAdjustment(adjustment: ScheduledTherapyAdjustment): Long {
+        val id = therapyRepository.saveScheduledTherapyAdjustment(adjustment)
+        val now = Timestamp.now()
+        if (adjustment.startTime > now) {
+            wakeService?.scheduleWakeup(WAKEUP_TAG_ADJUSTMENT, WAKEUP_ID_START, adjustment.startTime)
+        } else if (adjustment.endTime > now) {
+            wakeService?.scheduleWakeup(WAKEUP_TAG_ADJUSTMENT, WAKEUP_ID_END, adjustment.endTime)
+        }
+        return id
+    }
+
+    suspend fun deleteScheduledTherapyAdjustment(id: Long) {
+        therapyRepository.deleteScheduledTherapyAdjustment(id)
     }
 
     // -----------------------------------------------------------------------------------------

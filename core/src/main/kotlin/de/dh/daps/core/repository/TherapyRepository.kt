@@ -9,6 +9,7 @@ import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.CurrentTherapySettings
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.ScheduledTherapyAdjustment
 import de.dh.daps.common.model.data.TherapyAdjustmentTiming
 import de.dh.daps.core.repository.db.AppDatabase
 import de.dh.daps.core.repository.db.MetabolicEventsDao
@@ -181,5 +182,52 @@ class TherapyRepository(
             therapyDao.updateCurrentTherapySettings(entity)
         }
         clearCache()
+    }
+
+    // --- Scheduled Therapy Adjustments Operations ---
+
+    suspend fun getAllScheduledTherapyAdjustments(): List<ScheduledTherapyAdjustment> {
+        val alarmProfiles = alarmProfileDao.getAllAlarmProfiles().associateBy { it.id }
+        return therapyDao.getAllScheduledTherapyAdjustments().map { entity ->
+            val alarmProfile = entity.active_alarm_profile_id?.let { alarmProfiles[it]?.toModel() }
+            entity.toModel(alarmProfile)
+        }
+    }
+
+    fun observeAllScheduledTherapyAdjustments(): Flow<List<ScheduledTherapyAdjustment>> = combine(
+        therapyDao.observeAllScheduledTherapyAdjustments(),
+        alarmProfileDao.observeAllAlarmProfiles()
+    ) { entities, alarmProfiles ->
+        val alarmProfileMap = alarmProfiles.associateBy { it.id }
+        entities.map { entity ->
+            val alarmProfile = entity.active_alarm_profile_id?.let { alarmProfileMap[it]?.toModel() }
+            entity.toModel(alarmProfile)
+        }
+    }
+
+    suspend fun getScheduledTherapyAdjustmentById(id: Long): ScheduledTherapyAdjustment? {
+        val entity = therapyDao.getScheduledTherapyAdjustmentById(id) ?: return null
+        val alarmProfile = entity.active_alarm_profile_id?.let { alarmProfileId ->
+            alarmProfileDao.getAlarmProfileById(alarmProfileId)?.toModel()
+        }
+        return entity.toModel(alarmProfile)
+    }
+
+    suspend fun saveScheduledTherapyAdjustment(adjustment: ScheduledTherapyAdjustment): Long {
+        val entity = adjustment.toEntity()
+        return if (entity.id == ID_UNDEFINED) {
+            therapyDao.insertScheduledTherapyAdjustment(entity)
+        } else {
+            therapyDao.updateScheduledTherapyAdjustment(entity)
+            entity.id
+        }
+    }
+
+    suspend fun deleteScheduledTherapyAdjustment(id: Long) {
+        therapyDao.deleteScheduledTherapyAdjustment(id)
+    }
+
+    suspend fun deleteAllScheduledTherapyAdjustments() {
+        therapyDao.deleteAllScheduledTherapyAdjustments()
     }
 }

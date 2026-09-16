@@ -40,6 +40,7 @@ import de.dh.daps.common.navigation.PreferencesMainRoute
 import de.dh.daps.common.navigation.PumpManagementRoute
 import de.dh.daps.common.navigation.SystemControlRoute
 import de.dh.daps.common.navigation.TherapyAdjustmentRoute
+import de.dh.daps.common.navigation.ScheduledTherapyAdjustmentRoute
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.setUserDeclinedPermissions
 import de.dh.daps.ui.common.treatmentlock.TreatmentLockScreen
@@ -89,6 +90,8 @@ import de.dh.daps.ui.screens.systemcontrol.SystemControlViewModel
 import de.dh.daps.ui.screens.therapy.BgEditorScreen
 import de.dh.daps.ui.screens.therapy.CurrentTherapySettingsScreen
 import de.dh.daps.ui.screens.therapy.CurrentTherapyViewModel
+import de.dh.daps.ui.screens.therapy.ScheduledTherapyAdjustmentScreen
+import de.dh.daps.ui.screens.therapy.ScheduledTherapyViewModel
 import de.dh.daps.ui.screens.therapy.TherapyAdjustmentScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -156,7 +159,8 @@ class MainFeatureNavGraph(
                     onNavigateUp = { navViewModel.pop() },
                     onNavigateToInsulinProfileEditor = { navViewModel.push(InsulinProfileEditorRoute) },
                     onNavigateToBgEditor = { navViewModel.push(BgEditorRoute) },
-                    onNavigateToTherapyAdjustment = { navViewModel.push(TherapyAdjustmentRoute) }
+                    onNavigateToTherapyAdjustment = { navViewModel.push(TherapyAdjustmentRoute) },
+                    onNavigateToScheduledTherapyAdjustment = { navViewModel.push(ScheduledTherapyAdjustmentRoute) }
                 )
             }
 
@@ -176,6 +180,16 @@ class MainFeatureNavGraph(
 
                 TherapyAdjustmentScreen(
                     viewModel = currentTherapyVM,
+                    onNavigateUp = { navViewModel.pop() }
+                )
+            }
+
+            is ScheduledTherapyAdjustmentRoute -> NavEntry(key) {
+                val scheduledVM: ScheduledTherapyViewModel =
+                    viewModel(factory = ScheduledTherapyViewModel.Companion.Factory(registry))
+
+                ScheduledTherapyAdjustmentScreen(
+                    viewModel = scheduledVM,
                     onNavigateUp = { navViewModel.pop() }
                 )
             }

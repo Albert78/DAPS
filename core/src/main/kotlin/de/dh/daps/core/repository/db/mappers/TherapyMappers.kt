@@ -10,12 +10,14 @@ import de.dh.daps.common.model.data.Block
 import de.dh.daps.common.model.data.CurrentTherapySettings
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.ScheduledTherapyAdjustment
 import de.dh.daps.common.model.data.TherapyAdjustmentTiming
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.repository.db.entities.CurrentTherapySettingsEntity
 import de.dh.daps.core.repository.db.entities.DBBgBlock
 import de.dh.daps.core.repository.db.entities.DBBlock
 import de.dh.daps.core.repository.db.entities.InsulinProfileEntity
+import de.dh.daps.core.repository.db.entities.ScheduledTherapyAdjustmentEntity
 
 // Therapy Converters
 fun Block.toDb() = DBBlock(
@@ -104,3 +106,26 @@ fun CurrentTherapySettingsEntity.toModel(
         adjustmentTiming = timing
     )
 }
+
+fun ScheduledTherapyAdjustment.toEntity() = ScheduledTherapyAdjustmentEntity(
+    id = this.id,
+    start_time_ms = this.startTime.ms,
+    end_time_ms = this.endTime.ms,
+    insulin_adjustment_percentage = this.percentage,
+    target_bg_override = this.targetBgOverride?.mgdlInt?.toShort(),
+    low_threshold_override = this.lowThresholdOverride?.mgdlInt?.toShort(),
+    active_alarm_profile_id = this.activeAlarmProfileId,
+    adjustment_hint = this.adjustmentHint
+)
+
+fun ScheduledTherapyAdjustmentEntity.toModel(alarmProfile: AlarmProfile? = null) = ScheduledTherapyAdjustment(
+    id = this.id,
+    startTime = Timestamp(this.start_time_ms),
+    endTime = Timestamp(this.end_time_ms),
+    percentage = this.insulin_adjustment_percentage,
+    targetBgOverride = this.target_bg_override?.let { BgValue.fromMgDl(it) },
+    lowThresholdOverride = this.low_threshold_override?.let { BgValue.fromMgDl(it) },
+    activeAlarmProfileId = this.active_alarm_profile_id,
+    activeAlarmProfile = alarmProfile,
+    adjustmentHint = this.adjustment_hint
+)

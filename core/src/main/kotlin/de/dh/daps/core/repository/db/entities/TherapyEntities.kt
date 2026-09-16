@@ -55,3 +55,21 @@ data class CurrentTherapySettingsEntity(
     val adjustment_start_time_ms: Long? = null,
     val adjustment_end_time_ms: Long? = null
 )
+
+/**
+ * Entity for planned/scheduled therapy adjustments.
+ */
+@Entity(
+    tableName = "scheduled_therapy_adjustments"
+)
+data class ScheduledTherapyAdjustmentEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = ID_UNDEFINED,
+    val start_time_ms: Long,
+    val end_time_ms: Long,
+    val insulin_adjustment_percentage: Int = 0,
+    val target_bg_override: Short? = null,
+    val low_threshold_override: Short? = null,
+    val active_alarm_profile_id: Long? = null,
+    val adjustment_hint: String? = null
+)

@@ -41,6 +41,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -95,7 +96,8 @@ fun CurrentTherapySettingsScreen(
     onNavigateUp: () -> Unit,
     onNavigateToInsulinProfileEditor: () -> Unit,
     onNavigateToBgEditor: () -> Unit,
-    onNavigateToTherapyAdjustment: () -> Unit
+    onNavigateToTherapyAdjustment: () -> Unit,
+    onNavigateToScheduledTherapyAdjustment: (() -> Unit)? = null
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -105,6 +107,7 @@ fun CurrentTherapySettingsScreen(
         onNavigateToInsulinProfileEditor = onNavigateToInsulinProfileEditor,
         onNavigateToBgEditor = onNavigateToBgEditor,
         onNavigateToTherapyAdjustment = onNavigateToTherapyAdjustment,
+        onNavigateToScheduledTherapyAdjustment = onNavigateToScheduledTherapyAdjustment,
         onSelectProfile = { viewModel.selectInsulinProfile(it) }
     )
 }
@@ -117,6 +120,7 @@ fun CurrentTherapySettingsContent(
     onNavigateToInsulinProfileEditor: () -> Unit,
     onNavigateToBgEditor: () -> Unit,
     onNavigateToTherapyAdjustment: () -> Unit,
+    onNavigateToScheduledTherapyAdjustment: (() -> Unit)? = null,
     onSelectProfile: (InsulinProfile) -> Unit
 ) {
     var showInsulinProfileDialog by remember { mutableStateOf(false) }
@@ -212,6 +216,20 @@ fun CurrentTherapySettingsContent(
                     baseLow = uiState.activeTherapyStatus.baseLow,
                     onClick = onNavigateToTherapyAdjustment
                 )
+
+                if (onNavigateToScheduledTherapyAdjustment != null) {
+                    OutlinedButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp),
+                        onClick = onNavigateToScheduledTherapyAdjustment
+                    ) {
+                        Text(
+                            text = stringResource(R.string.therapy_adjustment_mode_timewindow),
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
+                }
             }
         }
     }
