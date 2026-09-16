@@ -172,201 +172,210 @@ fun ScheduledTherapyAdjustmentContent(
             )
         }
     ) { innerPadding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
-            contentAlignment = Alignment.TopCenter
+                .padding(innerPadding)
         ) {
             val focusManager = LocalFocusManager.current
             val scrollState = rememberScrollState()
 
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .contentScrollIndicator(scrollState)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(scrollState)
+                        .clickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() }
+                        ) {
+                            focusManager.clearFocus()
+                        }
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Shared Inner Form
+                    TherapyAdjustmentInnerForm(
+                        formState = formState,
+                        baseTarget = baseTarget,
+                        baseLow = baseLow,
+                        availableAlarmProfiles = availableAlarmProfiles,
+                        onValuesChange = onValuesChange
+                    )
+
+                    if (presets.isNotEmpty()) {
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+                        TherapyAdjustmentPresetsSection(
+                            presets = presets,
+                            onPresetApplied = onPresetApplied
+                        )
+                    }
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                    // Time Range Picker Section for Scheduled Activity
+                    Text(
+                        text = stringResource(R.string.therapy_adjustment_timing_summary_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        // Start Time Selector
+                        OutlinedButton(
+                            modifier = Modifier.weight(1f),
+                            onClick = {
+                                TimePickerDialog(
+                                    context,
+                                    { _, hourOfDay, minute ->
+                                        val newCal = Calendar.getInstance().apply {
+                                            timeInMillis = startTime.ms
+                                            set(Calendar.HOUR_OF_DAY, hourOfDay)
+                                            set(Calendar.MINUTE, minute)
+                                        }
+                                        onStartTimeChange(Timestamp(newCal.timeInMillis))
+                                    },
+                                    startCal.get(Calendar.HOUR_OF_DAY),
+                                    startCal.get(Calendar.MINUTE),
+                                    true
+                                ).show()
+                            }
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = stringResource(R.string.therapy_adjustment_start_time_label),
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                                Text(
+                                    text = timeFormat.format(startTime.ms),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+
+                        // End Time Selector
+                        OutlinedButton(
+                            modifier = Modifier.weight(1f),
+                            onClick = {
+                                TimePickerDialog(
+                                    context,
+                                    { _, hourOfDay, minute ->
+                                        val newCal = Calendar.getInstance().apply {
+                                            timeInMillis = endTime.ms
+                                            set(Calendar.HOUR_OF_DAY, hourOfDay)
+                                            set(Calendar.MINUTE, minute)
+                                        }
+                                        onEndTimeChange(Timestamp(newCal.timeInMillis))
+                                    },
+                                    endCal.get(Calendar.HOUR_OF_DAY),
+                                    endCal.get(Calendar.MINUTE),
+                                    true
+                                ).show()
+                            }
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = stringResource(R.string.therapy_adjustment_end_time_label),
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                                Text(
+                                    text = timeFormat.format(endTime.ms),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+
+                    // Quick Duration Preset Chips
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+                    ) {
+                        val durationOptions = listOf(30, 60, 120, 180, 240)
+                        durationOptions.forEach { mins ->
+                            val durationMs = mins * 60_000L
+                            val isSelected = (endTime.ms - startTime.ms) == durationMs
+                            FilterChip(
+                                selected = isSelected,
+                                onClick = {
+                                    onEndTimeChange(Timestamp(startTime.ms + durationMs))
+                                },
+                                label = {
+                                    val label = if (mins >= 60) "${mins / 60} h" else "$mins min"
+                                    Text(label)
+                                }
+                            )
+                        }
+                    }
+
+                    // Summary Card
+                    val durationMins = ((endTime.ms - startTime.ms) / 60_000L).coerceAtLeast(0)
+                    val durationText = if (durationMins >= 60) {
+                        "${durationMins / 60} h ${durationMins % 60} min"
+                    } else {
+                        "$durationMins min"
+                    }
+
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.AccessTime,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Text(
+                                    text = stringResource(R.string.therapy_adjustment_timing_summary_title),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Text(
+                                text = "${timeFormat.format(startTime.ms)} - ${timeFormat.format(endTime.ms)} ($durationText)",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Single Primary "Planen" Action Button outside contentScrollIndicator
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .contentScrollIndicator(scrollState)
-                    .verticalScroll(scrollState)
-                    .clickable(
-                        indication = null,
-                        interactionSource = remember { MutableInteractionSource() }
-                    ) {
-                        focusManager.clearFocus()
-                    }
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(16.dp)
             ) {
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Shared Inner Form
-                TherapyAdjustmentInnerForm(
-                    formState = formState,
-                    baseTarget = baseTarget,
-                    baseLow = baseLow,
-                    availableAlarmProfiles = availableAlarmProfiles,
-                    onValuesChange = onValuesChange
-                )
-
-                if (presets.isNotEmpty()) {
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                    TherapyAdjustmentPresetsSection(
-                        presets = presets,
-                        onPresetApplied = onPresetApplied
-                    )
-                }
-
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-                // Time Range Picker Section for Scheduled Activity
-                Text(
-                    text = stringResource(R.string.therapy_adjustment_timing_summary_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // Start Time Selector
-                    OutlinedButton(
-                        modifier = Modifier.weight(1f),
-                        onClick = {
-                            TimePickerDialog(
-                                context,
-                                { _, hourOfDay, minute ->
-                                    val newCal = Calendar.getInstance().apply {
-                                        timeInMillis = startTime.ms
-                                        set(Calendar.HOUR_OF_DAY, hourOfDay)
-                                        set(Calendar.MINUTE, minute)
-                                    }
-                                    onStartTimeChange(Timestamp(newCal.timeInMillis))
-                                },
-                                startCal.get(Calendar.HOUR_OF_DAY),
-                                startCal.get(Calendar.MINUTE),
-                                true
-                            ).show()
-                        }
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = stringResource(R.string.therapy_adjustment_start_time_label),
-                                style = MaterialTheme.typography.labelSmall
-                            )
-                            Text(
-                                text = timeFormat.format(startTime.ms),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-
-                    // End Time Selector
-                    OutlinedButton(
-                        modifier = Modifier.weight(1f),
-                        onClick = {
-                            TimePickerDialog(
-                                context,
-                                { _, hourOfDay, minute ->
-                                    val newCal = Calendar.getInstance().apply {
-                                        timeInMillis = endTime.ms
-                                        set(Calendar.HOUR_OF_DAY, hourOfDay)
-                                        set(Calendar.MINUTE, minute)
-                                    }
-                                    onEndTimeChange(Timestamp(newCal.timeInMillis))
-                                },
-                                endCal.get(Calendar.HOUR_OF_DAY),
-                                endCal.get(Calendar.MINUTE),
-                                true
-                            ).show()
-                        }
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = stringResource(R.string.therapy_adjustment_end_time_label),
-                                style = MaterialTheme.typography.labelSmall
-                            )
-                            Text(
-                                text = timeFormat.format(endTime.ms),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                }
-
-                // Quick Duration Preset Chips
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
-                ) {
-                    val durationOptions = listOf(30, 60, 120, 180, 240)
-                    durationOptions.forEach { mins ->
-                        val durationMs = mins * 60_000L
-                        val isSelected = (endTime.ms - startTime.ms) == durationMs
-                        FilterChip(
-                            selected = isSelected,
-                            onClick = {
-                                onEndTimeChange(Timestamp(startTime.ms + durationMs))
-                            },
-                            label = {
-                                val label = if (mins >= 60) "${mins / 60} h" else "$mins min"
-                                Text(label)
-                            }
-                        )
-                    }
-                }
-
-                // Summary Card
-                val durationMins = ((endTime.ms - startTime.ms) / 60_000L).coerceAtLeast(0)
-                val durationText = if (durationMins >= 60) {
-                    "${durationMins / 60} h ${durationMins % 60} min"
-                } else {
-                    "$durationMins min"
-                }
-
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.AccessTime,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Text(
-                                text = stringResource(R.string.therapy_adjustment_timing_summary_title),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                        Text(
-                            text = "${timeFormat.format(startTime.ms)} - ${timeFormat.format(endTime.ms)} ($durationText)",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Single Primary "Planen" Action Button
                 Button(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -381,8 +390,6 @@ fun ScheduledTherapyAdjustmentContent(
                         textAlign = TextAlign.Center
                     )
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
@@ -415,8 +422,8 @@ fun ScheduledTherapyAdjustmentContent(
     }
 }
 
-@Preview(showBackground = true, name = "Light Mode", heightDp = 1000)
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode", heightDp = 1000)
+@Preview(showBackground = true, name = "Light Mode", heightDp = 1200)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode", heightDp = 1200)
 @Composable
 private fun ScheduledTherapyAdjustmentPreview() {
     AppTheme {

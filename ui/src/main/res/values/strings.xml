@@ -240,7 +240,7 @@
     <string name="therapy_adjustment_timing_summary_title">Zeitplanung</string>
     <string name="therapy_adjustment_timing_scheduled_format">Geplant (%1$s – %2$s Uhr)</string>
     <string name="therapy_adjustment_schedule_button">Anpassung planen</string>
-    <string name="scheduled_therapy_adjustment_screen_title">Planen</string>
+    <string name="scheduled_therapy_adjustment_screen_title">Therapie-Anpassung planen</string>
 
     <string name="approx_prefix">ca.</string>
     <string name="unknown_label">Unbekannt</string>

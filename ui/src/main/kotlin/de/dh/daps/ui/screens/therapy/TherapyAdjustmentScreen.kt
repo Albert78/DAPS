@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -164,11 +163,10 @@ fun TherapyAdjustmentContent(
             )
         }
     ) { innerPadding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
-            contentAlignment = Alignment.TopCenter
+                .padding(innerPadding)
         ) {
             val focusManager = LocalFocusManager.current
             val scrollState = rememberScrollState()
@@ -180,74 +178,87 @@ fun TherapyAdjustmentContent(
                 formState.activeAlarmProfileId != null
             }
 
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .contentScrollIndicator(scrollState)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(scrollState)
+                        .clickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() }
+                        ) {
+                            focusManager.clearFocus()
+                        }
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    if (!isDirty && isAdjustmentActive) {
+                        val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+                        val endTime = formState.timing.endTime
+                        val activeHintText = if (endTime != null) {
+                            stringResource(R.string.therapy_adjustment_active_until_format, timeFormat.format(endTime.ms))
+                        } else {
+                            stringResource(R.string.therapy_adjustment_active_now)
+                        }
+
+                        Surface(
+                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Info,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Text(
+                                    text = activeHintText,
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
+
+                    // Reusable Inner Form Section
+                    TherapyAdjustmentInnerForm(
+                        formState = formState,
+                        baseTarget = baseTarget,
+                        baseLow = baseLow,
+                        availableAlarmProfiles = availableAlarmProfiles,
+                        onValuesChange = onValuesChange
+                    )
+
+                    if (presets.isNotEmpty()) {
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+                        TherapyAdjustmentPresetsSection(
+                            presets = presets,
+                            onPresetApplied = onPresetApplied
+                        )
+                    }
+                }
+            }
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .contentScrollIndicator(scrollState)
-                    .verticalScroll(scrollState)
-                    .clickable(
-                        indication = null,
-                        interactionSource = remember { MutableInteractionSource() }
-                    ) {
-                        focusManager.clearFocus()
-                    }
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                if (!isDirty && isAdjustmentActive) {
-                    val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
-                    val endTime = formState.timing.endTime
-                    val activeHintText = if (endTime != null) {
-                        stringResource(R.string.therapy_adjustment_active_until_format, timeFormat.format(endTime.ms))
-                    } else {
-                        stringResource(R.string.therapy_adjustment_active_now)
-                    }
-
-                    Surface(
-                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Text(
-                                text = activeHintText,
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-                }
-
-                // Reusable Inner Form Section
-                TherapyAdjustmentInnerForm(
-                    formState = formState,
-                    baseTarget = baseTarget,
-                    baseLow = baseLow,
-                    availableAlarmProfiles = availableAlarmProfiles,
-                    onValuesChange = onValuesChange
-                )
-
-                if (presets.isNotEmpty()) {
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                    TherapyAdjustmentPresetsSection(
-                        presets = presets,
-                        onPresetApplied = onPresetApplied
-                    )
-                }
-
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                HorizontalDivider()
 
                 // Action Buttons for Current Therapy Settings
                 Row(
@@ -291,8 +302,6 @@ fun TherapyAdjustmentContent(
                         )
                     }
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
