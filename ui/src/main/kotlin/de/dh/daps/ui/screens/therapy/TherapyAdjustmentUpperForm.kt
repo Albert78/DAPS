@@ -107,6 +107,32 @@ fun TherapyAdjustmentUpperForm(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // Description / Reason Section
+        val hintActive = !currentHint.isNullOrBlank()
+        AdjustmentSection(
+            icon = Icons.Default.Edit,
+            title = stringResource(R.string.therapy_adjustment_description_label),
+            description = stringResource(R.string.therapy_adjustment_description_description),
+            isActive = hintActive,
+            useCardWrapper = false
+        ) {
+            OutlinedTextField(
+                value = currentHint ?: "",
+                onValueChange = { text ->
+                    val newHint = text.ifBlank { null }
+                    onValuesChange(currentPercentage, currentTarget, currentLow, currentAlarmProfileId, newHint)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = {
+                    Text(stringResource(R.string.therapy_adjustment_description_placeholder))
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp)
+            )
+        }
+
+        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
         // Insulin Adjustment Section
         val insulinAdjustmentActive = currentPercentage != 0
         AdjustmentSection(
@@ -243,32 +269,6 @@ fun TherapyAdjustmentUpperForm(
                     )
                 }
             }
-        }
-
-        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-        // Description / Reason Section
-        val hintActive = !currentHint.isNullOrBlank()
-        AdjustmentSection(
-            icon = Icons.Default.Edit,
-            title = stringResource(R.string.therapy_adjustment_description_label),
-            description = stringResource(R.string.therapy_adjustment_description_description),
-            isActive = hintActive,
-            useCardWrapper = false
-        ) {
-            OutlinedTextField(
-                value = currentHint ?: "",
-                onValueChange = { text ->
-                    val newHint = text.ifBlank { null }
-                    onValuesChange(currentPercentage, currentTarget, currentLow, currentAlarmProfileId, newHint)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = {
-                    Text(stringResource(R.string.therapy_adjustment_description_placeholder))
-                },
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp)
-            )
         }
 
         if (presets.isNotEmpty()) {
