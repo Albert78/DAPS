@@ -484,7 +484,10 @@
     <string name="alarm_profile_override_dnd">„Bitte nicht stören“ umgehen</string>
     <string name="alarm_profile_show_full_screen">Als Vollbildalarm anzeigen</string>
     <string name="alarm_profile_test_sound">Probe-Hören</string>
-    <string name="cd_test_alarm_sound">Alarmton Probe-Hören</string>
+    <string name="cd_test_alarm_sound_and_vibration">Alarmton und Vibration testen</string>
+    <string name="cd_test_alarm_sound">Alarmton testen</string>
+    <string name="cd_test_alarm_vibration">Vibration testen</string>
+    <string name="cd_alarm_sound_and_vibration_off">Signalisierung ausgeschaltet</string>
     <string name="alarm_profile_delete_title">Alarmprofil löschen</string>
     <string name="alarm_profile_delete_message">Möchtest du das Alarmprofil „%1$s“ wirklich löschen?</string>
     <string name="alarm_profile_cannot_delete_default">Das Standard-Profil kann nicht gelöscht werden.</string>

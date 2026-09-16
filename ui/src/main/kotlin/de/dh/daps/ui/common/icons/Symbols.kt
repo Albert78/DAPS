@@ -38,8 +38,8 @@ import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Snooze
 import androidx.compose.material.icons.outlined.StarOutline
-import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -96,6 +96,10 @@ val Icon_Carbs = Icons.Filled.Carbs
 val Icon_Insulin = Icons.Filled.Insulin
 val Icon_Carbs_Blood = Icons.Filled.CarbsBlood
 val Icon_Insulin_Blood = Icons.Filled.InsulinBlood
+val Icon_Sound_Vibration = Icons.Outlined.SoundVibration
+val Icon_Sound_Only = Icons.Outlined.SoundOnly
+val Icon_Vibration_Only = Icons.Outlined.VibrationOnly
+val Icon_Sound_Off = Icons.Outlined.SoundOff
 
 // Menu Navigation Icons
 val Icon_Menu_Meals = Icons.Outlined.Restaurant
@@ -158,10 +162,14 @@ private val iconsForPreview = listOf(
     IconPreview("Next", Icon_Next),
     IconPreview("Previous", Icon_Previous),
     IconPreview("Plus", Icon_Plus),
-    IconPreview("Minus", Icon_Minus)
+    IconPreview("Minus", Icon_Minus),
+    IconPreview("Sound_Vibration", Icon_Sound_Vibration),
+    IconPreview("Sound_Only", Icon_Sound_Only),
+    IconPreview("Vibration_Only", Icon_Vibration_Only),
+    IconPreview("Sound_Off", Icon_Sound_Off)
 )
 
-@Preview(showBackground = true, widthDp = 320, heightDp = 1600, name = "Icon Catalog")
+@Preview(showBackground = true, widthDp = 320, heightDp = 1800, name = "Icon Catalog")
 @Composable
 fun IconCatalogPreview() {
     AppTheme {

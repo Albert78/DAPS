@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -49,6 +50,10 @@ import de.dh.daps.common.model.data.VibrationMode
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.screenTitle
+import de.dh.daps.ui.common.icons.Icon_Sound_Off
+import de.dh.daps.ui.common.icons.Icon_Sound_Only
+import de.dh.daps.ui.common.icons.Icon_Sound_Vibration
+import de.dh.daps.ui.common.icons.Icon_Vibration_Only
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.common.R as CommonR
 
@@ -311,13 +316,34 @@ fun SeveritySummaryItem(
     config: AlarmSignalConfig
 ) {
     val sound = config.soundConfig
-    val soundText = if (sound != null) "${sound.volume}%" else "Kein Ton"
+    val hasSound = sound != null && sound.volume > 0
+    val hasVibration = config.vibrationMode != VibrationMode.OFF
+
+    val soundVibrationIcon = when {
+        hasSound && hasVibration -> Icon_Sound_Vibration
+        hasSound -> Icon_Sound_Only
+        hasVibration -> Icon_Vibration_Only
+        else -> Icon_Sound_Off
+    }
+
+    val soundText = if (sound != null && sound.volume > 0) "${sound.volume}%" else "Kein Ton"
     Column {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.SemiBold
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Icon(
+                imageVector = soundVibrationIcon,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold
+            )
+        }
         Text(
             text = "$soundText • ${vibrationModeLabel(config.vibrationMode)}",
             style = MaterialTheme.typography.bodySmall,

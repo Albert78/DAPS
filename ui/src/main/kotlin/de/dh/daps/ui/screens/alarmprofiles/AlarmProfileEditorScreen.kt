@@ -16,7 +16,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
@@ -56,6 +55,10 @@ import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
+import de.dh.daps.ui.common.icons.Icon_Sound_Off
+import de.dh.daps.ui.common.icons.Icon_Sound_Only
+import de.dh.daps.ui.common.icons.Icon_Sound_Vibration
+import de.dh.daps.ui.common.icons.Icon_Vibration_Only
 import de.dh.daps.ui.common.theme.AppTheme
 import kotlin.math.roundToInt
 import de.dh.daps.common.R as CommonR
@@ -292,6 +295,16 @@ fun SeverityEditorSectionCard(
         getRingtoneTitle(context, sound?.soundUri)
     }
 
+    val hasSound = sound != null && sound.volume > 0
+    val hasVibration = config.vibrationMode != VibrationMode.OFF
+
+    val (soundVibrationIcon, contentDescRes) = when {
+        hasSound && hasVibration -> Icon_Sound_Vibration to R.string.cd_test_alarm_sound_and_vibration
+        hasSound -> Icon_Sound_Only to R.string.cd_test_alarm_sound
+        hasVibration -> Icon_Vibration_Only to R.string.cd_test_alarm_vibration
+        else -> Icon_Sound_Off to R.string.cd_alarm_sound_and_vibration_off
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -314,11 +327,11 @@ fun SeverityEditorSectionCard(
                 )
                 IconButton(
                     onClick = onPlayPreview,
-                    enabled = sound != null
+                    enabled = hasSound || hasVibration
                 ) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.VolumeUp,
-                        contentDescription = stringResource(id = R.string.cd_test_alarm_sound)
+                        imageVector = soundVibrationIcon,
+                        contentDescription = stringResource(id = contentDescRes)
                     )
                 }
             }
@@ -348,29 +361,6 @@ fun SeverityEditorSectionCard(
 
             // Audio Sound Section (only active if FullScreen)
             if (config.isFullScreen && sound != null) {
-                // Volume Slider
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.alarm_profile_volume_label, sound.volume),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-                Slider(
-                    value = sound.volume.toFloat(),
-                    onValueChange = { floatValue ->
-                        val roundedVolume = ((floatValue / 5f).roundToInt() * 5).coerceIn(0, 100)
-                        val updatedSound = sound.copy(volume = roundedVolume)
-                        onConfigChanged(config.copy(displayMode = AlertDisplayMode.FullScreen(updatedSound)))
-                        onUpdateVolume(roundedVolume)
-                    },
-                    valueRange = 0f..100f,
-                    steps = 19
-                )
-
                 // Sound Selection
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -410,6 +400,29 @@ fun SeverityEditorSectionCard(
                         }
                     }
                 }
+
+                // Volume Slider
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.alarm_profile_volume_label, sound.volume),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                Slider(
+                    value = sound.volume.toFloat(),
+                    onValueChange = { floatValue ->
+                        val roundedVolume = ((floatValue / 5f).roundToInt() * 5).coerceIn(0, 100)
+                        val updatedSound = sound.copy(volume = roundedVolume)
+                        onConfigChanged(config.copy(displayMode = AlertDisplayMode.FullScreen(updatedSound)))
+                        onUpdateVolume(roundedVolume)
+                    },
+                    valueRange = 0f..100f,
+                    steps = 19
+                )
             }
 
             // Vibration Mode
