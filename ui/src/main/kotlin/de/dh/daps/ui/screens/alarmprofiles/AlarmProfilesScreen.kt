@@ -46,6 +46,8 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.data.AlarmProfile
 import de.dh.daps.common.model.data.AlarmSeverity
 import de.dh.daps.common.model.data.AlarmSignalConfig
+import de.dh.daps.common.model.data.AlertDisplayMode
+import de.dh.daps.common.model.data.SoundConfig
 import de.dh.daps.common.model.data.VibrationMode
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.NormalTextButton
@@ -282,15 +284,18 @@ fun AlarmProfileCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 SeveritySummaryItem(
-                    label = "🔴 Kritisch",
+                    dot = "🔴",
+                    name = "Kritisch",
                     config = criticalConfig
                 )
                 SeveritySummaryItem(
-                    label = "🟡 Warnung",
+                    dot = "🟡",
+                    name = "Warnung",
                     config = warningConfig
                 )
                 SeveritySummaryItem(
-                    label = "🔵 Info",
+                    dot = "🔵",
+                    name = "Info",
                     config = infoConfig
                 )
             }
@@ -300,7 +305,8 @@ fun AlarmProfileCard(
 
 @Composable
 fun SeveritySummaryItem(
-    label: String,
+    dot: String,
+    name: String,
     config: AlarmSignalConfig
 ) {
     val sound = config.soundConfig
@@ -314,27 +320,28 @@ fun SeveritySummaryItem(
         else -> Icon_Sound_Off
     }
 
-    val soundText = if (sound != null && sound.volume > 0) "${sound.volume}%" else "Kein Ton"
-    Column {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
+            Text(
+                text = dot,
+                style = MaterialTheme.typography.bodyMedium
+            )
             Icon(
                 imageVector = soundVibrationIcon,
                 contentDescription = null,
-                modifier = Modifier.size(16.dp),
+                modifier = Modifier.size(18.dp),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Bold
             )
         }
         Text(
-            text = "$soundText • ${vibrationModeLabel(config.vibrationMode)}",
-            style = MaterialTheme.typography.bodySmall,
+            text = name,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
@@ -354,9 +361,82 @@ fun vibrationModeLabel(mode: VibrationMode): String {
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
 fun AlarmProfilesPreview() {
+    val sampleStandard = AlarmProfile(
+        id = 1L,
+        name = "Standard",
+        isDefault = true,
+        severityDefaults = mapOf(
+            AlarmSeverity.CRITICAL to AlarmSignalConfig(
+                displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 100)),
+                vibrationMode = VibrationMode.CONTINUOUS,
+                overrideDnd = true
+            ),
+            AlarmSeverity.WARNING to AlarmSignalConfig(
+                displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 80)),
+                vibrationMode = VibrationMode.LONG,
+                overrideDnd = false
+            ),
+            AlarmSeverity.INFO to AlarmSignalConfig(
+                displayMode = AlertDisplayMode.NotificationOnly,
+                vibrationMode = VibrationMode.SHORT,
+                overrideDnd = false
+            )
+        )
+    )
+
+    val sampleQuiet = AlarmProfile(
+        id = 2L,
+        name = "Kino / Diskret",
+        isDefault = false,
+        severityDefaults = mapOf(
+            AlarmSeverity.CRITICAL to AlarmSignalConfig(
+                displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 100)),
+                vibrationMode = VibrationMode.CONTINUOUS,
+                overrideDnd = true
+            ),
+            AlarmSeverity.WARNING to AlarmSignalConfig(
+                displayMode = AlertDisplayMode.NotificationOnly,
+                vibrationMode = VibrationMode.SHORT,
+                overrideDnd = false
+            ),
+            AlarmSeverity.INFO to AlarmSignalConfig(
+                displayMode = AlertDisplayMode.NotificationOnly,
+                vibrationMode = VibrationMode.OFF,
+                overrideDnd = false
+            )
+        )
+    )
+
+    val sampleLoud = AlarmProfile(
+        id = 3L,
+        name = "Laut / Draußen",
+        isDefault = false,
+        severityDefaults = mapOf(
+            AlarmSeverity.CRITICAL to AlarmSignalConfig(
+                displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 100)),
+                vibrationMode = VibrationMode.CONTINUOUS,
+                overrideDnd = true
+            ),
+            AlarmSeverity.WARNING to AlarmSignalConfig(
+                displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 100)),
+                vibrationMode = VibrationMode.LONG,
+                overrideDnd = true
+            ),
+            AlarmSeverity.INFO to AlarmSignalConfig(
+                displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 80)),
+                vibrationMode = VibrationMode.SHORT,
+                overrideDnd = false
+            )
+        )
+    )
+
     AppTheme {
         AlarmProfilesContent(
-            uiState = AlarmProfilesUiState(),
+            uiState = AlarmProfilesUiState(
+                profiles = listOf(sampleStandard, sampleQuiet, sampleLoud),
+                defaultProfile = sampleStandard,
+                isLoading = false
+            ),
             onAddProfile = {},
             onEditProfile = {},
             onDeleteProfile = {},

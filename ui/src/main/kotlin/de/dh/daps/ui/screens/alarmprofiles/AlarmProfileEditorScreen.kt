@@ -534,7 +534,25 @@ fun AlarmProfileEditorPreview() {
         AlarmProfileEditorContent(
             uiState = AlarmProfileEditorUiState(
                 profileId = 1L,
-                name = "Standard"
+                name = "Standard",
+                isDefault = true,
+                severityDefaults = mapOf(
+                    AlarmSeverity.CRITICAL to AlarmSignalConfig(
+                        displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 100)),
+                        vibrationMode = VibrationMode.CONTINUOUS,
+                        overrideDnd = true
+                    ),
+                    AlarmSeverity.WARNING to AlarmSignalConfig(
+                        displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 80)),
+                        vibrationMode = VibrationMode.LONG,
+                        overrideDnd = false
+                    ),
+                    AlarmSeverity.INFO to AlarmSignalConfig(
+                        displayMode = AlertDisplayMode.NotificationOnly,
+                        vibrationMode = VibrationMode.SHORT,
+                        overrideDnd = false
+                    )
+                )
             ),
             onNameChange = {},
             onIsDefaultChange = {},
