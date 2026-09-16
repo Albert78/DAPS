@@ -173,16 +173,16 @@ fun FoodTypeSelector(
 
 private fun getPreviewMealTypes(): List<MealType> = listOf(
     MealType(
-        id = ID_MEAL_STANDARD,
-        name = "Standard",
-        components = listOf(CarbCurveComponentData(100, Minutes(60))),
-        cat = Minutes(180)
-    ),
-    MealType(
         id = ID_MEAL_FAST,
         name = "Schnell",
         components = listOf(CarbCurveComponentData(100, Minutes(30))),
         cat = Minutes(120)
+    ),
+    MealType(
+        id = ID_MEAL_STANDARD,
+        name = "Standard",
+        components = listOf(CarbCurveComponentData(100, Minutes(60))),
+        cat = Minutes(180)
     ),
     MealType(
         id = ID_MEAL_SLOW,
