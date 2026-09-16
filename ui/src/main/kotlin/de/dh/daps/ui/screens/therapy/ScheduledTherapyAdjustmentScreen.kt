@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
@@ -34,6 +35,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -82,6 +84,8 @@ fun ScheduledTherapyAdjustmentScreen(
     val endTime by viewModel.endTime.collectAsState()
     val isDirty = viewModel.formStateHolder.isDirty()
 
+    val hasExistingAdjustment = uiState.existingScheduledAdjustment != null
+
     ScheduledTherapyAdjustmentContent(
         formState = formState,
         startTime = startTime,
@@ -89,6 +93,7 @@ fun ScheduledTherapyAdjustmentScreen(
         baseTarget = uiState.baseTarget,
         baseLow = uiState.baseLow,
         isDirty = isDirty,
+        hasExistingAdjustment = hasExistingAdjustment,
         onValuesChange = { p, t, l, a, h ->
             viewModel.setFormValues(p, t, l, a, h)
         },
@@ -99,6 +104,11 @@ fun ScheduledTherapyAdjustmentScreen(
         },
         onScheduleClicked = {
             viewModel.saveScheduledAdjustment {
+                onNavigateUp()
+            }
+        },
+        onDeleteClicked = {
+            viewModel.deleteScheduledAdjustment {
                 onNavigateUp()
             }
         },
@@ -121,11 +131,13 @@ fun ScheduledTherapyAdjustmentContent(
     baseTarget: BgValue,
     baseLow: BgValue,
     isDirty: Boolean,
+    hasExistingAdjustment: Boolean = false,
     onValuesChange: (percentage: Int, targetBg: BgValue?, lowThreshold: BgValue?, alarmProfileId: Long?, adjustmentHint: String?) -> Unit,
     onStartTimeChange: (Timestamp) -> Unit,
     onEndTimeChange: (Timestamp) -> Unit,
     onPresetApplied: (TherapyAdjustment) -> Unit,
     onScheduleClicked: () -> Unit,
+    onDeleteClicked: () -> Unit = {},
     onDiscardClicked: () -> Unit,
     onNavigateUp: () -> Unit,
     availableAlarmProfiles: List<AlarmProfile> = emptyList(),
@@ -402,6 +414,26 @@ fun ScheduledTherapyAdjustmentContent(
                             text = timeRangeText,
                             style = MaterialTheme.typography.bodySmall,
                             textAlign = TextAlign.Center
+                        )
+                    }
+                }
+
+                if (hasExistingAdjustment) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error
+                        ),
+                        onClick = onDeleteClicked
+                    ) {
+                        Text(
+                            text = stringResource(R.string.scheduled_therapy_adjustment_delete_button),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }

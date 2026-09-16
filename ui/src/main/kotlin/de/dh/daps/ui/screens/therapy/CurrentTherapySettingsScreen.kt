@@ -22,12 +22,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Adjust
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material.icons.filled.VerticalAlignBottom
+import de.dh.daps.common.model.data.ScheduledTherapyAdjustment
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -215,16 +217,24 @@ fun CurrentTherapySettingsContent(
                     onClick = onNavigateToTherapyAdjustment
                 )
 
-                OutlinedButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 4.dp),
-                    onClick = onNavigateToScheduledTherapyAdjustment
-                ) {
-                    Text(
-                        text = stringResource(R.string.therapy_adjustment_schedule_button),
-                        style = MaterialTheme.typography.labelLarge
+                val scheduled = uiState.scheduledTherapyAdjustment
+                if (scheduled != null) {
+                    ScheduledAdjustmentCard(
+                        scheduledAdjustment = scheduled,
+                        onClick = onNavigateToScheduledTherapyAdjustment
                     )
+                } else {
+                    OutlinedButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp),
+                        onClick = onNavigateToScheduledTherapyAdjustment
+                    ) {
+                        Text(
+                            text = stringResource(R.string.therapy_adjustment_schedule_button),
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
                 }
             }
         }
@@ -952,6 +962,72 @@ fun CurrentTherapySettingsPreview() {
                 onNavigateToTherapyAdjustment = {},
                 onNavigateToScheduledTherapyAdjustment = {},
                 onSelectProfile = {}
+            )
+        }
+    }
+}
+
+@Composable
+private fun ScheduledAdjustmentCard(
+    scheduledAdjustment: ScheduledTherapyAdjustment,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+    val startTimeStr = timeFormat.format(scheduledAdjustment.startTime.ms)
+    val endTimeStr = timeFormat.format(scheduledAdjustment.endTime.ms)
+    val hint = scheduledAdjustment.adjustmentHint ?: stringResource(R.string.scheduled_therapy_adjustment_card_title)
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AccessTime,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Text(
+                        text = hint,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            Text(
+                text = stringResource(R.string.scheduled_therapy_adjustment_scheduled_time, startTimeStr, endTimeStr),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }

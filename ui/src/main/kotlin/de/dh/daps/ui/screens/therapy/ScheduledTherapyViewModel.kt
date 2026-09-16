@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import de.dh.daps.common.model.ID_UNDEFINED
 import de.dh.daps.common.model.data.AlarmProfile
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.GlucoseUnit
@@ -27,7 +28,8 @@ data class ScheduledTherapyUiState(
     val baseLow: BgValue = BgValue.fromMgDl(70),
     val glucoseUnit: GlucoseUnit = GlucoseUnit.MG_DL,
     val availableAlarmProfiles: List<AlarmProfile> = emptyList(),
-    val therapyAdjustmentPresets: List<TherapyAdjustment> = emptyList()
+    val therapyAdjustmentPresets: List<TherapyAdjustment> = emptyList(),
+    val existingScheduledAdjustment: ScheduledTherapyAdjustment? = null
 )
 
 /**
@@ -52,6 +54,8 @@ class ScheduledTherapyViewModel(
     private val therapyManager = systemRegistry.therapyManager
     private val appPreferencesRepository = systemRegistry.appPreferencesRepository
 
+    private var isInitializedFromExisting = false
+
     // Hardcoded presets for now.
     // See also CurrentTherapyViewModel
     // TODO: Make these user-editable in the future (e.g. via a database table or preferences).
@@ -69,10 +73,29 @@ class ScheduledTherapyViewModel(
         combine(
             therapyManager.currentTherapySettingsFlow,
             systemRegistry.alarmRepository.observeAllAlarmProfiles(),
-            glucoseUnitFlow
-        ) { currentSettings, alarmProfiles, unit ->
+            glucoseUnitFlow,
+            therapyManager.observeScheduledTherapyAdjustment()
+        ) { currentSettings, alarmProfiles, unit, existingScheduled ->
             val now = Timestamp.now()
             val baseBg = currentSettings.defaultBgBlocks.getBgForMinute(now.minutesSinceMidnight())
+
+            if (!isInitializedFromExisting && existingScheduled != null) {
+                isInitializedFromExisting = true
+                _startTime.value = existingScheduled.startTime
+                _endTime.value = existingScheduled.endTime
+                val alarmProfileName = alarmProfiles.find { it.id == existingScheduled.alarmProfileOverrideId }?.name
+                formStateHolder.initFormState(
+                    TherapyAdjustmentFormState(
+                        percentage = existingScheduled.percentage,
+                        targetBgOverride = existingScheduled.targetBgOverride,
+                        lowThresholdOverride = existingScheduled.lowThresholdOverride,
+                        alarmProfileOverrideId = existingScheduled.alarmProfileOverrideId,
+                        alarmProfileOverrideName = alarmProfileName,
+                        adjustmentHint = existingScheduled.adjustmentHint
+                    )
+                )
+            }
+
             _uiState.update {
                 it.copy(
                     isLoading = false,
@@ -80,7 +103,8 @@ class ScheduledTherapyViewModel(
                     baseLow = baseBg.second,
                     glucoseUnit = unit,
                     availableAlarmProfiles = alarmProfiles,
-                    therapyAdjustmentPresets = hardcodedPresets
+                    therapyAdjustmentPresets = hardcodedPresets,
+                    existingScheduledAdjustment = existingScheduled
                 )
             }
         }.launchIn(viewModelScope)
@@ -128,7 +152,9 @@ class ScheduledTherapyViewModel(
     fun saveScheduledAdjustment(onSuccess: () -> Unit) {
         val form = formStateHolder.formState.value
         viewModelScope.launch {
+            val existingId = _uiState.value.existingScheduledAdjustment?.id ?: ID_UNDEFINED
             val adjustment = ScheduledTherapyAdjustment(
+                id = existingId,
                 startTime = _startTime.value,
                 endTime = _endTime.value,
                 percentage = form.percentage,
@@ -138,6 +164,13 @@ class ScheduledTherapyViewModel(
                 adjustmentHint = form.adjustmentHint
             )
             therapyManager.saveScheduledTherapyAdjustment(adjustment)
+            onSuccess()
+        }
+    }
+
+    fun deleteScheduledAdjustment(onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            therapyManager.deleteScheduledTherapyAdjustment()
             onSuccess()
         }
     }

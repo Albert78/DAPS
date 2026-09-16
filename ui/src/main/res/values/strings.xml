@@ -239,6 +239,9 @@
     <string name="therapy_adjustment_timing_summary_title">Zeitplanung</string>
     <string name="therapy_adjustment_schedule_button">Anpassung planen</string>
     <string name="scheduled_therapy_adjustment_screen_title">Therapie-Anpassung planen</string>
+    <string name="scheduled_therapy_adjustment_card_title">Individuelle Anpassung</string>
+    <string name="scheduled_therapy_adjustment_scheduled_time">Geplant: %1$s – %2$s Uhr</string>
+    <string name="scheduled_therapy_adjustment_delete_button">Geplante Anpassung löschen</string>
 
     <string name="approx_prefix">ca.</string>
     <string name="unknown_label">Unbekannt</string>

@@ -336,11 +336,20 @@ class TherapyManager(
 
     // --- Scheduled Therapy Adjustments ---
 
+    fun observeScheduledTherapyAdjustment(): Flow<ScheduledTherapyAdjustment?> =
+        therapyRepository.observeAllScheduledTherapyAdjustments().map { it.firstOrNull() }
+
     fun observeScheduledTherapyAdjustments(): Flow<List<ScheduledTherapyAdjustment>> =
         therapyRepository.observeAllScheduledTherapyAdjustments()
 
+    suspend fun getScheduledTherapyAdjustment(): ScheduledTherapyAdjustment? =
+        therapyRepository.getAllScheduledTherapyAdjustments().firstOrNull()
+
     suspend fun saveScheduledTherapyAdjustment(adjustment: ScheduledTherapyAdjustment): Long {
-        val id = therapyRepository.saveScheduledTherapyAdjustment(adjustment)
+        // Enforce singleton: clear any existing scheduled adjustment first, then insert new record
+        therapyRepository.deleteAllScheduledTherapyAdjustments()
+        val newAdjustment = adjustment.copy(id = ID_UNDEFINED)
+        val id = therapyRepository.saveScheduledTherapyAdjustment(newAdjustment)
         val now = Timestamp.now()
         if (adjustment.startTime > now) {
             wakeService?.scheduleWakeup(WAKEUP_TAG_ADJUSTMENT, WAKEUP_ID_START, adjustment.startTime)
@@ -350,8 +359,8 @@ class TherapyManager(
         return id
     }
 
-    suspend fun deleteScheduledTherapyAdjustment(id: Long) {
-        therapyRepository.deleteScheduledTherapyAdjustment(id)
+    suspend fun deleteScheduledTherapyAdjustment() {
+        therapyRepository.deleteAllScheduledTherapyAdjustments()
     }
 
     // -----------------------------------------------------------------------------------------

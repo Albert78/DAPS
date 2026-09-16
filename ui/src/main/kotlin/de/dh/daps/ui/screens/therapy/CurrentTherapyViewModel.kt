@@ -29,6 +29,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Locale
 
+import de.dh.daps.common.model.data.ScheduledTherapyAdjustment
+
 data class InsulinProfileUiState(
     val name: String = "",
     val activeProfileId: Long? = null,
@@ -72,6 +74,7 @@ data class TherapyAdjustment(
 data class CurrentTherapyUiState(
     val isLoading: Boolean = true,
     val activeTherapyStatus: ActiveTherapyStatusUiState = ActiveTherapyStatusUiState(),
+    val scheduledTherapyAdjustment: ScheduledTherapyAdjustment? = null,
     val glucoseUnit: GlucoseUnit = GlucoseUnit.MG_DL,
     val availableInsulinProfiles: List<InsulinProfile> = emptyList(),
     val availableAlarmProfiles: List<AlarmProfile> = emptyList(),
@@ -109,9 +112,10 @@ class CurrentTherapyViewModel(
             therapyManager.currentTherapySettingsFlow,
             therapyManager.observeAllInsulinProfiles(),
             systemRegistry.alarmRepository.observeAllAlarmProfiles(),
-            glucoseUnitFlow
-        ) { currentSettings, profiles, alarmProfiles, unit ->
-            updateState(currentSettings, profiles, alarmProfiles, unit)
+            glucoseUnitFlow,
+            therapyManager.observeScheduledTherapyAdjustment()
+        ) { currentSettings, profiles, alarmProfiles, unit, scheduledAdjustment ->
+            updateState(currentSettings, profiles, alarmProfiles, unit, scheduledAdjustment)
         }.launchIn(viewModelScope)
     }
 
@@ -119,7 +123,8 @@ class CurrentTherapyViewModel(
         currentSettings: CurrentTherapySettings,
         profiles: List<InsulinProfile>,
         alarmProfiles: List<AlarmProfile>,
-        unit: GlucoseUnit
+        unit: GlucoseUnit,
+        scheduledAdjustment: ScheduledTherapyAdjustment?
     ) {
         val now = Timestamp.now()
         val isf = therapyManager.getIsfFactor(now)
@@ -172,6 +177,7 @@ class CurrentTherapyViewModel(
             it.copy(
                 isLoading = false,
                 activeTherapyStatus = activeTherapyStatus,
+                scheduledTherapyAdjustment = scheduledAdjustment,
                 glucoseUnit = unit,
                 availableInsulinProfiles = profiles,
                 availableAlarmProfiles = alarmProfiles,
@@ -179,7 +185,6 @@ class CurrentTherapyViewModel(
                 therapyAdjustmentPresets = hardcodedPresets
             )
         }
-
         if (isInitialLoad) {
             initDraftAdjustment()
         }
