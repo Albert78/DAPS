@@ -159,7 +159,7 @@ fun ScheduledTherapyAdjustmentContent(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
-                title = screenTitle(stringResource(id = R.string.therapy_adjustment_mode_timewindow)),
+                title = screenTitle(stringResource(id = R.string.scheduled_therapy_adjustment_screen_title)),
                 navigationIcon = {
                     IconButton(onClick = ::handleBack) {
                         Icon(

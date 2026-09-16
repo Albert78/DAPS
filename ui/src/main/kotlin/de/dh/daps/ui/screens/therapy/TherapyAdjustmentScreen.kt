@@ -156,7 +156,7 @@ fun TherapyAdjustmentContent(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
-                title = screenTitle(stringResource(id = R.string.aps_control_therpay_adjustment_dialog_title)),
+                title = screenTitle(stringResource(id = R.string.therapy_adjustment_title)),
                 navigationIcon = {
                     IconButton(onClick = ::handleBack) {
                         Icon(
@@ -247,7 +247,7 @@ fun TherapyAdjustmentContent(
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-                // Action Buttons for Current Therapy Settings: "Jetzt übernehmen" & "Dauer"
+                // Action Buttons for Current Therapy Settings
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -263,7 +263,7 @@ fun TherapyAdjustmentContent(
                         }
                     ) {
                         Text(
-                            text = stringResource(R.string.therapy_adjustment_mode_adhoc),
+                            text = stringResource(R.string.therapy_adjustment_unlimited),
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center,
@@ -280,7 +280,7 @@ fun TherapyAdjustmentContent(
                         onClick = { showDurationDialog = true }
                     ) {
                         Text(
-                            text = stringResource(R.string.therapy_adjustment_mode_duration),
+                            text = stringResource(R.string.therapy_adjustment_duration),
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center,

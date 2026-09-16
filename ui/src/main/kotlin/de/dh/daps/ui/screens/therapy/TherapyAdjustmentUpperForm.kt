@@ -111,8 +111,8 @@ fun TherapyAdjustmentUpperForm(
         val insulinAdjustmentActive = currentPercentage != 0
         AdjustmentSection(
             icon = Icons.Default.UnfoldMore,
-            title = stringResource(R.string.aps_control_therapy_adjustment_dialog_insulin_adjustment_label),
-            description = stringResource(R.string.aps_control_therapy_adjustment_dialog_insulin_adjustment_description),
+            title = stringResource(R.string.therapy_adjustment_insulin_adjustment_label),
+            description = stringResource(R.string.therapy_adjustment_insulin_adjustment_description),
             isActive = insulinAdjustmentActive,
             accentColor = if (currentPercentage > 0) SoftRed else SoftBlue
         ) {
@@ -132,8 +132,8 @@ fun TherapyAdjustmentUpperForm(
         // BG Override Section
         AdjustmentSection(
             icon = Icons.Default.Adjust,
-            title = stringResource(R.string.aps_control_therapy_adjustment_dialog_bg_adjustment_label),
-            description = stringResource(R.string.aps_control_therapy_adjustment_dialog_bg_adjustment_description),
+            title = stringResource(R.string.therapy_adjustment_bg_adjustment_label),
+            description = stringResource(R.string.therapy_adjustment_bg_adjustment_description),
             useCardWrapper = false
         ) {
             Row(
@@ -220,8 +220,8 @@ fun TherapyAdjustmentUpperForm(
         val alarmProfileActive = currentAlarmProfileId != null
         AdjustmentSection(
             icon = Icons.Default.Notifications,
-            title = stringResource(R.string.aps_control_therapy_adjustment_alarm_profile_label),
-            description = stringResource(R.string.aps_control_therapy_adjustment_alarm_profile_description),
+            title = stringResource(R.string.therapy_adjustment_alarm_profile_label),
+            description = stringResource(R.string.therapy_adjustment_alarm_profile_description),
             isActive = alarmProfileActive,
             useCardWrapper = false
         ) {
@@ -251,8 +251,8 @@ fun TherapyAdjustmentUpperForm(
         val hintActive = !currentHint.isNullOrBlank()
         AdjustmentSection(
             icon = Icons.Default.Edit,
-            title = stringResource(R.string.aps_control_therapy_adjustment_description_label),
-            description = stringResource(R.string.aps_control_therapy_adjustment_description_description),
+            title = stringResource(R.string.therapy_adjustment_description_label),
+            description = stringResource(R.string.therapy_adjustment_description_description),
             isActive = hintActive,
             useCardWrapper = false
         ) {
@@ -264,7 +264,7 @@ fun TherapyAdjustmentUpperForm(
                 },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = {
-                    Text(stringResource(R.string.aps_control_therapy_adjustment_description_placeholder))
+                    Text(stringResource(R.string.therapy_adjustment_description_placeholder))
                 },
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp)
@@ -276,7 +276,7 @@ fun TherapyAdjustmentUpperForm(
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
                 Text(
-                    text = stringResource(R.string.aps_control_therapy_adjustment_dialog_presets_title),
+                    text = stringResource(R.string.therapy_adjustment_presets_title),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary
                 )

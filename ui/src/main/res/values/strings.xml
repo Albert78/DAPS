@@ -206,24 +206,22 @@
     <string name="therapy_settings_help_adjustment_title">Therapie-Anpassung</string>
     <string name="therapy_settings_help_adjustment_desc">Ermöglicht es dir, die Therapie kurzfristig an besondere Situationen wie Sport, Schlaf, Alkohol oder Stress anzupassen, indem Insulinmengen prozentual verändert, Zielwerte verschoben oder das Alarmprofil angepasst werden.</string>
 
-    <string name="aps_control_therapy_adjustment_label">Therapie-Anpassung</string>
-    <string name="aps_control_therpay_adjustment_dialog_title">Therapie-Anpassung</string>
-    <string name="aps_control_therapy_adjustment_custom">Individuell</string>
-    <string name="aps_control_therapy_adjustment_dialog_insulin_adjustment_label">Insulin-Anpassung</string>
-    <string name="aps_control_therapy_adjustment_dialog_insulin_adjustment_description">Passt die abgegebene Insulinmenge für einen begrenzten Zeitraum prozentual an.</string>
-    <string name="aps_control_therapy_adjustment_dialog_bg_adjustment_label">Werte-Anpassung</string>
-    <string name="aps_control_therapy_adjustment_dialog_bg_adjustment_description">Überschreibt Zielwert und Niedrig-&#173;Schwelle für einen begrenzten Zeitraum.</string>
-    <string name="aps_control_therapy_adjustment_alarm_profile_label">Alarmprofil</string>
-    <string name="aps_control_therapy_adjustment_alarm_profile_description">Schaltet während dieser Therapie-Anpassung automatisch auf das gewählte Alarmprofil um.</string>
-    <string name="aps_control_therapy_adjustment_description_label">Beschreibung</string>
-    <string name="aps_control_therapy_adjustment_description_description">Optionale, kurze Beschreibung oder Grund für diese Therapie-Anpassung.</string>
-    <string name="aps_control_therapy_adjustment_description_placeholder">z. B. Sport, Spaziergang, Stress…</string>
-    <string name="aps_control_therapy_adjustment_dialog_presets_title">Schnellauswahl</string>
+    <string name="therapy_adjustment_label">Therapie-Anpassung</string>
+    <string name="therapy_adjustment_title">Therapie-Anpassung</string>
+    <string name="therapy_adjustment_custom">Individuell</string>
+    <string name="therapy_adjustment_insulin_adjustment_label">Insulin-Anpassung</string>
+    <string name="therapy_adjustment_insulin_adjustment_description">Passt die abgegebene Insulinmenge für einen begrenzten Zeitraum prozentual an.</string>
+    <string name="therapy_adjustment_bg_adjustment_label">Werte-Anpassung</string>
+    <string name="therapy_adjustment_bg_adjustment_description">Überschreibt Zielwert und Niedrig-&#173;Schwelle für einen begrenzten Zeitraum.</string>
+    <string name="therapy_adjustment_alarm_profile_label">Alarmprofil</string>
+    <string name="therapy_adjustment_alarm_profile_description">Schaltet während dieser Therapie-Anpassung automatisch auf das gewählte Alarmprofil um.</string>
+    <string name="therapy_adjustment_description_label">Beschreibung</string>
+    <string name="therapy_adjustment_description_description">Optionale, kurze Beschreibung oder Grund für diese Therapie-Anpassung.</string>
+    <string name="therapy_adjustment_description_placeholder">z. B. Sport, Spaziergang, Stress…</string>
+    <string name="therapy_adjustment_presets_title">Schnellauswahl</string>
 
-    <string name="therapy_adjustment_time_dialog_title">Zeitsteuerung</string>
-    <string name="therapy_adjustment_mode_adhoc">Jetzt festlegen</string>
-    <string name="therapy_adjustment_mode_duration">Dauer</string>
-    <string name="therapy_adjustment_mode_timewindow">Planen</string>
+    <string name="therapy_adjustment_unlimited">Jetzt festlegen</string>
+    <string name="therapy_adjustment_duration">Dauer</string>
     <string name="therapy_adjustment_adhoc_info">Die Einstellung gilt sofort und unbegrenzt, bis sie manuell beendet wird.</string>
     <string name="therapy_adjustment_duration_select_label">Dauer wählen</string>
     <string name="therapy_adjustment_duration_active_until">Gilt ab sofort bis %s Uhr</string>
@@ -236,12 +234,13 @@
     <string name="therapy_adjustment_discard_dialog_title">Änderungen verwerfen?</string>
     <string name="therapy_adjustment_discard_dialog_message">Es wurden Änderungen gemacht. Bestätige sie mit den Knöpfen unten, oder verwirf sie.\n\nMöchtest du die Änderung verwerfen?</string>
     <string name="therapy_adjustment_apply_button">Übernehmen</string>
-    <string name="therapy_adjustment_schedule_button">Anpassung planen</string>
     <string name="therapy_adjustment_hint_until_format">%1$s (bis %2$s)</string>
     <string name="therapy_adjustment_active_now">Aktuell aktiv</string>
     <string name="therapy_adjustment_active_until_format">Aktiv bis %s Uhr</string>
     <string name="therapy_adjustment_timing_summary_title">Zeitplanung</string>
     <string name="therapy_adjustment_timing_scheduled_format">Geplant (%1$s – %2$s Uhr)</string>
+    <string name="therapy_adjustment_schedule_button">Anpassung planen</string>
+    <string name="scheduled_therapy_adjustment_screen_title">Planen</string>
 
     <string name="approx_prefix">ca.</string>
     <string name="unknown_label">Unbekannt</string>

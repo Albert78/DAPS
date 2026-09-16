@@ -28,8 +28,6 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material.icons.filled.VerticalAlignBottom
-import java.text.SimpleDateFormat
-import java.util.Locale
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -86,6 +84,8 @@ import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.NeutralGrey
 import de.dh.daps.ui.common.theme.SoftBlue
 import de.dh.daps.ui.common.theme.SoftRed
+import java.text.SimpleDateFormat
+import java.util.Locale
 import de.dh.daps.common.R as CommonR
 
 @Composable
@@ -205,7 +205,7 @@ fun CurrentTherapySettingsContent(
                 // Temporary Adjustment Card
                 SectionHeader(
                     icon = Icons.Default.UnfoldMore,
-                    title = stringResource(id = R.string.aps_control_therapy_adjustment_label)
+                    title = stringResource(id = R.string.therapy_adjustment_label)
                 )
 
                 TemporaryAdjustmentCard(
@@ -687,7 +687,7 @@ private fun TemporaryAdjustmentCard(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Header: Hint and Arrow
-            val baseHint = adjustment.adjustmentHint ?: stringResource(R.string.aps_control_therapy_adjustment_custom)
+            val baseHint = adjustment.adjustmentHint ?: stringResource(R.string.therapy_adjustment_custom)
             val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
             val endTimeStr = adjustment.timing.endTime?.let { timeFormat.format(it.ms) }
             val hintText = if (!endTimeStr.isNullOrEmpty()) {
@@ -723,7 +723,7 @@ private fun TemporaryAdjustmentCard(
                 // Insulin Adjustment
                 AdjustmentItem(
                     icon = Icons.Default.UnfoldMore,
-                    label = stringResource(R.string.aps_control_therapy_adjustment_dialog_insulin_adjustment_label),
+                    label = stringResource(R.string.therapy_adjustment_insulin_adjustment_label),
                     value = displayStrategy.format(adjustment.percentage.toDouble()),
                     valueColor = if (adjustment.percentage == 0)
                         MaterialTheme.colorScheme.onSurfaceVariant
@@ -782,7 +782,7 @@ private fun TemporaryAdjustmentCard(
                 // Alarm Profile Override
                 AdjustmentItem(
                     icon = Icons.Default.Notifications,
-                    label = stringResource(R.string.aps_control_therapy_adjustment_alarm_profile_label),
+                    label = stringResource(R.string.therapy_adjustment_alarm_profile_label),
                     value = adjustment.activeAlarmProfileName ?: stringResource(R.string.aps_control_adjustment_standard),
                     valueColor = if (adjustment.activeAlarmProfileId != null)
                         MaterialTheme.colorScheme.primary
