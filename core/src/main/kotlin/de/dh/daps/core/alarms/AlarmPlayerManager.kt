@@ -16,47 +16,21 @@ import android.os.Vibrator
 import android.os.VibratorManager
 import android.util.Log
 import androidx.core.net.toUri
-import de.dh.daps.common.model.data.AlarmSoundConfig
+import de.dh.daps.common.model.data.AlarmSignalConfig
+import de.dh.daps.common.model.data.SoundConfig
 import de.dh.daps.common.model.data.VibrationMode
 
 /**
  * Central engine for audio playback, haptics/vibration, and safety audio focus handling in DAPS.
  */
 interface AlarmPlayerManager {
-    /**
-     * Starts or updates an alarm sound and vibration based on the provided [config].
-     *
-     * @param config Sound, volume, vibration mode, and DND settings.
-     * @param isSafetyCritical If true, continuous vibration is maintained even if audio focus is lost during phone calls.
-     */
-    fun playAlarm(config: AlarmSoundConfig, isSafetyCritical: Boolean = false)
-
-    /**
-     * Plays a short preview of the sound and vibration for user testing in the profile editor.
-     *
-     * @param config The sound configuration to test.
-     * @param durationMs Duration of preview playback in milliseconds (default 3000ms).
-     */
-    fun playPreview(config: AlarmSoundConfig, durationMs: Long = 3000L)
-
-    /**
-     * Updates the audio playback volume in real-time (0..100%).
-     */
+    fun playAlarm(signalConfig: AlarmSignalConfig, isSafetyCritical: Boolean = false)
+    fun playAlarm(soundConfig: SoundConfig?, vibrationMode: VibrationMode = VibrationMode.SHORT, overrideDnd: Boolean = false, isSafetyCritical: Boolean = false)
+    fun playPreview(signalConfig: AlarmSignalConfig, durationMs: Long = 3000L)
+    fun playPreview(soundConfig: SoundConfig?, vibrationMode: VibrationMode = VibrationMode.SHORT, durationMs: Long = 3000L)
     fun updateVolume(volume: Int)
-
-    /**
-     * Stops any currently active alarm sound, preview, or vibration.
-     */
     fun stopAlarm()
-
-    /**
-     * Returns true if an alarm or preview is currently playing audio or vibrating.
-     */
     fun isPlaying(): Boolean
-
-    /**
-     * Releases all held resources (MediaPlayer, audio focus, vibration).
-     */
     fun release()
 }
 
@@ -76,7 +50,8 @@ class AlarmPlayerManagerImpl(
 
     private var isPlayingActive = false
     private var currentIsSafetyCritical = false
-    private var currentConfig: AlarmSoundConfig? = null
+    private var currentSoundConfig: SoundConfig? = null
+    private var currentVibrationMode: VibrationMode = VibrationMode.OFF
     private var isPreviewPlaying = false
 
     private val stopPreviewRunnable = Runnable {
@@ -96,8 +71,6 @@ class AlarmPlayerManagerImpl(
                 AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
                     Log.d(TAG, "Audio focus lost ($focusChange). SafetyCritical=$currentIsSafetyCritical")
                     if (currentIsSafetyCritical) {
-                        // Safety-critical medical alarm: Pause audio sound if suppressed by OS call,
-                        // but keep vibrating continuously to alert user during phone calls!
                         pauseAudioOnly()
                     } else {
                         pauseAudioAndVibration()
@@ -126,25 +99,49 @@ class AlarmPlayerManagerImpl(
         }
     }
 
-    override fun playAlarm(config: AlarmSoundConfig, isSafetyCritical: Boolean) {
+    override fun playAlarm(signalConfig: AlarmSignalConfig, isSafetyCritical: Boolean) {
+        playAlarm(
+            soundConfig = signalConfig.soundConfig,
+            vibrationMode = signalConfig.vibrationMode,
+            overrideDnd = signalConfig.overrideDnd,
+            isSafetyCritical = isSafetyCritical
+        )
+    }
+
+    override fun playAlarm(
+        soundConfig: SoundConfig?,
+        vibrationMode: VibrationMode,
+        overrideDnd: Boolean,
+        isSafetyCritical: Boolean
+    ) {
         synchronized(mutex) {
             stopAlarmInternal()
-            currentConfig = config
+            currentSoundConfig = soundConfig
+            currentVibrationMode = vibrationMode
             currentIsSafetyCritical = isSafetyCritical
             isPreviewPlaying = false
 
-            startAlarmInternal(config, isLooping = true)
+            startAlarmInternal(soundConfig, vibrationMode, isLooping = true)
         }
     }
 
-    override fun playPreview(config: AlarmSoundConfig, durationMs: Long) {
+    override fun playPreview(signalConfig: AlarmSignalConfig, durationMs: Long) {
+        playPreview(
+            soundConfig = signalConfig.soundConfig,
+            vibrationMode = signalConfig.vibrationMode,
+            durationMs = durationMs
+        )
+    }
+
+    override fun playPreview(soundConfig: SoundConfig?, vibrationMode: VibrationMode, durationMs: Long) {
         synchronized(mutex) {
             stopAlarmInternal()
-            currentConfig = config
+            currentSoundConfig = soundConfig
+            currentVibrationMode = vibrationMode
             currentIsSafetyCritical = false
             isPreviewPlaying = true
 
-            startAlarmInternal(config, isLooping = true)
+            startAlarmInternal(soundConfig, vibrationMode, isLooping = true)
 
             handler.postDelayed(stopPreviewRunnable, durationMs)
         }
@@ -153,7 +150,7 @@ class AlarmPlayerManagerImpl(
     override fun updateVolume(volume: Int) {
         synchronized(mutex) {
             val roundedVol = volume.coerceIn(0, 100)
-            currentConfig = currentConfig?.copy(volume = roundedVol)
+            currentSoundConfig = currentSoundConfig?.copy(volume = roundedVol)
             val floatVol = roundedVol / 100f
             try {
                 mediaPlayer?.setVolume(floatVol, floatVol)
@@ -182,13 +179,13 @@ class AlarmPlayerManagerImpl(
         }
     }
 
-    private fun startAlarmInternal(config: AlarmSoundConfig, isLooping: Boolean) {
+    private fun startAlarmInternal(soundConfig: SoundConfig?, vibrationMode: VibrationMode, isLooping: Boolean) {
         requestAudioFocus()
 
         // 1. Audio Playback
-        if (config.volume > 0) {
+        if (soundConfig != null && soundConfig.volume > 0) {
             try {
-                val soundUri = resolveSoundUri(config.soundUri)
+                val soundUri = resolveSoundUri(soundConfig.soundUri)
                 if (soundUri != null) {
                     val audioAttributes = AudioAttributes.Builder()
                         .setUsage(AudioAttributes.USAGE_ALARM)
@@ -200,7 +197,7 @@ class AlarmPlayerManagerImpl(
                     try {
                         player.setDataSource(appContext, soundUri)
                         player.setAudioAttributes(audioAttributes)
-                        val floatVol = config.volume.coerceIn(0, 100) / 100f
+                        val floatVol = soundConfig.volume.coerceIn(0, 100) / 100f
                         player.setVolume(floatVol, floatVol)
                         player.isLooping = isLooping
                         player.prepare()
@@ -215,7 +212,7 @@ class AlarmPlayerManagerImpl(
                                 player.reset()
                                 player.setDataSource(appContext, defaultUri)
                                 player.setAudioAttributes(audioAttributes)
-                                val floatVol = config.volume.coerceIn(0, 100) / 100f
+                                val floatVol = soundConfig.volume.coerceIn(0, 100) / 100f
                                 player.setVolume(floatVol, floatVol)
                                 player.isLooping = isLooping
                                 player.prepare()
@@ -239,7 +236,7 @@ class AlarmPlayerManagerImpl(
         }
 
         // 2. Haptics / Vibration
-        startVibration(config.vibrationMode)
+        startVibration(vibrationMode)
 
         isPlayingActive = true
     }
@@ -250,142 +247,159 @@ class AlarmPlayerManagerImpl(
         if (!currentVibrator.hasVibrator()) return
 
         try {
-            currentVibrator.cancel()
-            when (mode) {
-                VibrationMode.OFF -> {
-                    // No vibration
-                }
-                VibrationMode.SHORT -> {
-                    val pattern = longArrayOf(0, 200, 200, 200)
-                    val effect = VibrationEffect.createWaveform(pattern, -1)
-                    currentVibrator.vibrate(effect)
-                }
-                VibrationMode.LONG -> {
-                    val pattern = longArrayOf(0, 500, 300, 500)
-                    val effect = VibrationEffect.createWaveform(pattern, -1)
-                    currentVibrator.vibrate(effect)
-                }
-                VibrationMode.CONTINUOUS -> {
-                    val pattern = longArrayOf(0, 1000, 500, 1000)
-                    val effect = VibrationEffect.createWaveform(pattern, 0) // Repeat continuous
-                    currentVibrator.vibrate(effect)
-                }
+            val pattern = when (mode) {
+                VibrationMode.OFF -> null
+                VibrationMode.SHORT -> longArrayOf(0, 300, 200, 300)
+                VibrationMode.LONG -> longArrayOf(0, 800, 400, 800)
+                VibrationMode.CONTINUOUS -> longArrayOf(0, 1000, 500)
+            }
+
+            if (pattern == null) {
+                currentVibrator.cancel()
+                return
+            }
+
+            val repeat = if (mode == VibrationMode.CONTINUOUS || mode == VibrationMode.LONG) 0 else -1
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val vibrationEffect = VibrationEffect.createWaveform(pattern, repeat)
+                val attributes = AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_ALARM)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build()
+                currentVibrator.vibrate(vibrationEffect, attributes)
+            } else {
+                @Suppress("DEPRECATION")
+                currentVibrator.vibrate(pattern, repeat)
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error starting vibration mode: $mode", e)
+            Log.e(TAG, "Error starting vibration", e)
         }
     }
 
     private fun resolveSoundUri(uriString: String?): Uri? {
-        if (!uriString.isNullOrEmpty()) {
-            try {
-                return uriString.toUri()
-            } catch (e: Exception) {
-                Log.w(TAG, "Failed to parse custom soundUri '$uriString', falling back to system alarm sound", e)
-            }
+        if (uriString.isNullOrEmpty()) {
+            return RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
         }
-        return RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-            ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-    }
-
-    private fun pauseAudioOnly() {
-        try {
-            mediaPlayer?.pause()
+        return try {
+            uriString.toUri()
         } catch (e: Exception) {
-            Log.e(TAG, "Error pausing MediaPlayer", e)
+            Log.w(TAG, "Failed to parse custom soundUri '$uriString', falling back to system alarm sound", e)
+            RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
         }
-        // Force continuous vibration for safety critical alarms during call/loss
-        startVibration(VibrationMode.CONTINUOUS)
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun pauseAudioAndVibration() {
-        try {
-            mediaPlayer?.pause()
-        } catch (e: Exception) {
-            Log.e(TAG, "Error pausing MediaPlayer", e)
-        }
-        try {
-            vibrator?.cancel()
-        } catch (e: Exception) {
-            Log.e(TAG, "Error canceling vibrator", e)
-        }
-    }
-
-    private fun resumeAudioAndVibration() {
-        val config = currentConfig ?: return
-        try {
-            mediaPlayer?.start()
-        } catch (e: Exception) {
-            Log.e(TAG, "Error resuming MediaPlayer", e)
-        }
-        startVibration(config.vibrationMode)
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun stopAlarmInternal() {
-        handler.removeCallbacks(stopPreviewRunnable)
-
-        try {
-            mediaPlayer?.let {
-                if (it.isPlaying) {
-                    it.stop()
-                }
-                it.release()
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error stopping/releasing MediaPlayer", e)
-        } finally {
-            mediaPlayer = null
-        }
-
-        try {
-            vibrator?.cancel()
-        } catch (e: Exception) {
-            Log.e(TAG, "Error stopping Vibrator", e)
-        }
-
-        abandonAudioFocus()
-
-        isPlayingActive = false
-        isPreviewPlaying = false
-        currentConfig = null
-        currentIsSafetyCritical = false
     }
 
     private fun requestAudioFocus() {
         try {
-            val audioAttributes = AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_ALARM)
-                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                .build()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val audioAttributes = AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_ALARM)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build()
 
-            val request = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
-                .setAudioAttributes(audioAttributes)
-                .setWillPauseWhenDucked(true)
-                .setAcceptsDelayedFocusGain(false)
-                .setOnAudioFocusChangeListener(audioFocusChangeListener)
-                .build()
+                val focusReq = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
+                    .setAudioAttributes(audioAttributes)
+                    .setOnAudioFocusChangeListener(audioFocusChangeListener)
+                    .build()
 
-            audioFocusRequest = request
-            val result = audioManager.requestAudioFocus(request)
-            if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-                Log.w(TAG, "Audio focus request was not granted immediately ($result)")
+                audioFocusRequest = focusReq
+                audioManager.requestAudioFocus(focusReq)
+            } else {
+                @Suppress("DEPRECATION")
+                audioManager.requestAudioFocus(
+                    audioFocusChangeListener,
+                    AudioManager.STREAM_ALARM,
+                    AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
+                )
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error requesting audio focus", e)
         }
     }
 
-    private fun abandonAudioFocus() {
-        audioFocusRequest?.let { request ->
+    @SuppressLint("MissingPermission")
+    private fun stopAlarmInternal() {
+        handler.removeCallbacks(stopPreviewRunnable)
+
+        mediaPlayer?.let {
             try {
-                audioManager.abandonAudioFocusRequest(request)
+                if (it.isPlaying) {
+                    it.stop()
+                }
+                it.release()
             } catch (e: Exception) {
-                Log.e(TAG, "Error abandoning audio focus", e)
+                Log.e(TAG, "Error stopping MediaPlayer", e)
             }
         }
-        audioFocusRequest = null
+        mediaPlayer = null
+
+        vibrator?.let {
+            try {
+                it.cancel()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error stopping Vibrator", e)
+            }
+        }
+
+        abandonAudioFocus()
+
+        isPlayingActive = false
+        currentSoundConfig = null
+        currentVibrationMode = VibrationMode.OFF
+        currentIsSafetyCritical = false
+        isPreviewPlaying = false
+    }
+
+    private fun pauseAudioOnly() {
+        mediaPlayer?.let {
+            try {
+                if (it.isPlaying) {
+                    it.pause()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error pausing MediaPlayer", e)
+            }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun pauseAudioAndVibration() {
+        pauseAudioOnly()
+        vibrator?.let {
+            try {
+                it.cancel()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error pausing Vibrator", e)
+            }
+        }
+    }
+
+    private fun resumeAudioAndVibration() {
+        mediaPlayer?.let {
+            try {
+                if (!it.isPlaying) {
+                    it.start()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error resuming MediaPlayer", e)
+            }
+        }
+        startVibration(currentVibrationMode)
+    }
+
+    private fun abandonAudioFocus() {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                audioFocusRequest?.let { audioManager.abandonAudioFocusRequest(it) }
+                audioFocusRequest = null
+            } else {
+                @Suppress("DEPRECATION")
+                audioManager.abandonAudioFocus(audioFocusChangeListener)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error abandoning audio focus", e)
+        }
     }
 
     companion object {

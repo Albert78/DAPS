@@ -7,7 +7,9 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import de.dh.daps.common.model.ID_UNDEFINED
 import de.dh.daps.common.model.data.AlarmProfile
 import de.dh.daps.common.model.data.AlarmSeverity
-import de.dh.daps.common.model.data.AlarmSoundConfig
+import de.dh.daps.common.model.data.AlarmSignalConfig
+import de.dh.daps.common.model.data.AlertDisplayMode
+import de.dh.daps.common.model.data.SoundConfig
 import de.dh.daps.common.model.data.VibrationMode
 import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,10 +21,22 @@ import kotlinx.coroutines.launch
 data class AlarmProfileEditorUiState(
     val profileId: Long? = null,
     val name: String = "",
-    val severityDefaults: Map<AlarmSeverity, AlarmSoundConfig> = mapOf(
-        AlarmSeverity.CRITICAL to AlarmSoundConfig(volume = 100, vibrationMode = VibrationMode.CONTINUOUS, overrideDnd = true),
-        AlarmSeverity.WARNING to AlarmSoundConfig(volume = 70, vibrationMode = VibrationMode.LONG, overrideDnd = false),
-        AlarmSeverity.INFO to AlarmSoundConfig(volume = 40, vibrationMode = VibrationMode.SHORT, overrideDnd = false)
+    val severityDefaults: Map<AlarmSeverity, AlarmSignalConfig> = mapOf(
+        AlarmSeverity.CRITICAL to AlarmSignalConfig(
+            displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 100)),
+            vibrationMode = VibrationMode.CONTINUOUS,
+            overrideDnd = true
+        ),
+        AlarmSeverity.WARNING to AlarmSignalConfig(
+            displayMode = AlertDisplayMode.NotificationOnly,
+            vibrationMode = VibrationMode.LONG,
+            overrideDnd = false
+        ),
+        AlarmSeverity.INFO to AlarmSignalConfig(
+            displayMode = AlertDisplayMode.NotificationOnly,
+            vibrationMode = VibrationMode.SHORT,
+            overrideDnd = false
+        )
     ),
     val isDefault: Boolean = false,
     val isLoading: Boolean = false,
@@ -89,7 +103,7 @@ class AlarmProfileEditorViewModel(
         _uiState.update { it.copy(name = name) }
     }
 
-    fun onSeverityConfigChange(severity: AlarmSeverity, config: AlarmSoundConfig) {
+    fun onSeverityConfigChange(severity: AlarmSeverity, config: AlarmSignalConfig) {
         _uiState.update { state ->
             val updatedMap = state.severityDefaults.toMutableMap().apply {
                 put(severity, config)
@@ -120,7 +134,7 @@ class AlarmProfileEditorViewModel(
         }
     }
 
-    fun playPreviewSound(config: AlarmSoundConfig) {
+    fun playPreviewSound(config: AlarmSignalConfig) {
         alarmPlayerManager.playPreview(config, durationMs = 3000L)
     }
 

@@ -11,7 +11,7 @@ interface AndroidNotifications {
     fun showRecommendationNotification(recommendation: ApsRecommendation)
     fun cancelRecommendationNotification()
 
-    fun showAlarmNotification(alarmType: AlarmType, bgValue: BgValue? = null)
+    fun showAlarmNotification(alarmType: AlarmType, bgValue: BgValue? = null, isFullScreen: Boolean = true)
     fun cancelAlarmNotification()
 
     fun createMainAppNotification(glucoseRepository: GlucoseRepository): Notification

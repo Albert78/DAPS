@@ -48,7 +48,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import de.dh.daps.common.model.data.AlarmSeverity
-import de.dh.daps.common.model.data.AlarmSoundConfig
+import de.dh.daps.common.model.data.AlarmSignalConfig
+import de.dh.daps.common.model.data.AlertDisplayMode
+import de.dh.daps.common.model.data.SoundConfig
 import de.dh.daps.common.model.data.VibrationMode
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.NormalTextButton
@@ -60,7 +62,7 @@ import de.dh.daps.common.R as CommonR
 
 private data class InitialAlarmProfileValues(
     val name: String,
-    val severityDefaults: Map<AlarmSeverity, AlarmSoundConfig>
+    val severityDefaults: Map<AlarmSeverity, AlarmSignalConfig>
 )
 
 @Composable
@@ -89,8 +91,8 @@ fun AlarmProfileEditorScreen(
 fun AlarmProfileEditorContent(
     uiState: AlarmProfileEditorUiState,
     onNameChange: (String) -> Unit,
-    onSeverityConfigChange: (AlarmSeverity, AlarmSoundConfig) -> Unit,
-    onPlayPreview: (AlarmSoundConfig) -> Unit,
+    onSeverityConfigChange: (AlarmSeverity, AlarmSignalConfig) -> Unit,
+    onPlayPreview: (AlarmSignalConfig) -> Unit,
     onUpdateVolume: (Int) -> Unit,
     onStopPreview: () -> Unit,
     onSave: () -> Unit,
@@ -201,7 +203,7 @@ fun AlarmProfileEditorContent(
 
             // Severity Sections
             items(severityTitles) { (severity, title) ->
-                val currentConfig = uiState.severityDefaults[severity] ?: AlarmSoundConfig()
+                val currentConfig = uiState.severityDefaults[severity] ?: AlarmSignalConfig()
                 SeverityEditorSectionCard(
                     title = title,
                     config = currentConfig,
@@ -249,15 +251,21 @@ fun AlarmProfileEditorContent(
 
     val targetSeverity = activeSeverityForSoundPicker
     if (showRingtonePickerDialog && targetSeverity != null) {
-        val currentConfig = uiState.severityDefaults[targetSeverity] ?: AlarmSoundConfig()
+        val currentConfig = uiState.severityDefaults[targetSeverity] ?: AlarmSignalConfig()
+        val currentSound = currentConfig.soundConfig ?: SoundConfig()
         RingtonePickerDialog(
-            currentUri = currentConfig.soundUri,
-            currentVolume = currentConfig.volume,
+            currentUri = currentSound.soundUri,
+            currentVolume = currentSound.volume,
             onSoundSelected = { selectedUri, selectedVolume ->
-                onSeverityConfigChange(targetSeverity, currentConfig.copy(soundUri = selectedUri, volume = selectedVolume))
+                val updatedSound = currentSound.copy(soundUri = selectedUri, volume = selectedVolume)
+                onSeverityConfigChange(
+                    targetSeverity,
+                    currentConfig.copy(displayMode = AlertDisplayMode.FullScreen(updatedSound))
+                )
             },
             onPlayPreview = { soundUri, volume ->
-                onPlayPreview(currentConfig.copy(soundUri = soundUri, volume = volume))
+                val previewSound = currentSound.copy(soundUri = soundUri, volume = volume)
+                onPlayPreview(currentConfig.copy(displayMode = AlertDisplayMode.FullScreen(previewSound)))
             },
             onUpdateVolume = onUpdateVolume,
             onStopPreview = onStopPreview,
@@ -272,15 +280,16 @@ fun AlarmProfileEditorContent(
 @Composable
 fun SeverityEditorSectionCard(
     title: String,
-    config: AlarmSoundConfig,
-    onConfigChanged: (AlarmSoundConfig) -> Unit,
+    config: AlarmSignalConfig,
+    onConfigChanged: (AlarmSignalConfig) -> Unit,
     onPlayPreview: () -> Unit,
     onSelectSound: () -> Unit,
     onUpdateVolume: (Int) -> Unit
 ) {
     val context = LocalContext.current
-    val soundTitle = remember(config.soundUri) {
-        getRingtoneTitle(context, config.soundUri)
+    val sound = config.soundConfig
+    val soundTitle = remember(sound?.soundUri) {
+        getRingtoneTitle(context, sound?.soundUri)
     }
 
     Card(
@@ -303,7 +312,10 @@ fun SeverityEditorSectionCard(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
-                IconButton(onClick = onPlayPreview) {
+                IconButton(
+                    onClick = onPlayPreview,
+                    enabled = sound != null
+                ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                         contentDescription = stringResource(id = R.string.cd_test_alarm_sound)
@@ -311,61 +323,91 @@ fun SeverityEditorSectionCard(
                 }
             }
 
-            // Volume Slider
+            // Full Screen Alarm Switch
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = stringResource(id = R.string.alarm_profile_volume_label, config.volume),
+                    text = stringResource(id = R.string.alarm_profile_show_full_screen),
                     style = MaterialTheme.typography.bodyMedium
                 )
+                Switch(
+                    checked = config.isFullScreen,
+                    onCheckedChange = { showFS ->
+                        val newDisplayMode = if (showFS) {
+                            AlertDisplayMode.FullScreen(sound = SoundConfig(volume = 80))
+                        } else {
+                            AlertDisplayMode.NotificationOnly
+                        }
+                        onConfigChanged(config.copy(displayMode = newDisplayMode))
+                    }
+                )
             }
-            Slider(
-                value = config.volume.toFloat(),
-                onValueChange = { floatValue ->
-                    val roundedVolume = ((floatValue / 5f).roundToInt() * 5).coerceIn(0, 100)
-                    onConfigChanged(config.copy(volume = roundedVolume))
-                    onUpdateVolume(roundedVolume)
-                },
-                valueRange = 0f..100f,
-                steps = 19
-            )
 
-            // Sound Selection
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(id = R.string.alarm_profile_sound_label),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Text(
-                        text = soundTitle,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+            // Audio Sound Section (only active if FullScreen)
+            if (config.isFullScreen && sound != null) {
+                // Volume Slider
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (!config.soundUri.isNullOrEmpty()) {
-                        IconButton(
-                            onClick = { onConfigChanged(config.copy(soundUri = null)) }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = stringResource(id = R.string.alarm_profile_sound_reset)
-                            )
-                        }
+                    Text(
+                        text = stringResource(id = R.string.alarm_profile_volume_label, sound.volume),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                Slider(
+                    value = sound.volume.toFloat(),
+                    onValueChange = { floatValue ->
+                        val roundedVolume = ((floatValue / 5f).roundToInt() * 5).coerceIn(0, 100)
+                        val updatedSound = sound.copy(volume = roundedVolume)
+                        onConfigChanged(config.copy(displayMode = AlertDisplayMode.FullScreen(updatedSound)))
+                        onUpdateVolume(roundedVolume)
+                    },
+                    valueRange = 0f..100f,
+                    steps = 19
+                )
+
+                // Sound Selection
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(id = R.string.alarm_profile_sound_label),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            text = soundTitle,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
-                    NormalTextButton(onClick = onSelectSound) {
-                        Text(text = stringResource(id = R.string.alarm_profile_sound_select))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (!sound.soundUri.isNullOrEmpty()) {
+                            IconButton(
+                                onClick = {
+                                    val updatedSound = sound.copy(soundUri = null)
+                                    onConfigChanged(config.copy(displayMode = AlertDisplayMode.FullScreen(updatedSound)))
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = stringResource(id = R.string.alarm_profile_sound_reset)
+                                )
+                            }
+                        }
+                        NormalTextButton(onClick = onSelectSound) {
+                            Text(text = stringResource(id = R.string.alarm_profile_sound_select))
+                        }
                     }
                 }
             }
@@ -407,22 +449,6 @@ fun SeverityEditorSectionCard(
                 Switch(
                     checked = config.overrideDnd,
                     onCheckedChange = { onConfigChanged(config.copy(overrideDnd = it)) }
-                )
-            }
-
-            // Full Screen Alarm Switch
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(id = R.string.alarm_profile_show_full_screen),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Switch(
-                    checked = config.showFullScreen,
-                    onCheckedChange = { onConfigChanged(config.copy(showFullScreen = it)) }
                 )
             }
         }

@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import de.dh.daps.common.model.ApsMode
-import de.dh.daps.common.model.data.AlarmSoundConfig
+import de.dh.daps.common.model.data.AlarmSignalConfig
 import de.dh.daps.common.model.data.AlarmType
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.alarms.AlarmSnoozeState
@@ -27,7 +27,7 @@ data class DashboardUiState(
     val recommendations: List<ApsRecommendation> = emptyList(),
     val isMealCorrectionBolusAllowed: Boolean = false,
     val activeFiringAlarm: AlarmType? = null,
-    val activeFiringConfig: AlarmSoundConfig? = null,
+    val activeFiringConfig: AlarmSignalConfig? = null,
     val snoozedAlarms: Map<AlarmType, AlarmSnoozeState> = emptyMap()
 )
 
@@ -55,7 +55,7 @@ class DashboardViewModel(
         @Suppress("UNCHECKED_CAST")
         val recommendations = flows[2] as List<ApsRecommendation>
         val activeFiring = flows[3] as AlarmType?
-        val config = flows[4] as AlarmSoundConfig?
+        val config = flows[4] as AlarmSignalConfig?
         @Suppress("UNCHECKED_CAST")
         val snoozedMap = flows[5] as Map<AlarmType, AlarmSnoozeState>
 

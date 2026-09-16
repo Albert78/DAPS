@@ -36,8 +36,9 @@ At the severity level, the user defines global default settings for volume, vibr
 ---
 
 ### 2. Alarm Profiles & Cascading Overrides
-An **Alarm Profile** bundles the signal configurations (`AlarmSoundConfig`) of all three severities into a logical application context (e.g., *Standard*, *Cinema / Discrete*, *Loud / Outdoor*).
+An **Alarm Profile** bundles the signal configurations (`AlarmSignalConfig`) of all three severities into a logical application context (e.g., *Standard*, *Cinema / Discrete*, *Loud / Outdoor*).
 
+* **Display Mode & Audio Coupling**: Signal settings are defined via `AlarmSignalConfig`. The display mode (`AlertDisplayMode`) specifies whether an alarm is shown as `NotificationOnly` or as a full-screen window (`FullScreen`). Audio sound settings (`SoundConfig`) exist exclusively inside `FullScreen`, guaranteeing that melodies are played only when a full-screen alarm screen is shown.
 * **Inheritance System**:
   1. **Severity Defaults**: Provide the base configuration for all assigned alarms.
   2. **Custom Overrides (`customOverrides`)**: Individual alarm types can be specifically customized (e.g., a different vibration for infusion set changes despite the `INFO` severity).

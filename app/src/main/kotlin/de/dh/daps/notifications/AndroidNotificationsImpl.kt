@@ -167,7 +167,7 @@ class AndroidNotificationsImpl(
         manager.cancel(RECOMMENDATION_NOTIFICATION_ID)
     }
 
-    override fun showAlarmNotification(alarmType: AlarmType, bgValue: BgValue?) {
+    override fun showAlarmNotification(alarmType: AlarmType, bgValue: BgValue?, isFullScreen: Boolean) {
         val unit = getGlucoseUnit()
         val title = getAlarmTitle(alarmType)
         val contentText = getAlarmContentText(alarmType, bgValue, unit)
@@ -196,12 +196,11 @@ class AndroidNotificationsImpl(
             context, 30, snooze30Intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val notification = NotificationCompat.Builder(context, ALGORITHM_ISSUE_CHANNEL_ID)
+        val builder = NotificationCompat.Builder(context, ALGORITHM_ISSUE_CHANNEL_ID)
             .setContentTitle(title)
             .setContentText(contentText)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentIntent(pendingIntent)
-            .setFullScreenIntent(fullScreenPendingIntent, true)
             .addAction(
                 R.mipmap.ic_launcher,
                 context.getString(UiR.string.alarm_action_snooze_15),
@@ -216,7 +215,12 @@ class AndroidNotificationsImpl(
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
-            .build()
+
+        if (isFullScreen) {
+            builder.setFullScreenIntent(fullScreenPendingIntent, true)
+        }
+
+        val notification = builder.build()
 
         notify(ALGORITHM_ISSUE_NOTIFICATION_ID, notification)
     }

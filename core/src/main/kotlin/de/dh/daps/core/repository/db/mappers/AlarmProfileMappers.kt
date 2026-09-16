@@ -2,8 +2,10 @@ package de.dh.daps.core.repository.db.mappers
 
 import de.dh.daps.common.model.data.AlarmProfile
 import de.dh.daps.common.model.data.AlarmSeverity
-import de.dh.daps.common.model.data.AlarmSoundConfig
+import de.dh.daps.common.model.data.AlarmSignalConfig
 import de.dh.daps.common.model.data.AlarmType
+import de.dh.daps.common.model.data.AlertDisplayMode
+import de.dh.daps.common.model.data.SoundConfig
 import de.dh.daps.common.model.data.VibrationMode
 import de.dh.daps.core.repository.db.entities.AlarmProfileEntity
 import org.json.JSONObject
@@ -29,33 +31,42 @@ fun AlarmProfile.toEntity(isActive: Boolean = false): AlarmProfileEntity {
     )
 }
 
-private fun AlarmSoundConfig.toJson(): JSONObject {
+private fun AlarmSignalConfig.toJson(): JSONObject {
     val json = JSONObject()
-    json.put("volume", volume)
-    json.put("soundUri", soundUri ?: JSONObject.NULL)
+    val isFS = isFullScreen
+    json.put("isFullScreen", isFS)
+    val sound = soundConfig
+    if (sound != null) {
+        json.put("volume", sound.volume)
+        json.put("soundUri", sound.soundUri ?: JSONObject.NULL)
+    }
     json.put("vibrationMode", vibrationMode.name)
     json.put("overrideDnd", overrideDnd)
-    json.put("showFullScreen", showFullScreen)
     return json
 }
 
-private fun JSONObject.toAlarmSoundConfig(): AlarmSoundConfig {
-    val volume = optInt("volume", 80)
-    val soundUri = if (isNull("soundUri")) null else optString("soundUri")
+private fun JSONObject.toAlarmSignalConfig(): AlarmSignalConfig {
+    val isFS = optBoolean("isFullScreen", false)
+    val displayMode = if (isFS) {
+        val volume = optInt("volume", 80)
+        val soundUri = if (isNull("soundUri") || !has("soundUri")) null else optString("soundUri")
+        AlertDisplayMode.FullScreen(sound = SoundConfig(volume = volume, soundUri = soundUri))
+    } else {
+        AlertDisplayMode.NotificationOnly
+    }
+
     val vibModeStr = optString("vibrationMode", VibrationMode.SHORT.name)
     val vibrationMode = try { VibrationMode.valueOf(vibModeStr) } catch (_: Exception) { VibrationMode.SHORT }
     val overrideDnd = optBoolean("overrideDnd", false)
-    val showFullScreen = optBoolean("showFullScreen", false)
-    return AlarmSoundConfig(
-        volume = volume,
-        soundUri = soundUri,
+
+    return AlarmSignalConfig(
+        displayMode = displayMode,
         vibrationMode = vibrationMode,
-        overrideDnd = overrideDnd,
-        showFullScreen = showFullScreen
+        overrideDnd = overrideDnd
     )
 }
 
-private fun severityDefaultsToJson(map: Map<AlarmSeverity, AlarmSoundConfig>): String {
+private fun severityDefaultsToJson(map: Map<AlarmSeverity, AlarmSignalConfig>): String {
     val json = JSONObject()
     map.forEach { (severity, config) ->
         json.put(severity.name, config.toJson())
@@ -63,9 +74,9 @@ private fun severityDefaultsToJson(map: Map<AlarmSeverity, AlarmSoundConfig>): S
     return json.toString()
 }
 
-private fun parseSeverityDefaults(jsonStr: String?): Map<AlarmSeverity, AlarmSoundConfig> {
+private fun parseSeverityDefaults(jsonStr: String?): Map<AlarmSeverity, AlarmSignalConfig> {
     if (jsonStr.isNullOrEmpty()) return emptyMap()
-    val result = mutableMapOf<AlarmSeverity, AlarmSoundConfig>()
+    val result = mutableMapOf<AlarmSeverity, AlarmSignalConfig>()
     try {
         val json = JSONObject(jsonStr)
         val keys = json.keys()
@@ -73,14 +84,14 @@ private fun parseSeverityDefaults(jsonStr: String?): Map<AlarmSeverity, AlarmSou
             val key = keys.next()
             val severity = try { AlarmSeverity.valueOf(key) } catch (_: Exception) { null }
             if (severity != null) {
-                result[severity] = json.getJSONObject(key).toAlarmSoundConfig()
+                result[severity] = json.getJSONObject(key).toAlarmSignalConfig()
             }
         }
     } catch (_: Exception) {}
     return result
 }
 
-private fun customOverridesToJson(map: Map<AlarmType, AlarmSoundConfig>): String {
+private fun customOverridesToJson(map: Map<AlarmType, AlarmSignalConfig>): String {
     val json = JSONObject()
     map.forEach { (type, config) ->
         json.put(type.name, config.toJson())
@@ -88,9 +99,9 @@ private fun customOverridesToJson(map: Map<AlarmType, AlarmSoundConfig>): String
     return json.toString()
 }
 
-private fun parseCustomOverrides(jsonStr: String?): Map<AlarmType, AlarmSoundConfig> {
+private fun parseCustomOverrides(jsonStr: String?): Map<AlarmType, AlarmSignalConfig> {
     if (jsonStr.isNullOrEmpty()) return emptyMap()
-    val result = mutableMapOf<AlarmType, AlarmSoundConfig>()
+    val result = mutableMapOf<AlarmType, AlarmSignalConfig>()
     try {
         val json = JSONObject(jsonStr)
         val keys = json.keys()
@@ -98,7 +109,7 @@ private fun parseCustomOverrides(jsonStr: String?): Map<AlarmType, AlarmSoundCon
             val key = keys.next()
             val type = try { AlarmType.valueOf(key) } catch (_: Exception) { null }
             if (type != null) {
-                result[type] = json.getJSONObject(key).toAlarmSoundConfig()
+                result[type] = json.getJSONObject(key).toAlarmSignalConfig()
             }
         }
     } catch (_: Exception) {}

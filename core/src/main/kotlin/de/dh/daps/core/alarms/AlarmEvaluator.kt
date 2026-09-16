@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 import de.dh.daps.common.model.data.AlarmProfile
 import de.dh.daps.common.model.data.AlarmSeverity
-import de.dh.daps.common.model.data.AlarmSoundConfig
+import de.dh.daps.common.model.data.AlarmSignalConfig
 import de.dh.daps.common.model.data.AlarmType
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.core.aps.ApsIssue
@@ -43,8 +43,8 @@ class AlarmEvaluator(
     private val _activeFiringAlarm = MutableStateFlow<AlarmType?>(null)
     val activeFiringAlarm: StateFlow<AlarmType?> = _activeFiringAlarm.asStateFlow()
 
-    private val _activeFiringConfig = MutableStateFlow<AlarmSoundConfig?>(null)
-    val activeFiringConfig: StateFlow<AlarmSoundConfig?> = _activeFiringConfig.asStateFlow()
+    private val _activeFiringConfig = MutableStateFlow<AlarmSignalConfig?>(null)
+    val activeFiringConfig: StateFlow<AlarmSignalConfig?> = _activeFiringConfig.asStateFlow()
 
     fun start() {
         scope.launch {
@@ -113,13 +113,13 @@ class AlarmEvaluator(
             ) ?: unsnoozedActiveAlarms.first()
 
             val activeProfile = input.activeProfile
-            val config = activeProfile?.getConfigFor(primaryAlarm) ?: AlarmSoundConfig()
+            val config = activeProfile?.getConfigFor(primaryAlarm) ?: AlarmSignalConfig()
 
             _activeFiringAlarm.value = primaryAlarm
             _activeFiringConfig.value = config
 
-            Log.d(TAG, "Posting notification for active alarm $primaryAlarm")
-            androidNotifications.showAlarmNotification(primaryAlarm, input.bgReading?.value)
+            Log.d(TAG, "Posting notification for active alarm $primaryAlarm (isFullScreen=${config.isFullScreen})")
+            androidNotifications.showAlarmNotification(primaryAlarm, input.bgReading?.value, isFullScreen = config.isFullScreen)
         } else {
             // No unsnoozed alarms active
             if (_activeFiringAlarm.value != null) {

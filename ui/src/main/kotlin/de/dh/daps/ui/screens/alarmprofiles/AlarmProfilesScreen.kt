@@ -44,7 +44,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.data.AlarmProfile
 import de.dh.daps.common.model.data.AlarmSeverity
-import de.dh.daps.common.model.data.AlarmSoundConfig
+import de.dh.daps.common.model.data.AlarmSignalConfig
 import de.dh.daps.common.model.data.VibrationMode
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.NormalTextButton
@@ -280,9 +280,9 @@ fun AlarmProfileCard(
             Spacer(modifier = Modifier.height(8.dp))
 
             // Severity summaries
-            val criticalConfig = profile.severityDefaults[AlarmSeverity.CRITICAL] ?: AlarmSoundConfig()
-            val warningConfig = profile.severityDefaults[AlarmSeverity.WARNING] ?: AlarmSoundConfig()
-            val infoConfig = profile.severityDefaults[AlarmSeverity.INFO] ?: AlarmSoundConfig()
+            val criticalConfig = profile.severityDefaults[AlarmSeverity.CRITICAL] ?: AlarmSignalConfig()
+            val warningConfig = profile.severityDefaults[AlarmSeverity.WARNING] ?: AlarmSignalConfig()
+            val infoConfig = profile.severityDefaults[AlarmSeverity.INFO] ?: AlarmSignalConfig()
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -308,8 +308,10 @@ fun AlarmProfileCard(
 @Composable
 fun SeveritySummaryItem(
     label: String,
-    config: AlarmSoundConfig
+    config: AlarmSignalConfig
 ) {
+    val sound = config.soundConfig
+    val soundText = if (sound != null) "${sound.volume}%" else "Kein Ton"
     Column {
         Text(
             text = label,
@@ -317,7 +319,7 @@ fun SeveritySummaryItem(
             fontWeight = FontWeight.SemiBold
         )
         Text(
-            text = "${config.volume}% • ${vibrationModeLabel(config.vibrationMode)}",
+            text = "$soundText • ${vibrationModeLabel(config.vibrationMode)}",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
