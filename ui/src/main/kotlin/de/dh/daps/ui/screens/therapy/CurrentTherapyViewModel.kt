@@ -92,6 +92,7 @@ class CurrentTherapyViewModel(
     private val appPreferencesRepository = systemRegistry.appPreferencesRepository
 
     // Hardcoded presets for now.
+    // See also ScheduledTherapyViewModel
     // TODO: Make these user-editable in the future (e.g. via a database table or preferences).
     private val hardcodedPresets = listOf(
         TherapyAdjustment("Neutral"),

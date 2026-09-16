@@ -52,6 +52,9 @@ class ScheduledTherapyViewModel(
     private val therapyManager = systemRegistry.therapyManager
     private val appPreferencesRepository = systemRegistry.appPreferencesRepository
 
+    // Hardcoded presets for now.
+    // See also CurrentTherapyViewModel
+    // TODO: Make these user-editable in the future (e.g. via a database table or preferences).
     private val hardcodedPresets = listOf(
         TherapyAdjustment("Neutral"),
         TherapyAdjustment("Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
