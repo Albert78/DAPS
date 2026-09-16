@@ -226,7 +226,7 @@ data class DeferredBolus(
  * Snapshot of an insulin delivery point.
  */
 interface InsulinHistoryPoint {
-    val timestamp: Long
+    val timestamp: Timestamp
     val amount: InsulinAmount
     val category: InsulinCategory
     val pumpId: String?
@@ -236,8 +236,8 @@ interface InsulinHistoryPoint {
  * Compound object representing a snapshot of the pump's insulin delivery history.
  */
 data class InsulinHistory(
-    val from: Long,
-    val to: Long,
+    val from: Timestamp,
+    val to: Timestamp,
     val points: List<InsulinHistoryPoint>
 )
 

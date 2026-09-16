@@ -4,11 +4,12 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinOrigin
+import de.dh.daps.common.model.data.Timestamp
 
 @Entity(tableName = "sim_history")
 data class SimHistoryEntity(
     @PrimaryKey
-    val timestampMs: Long,
+    val timestamp: Timestamp,
     val bgMgDl: Double,
     val carbImpact: Double,
     val insulinImpact: Double,
@@ -20,7 +21,7 @@ data class SimHistoryEntity(
 @Entity(tableName = "simulation_state")
 data class SimulationStateEntity(
     @PrimaryKey val id: Int = 0, // Only one state entry
-    val lastSimulationTimestampMs: Long,
+    val lastSimulationTimestamp: Timestamp,
     val exerciseIntensity: Double,
     val stressLevel: Double,
     val illnessFactor: Double,
@@ -34,7 +35,7 @@ data class SimEventEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val type: String, // "MEAL" or "BOLUS"
-    val timestampMs: Long,
+    val timestamp: Timestamp,
     val amount: InsulinAmount,
     val detailId: String? = null, // MealType ID or InsulinType ID
     val insulinOrigin: InsulinOrigin? = null
@@ -60,9 +61,9 @@ data class PumpStateEntity(
     val isPrimed: Boolean,
     val hasHardwareError: Boolean,
     val isBroken: Boolean,
-    val lastBasalDeliveryTimestampMs: Long,
+    val lastBasalDeliveryTimestamp: Timestamp,
     val tempBasalPercent: Int?,
-    val tempBasalExpiryMs: Long? = null
+    val tempBasalExpiry: Timestamp? = null
 )
 
 enum class PumpDeliveryType {
@@ -73,7 +74,7 @@ enum class PumpDeliveryType {
 data class PumpHistoryEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
-    val timestampMs: Long,
+    val timestamp: Timestamp,
     val amount: InsulinAmount,
     val deliveryType: PumpDeliveryType
 )

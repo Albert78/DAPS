@@ -118,8 +118,8 @@ class TreatmentRepository(
      * Updates matching entries, inserts new entries, and cancels unconfirmed scheduled entries.
      */
     suspend fun mergeInsulinHistory(history: InsulinHistory, insulinType: InsulinType) = mutex.withLock {
-        val from = Timestamp(history.from)
-        val to = Timestamp(history.to)
+        val from = history.from
+        val to = history.to
         val historyStart = historyStart()
 
         val typesMap = metabolicEventsDao.getAllInsulinTypes().associateBy { it.id }
@@ -144,7 +144,7 @@ class TreatmentRepository(
         // 2. Match points with existing entries
         history.points.forEach { point ->
             if (point.amount < InsulinAmount.EPSILON) return@forEach
-            val timestamp = Timestamp(point.timestamp)
+            val timestamp = point.timestamp
 
             // Priority 1: O(1) lookup by pumpId
             var match: InsulinApplication? = if (point.pumpId != null) {

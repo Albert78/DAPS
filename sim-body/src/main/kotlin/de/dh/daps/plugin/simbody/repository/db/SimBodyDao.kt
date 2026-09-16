@@ -5,31 +5,32 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import de.dh.daps.common.model.data.Timestamp
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SimBodyDao {
     // Simulation History (Combined BG and Impacts)
-    @Query("SELECT * FROM sim_history ORDER BY timestampMs DESC")
+    @Query("SELECT * FROM sim_history ORDER BY timestamp DESC")
     fun observeAllHistory(): Flow<List<SimHistoryEntity>>
 
-    @Query("SELECT * FROM sim_history WHERE timestampMs >= :sinceMs ORDER BY timestampMs DESC")
-    suspend fun getHistorySince(sinceMs: Long): List<SimHistoryEntity>
+    @Query("SELECT * FROM sim_history WHERE timestamp >= :since ORDER BY timestamp DESC")
+    suspend fun getHistorySince(since: Timestamp): List<SimHistoryEntity>
 
-    @Query("SELECT * FROM sim_history ORDER BY timestampMs DESC LIMIT 1")
+    @Query("SELECT * FROM sim_history ORDER BY timestamp DESC LIMIT 1")
     suspend fun getLatestHistoryEntry(): SimHistoryEntity?
 
-    @Query("SELECT * FROM sim_history WHERE timestampMs <= :sinceMs ORDER BY timestampMs DESC LIMIT 1")
-    suspend fun getHistoryNear(sinceMs: Long): SimHistoryEntity?
+    @Query("SELECT * FROM sim_history WHERE timestamp <= :since ORDER BY timestamp DESC LIMIT 1")
+    suspend fun getHistoryNear(since: Timestamp): SimHistoryEntity?
 
-    @Query("SELECT * FROM sim_history ORDER BY timestampMs ASC LIMIT 1")
+    @Query("SELECT * FROM sim_history ORDER BY timestamp ASC LIMIT 1")
     suspend fun getEarliestHistoryEntry(): SimHistoryEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertHistory(entry: SimHistoryEntity): Long
 
-    @Query("DELETE FROM sim_history WHERE timestampMs < :thresholdMs")
-    suspend fun deleteOldHistory(thresholdMs: Long)
+    @Query("DELETE FROM sim_history WHERE timestamp < :threshold")
+    suspend fun deleteOldHistory(threshold: Timestamp)
 
     // Simulation State
     @Query("SELECT * FROM simulation_state WHERE id = 0")
@@ -39,14 +40,14 @@ interface SimBodyDao {
     suspend fun updateSimulationState(state: SimulationStateEntity)
 
     // Simulation Events
-    @Query("SELECT * FROM sim_events WHERE timestampMs >= :sinceMs ORDER BY timestampMs DESC")
-    suspend fun getEventsSince(sinceMs: Long): List<SimEventEntity>
+    @Query("SELECT * FROM sim_events WHERE timestamp >= :since ORDER BY timestamp DESC")
+    suspend fun getEventsSince(since: Timestamp): List<SimEventEntity>
 
     @Insert
     suspend fun insertEvent(event: SimEventEntity): Long
 
-    @Query("DELETE FROM sim_events WHERE timestampMs < :thresholdMs")
-    suspend fun deleteOldEvents(thresholdMs: Long)
+    @Query("DELETE FROM sim_events WHERE timestamp < :threshold")
+    suspend fun deleteOldEvents(threshold: Timestamp)
 
     // Body Profiles
     @Query("SELECT * FROM body_profiles")

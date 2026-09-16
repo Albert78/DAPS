@@ -232,7 +232,7 @@ class SimBodyInsulinPump(
         if (!_isConnected.value) return
         val points = device.getHistory().map { point ->
             object : InsulinHistoryPoint {
-                override val timestamp: Long = point.timestamp
+                override val timestamp: Timestamp = point.timestamp
                 override val amount: InsulinAmount = point.amount
                 override val category: InsulinCategory = point.category
                 override val pumpId: String? = point.id

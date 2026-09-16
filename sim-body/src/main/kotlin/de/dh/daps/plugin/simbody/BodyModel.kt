@@ -141,7 +141,7 @@ class BodyModel(
                     diaMinutes = bolus.dia.value.toDouble(),
                     peakMinutes = bolus.peak.value.toDouble()
                 )
-                val timeSinceBolus = (now.ms - bolus.timestamp.ms) / 60000.0
+                val timeSinceBolus = (now - bolus.timestamp) / 60000.0
                 acc + bolus.amount * (1.0 - curve.spentFraction(timeSinceBolus)).coerceAtLeast(0.0)
             }
         }
@@ -152,7 +152,7 @@ class BodyModel(
             return meals.sumOf { meal ->
                 meal.mealType.components.sumOf { comp ->
                     val curve = CarbCurveComponent(comp.peakMinutes.value.toDouble())
-                    val timeSinceMeal = (now.ms - meal.timestamp.ms) / 60000.0
+                    val timeSinceMeal = (now - meal.timestamp) / 60000.0
                     meal.carbGrams * (comp.weight / 100.0) * (1.0 - curve.absorbedFraction(timeSinceMeal)).coerceAtLeast(0.0)
                 }
             }
@@ -190,10 +190,10 @@ class BodyModel(
         referenceTimestamp: Timestamp = Timestamp.now()
     ): Double {
         val dao = simBodyDao ?: return bloodGlucose
-        val targetMs = referenceTimestamp.ms - delayMinutes * 60 * 1000L
+        val targetTimestamp = referenceTimestamp.minusMinutes(delayMinutes)
 
         // Try to find the value closest to the target time
-        val delayedEntry = dao.getHistoryNear(targetMs)
+        val delayedEntry = dao.getHistoryNear(targetTimestamp)
         if (delayedEntry != null) {
             return delayedEntry.bgMgDl
         }
@@ -220,7 +220,7 @@ class BodyModel(
                 // Load simulation state (UI settings)
                 val state = dao.getSimulationState()
                 if (state != null) {
-                    _lastSimulationTimestamp.value = Timestamp(state.lastSimulationTimestampMs)
+                    _lastSimulationTimestamp.value = state.lastSimulationTimestamp
                     _exerciseIntensity.value = state.exerciseIntensity
                     _stressLevel.value = state.stressLevel
                     _illnessFactor.value = state.illnessFactor
@@ -229,7 +229,7 @@ class BodyModel(
                 } else {
                     // First run defaults
                     // Set last simulation timestamp to 5 minutes ago so heartbeat triggers immediately on start
-                    _lastSimulationTimestamp.value = Timestamp(Timestamp.now().ms - 5 * 60 * 1000L)
+                    _lastSimulationTimestamp.value = Timestamp.now().minusMinutes(5)
                     _isSensorEnabled.value = true
                     _sensorNoiseFactor.value = 0.0
                 }
@@ -251,15 +251,14 @@ class BodyModel(
                     )
                 }
 
-                val horizonMs = 10 * 60 * 60 * 1000L
-                val threshold = Timestamp.now().ms - horizonMs
+                val threshold = Timestamp.now().minusHours(10)
 
                 // Load events (meals and boluses) from the last 10 hours
                 val events = dao.getEventsSince(threshold)
 
                 val loadedMeals = events.filter { it.type == "MEAL" }.map { event ->
                     MealEntry(
-                        timestamp = Timestamp(event.timestampMs),
+                        timestamp = event.timestamp,
                         carbGrams = event.amount.iu,
                         mealType = if (event.detailId == defaultMealType.id) defaultMealType else defaultMealType
                     )
@@ -270,7 +269,7 @@ class BodyModel(
                 val loadedInsulin = events.filter { it.type == "BOLUS" }.map { event ->
                     val type = defaultInsulinType
                     SimInsulinApplication(
-                        timestamp = Timestamp(event.timestampMs),
+                        timestamp = event.timestamp,
                         amount = event.amount,
                         peak = type.peak,
                         dia = type.dia
@@ -287,7 +286,7 @@ class BodyModel(
                         endogenousImpact = entity.endogenousImpact,
                         exerciseImpact = entity.exerciseImpact,
                         stressImpact = entity.stressImpact,
-                        currentTimestamp = Timestamp(entity.timestampMs)
+                        currentTimestamp = entity.timestamp
                     )
                 }
                 impactHistory.clear()
@@ -320,7 +319,7 @@ class BodyModel(
         scope.launch {
             dao.updateSimulationState(
                 SimulationStateEntity(
-                    lastSimulationTimestampMs = lastSimulationTimestamp.ms,
+                    lastSimulationTimestamp = lastSimulationTimestamp,
                     exerciseIntensity = exerciseIntensity,
                     stressLevel = stressLevel,
                     illnessFactor = illnessFactor,
@@ -343,7 +342,7 @@ class BodyModel(
         val dao = simBodyDao ?: return
         dao.insertHistory(
             SimHistoryEntity(
-                timestampMs = timestamp.ms,
+                timestamp = timestamp,
                 bgMgDl = bg,
                 carbImpact = carbImpact,
                 insulinImpact = insulinImpact,
@@ -359,7 +358,7 @@ class BodyModel(
      * Calculates the delta in blood glucose based on all active influences.
      */
     suspend fun advanceTo(currentTimestamp: Timestamp = Timestamp.now()) {
-        val durationMs = currentTimestamp.ms - lastSimulationTimestamp.ms
+        val durationMs = currentTimestamp - lastSimulationTimestamp
 
         val durationHours = durationMs / (1000.0 * 60 * 60)
 
@@ -406,12 +405,11 @@ class BodyModel(
      * Removes historical data older than 10 hours to keep the simulation performant.
      */
     private fun cleanup(currentTimestamp: Timestamp) {
-        val horizonMs = 10 * 60 * 60 * 1000L
-        val threshold = currentTimestamp.ms - horizonMs
+        val threshold = currentTimestamp.minusHours(10)
 
-        meals.removeIf { it.timestamp.ms < threshold }
-        insulinApplications.removeIf { it.timestamp.ms < threshold }
-        impactHistory.removeIf { it.currentTimestamp.ms < threshold }
+        meals.removeIf { it.timestamp < threshold }
+        insulinApplications.removeIf { it.timestamp < threshold }
+        impactHistory.removeIf { it.currentTimestamp < threshold }
 
         simBodyDao?.let { dao ->
             scope.launch {
@@ -437,7 +435,7 @@ class BodyModel(
                 dao.insertEvent(
                     SimEventEntity(
                         type = "MEAL",
-                        timestampMs = entry.timestamp.ms,
+                        timestamp = entry.timestamp,
                         amount = InsulinAmount(entry.carbGrams),
                         detailId = entry.mealType.id
                     )
@@ -470,7 +468,7 @@ class BodyModel(
                 dao.insertEvent(
                     SimEventEntity(
                         type = "BOLUS",
-                        timestampMs = entry.timestamp.ms,
+                        timestamp = entry.timestamp,
                         amount = entry.amount,
                         detailId = insulinType.id,
                         insulinOrigin = InsulinOrigin.Pump
@@ -489,8 +487,8 @@ class BodyModel(
                 peakMinutes = bolus.peak.value.toDouble()
             )
 
-            val timeStart = (start.ms - bolus.timestamp.ms) / 60000.0
-            val timeEnd = (end.ms - bolus.timestamp.ms) / 60000.0
+            val timeStart = (start - bolus.timestamp) / 60000.0
+            val timeEnd = (end - bolus.timestamp) / 60000.0
 
             val fractionStart = curve.spentFraction(timeStart)
             val fractionEnd = curve.spentFraction(timeEnd)
@@ -513,8 +511,8 @@ class BodyModel(
             val type = meal.mealType
             var mealAbsorbedInWindow = 0.0
 
-            val timeStart = (start.ms - meal.timestamp.ms) / 60000.0
-            val timeEnd = (end.ms - meal.timestamp.ms) / 60000.0
+            val timeStart = (start - meal.timestamp) / 60000.0
+            val timeEnd = (end - meal.timestamp) / 60000.0
 
             for (comp in type.components) {
                 val curve = CarbCurveComponent(comp.peakMinutes.value.toDouble())

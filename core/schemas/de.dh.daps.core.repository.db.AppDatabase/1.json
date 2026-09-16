@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "b803b20b4559fef09e4f080f7592926c",
+    "identityHash": "4f1f5e9c504b01da49b34a5bb8e8bd28",
     "entities": [
       {
         "tableName": "sensor_type",
@@ -60,7 +60,7 @@
       },
       {
         "tableName": "glucose_reading",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `value_mgdl` INTEGER NOT NULL, `sample_kind` TEXT NOT NULL, `timestamp_ms` INTEGER NOT NULL, `fk_data_provider` INTEGER NOT NULL, `fk_source_sensor` INTEGER NOT NULL, FOREIGN KEY(`fk_source_sensor`) REFERENCES `sensor_type`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`fk_data_provider`) REFERENCES `data_provider`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `value_mgdl` INTEGER NOT NULL, `sample_kind` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, `fk_data_provider` INTEGER NOT NULL, `fk_source_sensor` INTEGER NOT NULL, FOREIGN KEY(`fk_source_sensor`) REFERENCES `sensor_type`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`fk_data_provider`) REFERENCES `data_provider`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "id",
@@ -81,8 +81,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "timestamp_ms",
-            "columnName": "timestamp_ms",
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -107,13 +107,13 @@
         },
         "indices": [
           {
-            "name": "index_glucose_reading_timestamp_ms",
+            "name": "index_glucose_reading_timestamp",
             "unique": false,
             "columnNames": [
-              "timestamp_ms"
+              "timestamp"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_glucose_reading_timestamp_ms` ON `${TABLE_NAME}` (`timestamp_ms`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_glucose_reading_timestamp` ON `${TABLE_NAME}` (`timestamp`)"
           }
         ],
         "foreignKeys": [
@@ -913,7 +913,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b803b20b4559fef09e4f080f7592926c')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4f1f5e9c504b01da49b34a5bb8e8bd28')"
     ]
   }
 }

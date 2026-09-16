@@ -1,6 +1,7 @@
 package de.dh.daps.plugin.simbody.repository
 
 import de.dh.daps.common.model.data.Block
+import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.plugin.simbody.model.BodyProfile
 import de.dh.daps.plugin.simbody.repository.db.BodyProfileEntity
 import de.dh.daps.plugin.simbody.repository.db.SimBodyDao
@@ -13,14 +14,14 @@ class SimBodyRepository(private val simBodyDao: SimBodyDao) {
     suspend fun getSimulationState() = simBodyDao.getSimulationState()
 
     suspend fun updateSimulationState(
-        lastSimulationTimestampMs: Long,
+        lastSimulationTimestamp: Timestamp,
         exerciseIntensity: Double,
         stressLevel: Double,
         illnessFactor: Double
     ) {
         simBodyDao.updateSimulationState(
             SimulationStateEntity(
-                lastSimulationTimestampMs = lastSimulationTimestampMs,
+                lastSimulationTimestamp = lastSimulationTimestamp,
                 exerciseIntensity = exerciseIntensity,
                 stressLevel = stressLevel,
                 illnessFactor = illnessFactor

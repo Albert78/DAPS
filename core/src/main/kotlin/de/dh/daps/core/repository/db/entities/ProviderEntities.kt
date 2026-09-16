@@ -6,6 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import de.dh.daps.common.model.ID_UNDEFINED
 import de.dh.daps.common.model.data.BgSampleKind
+import de.dh.daps.common.model.data.Timestamp
 
 /**
  * Types of glucose sensors like "Libre3", "Dexcom G6", ...
@@ -47,7 +48,7 @@ data class DataProviderEntity(
         ),
     ],
     indices = [
-        Index("timestamp_ms")
+        Index("timestamp")
     ]
 )
 data class GlucoseReadingEntity(
@@ -55,7 +56,7 @@ data class GlucoseReadingEntity(
     val id: Long = ID_UNDEFINED,
     val value_mgdl: Short,
     val sample_kind: BgSampleKind,
-    val timestamp_ms: Long,
+    val timestamp: Timestamp,
     val fk_data_provider: Long,
     val fk_source_sensor: Long
 )

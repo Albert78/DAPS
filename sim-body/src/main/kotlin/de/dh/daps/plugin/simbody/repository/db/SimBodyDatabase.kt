@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 
 @Database(entities = [
     SimHistoryEntity::class,
@@ -13,6 +14,7 @@ import androidx.room.RoomDatabase
     PumpStateEntity::class,
     PumpHistoryEntity::class
 ], version = 1)
+@TypeConverters(SimBodyTypeConverters::class)
 abstract class SimBodyDatabase : RoomDatabase() {
     abstract fun impactDao(): SimBodyDao
     abstract fun pumpDao(): PumpDao

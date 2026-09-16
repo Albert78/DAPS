@@ -5,7 +5,6 @@ import de.dh.pump.PumpCommandException
 import de.dh.pump.PumpStatus
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinCategory
-import de.dh.daps.common.model.MS_PER_DAY
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.data.getAmountForMinute
@@ -63,10 +62,10 @@ class SimBodyPumpDevice(
     private val _tempBasalPercent = MutableStateFlow<Int?>(null)
     val tempBasalPercent: StateFlow<Int?> = _tempBasalPercent.asStateFlow()
 
-    private val _tempBasalExpiryMs = MutableStateFlow<Long?>(null)
-    val tempBasalExpiryMs: StateFlow<Long?> = _tempBasalExpiryMs.asStateFlow()
+    private val _tempBasalExpiry = MutableStateFlow<Timestamp?>(null)
+    val tempBasalExpiry: StateFlow<Timestamp?> = _tempBasalExpiry.asStateFlow()
 
-    private var lastBasalDeliveryTimestamp: Long = 0L // Initialize on first tick
+    private var lastBasalDeliveryTimestamp: Timestamp? = null // Initialize on first tick
 
     fun loadState() {
         val dao = pumpDao ?: return
@@ -79,17 +78,16 @@ class SimBodyPumpDevice(
                     _isPrimed.value = state.isPrimed
                     _hasHardwareError.value = state.hasHardwareError
                     _isBroken.value = state.isBroken
-                    lastBasalDeliveryTimestamp = state.lastBasalDeliveryTimestampMs
+                    lastBasalDeliveryTimestamp = state.lastBasalDeliveryTimestamp
                     _tempBasalPercent.value = state.tempBasalPercent
-                    _tempBasalExpiryMs.value = state.tempBasalExpiryMs
+                    _tempBasalExpiry.value = state.tempBasalExpiry
                 }
 
-                val horizonMs = 3 * MS_PER_DAY
-                val threshold = System.currentTimeMillis() - horizonMs
+                val threshold = Timestamp.now().minusHours(72)
                 val loadedHistory = dao.getHistorySince(threshold).map {
                     HistoryEntry(
                         id = it.id.toString(),
-                        timestamp = it.timestampMs,
+                        timestamp = it.timestamp,
                         amount = it.amount,
                         category = if (it.deliveryType == PumpDeliveryType.Bolus) InsulinCategory.Bolus else InsulinCategory.Basal
                     )
@@ -113,9 +111,9 @@ class SimBodyPumpDevice(
                     isPrimed = _isPrimed.value,
                     hasHardwareError = _hasHardwareError.value,
                     isBroken = _isBroken.value,
-                    lastBasalDeliveryTimestampMs = lastBasalDeliveryTimestamp,
+                    lastBasalDeliveryTimestamp = lastBasalDeliveryTimestamp ?: Timestamp.now(),
                     tempBasalPercent = _tempBasalPercent.value,
-                    tempBasalExpiryMs = _tempBasalExpiryMs.value
+                    tempBasalExpiry = _tempBasalExpiry.value
                 )
             )
         }
@@ -153,8 +151,6 @@ class SimBodyPumpDevice(
 
     fun setProfile(profile: InsulinProfile) {
         _activeProfile.value = profile
-        // Profiles are currently not persisted in pump_state, but in body_profiles if needed.
-        // For SimBodyPumpDevice we might want to persist the profile too if it's pump-specific.
     }
 
     fun getProfileBasalRate(timestamp: Timestamp = Timestamp.now()): Double {
@@ -167,7 +163,6 @@ class SimBodyPumpDevice(
      */
     fun advanceTo(currentTimestamp: Timestamp) {
         handleBasal(currentTimestamp)
-        return
     }
 
     /**
@@ -177,21 +172,21 @@ class SimBodyPumpDevice(
     private fun handleBasal(currentTimestamp: Timestamp) {
         val twentyMinutesMs = 20 * 60 * 1000L
 
-        // Initialize if first step to prevent retroactive deliveries
-        if (lastBasalDeliveryTimestamp == 0L) {
-            lastBasalDeliveryTimestamp = currentTimestamp.ms
+        val lastBasal = lastBasalDeliveryTimestamp ?: run {
+            lastBasalDeliveryTimestamp = currentTimestamp
             persistState()
             return
         }
 
-        while (currentTimestamp.ms - lastBasalDeliveryTimestamp >= twentyMinutesMs) {
-            val deliveryTimestamp = Timestamp(lastBasalDeliveryTimestamp + twentyMinutesMs)
+        var currentDelivery: Timestamp = lastBasal
+        while (currentTimestamp - currentDelivery >= twentyMinutesMs) {
+            val deliveryTimestamp = currentDelivery.plusMinutes(20)
 
             // Auto-reset TBR if expired
-            _tempBasalExpiryMs.value?.let { expiry ->
-                if (deliveryTimestamp.ms >= expiry) {
+            _tempBasalExpiry.value?.let { expiry ->
+                if (deliveryTimestamp >= expiry) {
                     _tempBasalPercent.value = null
-                    _tempBasalExpiryMs.value = null
+                    _tempBasalExpiry.value = null
                     persistState()
                 }
             }
@@ -212,7 +207,8 @@ class SimBodyPumpDevice(
                 deliveryTimestamp,
                 if (_tempBasalPercent.value != null) PumpDeliveryType.Tbr else PumpDeliveryType.Basal
             )
-            lastBasalDeliveryTimestamp = deliveryTimestamp.ms
+            currentDelivery = deliveryTimestamp
+            lastBasalDeliveryTimestamp = deliveryTimestamp
             persistState()
         }
     }
@@ -239,7 +235,7 @@ class SimBodyPumpDevice(
         val tempId = UUID.randomUUID().toString()
         val entry = HistoryEntry(
             id = tempId,
-            timestamp = timestamp.ms,
+            timestamp = timestamp,
             amount = units,
             category = if (type == PumpDeliveryType.Bolus) InsulinCategory.Bolus else InsulinCategory.Basal
         )
@@ -248,7 +244,7 @@ class SimBodyPumpDevice(
         pumpDao?.let { dao ->
             scope.launch {
                 val dbId = dao.insertHistoryEntry(PumpHistoryEntity(
-                    timestampMs = entry.timestamp,
+                    timestamp = entry.timestamp,
                     amount = entry.amount,
                     deliveryType = type
                 ))
@@ -349,9 +345,9 @@ class SimBodyPumpDevice(
 
         _tempBasalPercent.value = percent
         if (percent != null && durationHours != null) {
-            _tempBasalExpiryMs.value = Timestamp.now().plusHours(durationHours).ms
+            _tempBasalExpiry.value = Timestamp.now().plusHours(durationHours)
         } else {
-            _tempBasalExpiryMs.value = null
+            _tempBasalExpiry.value = null
         }
         persistState()
     }
@@ -359,7 +355,7 @@ class SimBodyPumpDevice(
     fun getHistory(): List<HistoryEntry> = _history.toList()
 
     private fun cleanupHistory() {
-        val threeDaysAgo = System.currentTimeMillis() - (3 * MS_PER_DAY)
+        val threeDaysAgo = Timestamp.now().minusHours(72)
         _history.removeIf { it.timestamp < threeDaysAgo }
 
         pumpDao?.let { dao ->
@@ -394,7 +390,7 @@ class SimBodyPumpDevice(
 
     data class HistoryEntry(
         val id: String? = null,
-        val timestamp: Long,
+        val timestamp: Timestamp,
         val amount: InsulinAmount,
         val category: InsulinCategory
     )

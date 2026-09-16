@@ -12,6 +12,7 @@ import androidx.room.TypeConverters
 import androidx.room.Update
 import androidx.room.Upsert
 import de.dh.daps.common.model.InsulinOrigin
+import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.repository.db.dao.AlarmProfileDao
 import de.dh.daps.core.repository.db.entities.AlarmProfileEntity
 import de.dh.daps.core.repository.db.entities.CoreInsightEntity
@@ -52,10 +53,10 @@ interface ProviderDao {
     @Insert
     suspend fun insertDataProvider(value: DataProviderEntity): Long
 
-    @Query("SELECT * FROM glucose_reading where timestamp_ms > :timestampMs ORDER BY timestamp_ms ASC")
-    suspend fun getReadingsFromTime(timestampMs: Long): List<GlucoseReadingEntity>
+    @Query("SELECT * FROM glucose_reading where timestamp > :timestamp ORDER BY timestamp ASC")
+    suspend fun getReadingsFromTime(timestamp: Timestamp): List<GlucoseReadingEntity>
 
-    @Query("SELECT * FROM glucose_reading ORDER BY timestamp_ms ASC")
+    @Query("SELECT * FROM glucose_reading ORDER BY timestamp ASC")
     fun observeAllReadings(): Flow<List<GlucoseReadingEntity>>
 
     @Insert

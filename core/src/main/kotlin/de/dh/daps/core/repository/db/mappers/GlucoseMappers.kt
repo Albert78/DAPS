@@ -14,7 +14,7 @@ fun BgReading.toEntity(dataProviderId: Long, sourceSensorId: Long) = GlucoseRead
     id = this.id,
     value_mgdl = this.value.mgdlInt.toShort(),
     sample_kind = this.sampleKind,
-    timestamp_ms = this.timestamp.ms,
+    timestamp = this.timestamp,
     fk_data_provider = dataProviderId,
     fk_source_sensor = sourceSensorId
 )
@@ -23,7 +23,7 @@ fun GlucoseReadingEntity.toModel() = BgReading(
     id = this.id,
     value = BgValue.fromMgDl(this.value_mgdl),
     sampleKind = this.sample_kind,
-    timestamp = Timestamp(timestamp_ms)
+    timestamp = this.timestamp
 )
 
 // SensorType Converters

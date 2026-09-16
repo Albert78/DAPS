@@ -90,7 +90,7 @@ class GlucoseRepository(appDatabase: AppDatabase) {
      * Loads glucose readings from the database that were recorded after the given timestamp.
      */
     suspend fun loadBgReadings(from: Timestamp): List<BgReading> {
-        return providerDao.getReadingsFromTime(from.ms)
+        return providerDao.getReadingsFromTime(from)
             .map { it.toModel() }
     }
 }
