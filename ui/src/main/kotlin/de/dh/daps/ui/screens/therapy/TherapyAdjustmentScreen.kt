@@ -2,7 +2,6 @@ package de.dh.daps.ui.screens.therapy
 
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -20,8 +19,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -179,6 +178,13 @@ fun TherapyAdjustmentContent(
             val focusManager = LocalFocusManager.current
             val scrollState = rememberScrollState()
 
+            val isAdjustmentActive = remember(formState) {
+                formState.percentage != 0 ||
+                formState.targetBgOverride != null ||
+                formState.lowThresholdOverride != null ||
+                formState.activeAlarmProfileId != null
+            }
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -193,7 +199,40 @@ fun TherapyAdjustmentContent(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Spacer(modifier = Modifier.height(8.dp))
+                if (!isDirty && isAdjustmentActive) {
+                    val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+                    val endTime = formState.timing.endTime
+                    val activeHintText = if (endTime != null) {
+                        stringResource(R.string.therapy_adjustment_active_until_format, timeFormat.format(endTime.ms))
+                    } else {
+                        stringResource(R.string.therapy_adjustment_active_now)
+                    }
+
+                    Surface(
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Text(
+                                text = activeHintText,
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
 
                 // Reusable Upper Form Section
                 TherapyAdjustmentUpperForm(
@@ -207,67 +246,6 @@ fun TherapyAdjustmentContent(
                 )
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-                // Active Timing Status Card
-                val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
-                val currentTiming = formState.timing
-                val summaryText = when (currentTiming.mode) {
-                    AdjustmentTimeMode.AD_HOC -> stringResource(R.string.therapy_adjustment_timing_active_unlimited)
-                    AdjustmentTimeMode.DURATION -> {
-                        val endStr = currentTiming.endTime?.let { timeFormat.format(it.ms) } ?: ""
-                        if (endStr.isNotEmpty()) {
-                            stringResource(R.string.therapy_adjustment_timing_active_until, endStr)
-                        } else {
-                            stringResource(R.string.therapy_adjustment_timing_active_unlimited)
-                        }
-                    }
-                    AdjustmentTimeMode.TIME_WINDOW -> {
-                        val startStr = currentTiming.startTime?.let { timeFormat.format(it.ms) } ?: ""
-                        val endStr = currentTiming.endTime?.let { timeFormat.format(it.ms) } ?: ""
-                        stringResource(R.string.therapy_adjustment_timing_scheduled_format, startStr, endStr)
-                    }
-                }
-
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.AccessTime,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Text(
-                                text = stringResource(R.string.therapy_adjustment_timing_summary_title),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                        Text(
-                            text = summaryText,
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(4.dp))
 
                 // Action Buttons for Current Therapy Settings: "Jetzt übernehmen" & "Dauer"
                 Row(
@@ -376,7 +354,7 @@ private fun TherapyAdjustmentPreviewValues() {
                     ),
                     baseTarget = BgValue.fromMgDl(100),
                     baseLow = BgValue.fromMgDl(70),
-                    isDirty = true,
+                    isDirty = false,
                     onValuesChange = { _, _, _, _ -> },
                     onTimingChange = {},
                     onPresetApplied = {},

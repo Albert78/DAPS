@@ -224,20 +224,20 @@
     <string name="therapy_adjustment_adhoc_info">Die Einstellung gilt sofort und unbegrenzt, bis sie manuell beendet wird.</string>
     <string name="therapy_adjustment_duration_select_label">Dauer wählen</string>
     <string name="therapy_adjustment_duration_active_until">Gilt ab sofort bis %s Uhr</string>
-    <string name="therapy_adjustment_duration_dialog_title">Dauer festlegen</string>
-    <string name="therapy_adjustment_duration_mode_relative">Relativ</string>
+    <string name="therapy_adjustment_duration_dialog_title">Ende festlegen</string>
+    <string name="therapy_adjustment_duration_mode_relative">Dauer</string>
     <string name="therapy_adjustment_duration_mode_absolute">Uhrzeit</string>
     <string name="therapy_adjustment_duration_label">Dauer: %s</string>
     <string name="therapy_adjustment_start_time_label">Startzeit</string>
     <string name="therapy_adjustment_end_time_label">Endzeit</string>
     <string name="therapy_adjustment_discard_dialog_title">Änderungen verwerfen?</string>
-    <string name="therapy_adjustment_discard_dialog_message">Es wurden Änderungen gemacht. Möchtest du sie verwerfen?</string>
+    <string name="therapy_adjustment_discard_dialog_message">Es wurden Änderungen gemacht. Bestätige sie mit den Knöpfen unten, oder verwirf sie.\n\nMöchtest du die Änderung verwerfen?</string>
     <string name="therapy_adjustment_apply_button">Übernehmen</string>
     <string name="therapy_adjustment_schedule_button">Anpassung planen</string>
     <string name="therapy_adjustment_hint_until_format">%1$s (bis %2$s)</string>
+    <string name="therapy_adjustment_active_now">Aktuell aktiv</string>
+    <string name="therapy_adjustment_active_until_format">Aktiv bis %s Uhr</string>
     <string name="therapy_adjustment_timing_summary_title">Zeitplanung</string>
-    <string name="therapy_adjustment_timing_active_unlimited">Aktiv (unbegrenzt)</string>
-    <string name="therapy_adjustment_timing_active_until">Aktiv (bis %s Uhr)</string>
     <string name="therapy_adjustment_timing_scheduled_format">Geplant (%1$s – %2$s Uhr)</string>
 
     <string name="approx_prefix">ca.</string>
