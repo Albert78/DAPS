@@ -97,10 +97,10 @@ interface TherapyDao {
     suspend fun updateCurrentTherapySettings(data: CurrentTherapySettingsEntity)
 
     // Scheduled Therapy Adjustments
-    @Query("SELECT * FROM scheduled_therapy_adjustments ORDER BY start_time_ms ASC")
+    @Query("SELECT * FROM scheduled_therapy_adjustments ORDER BY start_time ASC")
     suspend fun getAllScheduledTherapyAdjustments(): List<ScheduledTherapyAdjustmentEntity>
 
-    @Query("SELECT * FROM scheduled_therapy_adjustments ORDER BY start_time_ms ASC")
+    @Query("SELECT * FROM scheduled_therapy_adjustments ORDER BY start_time ASC")
     fun observeAllScheduledTherapyAdjustments(): Flow<List<ScheduledTherapyAdjustmentEntity>>
 
     @Query("SELECT * FROM scheduled_therapy_adjustments WHERE id = :id")

@@ -2,7 +2,6 @@ package de.dh.daps.core.repository.db.mappers
 
 import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinType
-import de.dh.daps.common.model.data.AdjustmentTimeMode
 import de.dh.daps.common.model.data.AlarmProfile
 import de.dh.daps.common.model.data.BgBlock
 import de.dh.daps.common.model.data.BgValue
@@ -11,8 +10,6 @@ import de.dh.daps.common.model.data.CurrentTherapySettings
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.ScheduledTherapyAdjustment
-import de.dh.daps.common.model.data.TherapyAdjustmentTiming
-import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.repository.db.entities.CurrentTherapySettingsEntity
 import de.dh.daps.core.repository.db.entities.DBBgBlock
 import de.dh.daps.core.repository.db.entities.DBBlock
@@ -75,9 +72,7 @@ fun CurrentTherapySettings.toEntity() = CurrentTherapySettingsEntity(
     low_threshold_override = this.lowThresholdOverride?.mgdlInt?.toShort(),
     alarm_profile_override_id = this.alarmProfileOverrideId,
     adjustment_hint = this.adjustmentHint,
-    adjustment_time_mode = this.adjustmentTiming.mode.name,
-    adjustment_start_time_ms = this.adjustmentTiming.startTime?.ms,
-    adjustment_end_time_ms = this.adjustmentTiming.endTime?.ms
+    adjustment_end_time = this.adjustmentEndTime
 )
 
 fun CurrentTherapySettingsEntity.toModel(
@@ -85,16 +80,6 @@ fun CurrentTherapySettingsEntity.toModel(
     defaultAlarmProfile: AlarmProfile? = null,
     alarmProfileOverride: AlarmProfile? = null
 ): CurrentTherapySettings {
-    val timeMode = this.adjustment_time_mode?.let {
-        runCatching { AdjustmentTimeMode.valueOf(it) }.getOrDefault(AdjustmentTimeMode.AD_HOC)
-    } ?: AdjustmentTimeMode.AD_HOC
-
-    val timing = TherapyAdjustmentTiming(
-        mode = timeMode,
-        startTime = this.adjustment_start_time_ms?.let { Timestamp(it) },
-        endTime = this.adjustment_end_time_ms?.let { Timestamp(it) }
-    )
-
     return CurrentTherapySettings(
         id = this.id,
         insulinProfile = profile,
@@ -105,14 +90,14 @@ fun CurrentTherapySettingsEntity.toModel(
         defaultAlarmProfile = defaultAlarmProfile,
         alarmProfileOverride = alarmProfileOverride,
         adjustmentHint = this.adjustment_hint,
-        adjustmentTiming = timing
+        adjustmentEndTime = this.adjustment_end_time
     )
 }
 
 fun ScheduledTherapyAdjustment.toEntity() = ScheduledTherapyAdjustmentEntity(
     id = this.id,
-    start_time_ms = this.startTime.ms,
-    end_time_ms = this.endTime.ms,
+    start_time = this.startTime,
+    end_time = this.endTime,
     insulin_adjustment_percentage = this.percentage,
     target_bg_override = this.targetBgOverride?.mgdlInt?.toShort(),
     low_threshold_override = this.lowThresholdOverride?.mgdlInt?.toShort(),
@@ -122,8 +107,8 @@ fun ScheduledTherapyAdjustment.toEntity() = ScheduledTherapyAdjustmentEntity(
 
 fun ScheduledTherapyAdjustmentEntity.toModel(alarmProfile: AlarmProfile? = null) = ScheduledTherapyAdjustment(
     id = this.id,
-    startTime = Timestamp(this.start_time_ms),
-    endTime = Timestamp(this.end_time_ms),
+    startTime = this.start_time,
+    endTime = this.end_time,
     percentage = this.insulin_adjustment_percentage,
     targetBgOverride = this.target_bg_override?.let { BgValue.fromMgDl(it) },
     lowThresholdOverride = this.low_threshold_override?.let { BgValue.fromMgDl(it) },

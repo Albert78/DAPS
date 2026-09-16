@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "b99bf58dd676b69eb1bc4ad87477a493",
+    "identityHash": "b803b20b4559fef09e4f080f7592926c",
     "entities": [
       {
         "tableName": "sensor_type",
@@ -209,7 +209,7 @@
       },
       {
         "tableName": "current_therapy_settings",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `insulin_profile_id` INTEGER NOT NULL, `default_bg_blocks` TEXT NOT NULL, `insulin_adjustment_percentage` INTEGER NOT NULL, `target_bg_override` INTEGER, `low_threshold_override` INTEGER, `alarm_profile_override_id` INTEGER, `adjustment_hint` TEXT, `adjustment_time_mode` TEXT, `adjustment_start_time_ms` INTEGER, `adjustment_end_time_ms` INTEGER, FOREIGN KEY(`insulin_profile_id`) REFERENCES `insulin_profiles`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `insulin_profile_id` INTEGER NOT NULL, `default_bg_blocks` TEXT NOT NULL, `insulin_adjustment_percentage` INTEGER NOT NULL, `target_bg_override` INTEGER, `low_threshold_override` INTEGER, `alarm_profile_override_id` INTEGER, `adjustment_hint` TEXT, `adjustment_end_time` INTEGER, FOREIGN KEY(`insulin_profile_id`) REFERENCES `insulin_profiles`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL )",
         "fields": [
           {
             "fieldPath": "id",
@@ -256,18 +256,8 @@
             "affinity": "TEXT"
           },
           {
-            "fieldPath": "adjustment_time_mode",
-            "columnName": "adjustment_time_mode",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "adjustment_start_time_ms",
-            "columnName": "adjustment_start_time_ms",
-            "affinity": "INTEGER"
-          },
-          {
-            "fieldPath": "adjustment_end_time_ms",
-            "columnName": "adjustment_end_time_ms",
+            "fieldPath": "adjustment_end_time",
+            "columnName": "adjustment_end_time",
             "affinity": "INTEGER"
           }
         ],
@@ -304,7 +294,7 @@
       },
       {
         "tableName": "scheduled_therapy_adjustments",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `start_time_ms` INTEGER NOT NULL, `end_time_ms` INTEGER NOT NULL, `insulin_adjustment_percentage` INTEGER NOT NULL, `target_bg_override` INTEGER, `low_threshold_override` INTEGER, `alarm_profile_override_id` INTEGER, `adjustment_hint` TEXT)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `start_time` INTEGER NOT NULL, `end_time` INTEGER NOT NULL, `insulin_adjustment_percentage` INTEGER NOT NULL, `target_bg_override` INTEGER, `low_threshold_override` INTEGER, `alarm_profile_override_id` INTEGER, `adjustment_hint` TEXT)",
         "fields": [
           {
             "fieldPath": "id",
@@ -313,14 +303,14 @@
             "notNull": true
           },
           {
-            "fieldPath": "start_time_ms",
-            "columnName": "start_time_ms",
+            "fieldPath": "start_time",
+            "columnName": "start_time",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "end_time_ms",
-            "columnName": "end_time_ms",
+            "fieldPath": "end_time",
+            "columnName": "end_time",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -923,7 +913,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b99bf58dd676b69eb1bc4ad87477a493')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b803b20b4559fef09e4f080f7592926c')"
     ]
   }
 }

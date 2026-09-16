@@ -49,11 +49,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.model.data.AdjustmentTimeMode
 import de.dh.daps.common.model.data.AlarmProfile
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.GlucoseUnit
-import de.dh.daps.common.model.data.TherapyAdjustmentTiming
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.LocalGlucoseUnit
@@ -84,20 +82,20 @@ fun TherapyAdjustmentScreen(
         lowThresholdOverride = currentDraft.lowThresholdOverride,
         alarmProfileOverrideId = currentDraft.alarmProfileOverrideId,
         alarmProfileOverrideName = currentDraft.alarmProfileOverrideName,
-        adjustmentHint = currentDraft.adjustmentHint,
-        timing = currentDraft.timing
+        adjustmentHint = currentDraft.adjustmentHint
     )
 
     TherapyAdjustmentContent(
         formState = formState,
+        adjustmentEndTime = currentDraft.adjustmentEndTime,
         baseTarget = activeTherapyStatus.baseTarget,
         baseLow = activeTherapyStatus.baseLow,
         isDirty = isDirty,
         onValuesChange = { p, t, l, a, h ->
             viewModel.setDraftValues(p, t, l, a, h)
         },
-        onTimingChange = { timing ->
-            viewModel.setDraftTiming(timing)
+        onEndTimeChange = { endTime ->
+            viewModel.setDraftEndTime(endTime)
         },
         availableAlarmProfiles = uiState.availableAlarmProfiles,
         presets = uiState.therapyAdjustmentPresets,
@@ -120,11 +118,12 @@ fun TherapyAdjustmentScreen(
 @Composable
 fun TherapyAdjustmentContent(
     formState: TherapyAdjustmentFormState,
+    adjustmentEndTime: Timestamp?,
     baseTarget: BgValue,
     baseLow: BgValue,
     isDirty: Boolean,
     onValuesChange: (percentage: Int, targetBg: BgValue?, lowThreshold: BgValue?, alarmProfileId: Long?, adjustmentHint: String?) -> Unit,
-    onTimingChange: (TherapyAdjustmentTiming) -> Unit,
+    onEndTimeChange: (Timestamp?) -> Unit,
     onPresetApplied: (TherapyAdjustment) -> Unit,
     onApplyClicked: () -> Unit,
     onDiscardClicked: () -> Unit,
@@ -199,9 +198,8 @@ fun TherapyAdjustmentContent(
                 ) {
                     if (!isDirty && isAdjustmentActive) {
                         val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
-                        val endTime = formState.timing.endTime
-                        val activeHintText = if (endTime != null) {
-                            stringResource(R.string.therapy_adjustment_active_until_format, timeFormat.format(endTime.ms))
+                        val activeHintText = if (adjustmentEndTime != null) {
+                            stringResource(R.string.therapy_adjustment_active_until_format, timeFormat.format(adjustmentEndTime.ms))
                         } else {
                             stringResource(R.string.therapy_adjustment_active_now)
                         }
@@ -271,7 +269,7 @@ fun TherapyAdjustmentContent(
                             .height(52.dp),
                         shape = RoundedCornerShape(12.dp),
                         onClick = {
-                            onTimingChange(TherapyAdjustmentTiming(mode = AdjustmentTimeMode.AD_HOC))
+                            onEndTimeChange(null)
                             onApplyClicked()
                         }
                     ) {
@@ -335,9 +333,9 @@ fun TherapyAdjustmentContent(
 
     if (showDurationDialog) {
         TherapyAdjustmentDurationDialog(
-            initialTiming = formState.timing,
-            onTimingSelected = { newTiming ->
-                onTimingChange(newTiming)
+            initialEndTime = adjustmentEndTime,
+            onEndTimeSelected = { newEndTime ->
+                onEndTimeChange(newEndTime)
                 showDurationDialog = false
                 onApplyClicked()
             },
@@ -357,17 +355,14 @@ private fun TherapyAdjustmentPreviewValues() {
                     formState = TherapyAdjustmentFormState(
                         percentage = -10,
                         targetBgOverride = BgValue.fromMgDl(120),
-                        lowThresholdOverride = BgValue.fromMgDl(80),
-                        timing = TherapyAdjustmentTiming(
-                            mode = AdjustmentTimeMode.DURATION,
-                            endTime = Timestamp(System.currentTimeMillis() + 3600_000)
-                        )
+                        lowThresholdOverride = BgValue.fromMgDl(80)
                     ),
+                    adjustmentEndTime = Timestamp(System.currentTimeMillis() + 3600_000),
                     baseTarget = BgValue.fromMgDl(100),
                     baseLow = BgValue.fromMgDl(70),
                     isDirty = false,
                     onValuesChange = { _, _, _, _, _ -> },
-                    onTimingChange = {},
+                    onEndTimeChange = {},
                     onPresetApplied = {},
                     onApplyClicked = {},
                     onDiscardClicked = {},

@@ -697,7 +697,7 @@ private fun TemporaryAdjustmentCard(
             // Header: Hint and Arrow
             val baseHint = adjustment.adjustmentHint ?: stringResource(R.string.therapy_adjustment_custom)
             val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
-            val endTimeStr = adjustment.timing.endTime?.let { timeFormat.format(it.ms) }
+            val endTimeStr = adjustment.adjustmentEndTime?.let { timeFormat.format(it.ms) }
             val hintText = if (!endTimeStr.isNullOrEmpty()) {
                 stringResource(R.string.therapy_adjustment_hint_until_format, baseHint, endTimeStr)
             } else {

@@ -13,7 +13,7 @@ import de.dh.daps.common.model.data.CurrentTherapySettings
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
-import de.dh.daps.common.model.data.TherapyAdjustmentTiming
+import de.dh.daps.common.model.data.ScheduledTherapyAdjustment
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.data.getBgForMinute
 import de.dh.daps.core.SystemRegistry
@@ -28,8 +28,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Locale
-
-import de.dh.daps.common.model.data.ScheduledTherapyAdjustment
 
 data class InsulinProfileUiState(
     val name: String = "",
@@ -48,7 +46,7 @@ data class TherapyAdjustmentUiState(
     val alarmProfileOverrideId: Long? = null,
     val alarmProfileOverrideName: String? = null,
     val adjustmentHint: String? = null,
-    val timing: TherapyAdjustmentTiming = TherapyAdjustmentTiming()
+    val adjustmentEndTime: Timestamp? = null
 )
 
 data class ActiveTherapyStatusUiState(
@@ -156,7 +154,7 @@ class CurrentTherapyViewModel(
             alarmProfileOverrideId = currentSettings.alarmProfileOverrideId,
             alarmProfileOverrideName = currentSettings.alarmProfileOverride?.name,
             adjustmentHint = currentSettings.adjustmentHint,
-            timing = currentSettings.adjustmentTiming
+            adjustmentEndTime = currentSettings.adjustmentEndTime
         )
 
         val activeTherapyStatus = ActiveTherapyStatusUiState(
@@ -233,7 +231,12 @@ class CurrentTherapyViewModel(
 
     val formStateHolder = TherapyAdjustmentFormStateHolder()
 
-    val draftAdjustment: StateFlow<TherapyAdjustmentUiState?> = formStateHolder.formState.map { form ->
+    private val _draftEndTime = MutableStateFlow<Timestamp?>(null)
+
+    val draftAdjustment: StateFlow<TherapyAdjustmentUiState?> = combine(
+        formStateHolder.formState,
+        _draftEndTime
+    ) { form, endTime ->
         TherapyAdjustmentUiState(
             percentage = form.percentage,
             targetBgOverride = form.targetBgOverride,
@@ -241,12 +244,13 @@ class CurrentTherapyViewModel(
             alarmProfileOverrideId = form.alarmProfileOverrideId,
             alarmProfileOverrideName = form.alarmProfileOverrideName,
             adjustmentHint = form.adjustmentHint,
-            timing = form.timing
+            adjustmentEndTime = endTime
         )
     }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     fun initDraftAdjustment() {
         val active = _uiState.value.activeTherapyStatus.adjustment
+        _draftEndTime.value = active.adjustmentEndTime
         formStateHolder.initFormState(
             TherapyAdjustmentFormState(
                 percentage = active.percentage,
@@ -254,8 +258,7 @@ class CurrentTherapyViewModel(
                 lowThresholdOverride = active.lowThresholdOverride,
                 alarmProfileOverrideId = active.alarmProfileOverrideId,
                 alarmProfileOverrideName = active.alarmProfileOverrideName,
-                adjustmentHint = active.adjustmentHint,
-                timing = active.timing
+                adjustmentHint = active.adjustmentHint
             )
         )
     }
@@ -266,7 +269,7 @@ class CurrentTherapyViewModel(
         lowThreshold: BgValue?,
         alarmProfileOverrideId: Long?,
         adjustmentHint: String? = null,
-        timing: TherapyAdjustmentTiming? = null
+        adjustmentEndTime: Timestamp? = null
     ) {
         val alarmProfiles = _uiState.value.availableAlarmProfiles
         val alarmProfileName = alarmProfiles.find { it.id == alarmProfileOverrideId }?.name
@@ -278,8 +281,8 @@ class CurrentTherapyViewModel(
             alarmProfileName = alarmProfileName,
             hint = adjustmentHint
         )
-        if (timing != null) {
-            formStateHolder.updateTiming(timing)
+        if (adjustmentEndTime != null) {
+            _draftEndTime.value = adjustmentEndTime
         }
     }
 
@@ -287,12 +290,13 @@ class CurrentTherapyViewModel(
         formStateHolder.applyPreset(preset)
     }
 
-    fun setDraftTiming(timing: TherapyAdjustmentTiming) {
-        formStateHolder.updateTiming(timing)
+    fun setDraftEndTime(endTime: Timestamp?) {
+        _draftEndTime.value = endTime
     }
 
     fun applyDraftAdjustment() {
         val form = formStateHolder.formState.value
+        val endTime = _draftEndTime.value
         viewModelScope.launch {
             therapyManager.setTherapyAdjustment(
                 percentage = form.percentage,
@@ -300,17 +304,19 @@ class CurrentTherapyViewModel(
                 lowThreshold = form.lowThresholdOverride,
                 alarmProfileOverrideId = form.alarmProfileOverrideId,
                 adjustmentHint = form.adjustmentHint,
-                timing = form.timing
+                adjustmentEndTime = endTime
             )
         }
     }
 
     fun resetDraft() {
         formStateHolder.reset()
+        _draftEndTime.value = _uiState.value.activeTherapyStatus.adjustment.adjustmentEndTime
     }
 
     fun isDraftDirty(): Boolean {
-        return formStateHolder.isDirty()
+        val active = _uiState.value.activeTherapyStatus.adjustment
+        return formStateHolder.isDirty() || _draftEndTime.value != active.adjustmentEndTime
     }
 
     fun setTherapyAdjustment(
@@ -319,7 +325,7 @@ class CurrentTherapyViewModel(
         lowThreshold: BgValue?,
         alarmProfileOverrideId: Long? = null,
         adjustmentHint: String? = null,
-        timing: TherapyAdjustmentTiming = TherapyAdjustmentTiming()
+        adjustmentEndTime: Timestamp? = null
     ) {
         viewModelScope.launch {
             therapyManager.setTherapyAdjustment(
@@ -328,7 +334,7 @@ class CurrentTherapyViewModel(
                 lowThreshold = lowThreshold,
                 alarmProfileOverrideId = alarmProfileOverrideId,
                 adjustmentHint = adjustmentHint,
-                timing = timing
+                adjustmentEndTime = adjustmentEndTime
             )
         }
     }

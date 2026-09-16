@@ -1,7 +1,6 @@
 package de.dh.daps.ui.screens.therapy
 
 import de.dh.daps.common.model.data.BgValue
-import de.dh.daps.common.model.data.TherapyAdjustmentTiming
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,8 +15,7 @@ data class TherapyAdjustmentFormState(
     val lowThresholdOverride: BgValue? = null,
     val alarmProfileOverrideId: Long? = null,
     val alarmProfileOverrideName: String? = null,
-    val adjustmentHint: String? = null,
-    val timing: TherapyAdjustmentTiming = TherapyAdjustmentTiming()
+    val adjustmentHint: String? = null
 )
 
 /**
@@ -52,10 +50,6 @@ class TherapyAdjustmentFormStateHolder {
                 adjustmentHint = hint
             )
         }
-    }
-
-    fun updateTiming(timing: TherapyAdjustmentTiming) {
-        _formState.update { it.copy(timing = timing) }
     }
 
     fun applyPreset(preset: TherapyAdjustment) {

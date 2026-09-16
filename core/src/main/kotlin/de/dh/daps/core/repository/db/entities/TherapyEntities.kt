@@ -6,6 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import de.dh.daps.common.model.ID_UNDEFINED
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.Timestamp
 
 /**
  * Entity for a therapy profile.
@@ -51,9 +52,7 @@ data class CurrentTherapySettingsEntity(
     val low_threshold_override: Short? = null,
     val alarm_profile_override_id: Long? = null,
     val adjustment_hint: String? = null,
-    val adjustment_time_mode: String? = null,
-    val adjustment_start_time_ms: Long? = null,
-    val adjustment_end_time_ms: Long? = null
+    val adjustment_end_time: Timestamp? = null
 )
 
 /**
@@ -65,8 +64,8 @@ data class CurrentTherapySettingsEntity(
 data class ScheduledTherapyAdjustmentEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = ID_UNDEFINED,
-    val start_time_ms: Long,
-    val end_time_ms: Long,
+    val start_time: Timestamp,
+    val end_time: Timestamp,
     val insulin_adjustment_percentage: Int = 0,
     val target_bg_override: Short? = null,
     val low_threshold_override: Short? = null,

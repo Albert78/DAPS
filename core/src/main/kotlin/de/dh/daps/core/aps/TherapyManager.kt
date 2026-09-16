@@ -19,7 +19,6 @@ import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.CurrentTherapySettings
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.ScheduledTherapyAdjustment
-import de.dh.daps.common.model.data.TherapyAdjustmentTiming
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.data.getAmountForMinute
 import de.dh.daps.common.model.data.getBgForMinute
@@ -137,10 +136,8 @@ class TherapyManager(
     suspend fun checkAndApplyTherapyAdjustmentTiming() {
         mutex.withLock {
             val currentSettings = runCatching { getCurrentTherapySettings() }.getOrNull() ?: return@withLock
-            val timing = currentSettings.adjustmentTiming
+            val endTime = currentSettings.adjustmentEndTime
             val now = Timestamp.now()
-            val startTime = timing.startTime
-            val endTime = timing.endTime
             if (endTime != null && now >= endTime) {
                 // Adjustment expired -> reset to neutral / standard
                 therapyRepository.updateCurrentTherapySettings(
@@ -151,13 +148,13 @@ class TherapyManager(
                     lowThresholdOverride = null,
                     alarmProfileOverrideId = null,
                     adjustmentHint = null,
-                    timing = TherapyAdjustmentTiming()
+                    adjustmentEndTime = null
                 )
                 Log.d(TAG, "Therapy adjustment expired and reset to neutral")
-            } else if (startTime != null && endTime != null && now >= startTime && now < endTime) {
-                // Adjustment became active -> schedule end wakeup if needed
+            } else if (endTime != null && now < endTime) {
+                // Adjustment is active -> schedule end wakeup if needed
                 wakeService?.scheduleWakeup(WAKEUP_TAG_ADJUSTMENT, WAKEUP_ID_END, endTime)
-                Log.d(TAG, "Therapy adjustment became active, scheduled end wakeup for ${endTime}")
+                Log.d(TAG, "Therapy adjustment is active, scheduled end wakeup for $endTime")
             }
         }
     }
@@ -259,7 +256,7 @@ class TherapyManager(
         lowThreshold: BgValue?,
         alarmProfileOverrideId: Long? = null,
         adjustmentHint: String? = null,
-        timing: TherapyAdjustmentTiming = TherapyAdjustmentTiming()
+        adjustmentEndTime: Timestamp? = null
     ) {
         mutex.withLock {
             val currentSettings = getCurrentTherapySettings()
@@ -272,19 +269,14 @@ class TherapyManager(
                 lowThresholdOverride = lowThreshold,
                 alarmProfileOverrideId = alarmProfileOverrideId,
                 adjustmentHint = adjustmentHint,
-                timing = timing
+                adjustmentEndTime = adjustmentEndTime
             )
 
             // Schedule system wakeup if needed
             val now = Timestamp.now()
-            val startTime = timing.startTime
-            val endTime = timing.endTime
-            if (startTime != null && startTime > now) {
-                wakeService?.scheduleWakeup(WAKEUP_TAG_ADJUSTMENT, WAKEUP_ID_START, startTime)
-                Log.d(TAG, "Scheduled adjustment start wakeup for ${timing.startTime}")
-            } else if (endTime != null && endTime > now) {
-                wakeService?.scheduleWakeup(WAKEUP_TAG_ADJUSTMENT, WAKEUP_ID_END, endTime)
-                Log.d(TAG, "Scheduled adjustment end wakeup for ${timing.endTime}")
+            if (adjustmentEndTime != null && adjustmentEndTime > now) {
+                wakeService?.scheduleWakeup(WAKEUP_TAG_ADJUSTMENT, WAKEUP_ID_END, adjustmentEndTime)
+                Log.d(TAG, "Scheduled adjustment end wakeup for $adjustmentEndTime")
             }
         }
     }

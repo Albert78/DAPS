@@ -26,9 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.model.data.AdjustmentTimeMode
 import de.dh.daps.common.model.data.Minutes
-import de.dh.daps.common.model.data.TherapyAdjustmentTiming
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.AbsoluteTimeStepper
@@ -49,8 +47,8 @@ private enum class DurationMode {
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun TherapyAdjustmentDurationDialog(
-    initialTiming: TherapyAdjustmentTiming,
-    onTimingSelected: (TherapyAdjustmentTiming) -> Unit,
+    initialEndTime: Timestamp?,
+    onEndTimeSelected: (Timestamp) -> Unit,
     onDismiss: () -> Unit
 ) {
     var selectedMode by remember { mutableStateOf(DurationMode.RELATIVE) }
@@ -61,28 +59,22 @@ fun TherapyAdjustmentDurationDialog(
     val minEndTime = remember(now) { now + Minutes(5) }
     val maxEndTime = remember(now) { now + Minutes((24 * 60).toShort()) }
 
-    val initialEndTime = remember(initialTiming) {
-        val endTime = initialTiming.endTime
-        if (endTime != null && endTime > minEndTime) {
-            endTime
+    val computedInitialEndTime = remember(initialEndTime) {
+        if (initialEndTime != null && initialEndTime > minEndTime) {
+            initialEndTime
         } else {
             now + Minutes(60)
         }
     }
 
-    var targetEndTime by remember { mutableStateOf(initialEndTime) }
+    var targetEndTime by remember { mutableStateOf(computedInitialEndTime) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             NormalTextButton(
                 onClick = {
-                    val resultTiming = TherapyAdjustmentTiming(
-                        mode = AdjustmentTimeMode.DURATION,
-                        startTime = now,
-                        endTime = targetEndTime
-                    )
-                    onTimingSelected(resultTiming)
+                    onEndTimeSelected(targetEndTime)
                 }
             ) {
                 Text(text = stringResource(id = android.R.string.ok))
