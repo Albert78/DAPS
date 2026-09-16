@@ -217,6 +217,20 @@
     <string name="aps_control_therapy_adjustment_alarm_profile_description">Schaltet während dieser Therapie-Anpassung automatisch auf das gewählte Alarmprofil um.</string>
     <string name="aps_control_therapy_adjustment_dialog_presets_title">Schnellauswahl</string>
 
+    <string name="therapy_adjustment_time_dialog_title">Zeitsteuerung</string>
+    <string name="therapy_adjustment_mode_adhoc">Jetzt festlegen</string>
+    <string name="therapy_adjustment_mode_duration">Dauer</string>
+    <string name="therapy_adjustment_mode_timewindow">Planen</string>
+    <string name="therapy_adjustment_adhoc_info">Die Einstellung gilt sofort und unbegrenzt, bis sie manuell beendet wird.</string>
+    <string name="therapy_adjustment_duration_select_label">Dauer wählen</string>
+    <string name="therapy_adjustment_duration_active_until">Gilt ab sofort bis %s Uhr</string>
+    <string name="therapy_adjustment_start_time_label">Startzeit</string>
+    <string name="therapy_adjustment_end_time_label">Endzeit</string>
+    <string name="therapy_adjustment_discard_dialog_title">Änderungen verwerfen?</string>
+    <string name="therapy_adjustment_discard_dialog_message">Es wurden Änderungen gemacht. Möchtest du sie verwerfen?</string>
+    <string name="therapy_adjustment_apply_button">Übernehmen</string>
+    <string name="therapy_adjustment_timing_summary_title">Zeitplanung</string>
+
     <string name="approx_prefix">ca.</string>
     <string name="unknown_label">Unbekannt</string>
     <string name="bg_delta_format">Delta: %1$s %2$s</string>

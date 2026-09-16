@@ -22,12 +22,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Adjust
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material.icons.filled.VerticalAlignBottom
+import de.dh.daps.common.model.data.AdjustmentTimeMode
+import java.text.SimpleDateFormat
+import java.util.Locale
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -760,6 +764,29 @@ private fun TemporaryAdjustmentCard(
                     else
                         MaterialTheme.colorScheme.onSurfaceVariant,
                     status = if (adjustment.activeAlarmProfileId != null) stringResource(R.string.label_active) else null
+                )
+
+                // Timing Status
+                val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+                val timingText = when (adjustment.timing.mode) {
+                    AdjustmentTimeMode.AD_HOC -> stringResource(R.string.therapy_adjustment_mode_adhoc)
+                    AdjustmentTimeMode.DURATION -> {
+                        val endStr = adjustment.timing.endTime?.let { timeFormat.format(it.ms) } ?: ""
+                        if (endStr.isNotEmpty()) "Aktiv bis $endStr Uhr" else "Aktiv"
+                    }
+                    AdjustmentTimeMode.TIME_WINDOW -> {
+                        val startStr = adjustment.timing.startTime?.let { timeFormat.format(it.ms) } ?: ""
+                        val endStr = adjustment.timing.endTime?.let { timeFormat.format(it.ms) } ?: ""
+                        "Geplant: $startStr – $endStr Uhr"
+                    }
+                }
+
+                AdjustmentItem(
+                    icon = Icons.Default.AccessTime,
+                    label = stringResource(R.string.therapy_adjustment_timing_summary_title),
+                    value = timingText,
+                    valueColor = MaterialTheme.colorScheme.primary,
+                    status = if (adjustment.timing.mode != AdjustmentTimeMode.AD_HOC) stringResource(R.string.label_active) else null
                 )
             }
         }

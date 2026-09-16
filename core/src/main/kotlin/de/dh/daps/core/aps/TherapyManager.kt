@@ -1,5 +1,6 @@
 package de.dh.daps.core.aps
 
+import android.content.Intent
 import android.util.Log
 import de.dh.daps.AppPreferencesRepository
 import de.dh.daps.common.model.ApsMode
@@ -17,6 +18,7 @@ import de.dh.daps.common.model.data.BgDelta
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.CurrentTherapySettings
 import de.dh.daps.common.model.data.InsulinProfile
+import de.dh.daps.common.model.data.TherapyAdjustmentTiming
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.data.getAmountForMinute
 import de.dh.daps.common.model.data.getBgForMinute
@@ -25,6 +27,8 @@ import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.repository.AlarmRepository
 import de.dh.daps.core.repository.TherapyRepository
 import de.dh.daps.core.repository.TreatmentRepository
+import de.dh.daps.core.system.SystemWakeService
+import de.dh.daps.core.system.WakeupHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -83,7 +87,8 @@ class TherapyManager(
     private val pumpManager: PumpManager,
     private val systemOrchestrator: SystemOrchestrator,
     private val alarmRepository: AlarmRepository,
-    private val scope: CoroutineScope
+    private val scope: CoroutineScope,
+    private val wakeService: SystemWakeService? = null
 ) {
     private val mutex = Mutex()
     private val executionMutex = Mutex()
@@ -108,6 +113,14 @@ class TherapyManager(
 
         pumpManager.issueCommand(PumpCommand.SyncHistory)
 
+        wakeService?.registerHandler(WAKEUP_TAG_ADJUSTMENT, object : WakeupHandler {
+            override fun onWakeup(wakeupId: UInt?, intent: Intent?) {
+                scope.launch {
+                    checkAndApplyTherapyAdjustmentTiming()
+                }
+            }
+        })
+
         scope.launch {
             currentTherapySettingsFlow
                 .map { it.effectiveInsulinProfile }
@@ -117,6 +130,39 @@ class TherapyManager(
                         PumpCommand.SetProfile(effectiveProfile)
                     )
                 }
+        }
+    }
+
+    suspend fun checkAndApplyTherapyAdjustmentTiming() {
+        mutex.withLock {
+            val currentSettings = runCatching { getCurrentTherapySettings() }.getOrNull() ?: return@withLock
+            val timing = currentSettings.adjustmentTiming
+            val now = Timestamp.now()
+            val startTime = timing.startTime
+            val endTime = timing.endTime
+            if (endTime != null && now >= endTime) {
+                // Adjustment expired -> reset to neutral / standard
+                val previousAlarmProfileId = currentSettings.activeAlarmProfileId
+                therapyRepository.updateCurrentTherapySettings(
+                    insulinProfileId = currentSettings.insulinProfile.id,
+                    defaultBgBlocks = currentSettings.defaultBgBlocks,
+                    insulinAdjustmentPercentage = 0,
+                    targetBgOverride = null,
+                    lowThresholdOverride = null,
+                    activeAlarmProfileId = null,
+                    adjustmentHint = null,
+                    timing = TherapyAdjustmentTiming()
+                )
+                if (previousAlarmProfileId != null) {
+                    val defaultProfile = alarmRepository.getAllAlarmProfiles().find { it.isDefault }
+                    defaultProfile?.let { alarmRepository.setActiveAlarmProfile(it.id) }
+                }
+                Log.d(TAG, "Therapy adjustment expired and reset to neutral")
+            } else if (startTime != null && endTime != null && now >= startTime && now < endTime) {
+                // Adjustment became active -> schedule end wakeup if needed
+                wakeService?.scheduleWakeup(WAKEUP_TAG_ADJUSTMENT, WAKEUP_ID_END, endTime)
+                Log.d(TAG, "Therapy adjustment became active, scheduled end wakeup for ${endTime}")
+            }
         }
     }
 
@@ -216,7 +262,8 @@ class TherapyManager(
         targetBg: BgValue?,
         lowThreshold: BgValue?,
         activeAlarmProfileId: Long? = null,
-        adjustmentHint: String? = null
+        adjustmentHint: String? = null,
+        timing: TherapyAdjustmentTiming = TherapyAdjustmentTiming()
     ) {
         mutex.withLock {
             val currentSettings = getCurrentTherapySettings()
@@ -229,7 +276,8 @@ class TherapyManager(
                 targetBgOverride = targetBg,
                 lowThresholdOverride = lowThreshold,
                 activeAlarmProfileId = activeAlarmProfileId,
-                adjustmentHint = adjustmentHint
+                adjustmentHint = adjustmentHint,
+                timing = timing
             )
 
             if (activeAlarmProfileId != null) {
@@ -237,6 +285,18 @@ class TherapyManager(
             } else if (previousAlarmProfileId != null) {
                 val defaultProfile = alarmRepository.getAllAlarmProfiles().find { it.isDefault }
                 defaultProfile?.let { alarmRepository.setActiveAlarmProfile(it.id) }
+            }
+
+            // Schedule system wakeup if needed
+            val now = Timestamp.now()
+            val startTime = timing.startTime
+            val endTime = timing.endTime
+            if (startTime != null && startTime > now) {
+                wakeService?.scheduleWakeup(WAKEUP_TAG_ADJUSTMENT, WAKEUP_ID_START, startTime)
+                Log.d(TAG, "Scheduled adjustment start wakeup for ${timing.startTime}")
+            } else if (endTime != null && endTime > now) {
+                wakeService?.scheduleWakeup(WAKEUP_TAG_ADJUSTMENT, WAKEUP_ID_END, endTime)
+                Log.d(TAG, "Scheduled adjustment end wakeup for ${timing.endTime}")
             }
         }
     }
@@ -540,5 +600,8 @@ class TherapyManager(
 
     companion object {
         val TAG = TherapyManager::class.simpleName
+        private const val WAKEUP_TAG_ADJUSTMENT = "TherapyAdjustment"
+        private val WAKEUP_ID_START = 1u
+        private val WAKEUP_ID_END = 2u
     }
 }

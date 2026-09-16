@@ -51,4 +51,7 @@ data class CurrentTherapySettingsEntity(
     val low_threshold_override: Short? = null,
     val active_alarm_profile_id: Long? = null,
     val adjustment_hint: String? = null,
+    val adjustment_time_mode: String? = null,
+    val adjustment_start_time_ms: Long? = null,
+    val adjustment_end_time_ms: Long? = null
 )

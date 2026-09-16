@@ -134,7 +134,8 @@ class SystemRegistryImpl(
                 pumpManager = pumpManager,
                 systemOrchestrator = systemOrchestrator,
                 alarmRepository = alarmRepository,
-                scope = scope
+                scope = scope,
+                wakeService = wakeService
             )
             val carbsInsulinCalculator = CarbsInsulinCalculator(timeService.tickInterval)
 

@@ -2,18 +2,20 @@ package de.dh.daps.core.repository.db.mappers
 
 import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinType
+import de.dh.daps.common.model.data.AdjustmentTimeMode
+import de.dh.daps.common.model.data.AlarmProfile
 import de.dh.daps.common.model.data.BgBlock
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Block
 import de.dh.daps.common.model.data.CurrentTherapySettings
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.TherapyAdjustmentTiming
+import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.repository.db.entities.CurrentTherapySettingsEntity
 import de.dh.daps.core.repository.db.entities.DBBgBlock
 import de.dh.daps.core.repository.db.entities.DBBlock
 import de.dh.daps.core.repository.db.entities.InsulinProfileEntity
-
-import de.dh.daps.common.model.data.AlarmProfile
 
 // Therapy Converters
 fun Block.toDb() = DBBlock(
@@ -71,18 +73,34 @@ fun CurrentTherapySettings.toEntity() = CurrentTherapySettingsEntity(
     low_threshold_override = this.lowThresholdOverride?.mgdlInt?.toShort(),
     active_alarm_profile_id = this.activeAlarmProfile?.id,
     adjustment_hint = this.adjustmentHint,
+    adjustment_time_mode = this.adjustmentTiming.mode.name,
+    adjustment_start_time_ms = this.adjustmentTiming.startTime?.ms,
+    adjustment_end_time_ms = this.adjustmentTiming.endTime?.ms
 )
 
 fun CurrentTherapySettingsEntity.toModel(
     profile: InsulinProfile,
     alarmProfile: AlarmProfile? = null
-) = CurrentTherapySettings(
-    id = this.id,
-    insulinProfile = profile,
-    defaultBgBlocks = this.default_bg_blocks.map { it.toModel() },
-    insulinAdjustmentPercentage = this.insulin_adjustment_percentage,
-    targetBgOverride = this.target_bg_override?.let { BgValue.fromMgDl(it) },
-    lowThresholdOverride = this.low_threshold_override?.let { BgValue.fromMgDl(it) },
-    activeAlarmProfile = alarmProfile,
-    adjustmentHint = this.adjustment_hint,
-)
+): CurrentTherapySettings {
+    val timeMode = this.adjustment_time_mode?.let {
+        runCatching { AdjustmentTimeMode.valueOf(it) }.getOrDefault(AdjustmentTimeMode.AD_HOC)
+    } ?: AdjustmentTimeMode.AD_HOC
+
+    val timing = TherapyAdjustmentTiming(
+        mode = timeMode,
+        startTime = this.adjustment_start_time_ms?.let { Timestamp(it) },
+        endTime = this.adjustment_end_time_ms?.let { Timestamp(it) }
+    )
+
+    return CurrentTherapySettings(
+        id = this.id,
+        insulinProfile = profile,
+        defaultBgBlocks = this.default_bg_blocks.map { it.toModel() },
+        insulinAdjustmentPercentage = this.insulin_adjustment_percentage,
+        targetBgOverride = this.target_bg_override?.let { BgValue.fromMgDl(it) },
+        lowThresholdOverride = this.low_threshold_override?.let { BgValue.fromMgDl(it) },
+        activeAlarmProfile = alarmProfile,
+        adjustmentHint = this.adjustment_hint,
+        adjustmentTiming = timing
+    )
+}

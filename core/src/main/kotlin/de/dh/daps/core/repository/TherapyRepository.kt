@@ -9,6 +9,7 @@ import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.CurrentTherapySettings
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.TherapyAdjustmentTiming
 import de.dh.daps.core.repository.db.AppDatabase
 import de.dh.daps.core.repository.db.MetabolicEventsDao
 import de.dh.daps.core.repository.db.TherapyDao
@@ -157,7 +158,8 @@ class TherapyRepository(
         targetBgOverride: BgValue? = null,
         lowThresholdOverride: BgValue? = null,
         activeAlarmProfileId: Long? = null,
-        adjustmentHint: String? = null
+        adjustmentHint: String? = null,
+        timing: TherapyAdjustmentTiming = TherapyAdjustmentTiming()
     ) {
         val existing = therapyDao.getCurrentTherapySettings()
         val entity = CurrentTherapySettingsEntity(
@@ -168,7 +170,10 @@ class TherapyRepository(
             target_bg_override = targetBgOverride?.mgdlInt?.toShort(),
             low_threshold_override = lowThresholdOverride?.mgdlInt?.toShort(),
             active_alarm_profile_id = activeAlarmProfileId,
-            adjustment_hint = adjustmentHint
+            adjustment_hint = adjustmentHint,
+            adjustment_time_mode = timing.mode.name,
+            adjustment_start_time_ms = timing.startTime?.ms,
+            adjustment_end_time_ms = timing.endTime?.ms
         )
         if (existing == null) {
             therapyDao.insertCurrentTherapySettings(entity)

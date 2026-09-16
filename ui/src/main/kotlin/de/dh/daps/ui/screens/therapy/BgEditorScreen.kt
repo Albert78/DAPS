@@ -333,7 +333,7 @@ private fun BgBlockList(
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                                 EditableValueStepper(
-                                    currentValue = block.target.mgdl.toDouble(),
+                                    currentValue = block.target.mgdl,
                                     onValueChange = { newVal ->
                                         val updated = blocks.toMutableList()
                                         updated[index] = block.copy(target = BgValue.fromMgDl(newVal.roundToInt()))
@@ -356,7 +356,7 @@ private fun BgBlockList(
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                                 EditableValueStepper(
-                                    currentValue = block.lowThreshold.mgdl.toDouble(),
+                                    currentValue = block.lowThreshold.mgdl,
                                     onValueChange = { newVal ->
                                         val updated = blocks.toMutableList()
                                         updated[index] = block.copy(lowThreshold = BgValue.fromMgDl(newVal.roundToInt()))

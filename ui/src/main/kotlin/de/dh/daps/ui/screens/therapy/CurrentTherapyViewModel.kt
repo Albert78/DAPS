@@ -13,6 +13,7 @@ import de.dh.daps.common.model.data.CurrentTherapySettings
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.TherapyAdjustmentTiming
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.data.getBgForMinute
 import de.dh.daps.core.SystemRegistry
@@ -42,7 +43,8 @@ data class TherapyAdjustmentUiState(
     val lowThresholdOverride: BgValue? = null,
     val activeAlarmProfileId: Long? = null,
     val activeAlarmProfileName: String? = null,
-    val adjustmentHint: String? = null
+    val adjustmentHint: String? = null,
+    val timing: TherapyAdjustmentTiming = TherapyAdjustmentTiming()
 )
 
 data class ActiveTherapyStatusUiState(
@@ -145,7 +147,8 @@ class CurrentTherapyViewModel(
             lowThresholdOverride = currentSettings.lowThresholdOverride,
             activeAlarmProfileId = currentSettings.activeAlarmProfileId,
             activeAlarmProfileName = currentSettings.activeAlarmProfile?.name,
-            adjustmentHint = currentSettings.adjustmentHint
+            adjustmentHint = currentSettings.adjustmentHint,
+            timing = currentSettings.adjustmentTiming
         )
 
         val activeTherapyStatus = ActiveTherapyStatusUiState(
@@ -192,7 +195,7 @@ class CurrentTherapyViewModel(
         val max = values.maxOrNull() ?: 0.0
 
         fun formatVal(v: Double): String {
-            return BgDelta.fromMgDl(v.toDouble()).toString(unit)
+            return BgDelta.fromMgDl(v).toString(unit)
         }
 
         return if (min == max) {
@@ -214,12 +217,72 @@ class CurrentTherapyViewModel(
         }
     }
 
+    private val _draftAdjustment = MutableStateFlow<TherapyAdjustmentUiState?>(null)
+    val draftAdjustment: StateFlow<TherapyAdjustmentUiState?> = _draftAdjustment
+
+    fun initDraftAdjustment() {
+        _draftAdjustment.value = _uiState.value.activeTherapyStatus.adjustment
+    }
+
+    fun setDraftValues(
+        percentage: Int,
+        targetBg: BgValue?,
+        lowThreshold: BgValue?,
+        activeAlarmProfileId: Long?,
+        adjustmentHint: String? = null,
+        timing: TherapyAdjustmentTiming? = null
+    ) {
+        val currentDraft = _draftAdjustment.value ?: _uiState.value.activeTherapyStatus.adjustment
+        val alarmProfiles = _uiState.value.availableAlarmProfiles
+        val alarmProfileName = alarmProfiles.find { it.id == activeAlarmProfileId }?.name
+        _draftAdjustment.value = currentDraft.copy(
+            percentage = percentage,
+            targetBgOverride = targetBg,
+            lowThresholdOverride = lowThreshold,
+            activeAlarmProfileId = activeAlarmProfileId,
+            activeAlarmProfileName = if (activeAlarmProfileId != null) alarmProfileName else null,
+            adjustmentHint = adjustmentHint ?: currentDraft.adjustmentHint,
+            timing = timing ?: currentDraft.timing
+        )
+    }
+
+    fun setDraftTiming(timing: TherapyAdjustmentTiming) {
+        val currentDraft = _draftAdjustment.value ?: _uiState.value.activeTherapyStatus.adjustment
+        _draftAdjustment.value = currentDraft.copy(timing = timing)
+    }
+
+    fun applyDraftAdjustment() {
+        val draft = _draftAdjustment.value ?: return
+        viewModelScope.launch {
+            therapyManager.setTherapyAdjustment(
+                percentage = draft.percentage,
+                targetBg = draft.targetBgOverride,
+                lowThreshold = draft.lowThresholdOverride,
+                activeAlarmProfileId = draft.activeAlarmProfileId,
+                adjustmentHint = draft.adjustmentHint,
+                timing = draft.timing
+            )
+            _draftAdjustment.value = null
+        }
+    }
+
+    fun resetDraft() {
+        _draftAdjustment.value = null
+    }
+
+    fun isDraftDirty(): Boolean {
+        val draft = _draftAdjustment.value ?: return false
+        val active = _uiState.value.activeTherapyStatus.adjustment
+        return draft != active
+    }
+
     fun setTherapyAdjustment(
         percentage: Int,
         targetBg: BgValue?,
         lowThreshold: BgValue?,
         activeAlarmProfileId: Long? = null,
-        adjustmentHint: String? = null
+        adjustmentHint: String? = null,
+        timing: TherapyAdjustmentTiming = TherapyAdjustmentTiming()
     ) {
         viewModelScope.launch {
             therapyManager.setTherapyAdjustment(
@@ -227,7 +290,8 @@ class CurrentTherapyViewModel(
                 targetBg = targetBg,
                 lowThreshold = lowThreshold,
                 activeAlarmProfileId = activeAlarmProfileId,
-                adjustmentHint = adjustmentHint
+                adjustmentHint = adjustmentHint,
+                timing = timing
             )
         }
     }

@@ -26,7 +26,6 @@ class SystemWakeServiceImpl(
     private val systemMetricsRepository: SystemMetricsRepository,
     private val scope: CoroutineScope
 ) : SystemWakeService {
-
     private val handlers = ConcurrentHashMap<String, WakeupHandler>()
     private val busyCount = AtomicInteger(0)
 

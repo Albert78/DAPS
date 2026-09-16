@@ -2,6 +2,24 @@ package de.dh.daps.common.model.data
 
 import de.dh.daps.common.model.ID_UNDEFINED
 
+enum class AdjustmentTimeMode {
+    AD_HOC,
+    DURATION,
+    TIME_WINDOW
+}
+
+data class TherapyAdjustmentTiming(
+    val mode: AdjustmentTimeMode = AdjustmentTimeMode.AD_HOC,
+    val startTime: Timestamp? = null,
+    val endTime: Timestamp? = null
+) {
+    fun isCurrentlyActive(now: Timestamp = Timestamp.now()): Boolean {
+        val startOk = startTime == null || now >= startTime
+        val endOk = endTime == null || now < endTime
+        return startOk && endOk
+    }
+}
+
 /**
  * Represents the current active therapy settings of the app.
  * It references the active [InsulinProfile].
@@ -15,6 +33,7 @@ data class CurrentTherapySettings(
     val lowThresholdOverride: BgValue? = null,
     val activeAlarmProfile: AlarmProfile? = null,
     val adjustmentHint: String? = null,
+    val adjustmentTiming: TherapyAdjustmentTiming = TherapyAdjustmentTiming()
 ) {
     /**
      * Resolves the ID of the active alarm profile, if one is set.
