@@ -335,7 +335,7 @@ private fun AdjustmentSection(
                 color = if (isActive) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.weight(1f))
-            if (isActive && isExpanded && onClear != null) {
+            if (isActive && onClear != null) {
                 IconButton(
                     onClick = onClear,
                     modifier = Modifier.size(24.dp)
