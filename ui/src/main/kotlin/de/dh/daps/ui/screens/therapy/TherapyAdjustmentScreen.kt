@@ -234,8 +234,8 @@ fun TherapyAdjustmentContent(
                     }
                 }
 
-                // Reusable Upper Form Section
-                TherapyAdjustmentUpperForm(
+                // Reusable Inner Form Section
+                TherapyAdjustmentInnerForm(
                     formState = formState,
                     baseTarget = baseTarget,
                     baseLow = baseLow,
@@ -342,8 +342,8 @@ fun TherapyAdjustmentContent(
     }
 }
 
-@Preview(showBackground = true, name = "Light Mode")
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
+@Preview(showBackground = true, name = "Light Mode", heightDp = 1000)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode", heightDp = 1000)
 @Composable
 private fun TherapyAdjustmentPreviewValues() {
     AppTheme {

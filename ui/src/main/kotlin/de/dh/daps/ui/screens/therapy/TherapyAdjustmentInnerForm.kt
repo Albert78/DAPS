@@ -77,12 +77,12 @@ import de.dh.daps.ui.common.theme.SoftBlue
 import de.dh.daps.ui.common.theme.SoftRed
 
 /**
- * Shared reusable form component for the top section of therapy adjustments
+ * Shared reusable form component for the inner section of therapy adjustments
  * (Insulin percentage adjustment, BG target/low overrides, alarm profile).
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun TherapyAdjustmentUpperForm(
+fun TherapyAdjustmentInnerForm(
     formState: TherapyAdjustmentFormState,
     baseTarget: BgValue,
     baseLow: BgValue,
@@ -473,14 +473,14 @@ private fun StandardValueDisplay(
     }
 }
 
-@Preview(showBackground = true, name = "Light Mode - All Active")
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode - All Active")
+@Preview(showBackground = true, name = "Light Mode - All Active", heightDp = 850)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode - All Active", heightDp = 850)
 @Composable
-private fun TherapyAdjustmentUpperFormPreview() {
+private fun TherapyAdjustmentInnerFormPreview() {
     AppTheme {
         CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
             Surface(modifier = Modifier.padding(16.dp)) {
-                TherapyAdjustmentUpperForm(
+                TherapyAdjustmentInnerForm(
                     formState = TherapyAdjustmentFormState(
                         percentage = -15,
                         targetBgOverride = BgValue.fromMgDl(130),
@@ -503,11 +503,11 @@ private fun TherapyAdjustmentUpperFormPreview() {
 
 @Preview(showBackground = true, name = "Light Mode - Collapsed Inactive")
 @Composable
-private fun TherapyAdjustmentUpperFormCollapsedPreview() {
+private fun TherapyAdjustmentInnerFormCollapsedPreview() {
     AppTheme {
         CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
             Surface(modifier = Modifier.padding(16.dp)) {
-                TherapyAdjustmentUpperForm(
+                TherapyAdjustmentInnerForm(
                     formState = TherapyAdjustmentFormState(
                         percentage = 0,
                         targetBgOverride = null,
