@@ -4,8 +4,8 @@ import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -28,6 +28,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,9 +40,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.TherapyAdjustment
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
+import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
@@ -159,6 +162,7 @@ fun TherapyAdjustmentsContent(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TherapyAdjustmentListItem(
     adjustment: TherapyAdjustment,
@@ -170,14 +174,18 @@ fun TherapyAdjustmentListItem(
             positiveColor = SoftRed,
             negativeColor = SoftBlue,
             neutralColor = NeutralGrey,
-            positivePrefix = "+"
+            positivePrefix = "+",
+            suffix = "%"
         )
     }
 
     ListItem(
         headlineContent = { Text(adjustment.name) },
         supportingContent = {
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
                 Text(
                     text = displayStrategyInsulin.format(adjustment.percentage.toDouble()),
                     color = displayStrategyInsulin.color(adjustment.percentage.toDouble())
@@ -186,7 +194,7 @@ fun TherapyAdjustmentListItem(
                 if (targetBg != null) {
                     val targetValue = BgValue.fromMgDl(targetBg.toInt())
                     Text(
-                        text = "• Ziel: ${glucoseValue(targetValue, withUnit = true)}",
+                        text = "•\u00A0Ziel:\u00A0${glucoseValue(targetValue, withUnit = true).replace(' ', '\u00A0')}",
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -194,7 +202,7 @@ fun TherapyAdjustmentListItem(
                 if (lowThreshold != null) {
                     val lowValue = BgValue.fromMgDl(lowThreshold.toInt())
                     Text(
-                        text = "• Low: ${glucoseValue(lowValue, withUnit = true)}",
+                        text = "•\u00A0Low:\u00A0${glucoseValue(lowValue, withUnit = true).replace(' ', '\u00A0')}",
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -224,17 +232,19 @@ fun TherapyAdjustmentListItem(
 @Composable
 fun TherapyAdjustmentsPreview() {
     AppTheme {
-        TherapyAdjustmentsContent(
-            uiState = TherapyAdjustmentsUiState(
-                adjustments = listOf(
-                    TherapyAdjustment(name = "Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
-                    TherapyAdjustment(name = "Stress", percentage = 20, targetBgMgDl = 115, lowThresholdMgDl = 75)
-                )
-            ),
-            onDeleteAdjustment = {},
-            onAddAdjustment = {},
-            onEditAdjustment = {},
-            onNavigateUp = {}
-        )
+        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
+            TherapyAdjustmentsContent(
+                uiState = TherapyAdjustmentsUiState(
+                    adjustments = listOf(
+                        TherapyAdjustment(name = "Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
+                        TherapyAdjustment(name = "Stress", percentage = 20, targetBgMgDl = 115, lowThresholdMgDl = 75)
+                    )
+                ),
+                onDeleteAdjustment = {},
+                onAddAdjustment = {},
+                onEditAdjustment = {},
+                onNavigateUp = {}
+            )
+        }
     }
 }
