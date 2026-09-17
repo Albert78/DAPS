@@ -192,17 +192,19 @@ fun TherapyAdjustmentListItem(
                 )
                 val targetBg = adjustment.targetBgMgDl
                 if (targetBg != null) {
+                    Text(text = "•")
                     val targetValue = BgValue.fromMgDl(targetBg.toInt())
                     Text(
-                        text = "•\u00A0Ziel:\u00A0${glucoseValue(targetValue, withUnit = true).replace(' ', '\u00A0')}",
+                        text = "Ziel:\u00A0${glucoseValue(targetValue, withUnit = true).replace(' ', '\u00A0')}",
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 val lowThreshold = adjustment.lowThresholdMgDl
                 if (lowThreshold != null) {
+                    Text(text = "•")
                     val lowValue = BgValue.fromMgDl(lowThreshold.toInt())
                     Text(
-                        text = "•\u00A0Low:\u00A0${glucoseValue(lowValue, withUnit = true).replace(' ', '\u00A0')}",
+                        text = "Low:\u00A0${glucoseValue(lowValue, withUnit = true).replace(' ', '\u00A0')}",
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }

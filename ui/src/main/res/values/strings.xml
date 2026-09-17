@@ -30,9 +30,9 @@
     <string name="therapy_adjustment_editor_title_edit">Therapie-Anpassung bearbeiten</string>
     <string name="therapy_adjustment_name_label">Name des Presets</string>
     <string name="therapy_adjustment_percentage_label">Insulin-Anpassung (%)</string>
-    <string name="therapy_adjustment_target_bg_override_label">Zielwert-Übersteuerung</string>
-    <string name="therapy_adjustment_low_threshold_override_label">Low-Schwellen-Übersteuerung</string>
-    <string name="therapy_adjustment_alarm_profile_override_label">Alarmprofil-Übersteuerung</string>
+    <string name="therapy_adjustment_target_bg_override_label">Zielwert</string>
+    <string name="therapy_adjustment_low_threshold_override_label">Low-Schwelle</string>
+    <string name="therapy_adjustment_alarm_profile_override_label">Alarmprofil</string>
     <string name="therapy_adjustment_override_none">Keine Übersteuerung</string>
     <string name="therapy_adjustment_editor_discard_title">Änderungen verwerfen?</string>
     <string name="therapy_adjustment_editor_discard_message">Du hast ungespeicherte Änderungen. Möchtest du diese verwerfen oder speichern?</string>

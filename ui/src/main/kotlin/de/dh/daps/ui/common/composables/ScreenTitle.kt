@@ -56,7 +56,7 @@ fun ScreenTitle(
         }
         Text(
             text = modifiedText,
-            style = MaterialTheme.typography.headlineLarge,
+            style = MaterialTheme.typography.titleLarge,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
