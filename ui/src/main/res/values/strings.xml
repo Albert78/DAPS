@@ -17,6 +17,25 @@
     <string name="master_data_item_meal_types_desc">Absorptionskurven und Wirkzeiten</string>
     <string name="master_data_item_alarm_profiles_title">Alarmprofile</string>
     <string name="master_data_item_alarm_profiles_desc">Vibrations- und Alarm-Einstellungen</string>
+    <string name="master_data_item_therapy_adjustments_title">Therapie-Anpassungen</string>
+    <string name="master_data_item_therapy_adjustments_desc">Vordefinierte Presets für Aktivitäten und Zustände</string>
+
+    <string name="therapy_adjustments_screen_title">Therapie-Anpassungen</string>
+    <string name="therapy_adjustments_empty_list">Keine Anpassungs-Presets vorhanden.</string>
+    <string name="cd_add_therapy_adjustment">Therapie-Anpassung hinzufügen</string>
+    <string name="delete_therapy_adjustment_title">Therapie-Anpassung löschen</string>
+    <string name="delete_therapy_adjustment_message">Möchtest du das Preset „%1$s“ wirklich löschen?</string>
+
+    <string name="therapy_adjustment_editor_title_new">Neue Therapie-Anpassung</string>
+    <string name="therapy_adjustment_editor_title_edit">Therapie-Anpassung bearbeiten</string>
+    <string name="therapy_adjustment_name_label">Name des Presets</string>
+    <string name="therapy_adjustment_percentage_label">Insulin-Anpassung (%)</string>
+    <string name="therapy_adjustment_target_bg_override_label">Zielwert-Übersteuerung</string>
+    <string name="therapy_adjustment_low_threshold_override_label">Low-Schwellen-Übersteuerung</string>
+    <string name="therapy_adjustment_alarm_profile_override_label">Alarmprofil-Übersteuerung</string>
+    <string name="therapy_adjustment_override_none">Keine Übersteuerung</string>
+    <string name="therapy_adjustment_editor_discard_title">Änderungen verwerfen?</string>
+    <string name="therapy_adjustment_editor_discard_message">Du hast ungespeicherte Änderungen. Möchtest du diese verwerfen oder speichern?</string>
 
     <string name="insulin_types_screen_title">Insulintypen</string>
     <string name="insulin_type_editor_title_edit">Insulintyp bearbeiten</string>

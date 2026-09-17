@@ -39,6 +39,8 @@ import de.dh.daps.common.navigation.PermissionsRoute
 import de.dh.daps.common.navigation.PreferencesMainRoute
 import de.dh.daps.common.navigation.PumpManagementRoute
 import de.dh.daps.common.navigation.SystemControlRoute
+import de.dh.daps.common.navigation.TherapyAdjustmentEditorRoute
+import de.dh.daps.common.navigation.TherapyAdjustmentPresetsRoute
 import de.dh.daps.common.navigation.TherapyAdjustmentRoute
 import de.dh.daps.common.navigation.ScheduledTherapyAdjustmentRoute
 import de.dh.daps.core.SystemRegistry
@@ -93,6 +95,10 @@ import de.dh.daps.ui.screens.therapy.CurrentTherapyViewModel
 import de.dh.daps.ui.screens.therapy.ScheduledTherapyAdjustmentScreen
 import de.dh.daps.ui.screens.therapy.ScheduledTherapyViewModel
 import de.dh.daps.ui.screens.therapy.TherapyAdjustmentScreen
+import de.dh.daps.ui.screens.therapyadjustments.TherapyAdjustmentEditorScreen
+import de.dh.daps.ui.screens.therapyadjustments.TherapyAdjustmentEditorViewModel
+import de.dh.daps.ui.screens.therapyadjustments.TherapyAdjustmentsScreen
+import de.dh.daps.ui.screens.therapyadjustments.TherapyAdjustmentsViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -397,6 +403,28 @@ class MainFeatureNavGraph(
                     onNavigateToBgEditor = { navViewModel.push(BgEditorRoute) },
                     onNavigateToMealTypes = { navViewModel.push(MealTypesRoute) },
                     onNavigateToAlarmProfiles = { navViewModel.push(AlarmProfilesRoute) },
+                    onNavigateToTherapyAdjustments = { navViewModel.push(TherapyAdjustmentPresetsRoute) },
+                    onNavigateUp = { navViewModel.pop() }
+                )
+            }
+
+            is TherapyAdjustmentPresetsRoute -> NavEntry(key) {
+                val vm: TherapyAdjustmentsViewModel = viewModel(
+                    factory = TherapyAdjustmentsViewModel.Companion.Factory(registry)
+                )
+                TherapyAdjustmentsScreen(
+                    viewModel = vm,
+                    onNavigateToEditor = { id -> navViewModel.push(TherapyAdjustmentEditorRoute(adjustmentId = id)) },
+                    onNavigateUp = { navViewModel.pop() }
+                )
+            }
+
+            is TherapyAdjustmentEditorRoute -> NavEntry(key) {
+                val vm: TherapyAdjustmentEditorViewModel = viewModel(
+                    factory = TherapyAdjustmentEditorViewModel.Companion.Factory(registry, key.adjustmentId)
+                )
+                TherapyAdjustmentEditorScreen(
+                    viewModel = vm,
                     onNavigateUp = { navViewModel.pop() }
                 )
             }

@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Adjust
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -41,6 +42,7 @@ fun MasterDataScreen(
     onNavigateToBgEditor: () -> Unit,
     onNavigateToMealTypes: () -> Unit,
     onNavigateToAlarmProfiles: () -> Unit,
+    onNavigateToTherapyAdjustments: () -> Unit,
     onNavigateUp: () -> Unit
 ) {
     val scrollState = rememberScrollState()
@@ -165,6 +167,26 @@ fun MasterDataScreen(
                 modifier = Modifier.clickable(onClick = onNavigateToAlarmProfiles)
             )
             HorizontalDivider()
+
+            ListItem(
+                headlineContent = { Text(stringResource(id = R.string.master_data_item_therapy_adjustments_title)) },
+                supportingContent = { Text(stringResource(id = R.string.master_data_item_therapy_adjustments_desc)) },
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Default.Tune,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                trailingContent = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = null
+                    )
+                },
+                modifier = Modifier.clickable(onClick = onNavigateToTherapyAdjustments)
+            )
+            HorizontalDivider()
         }
     }
 }
@@ -180,6 +202,7 @@ fun MasterDataScreenPreview() {
             onNavigateToBgEditor = {},
             onNavigateToMealTypes = {},
             onNavigateToAlarmProfiles = {},
+            onNavigateToTherapyAdjustments = {},
             onNavigateUp = {}
         )
     }

@@ -395,6 +395,22 @@ class TherapyManager(
     suspend fun getAllTherapyAdjustments(): List<TherapyAdjustment> =
         therapyRepository.getAllTherapyAdjustments()
 
+    suspend fun getTherapyAdjustmentById(id: Long): TherapyAdjustment? =
+        therapyRepository.getTherapyAdjustmentById(id)
+
+    suspend fun saveTherapyAdjustment(adjustment: TherapyAdjustment): Long {
+        return if (adjustment.id == ID_UNDEFINED) {
+            therapyRepository.insertTherapyAdjustment(adjustment)
+        } else {
+            therapyRepository.updateTherapyAdjustment(adjustment)
+            adjustment.id
+        }
+    }
+
+    suspend fun deleteTherapyAdjustment(id: Long) {
+        therapyRepository.deleteTherapyAdjustment(id)
+    }
+
     // -----------------------------------------------------------------------------------------
     // --- Section: Critical Insulin & Carb Management (Requires Lock) ---
     // -----------------------------------------------------------------------------------------
