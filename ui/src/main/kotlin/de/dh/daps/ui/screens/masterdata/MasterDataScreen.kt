@@ -149,26 +149,6 @@ fun MasterDataScreen(
             HorizontalDivider()
 
             ListItem(
-                headlineContent = { Text(stringResource(id = R.string.master_data_item_alarm_profiles_title)) },
-                supportingContent = { Text(stringResource(id = R.string.master_data_item_alarm_profiles_desc)) },
-                leadingContent = {
-                    Icon(
-                        imageVector = Icon_Menu_Alarms,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                },
-                trailingContent = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                        contentDescription = null
-                    )
-                },
-                modifier = Modifier.clickable(onClick = onNavigateToAlarmProfiles)
-            )
-            HorizontalDivider()
-
-            ListItem(
                 headlineContent = { Text(stringResource(id = R.string.master_data_item_therapy_adjustments_title)) },
                 supportingContent = { Text(stringResource(id = R.string.master_data_item_therapy_adjustments_desc)) },
                 leadingContent = {
@@ -185,6 +165,26 @@ fun MasterDataScreen(
                     )
                 },
                 modifier = Modifier.clickable(onClick = onNavigateToTherapyAdjustments)
+            )
+            HorizontalDivider()
+
+            ListItem(
+                headlineContent = { Text(stringResource(id = R.string.master_data_item_alarm_profiles_title)) },
+                supportingContent = { Text(stringResource(id = R.string.master_data_item_alarm_profiles_desc)) },
+                leadingContent = {
+                    Icon(
+                        imageVector = Icon_Menu_Alarms,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                trailingContent = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = null
+                    )
+                },
+                modifier = Modifier.clickable(onClick = onNavigateToAlarmProfiles)
             )
             HorizontalDivider()
         }
