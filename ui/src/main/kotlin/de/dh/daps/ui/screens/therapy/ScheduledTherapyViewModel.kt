@@ -9,6 +9,7 @@ import de.dh.daps.common.model.data.AlarmProfile
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.ScheduledTherapyAdjustment
+import de.dh.daps.common.model.data.TherapyAdjustment
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.data.getBgForMinute
 import de.dh.daps.core.SystemRegistry
@@ -56,26 +57,15 @@ class ScheduledTherapyViewModel(
 
     private var isInitializedFromExisting = false
 
-    // Hardcoded presets for now.
-    // See also CurrentTherapyViewModel
-    // TODO: Make these user-editable in the future (e.g. via a database table or preferences).
-    private val hardcodedPresets = listOf(
-        TherapyAdjustment("Neutral"),
-        TherapyAdjustment("Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
-        TherapyAdjustment("Klettern", percentage = -40, targetBgMgDl = 160, lowThresholdMgDl = 110),
-        TherapyAdjustment("Alkohol", percentage = -15, targetBgMgDl = 120, lowThresholdMgDl = 80),
-        TherapyAdjustment("Krank", percentage = 30, targetBgMgDl = 100, lowThresholdMgDl = 70),
-        TherapyAdjustment("Stress", percentage = 20, targetBgMgDl = 115, lowThresholdMgDl = 75)
-    )
-
     init {
         val glucoseUnitFlow = appPreferencesRepository.cachedPreferences.map { it.glucoseUnit }
         combine(
             therapyManager.currentTherapySettingsFlow,
             systemRegistry.alarmRepository.observeAllAlarmProfiles(),
             glucoseUnitFlow,
-            therapyManager.observeScheduledTherapyAdjustment()
-        ) { currentSettings, alarmProfiles, unit, existingScheduled ->
+            therapyManager.observeScheduledTherapyAdjustment(),
+            therapyManager.observeAllTherapyAdjustments()
+        ) { currentSettings, alarmProfiles, unit, existingScheduled, presets ->
             val now = Timestamp.now()
             val baseBg = currentSettings.defaultBgBlocks.getBgForMinute(now.minutesSinceMidnight())
 
@@ -103,7 +93,7 @@ class ScheduledTherapyViewModel(
                     baseLow = baseBg.second,
                     glucoseUnit = unit,
                     availableAlarmProfiles = alarmProfiles,
-                    therapyAdjustmentPresets = hardcodedPresets,
+                    therapyAdjustmentPresets = presets,
                     existingScheduledAdjustment = existingScheduled
                 )
             }

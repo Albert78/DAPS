@@ -19,6 +19,7 @@ import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.CurrentTherapySettings
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.ScheduledTherapyAdjustment
+import de.dh.daps.common.model.data.TherapyAdjustment
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.data.getAmountForMinute
 import de.dh.daps.common.model.data.getBgForMinute
@@ -385,6 +386,14 @@ class TherapyManager(
     suspend fun deleteScheduledTherapyAdjustment() {
         therapyRepository.deleteAllScheduledTherapyAdjustments()
     }
+
+    // --- Therapy Adjustment Presets ---
+
+    fun observeAllTherapyAdjustments(): Flow<List<TherapyAdjustment>> =
+        therapyRepository.observeAllTherapyAdjustments()
+
+    suspend fun getAllTherapyAdjustments(): List<TherapyAdjustment> =
+        therapyRepository.getAllTherapyAdjustments()
 
     // -----------------------------------------------------------------------------------------
     // --- Section: Critical Insulin & Carb Management (Requires Lock) ---

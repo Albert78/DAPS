@@ -5,6 +5,7 @@ import de.dh.daps.common.R
 import de.dh.daps.common.model.data.Block
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.TherapyAdjustment
 
 val FAST_KE_DEFAULT_PEAK = Minutes(25)
 
@@ -79,4 +80,13 @@ fun getDefaultInsulinProfile(context: Context, insulinType: InsulinType): Insuli
     insulinConcentration = insulinType.defaultConcentration,
     dia = insulinType.dia,
     peak = insulinType.peak
+)
+
+fun getDefaultTherapyAdjustments(context: Context): List<TherapyAdjustment> = listOf(
+    TherapyAdjustment(name = context.getString(R.string.therapy_adjustment_preset_neutral)),
+    TherapyAdjustment(name = context.getString(R.string.therapy_adjustment_preset_biking), percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
+    TherapyAdjustment(name = context.getString(R.string.therapy_adjustment_preset_climbing), percentage = -40, targetBgMgDl = 160, lowThresholdMgDl = 110),
+    TherapyAdjustment(name = context.getString(R.string.therapy_adjustment_preset_alcohol), percentage = -15, targetBgMgDl = 120, lowThresholdMgDl = 80),
+    TherapyAdjustment(name = context.getString(R.string.therapy_adjustment_preset_sick), percentage = 30, targetBgMgDl = 100, lowThresholdMgDl = 70),
+    TherapyAdjustment(name = context.getString(R.string.therapy_adjustment_preset_stress), percentage = 20, targetBgMgDl = 115, lowThresholdMgDl = 75)
 )

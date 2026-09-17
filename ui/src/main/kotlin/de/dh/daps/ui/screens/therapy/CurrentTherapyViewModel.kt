@@ -14,6 +14,7 @@ import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.ScheduledTherapyAdjustment
+import de.dh.daps.common.model.data.TherapyAdjustment
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.data.getBgForMinute
 import de.dh.daps.core.SystemRegistry
@@ -61,14 +62,6 @@ data class ActiveTherapyStatusUiState(
     val baseLow: BgValue = BgValue.fromMgDl(0)
 )
 
-data class TherapyAdjustment(
-    val name: String,
-    val percentage: Int = 0,
-    val targetBgMgDl: Short? = null,
-    val lowThresholdMgDl: Short? = null,
-    val alarmProfileOverrideId: Long? = null
-)
-
 data class CurrentTherapyUiState(
     val isLoading: Boolean = true,
     val activeTherapyStatus: ActiveTherapyStatusUiState = ActiveTherapyStatusUiState(),
@@ -92,18 +85,6 @@ class CurrentTherapyViewModel(
     private val therapyManager = systemRegistry.therapyManager
     private val appPreferencesRepository = systemRegistry.appPreferencesRepository
 
-    // Hardcoded presets for now.
-    // See also ScheduledTherapyViewModel
-    // TODO: Make these user-editable in the future (e.g. via a database table or preferences).
-    private val hardcodedPresets = listOf(
-        TherapyAdjustment("Neutral"),
-        TherapyAdjustment("Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
-        TherapyAdjustment("Klettern", percentage = -40, targetBgMgDl = 160, lowThresholdMgDl = 110),
-        TherapyAdjustment("Alkohol", percentage = -15, targetBgMgDl = 120, lowThresholdMgDl = 80),
-        TherapyAdjustment("Krank", percentage = 30, targetBgMgDl = 100, lowThresholdMgDl = 70),
-        TherapyAdjustment("Stress", percentage = 20, targetBgMgDl = 115, lowThresholdMgDl = 75)
-    )
-
     init {
         val glucoseUnitFlow = appPreferencesRepository.cachedPreferences.map { it.glucoseUnit }
         combine(
@@ -111,9 +92,18 @@ class CurrentTherapyViewModel(
             therapyManager.observeAllInsulinProfiles(),
             systemRegistry.alarmRepository.observeAllAlarmProfiles(),
             glucoseUnitFlow,
-            therapyManager.observeScheduledTherapyAdjustment()
-        ) { currentSettings, profiles, alarmProfiles, unit, scheduledAdjustment ->
-            updateState(currentSettings, profiles, alarmProfiles, unit, scheduledAdjustment)
+            therapyManager.observeScheduledTherapyAdjustment(),
+            therapyManager.observeAllTherapyAdjustments()
+        ) { flows ->
+            @Suppress("UNCHECKED_CAST")
+            updateState(
+                currentSettings = flows[0] as CurrentTherapySettings,
+                profiles = flows[1] as List<InsulinProfile>,
+                alarmProfiles = flows[2] as List<AlarmProfile>,
+                unit = flows[3] as GlucoseUnit,
+                scheduledAdjustment = flows[4] as ScheduledTherapyAdjustment?,
+                presets = flows[5] as List<TherapyAdjustment>
+            )
         }.launchIn(viewModelScope)
     }
 
@@ -122,7 +112,8 @@ class CurrentTherapyViewModel(
         profiles: List<InsulinProfile>,
         alarmProfiles: List<AlarmProfile>,
         unit: GlucoseUnit,
-        scheduledAdjustment: ScheduledTherapyAdjustment?
+        scheduledAdjustment: ScheduledTherapyAdjustment?,
+        presets: List<TherapyAdjustment>
     ) {
         val now = Timestamp.now()
         val isf = therapyManager.getIsfFactor(now)
@@ -180,7 +171,7 @@ class CurrentTherapyViewModel(
                 availableInsulinProfiles = profiles,
                 availableAlarmProfiles = alarmProfiles,
                 defaultBgBlocks = currentSettings.defaultBgBlocks,
-                therapyAdjustmentPresets = hardcodedPresets
+                therapyAdjustmentPresets = presets
             )
         }
         if (isInitialLoad) {

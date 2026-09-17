@@ -1,5 +1,7 @@
 package de.dh.daps.ui.screens.therapy
 
+import de.dh.daps.common.model.data.TherapyAdjustment
+
 import android.app.TimePickerDialog
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler

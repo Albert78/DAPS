@@ -11,6 +11,7 @@ import de.dh.daps.common.model.getDefaultAlarmProfiles
 import de.dh.daps.common.model.getDefaultInsulinProfile
 import de.dh.daps.common.model.getDefaultInsulinTypes
 import de.dh.daps.common.model.getDefaultMealTypes
+import de.dh.daps.common.model.getDefaultTherapyAdjustments
 
 object DatabaseInitializer {
     suspend fun initialize(
@@ -25,6 +26,7 @@ object DatabaseInitializer {
         initializeDefaultInsulinProfileAndCurrentTherapy(context, therapyRepository)
         initializeSettings(settingsRepository)
         initializeDefaultAlarmProfiles(context, alarmRepository)
+        initializeDefaultTherapyAdjustments(context, therapyRepository)
     }
 
     private suspend fun initializeInsulinTypes(context: Context, repository: TreatmentRepository) {
@@ -89,6 +91,15 @@ object DatabaseInitializer {
             if (profile.isDefault) {
                 repository.setActiveAlarmProfile(id)
             }
+        }
+    }
+
+    private suspend fun initializeDefaultTherapyAdjustments(context: Context, repository: TherapyRepository) {
+        if (repository.getAllTherapyAdjustments().isNotEmpty()) {
+            return
+        }
+        getDefaultTherapyAdjustments(context).forEach { adjustment ->
+            repository.insertTherapyAdjustment(adjustment)
         }
     }
 }

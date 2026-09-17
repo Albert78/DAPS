@@ -21,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.common.model.data.TherapyAdjustment
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
 import de.dh.daps.ui.common.LocalGlucoseUnit
@@ -81,8 +82,9 @@ fun TherapyAdjustmentPresetsSection(
                                     style = MaterialTheme.typography.labelSmall,
                                     color = displayStrategyInsulin.color(preset.percentage.toDouble())
                                 )
-                                if (preset.targetBgMgDl != null) {
-                                    val targetValue = BgValue.fromMgDl(preset.targetBgMgDl.toInt())
+                                val targetBg = preset.targetBgMgDl
+                                if (targetBg != null) {
+                                    val targetValue = BgValue.fromMgDl(targetBg.toInt())
                                     Text(
                                         text = "• ${glucoseValue(targetValue, withUnit = true)}",
                                         style = MaterialTheme.typography.labelSmall,
@@ -106,8 +108,8 @@ private fun TherapyAdjustmentPresetsSectionPreview() {
             Surface(modifier = Modifier.padding(16.dp)) {
                 TherapyAdjustmentPresetsSection(
                     presets = listOf(
-                        TherapyAdjustment("Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
-                        TherapyAdjustment("Stress", percentage = 20, targetBgMgDl = 115, lowThresholdMgDl = 75)
+                        TherapyAdjustment(name = "Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
+                        TherapyAdjustment(name = "Stress", percentage = 20, targetBgMgDl = 115, lowThresholdMgDl = 75)
                     ),
                     onPresetApplied = {}
                 )

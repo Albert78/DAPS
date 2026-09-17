@@ -50,6 +50,13 @@
     <string name="alarm_profile_default_quiet_name">Kino / Diskret</string>
     <string name="alarm_profile_default_loud_name">Laut / Draußen</string>
 
+    <string name="therapy_adjustment_preset_neutral">Neutral</string>
+    <string name="therapy_adjustment_preset_biking">Fahrrad fahren</string>
+    <string name="therapy_adjustment_preset_climbing">Klettern</string>
+    <string name="therapy_adjustment_preset_alcohol">Alkohol</string>
+    <string name="therapy_adjustment_preset_sick">Krank</string>
+    <string name="therapy_adjustment_preset_stress">Stress</string>
+
     <string name="therapy_insulin_profile_selection_title">Insulinprofil wählen</string>
     <string name="therapy_target_label">Zielwert</string>
     <string name="therapy_low_threshold_label">Low-Schwelle</string>

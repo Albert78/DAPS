@@ -10,6 +10,7 @@ import de.dh.daps.common.model.data.CurrentTherapySettings
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.ScheduledTherapyAdjustment
+import de.dh.daps.common.model.data.TherapyAdjustment
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.repository.db.AppDatabase
 import de.dh.daps.core.repository.db.MetabolicEventsDao
@@ -233,5 +234,33 @@ class TherapyRepository(
 
     suspend fun deleteAllScheduledTherapyAdjustments() {
         therapyDao.deleteAllScheduledTherapyAdjustments()
+    }
+
+    // --- Therapy Adjustment Presets Operations ---
+
+    suspend fun getAllTherapyAdjustments(): List<TherapyAdjustment> {
+        return therapyDao.getAllTherapyAdjustments().map { it.toModel() }
+    }
+
+    fun observeAllTherapyAdjustments(): Flow<List<TherapyAdjustment>> {
+        return therapyDao.observeAllTherapyAdjustments().map { entities ->
+            entities.map { it.toModel() }
+        }
+    }
+
+    suspend fun getTherapyAdjustmentById(id: Long): TherapyAdjustment? {
+        return therapyDao.getTherapyAdjustmentById(id)?.toModel()
+    }
+
+    suspend fun insertTherapyAdjustment(adjustment: TherapyAdjustment): Long {
+        return therapyDao.insertTherapyAdjustment(adjustment.toEntity())
+    }
+
+    suspend fun updateTherapyAdjustment(adjustment: TherapyAdjustment) {
+        therapyDao.updateTherapyAdjustment(adjustment.toEntity())
+    }
+
+    suspend fun deleteTherapyAdjustment(id: Long) {
+        therapyDao.deleteTherapyAdjustment(id)
     }
 }

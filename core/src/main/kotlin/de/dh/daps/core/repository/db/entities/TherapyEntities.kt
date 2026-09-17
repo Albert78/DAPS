@@ -72,3 +72,19 @@ data class ScheduledTherapyAdjustmentEntity(
     val alarm_profile_override_id: Long? = null,
     val adjustment_hint: String? = null
 )
+
+/**
+ * Entity for predefined or user-configured therapy adjustment presets.
+ */
+@Entity(
+    tableName = "therapy_adjustments"
+)
+data class TherapyAdjustmentEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = ID_UNDEFINED,
+    val name: String,
+    val percentage: Int = 0,
+    val target_bg_override: Short? = null,
+    val low_threshold_override: Short? = null,
+    val alarm_profile_override_id: Long? = null
+)

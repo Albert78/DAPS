@@ -1,5 +1,7 @@
 package de.dh.daps.ui.screens.therapy
 
+import de.dh.daps.common.model.data.TherapyAdjustment
+
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
@@ -368,8 +370,8 @@ private fun TherapyAdjustmentPreviewValues() {
                     onDiscardClicked = {},
                     onNavigateUp = {},
                     presets = listOf(
-                        TherapyAdjustment("Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
-                        TherapyAdjustment("Stress", percentage = 20, targetBgMgDl = 115, lowThresholdMgDl = 75)
+                        TherapyAdjustment(name = "Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
+                        TherapyAdjustment(name = "Stress", percentage = 20, targetBgMgDl = 115, lowThresholdMgDl = 75)
                     )
                 )
             }

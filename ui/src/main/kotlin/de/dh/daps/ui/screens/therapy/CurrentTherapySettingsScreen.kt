@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material.icons.filled.VerticalAlignBottom
 import de.dh.daps.common.model.data.ScheduledTherapyAdjustment
+import de.dh.daps.common.model.data.TherapyAdjustment
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -946,9 +947,9 @@ fun CurrentTherapySettingsPreview() {
             BgBlock(Minutes(1440), BgValue.fromMgDl(100), BgValue.fromMgDl(70))
         ),
         therapyAdjustmentPresets = listOf(
-            TherapyAdjustment("Neutral"),
-            TherapyAdjustment("Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
-            TherapyAdjustment("Klettern", percentage = -40, targetBgMgDl = 160, lowThresholdMgDl = 110),
+            TherapyAdjustment(name = "Neutral"),
+            TherapyAdjustment(name = "Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
+            TherapyAdjustment(name = "Klettern", percentage = -40, targetBgMgDl = 160, lowThresholdMgDl = 110),
         )
     )
 
