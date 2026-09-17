@@ -158,10 +158,10 @@ interface SettingsDao {
 @Dao
 interface MetabolicEventsDao {
     // Meal Types
-    @Query("SELECT * FROM meal_type")
+    @Query("SELECT * FROM meal_type ORDER BY sort_order ASC, name ASC")
     suspend fun getAllMealTypes(): List<MealTypeEntity>
 
-    @Query("SELECT * FROM meal_type ORDER BY name ASC")
+    @Query("SELECT * FROM meal_type ORDER BY sort_order ASC, name ASC")
     fun observeAllMealTypes(): Flow<List<MealTypeEntity>>
 
     @Query("SELECT * FROM meal_type WHERE id = :id")

@@ -33,7 +33,8 @@ fun getDefaultStandardMealType(context: Context): MealType = MealType(
         CarbCurveComponentData(weight = 70, peakMinutes = Minutes(75)),
         CarbCurveComponentData(weight = 30, peakMinutes = Minutes(150))
     ),
-    cat = Minutes.ofHours(4)
+    cat = Minutes.ofHours(4),
+    sortOrder = 1
 )
 
 fun getDefaultMealTypes(context: Context): List<MealType> = listOf(
@@ -43,7 +44,8 @@ fun getDefaultMealTypes(context: Context): List<MealType> = listOf(
         components = listOf(
             CarbCurveComponentData(weight = 100, peakMinutes = FAST_KE_DEFAULT_PEAK)
         ),
-        cat = Minutes(90)
+        cat = Minutes(90),
+        sortOrder = 0
     ),
     getDefaultStandardMealType(context),
     MealType(
@@ -53,7 +55,8 @@ fun getDefaultMealTypes(context: Context): List<MealType> = listOf(
             CarbCurveComponentData(weight = 35, peakMinutes = Minutes(60)),
             CarbCurveComponentData(weight = 65, peakMinutes = Minutes(240))
         ),
-        cat = Minutes.ofHours(6)
+        cat = Minutes.ofHours(6),
+        sortOrder = 2
     ),
     MealType(
         id = ID_MEAL_SLOW,
@@ -62,7 +65,8 @@ fun getDefaultMealTypes(context: Context): List<MealType> = listOf(
             CarbCurveComponentData(weight = 40, peakMinutes = Minutes(120)),
             CarbCurveComponentData(weight = 60, peakMinutes = Minutes(300))
         ),
-        cat = Minutes.ofHours(8)
+        cat = Minutes.ofHours(8),
+        sortOrder = 3
     )
 )
 

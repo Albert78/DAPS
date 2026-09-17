@@ -38,7 +38,12 @@ data class MealType(
     /**
      * Carbs absorption time; maximum duration when the carbs are completely absorbed.
      */
-    val cat: Minutes
+    val cat: Minutes,
+
+    /**
+     * Display sort order for UI lists and selectors.
+     */
+    val sortOrder: Int = 0
 ) {
     init {
         require(components.isNotEmpty()) {

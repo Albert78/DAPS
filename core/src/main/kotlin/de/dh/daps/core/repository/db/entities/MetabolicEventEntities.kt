@@ -1,5 +1,6 @@
 package de.dh.daps.core.repository.db.entities
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -22,7 +23,9 @@ data class MealTypeEntity(
     val name: String,
     val symbol: String? = null,
     val curve_components: String,
-    val cat: Minutes
+    val cat: Minutes,
+    @ColumnInfo(name = "sort_order")
+    val sortOrder: Int = 0
 )
 
 @Entity(

@@ -22,6 +22,7 @@ data class MealTypeEditorUiState(
     val symbol: String? = null,
     val cat: String = "180",
     val components: List<CarbCurveComponentData> = listOf(CarbCurveComponentData(100, Minutes(30))),
+    val sortOrder: Int = 0,
     val isSaving: Boolean = false,
     val isLoading: Boolean = false
 ) {
@@ -63,6 +64,7 @@ class MealTypeEditorViewModel(
                         symbol = mealType.symbol,
                         cat = mealType.cat.value.toString(),
                         components = mealType.components,
+                        sortOrder = mealType.sortOrder,
                         isLoading = false
                     )
                 }
@@ -95,12 +97,19 @@ class MealTypeEditorViewModel(
 
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
+            val existingTypes = treatmentRepository.getAllMealTypes()
+            val sortOrder = if (state.id != null) {
+                state.sortOrder
+            } else {
+                existingTypes.size
+            }
             val mealType = MealType(
                 id = state.id ?: UUID.randomUUID().toString(),
                 name = state.name,
                 symbol = state.symbol,
                 cat = Minutes((state.cat.toIntOrNull() ?: 180).toShort()),
-                components = state.components
+                components = state.components,
+                sortOrder = sortOrder
             )
             treatmentRepository.insertMealType(mealType)
             onSuccess()

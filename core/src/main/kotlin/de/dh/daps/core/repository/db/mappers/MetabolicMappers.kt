@@ -39,7 +39,8 @@ fun MealType.toEntity() = MealTypeEntity(
     name = this.name,
     symbol = this.symbol,
     curve_components = carbCurveComponentListToString(this.components),
-    cat = this.cat
+    cat = this.cat,
+    sortOrder = this.sortOrder
 )
 
 fun MealTypeEntity.toModel() = MealType(
@@ -47,7 +48,8 @@ fun MealTypeEntity.toModel() = MealType(
     name = this.name,
     symbol = this.symbol,
     components = stringToCarbCurveComponentList(this.curve_components),
-    cat = this.cat
+    cat = this.cat,
+    sortOrder = this.sortOrder
 )
 
 fun MealEntry.toEntity() = MealEntity(

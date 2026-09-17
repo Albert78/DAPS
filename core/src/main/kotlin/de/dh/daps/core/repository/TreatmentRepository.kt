@@ -407,7 +407,7 @@ class TreatmentRepository(
      * Observes all available meal types as a reactive stream.
      */
     fun observeMealTypes(): Flow<List<MealType>> = metabolicEventsDao.observeAllMealTypes()
-        .map { entities -> entities.map { it.toModel() }.sortedBy { it.name } }
+        .map { entities -> entities.map { it.toModel() }.sortedWith(compareBy({ it.sortOrder }, { it.name })) }
 
     /**
      * Returns all available meal types.
@@ -422,7 +422,23 @@ class TreatmentRepository(
     suspend fun insertMealType(mealType: MealType) {
         metabolicEventsDao.insertMealType(mealType.toEntity())
         mutex.withLock {
-            mealTypes = (mealTypes.filter { it.id != mealType.id } + mealType).sortedBy { it.name }
+            mealTypes = (mealTypes.filter { it.id != mealType.id } + mealType)
+                .sortedWith(compareBy({ it.sortOrder }, { it.name }))
+        }
+    }
+
+    /**
+     * Updates the sort order of the provided meal types list and persists them to the database.
+     */
+    suspend fun updateMealTypeOrders(orderedMealTypes: List<MealType>) {
+        val updatedTypes = orderedMealTypes.mapIndexed { index, mealType ->
+            mealType.copy(sortOrder = index)
+        }
+        updatedTypes.forEach { type ->
+            metabolicEventsDao.insertMealType(type.toEntity())
+        }
+        mutex.withLock {
+            mealTypes = updatedTypes
         }
     }
 

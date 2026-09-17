@@ -37,6 +37,30 @@ class MealTypesViewModel(
         }
     }
 
+    fun moveMealTypeUp(mealType: MealType) {
+        val currentList = uiState.value.mealTypes.toMutableList()
+        val index = currentList.indexOfFirst { it.id == mealType.id }
+        if (index > 0) {
+            val item = currentList.removeAt(index)
+            currentList.add(index - 1, item)
+            viewModelScope.launch {
+                treatmentRepository.updateMealTypeOrders(currentList)
+            }
+        }
+    }
+
+    fun moveMealTypeDown(mealType: MealType) {
+        val currentList = uiState.value.mealTypes.toMutableList()
+        val index = currentList.indexOfFirst { it.id == mealType.id }
+        if (index >= 0 && index < currentList.size - 1) {
+            val item = currentList.removeAt(index)
+            currentList.add(index + 1, item)
+            viewModelScope.launch {
+                treatmentRepository.updateMealTypeOrders(currentList)
+            }
+        }
+    }
+
     companion object {
         class Factory(private val registry: SystemRegistry) : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
