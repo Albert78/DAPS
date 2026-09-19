@@ -14,7 +14,7 @@ interface AndroidNotifications {
     fun cancelRecommendationNotification()
 
     fun showMealReminderNotification(mealReminder: MealReminder)
-    fun showDeferredBolusNotification(handledDeferredBoluses: List<DeferredBolus>)
+    fun showDeferredBolusRecommendationNotification(handledDeferredBoluses: List<DeferredBolus>)
 
     fun showAlarmNotification(alarmType: AlarmType, bgValue: BgValue? = null, isFullScreen: Boolean = true)
     fun cancelAlarmNotification()

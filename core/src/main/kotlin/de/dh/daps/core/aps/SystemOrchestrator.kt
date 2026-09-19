@@ -358,12 +358,12 @@ class SystemOrchestratorImpl(
                     ApsMode.BasalOnly, ApsMode.Suspend -> {
                         recommendationManager.addBolusRecommendation(
                             amount = amount,
-                            handledDeferredBoluses = handledDeferredBoluses,
+                            deferredBoluses = handledDeferredBoluses,
                             correctionPart = correctionPart,
                             basalPart = basalPart
                         )
                         if (!handledDeferredBoluses.isNullOrEmpty()) {
-                            androidNotifications.showDeferredBolusNotification(handledDeferredBoluses)
+                            androidNotifications.showDeferredBolusRecommendationNotification(handledDeferredBoluses)
                         }
                     }
                 }

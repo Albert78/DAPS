@@ -198,10 +198,10 @@ class AndroidNotificationsImpl(
         notify(MEAL_REMINDER_NOTIFICATION_ID, notification)
     }
 
-    override fun showDeferredBolusNotification(handledDeferredBoluses: List<DeferredBolus>) {
+    override fun showDeferredBolusRecommendationNotification(handledDeferredBoluses: List<DeferredBolus>) {
         val totalAmount = handledDeferredBoluses.sumOf { it.amount.iu }
         val title = "Verzögerter Bolus"
-        val text = "Ein verzögerter Bolus über ${String.format("%.2f", totalAmount)} E wurde verarbeitet."
+        val text = "Ein verzögerter Bolus über ${String.format("%.2f", totalAmount)} E ist fällig."
 
         val dashboardIntent = MainActivity.createStartDashboardIntent(context)
         val pendingIntent = PendingIntent.getActivity(
