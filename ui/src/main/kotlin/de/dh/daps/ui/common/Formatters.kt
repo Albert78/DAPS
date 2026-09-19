@@ -68,6 +68,31 @@ fun time(time: LocalTime): String {
     return String.format(Locale.getDefault(), "%02d:%02d", time.hour, time.minute)
 }
 
+@Composable
+fun timeUnitLabel(): String {
+    return stringResource(CommonR.string.time_unit)
+}
+
+@Composable
+fun timeWithUnit(timestamp: Timestamp): String {
+    return "${time(timestamp)} ${timeUnitLabel()}"
+}
+
+@Composable
+fun timeWithUnit(time: LocalTime): String {
+    return "${time(time)} ${timeUnitLabel()}"
+}
+
+@Composable
+fun time(timestamp: Timestamp, withUnit: Boolean): String {
+    return if (withUnit) timeWithUnit(timestamp) else time(timestamp)
+}
+
+@Composable
+fun time(time: LocalTime, withUnit: Boolean): String {
+    return if (withUnit) timeWithUnit(time) else time(time)
+}
+
 /////////////////////////////////////////////// Long date time //////////////////////////////////////
 
 @Composable
@@ -310,7 +335,7 @@ fun carbsKeValue(value: Double?, default: String = "-", withUnit: Boolean = true
 
 @Composable
 fun carbsGramsUnitLabel(): String {
-    return "g" // Not in strings.xml as standalone, but used in formats
+    return stringResource(CommonR.string.unit_g)
 }
 
 @Composable

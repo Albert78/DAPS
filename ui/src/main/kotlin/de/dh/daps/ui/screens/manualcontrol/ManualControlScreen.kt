@@ -20,7 +20,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Fastfood
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.AlertDialog
@@ -90,6 +89,7 @@ import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.SoftRed
 import de.dh.daps.ui.common.time
+import de.dh.daps.ui.common.timeWithUnit
 import de.dh.daps.ui.screens.mealtypes.MealTypeIcon
 import java.time.Instant
 import java.time.ZoneId
@@ -340,13 +340,6 @@ private fun ManualControlMealsSection(
     }
 }
 
-private fun formatTimestamp(timestamp: Timestamp): String {
-    val formatter = DateTimeFormatter.ofPattern("HH:mm 'Uhr'", Locale.getDefault())
-    return Instant.ofEpochMilli(timestamp.ms)
-        .atZone(ZoneId.systemDefault())
-        .format(formatter)
-}
-
 @Composable
 private fun MealInfoCard(
     title: String,
@@ -409,7 +402,7 @@ private fun MealInfoCard(
                         )
                     }
                     Text(
-                        text = formatTimestamp(mealEntry.timestamp),
+                        text = timeWithUnit(mealEntry.timestamp),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
