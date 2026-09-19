@@ -14,6 +14,7 @@ import androidx.room.Upsert
 import de.dh.daps.common.model.InsulinOrigin
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.repository.db.dao.AlarmProfileDao
+import de.dh.daps.core.repository.db.dao.MealReminderDao
 import de.dh.daps.core.repository.db.entities.AlarmProfileEntity
 import de.dh.daps.core.repository.db.entities.CoreInsightEntity
 import de.dh.daps.core.repository.db.entities.CurrentSettingsEntity
@@ -27,6 +28,7 @@ import de.dh.daps.core.repository.db.entities.InsulinEntity
 import de.dh.daps.core.repository.db.entities.InsulinProfileEntity
 import de.dh.daps.core.repository.db.entities.InsulinTypeEntity
 import de.dh.daps.core.repository.db.entities.MealEntity
+import de.dh.daps.core.repository.db.entities.MealReminderEntity
 import de.dh.daps.core.repository.db.entities.MealTypeEntity
 import de.dh.daps.core.repository.db.entities.SensorTypeEntity
 import de.dh.daps.core.repository.db.entities.TickMetricEntity
@@ -324,6 +326,7 @@ interface SystemMetricsDao {
     // Metabolic events
     MealTypeEntity::class,
     MealEntity::class,
+    MealReminderEntity::class,
     InsulinTypeEntity::class,
     InsulinEntity::class,
     DeferredBolusEntity::class,
@@ -341,6 +344,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun settingsDao(): SettingsDao
     abstract fun systemMetricsDao(): SystemMetricsDao
     abstract fun alarmProfileDao(): AlarmProfileDao
+    abstract fun mealReminderDao(): MealReminderDao
 
     companion object {
         const val CURRENT_DATABASE_VERSION = "1.0"

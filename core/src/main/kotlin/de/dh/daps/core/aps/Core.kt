@@ -94,8 +94,6 @@ class Core(
     var coreState: CoreState = CoreState.Uninitialized
         private set
 
-    private var isReadOnly: Boolean = true
-
     private var lastCompletion: Timestamp = Timestamp.now()
 
     /**
@@ -115,8 +113,7 @@ class Core(
         setCoreState(CoreState.Suspended)
     }
 
-    fun activate(isReadOnly: Boolean = false) {
-        this.isReadOnly = isReadOnly
+    fun activate() {
         setCoreState(CoreState.Active())
     }
 
@@ -156,33 +153,31 @@ class Core(
             val res = therapyManager.tryAcquire(TAG ?: "Core") { treatmentLock ->
                 val issuesWithoutLock = currentCoreState.issues.filterNot { it is CoreIssue.TherapyLockBusy }.toSet()
                 try {
-                    if (!isReadOnly) {
-                        val pendingCount = onWaitForPumpSync(treatmentLock)
-                        if (pendingCount > 0) {
-                            Log.w(
-                                TAG,
-                                "processCalculation: $pendingCount insulin jobs were not executed! Skipping core calculation..."
-                            )
-                            scope.launch {
-                                systemMetricsRepository.saveInsight(
-                                    CoreInsight(
-                                        timestamp = now,
-                                        bgOriginal = BgValue.INVALID,
-                                        bgFiltered = BgValue.INVALID,
-                                        deviationPerTick = BgDelta.ZERO,
-                                        futureActiveInsulin = InsulinAmount.ZERO,
-                                        futureActiveCarbs = 0.0,
-                                        predictedBgAtPeak = BgValue.INVALID,
-                                        targetBg = BgValue.INVALID,
-                                        isf = BgDelta.ZERO,
-                                        cr = 0.0,
-                                        reasoning = CoreReasoning.PENDING_PUMP_JOBS
-                                    )
+                    val pendingCount = onWaitForPumpSync(treatmentLock)
+                    if (pendingCount > 0) {
+                        Log.w(
+                            TAG,
+                            "processCalculation: $pendingCount insulin jobs were not executed! Skipping core calculation..."
+                        )
+                        scope.launch {
+                            systemMetricsRepository.saveInsight(
+                                CoreInsight(
+                                    timestamp = now,
+                                    bgOriginal = BgValue.INVALID,
+                                    bgFiltered = BgValue.INVALID,
+                                    deviationPerTick = BgDelta.ZERO,
+                                    futureActiveInsulin = InsulinAmount.ZERO,
+                                    futureActiveCarbs = 0.0,
+                                    predictedBgAtPeak = BgValue.INVALID,
+                                    targetBg = BgValue.INVALID,
+                                    isf = BgDelta.ZERO,
+                                    cr = 0.0,
+                                    reasoning = CoreReasoning.PENDING_PUMP_JOBS
                                 )
-                            }
-                            setCoreState(CoreState.Active(issuesWithoutLock + CoreIssue.NoPumpConnection(lastCompletion)))
-                            return@tryAcquire
+                            )
                         }
+                        setCoreState(CoreState.Active(issuesWithoutLock + CoreIssue.NoPumpConnection(lastCompletion)))
+                        return@tryAcquire
                     }
                     onClearRecommendations(treatmentLock)
 
@@ -208,43 +203,39 @@ class Core(
                         systemMetricsRepository.saveInsight(insight)
                     }
 
-                    if (!isReadOnly) {
-                        if (result.carbsInGHint != null) {
-                            onCarbsHint(treatmentLock, result.carbsInGHint)
-                        }
-                        if (result.tempBasal != null) {
-                            onSetTempBasal(
+                    if (result.carbsInGHint != null) {
+                        onCarbsHint(treatmentLock, result.carbsInGHint)
+                    }
+                    if (result.tempBasal != null) {
+                        onSetTempBasal(
+                            treatmentLock,
+                            result.tempBasal.durationInHours,
+                            result.tempBasal.percent
+                        )
+                    }
+                    if (result.clearTempBasal) {
+                        onClearTempBasal(treatmentLock)
+                    }
+                    if (result.bolus != null && result.bolus >= InsulinAmount.EPSILON) {
+                        onDeliverBolus(
+                            treatmentLock,
+                            result.bolus,
+                            result.handledDeferredBoluses,
+                            result.correctionPart,
+                            result.basalPart
+                        )
+                        result.deferredBolusUpdates?.let { updates ->
+                            onApplyDeferredBolusUpdates(
                                 treatmentLock,
-                                result.tempBasal.durationInHours,
-                                result.tempBasal.percent
+                                updates
                             )
-                        }
-                        if (result.clearTempBasal) {
-                            onClearTempBasal(treatmentLock)
-                        }
-                        if (result.bolus != null && result.bolus >= InsulinAmount.EPSILON) {
-                            onDeliverBolus(
-                                treatmentLock,
-                                result.bolus,
-                                result.handledDeferredBoluses,
-                                result.correctionPart,
-                                result.basalPart
-                            )
-                            result.deferredBolusUpdates?.let { updates ->
-                                onApplyDeferredBolusUpdates(
-                                    treatmentLock,
-                                    updates
-                                )
-                            }
                         }
                     }
 
-                    if (!isReadOnly) {
-                        val pendingCount2 = onWaitForPumpSync(treatmentLock)
-                        if (pendingCount2 > 0) {
-                            setCoreState(CoreState.Active(issuesWithoutLock + CoreIssue.NoPumpConnection(lastCompletion)))
-                            return@tryAcquire
-                        }
+                    val pendingCount2 = onWaitForPumpSync(treatmentLock)
+                    if (pendingCount2 > 0) {
+                        setCoreState(CoreState.Active(issuesWithoutLock + CoreIssue.NoPumpConnection(lastCompletion)))
+                        return@tryAcquire
                     }
                     lastCompletion = Timestamp.now()
 

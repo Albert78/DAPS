@@ -11,20 +11,18 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
 import de.dh.daps.R
+import de.dh.daps.common.model.DeferredBolus
+import de.dh.daps.common.model.MealReminder
 import de.dh.daps.common.model.data.AlarmType
 import de.dh.daps.common.model.data.BgDelta
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.core.aps.ApsRecommendation
-import de.dh.daps.core.aps.CoreIssue
-import de.dh.daps.core.aps.STALE_BG_THRESHOLD
-import de.dh.daps.core.pump.PumpIssue
 import de.dh.daps.core.repository.GlucoseRepository
 import de.dh.daps.core.system.AndroidNotifications
 import de.dh.daps.core.system.RegistryProvider
 import de.dh.daps.ui.activities.AlarmActivity
 import de.dh.daps.ui.activities.MainActivity
-import de.dh.daps.ui.common.time
 import de.dh.daps.ui.screens.permissions.canPostNotifications
 import de.dh.daps.common.R as CommonR
 import de.dh.daps.ui.R as UiR
@@ -130,6 +128,7 @@ class AndroidNotificationsImpl(
         val title = when (recommendation) {
             is ApsRecommendation.Carbs -> context.getString(UiR.string.recommendation_title_carbs)
             is ApsRecommendation.Bolus -> context.getString(UiR.string.recommendation_title_bolus)
+            is ApsRecommendation.TempBasal -> "Temp-Basal Empfehlung"
         }
         val text = when (recommendation) {
             is ApsRecommendation.Carbs -> context.getString(
@@ -140,6 +139,7 @@ class AndroidNotificationsImpl(
                 UiR.string.recommendation_text_bolus,
                 recommendation.amount.iu
             )
+            is ApsRecommendation.TempBasal -> "Empfohlener Temp-Basal: ${recommendation.percent}% für ${recommendation.durationInHours}h"
         }
 
         val dashboardIntent = MainActivity.createStartDashboardIntent(context)
@@ -165,6 +165,57 @@ class AndroidNotificationsImpl(
 
     override fun cancelRecommendationNotification() {
         manager.cancel(RECOMMENDATION_NOTIFICATION_ID)
+    }
+
+    override fun showMealReminderNotification(mealReminder: MealReminder) {
+        val title = "Nahrungserinnerung"
+        val text = if (mealReminder.description.isNotBlank()) {
+            "Erinnerung für Mahlzeit: ${mealReminder.description}"
+        } else {
+            "Zeit für Ihre geplante Mahlzeit."
+        }
+
+        val dashboardIntent = MainActivity.createStartDashboardIntent(context)
+        val pendingIntent = PendingIntent.getActivity(
+            context, 0,
+            dashboardIntent, PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(context, RECOMMENDATION_CHANNEL_ID)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_EVENT)
+            .build()
+
+        notify(MEAL_REMINDER_NOTIFICATION_ID, notification)
+    }
+
+    override fun showDeferredBolusNotification(handledDeferredBoluses: List<DeferredBolus>) {
+        val totalAmount = handledDeferredBoluses.sumOf { it.amount.iu }
+        val title = "Verzögerter Bolus"
+        val text = "Ein verzögerter Bolus über ${String.format("%.2f", totalAmount)} E wurde verarbeitet."
+
+        val dashboardIntent = MainActivity.createStartDashboardIntent(context)
+        val pendingIntent = PendingIntent.getActivity(
+            context, 0,
+            dashboardIntent, PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(context, RECOMMENDATION_CHANNEL_ID)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
+            .build()
+
+        notify(DEFERRED_BOLUS_NOTIFICATION_ID, notification)
     }
 
     override fun showAlarmNotification(alarmType: AlarmType, bgValue: BgValue?, isFullScreen: Boolean) {
@@ -272,6 +323,8 @@ class AndroidNotificationsImpl(
         val TAG = AndroidNotificationsImpl::class.simpleName
         const val RECOMMENDATION_NOTIFICATION_ID = 2
         const val ALGORITHM_ISSUE_NOTIFICATION_ID = 3
+        const val MEAL_REMINDER_NOTIFICATION_ID = 4
+        const val DEFERRED_BOLUS_NOTIFICATION_ID = 5
         const val SERVICE_CHANNEL_ID = "aps_service_channel"
         const val RECOMMENDATION_CHANNEL_ID = "aps_recommendation_channel"
         const val ALGORITHM_ISSUE_CHANNEL_ID = "aps_algorithm_issue_channel"

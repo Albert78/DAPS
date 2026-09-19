@@ -10,6 +10,7 @@ import de.dh.daps.core.alarms.AlarmEvaluator
 import de.dh.daps.core.alarms.AlarmPlayerManager
 import de.dh.daps.core.alarms.AlarmSnoozeManager
 import de.dh.daps.core.aps.GlucoseSourceManager
+import de.dh.daps.core.aps.RecommendationManager
 import de.dh.daps.core.aps.SystemOrchestrator
 import de.dh.daps.core.aps.TherapyManager
 import de.dh.daps.core.pump.PumpManager
@@ -145,6 +146,11 @@ interface SystemRegistry {
      * Core coordinator for therapy logic, combining data from various sources to generate APS recommendations.
      */
     val therapyManager: TherapyManager
+
+    /**
+     * Central manager for treatment recommendations and meal reminders.
+     */
+    val recommendationManager: RecommendationManager
 
     /**
      * Manages the overall application state, including the active APS mode and system-wide issues.

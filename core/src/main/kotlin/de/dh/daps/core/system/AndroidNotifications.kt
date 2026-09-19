@@ -1,6 +1,8 @@
 package de.dh.daps.core.system
 
 import android.app.Notification
+import de.dh.daps.common.model.DeferredBolus
+import de.dh.daps.common.model.MealReminder
 import de.dh.daps.common.model.data.AlarmType
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.core.aps.ApsRecommendation
@@ -10,6 +12,9 @@ interface AndroidNotifications {
     fun createNotificationChannels()
     fun showRecommendationNotification(recommendation: ApsRecommendation)
     fun cancelRecommendationNotification()
+
+    fun showMealReminderNotification(mealReminder: MealReminder)
+    fun showDeferredBolusNotification(handledDeferredBoluses: List<DeferredBolus>)
 
     fun showAlarmNotification(alarmType: AlarmType, bgValue: BgValue? = null, isFullScreen: Boolean = true)
     fun cancelAlarmNotification()

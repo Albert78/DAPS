@@ -265,6 +265,11 @@ fun DashboardContent(
                         stringResource(R.string.recommendation_bolus_info_title, recommendation.amount.iu) to
                                 stringResource(R.string.recommendation_bolus_info_text, recommendation.amount.iu)
                     }
+
+                    is ApsRecommendation.TempBasal -> {
+                        "Temp-Basal (${recommendation.percent}%)" to
+                                "Empfohlener Temp-Basal von ${recommendation.percent}% für ${recommendation.durationInHours}h"
+                    }
                 }
                 ExpandableInfoCard(
                     infoText = infoText,

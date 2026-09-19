@@ -45,7 +45,7 @@ class DashboardViewModel(
     val uiState: StateFlow<DashboardUiState> = combine(
         _uiState,
         systemOrchestrator.apsMode,
-        systemRegistry.therapyManager.recommendations,
+        systemRegistry.recommendationManager.recommendations,
         alarmEvaluator.activeFiringAlarm,
         alarmEvaluator.activeFiringConfig,
         alarmSnoozeManager.snoozedAlarms

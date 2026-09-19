@@ -14,6 +14,7 @@ import de.dh.daps.core.alarms.AlarmPlayerManager
 import de.dh.daps.core.alarms.AlarmPlayerManagerImpl
 import de.dh.daps.core.alarms.AlarmSnoozeManager
 import de.dh.daps.core.aps.GlucoseSourceManager
+import de.dh.daps.core.aps.RecommendationManager
 import de.dh.daps.core.aps.SystemOrchestrator
 import de.dh.daps.core.aps.SystemOrchestratorImpl
 import de.dh.daps.core.aps.TherapyManager
@@ -57,6 +58,7 @@ class SystemRegistryImpl(
     override val appPreferencesRepository: AppPreferencesRepository,
     override val glucoseSourceManager: GlucoseSourceManager,
     override val therapyManager: TherapyManager,
+    override val recommendationManager: RecommendationManager,
     override val systemOrchestrator: SystemOrchestrator,
     override val pluginManager: PluginManager,
     override val wakeService: SystemWakeService,
@@ -127,6 +129,11 @@ class SystemRegistryImpl(
                 scope = scope
             )
 
+            val recommendationManager = RecommendationManager(
+                mealReminderDao = appDatabase.mealReminderDao(),
+                scope = scope
+            )
+
             val therapyManager = TherapyManager(
                 therapyRepository = therapyRepository,
                 treatmentRepository = treatmentRepository,
@@ -135,7 +142,8 @@ class SystemRegistryImpl(
                 systemOrchestrator = systemOrchestrator,
                 alarmRepository = alarmRepository,
                 scope = scope,
-                wakeService = wakeService
+                wakeService = wakeService,
+                recommendationManager = recommendationManager
             )
             val carbsInsulinCalculator = CarbsInsulinCalculator(timeService.tickInterval)
 
@@ -149,6 +157,7 @@ class SystemRegistryImpl(
             systemOrchestrator.startInitialization(
                 treatmentRepository = treatmentRepository,
                 therapyManager = therapyManager,
+                recommendationManager = recommendationManager,
                 pumpManager = pumpManager,
                 appPreferencesRepository = appPreferencesRepository,
                 carbsInsulinCalculator = carbsInsulinCalculator,
@@ -189,6 +198,7 @@ class SystemRegistryImpl(
                 systemMetricsRepository = systemMetricsRepository,
                 appPreferencesRepository = appPreferencesRepository,
                 therapyManager = therapyManager,
+                recommendationManager = recommendationManager,
                 glucoseSourceManager = glucoseSourceManager,
                 systemOrchestrator = systemOrchestrator,
                 pluginManager = pluginManager,

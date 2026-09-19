@@ -42,14 +42,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 /**
- * Recommendations for manual treatments, which are displayed as notifications to the user.
- */
-sealed class ApsRecommendation {
-    data class Carbs(val amountInGram: Int) : ApsRecommendation()
-    data class Bolus(val amount: InsulinAmount) : ApsRecommendation()
-}
-
-/**
  * Represents an active lock on therapy-related operations.
  * This lock must be held and passed to critical functions in [TherapyManager].
  */
@@ -70,7 +62,6 @@ sealed class LockResult {
  * - **Therapy Settings Management**: Access and modification of insulin profiles, factors (ISF, CR),
  *   basal rates, and blood glucose targets.
  * - **Insulin Delivery**: Execution of bolus and temporary basal rate commands via the [PumpManager].
- * - **Treatment Recommendations**: Generation of recommendations for manual carbs or bolus delivery.
  * - **Job Management**: Coordination and cleanup of pending insulin delivery tasks.
  *
  * ### Locking System (Concurrency Protection):
@@ -89,14 +80,12 @@ class TherapyManager(
     private val systemOrchestrator: SystemOrchestrator,
     private val alarmRepository: AlarmRepository,
     private val scope: CoroutineScope,
-    private val wakeService: SystemWakeService? = null
+    private val wakeService: SystemWakeService? = null,
+    private val recommendationManager: RecommendationManager? = null
 ) {
     private val mutex = Mutex()
     private val executionMutex = Mutex()
     private var currentExecutionOwner: String? = null
-
-    private val _recommendations = MutableStateFlow<List<ApsRecommendation>>(emptyList())
-    val recommendations: StateFlow<List<ApsRecommendation>> = _recommendations.asStateFlow()
 
     val currentTherapySettingsFlow: Flow<CurrentTherapySettings> = therapyRepository.observeCurrentTherapySettings()
 
@@ -509,8 +498,7 @@ class TherapyManager(
         }
         when (systemOrchestrator.apsMode.value) {
             ApsMode.Suspend -> return
-            ApsMode.BasalOnly -> recommendBolus(treatmentLock, amount)
-            ApsMode.AutoCorrection -> {
+            ApsMode.BasalOnly, ApsMode.AutoCorrection -> {
                 pumpManager.issueCommand(PumpCommand.DeliverBolus(amount, bolusId))
             }
         }
@@ -556,38 +544,20 @@ class TherapyManager(
     }
 
     /**
-     * Clears all currently active therapy recommendations.
-     */
-    fun clearRecommendations(treatmentLock: TreatmentLock) {
-        checkLock(treatmentLock)
-        _recommendations.value = emptyList()
-    }
-
-    /**
-     * Records a recommendation for carb intake.
-     */
-    fun recommendCarbs(treatmentLock: TreatmentLock, amountInGram: Int) {
-        checkLock(treatmentLock)
-        _recommendations.value += ApsRecommendation.Carbs(amountInGram)
-    }
-
-    /**
-     * Records a recommendation for bolus delivery.
-     */
-    fun recommendBolus(treatmentLock: TreatmentLock, amount: InsulinAmount) {
-        checkLock(treatmentLock)
-        _recommendations.value += ApsRecommendation.Bolus(amount)
-    }
-
-    /**
      * Schedules a reminder for the user to eat their meal.
-     *
-     * @param mealTimestamp The time when the meal is planned to be eaten.
      */
-    fun scheduleMealReminder(mealTimestamp: Timestamp) {
-        ToDo.toBeImplemented("Schedule meal reminder")
-        // TODO: Implement meal reminder notification logic
-        Log.i(TAG, "Scheduled meal reminder for $mealTimestamp")
+    suspend fun scheduleMealReminder(
+        mealTimestamp: Timestamp,
+        reminderTimestamp: Timestamp = mealTimestamp,
+        mealId: Long? = null,
+        description: String = ""
+    ) {
+        recommendationManager?.scheduleMealReminder(
+            mealTimestamp = mealTimestamp,
+            reminderTimestamp = reminderTimestamp,
+            mealId = mealId,
+            description = description
+        )
     }
 
     suspend fun addDeferredBolus(treatmentLock: TreatmentLock, deferredBolus: DeferredBolus) {

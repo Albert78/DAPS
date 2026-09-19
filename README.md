@@ -10,7 +10,7 @@ git clone
 
 Open with Android Studio.
 
-Run on device.
+Run on device (debug version, release build is not necessary).
 
 Updates might need a database clean (long click on app symbol, force stop, delete local data)
 
@@ -72,7 +72,7 @@ git clone
 
 Mit Android Studio öffnen.
 
-Auf Handy ausführen.
+Auf Handy ausführen (Debug-Version reicht aus, Release-Build ist nicht notwendig).
 
 Bei Aktualisierungen kann es notwendig sein, die lokale Datenbank zu löschen (Langes Tippen auf App-Symbol, Stop erzwingen, Lokale Daten löschen)
 

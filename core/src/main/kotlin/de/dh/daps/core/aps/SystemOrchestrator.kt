@@ -95,6 +95,7 @@ interface SystemOrchestrator {
     fun startInitialization(
         treatmentRepository: TreatmentRepository,
         therapyManager: TherapyManager,
+        recommendationManager: RecommendationManager,
         pumpManager: PumpManager,
         appPreferencesRepository: AppPreferencesRepository,
         carbsInsulinCalculator: CarbsInsulinCalculator,
@@ -220,6 +221,7 @@ class SystemOrchestratorImpl(
     override fun startInitialization(
         treatmentRepository: TreatmentRepository,
         therapyManager: TherapyManager,
+        recommendationManager: RecommendationManager,
         pumpManager: PumpManager,
         appPreferencesRepository: AppPreferencesRepository,
         carbsInsulinCalculator: CarbsInsulinCalculator,
@@ -311,11 +313,22 @@ class SystemOrchestratorImpl(
         }
 
         scope.launch {
-            therapyManager.recommendations.collect { recommendations ->
-                if (recommendations.isEmpty()) {
-                    androidNotifications.cancelRecommendationNotification()
+            recommendationManager.recommendations.collect { recommendations ->
+                val carbRec = recommendations.filterIsInstance<ApsRecommendation.Carbs>().firstOrNull()
+                if (carbRec != null) {
+                    androidNotifications.showRecommendationNotification(carbRec)
                 } else {
-                    androidNotifications.showRecommendationNotification(recommendations.first())
+                    androidNotifications.cancelRecommendationNotification()
+                }
+            }
+        }
+
+        scope.launch {
+            recommendationManager.mealReminders.collect { reminders ->
+                val now = Timestamp.now()
+                reminders.filter { it.reminderTimestamp <= now }.forEach { reminder ->
+                    androidNotifications.showMealReminderNotification(reminder)
+                    recommendationManager.processMealReminderFired(reminder)
                 }
             }
         }
@@ -332,19 +345,50 @@ class SystemOrchestratorImpl(
             onReleaseBusyState = { releaseBusyState() },
 
             onDeliverBolus = { treatmentLock, amount, handledDeferredBoluses, correctionPart, basalPart ->
-                therapyManager.issueBolus(
-                    treatmentLock = treatmentLock,
-                    amount = amount,
-                    handledDeferredBoluses = handledDeferredBoluses,
-                    correctionPart = correctionPart,
-                    basalPart = basalPart
-                )
+                when (apsMode.value) {
+                    ApsMode.Suspend -> { /* Do nothing */ }
+                    ApsMode.AutoCorrection -> {
+                        therapyManager.issueBolus(
+                            treatmentLock = treatmentLock,
+                            amount = amount,
+                            handledDeferredBoluses = handledDeferredBoluses,
+                            correctionPart = correctionPart,
+                            basalPart = basalPart
+                        )
+                        if (!handledDeferredBoluses.isNullOrEmpty()) {
+                            androidNotifications.showDeferredBolusNotification(handledDeferredBoluses)
+                        }
+                    }
+                    ApsMode.BasalOnly -> {
+                        recommendationManager.addBolusRecommendation(
+                            amount = amount,
+                            handledDeferredBoluses = handledDeferredBoluses,
+                            correctionPart = correctionPart,
+                            basalPart = basalPart
+                        )
+                        if (!handledDeferredBoluses.isNullOrEmpty()) {
+                            androidNotifications.showDeferredBolusNotification(handledDeferredBoluses)
+                        }
+                    }
+                }
             },
             onApplyDeferredBolusUpdates = { treatmentLock, updates -> therapyManager.applyDeferredBolusUpdates(treatmentLock, updates) },
-            onSetTempBasal = { treatmentLock, durationInHours, percent -> therapyManager.setTempBasal(treatmentLock, durationInHours, percent) },
-            onClearTempBasal = { treatmentLock -> therapyManager.clearTempBasal(treatmentLock) },
-            onCarbsHint = { treatmentLock, amountInGram -> therapyManager.recommendCarbs(treatmentLock, amountInGram) },
-            onClearRecommendations = { treatmentLock -> therapyManager.clearRecommendations(treatmentLock) },
+            onSetTempBasal = { treatmentLock, durationInHours, percent ->
+                when (apsMode.value) {
+                    ApsMode.Suspend -> { /* Do nothing */ }
+                    ApsMode.AutoCorrection -> therapyManager.setTempBasal(treatmentLock, durationInHours, percent)
+                    ApsMode.BasalOnly -> recommendationManager.addTempBasalRecommendation(durationInHours, percent)
+                }
+            },
+            onClearTempBasal = { treatmentLock ->
+                when (apsMode.value) {
+                    ApsMode.Suspend -> { /* Do nothing */ }
+                    ApsMode.AutoCorrection -> therapyManager.clearTempBasal(treatmentLock)
+                    ApsMode.BasalOnly -> recommendationManager.clearTempBasalRecommendation()
+                }
+            },
+            onCarbsHint = { treatmentLock, amountInGram -> recommendationManager.addCarbsRecommendation(amountInGram) },
+            onClearRecommendations = { treatmentLock -> recommendationManager.clearRecommendations() },
             onWaitForPumpSync = { treatmentLock -> therapyManager.waitForPumpSync(treatmentLock) },
             systemMetricsRepository = systemMetricsRepository,
             scope = scope
@@ -356,8 +400,7 @@ class SystemOrchestratorImpl(
             launch {
                 apsMode.collect { mode ->
                     when (mode) {
-                        ApsMode.AutoCorrection -> core.activate(isReadOnly = false)
-                        ApsMode.BasalOnly -> core.activate(isReadOnly = true)
+                        ApsMode.AutoCorrection, ApsMode.BasalOnly -> core.activate()
                         ApsMode.Suspend -> core.suspend()
                     }
                     if (mode != ApsMode.Suspend) {
