@@ -81,6 +81,7 @@ import de.dh.daps.ui.common.composables.Yellow
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.glucoseValue
 import de.dh.daps.ui.common.icons.Carbs
+import de.dh.daps.ui.common.icons.Icon_Meal_Fast
 import de.dh.daps.ui.common.icons.Insulin
 import de.dh.daps.ui.common.icons.Syringe
 import de.dh.daps.ui.common.insulinUnitLabel
@@ -462,7 +463,7 @@ private fun RecommendationCard(
                 is ApsRecommendation.Carbs -> {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            imageVector = Icons.Default.Fastfood,
+                            imageVector = Icon_Meal_Fast,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(24.dp)
