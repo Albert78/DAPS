@@ -57,7 +57,6 @@ import de.dh.daps.common.model.CarbCurveComponentData
 import de.dh.daps.common.model.DeferredBolus
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.MealEntry
-import de.dh.daps.common.model.MealReminder
 import de.dh.daps.common.model.MealType
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgSampleKind
@@ -270,11 +269,7 @@ fun ManualControlContent(
                 ManualControlMealsSection(
                     lastPastMeal = uiState.contextInfo.lastPastMeal,
                     nextPlannedMeal = uiState.contextInfo.nextPlannedMeal,
-                    onNavigateToMeals = onNavigateToMeals
-                )
-
-                ManualControlMealRemindersSection(
-                    reminders = uiState.activeMealReminders,
+                    hasNextPlannedMealReminder = uiState.contextInfo.hasNextPlannedMealReminder,
                     onNavigateToMeals = onNavigateToMeals
                 )
 
@@ -298,7 +293,137 @@ fun ManualControlContent(
 }
 
 // -----------------------------------------------------------------------------------------
-// --- Section 1: Recommendations ---
+// --- Section: Meals (Past & Next Planned) ---
+// -----------------------------------------------------------------------------------------
+
+@Composable
+private fun ManualControlMealsSection(
+    lastPastMeal: MealEntry?,
+    nextPlannedMeal: MealEntry?,
+    hasNextPlannedMealReminder: Boolean = false,
+    onNavigateToMeals: () -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(id = R.string.manual_control_meals_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            NormalTextButton(onClick = onNavigateToMeals) {
+                Text(stringResource(id = R.string.meals_screen_title))
+            }
+        }
+
+        // Last Past Meal
+        MealInfoCard(
+            title = stringResource(id = R.string.manual_control_past_meal_title),
+            icon = Icons.Filled.Carbs,
+            mealEntry = lastPastMeal,
+            emptyText = stringResource(id = R.string.manual_control_no_past_meal),
+            onClick = onNavigateToMeals
+        )
+
+        // Next Planned Meal
+        MealInfoCard(
+            title = stringResource(id = R.string.manual_control_next_meal_title),
+            icon = Icons.Default.Schedule,
+            mealEntry = nextPlannedMeal,
+            emptyText = stringResource(id = R.string.manual_control_no_next_meal),
+            onClick = onNavigateToMeals,
+            hasReminder = hasNextPlannedMealReminder
+        )
+    }
+}
+
+private fun formatTimestamp(timestamp: Timestamp): String {
+    val formatter = DateTimeFormatter.ofPattern("HH:mm 'Uhr'", Locale.getDefault())
+    return Instant.ofEpochMilli(timestamp.ms)
+        .atZone(ZoneId.systemDefault())
+        .format(formatter)
+}
+
+@Composable
+private fun MealInfoCard(
+    title: String,
+    icon: ImageVector,
+    mealEntry: MealEntry?,
+    emptyText: String,
+    onClick: () -> Unit,
+    hasReminder: Boolean = false
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                if (hasReminder && mealEntry != null) {
+                    Icon(
+                        imageVector = Icons.Default.Notifications,
+                        contentDescription = stringResource(id = R.string.meal_correction_bolus_reminder_label),
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(6.dp))
+
+            if (mealEntry != null) {
+                Text(
+                    text = "%.0f g Kohlenhydrate (%s)".format(mealEntry.carbGrams, mealEntry.mealType.name),
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = formatTimestamp(mealEntry.timestamp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (mealEntry.description.isNotBlank()) {
+                    Text(
+                        text = mealEntry.description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            } else {
+                Text(
+                    text = emptyText,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+// -----------------------------------------------------------------------------------------
+// --- Section: Recommendations ---
 // -----------------------------------------------------------------------------------------
 
 @Composable
@@ -463,176 +588,7 @@ private fun RecommendationCard(
 }
 
 // -----------------------------------------------------------------------------------------
-// --- Section 2: Active Meal Reminders ---
-// -----------------------------------------------------------------------------------------
-
-@Composable
-private fun ManualControlMealRemindersSection(
-    reminders: List<MealReminder>,
-    onNavigateToMeals: () -> Unit
-) {
-    if (reminders.isEmpty()) return
-
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-            text = stringResource(id = R.string.meal_correction_bolus_reminder_label),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
-        )
-
-        reminders.forEach { reminder ->
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = onNavigateToMeals),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f))
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Notifications,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text(
-                            text = reminder.description.ifBlank { stringResource(R.string.notification_meal_reminder_title) },
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = stringResource(R.string.at_time_format, time(reminder.reminderTimestamp)),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-// -----------------------------------------------------------------------------------------
-// --- Section 3: Meals (Past & Next Planned) ---
-// -----------------------------------------------------------------------------------------
-
-@Composable
-private fun ManualControlMealsSection(
-    lastPastMeal: MealEntry?,
-    nextPlannedMeal: MealEntry?,
-    onNavigateToMeals: () -> Unit
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = stringResource(id = R.string.manual_control_meals_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            NormalTextButton(onClick = onNavigateToMeals) {
-                Text(stringResource(id = R.string.meals_screen_title))
-            }
-        }
-
-        // Last Past Meal
-        MealInfoCard(
-            title = stringResource(id = R.string.manual_control_past_meal_title),
-            icon = Icons.Filled.Carbs,
-            mealEntry = lastPastMeal,
-            emptyText = stringResource(id = R.string.manual_control_no_past_meal),
-            onClick = onNavigateToMeals
-        )
-
-        // Next Planned Meal
-        MealInfoCard(
-            title = stringResource(id = R.string.manual_control_next_meal_title),
-            icon = Icons.Default.Schedule,
-            mealEntry = nextPlannedMeal,
-            emptyText = stringResource(id = R.string.manual_control_no_next_meal),
-            onClick = onNavigateToMeals
-        )
-    }
-}
-
-private fun formatTimestamp(timestamp: Timestamp): String {
-    val formatter = DateTimeFormatter.ofPattern("HH:mm 'Uhr'", Locale.getDefault())
-    return Instant.ofEpochMilli(timestamp.ms)
-        .atZone(ZoneId.systemDefault())
-        .format(formatter)
-}
-
-@Composable
-private fun MealInfoCard(
-    title: String,
-    icon: ImageVector,
-    mealEntry: MealEntry?,
-    emptyText: String,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-            Spacer(modifier = Modifier.height(6.dp))
-
-            if (mealEntry != null) {
-                Text(
-                    text = "%.0f g Kohlenhydrate (%s)".format(mealEntry.carbGrams, mealEntry.mealType.name),
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium
-                )
-                Text(
-                    text = formatTimestamp(mealEntry.timestamp),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                if (mealEntry.description.isNotBlank()) {
-                    Text(
-                        text = mealEntry.description,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            } else {
-                Text(
-                    text = emptyText,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
-
-// -----------------------------------------------------------------------------------------
-// --- Section 4: Pump Controls ---
+// --- Section: Pump Controls ---
 // -----------------------------------------------------------------------------------------
 
 @Composable
@@ -999,7 +955,8 @@ fun ManualControlScreenPreview() {
                                     cat = Minutes(180)
                                 ),
                                 description = "Pizza"
-                            )
+                            ),
+                            hasNextPlannedMealReminder = true
                         ),
                         recommendations = listOf(
                             ApsRecommendation.Bolus(
@@ -1008,13 +965,6 @@ fun ManualControlScreenPreview() {
                                 basalPart = InsulinAmount(0.0)
                             ),
                             ApsRecommendation.TempBasal(durationInHours = 2, percent = 80)
-                        ),
-                        activeMealReminders = listOf(
-                            MealReminder(
-                                id = 10L,
-                                mealTimestamp = Timestamp.now().plusMinutes(15),
-                                description = "Snack nach dem Sport"
-                            )
                         ),
                         pump = ManualControlPumpUiModel(
                             isConnected = true

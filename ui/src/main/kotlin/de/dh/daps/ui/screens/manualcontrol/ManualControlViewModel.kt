@@ -8,7 +8,6 @@ import de.dh.daps.common.model.BolusStatus
 import de.dh.daps.common.model.DeferredBolus
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.MealEntry
-import de.dh.daps.common.model.MealReminder
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.toActiveDoses
@@ -33,7 +32,8 @@ data class ManualControlContextInfoUiModel(
     val iob: InsulinAmount = InsulinAmount.ZERO,
     val cob: Double = 0.0,
     val lastPastMeal: MealEntry? = null,
-    val nextPlannedMeal: MealEntry? = null
+    val nextPlannedMeal: MealEntry? = null,
+    val hasNextPlannedMealReminder: Boolean = false,
 )
 
 /**
@@ -54,7 +54,6 @@ data class ManualControlPumpUiModel(
 data class ManualControlUiState(
     val contextInfo: ManualControlContextInfoUiModel = ManualControlContextInfoUiModel(),
     val recommendations: List<ApsRecommendation> = emptyList(),
-    val activeMealReminders: List<MealReminder> = emptyList(),
     val pump: ManualControlPumpUiModel = ManualControlPumpUiModel()
 )
 
@@ -130,10 +129,17 @@ class ManualControlViewModel(
         recommendationManager.mealReminders,
         pumpFlow
     ) { contextInfo, recommendations, mealReminders, pump ->
+        val nextMeal = contextInfo.nextPlannedMeal
+        val hasNextPlannedMealReminder = if (nextMeal != null) {
+            mealReminders.any { reminder ->
+                (reminder.mealId != null && reminder.mealId == nextMeal.id) ||
+                        reminder.mealTimestamp == nextMeal.timestamp
+            }
+        } else false
+
         ManualControlUiState(
-            contextInfo = contextInfo,
+            contextInfo = contextInfo.copy(hasNextPlannedMealReminder = hasNextPlannedMealReminder),
             recommendations = recommendations,
-            activeMealReminders = mealReminders,
             pump = pump
         )
     }.stateIn(
