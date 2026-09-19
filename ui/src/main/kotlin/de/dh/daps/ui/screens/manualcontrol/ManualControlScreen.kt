@@ -117,7 +117,7 @@ fun ManualControlScreen(
     viewModel: ManualControlViewModel,
     treatmentLock: TreatmentLock,
     onNavigateUp: () -> Unit,
-    onNavigateToMealCorrectionBolus: () -> Unit = {}
+    onNavigateToMealCorrectionBolus: (Double?) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var activeDialog by remember { mutableStateOf<ManualControlDialog?>(null) }
@@ -243,7 +243,7 @@ fun ManualControlContextInfo(
 @Composable
 fun ManualControlContent(
     uiState: ManualControlUiState,
-    onNavigateToMealCorrectionBolus: () -> Unit = {},
+    onNavigateToMealCorrectionBolus: (Double?) -> Unit = {},
     onOpenBolusDialog: (ManualControlDialog.Bolus) -> Unit = {},
     onOpenTempBasalDialog: (ManualControlDialog.TempBasal) -> Unit = {},
     onCancelBolus: () -> Unit = {},
@@ -416,7 +416,7 @@ private fun ManualControlRecommendationsSection(
     recommendations: List<ApsRecommendation>,
     onOpenBolusDialog: (ManualControlDialog.Bolus) -> Unit,
     onOpenTempBasalDialog: (ManualControlDialog.TempBasal) -> Unit,
-    onNavigateToMealCorrectionBolus: () -> Unit
+    onNavigateToMealCorrectionBolus: (Double?) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
@@ -452,7 +452,7 @@ private fun RecommendationCard(
     recommendation: ApsRecommendation,
     onOpenBolusDialog: (ManualControlDialog.Bolus) -> Unit,
     onOpenTempBasalDialog: (ManualControlDialog.TempBasal) -> Unit,
-    onNavigateToMealCorrectionBolus: () -> Unit
+    onNavigateToMealCorrectionBolus: (Double?) -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -480,6 +480,21 @@ private fun RecommendationCard(
                         text = stringResource(R.string.recommendation_carbs_info_text, recommendation.amountInGram),
                         style = MaterialTheme.typography.bodyMedium
                     )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        PrimaryButton(
+                            onClick = {
+                                val carbsKe = recommendation.amountInGram / 10.0
+                                onNavigateToMealCorrectionBolus(carbsKe)
+                            }
+                        ) {
+                            Text(stringResource(id = R.string.manual_control_apply_recommendation))
+                        }
+                    }
                 }
 
                 is ApsRecommendation.Bolus -> {

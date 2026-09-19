@@ -301,7 +301,9 @@ class MainFeatureNavGraph(
                         viewModel = vm,
                         treatmentLock = treatmentLock,
                         onNavigateUp = { navViewModel.pop() },
-                        onNavigateToMealCorrectionBolus = { navViewModel.push(MealCorrectionBolusRoute()) }
+                        onNavigateToMealCorrectionBolus = { carbs ->
+                            navViewModel.replaceTop(MealCorrectionBolusRoute(prefilledCarbsKe = carbs))
+                        }
                     )
                 }
             }
