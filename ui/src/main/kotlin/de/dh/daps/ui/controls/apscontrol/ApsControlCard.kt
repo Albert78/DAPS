@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Adjust
-import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material.icons.filled.VerticalAlignBottom
 import androidx.compose.material3.ButtonDefaults
@@ -56,6 +55,7 @@ import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.crValue
 import de.dh.daps.ui.common.glucoseValue
+import de.dh.daps.ui.common.icons.Icon_OpenLoopMode
 import de.dh.daps.ui.common.isfValue
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.NeutralGrey
@@ -255,8 +255,6 @@ fun ApsControlCard(
                         onClick = onOpenLoopControlClick,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Icon(Icons.Default.Tune, null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp))
                         Text(stringResource(R.string.aps_control_button_manual_control), style = MaterialTheme.typography.titleMedium)
                     }
                 } else {

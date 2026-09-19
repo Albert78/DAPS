@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -84,6 +83,7 @@ import de.dh.daps.ui.common.icons.Icon_Menu_Food_Database
 import de.dh.daps.ui.common.icons.Icon_Menu_Master_Data
 import de.dh.daps.ui.common.icons.Icon_Menu_Meals
 import de.dh.daps.ui.common.icons.Icon_Menu_System_Control
+import de.dh.daps.ui.common.icons.Icon_OpenLoopMode
 import de.dh.daps.ui.common.rememberAppFormatters
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.rememberUseDarkTheme
@@ -360,7 +360,7 @@ fun DrawerContent(
                 )
                 DrawerItem(
                     label = stringResource(id = R.string.open_loop_screen_title),
-                    icon = Icons.Default.Tune,
+                    icon = Icon_OpenLoopMode,
                     selected = currentRoute == OpenLoopRoute,
                     onClick = { onRouteSelected(OpenLoopRoute) }
                 )
