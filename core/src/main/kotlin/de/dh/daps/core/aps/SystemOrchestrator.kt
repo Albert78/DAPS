@@ -1,7 +1,6 @@
 package de.dh.daps.core.aps
 
 import android.app.Notification
-import android.content.Context
 import android.content.Intent
 import de.dh.daps.AppPreferencesRepository
 import de.dh.daps.common.model.ApsMode
@@ -99,8 +98,7 @@ interface SystemOrchestrator {
         pumpManager: PumpManager,
         appPreferencesRepository: AppPreferencesRepository,
         carbsInsulinCalculator: CarbsInsulinCalculator,
-        systemMetricsRepository: SystemMetricsRepository,
-        context: Context
+        systemMetricsRepository: SystemMetricsRepository
     )
 
     /**
@@ -225,8 +223,7 @@ class SystemOrchestratorImpl(
         pumpManager: PumpManager,
         appPreferencesRepository: AppPreferencesRepository,
         carbsInsulinCalculator: CarbsInsulinCalculator,
-        systemMetricsRepository: SystemMetricsRepository,
-        context: Context
+        systemMetricsRepository: SystemMetricsRepository
     ) {
         this.therapyManager = therapyManager
         this.treatmentRepository = treatmentRepository

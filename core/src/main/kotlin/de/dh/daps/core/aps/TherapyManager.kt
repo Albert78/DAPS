@@ -2,7 +2,6 @@ package de.dh.daps.core.aps
 
 import android.content.Intent
 import android.util.Log
-import de.dh.daps.AppPreferencesRepository
 import de.dh.daps.common.model.BolusDeliveryState
 import de.dh.daps.common.model.BolusStatus
 import de.dh.daps.common.model.DeferredBolus
@@ -11,7 +10,6 @@ import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinHistory
 import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.MealEntry
-import de.dh.daps.common.model.ToDo
 import de.dh.daps.common.model.data.BgBlock
 import de.dh.daps.common.model.data.BgDelta
 import de.dh.daps.common.model.data.BgValue
@@ -24,16 +22,12 @@ import de.dh.daps.common.model.data.getAmountForMinute
 import de.dh.daps.common.model.data.getBgForMinute
 import de.dh.daps.core.pump.PumpCommand
 import de.dh.daps.core.pump.PumpManager
-import de.dh.daps.core.repository.AlarmRepository
 import de.dh.daps.core.repository.TherapyRepository
 import de.dh.daps.core.repository.TreatmentRepository
 import de.dh.daps.core.system.SystemWakeService
 import de.dh.daps.core.system.WakeupHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -74,12 +68,9 @@ sealed class LockResult {
 class TherapyManager(
     private val therapyRepository: TherapyRepository,
     private val treatmentRepository: TreatmentRepository,
-    private val appPreferencesRepository: AppPreferencesRepository,
     private val pumpManager: PumpManager,
-    private val alarmRepository: AlarmRepository,
     private val scope: CoroutineScope,
-    private val wakeService: SystemWakeService? = null,
-    private val recommendationManager: RecommendationManager? = null
+    private val wakeService: SystemWakeService? = null
 ) {
     private val mutex = Mutex()
     private val executionMutex = Mutex()

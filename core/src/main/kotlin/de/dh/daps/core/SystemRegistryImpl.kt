@@ -138,12 +138,9 @@ class SystemRegistryImpl(
             val therapyManager = TherapyManager(
                 therapyRepository = therapyRepository,
                 treatmentRepository = treatmentRepository,
-                appPreferencesRepository = appPreferencesRepository,
                 pumpManager = pumpManager,
-                alarmRepository = alarmRepository,
                 scope = scope,
-                wakeService = wakeService,
-                recommendationManager = recommendationManager
+                wakeService = wakeService
             )
             val carbsInsulinCalculator = CarbsInsulinCalculator(timeService.tickInterval)
 
@@ -161,16 +158,13 @@ class SystemRegistryImpl(
                 pumpManager = pumpManager,
                 appPreferencesRepository = appPreferencesRepository,
                 carbsInsulinCalculator = carbsInsulinCalculator,
-                systemMetricsRepository = systemMetricsRepository,
-                context = application
+                systemMetricsRepository = systemMetricsRepository
             )
 
             val alarmSnoozeManager = AlarmSnoozeManager()
             val alarmEvaluator = AlarmEvaluator(
-                context = application,
                 glucoseRepository = glucoseRepository,
                 systemOrchestrator = systemOrchestrator,
-                alarmRepository = alarmRepository,
                 therapyRepository = therapyRepository,
                 alarmSnoozeManager = alarmSnoozeManager,
                 androidNotifications = androidNotifications,

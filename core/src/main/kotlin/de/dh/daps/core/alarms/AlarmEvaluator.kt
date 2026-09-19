@@ -1,6 +1,5 @@
 package de.dh.daps.core.alarms
 
-import android.content.Context
 import android.util.Log
 import de.dh.daps.common.model.data.AlarmProfile
 import de.dh.daps.common.model.data.AlarmSeverity
@@ -10,10 +9,9 @@ import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.core.aps.ApsIssue
 import de.dh.daps.core.aps.SystemOrchestrator
 import de.dh.daps.core.pump.PumpIssue
-import de.dh.daps.core.repository.AlarmRepository
 import de.dh.daps.core.repository.GlucoseRepository
-import de.dh.daps.core.system.AndroidNotifications
 import de.dh.daps.core.repository.TherapyRepository
+import de.dh.daps.core.system.AndroidNotifications
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,10 +25,8 @@ import kotlinx.coroutines.launch
  * and snooze states to trigger audio/haptics, notification updates, and full-screen alarm screens.
  */
 class AlarmEvaluator(
-    private val context: Context,
     private val glucoseRepository: GlucoseRepository,
     private val systemOrchestrator: SystemOrchestrator,
-    private val alarmRepository: AlarmRepository,
     private val therapyRepository: TherapyRepository,
     private val alarmSnoozeManager: AlarmSnoozeManager,
     private val androidNotifications: AndroidNotifications,

@@ -472,6 +472,8 @@ fun EditMealCard(
                     )
                 }
 
+                Spacer(modifier = Modifier.width(8.dp))
+
                 OutlinedButton(onClick = onOpenBolusPlanSheet) {
                     Icon(
                         imageVector = Icons.Default.Edit,
