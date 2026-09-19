@@ -60,12 +60,14 @@ import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDe
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import android.net.Uri
 import de.dh.daps.common.navigation.BolusHistoryRoute
 import de.dh.daps.common.navigation.DashboardRoute
 import de.dh.daps.common.navigation.FeatureNavGraph
 import de.dh.daps.common.navigation.FoodDatabaseRoute
 import de.dh.daps.common.navigation.HistoricalMealRoute
 import de.dh.daps.common.navigation.MasterDataRoute
+import de.dh.daps.common.navigation.MealCorrectionBolusRoute
 import de.dh.daps.common.navigation.MealsRoute
 import de.dh.daps.common.navigation.NavigationViewModel
 import de.dh.daps.common.navigation.ManualControlRoute
@@ -90,6 +92,7 @@ import de.dh.daps.ui.common.theme.rememberUseDarkTheme
 import de.dh.daps.ui.navigation.MainFeatureNavGraph
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 class MainActivity : ComponentActivity() {
     private lateinit var navViewModel: NavigationViewModel
@@ -174,7 +177,7 @@ class MainActivity : ComponentActivity() {
         var showHamburger by remember { mutableStateOf(isTopLevel) }
         LaunchedEffect(isTopLevel) {
             if (isTopLevel) {
-                delay(400) // Delay to wait for screen transition
+                delay(400.milliseconds) // Delay to wait for screen transition
                 showHamburger = true
             } else {
                 showHamburger = false
@@ -244,19 +247,31 @@ class MainActivity : ComponentActivity() {
 
     class IntentHandler {
         fun parseIntent(intent: Intent?): List<NavKey>? {
-            if (intent?.action == Intent.ACTION_VIEW) {
+            if (intent == null) return null
+
+            if (intent.action == Intent.ACTION_VIEW) {
                 val data = intent.data
                 if (data?.scheme == "app" && data.host == "daps.dh.de") {
-                    if (data.path == "/dashboard") {
+                    val path = data.path
+                    if (path == "/dashboard") {
                         return listOf(DashboardRoute)
-                    } else if (data.path?.startsWith("/meal/") == true) {
+                    } else if (path?.startsWith("/meal/") == true) {
                         val mealId = data.lastPathSegment?.toLongOrNull()
                         if (mealId != null) {
                             return listOf(DashboardRoute, HistoricalMealRoute(mealId))
                         }
+                    } else if (path == "/mealcorrectionbolus") {
+                        val carbs = data.getDoubleQueryParameter("carbs")
+                            ?: intent.getDoubleExtraOrNull("carbs")
+
+                        return listOf(DashboardRoute, MealCorrectionBolusRoute(prefilledCarbsKe = carbs))
                     }
                 }
+            } else if (intent.action == ACTION_MEAL_CORRECTION_BOLUS || intent.hasExtra("carbs")) {
+                val carbs = intent.getDoubleExtraOrNull("carbs")
+                return listOf(DashboardRoute, MealCorrectionBolusRoute(prefilledCarbsKe = carbs))
             }
+
             return null
         }
 
@@ -268,6 +283,9 @@ class MainActivity : ComponentActivity() {
         }
 
         companion object {
+            const val ACTION_MEAL_CORRECTION_BOLUS = "de.dh.daps.action.MEAL_CORRECTION_BOLUS"
+            const val EXTRA_CARBS = "carbs"
+
             fun createStartDashboardIntent(context: Context): Intent {
                 return Intent(context, MainActivity::class.java).apply {
                     action = Intent.ACTION_VIEW
@@ -279,6 +297,21 @@ class MainActivity : ComponentActivity() {
                 return Intent(context, MainActivity::class.java).apply {
                     action = Intent.ACTION_VIEW
                     data = "app://daps.dh.de/meal/$mealId".toUri()
+                }
+            }
+
+            fun createMealCorrectionBolusIntent(
+                context: Context,
+                carbs: Double? = null
+            ): Intent {
+                return Intent(context, MainActivity::class.java).apply {
+                    action = Intent.ACTION_VIEW
+                    val uriBuilder = "app://daps.dh.de/mealcorrectionbolus".toUri().buildUpon()
+                    if (carbs != null) {
+                        uriBuilder.appendQueryParameter("carbs", carbs.toString())
+                        putExtra(EXTRA_CARBS, carbs)
+                    }
+                    data = uriBuilder.build()
                 }
             }
         }
@@ -293,6 +326,28 @@ class MainActivity : ComponentActivity() {
 
         fun createEditMealIntent(context: Context, mealId: Long): Intent =
             IntentHandler.createEditMealIntent(context, mealId)
+
+        fun createMealCorrectionBolusIntent(
+            context: Context,
+            carbs: Double? = null
+        ): Intent = IntentHandler.createMealCorrectionBolusIntent(context, carbs)
+    }
+}
+
+private fun Uri.getDoubleQueryParameter(key: String): Double? {
+    return getQueryParameter(key)?.toDoubleOrNull()
+}
+
+private fun Intent.getDoubleExtraOrNull(key: String): Double? {
+    if (!hasExtra(key)) return null
+    return try {
+        getDoubleExtra(key, 0.0)
+    } catch (_: Exception) {
+        try {
+            getFloatExtra(key, 0f).toDouble()
+        } catch (_: Exception) {
+            getStringExtra(key)?.toDoubleOrNull()
+        }
     }
 }
 

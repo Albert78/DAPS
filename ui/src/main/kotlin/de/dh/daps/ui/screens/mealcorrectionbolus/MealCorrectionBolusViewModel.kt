@@ -174,7 +174,8 @@ data class MealCorrectionBolusUiState(
 )
 
 class MealCorrectionBolusViewModel(
-    private val registry: SystemRegistry
+    private val registry: SystemRegistry,
+    private val prefilledCarbsKe: Double? = null
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MealCorrectionBolusUiState())
     val uiState: StateFlow<MealCorrectionBolusUiState> = _uiState.asStateFlow()
@@ -207,6 +208,8 @@ class MealCorrectionBolusViewModel(
             )
             val suggestedCarbsKe = BolusCalculationMath.calculateSuggestedCarbsKe(projectedBg, targetBg, isf, cr, projections.futureCarbs)
 
+            val initialCarbsKe = prefilledCarbsKe?.coerceAtLeast(0.0) ?: suggestedCarbsKe
+
             _uiState.update {
                 val mealTimeFromNow = max(Minutes.ZERO, suggestedImi ?: Minutes.ZERO)
                 val initialMealTimestamp = now + mealTimeFromNow
@@ -218,7 +221,7 @@ class MealCorrectionBolusViewModel(
                     input = MealInput(
                         mealTimestamp = initialMealTimestamp,
                         mealTimeFromNow = mealTimeFromNow,
-                        carbsKe = suggestedCarbsKe,
+                        carbsKe = initialCarbsKe,
                     ),
                     mealTypes = mealTypes,
                     projections = projections,
@@ -594,10 +597,13 @@ class MealCorrectionBolusViewModel(
     }
 
     companion object {
-        class Factory(private val registry: SystemRegistry) : ViewModelProvider.Factory {
+        class Factory(
+            private val registry: SystemRegistry,
+            private val prefilledCarbsKe: Double? = null
+        ) : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
-                return MealCorrectionBolusViewModel(registry) as T
+                return MealCorrectionBolusViewModel(registry, prefilledCarbsKe) as T
             }
         }
     }

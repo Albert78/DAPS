@@ -43,6 +43,18 @@
                     android:scheme="app"
                     android:host="daps.dh.de"
                     android:pathPrefix="/dashboard" />
+                <data
+                    android:scheme="app"
+                    android:host="daps.dh.de"
+                    android:pathPrefix="/meal" />
+                <data
+                    android:scheme="app"
+                    android:host="daps.dh.de"
+                    android:pathPrefix="/mealcorrectionbolus" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="de.dh.daps.action.MEAL_CORRECTION_BOLUS" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
 

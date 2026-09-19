@@ -141,7 +141,7 @@ class MainFeatureNavGraph(
                     onNavigateToPermissions = { navViewModel.push(PermissionsRoute) },
                     onNavigateToPreferences = { navViewModel.push(PreferencesMainRoute) },
                     onNavigateToTherapySettings = { navViewModel.push(CurrentTherapySettingsRoute) },
-                    onNavigateToMealCorrectionBolus = { navViewModel.push(MealCorrectionBolusRoute) },
+                    onNavigateToMealCorrectionBolus = { navViewModel.push(MealCorrectionBolusRoute()) },
                     onNavigateToSystemControl = { navViewModel.push(SystemControlRoute()) },
                     onNavigateToManualControl = { navViewModel.push(ManualControlRoute) },
                     onAdjustmentClick = { navViewModel.push(TherapyAdjustmentRoute) },
@@ -216,7 +216,10 @@ class MainFeatureNavGraph(
 
             is MealCorrectionBolusRoute -> NavEntry(key) {
                 val vm: MealCorrectionBolusViewModel = viewModel(
-                    factory = MealCorrectionBolusViewModel.Companion.Factory(registry)
+                    factory = MealCorrectionBolusViewModel.Companion.Factory(
+                        registry = registry,
+                        prefilledCarbsKe = key.prefilledCarbsKe
+                    )
                 )
                 val lockViewModel: TreatmentLockViewModel = viewModel(
                     factory = TreatmentLockViewModel.Companion.Factory(
@@ -298,7 +301,7 @@ class MainFeatureNavGraph(
                         viewModel = vm,
                         treatmentLock = treatmentLock,
                         onNavigateUp = { navViewModel.pop() },
-                        onNavigateToMealCorrectionBolus = { navViewModel.push(MealCorrectionBolusRoute) }
+                        onNavigateToMealCorrectionBolus = { navViewModel.push(MealCorrectionBolusRoute()) }
                     )
                 }
             }
