@@ -12,6 +12,7 @@ import de.dh.daps.common.model.DeferredBolus
 import de.dh.daps.common.model.ID_MEAL_STANDARD
 import de.dh.daps.common.model.ID_UNDEFINED
 import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.MEAL_REMINDER_MIN_FUTURE_MINUTES
 import de.dh.daps.common.model.MealEntry
 import de.dh.daps.common.model.MealType
 import de.dh.daps.common.model.data.BgDelta
@@ -166,6 +167,7 @@ data class MealCorrectionBolusUiState(
     val cr: Double = DEFAULT_CR_GRAM_PER_UNIT,
     val isBolusPlanDialogOpen: Boolean = false,
     val isMealReminderEnabled: Boolean = false,
+    val isMealReminderAllowed: Boolean = false,
     val showCloseBanner: Boolean = false,
     val submissionStatus: SubmissionStatus = SubmissionStatus.NotSubmitted,
     val conflictingMealTime: String? = null
@@ -207,12 +209,14 @@ class MealCorrectionBolusViewModel(
 
             _uiState.update {
                 val mealTimeFromNow = max(Minutes.ZERO, suggestedImi ?: Minutes.ZERO)
+                val initialMealTimestamp = now + mealTimeFromNow
+                val isReminderAllowed = initialMealTimestamp >= now + Minutes(MEAL_REMINDER_MIN_FUTURE_MINUTES.toShort())
                 it.copy(
                     isLoading = false,
                     suggestedCarbsKe = suggestedCarbsKe,
                     suggestedImi = suggestedImi,
                     input = MealInput(
-                        mealTimestamp = now + mealTimeFromNow,
+                        mealTimestamp = initialMealTimestamp,
                         mealTimeFromNow = mealTimeFromNow,
                         carbsKe = suggestedCarbsKe,
                     ),
@@ -222,6 +226,8 @@ class MealCorrectionBolusViewModel(
                     lowThreshold = lowThreshold,
                     isf = isf,
                     cr = if (cr == 0.0) DEFAULT_CR_GRAM_PER_UNIT else cr,
+                    isMealReminderAllowed = isReminderAllowed,
+                    isMealReminderEnabled = if (!isReminderAllowed) false else it.isMealReminderEnabled
                 )
             }
             checkMealTimeConflict(_uiState.value.input.mealTimestamp)
@@ -262,6 +268,7 @@ class MealCorrectionBolusViewModel(
         val rawOffset = Minutes.timeDifference(now, timestamp)
         val offsetMinutes = BolusCalculationMath.roundTo5Minutes(rawOffset).coerceIn(Minutes(-30), Minutes(60))
         val newMealTimestamp = now + offsetMinutes
+        val isReminderAllowed = newMealTimestamp >= now + Minutes(MEAL_REMINDER_MIN_FUTURE_MINUTES.toShort())
 
         viewModelScope.launch {
             val projections = bolusCorrectionCalculator.calculateBolusProjections(newMealTimestamp)
@@ -273,6 +280,8 @@ class MealCorrectionBolusViewModel(
                         mealTimeFromNow = offsetMinutes
                     ),
                     projections = projections,
+                    isMealReminderAllowed = isReminderAllowed,
+                    isMealReminderEnabled = if (!isReminderAllowed) false else state.isMealReminderEnabled
                 )
             }
             checkMealTimeConflict(newMealTimestamp)
@@ -396,6 +405,7 @@ class MealCorrectionBolusViewModel(
     }
 
     fun onToggleMealReminder() {
+        if (!_uiState.value.isMealReminderAllowed) return
         _uiState.update { it.copy(isMealReminderEnabled = !it.isMealReminderEnabled) }
     }
 
@@ -561,11 +571,15 @@ class MealCorrectionBolusViewModel(
                     // 4. Check for conflicting meal time
                     val conflictingTime = findConflictingMealTime(newMealTimestamp)
 
+                    val isReminderAllowed = newMealTimestamp >= now + Minutes(MEAL_REMINDER_MIN_FUTURE_MINUTES.toShort())
+
                     state.copy(
                         input = state.input.copy(mealTimestamp = newMealTimestamp),
                         insulinPlan = updatedPlan,
                         isProjectionsStale = isStale,
-                        conflictingMealTime = conflictingTime
+                        conflictingMealTime = conflictingTime,
+                        isMealReminderAllowed = isReminderAllowed,
+                        isMealReminderEnabled = if (!isReminderAllowed) false else state.isMealReminderEnabled
                     )
                 }
             }

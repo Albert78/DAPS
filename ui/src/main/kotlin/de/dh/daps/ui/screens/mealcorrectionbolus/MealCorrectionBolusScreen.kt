@@ -287,6 +287,7 @@ fun MealCorrectionBolusContent(
                                 text = stringResource(R.string.meal_correction_bolus_reminder_label),
                                 checked = uiState.isMealReminderEnabled,
                                 onCheckedChange = { onToggleMealReminder() },
+                                enabled = uiState.isMealReminderAllowed,
                                 modifier = Modifier.fillMaxWidth()
                             )
                         }
@@ -926,7 +927,9 @@ fun MealCorrectionBolusZeroKePreview() {
                         calculation = BolusCalculationDetails(
                             proposedTotal = InsulinAmount(0.8)
                         ),
-                        submissionStatus = SubmissionStatus.NotSubmitted
+                        submissionStatus = SubmissionStatus.NotSubmitted,
+                        isMealReminderAllowed = true,
+                        isMealReminderEnabled = true
                     ),
                     onCarbsChange = {},
                     onMealTimeChange = {},
@@ -991,7 +994,9 @@ fun MealCorrectionBolusDefaultPreview() {
                             correctionPart = InsulinAmount(0.8),
                             proposedTotal = InsulinAmount(5.3),
                         ),
-                        submissionStatus = SubmissionStatus.NotSubmitted
+                        submissionStatus = SubmissionStatus.NotSubmitted,
+                        isMealReminderAllowed = true,
+                        isMealReminderEnabled = true
                     ),
                     onCarbsChange = {},
                     onMealTimeChange = {},

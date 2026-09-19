@@ -262,6 +262,7 @@ fun EditHistoricalMealContent(
                     pendingDeferredBoluses = uiState.pendingDeferredBoluses,
                     administeredInsulinAmount = uiState.administeredInsulinAmount,
                     isMealReminderEnabled = uiState.isMealReminderEnabled,
+                    isMealReminderAllowed = uiState.isMealReminderAllowed,
                     onCarbsChange = onCarbsChange,
                     onTimestampChange = onTimestampChange,
                     onMealTypeChange = onMealTypeChange,
@@ -353,6 +354,7 @@ fun EditMealCard(
     pendingDeferredBoluses: List<PlannedBolusUiModel>,
     administeredInsulinAmount: InsulinAmount = InsulinAmount.ZERO,
     isMealReminderEnabled: Boolean = false,
+    isMealReminderAllowed: Boolean = false,
     onCarbsChange: (Double) -> Unit,
     onTimestampChange: (Timestamp) -> Unit,
     onMealTypeChange: (MealType) -> Unit,
@@ -424,6 +426,7 @@ fun EditMealCard(
                 text = stringResource(R.string.meal_correction_bolus_reminder_label),
                 checked = isMealReminderEnabled,
                 onCheckedChange = { onToggleMealReminder() },
+                enabled = isMealReminderAllowed,
                 modifier = Modifier.fillMaxWidth()
             )
 

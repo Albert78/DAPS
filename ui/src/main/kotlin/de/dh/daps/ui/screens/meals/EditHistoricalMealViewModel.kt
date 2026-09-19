@@ -5,10 +5,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import de.dh.daps.common.model.DeferredBolus
+import de.dh.daps.common.model.HISTORICAL_MEAL_MAX_PAST_MINUTES
 import de.dh.daps.common.model.ID_UNDEFINED
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.MEAL_ADD_THRESHOLD_HOURS
 import de.dh.daps.common.model.MEAL_EDIT_THRESHOLD_HOURS
+import de.dh.daps.common.model.MEAL_REMINDER_MIN_FUTURE_MINUTES
 import de.dh.daps.common.model.MealEntry
 import de.dh.daps.common.model.MealType
 import de.dh.daps.common.model.data.Minutes
@@ -33,6 +35,7 @@ data class EditHistoricalMealUiState(
     val isBolusPlanSheetOpen: Boolean = false,
     val administeredInsulinAmount: InsulinAmount = InsulinAmount.ZERO,
     val isMealReminderEnabled: Boolean = false,
+    val isMealReminderAllowed: Boolean = false,
     val isSaving: Boolean = false,
     val isFormValid: Boolean = false
 )
@@ -81,6 +84,10 @@ class EditHistoricalMealViewModel(
                 allReminders.find { it.mealId == meal.id }
             } else null
 
+            val now = Timestamp.now()
+            val editedTime = meal?.timestamp ?: (now - Minutes(15))
+            val isReminderAllowed = editedTime >= now + Minutes(MEAL_REMINDER_MIN_FUTURE_MINUTES.toShort())
+
             _uiState.update {
                 it.copy(
                     isLoading = false,
@@ -88,11 +95,12 @@ class EditHistoricalMealViewModel(
                     meal = meal,
                     mealTypes = mealTypes,
                     editedCarbsKe = meal?.let { m -> m.carbGrams / 10.0 } ?: 0.0,
-                    editedTimestamp = meal?.timestamp ?: (Timestamp.now() - Minutes(15)),
+                    editedTimestamp = editedTime,
                     editedMealType = meal?.mealType,
                     pendingDeferredBoluses = pendingUiModels,
                     administeredInsulinAmount = meal?.administeredInsulinAmount ?: InsulinAmount.ZERO,
-                    isMealReminderEnabled = existingReminder != null
+                    isMealReminderAllowed = isReminderAllowed,
+                    isMealReminderEnabled = isReminderAllowed && (existingReminder != null)
                 )
             }
             validateForm()
@@ -108,10 +116,17 @@ class EditHistoricalMealViewModel(
         val now = Timestamp.now()
         val thresholdMinutes = if (isAddMode) MEAL_ADD_THRESHOLD_HOURS * 60 else (MEAL_EDIT_THRESHOLD_HOURS * 60)
         val minTime = now - Minutes(thresholdMinutes.toShort())
-        val maxTime = now - Minutes(5)
+        val maxTime = now - Minutes(HISTORICAL_MEAL_MAX_PAST_MINUTES.toShort())
 
         val cappedTimestamp = if (timestamp < minTime) minTime else if (timestamp > maxTime) maxTime else timestamp
-        _uiState.update { it.copy(editedTimestamp = cappedTimestamp) }
+        val isReminderAllowed = cappedTimestamp >= now + Minutes(MEAL_REMINDER_MIN_FUTURE_MINUTES.toShort())
+        _uiState.update {
+            it.copy(
+                editedTimestamp = cappedTimestamp,
+                isMealReminderAllowed = isReminderAllowed,
+                isMealReminderEnabled = if (!isReminderAllowed) false else it.isMealReminderEnabled
+            )
+        }
         validateForm()
     }
 
@@ -121,6 +136,7 @@ class EditHistoricalMealViewModel(
     }
 
     fun onToggleMealReminder() {
+        if (!_uiState.value.isMealReminderAllowed) return
         _uiState.update { it.copy(isMealReminderEnabled = !it.isMealReminderEnabled) }
     }
 
