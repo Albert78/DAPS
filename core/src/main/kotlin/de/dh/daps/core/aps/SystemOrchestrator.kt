@@ -381,8 +381,8 @@ class SystemOrchestratorImpl(
                     else -> recommendationManager.clearTempBasalRecommendation()
                 }
             },
-            onCarbsHint = { treatmentLock, amountInGram -> recommendationManager.addCarbsRecommendation(amountInGram) },
-            onClearRecommendations = { treatmentLock -> recommendationManager.clearRecommendations() },
+            onCarbsHint = { amountInGram -> recommendationManager.addCarbsRecommendation(amountInGram) },
+            onClearRecommendations = { recommendationManager.clearRecommendations() },
             onWaitForPumpSync = { treatmentLock -> therapyManager.waitForPumpSync(treatmentLock) },
             systemMetricsRepository = systemMetricsRepository,
             scope = scope

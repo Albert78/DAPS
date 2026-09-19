@@ -81,8 +81,8 @@ class Core(
     private val onApplyDeferredBolusUpdates: suspend (treatmentLock: TreatmentLock, List<DeferredBolusUpdate>) -> Unit,
     private val onSetTempBasal: (treatmentLock: TreatmentLock, durationInHours: Int, percent: Int) -> Unit,
     private val onClearTempBasal: (treatmentLock: TreatmentLock) -> Unit,
-    private val onCarbsHint: (treatmentLock: TreatmentLock, Int) -> Unit,
-    private val onClearRecommendations: (treatmentLock: TreatmentLock) -> Unit,
+    private val onCarbsHint: (amountInGram: Int) -> Unit,
+    private val onClearRecommendations: () -> Unit,
 
     private val onWaitForPumpSync: suspend (treatmentLock: TreatmentLock) -> Int,
     private val systemMetricsRepository: SystemMetricsRepository,
@@ -179,7 +179,7 @@ class Core(
                         setCoreState(CoreState.Active(issuesWithoutLock + CoreIssue.NoPumpConnection(lastCompletion)))
                         return@tryAcquire
                     }
-                    onClearRecommendations(treatmentLock)
+                    onClearRecommendations()
 
                     val result = doRecalculate()
 
@@ -204,7 +204,7 @@ class Core(
                     }
 
                     if (result.carbsInGHint != null) {
-                        onCarbsHint(treatmentLock, result.carbsInGHint)
+                        onCarbsHint(result.carbsInGHint)
                     }
                     if (result.tempBasal != null) {
                         onSetTempBasal(
@@ -407,8 +407,8 @@ class Core(
             onApplyDeferredBolusUpdates: suspend (treatmentLock: TreatmentLock, List<DeferredBolusUpdate>) -> Unit,
             onSetTempBasal: (treatmentLock: TreatmentLock, durationInHours: Int, percent: Int) -> Unit,
             onClearTempBasal: (treatmentLock: TreatmentLock) -> Unit,
-            onCarbsHint: (treatmentLock: TreatmentLock, amountInGram: Int) -> Unit,
-            onClearRecommendations: (treatmentLock: TreatmentLock) -> Unit,
+            onCarbsHint: (amountInGram: Int) -> Unit,
+            onClearRecommendations: () -> Unit,
             onWaitForPumpSync: suspend (treatmentLock: TreatmentLock) -> Int,
             systemMetricsRepository: SystemMetricsRepository,
             scope: CoroutineScope
