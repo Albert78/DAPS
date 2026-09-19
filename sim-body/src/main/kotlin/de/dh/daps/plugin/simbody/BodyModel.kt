@@ -1,16 +1,13 @@
 package de.dh.daps.plugin.simbody
 
 import androidx.compose.runtime.mutableStateListOf
-import de.dh.daps.common.model.CarbCurveComponentData
-import de.dh.daps.common.model.ID_MEAL_FAST
-import de.dh.daps.common.model.ID_MEAL_HIGH_FAT
-import de.dh.daps.common.model.ID_MEAL_SLOW
-import de.dh.daps.common.model.ID_MEAL_STANDARD
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinOrigin
 import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.MealEntry
 import de.dh.daps.common.model.MealType
+import de.dh.daps.common.model.getDefaultMealTypes
+import de.dh.daps.common.model.getDefaultStandardMealType
 import de.dh.daps.common.model.calculation.CarbCurveComponent
 import de.dh.daps.common.model.calculation.InsulinCurve
 import de.dh.daps.common.model.data.Block
@@ -64,7 +61,7 @@ class BodyModel(
         peak = Minutes(75)
     )
 
-    private val defaultMealType = SIM_MEAL_TYPES.first { it.id == ID_MEAL_STANDARD }
+    private val defaultMealType = getDefaultStandardMealType()
 
     // Inputs (historical data) - using Compose state for UI updates
     val meals = mutableStateListOf<MealEntry>()
@@ -529,38 +526,7 @@ class BodyModel(
     }
 
     companion object {
-        val SIM_MEAL_TYPES = listOf(
-            MealType(
-                id = ID_MEAL_FAST,
-                name = "Schnelle KE",
-                components = listOf(CarbCurveComponentData(weight = 100, peakMinutes = Minutes(45))),
-                cat = Minutes.ofHours(2)
-            ),
-            MealType(
-                id = ID_MEAL_STANDARD,
-                name = "Standard-Essen",
-                components = listOf(
-                    CarbCurveComponentData(weight = 70, peakMinutes = Minutes(75)),
-                    CarbCurveComponentData(weight = 30, peakMinutes = Minutes(150))
-                ),
-                cat = Minutes.ofHours(4)
-            ),
-            MealType(
-                id = ID_MEAL_HIGH_FAT,
-                name = "Fettreiches Essen",
-                components = listOf(
-                    CarbCurveComponentData(weight = 40, peakMinutes = Minutes(90)),
-                    CarbCurveComponentData(weight = 60, peakMinutes = Minutes(240))
-                ),
-                cat = Minutes.ofHours(8)
-            ),
-            MealType(
-                id = ID_MEAL_SLOW,
-                name = "Langsames Essen",
-                components = listOf(CarbCurveComponentData(weight = 100, peakMinutes = Minutes(180))),
-                cat = Minutes.ofHours(6)
-            )
-        )
+        val SIM_MEAL_TYPES = getDefaultMealTypes()
 
         fun findSimMealType(id: String): MealType? = SIM_MEAL_TYPES.find { it.id == id }
     }

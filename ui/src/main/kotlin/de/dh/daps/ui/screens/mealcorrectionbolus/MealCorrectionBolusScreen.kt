@@ -60,13 +60,9 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.BOLUS_MAX
 import de.dh.daps.common.model.CARBS_KE_MAX
 import de.dh.daps.common.model.CARBS_KE_MIN
-import de.dh.daps.common.model.CarbCurveComponentData
-import de.dh.daps.common.model.ID_MEAL_FAST
-import de.dh.daps.common.model.ID_MEAL_HIGH_FAT
-import de.dh.daps.common.model.ID_MEAL_SLOW
-import de.dh.daps.common.model.ID_MEAL_STANDARD
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.MealType
+import de.dh.daps.common.model.getDefaultMealTypes
 import de.dh.daps.common.model.data.BgDelta
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.GlucoseUnit
@@ -957,12 +953,7 @@ fun MealCorrectionBolusZeroKePreview() {
 @Preview(showBackground = true, name = "Default Mode - Dark", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun MealCorrectionBolusDefaultPreview() {
-    val sampleMealTypes = listOf(
-        MealType(id = ID_MEAL_FAST, name = "Schnell", components = listOf(CarbCurveComponentData(100, Minutes(30))), cat = Minutes(120)),
-        MealType(id = ID_MEAL_STANDARD, name = "Standard", components = listOf(CarbCurveComponentData(100, Minutes(60))), cat = Minutes(180)),
-        MealType(id = ID_MEAL_HIGH_FAT, name = "Fettreiches Essen", components = listOf(CarbCurveComponentData(100, Minutes(60))), cat = Minutes(180)),
-        MealType(id = ID_MEAL_SLOW, name = "Langsam", components = listOf(CarbCurveComponentData(100, Minutes(90))), cat = Minutes(240)),
-    )
+    val sampleMealTypes = getDefaultMealTypes()
     AppTheme {
         CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
             Surface {

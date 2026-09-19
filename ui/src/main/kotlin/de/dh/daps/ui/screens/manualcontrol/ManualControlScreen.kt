@@ -48,21 +48,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.BolusDeliveryState
-import de.dh.daps.common.model.CarbCurveComponentData
 import de.dh.daps.common.model.DeferredBolus
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.MealEntry
-import de.dh.daps.common.model.MealType
+import de.dh.daps.common.model.getDefaultSlowMealType
+import de.dh.daps.common.model.getDefaultStandardMealType
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgSampleKind
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.GlucoseUnit
-import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.aps.ApsRecommendation
 import de.dh.daps.core.aps.TreatmentLock
@@ -937,11 +937,7 @@ fun ManualControlScreenPreview() {
                                 id = 1L,
                                 timestamp = Timestamp.now().minusHours(2),
                                 carbGrams = 45.0,
-                                mealType = MealType(
-                                    name = "Mittagessen",
-                                    components = listOf(CarbCurveComponentData(100, Minutes(30))),
-                                    cat = Minutes(180)
-                                ),
+                                mealType = getDefaultStandardMealType(LocalContext.current),
                                 description = "Pasta mit Tomatensauce",
                                 administeredInsulinAmount = InsulinAmount(3.5)
                             ),
@@ -949,11 +945,7 @@ fun ManualControlScreenPreview() {
                                 id = 2L,
                                 timestamp = Timestamp.now().plusHours(3),
                                 carbGrams = 60.0,
-                                mealType = MealType(
-                                    name = "Abendessen",
-                                    components = listOf(CarbCurveComponentData(100, Minutes(30))),
-                                    cat = Minutes(180)
-                                ),
+                                mealType = getDefaultSlowMealType(LocalContext.current),
                                 description = "Pizza"
                             ),
                             hasNextPlannedMealReminder = true

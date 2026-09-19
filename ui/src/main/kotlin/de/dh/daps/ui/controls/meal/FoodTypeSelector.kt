@@ -35,10 +35,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.CarbCurveComponentData
-import de.dh.daps.common.model.ID_MEAL_FAST
-import de.dh.daps.common.model.ID_MEAL_SLOW
-import de.dh.daps.common.model.ID_MEAL_STANDARD
 import de.dh.daps.common.model.MealType
+import de.dh.daps.common.model.getDefaultFastMealType
+import de.dh.daps.common.model.getDefaultSlowMealType
+import de.dh.daps.common.model.getDefaultStandardMealType
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.theme.AppTheme
@@ -172,24 +172,9 @@ fun FoodTypeSelector(
 }
 
 private fun getPreviewMealTypes(): List<MealType> = listOf(
-    MealType(
-        id = ID_MEAL_FAST,
-        name = "Schnell",
-        components = listOf(CarbCurveComponentData(100, Minutes(30))),
-        cat = Minutes(120)
-    ),
-    MealType(
-        id = ID_MEAL_STANDARD,
-        name = "Standard",
-        components = listOf(CarbCurveComponentData(100, Minutes(60))),
-        cat = Minutes(180)
-    ),
-    MealType(
-        id = ID_MEAL_SLOW,
-        name = "Langsam",
-        components = listOf(CarbCurveComponentData(100, Minutes(90))),
-        cat = Minutes(240)
-    ),
+    getDefaultFastMealType(),
+    getDefaultStandardMealType(),
+    getDefaultSlowMealType(),
     MealType(
         id = "custom_m",
         name = "Müsli",

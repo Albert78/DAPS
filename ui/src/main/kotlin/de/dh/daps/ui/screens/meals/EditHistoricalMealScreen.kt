@@ -48,13 +48,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.CARBS_KE_MAX
 import de.dh.daps.common.model.CARBS_KE_MIN
-import de.dh.daps.common.model.CarbCurveComponentData
-import de.dh.daps.common.model.ID_MEAL_FAST
-import de.dh.daps.common.model.ID_MEAL_SLOW
-import de.dh.daps.common.model.ID_MEAL_STANDARD
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.MealEntry
 import de.dh.daps.common.model.MealType
+import de.dh.daps.common.model.getDefaultMealTypes
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.R
@@ -514,11 +511,7 @@ fun EditMealCard(
 @Preview(showBackground = true)
 @Composable
 private fun EditHistoricalMealContentPreview() {
-    val sampleMealTypes = listOf(
-        MealType(id = ID_MEAL_FAST, name = "Schnell", components = listOf(CarbCurveComponentData(100, Minutes(30))), cat = Minutes(120)),
-        MealType(id = ID_MEAL_STANDARD, name = "Standard", components = listOf(CarbCurveComponentData(100, Minutes(60))), cat = Minutes(180)),
-        MealType(id = ID_MEAL_SLOW, name = "Langsam", components = listOf(CarbCurveComponentData(100, Minutes(90))), cat = Minutes(240)),
-    )
+    val sampleMealTypes = getDefaultMealTypes()
     val sampleMealType = sampleMealTypes[1]
     val sampleMeal = MealEntry(
         timestamp = Timestamp.now(),

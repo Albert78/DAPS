@@ -38,12 +38,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.model.CarbCurveComponentData
-import de.dh.daps.common.model.ID_MEAL_FAST
-import de.dh.daps.common.model.ID_MEAL_SLOW
-import de.dh.daps.common.model.ID_MEAL_STANDARD
 import de.dh.daps.common.model.MealType
-import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.getDefaultMealTypes
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
@@ -231,29 +227,7 @@ fun MealTypesEmptyPreview() {
     }
 }
 
-private fun getPreviewMealTypes(): List<MealType> = listOf(
-    MealType(
-        id = ID_MEAL_FAST,
-        name = "Schnell",
-        components = listOf(CarbCurveComponentData(100, Minutes(30))),
-        cat = Minutes(90),
-        sortOrder = 0
-    ),
-    MealType(
-        id = ID_MEAL_STANDARD,
-        name = "Standard",
-        components = listOf(CarbCurveComponentData(100, Minutes(60))),
-        cat = Minutes(180),
-        sortOrder = 1
-    ),
-    MealType(
-        id = ID_MEAL_SLOW,
-        name = "Langsam",
-        components = listOf(CarbCurveComponentData(100, Minutes(90))),
-        cat = Minutes(240),
-        sortOrder = 2
-    )
-)
+private fun getPreviewMealTypes(): List<MealType> = getDefaultMealTypes()
 
 @Preview(showBackground = true, name = "With 3 Items - Light Mode")
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "With 3 Items - Dark Mode")

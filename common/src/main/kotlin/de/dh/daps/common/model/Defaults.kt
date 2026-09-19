@@ -26,9 +26,19 @@ fun getDefaultInsulinTypes(context: Context): List<InsulinType> = listOf(
     )
 )
 
-fun getDefaultStandardMealType(context: Context): MealType = MealType(
+fun getDefaultFastMealType(context: Context? = null): MealType = MealType(
+    id = ID_MEAL_FAST,
+    name = context?.getString(R.string.meal_type_fast_carbs_name) ?: "Schnelle Kohlenhydrate",
+    components = listOf(
+        CarbCurveComponentData(weight = 100, peakMinutes = FAST_KE_DEFAULT_PEAK)
+    ),
+    cat = Minutes(90),
+    sortOrder = 0
+)
+
+fun getDefaultStandardMealType(context: Context? = null): MealType = MealType(
     id = ID_MEAL_STANDARD,
-    name = context.getString(R.string.meal_type_standard_meal_name),
+    name = context?.getString(R.string.meal_type_standard_meal_name) ?: "Standard Mahlzeit",
     components = listOf(
         CarbCurveComponentData(weight = 70, peakMinutes = Minutes(75)),
         CarbCurveComponentData(weight = 30, peakMinutes = Minutes(150))
@@ -37,37 +47,33 @@ fun getDefaultStandardMealType(context: Context): MealType = MealType(
     sortOrder = 1
 )
 
-fun getDefaultMealTypes(context: Context): List<MealType> = listOf(
-    MealType(
-        id = ID_MEAL_FAST,
-        name = context.getString(R.string.meal_type_fast_carbs_name),
-        components = listOf(
-            CarbCurveComponentData(weight = 100, peakMinutes = FAST_KE_DEFAULT_PEAK)
-        ),
-        cat = Minutes(90),
-        sortOrder = 0
+fun getDefaultHighFatMealType(context: Context? = null): MealType = MealType(
+    id = ID_MEAL_HIGH_FAT,
+    name = context?.getString(R.string.meal_type_high_fat_meal_name) ?: "Fettreiche Mahlzeit",
+    components = listOf(
+        CarbCurveComponentData(weight = 35, peakMinutes = Minutes(60)),
+        CarbCurveComponentData(weight = 65, peakMinutes = Minutes(240))
     ),
+    cat = Minutes.ofHours(6),
+    sortOrder = 2
+)
+
+fun getDefaultSlowMealType(context: Context? = null): MealType = MealType(
+    id = ID_MEAL_SLOW,
+    name = context?.getString(R.string.meal_type_slow_meal_name) ?: "Langsame Mahlzeit",
+    components = listOf(
+        CarbCurveComponentData(weight = 40, peakMinutes = Minutes(120)),
+        CarbCurveComponentData(weight = 60, peakMinutes = Minutes(300))
+    ),
+    cat = Minutes.ofHours(8),
+    sortOrder = 3
+)
+
+fun getDefaultMealTypes(context: Context? = null): List<MealType> = listOf(
+    getDefaultFastMealType(context),
     getDefaultStandardMealType(context),
-    MealType(
-        id = ID_MEAL_HIGH_FAT,
-        name = context.getString(R.string.meal_type_high_fat_meal_name),
-        components = listOf(
-            CarbCurveComponentData(weight = 35, peakMinutes = Minutes(60)),
-            CarbCurveComponentData(weight = 65, peakMinutes = Minutes(240))
-        ),
-        cat = Minutes.ofHours(6),
-        sortOrder = 2
-    ),
-    MealType(
-        id = ID_MEAL_SLOW,
-        name = context.getString(R.string.meal_type_slow_meal_name),
-        components = listOf(
-            CarbCurveComponentData(weight = 40, peakMinutes = Minutes(120)),
-            CarbCurveComponentData(weight = 60, peakMinutes = Minutes(300))
-        ),
-        cat = Minutes.ofHours(8),
-        sortOrder = 3
-    )
+    getDefaultHighFatMealType(context),
+    getDefaultSlowMealType(context)
 )
 
 fun getDefaultInsulinProfile(context: Context, insulinType: InsulinType): InsulinProfile = InsulinProfile(
