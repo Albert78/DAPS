@@ -117,7 +117,8 @@ fun ManualControlScreen(
     viewModel: ManualControlViewModel,
     treatmentLock: TreatmentLock,
     onNavigateUp: () -> Unit,
-    onNavigateToMealCorrectionBolus: (Double?) -> Unit = {}
+    onNavigateToMealCorrectionBolus: (Double?) -> Unit = {},
+    onEditMeal: (Long) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var activeDialog by remember { mutableStateOf<ManualControlDialog?>(null) }
@@ -125,6 +126,7 @@ fun ManualControlScreen(
     ManualControlContent(
         uiState = uiState,
         onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus,
+        onEditMeal = onEditMeal,
         onOpenBolusDialog = { activeDialog = it },
         onOpenTempBasalDialog = { activeDialog = it },
         onCancelBolus = { viewModel.cancelBolus(treatmentLock) },
@@ -244,6 +246,7 @@ fun ManualControlContextInfo(
 fun ManualControlContent(
     uiState: ManualControlUiState,
     onNavigateToMealCorrectionBolus: (Double?) -> Unit = {},
+    onEditMeal: (Long) -> Unit = {},
     onOpenBolusDialog: (ManualControlDialog.Bolus) -> Unit = {},
     onOpenTempBasalDialog: (ManualControlDialog.TempBasal) -> Unit = {},
     onCancelBolus: () -> Unit = {},
@@ -268,7 +271,8 @@ fun ManualControlContent(
                 ManualControlMealsSection(
                     lastPastMeal = uiState.contextInfo.lastPastMeal,
                     nextPlannedMeal = uiState.contextInfo.nextPlannedMeal,
-                    hasNextPlannedMealReminder = uiState.contextInfo.hasNextPlannedMealReminder
+                    hasNextPlannedMealReminder = uiState.contextInfo.hasNextPlannedMealReminder,
+                    onEditMeal = onEditMeal
                 )
 
                 ManualControlRecommendationsSection(
@@ -298,7 +302,8 @@ fun ManualControlContent(
 private fun ManualControlMealsSection(
     lastPastMeal: MealEntry?,
     nextPlannedMeal: MealEntry?,
-    hasNextPlannedMealReminder: Boolean = false
+    hasNextPlannedMealReminder: Boolean = false,
+    onEditMeal: (Long) -> Unit = {}
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
@@ -311,7 +316,8 @@ private fun ManualControlMealsSection(
         MealInfoCard(
             title = stringResource(id = R.string.manual_control_past_meal_title),
             mealEntry = lastPastMeal,
-            emptyText = stringResource(id = R.string.manual_control_no_past_meal)
+            emptyText = stringResource(id = R.string.manual_control_no_past_meal),
+            onClick = lastPastMeal?.let { meal -> { onEditMeal(meal.id) } }
         )
 
         // Next Planned Meal
@@ -319,7 +325,8 @@ private fun ManualControlMealsSection(
             title = stringResource(id = R.string.manual_control_next_meal_title),
             mealEntry = nextPlannedMeal,
             emptyText = stringResource(id = R.string.manual_control_no_next_meal),
-            hasReminder = hasNextPlannedMealReminder
+            hasReminder = hasNextPlannedMealReminder,
+            onClick = nextPlannedMeal?.let { meal -> { onEditMeal(meal.id) } }
         )
     }
 }
@@ -329,9 +336,12 @@ private fun MealInfoCard(
     title: String,
     mealEntry: MealEntry?,
     emptyText: String,
-    hasReminder: Boolean = false
+    hasReminder: Boolean = false,
+    onClick: (() -> Unit)? = null
 ) {
     Card(
+        onClick = { onClick?.invoke() },
+        enabled = mealEntry != null && onClick != null,
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
     ) {

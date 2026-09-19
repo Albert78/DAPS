@@ -303,6 +303,9 @@ class MainFeatureNavGraph(
                         onNavigateUp = { navViewModel.pop() },
                         onNavigateToMealCorrectionBolus = { carbs ->
                             navViewModel.replaceTop(MealCorrectionBolusRoute(prefilledCarbsKe = carbs))
+                        },
+                        onEditMeal = { mealId ->
+                            navViewModel.push(HistoricalMealRoute(mealId = mealId))
                         }
                     )
                 }
