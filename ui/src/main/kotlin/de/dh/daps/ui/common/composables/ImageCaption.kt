@@ -45,28 +45,37 @@ fun ImageCaptionWithSwitch(
     text: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        val alpha = if (enabled) 1.0f else 0.38f
         Icon(
             imageVector = imageVector,
             contentDescription = null,
-            tint = if (checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+            tint = if (enabled && checked) {
+                MaterialTheme.colorScheme.primary
+            } else if (enabled) {
+                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+            } else {
+                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+            }
         )
         Spacer(Modifier.width(10.dp))
         Text(
             text = text,
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = alpha),
             modifier = Modifier.weight(1f)
         )
         Spacer(Modifier.width(10.dp))
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,
+            enabled = enabled,
             modifier = Modifier.scale(0.8f)
         )
     }
