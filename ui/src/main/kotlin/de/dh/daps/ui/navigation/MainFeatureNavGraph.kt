@@ -35,6 +35,7 @@ import de.dh.daps.common.navigation.MealTypeEditorRoute
 import de.dh.daps.common.navigation.MealTypesRoute
 import de.dh.daps.common.navigation.MealsRoute
 import de.dh.daps.common.navigation.NavigationViewModel
+import de.dh.daps.common.navigation.OpenLoopRoute
 import de.dh.daps.common.navigation.PermissionsRoute
 import de.dh.daps.common.navigation.PreferencesMainRoute
 import de.dh.daps.common.navigation.PumpManagementRoute
@@ -76,6 +77,8 @@ import de.dh.daps.ui.screens.mealtypes.MealTypeEditorScreen
 import de.dh.daps.ui.screens.mealtypes.MealTypeEditorViewModel
 import de.dh.daps.ui.screens.mealtypes.MealTypesScreen
 import de.dh.daps.ui.screens.mealtypes.MealTypesViewModel
+import de.dh.daps.ui.screens.openloop.OpenLoopScreen
+import de.dh.daps.ui.screens.openloop.OpenLoopViewModel
 import de.dh.daps.ui.screens.permissions.PermissionsScreen
 import de.dh.daps.ui.screens.permissions.PermissionsViewModel
 import de.dh.daps.ui.screens.permissions.isPermissionsMissing
@@ -139,6 +142,7 @@ class MainFeatureNavGraph(
                     onNavigateToTherapySettings = { navViewModel.push(CurrentTherapySettingsRoute) },
                     onNavigateToMealCorrectionBolus = { navViewModel.push(MealCorrectionBolusRoute) },
                     onNavigateToSystemControl = { navViewModel.push(SystemControlRoute()) },
+                    onNavigateToOpenLoop = { navViewModel.push(OpenLoopRoute) },
                     onAdjustmentClick = { navViewModel.push(TherapyAdjustmentRoute) },
                     onHistoryChartClick = { navViewModel.push(HistoryRoute) },
                     extraContent = extraDashboardContent
@@ -468,6 +472,18 @@ class MainFeatureNavGraph(
                 AlarmProfileEditorScreen(
                     viewModel = vm,
                     onNavigateUp = { navViewModel.pop() }
+                )
+            }
+
+            is OpenLoopRoute -> NavEntry(key) {
+                val vm: OpenLoopViewModel = viewModel(
+                    factory = OpenLoopViewModel.Companion.Factory(registry)
+                )
+                OpenLoopScreen(
+                    viewModel = vm,
+                    onNavigateUp = { navViewModel.pop() },
+                    onNavigateToMealCorrectionBolus = { navViewModel.push(MealCorrectionBolusRoute) },
+                    onNavigateToMeals = { navViewModel.push(MealsRoute) }
                 )
             }
 

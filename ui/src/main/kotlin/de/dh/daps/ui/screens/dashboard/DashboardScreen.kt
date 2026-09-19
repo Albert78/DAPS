@@ -102,6 +102,7 @@ fun DashboardScreen(
     onNavigateToTherapySettings: () -> Unit,
     onNavigateToMealCorrectionBolus: () -> Unit,
     onNavigateToSystemControl: () -> Unit,
+    onNavigateToOpenLoop: () -> Unit = {},
     onAdjustmentClick: () -> Unit,
     onHistoryChartClick: () -> Unit,
     extraContent: @Composable () -> Unit = {}
@@ -129,6 +130,7 @@ fun DashboardScreen(
         onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus,
         isMealCorrectionBolusAllowed = uiState.isMealCorrectionBolusAllowed,
         onNavigateToSystemControl = onNavigateToSystemControl,
+        onNavigateToOpenLoop = onNavigateToOpenLoop,
         onHistoryChartClick = onHistoryChartClick,
         onApsModeSelect = { viewModel.setApsMode(it) },
         onAdjustmentClick = onAdjustmentClick,
@@ -155,6 +157,7 @@ fun DashboardContent(
     onNavigateToMealCorrectionBolus: () -> Unit,
     isMealCorrectionBolusAllowed: Boolean,
     onNavigateToSystemControl: () -> Unit,
+    onNavigateToOpenLoop: () -> Unit = {},
     onHistoryChartClick: (() -> Unit)?,
     onApsModeSelect: (ApsMode) -> Unit,
     onAdjustmentClick: () -> Unit,
@@ -200,6 +203,14 @@ fun DashboardContent(
                                 onClick = {
                                     menuExpanded = false
                                     onNavigateToPreferences()
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(id = R.string.menu_item_open_loop_label)) },
+                                leadingIcon = { Icon(imageVector = Icons.Default.MoreVert, contentDescription = null) },
+                                onClick = {
+                                    menuExpanded = false
+                                    onNavigateToOpenLoop()
                                 }
                             )
                         }

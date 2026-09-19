@@ -29,3 +29,4 @@ import kotlinx.serialization.Serializable
 @Serializable data class InsulinTypeEditorRoute(val insulinTypeId: String? = null) : NavKey
 @Serializable object AlarmProfilesRoute : NavKey
 @Serializable data class AlarmProfileEditorRoute(val profileId: Long? = null) : NavKey
+@Serializable object OpenLoopRoute : NavKey
