@@ -2,7 +2,6 @@ package de.dh.daps.ui.screens.manualcontrol
 
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -117,8 +116,7 @@ fun ManualControlScreen(
     viewModel: ManualControlViewModel,
     treatmentLock: TreatmentLock,
     onNavigateUp: () -> Unit,
-    onNavigateToMealCorrectionBolus: () -> Unit = {},
-    onNavigateToMeals: () -> Unit = {}
+    onNavigateToMealCorrectionBolus: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var activeDialog by remember { mutableStateOf<ManualControlDialog?>(null) }
@@ -126,7 +124,6 @@ fun ManualControlScreen(
     ManualControlContent(
         uiState = uiState,
         onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus,
-        onNavigateToMeals = onNavigateToMeals,
         onOpenBolusDialog = { activeDialog = it },
         onOpenTempBasalDialog = { activeDialog = it },
         onCancelBolus = { viewModel.cancelBolus(treatmentLock) },
@@ -246,7 +243,6 @@ fun ManualControlContextInfo(
 fun ManualControlContent(
     uiState: ManualControlUiState,
     onNavigateToMealCorrectionBolus: () -> Unit = {},
-    onNavigateToMeals: () -> Unit = {},
     onOpenBolusDialog: (ManualControlDialog.Bolus) -> Unit = {},
     onOpenTempBasalDialog: (ManualControlDialog.TempBasal) -> Unit = {},
     onCancelBolus: () -> Unit = {},
@@ -271,8 +267,7 @@ fun ManualControlContent(
                 ManualControlMealsSection(
                     lastPastMeal = uiState.contextInfo.lastPastMeal,
                     nextPlannedMeal = uiState.contextInfo.nextPlannedMeal,
-                    hasNextPlannedMealReminder = uiState.contextInfo.hasNextPlannedMealReminder,
-                    onNavigateToMeals = onNavigateToMeals
+                    hasNextPlannedMealReminder = uiState.contextInfo.hasNextPlannedMealReminder
                 )
 
                 ManualControlRecommendationsSection(
@@ -302,31 +297,20 @@ fun ManualControlContent(
 private fun ManualControlMealsSection(
     lastPastMeal: MealEntry?,
     nextPlannedMeal: MealEntry?,
-    hasNextPlannedMealReminder: Boolean = false,
-    onNavigateToMeals: () -> Unit
+    hasNextPlannedMealReminder: Boolean = false
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = stringResource(id = R.string.manual_control_meals_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            NormalTextButton(onClick = onNavigateToMeals) {
-                Text(stringResource(id = R.string.meals_screen_title))
-            }
-        }
+        Text(
+            text = stringResource(id = R.string.manual_control_meals_title),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
 
         // Last Past Meal
         MealInfoCard(
             title = stringResource(id = R.string.manual_control_past_meal_title),
             mealEntry = lastPastMeal,
-            emptyText = stringResource(id = R.string.manual_control_no_past_meal),
-            onClick = onNavigateToMeals
+            emptyText = stringResource(id = R.string.manual_control_no_past_meal)
         )
 
         // Next Planned Meal
@@ -334,7 +318,6 @@ private fun ManualControlMealsSection(
             title = stringResource(id = R.string.manual_control_next_meal_title),
             mealEntry = nextPlannedMeal,
             emptyText = stringResource(id = R.string.manual_control_no_next_meal),
-            onClick = onNavigateToMeals,
             hasReminder = hasNextPlannedMealReminder
         )
     }
@@ -345,13 +328,10 @@ private fun MealInfoCard(
     title: String,
     mealEntry: MealEntry?,
     emptyText: String,
-    onClick: () -> Unit,
     hasReminder: Boolean = false
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
+        modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
