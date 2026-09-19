@@ -37,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -44,8 +45,11 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.plugin.simbody.BodyModel
 import de.dh.daps.plugin.simbody.R
 import de.dh.daps.plugin.simbody.ui.components.SimBodyEatMealDialog
+import de.dh.daps.ui.common.carbsGramsValue
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
+import de.dh.daps.ui.common.glucoseUnitLabel
+import de.dh.daps.ui.common.insulinValue
 import java.util.Locale
 import de.dh.daps.common.R as CommonR
 
@@ -62,6 +66,7 @@ fun SimBodyMainScreen(
         return
     }
 
+    val locale = LocalLocale.current.platformLocale
     val bg by bodyModel.bloodGlucoseFlow.collectAsState()
     val isSensorEnabled by bodyModel.isSensorEnabledFlow.collectAsState()
     val sensorNoiseFactor by bodyModel.sensorNoiseFactorFlow.collectAsState()
@@ -105,7 +110,7 @@ fun SimBodyMainScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = if (isLoaded) stringResource(R.string.unit_mg_dl, bg) else "---",
+                        text = if (isLoaded) "${String.format(locale, "%.1f", bg)} ${glucoseUnitLabel()}" else "---",
                         style = MaterialTheme.typography.displayMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
@@ -121,8 +126,8 @@ fun SimBodyMainScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        StatusItem(stringResource(R.string.label_iob), stringResource(R.string.unit_u, bodyModel.iob.iu))
-                        StatusItem(stringResource(R.string.label_cob), stringResource(R.string.unit_g, bodyModel.cob))
+                        StatusItem(stringResource(R.string.label_iob), insulinValue(bodyModel.iob.iu))
+                        StatusItem(stringResource(R.string.label_cob), carbsGramsValue(bodyModel.cob))
                     }
                 }
             }

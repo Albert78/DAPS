@@ -22,6 +22,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -32,6 +33,7 @@ import de.dh.daps.plugin.simbody.BodyModel
 import de.dh.daps.plugin.simbody.DEFAULT_SIM_BODY_PROFILE
 import de.dh.daps.plugin.simbody.Impacts
 import de.dh.daps.plugin.simbody.R
+import de.dh.daps.ui.common.glucoseUnitLabel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -95,6 +97,14 @@ fun SimBodyImpactsScreen(
 }
 
 @Composable
+private fun formatBgImpact(delta: Double, isPositive: Boolean): String {
+    val locale = LocalLocale.current.platformLocale
+    val sign = if (isPositive) "+" else "-"
+    val valStr = String.format(locale, "%.2f", delta)
+    return "$sign$valStr ${glucoseUnitLabel()}"
+}
+
+@Composable
 private fun ImpactCard(impact: Impacts, timeFormat: SimpleDateFormat) {
     Card(
         modifier = Modifier.fillMaxWidth()
@@ -112,7 +122,7 @@ private fun ImpactCard(impact: Impacts, timeFormat: SimpleDateFormat) {
 
                 val totalDelta = impact.carbImpact - impact.insulinImpact + impact.endogenousImpact - impact.exerciseImpact + impact.stressImpact
                 Text(
-                    text = if (totalDelta >= 0) stringResource(R.string.unit_delta_bg_pos, totalDelta) else stringResource(R.string.unit_delta_bg_neg, -totalDelta),
+                    text = if (totalDelta >= 0) formatBgImpact(totalDelta, true) else formatBgImpact(-totalDelta, false),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
                     color = if (totalDelta >= 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
@@ -121,11 +131,11 @@ private fun ImpactCard(impact: Impacts, timeFormat: SimpleDateFormat) {
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            ImpactRow(stringResource(R.string.impact_carbs), stringResource(R.string.unit_delta_bg_pos, impact.carbImpact))
-            ImpactRow(stringResource(R.string.impact_insulin), stringResource(R.string.unit_delta_bg_neg, impact.insulinImpact))
-            ImpactRow(stringResource(R.string.impact_liver), stringResource(R.string.unit_delta_bg_pos, impact.endogenousImpact))
-            ImpactRow(stringResource(R.string.impact_exercise), stringResource(R.string.unit_delta_bg_neg, impact.exerciseImpact))
-            ImpactRow(stringResource(R.string.impact_stress), stringResource(R.string.unit_delta_bg_pos, impact.stressImpact))
+            ImpactRow(stringResource(R.string.impact_carbs), formatBgImpact(impact.carbImpact, true))
+            ImpactRow(stringResource(R.string.impact_insulin), formatBgImpact(impact.insulinImpact, false))
+            ImpactRow(stringResource(R.string.impact_liver), formatBgImpact(impact.endogenousImpact, true))
+            ImpactRow(stringResource(R.string.impact_exercise), formatBgImpact(impact.exerciseImpact, false))
+            ImpactRow(stringResource(R.string.impact_stress), formatBgImpact(impact.stressImpact, true))
         }
     }
 }

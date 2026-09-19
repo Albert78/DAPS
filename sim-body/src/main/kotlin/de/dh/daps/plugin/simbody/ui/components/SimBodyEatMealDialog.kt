@@ -22,6 +22,7 @@ import de.dh.daps.common.model.MealType
 import de.dh.daps.plugin.simbody.BodyModel
 import de.dh.daps.plugin.simbody.R
 import de.dh.daps.ui.common.DefaultSteppingStrategy
+import de.dh.daps.ui.common.carbsGramsUnitLabel
 import de.dh.daps.ui.common.composables.EditableValueStepper
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.theme.AppTheme
@@ -41,7 +42,7 @@ fun SimBodyEatMealDialog(
         title = { Text(stringResource(R.string.dialog_title_eat_meal)) },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.label_carbs_g), style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(R.string.label_carbs_g, carbsGramsUnitLabel()), style = MaterialTheme.typography.bodyMedium)
                 Spacer(modifier = Modifier.height(16.dp))
                 EditableValueStepper(
                     currentValue = carbs,
@@ -49,7 +50,7 @@ fun SimBodyEatMealDialog(
                     minValue = 0.0,
                     maxValue = 200.0,
                     steppingStrategy = DefaultSteppingStrategy(step = 5.0),
-                    suffix = "g",
+                    suffix = carbsGramsUnitLabel(),
                     modifier = Modifier.fillMaxWidth()
                 )
 

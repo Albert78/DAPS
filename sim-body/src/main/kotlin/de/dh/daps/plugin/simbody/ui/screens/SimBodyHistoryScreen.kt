@@ -33,7 +33,9 @@ import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.plugin.simbody.BodyModel
 import de.dh.daps.plugin.simbody.DEFAULT_SIM_BODY_PROFILE
 import de.dh.daps.plugin.simbody.R
+import de.dh.daps.ui.common.carbsGramsValue
 import de.dh.daps.ui.common.composables.NormalButton
+import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.theme.AppTheme
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -99,7 +101,7 @@ fun SimBodyHistoryScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(stringResource(R.string.unit_g, meal.carbGrams))
+                            Text(carbsGramsValue(meal.carbGrams))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = meal.mealType.name,
@@ -144,7 +146,7 @@ fun SimBodyHistoryScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(stringResource(R.string.unit_u, insulin.amount.iu))
+                        Text(insulinValue(insulin.amount.iu))
                         Column(horizontalAlignment = Alignment.End) {
                             Text(
                                 text = timeFormat.format(Date(insulin.timestamp.ms)),

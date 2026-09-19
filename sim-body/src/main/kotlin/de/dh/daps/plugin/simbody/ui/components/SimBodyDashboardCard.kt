@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -30,8 +31,14 @@ import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.plugin.simbody.BodyModel
 import de.dh.daps.plugin.simbody.R
 import de.dh.daps.plugin.simbody.model.BodyProfile
+import de.dh.daps.ui.common.carbsGramsUnitLabel
+import de.dh.daps.ui.common.carbsGramsValue
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
+import de.dh.daps.ui.common.crValue
+import de.dh.daps.ui.common.glucoseUnitLabel
+import de.dh.daps.ui.common.insulinValue
+import de.dh.daps.ui.common.isfUnitLabel
 import de.dh.daps.ui.common.theme.AppTheme
 import java.util.Locale
 
@@ -40,6 +47,7 @@ fun SimBodyDashboardCard(
     bodyModel: BodyModel,
     onDetailsClick: () -> Unit
 ) {
+    val locale = LocalLocale.current.platformLocale
     val exercise by bodyModel.exerciseIntensityFlow.collectAsState()
     val illness by bodyModel.illnessFactorFlow.collectAsState()
     val stress by bodyModel.stressLevelFlow.collectAsState()
@@ -74,12 +82,12 @@ fun SimBodyDashboardCard(
 
             ParameterRow(
                 stringResource(R.string.label_blood_glucose),
-                if (isLoaded) stringResource(R.string.unit_mg_dl, bg) else "---"
+                if (isLoaded) "${String.format(locale, "%.1f", bg)} ${glucoseUnitLabel()}" else "---"
             ) { if (isLoaded) showEditDialog = "bg" }
 
             ParameterRow(
                 stringResource(R.string.label_iob_cob),
-                if (isLoaded) stringResource(R.string.unit_iob_cob, bodyModel.iob.iu, bodyModel.cob) else "---"
+                if (isLoaded) "${insulinValue(bodyModel.iob.iu)} / ${carbsGramsValue(bodyModel.cob)}" else "---"
             ) { }
 
             ParameterRow(
@@ -108,21 +116,21 @@ fun SimBodyDashboardCard(
             )
             ParameterRow(
                 stringResource(R.string.label_isf),
-                if (isLoaded) stringResource(R.string.unit_isf, bodyModel.isf) else "---"
+                if (isLoaded) "${String.format(locale, "%.1f", bodyModel.isf)} ${isfUnitLabel()}" else "---"
             ) { }
             ParameterRow(
                 stringResource(R.string.label_cr),
-                if (isLoaded) stringResource(R.string.unit_cr, bodyModel.cr) else "---"
+                if (isLoaded) crValue(bodyModel.cr) else "---"
             ) { }
             ParameterRow(
                 stringResource(R.string.label_liver_output),
-                if (isLoaded) stringResource(R.string.unit_liver_output, bodyModel.liverGlucoseOutputGph) else "---"
+                if (isLoaded) "${String.format(locale, "%.1f", bodyModel.liverGlucoseOutputGph)} ${carbsGramsUnitLabel()}/h" else "---"
             ) { }
         }
     }
 
     when (showEditDialog) {
-        "bg" -> EditDoubleDialog(stringResource(R.string.dialog_title_edit_bg), bg, { showEditDialog = null }) {
+        "bg" -> EditDoubleDialog(stringResource(R.string.dialog_title_edit_bg, glucoseUnitLabel()), bg, { showEditDialog = null }) {
             bodyModel.bloodGlucose = it
         }
         "exercise" -> EditDoubleDialog(stringResource(R.string.dialog_title_edit_exercise), exercise, { showEditDialog = null }) {

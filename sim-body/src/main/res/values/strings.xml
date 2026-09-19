@@ -28,10 +28,10 @@
 
     <!-- Dialogs -->
     <string name="dialog_title_eat_meal">Mahlzeit essen</string>
-    <string name="label_carbs_g">Kohlenhydrate (g):</string>
+    <string name="label_carbs_g">Kohlenhydrate (%1$s):</string>
     <string name="label_meal_type">Essenstyp:</string>
     <string name="dialog_title_edit_param">Bearbeiten: %1$s</string>
-    <string name="dialog_title_edit_bg">BZ (mg/dL)</string>
+    <string name="dialog_title_edit_bg">BZ (%1$s)</string>
     <string name="dialog_title_edit_exercise">Sportintensität (0-1)</string>
     <string name="dialog_title_edit_illness">Krankheitsfaktor (>= 1.0)</string>
     <string name="dialog_title_edit_stress">Stresslevel (0-1)</string>
@@ -59,15 +59,4 @@
     <string name="impact_liver">Leber (Endogen)</string>
     <string name="impact_exercise">Sport</string>
     <string name="impact_stress">Stress</string>
-
-    <!-- Units -->
-    <string name="unit_mg_dl">%1$.1f mg/dL</string>
-    <string name="unit_u">%1$.2f U</string>
-    <string name="unit_g">%1$.1f g</string>
-    <string name="unit_iob_cob">%1$.2f U / %2$.1f g</string>
-    <string name="unit_isf">%1$.1f mg/dL/U</string>
-    <string name="unit_cr">%1$.1f g/U</string>
-    <string name="unit_liver_output">%1$s g/h</string>
-    <string name="unit_delta_bg_pos">+%1$.2f mg/dL</string>
-    <string name="unit_delta_bg_neg">-%1$.2f mg/dL</string>
 </resources>
