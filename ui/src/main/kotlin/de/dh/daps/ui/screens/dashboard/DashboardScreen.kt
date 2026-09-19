@@ -205,14 +205,6 @@ fun DashboardContent(
                                     onNavigateToPreferences()
                                 }
                             )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(id = R.string.menu_item_open_loop_label)) },
-                                leadingIcon = { Icon(imageVector = Icons.Default.MoreVert, contentDescription = null) },
-                                onClick = {
-                                    menuExpanded = false
-                                    onNavigateToOpenLoop()
-                                }
-                            )
                         }
                     }
                 }
@@ -333,7 +325,8 @@ fun DashboardContent(
                 availableModes = dashboardUiState.availableApsModes,
                 onModeChange = onApsModeSelect,
                 onAdjustmentClick = onAdjustmentClick,
-                onProfileClick = onNavigateToTherapySettings
+                onProfileClick = onNavigateToTherapySettings,
+                onOpenLoopControlClick = onNavigateToOpenLoop
             )
 
             Spacer(modifier = Modifier.height(16.dp))

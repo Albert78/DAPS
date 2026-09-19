@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -68,6 +69,7 @@ import de.dh.daps.common.navigation.HistoricalMealRoute
 import de.dh.daps.common.navigation.MasterDataRoute
 import de.dh.daps.common.navigation.MealsRoute
 import de.dh.daps.common.navigation.NavigationViewModel
+import de.dh.daps.common.navigation.OpenLoopRoute
 import de.dh.daps.common.navigation.SystemControlRoute
 import de.dh.daps.common.navigation.combineEntryProviders
 import de.dh.daps.core.SystemRegistry
@@ -355,6 +357,12 @@ fun DrawerContent(
                     icon = Icon_Menu_Food_Database,
                     selected = currentRoute == FoodDatabaseRoute,
                     onClick = { onRouteSelected(FoodDatabaseRoute) }
+                )
+                DrawerItem(
+                    label = stringResource(id = R.string.open_loop_screen_title),
+                    icon = Icons.Default.Tune,
+                    selected = currentRoute == OpenLoopRoute,
+                    onClick = { onRouteSelected(OpenLoopRoute) }
                 )
                 DrawerItem(
                     label = stringResource(id = R.string.menu_system_control_label),

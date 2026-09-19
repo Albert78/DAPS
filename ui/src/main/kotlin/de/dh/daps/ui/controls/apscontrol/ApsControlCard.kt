@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Adjust
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material.icons.filled.VerticalAlignBottom
 import androidx.compose.material3.ButtonDefaults
@@ -73,7 +74,8 @@ fun ApsControlCard(
     availableModes: List<ApsMode>,
     onModeChange: (ApsMode) -> Unit,
     onAdjustmentClick: () -> Unit,
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    onOpenLoopControlClick: () -> Unit = {}
 ) {
     val insulinAdjustmentPercentage = activeTherapyStatus.adjustment.percentage
     val adjustmentHint = activeTherapyStatus.adjustment.adjustmentHint
@@ -248,44 +250,55 @@ fun ApsControlCard(
                     }
                 }
 
-                // Adjustment Button
-                val isNeutral = insulinAdjustmentPercentage == 0
-                val adjustmentText = buildString {
-                    if (adjustmentHint != null) {
-                        append(adjustmentHint)
-                        append(" (")
-                    }
-                    append(displayStrategy.format(insulinAdjustmentPercentage.toDouble()))
-                    if (adjustmentHint != null) {
-                        append(")")
-                    }
-                }
-
-                if (isNeutral && adjustmentHint == null) {
+                if (selectedMode != ApsMode.AutoCorrection) {
                     NormalButton(
-                        onClick = onAdjustmentClick,
-                        enabled = !isSuspended,
+                        onClick = onOpenLoopControlClick,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Icon(Icons.Default.UnfoldMore, null, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Default.Tune, null, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.width(8.dp))
-                        Text(adjustmentText, style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.aps_control_button_manual_control), style = MaterialTheme.typography.titleMedium)
                     }
                 } else {
-                    PrimaryButton(
-                        onClick = onAdjustmentClick,
-                        enabled = !isSuspended,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = displayStrategy.color(insulinAdjustmentPercentage.toDouble())
-                        )
-                    ) {
-                        Icon(Icons.Default.UnfoldMore, null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            adjustmentText,
-                            style = MaterialTheme.typography.titleMedium
-                        )
+                    // Adjustment Button
+                    val isNeutral = insulinAdjustmentPercentage == 0
+                    val adjustmentText = buildString {
+                        if (adjustmentHint != null) {
+                            append(adjustmentHint)
+                            append(" (")
+                        }
+                        append(displayStrategy.format(insulinAdjustmentPercentage.toDouble()))
+                        if (adjustmentHint != null) {
+                            append(")")
+                        }
+                    }
+
+                    if (isNeutral && adjustmentHint == null) {
+                        NormalButton(
+                            onClick = onAdjustmentClick,
+                            enabled = !isSuspended,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Default.UnfoldMore, null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text(adjustmentText, style = MaterialTheme.typography.titleMedium)
+                        }
+                    } else {
+                        PrimaryButton(
+                            onClick = onAdjustmentClick,
+                            enabled = !isSuspended,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = displayStrategy.color(insulinAdjustmentPercentage.toDouble())
+                            )
+                        ) {
+                            Icon(Icons.Default.UnfoldMore, null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                adjustmentText,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        }
                     }
                 }
             }
@@ -300,40 +313,84 @@ private fun ApsMode.toDisplayStringShort(): String = stringResource(id = when (t
     ApsMode.AutoCorrection -> R.string.aps_mode_auto_correction_short
 })
 
-@Preview(name = "Light", showBackground = true)
-@Preview(name = "Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+private fun createSampleTherapyStatus() = ActiveTherapyStatusUiState(
+    profile = InsulinProfileUiState(
+        name = "Standard",
+        activeProfileId = null,
+        isfRange = "50",
+        crRange = "12.0",
+        basalRange = "0.80",
+        dia = Minutes(300),
+        peak = Minutes(75)
+    ),
+    adjustment = TherapyAdjustmentUiState(
+        percentage = 0,
+        targetBgOverride = null,
+        lowThresholdOverride = null,
+        adjustmentHint = null
+    ),
+    currentIsf = BgDelta.fromMgDl(50),
+    currentCr = 12.0,
+    currentBasal = InsulinAmount(0.8),
+    target = BgValue.fromMgDl(100),
+    lowThreshold = BgValue.fromMgDl(70),
+    baseTarget = BgValue.fromMgDl(110),
+    baseLow = BgValue.fromMgDl(70)
+)
+
+@Preview(name = "AutoCorrection - Light", showBackground = true)
+@Preview(name = "AutoCorrection - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun PreviewApsControlCard() {
+private fun PreviewApsControlCardAutoCorrection() {
     AppTheme {
         CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
             Surface {
                 ApsControlCard(
                     modifier = Modifier.padding(16.dp),
-                    activeTherapyStatus = ActiveTherapyStatusUiState(
-                        profile = InsulinProfileUiState(
-                            name = "Standard",
-                            activeProfileId = null,
-                            isfRange = "50",
-                            crRange = "12.0",
-                            basalRange = "0.80",
-                            dia = Minutes(300),
-                            peak = Minutes(75)
-                        ),
-                        adjustment = TherapyAdjustmentUiState(
-                            percentage = 0,
-                            targetBgOverride = null,
-                            lowThresholdOverride = null,
-                            adjustmentHint = null
-                        ),
-                        currentIsf = BgDelta.fromMgDl(50),
-                        currentCr = 12.0,
-                        currentBasal = InsulinAmount(0.8),
-                        target = BgValue.fromMgDl(100),
-                        lowThreshold = BgValue.fromMgDl(70),
-                        baseTarget = BgValue.fromMgDl(110),
-                        baseLow = BgValue.fromMgDl(70)
-                    ),
+                    activeTherapyStatus = createSampleTherapyStatus(),
                     selectedMode = ApsMode.AutoCorrection,
+                    availableModes = ApsMode.entries,
+                    onModeChange = {},
+                    onAdjustmentClick = {},
+                    onProfileClick = {}
+                )
+            }
+        }
+    }
+}
+
+@Preview(name = "BasalOnly - Light", showBackground = true)
+@Preview(name = "BasalOnly - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun PreviewApsControlCardBasalOnly() {
+    AppTheme {
+        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
+            Surface {
+                ApsControlCard(
+                    modifier = Modifier.padding(16.dp),
+                    activeTherapyStatus = createSampleTherapyStatus(),
+                    selectedMode = ApsMode.BasalOnly,
+                    availableModes = ApsMode.entries,
+                    onModeChange = {},
+                    onAdjustmentClick = {},
+                    onProfileClick = {}
+                )
+            }
+        }
+    }
+}
+
+@Preview(name = "Suspend - Light", showBackground = true)
+@Preview(name = "Suspend - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun PreviewApsControlCardSuspend() {
+    AppTheme {
+        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
+            Surface {
+                ApsControlCard(
+                    modifier = Modifier.padding(16.dp),
+                    activeTherapyStatus = createSampleTherapyStatus(),
+                    selectedMode = ApsMode.Suspend,
                     availableModes = ApsMode.entries,
                     onModeChange = {},
                     onAdjustmentClick = {},
