@@ -321,12 +321,12 @@ class SystemOrchestratorImpl(
                     androidNotifications.cancelRecommendationNotification()
                 }
 
-                val deferredBoluses = recommendations
+                val dueDeferredBoluses = recommendations
                     .filterIsInstance<ApsRecommendation.Bolus>()
-                    .flatMap { it.handledDeferredBoluses.orEmpty() }
+                    .flatMap { it.includedDeferredBoluses.orEmpty() }
 
-                if (deferredBoluses.isNotEmpty()) {
-                    androidNotifications.showDeferredBolusRecommendationNotification(deferredBoluses)
+                if (dueDeferredBoluses.isNotEmpty()) {
+                    androidNotifications.showDeferredBolusRecommendationNotification(dueDeferredBoluses)
                 }
             }
         }
@@ -366,7 +366,7 @@ class SystemOrchestratorImpl(
                     else -> {
                         recommendationManager.addBolusRecommendation(
                             amount = amount,
-                            deferredBoluses = handledDeferredBoluses,
+                            includedDeferredBoluses = handledDeferredBoluses,
                             correctionPart = correctionPart,
                             basalPart = basalPart
                         )

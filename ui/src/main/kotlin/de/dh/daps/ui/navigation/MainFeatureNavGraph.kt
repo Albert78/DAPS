@@ -39,13 +39,14 @@ import de.dh.daps.common.navigation.OpenLoopRoute
 import de.dh.daps.common.navigation.PermissionsRoute
 import de.dh.daps.common.navigation.PreferencesMainRoute
 import de.dh.daps.common.navigation.PumpManagementRoute
+import de.dh.daps.common.navigation.ScheduledTherapyAdjustmentRoute
 import de.dh.daps.common.navigation.SystemControlRoute
 import de.dh.daps.common.navigation.TherapyAdjustmentEditorRoute
 import de.dh.daps.common.navigation.TherapyAdjustmentPresetsRoute
 import de.dh.daps.common.navigation.TherapyAdjustmentRoute
-import de.dh.daps.common.navigation.ScheduledTherapyAdjustmentRoute
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.setUserDeclinedPermissions
+import de.dh.daps.ui.R
 import de.dh.daps.ui.common.treatmentlock.TreatmentLockScreen
 import de.dh.daps.ui.common.treatmentlock.TreatmentLockViewModel
 import de.dh.daps.ui.controls.history.HistoryViewModel
@@ -225,7 +226,7 @@ class MainFeatureNavGraph(
                     )
                 )
 
-                // Leave MealCorrectionBolus screen and release therapy manager lock when the screen
+                // Leave the screen and release therapy manager lock when the screen
                 // stops (display off, app minimized/home, or switching apps). Using ON_STOP
                 // ensures internal dialogs/overlays (which only trigger ON_PAUSE) keep the lock.
                 LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
@@ -260,6 +261,47 @@ class MainFeatureNavGraph(
                     viewModel = vm,
                     onNavigateUp = { navViewModel.pop() }
                 )
+            }
+
+            is OpenLoopRoute -> NavEntry(key) {
+                val vm: OpenLoopViewModel = viewModel(
+                    factory = OpenLoopViewModel.Companion.Factory(registry)
+                )
+                val lockViewModel: TreatmentLockViewModel = viewModel(
+                    factory = TreatmentLockViewModel.Companion.Factory(
+                        tag = "OpenLoopScreen",
+                        registry = registry,
+                        requirePumpSync = true
+                    )
+                )
+
+                // Leave the screen and release therapy manager lock when the screen
+                // stops (display off, app minimized/home, or switching apps). Using ON_STOP
+                // ensures internal dialogs/overlays (which only trigger ON_PAUSE) keep the lock.
+                LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
+                    lockViewModel.releaseLock()
+                    navViewModel.pop()
+                }
+
+                DisposableEffect(Unit) {
+                    onDispose {
+                        lockViewModel.releaseLock()
+                    }
+                }
+
+                TreatmentLockScreen(
+                    viewModel = lockViewModel,
+                    title = stringResource(id = R.string.open_loop_screen_title),
+                    onNavigateUp = { navViewModel.pop() }
+                ) { treatmentLock ->
+                    OpenLoopScreen(
+                        viewModel = vm,
+                        treatmentLock = treatmentLock,
+                        onNavigateUp = { navViewModel.pop() },
+                        onNavigateToMealCorrectionBolus = { navViewModel.push(MealCorrectionBolusRoute) },
+                        onNavigateToMeals = { navViewModel.push(MealsRoute) }
+                    )
+                }
             }
 
             is PermissionsRoute -> NavEntry(key) {
@@ -472,18 +514,6 @@ class MainFeatureNavGraph(
                 AlarmProfileEditorScreen(
                     viewModel = vm,
                     onNavigateUp = { navViewModel.pop() }
-                )
-            }
-
-            is OpenLoopRoute -> NavEntry(key) {
-                val vm: OpenLoopViewModel = viewModel(
-                    factory = OpenLoopViewModel.Companion.Factory(registry)
-                )
-                OpenLoopScreen(
-                    viewModel = vm,
-                    onNavigateUp = { navViewModel.pop() },
-                    onNavigateToMealCorrectionBolus = { navViewModel.push(MealCorrectionBolusRoute) },
-                    onNavigateToMeals = { navViewModel.push(MealsRoute) }
                 )
             }
 

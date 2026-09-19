@@ -521,6 +521,16 @@ class TherapyManager(
         )
     }
 
+    /**
+     * Cancels any active bolus delivery on the pump.
+     */
+    fun cancelBolus(treatmentLock: TreatmentLock) {
+        checkLock(treatmentLock)
+        pumpManager.issueCommand(
+            PumpCommand.CancelBolus
+        )
+    }
+
     suspend fun addDeferredBolus(treatmentLock: TreatmentLock, deferredBolus: DeferredBolus) {
         checkLock(treatmentLock)
         treatmentRepository.addDeferredBolus(deferredBolus)

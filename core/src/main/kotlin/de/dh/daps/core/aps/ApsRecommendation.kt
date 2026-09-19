@@ -11,7 +11,7 @@ sealed class ApsRecommendation {
 
     data class Bolus(
         val amount: InsulinAmount,
-        val handledDeferredBoluses: List<DeferredBolus>? = null,
+        val includedDeferredBoluses: List<DeferredBolus>? = null,
         val correctionPart: InsulinAmount = InsulinAmount.ZERO,
         val basalPart: InsulinAmount = InsulinAmount.ZERO
     ) : ApsRecommendation()

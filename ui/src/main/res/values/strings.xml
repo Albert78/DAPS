@@ -192,7 +192,7 @@
     <string name="notification_meal_reminder_text_default">Zeit für deine geplante Mahlzeit.</string>
 
     <string name="notification_deferred_bolus_title">Verzögerter Bolus</string>
-    <string name="notification_deferred_bolus_text">Ein verzögerter Bolus über %1$.2f E ist fällig.</string>
+    <string name="notification_deferred_bolus_text">Es sind %1$.2f I.E. an verzögertem Bolus fällig.</string>
 
     <string name="algorithm_issue_notification_channel_name">Algorithmus-Warnungen</string>
     <string name="core_issue_title">Berechnungen blockiert</string>
@@ -548,7 +548,7 @@
     <string name="full_screen_alarm_title">ACHTUNG: SICHERHEITS-ALARM</string>
 
     <!-- Open-Loop Screen -->
-    <string name="open_loop_screen_title">Manueller Modus (Open-Loop)</string>
+    <string name="open_loop_screen_title">Manuelle Steuerung</string>
     <string name="open_loop_screen_subtitle">Empfehlungen &amp; Pumpensteuerung</string>
     <string name="open_loop_recommendations_title">Empfehlungen (RecommendationManager)</string>
     <string name="open_loop_no_recommendations">Keine aktiven Empfehlungen vorhanden.</string>

@@ -61,13 +61,13 @@ class RecommendationManager(
      */
     fun addBolusRecommendation(
         amount: InsulinAmount,
-        deferredBoluses: List<DeferredBolus>? = null,
+        includedDeferredBoluses: List<DeferredBolus>? = null,
         correctionPart: InsulinAmount = InsulinAmount.ZERO,
         basalPart: InsulinAmount = InsulinAmount.ZERO
     ) {
         _recommendations.value = _recommendations.value.filterNot { it is ApsRecommendation.Bolus } + ApsRecommendation.Bolus(
             amount = amount,
-            handledDeferredBoluses = deferredBoluses,
+            includedDeferredBoluses = includedDeferredBoluses,
             correctionPart = correctionPart,
             basalPart = basalPart
         )

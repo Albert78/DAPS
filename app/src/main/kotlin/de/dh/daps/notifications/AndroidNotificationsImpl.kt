@@ -202,8 +202,8 @@ class AndroidNotificationsImpl(
         notify(MEAL_REMINDER_NOTIFICATION_ID, notification)
     }
 
-    override fun showDeferredBolusRecommendationNotification(handledDeferredBoluses: List<DeferredBolus>) {
-        val totalAmount = handledDeferredBoluses.sumOf { it.amount.iu }
+    override fun showDeferredBolusRecommendationNotification(dueDeferredBoluses: List<DeferredBolus>) {
+        val totalAmount = dueDeferredBoluses.sumOf { it.amount.iu }
         val title = context.getString(UiR.string.notification_deferred_bolus_title)
         val text = context.getString(UiR.string.notification_deferred_bolus_text, totalAmount)
 
