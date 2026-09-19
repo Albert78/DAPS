@@ -320,6 +320,14 @@ class SystemOrchestratorImpl(
                 } else {
                     androidNotifications.cancelRecommendationNotification()
                 }
+
+                val deferredBoluses = recommendations
+                    .filterIsInstance<ApsRecommendation.Bolus>()
+                    .flatMap { it.handledDeferredBoluses.orEmpty() }
+
+                if (deferredBoluses.isNotEmpty()) {
+                    androidNotifications.showDeferredBolusRecommendationNotification(deferredBoluses)
+                }
             }
         }
 
@@ -362,9 +370,6 @@ class SystemOrchestratorImpl(
                             correctionPart = correctionPart,
                             basalPart = basalPart
                         )
-                        if (!handledDeferredBoluses.isNullOrEmpty()) {
-                            androidNotifications.showDeferredBolusRecommendationNotification(handledDeferredBoluses)
-                        }
                     }
                 }
             },
