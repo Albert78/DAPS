@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,29 +18,30 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ClearAll
 import androidx.compose.material.icons.filled.Fastfood
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -49,6 +51,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.BolusDeliveryState
 import de.dh.daps.common.model.CarbCurveComponentData
+import de.dh.daps.common.model.DeferredBolus
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.MealEntry
 import de.dh.daps.common.model.MealType
@@ -64,7 +67,6 @@ import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.SecondaryButton
-import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.icons.Carbs
 import de.dh.daps.ui.common.icons.Insulin
 import de.dh.daps.ui.common.icons.Syringe
@@ -74,7 +76,22 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
-import de.dh.daps.common.R as CommonR
+
+sealed interface OpenLoopDialog {
+    data class Bolus(
+        val initialAmount: Double,
+        val includedDeferredBoluses: List<DeferredBolus>? = null,
+        val correctionPart: InsulinAmount = InsulinAmount.ZERO,
+        val basalPart: InsulinAmount = InsulinAmount.ZERO,
+        val recommendationToDismiss: ApsRecommendation.Bolus? = null
+    ) : OpenLoopDialog
+
+    data class TempBasal(
+        val initialPercent: Int,
+        val initialDurationHours: Int,
+        val recommendationToDismiss: ApsRecommendation.TempBasal? = null
+    ) : OpenLoopDialog
+}
 
 @Composable
 fun OpenLoopScreen(
@@ -85,84 +102,81 @@ fun OpenLoopScreen(
     onNavigateToMeals: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var activeDialog by remember { mutableStateOf<OpenLoopDialog?>(null) }
 
     OpenLoopContent(
         uiState = uiState,
-        onNavigateUp = onNavigateUp,
         onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus,
         onNavigateToMeals = onNavigateToMeals,
-        onApplyBolusRecommendation = { viewModel.applyBolusRecommendation(it) },
-        onApplyTempBasalRecommendation = { viewModel.applyTempBasalRecommendation(it) },
-        onRemoveRecommendation = { viewModel.removeRecommendation(it) },
-        onClearAllRecommendations = { viewModel.clearAllRecommendations() },
-        onUpdateBolusAmount = { viewModel.updateManualBolusAmount(it) },
-        onDeliverBolus = { viewModel.deliverBolus() },
-        onCancelBolus = { viewModel.cancelBolus() },
-        onUpdateTempBasalPercent = { viewModel.updateManualTempBasalPercent(it) },
-        onUpdateTempBasalDuration = { viewModel.updateManualTempBasalDuration(it) },
-        onSetTempBasal = { viewModel.setTempBasal() },
-        onCancelTempBasal = { viewModel.cancelTempBasal() }
+        onOpenBolusDialog = { activeDialog = it },
+        onOpenTempBasalDialog = { activeDialog = it },
+        onCancelBolus = { viewModel.cancelBolus(treatmentLock) },
+        onCancelTempBasal = { viewModel.cancelTempBasal(treatmentLock) }
     )
-}
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun OpenLoopContent(
-    uiState: OpenLoopUiState,
-    onNavigateUp: () -> Unit,
-    onNavigateToMealCorrectionBolus: () -> Unit = {},
-    onNavigateToMeals: () -> Unit = {},
-    onApplyBolusRecommendation: (ApsRecommendation.Bolus) -> Unit = {},
-    onApplyTempBasalRecommendation: (ApsRecommendation.TempBasal) -> Unit = {},
-    onRemoveRecommendation: (ApsRecommendation) -> Unit = {},
-    onClearAllRecommendations: () -> Unit = {},
-    onUpdateBolusAmount: (Double) -> Unit = {},
-    onDeliverBolus: () -> Unit = {},
-    onCancelBolus: () -> Unit = {},
-    onUpdateTempBasalPercent: (Int) -> Unit = {},
-    onUpdateTempBasalDuration: (Int) -> Unit = {},
-    onSetTempBasal: () -> Unit = {},
-    onCancelTempBasal: () -> Unit = {}
-) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = screenTitle(stringResource(id = R.string.open_loop_screen_title)),
-                navigationIcon = {
-                    IconButton(onClick = onNavigateUp) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(id = CommonR.string.cd_navigate_up),
-                        )
-                    }
-                },
-                actions = {
-                    if (uiState.recommendations.isNotEmpty()) {
-                        IconButton(onClick = onClearAllRecommendations) {
-                            Icon(
-                                imageVector = Icons.Default.ClearAll,
-                                contentDescription = stringResource(id = R.string.open_loop_clear_all_recommendations)
-                            )
-                        }
-                    }
+    when (val dialog = activeDialog) {
+        is OpenLoopDialog.Bolus -> {
+            DeliverBolusDialog(
+                dialogData = dialog,
+                minBolusAmount = uiState.minBolusAmount,
+                maxBolusSize = uiState.maxBolusSize,
+                onDismiss = { activeDialog = null },
+                onConfirm = { amount, handledDeferredBoluses, correctionPart, basalPart, recommendationToDismiss ->
+                    viewModel.deliverBolus(
+                        treatmentLock = treatmentLock,
+                        amount = amount,
+                        handledDeferredBoluses = handledDeferredBoluses,
+                        correctionPart = correctionPart,
+                        basalPart = basalPart,
+                        recommendationToDismiss = recommendationToDismiss
+                    )
+                    activeDialog = null
                 }
             )
         }
-    ) { innerPadding ->
+        is OpenLoopDialog.TempBasal -> {
+            SetTempBasalDialog(
+                dialogData = dialog,
+                onDismiss = { activeDialog = null },
+                onConfirm = { durationHours, percent, recommendationToDismiss ->
+                    viewModel.setTempBasal(
+                        treatmentLock = treatmentLock,
+                        durationHours = durationHours,
+                        percent = percent,
+                        recommendationToDismiss = recommendationToDismiss
+                    )
+                    activeDialog = null
+                }
+            )
+        }
+        null -> {}
+    }
+}
+
+@Composable
+fun OpenLoopContent(
+    uiState: OpenLoopUiState,
+    onNavigateToMealCorrectionBolus: () -> Unit = {},
+    onNavigateToMeals: () -> Unit = {},
+    onOpenBolusDialog: (OpenLoopDialog.Bolus) -> Unit = {},
+    onOpenTempBasalDialog: (OpenLoopDialog.TempBasal) -> Unit = {},
+    onCancelBolus: () -> Unit = {},
+    onCancelTempBasal: () -> Unit = {}
+) {
+    val scrollState = rememberScrollState()
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(scrollState)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Section 1: Recommendations
             OpenLoopRecommendationsSection(
                 recommendations = uiState.recommendations,
-                onApplyBolusRecommendation = onApplyBolusRecommendation,
-                onApplyTempBasalRecommendation = onApplyTempBasalRecommendation,
-                onRemoveRecommendation = onRemoveRecommendation,
+                onOpenBolusDialog = onOpenBolusDialog,
+                onOpenTempBasalDialog = onOpenTempBasalDialog,
                 onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus
             )
 
@@ -176,12 +190,9 @@ fun OpenLoopContent(
             // Section 3: Pump Controls (Bolus & Temp-Basal)
             OpenLoopPumpControlsSection(
                 uiState = uiState,
-                onUpdateBolusAmount = onUpdateBolusAmount,
-                onDeliverBolus = onDeliverBolus,
+                onOpenBolusDialog = onOpenBolusDialog,
                 onCancelBolus = onCancelBolus,
-                onUpdateTempBasalPercent = onUpdateTempBasalPercent,
-                onUpdateTempBasalDuration = onUpdateTempBasalDuration,
-                onSetTempBasal = onSetTempBasal,
+                onOpenTempBasalDialog = onOpenTempBasalDialog,
                 onCancelTempBasal = onCancelTempBasal
             )
         }
@@ -195,9 +206,8 @@ fun OpenLoopContent(
 @Composable
 private fun OpenLoopRecommendationsSection(
     recommendations: List<ApsRecommendation>,
-    onApplyBolusRecommendation: (ApsRecommendation.Bolus) -> Unit,
-    onApplyTempBasalRecommendation: (ApsRecommendation.TempBasal) -> Unit,
-    onRemoveRecommendation: (ApsRecommendation) -> Unit,
+    onOpenBolusDialog: (OpenLoopDialog.Bolus) -> Unit,
+    onOpenTempBasalDialog: (OpenLoopDialog.TempBasal) -> Unit,
     onNavigateToMealCorrectionBolus: () -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -220,9 +230,8 @@ private fun OpenLoopRecommendationsSection(
             recommendations.forEach { recommendation ->
                 RecommendationCard(
                     recommendation = recommendation,
-                    onApplyBolusRecommendation = onApplyBolusRecommendation,
-                    onApplyTempBasalRecommendation = onApplyTempBasalRecommendation,
-                    onRemoveRecommendation = onRemoveRecommendation,
+                    onOpenBolusDialog = onOpenBolusDialog,
+                    onOpenTempBasalDialog = onOpenTempBasalDialog,
                     onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus
                 )
             }
@@ -233,9 +242,8 @@ private fun OpenLoopRecommendationsSection(
 @Composable
 private fun RecommendationCard(
     recommendation: ApsRecommendation,
-    onApplyBolusRecommendation: (ApsRecommendation.Bolus) -> Unit,
-    onApplyTempBasalRecommendation: (ApsRecommendation.TempBasal) -> Unit,
-    onRemoveRecommendation: (ApsRecommendation) -> Unit,
+    onOpenBolusDialog: (OpenLoopDialog.Bolus) -> Unit,
+    onOpenTempBasalDialog: (OpenLoopDialog.TempBasal) -> Unit,
     onNavigateToMealCorrectionBolus: () -> Unit
 ) {
     Card(
@@ -264,15 +272,6 @@ private fun RecommendationCard(
                         text = stringResource(R.string.recommendation_carbs_info_text, recommendation.amountInGram),
                         style = MaterialTheme.typography.bodyMedium
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        NormalTextButton(onClick = { onRemoveRecommendation(recommendation) }) {
-                            Text(stringResource(id = R.string.open_loop_dismiss_recommendation))
-                        }
-                    }
                 }
 
                 is ApsRecommendation.Bolus -> {
@@ -301,14 +300,17 @@ private fun RecommendationCard(
                         horizontalArrangement = Arrangement.End,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        NormalTextButton(onClick = { onRemoveRecommendation(recommendation) }) {
-                            Text(stringResource(id = R.string.open_loop_dismiss_recommendation))
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
                         PrimaryButton(
                             onClick = {
-                                onApplyBolusRecommendation(recommendation)
-                                onRemoveRecommendation(recommendation)
+                                onOpenBolusDialog(
+                                    OpenLoopDialog.Bolus(
+                                        initialAmount = recommendation.amount.iu,
+                                        includedDeferredBoluses = recommendation.includedDeferredBoluses,
+                                        correctionPart = recommendation.correctionPart,
+                                        basalPart = recommendation.basalPart,
+                                        recommendationToDismiss = recommendation
+                                    )
+                                )
                             }
                         ) {
                             Text(stringResource(id = R.string.open_loop_apply_recommendation))
@@ -342,14 +344,15 @@ private fun RecommendationCard(
                         horizontalArrangement = Arrangement.End,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        NormalTextButton(onClick = { onRemoveRecommendation(recommendation) }) {
-                            Text(stringResource(id = R.string.open_loop_dismiss_recommendation))
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
                         SecondaryButton(
                             onClick = {
-                                onApplyTempBasalRecommendation(recommendation)
-                                onRemoveRecommendation(recommendation)
+                                onOpenTempBasalDialog(
+                                    OpenLoopDialog.TempBasal(
+                                        initialPercent = recommendation.percent,
+                                        initialDurationHours = recommendation.durationInHours,
+                                        recommendationToDismiss = recommendation
+                                    )
+                                )
                             }
                         ) {
                             Text(stringResource(id = R.string.open_loop_apply_recommendation))
@@ -515,12 +518,9 @@ private fun MealInfoCard(
 @Composable
 private fun OpenLoopPumpControlsSection(
     uiState: OpenLoopUiState,
-    onUpdateBolusAmount: (Double) -> Unit,
-    onDeliverBolus: () -> Unit,
+    onOpenBolusDialog: (OpenLoopDialog.Bolus) -> Unit,
     onCancelBolus: () -> Unit,
-    onUpdateTempBasalPercent: (Int) -> Unit,
-    onUpdateTempBasalDuration: (Int) -> Unit,
-    onSetTempBasal: () -> Unit,
+    onOpenTempBasalDialog: (OpenLoopDialog.TempBasal) -> Unit,
     onCancelTempBasal: () -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -583,37 +583,21 @@ private fun OpenLoopPumpControlsSection(
                         Text(stringResource(id = R.string.open_loop_cancel_bolus))
                     }
                 } else {
-                    EditableValueStepper(
-                        currentValue = uiState.manualBolusAmount,
-                        onValueChange = onUpdateBolusAmount,
-                        minValue = uiState.minBolusAmount.iu,
-                        maxValue = uiState.maxBolusSize.iu,
-                        steppingStrategy = DefaultSteppingStrategy(step = 0.5),
-                        displayStrategy = ConfigurableDisplayStrategy(suffix = " E"),
-                        modifier = Modifier.fillMaxWidth()
+                    Text(
+                        text = stringResource(id = R.string.open_loop_no_active_bolus),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Preset Chips
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        listOf(0.5, 1.0, 2.0, 3.0, 5.0).forEach { preset ->
-                            AssistChip(
-                                onClick = { onUpdateBolusAmount(preset) },
-                                label = { Text("+%.1f E".format(preset)) }
-                            )
-                        }
-                    }
-
                     Spacer(modifier = Modifier.height(12.dp))
-
                     PrimaryButton(
-                        onClick = onDeliverBolus,
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = uiState.manualBolusAmount > 0.0
+                        onClick = {
+                            onOpenBolusDialog(
+                                OpenLoopDialog.Bolus(
+                                    initialAmount = uiState.minBolusAmount.iu.coerceAtLeast(1.0)
+                                )
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Icon(imageVector = Icons.Outlined.Syringe, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
@@ -676,54 +660,20 @@ private fun OpenLoopPumpControlsSection(
                     }
                 } else {
                     Text(
-                        text = stringResource(id = R.string.open_loop_rate_percent_label),
-                        style = MaterialTheme.typography.bodySmall,
+                        text = stringResource(id = R.string.open_loop_no_active_temp_basal),
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    EditableValueStepper(
-                        currentValue = uiState.manualTempBasalPercent.toDouble(),
-                        onValueChange = { onUpdateTempBasalPercent(it.toInt()) },
-                        minValue = 0.0,
-                        maxValue = 200.0,
-                        steppingStrategy = DefaultSteppingStrategy(step = 10.0),
-                        displayStrategy = ConfigurableDisplayStrategy(suffix = " %"),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    // Presets
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        listOf(0, 50, 80, 120, 150, 200).forEach { preset ->
-                            AssistChip(
-                                onClick = { onUpdateTempBasalPercent(preset) },
-                                label = { Text("%d%%".format(preset)) }
-                            )
-                        }
-                    }
-
                     Spacer(modifier = Modifier.height(12.dp))
-
-                    Text(
-                        text = stringResource(id = R.string.open_loop_duration_hours_label),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    EditableValueStepper(
-                        currentValue = uiState.manualTempBasalDurationHours.toDouble(),
-                        onValueChange = { onUpdateTempBasalDuration(it.toInt().coerceAtLeast(1)) },
-                        minValue = 1.0,
-                        maxValue = 24.0,
-                        steppingStrategy = DefaultSteppingStrategy(step = 1.0),
-                        displayStrategy = ConfigurableDisplayStrategy(suffix = " Std"),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
                     SecondaryButton(
-                        onClick = onSetTempBasal,
+                        onClick = {
+                            onOpenTempBasalDialog(
+                                OpenLoopDialog.TempBasal(
+                                    initialPercent = 100,
+                                    initialDurationHours = 1
+                                )
+                            )
+                        },
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Icon(imageVector = Icons.Default.Speed, contentDescription = null, modifier = Modifier.size(20.dp))
@@ -736,52 +686,267 @@ private fun OpenLoopPumpControlsSection(
     }
 }
 
+// -----------------------------------------------------------------------------------------
+// --- Section 4: Action Dialogs ---
+// -----------------------------------------------------------------------------------------
+
+@Composable
+private fun DeliverBolusDialog(
+    dialogData: OpenLoopDialog.Bolus,
+    minBolusAmount: InsulinAmount,
+    maxBolusSize: InsulinAmount,
+    onDismiss: () -> Unit,
+    onConfirm: (
+        amount: InsulinAmount,
+        handledDeferredBoluses: List<DeferredBolus>?,
+        correctionPart: InsulinAmount,
+        basalPart: InsulinAmount,
+        recommendationToDismiss: ApsRecommendation.Bolus?
+    ) -> Unit
+) {
+    var amount by remember { mutableDoubleStateOf(dialogData.initialAmount) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Outlined.Syringe,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(id = R.string.open_loop_dialog_deliver_bolus_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                EditableValueStepper(
+                    currentValue = amount,
+                    onValueChange = { amount = it },
+                    minValue = minBolusAmount.iu,
+                    maxValue = maxBolusSize.iu,
+                    steppingStrategy = DefaultSteppingStrategy(step = 0.5),
+                    displayStrategy = ConfigurableDisplayStrategy(suffix = " E"),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // Preset Chips
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    listOf(0.5, 1.0, 2.0, 3.0, 5.0).forEach { preset ->
+                        AssistChip(
+                            onClick = { amount = preset },
+                            label = { Text("+%.1f E".format(preset)) }
+                        )
+                    }
+                }
+
+                // Deferred Boluses Info Box (if recommendation contained deferred boluses)
+                val deferredBoluses = dialogData.includedDeferredBoluses
+                if (!deferredBoluses.isNullOrEmpty()) {
+                    val totalDeferred = deferredBoluses.sumOf { it.amount.iu }
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(
+                                    id = R.string.open_loop_deferred_boluses_info,
+                                    deferredBoluses.size,
+                                    totalDeferred
+                                ),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            PrimaryButton(
+                onClick = {
+                    onConfirm(
+                        InsulinAmount(amount),
+                        dialogData.includedDeferredBoluses,
+                        dialogData.correctionPart,
+                        dialogData.basalPart,
+                        dialogData.recommendationToDismiss
+                    )
+                },
+                enabled = amount > 0.0
+            ) {
+                Text(stringResource(id = R.string.open_loop_dialog_confirm_deliver))
+            }
+        },
+        dismissButton = {
+            NormalTextButton(onClick = onDismiss) {
+                Text(stringResource(id = R.string.open_loop_dialog_cancel))
+            }
+        }
+    )
+}
+
+@Composable
+private fun SetTempBasalDialog(
+    dialogData: OpenLoopDialog.TempBasal,
+    onDismiss: () -> Unit,
+    onConfirm: (
+        durationHours: Int,
+        percent: Int,
+        recommendationToDismiss: ApsRecommendation.TempBasal?
+    ) -> Unit
+) {
+    var percent by remember { mutableIntStateOf(dialogData.initialPercent) }
+    var durationHours by remember { mutableIntStateOf(dialogData.initialDurationHours) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Speed,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(id = R.string.open_loop_dialog_set_temp_basal_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = stringResource(id = R.string.open_loop_rate_percent_label),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                EditableValueStepper(
+                    currentValue = percent.toDouble(),
+                    onValueChange = { percent = it.toInt() },
+                    minValue = 0.0,
+                    maxValue = 200.0,
+                    steppingStrategy = DefaultSteppingStrategy(step = 10.0),
+                    displayStrategy = ConfigurableDisplayStrategy(suffix = " %"),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // Presets
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    listOf(0, 50, 80, 120, 150, 200).forEach { preset ->
+                        AssistChip(
+                            onClick = { percent = preset },
+                            label = { Text("%d%%".format(preset)) }
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = stringResource(id = R.string.open_loop_duration_hours_label),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                EditableValueStepper(
+                    currentValue = durationHours.toDouble(),
+                    onValueChange = { durationHours = it.toInt().coerceAtLeast(1) },
+                    minValue = 1.0,
+                    maxValue = 24.0,
+                    steppingStrategy = DefaultSteppingStrategy(step = 1.0),
+                    displayStrategy = ConfigurableDisplayStrategy(suffix = " Std"),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            SecondaryButton(
+                onClick = {
+                    onConfirm(durationHours, percent, dialogData.recommendationToDismiss)
+                }
+            ) {
+                Text(stringResource(id = R.string.open_loop_dialog_confirm_set))
+            }
+        },
+        dismissButton = {
+            NormalTextButton(onClick = onDismiss) {
+                Text(stringResource(id = R.string.open_loop_dialog_cancel))
+            }
+        }
+    )
+}
+
 @Preview(showBackground = true, name = "Light Mode")
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
 fun OpenLoopScreenPreview() {
     AppTheme {
-        OpenLoopContent(
-            uiState = OpenLoopUiState(
-                recommendations = listOf(
-                    ApsRecommendation.Bolus(
-                        amount = InsulinAmount(1.5),
-                        correctionPart = InsulinAmount(1.0),
-                        basalPart = InsulinAmount(0.5)
+        Surface {
+            OpenLoopContent(
+                uiState = OpenLoopUiState(
+                    recommendations = listOf(
+                        ApsRecommendation.Bolus(
+                            amount = InsulinAmount(1.5),
+                            correctionPart = InsulinAmount(1.0),
+                            basalPart = InsulinAmount(0.5)
+                        ),
+                        ApsRecommendation.TempBasal(durationInHours = 2, percent = 120)
                     ),
-                    ApsRecommendation.TempBasal(durationInHours = 2, percent = 120)
-                ),
-                lastPastMeal = MealEntry(
-                    id = 1L,
-                    timestamp = Timestamp.now().minusHours(2),
-                    carbGrams = 45.0,
-                    mealType = MealType(
-                        name = "Mittagessen",
-                        components = listOf(CarbCurveComponentData(100, Minutes(30))),
-                        cat = Minutes(180)
-                    ),
-                    description = "Pasta mit Tomatensauce",
-                    administeredInsulinAmount = InsulinAmount(3.5)
-                ),
-                nextPlannedMeal = PlannedMealItem.Entry(
-                    MealEntry(
-                        id = 2L,
-                        timestamp = Timestamp.now().plusHours(3),
-                        carbGrams = 60.0,
+                    lastPastMeal = MealEntry(
+                        id = 1L,
+                        timestamp = Timestamp.now().minusHours(2),
+                        carbGrams = 45.0,
                         mealType = MealType(
-                            name = "Abendessen",
+                            name = "Mittagessen",
                             components = listOf(CarbCurveComponentData(100, Minutes(30))),
                             cat = Minutes(180)
                         ),
-                        description = "Pizza"
-                    )
-                ),
-                isPumpConnected = true,
-                manualBolusAmount = 1.5,
-                manualTempBasalPercent = 120,
-                manualTempBasalDurationHours = 2
-            ),
-            onNavigateUp = {}
-        )
+                        description = "Pasta mit Tomatensauce",
+                        administeredInsulinAmount = InsulinAmount(3.5)
+                    ),
+                    nextPlannedMeal = PlannedMealItem.Entry(
+                        MealEntry(
+                            id = 2L,
+                            timestamp = Timestamp.now().plusHours(3),
+                            carbGrams = 60.0,
+                            mealType = MealType(
+                                name = "Abendessen",
+                                components = listOf(CarbCurveComponentData(100, Minutes(30))),
+                                cat = Minutes(180)
+                            ),
+                            description = "Pizza"
+                        )
+                    ),
+                    isPumpConnected = true
+                )
+            )
+        }
     }
 }

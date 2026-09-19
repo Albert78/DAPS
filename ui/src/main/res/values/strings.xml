@@ -567,16 +567,24 @@
 
     <string name="open_loop_pump_controls_title">Manuelle Pumpensteuerung</string>
     <string name="open_loop_bolus_title">Bolus abgeben</string>
-    <string name="open_loop_deliver_bolus">Bolus abgeben</string>
+    <string name="open_loop_deliver_bolus">Bolus abgeben&#8230;</string>
     <string name="open_loop_cancel_bolus">Bolus abbrechen</string>
     <string name="open_loop_bolus_delivering">Bolus wird verabreicht: %1$.2f / %2$.2f E (%3$d%%)</string>
+    <string name="open_loop_no_active_bolus">Keine aktive Bolusabgabe.</string>
     <string name="open_loop_temp_basal_title">Temporäre Basalrate (Temp-Basal)</string>
-    <string name="open_loop_set_temp_basal">Temp-Basal setzen</string>
+    <string name="open_loop_set_temp_basal">Temp-Basal setzen&#8230;</string>
     <string name="open_loop_cancel_temp_basal">Temp-Basal beenden</string>
     <string name="open_loop_temp_basal_active">Aktiv: Temp-Basal mit %1$d%%</string>
+    <string name="open_loop_no_active_temp_basal">Normale Basalrate aktiv (100%).</string>
     <string name="open_loop_duration_hours_label">Dauer (Stunden)</string>
     <string name="open_loop_rate_percent_label">Basalrate (%)</string>
     <string name="open_loop_pump_not_connected">Pumpe nicht verbunden</string>
+    <string name="open_loop_dialog_deliver_bolus_title">Bolus abgeben</string>
+    <string name="open_loop_dialog_set_temp_basal_title">Temporäre Basalrate setzen</string>
+    <string name="open_loop_dialog_confirm_deliver">Abgeben</string>
+    <string name="open_loop_dialog_confirm_set">Setzen</string>
+    <string name="open_loop_dialog_cancel">Abbrechen</string>
+    <string name="open_loop_deferred_boluses_info">Enthält %1$d zurückgestellte(n) Bolus (insg. %2$.2f E)</string>
     <string name="menu_item_open_loop_label">Manueller Modus (Open-Loop)</string>
 
 </resources>

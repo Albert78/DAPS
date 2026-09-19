@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import de.dh.daps.common.model.BasalStatus
 import de.dh.daps.common.model.BolusStatus
+import de.dh.daps.common.model.DeferredBolus
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.MealEntry
 import de.dh.daps.common.model.MealReminder
@@ -12,15 +13,15 @@ import de.dh.daps.common.model.PumpCapabilities
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.aps.ApsRecommendation
-import de.dh.daps.core.pump.PumpCommand
+import de.dh.daps.core.aps.TreatmentLock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 sealed interface PlannedMealItem {
     data class Entry(val meal: MealEntry) : PlannedMealItem
@@ -42,10 +43,7 @@ data class OpenLoopUiState(
     val activeBasalStatus: BasalStatus? = null,
     val activeBolusStatus: BolusStatus? = null,
     val minBolusAmount: InsulinAmount = InsulinAmount(0.05),
-    val maxBolusSize: InsulinAmount = InsulinAmount(25.0),
-    val manualBolusAmount: Double = 1.0,
-    val manualTempBasalPercent: Int = 100,
-    val manualTempBasalDurationHours: Int = 1
+    val maxBolusSize: InsulinAmount = InsulinAmount(25.0)
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -55,10 +53,7 @@ class OpenLoopViewModel(
     private val recommendationManager = systemRegistry.recommendationManager
     private val treatmentRepository = systemRegistry.treatmentRepository
     private val pumpManager = systemRegistry.pumpManager
-
-    private val _manualBolusAmount = MutableStateFlow(1.0)
-    private val _manualTempBasalPercent = MutableStateFlow(100)
-    private val _manualTempBasalDurationHours = MutableStateFlow(1)
+    private val therapyManager = systemRegistry.therapyManager
 
     private val pumpData = pumpManager.activeInsulinPump.flatMapLatest { pump ->
         if (pump == null) {
@@ -86,23 +81,8 @@ class OpenLoopViewModel(
         recommendationManager.recommendations,
         recommendationManager.mealReminders,
         treatmentRepository.observeMeals(),
-        pumpData,
-        combine(
-            _manualBolusAmount,
-            _manualTempBasalPercent,
-            _manualTempBasalDurationHours
-        ) { bolus, percent, duration -> Triple(bolus, percent, duration) }
-    ) { flows ->
-        @Suppress("UNCHECKED_CAST")
-        val recommendations = flows[0] as List<ApsRecommendation>
-        @Suppress("UNCHECKED_CAST")
-        val mealReminders = flows[1] as List<MealReminder>
-        @Suppress("UNCHECKED_CAST")
-        val meals = flows[2] as List<MealEntry>
-        val pData = flows[3] as PumpData
-        @Suppress("UNCHECKED_CAST")
-        val (bolusAmount, tempPercent, tempDuration) = flows[4] as Triple<Double, Int, Int>
-
+        pumpData
+    ) { recommendations, mealReminders, meals, pData ->
         val now = Timestamp.now()
 
         // Last meal in the past (timestamp <= now)
@@ -122,10 +102,7 @@ class OpenLoopViewModel(
             activeBasalStatus = pData.basalStatus,
             activeBolusStatus = pData.bolusStatus,
             minBolusAmount = pData.capabilities?.minBolusAmount ?: InsulinAmount(0.05),
-            maxBolusSize = pData.capabilities?.maxBolusSize ?: InsulinAmount(25.0),
-            manualBolusAmount = bolusAmount,
-            manualTempBasalPercent = tempPercent,
-            manualTempBasalDurationHours = tempDuration
+            maxBolusSize = pData.capabilities?.maxBolusSize ?: InsulinAmount(25.0)
         )
     }.stateIn(
         scope = viewModelScope,
@@ -133,54 +110,56 @@ class OpenLoopViewModel(
         initialValue = OpenLoopUiState()
     )
 
-    fun updateManualBolusAmount(amount: Double) {
-        _manualBolusAmount.value = amount
-    }
-
-    fun updateManualTempBasalPercent(percent: Int) {
-        _manualTempBasalPercent.value = percent
-    }
-
-    fun updateManualTempBasalDuration(hours: Int) {
-        _manualTempBasalDurationHours.value = hours
-    }
-
-    fun applyBolusRecommendation(recommendation: ApsRecommendation.Bolus) {
-        _manualBolusAmount.value = recommendation.amount.iu
-    }
-
-    fun applyTempBasalRecommendation(recommendation: ApsRecommendation.TempBasal) {
-        _manualTempBasalPercent.value = recommendation.percent
-        _manualTempBasalDurationHours.value = recommendation.durationInHours
-    }
-
-    fun removeRecommendation(recommendation: ApsRecommendation) {
-        recommendationManager.removeRecommendation(recommendation)
-    }
-
-    fun clearAllRecommendations() {
-        recommendationManager.clearRecommendations()
-    }
-
-    fun deliverBolus() {
-        val amount = _manualBolusAmount.value
-        if (amount > 0.0) {
-            pumpManager.issueCommand(PumpCommand.DeliverBolus(InsulinAmount(amount)))
+    fun deliverBolus(
+        treatmentLock: TreatmentLock,
+        amount: InsulinAmount,
+        handledDeferredBoluses: List<DeferredBolus>? = null,
+        correctionPart: InsulinAmount = InsulinAmount.ZERO,
+        basalPart: InsulinAmount = InsulinAmount.ZERO,
+        recommendationToDismiss: ApsRecommendation? = null
+    ) {
+        viewModelScope.launch {
+            therapyManager.issueBolus(
+                treatmentLock = treatmentLock,
+                amount = amount,
+                handledDeferredBoluses = handledDeferredBoluses,
+                correctionPart = correctionPart,
+                basalPart = basalPart
+            )
+            recommendationToDismiss?.let {
+                recommendationManager.removeRecommendation(it)
+            }
         }
     }
 
-    fun cancelBolus() {
-        pumpManager.issueCommand(PumpCommand.CancelBolus)
+    fun cancelBolus(treatmentLock: TreatmentLock) {
+        viewModelScope.launch {
+            therapyManager.cancelBolus(treatmentLock)
+        }
     }
 
-    fun setTempBasal() {
-        val percent = _manualTempBasalPercent.value
-        val hours = _manualTempBasalDurationHours.value
-        pumpManager.issueCommand(PumpCommand.SetTempBasal(percent = percent, durationHours = hours))
+    fun setTempBasal(
+        treatmentLock: TreatmentLock,
+        durationHours: Int,
+        percent: Int,
+        recommendationToDismiss: ApsRecommendation? = null
+    ) {
+        viewModelScope.launch {
+            therapyManager.setTempBasal(
+                treatmentLock = treatmentLock,
+                durationInHours = durationHours,
+                percent = percent
+            )
+            recommendationToDismiss?.let {
+                recommendationManager.removeRecommendation(it)
+            }
+        }
     }
 
-    fun cancelTempBasal() {
-        pumpManager.issueCommand(PumpCommand.CancelTempBasal)
+    fun cancelTempBasal(treatmentLock: TreatmentLock) {
+        viewModelScope.launch {
+            therapyManager.clearTempBasal(treatmentLock)
+        }
     }
 
     private data class PumpData(
