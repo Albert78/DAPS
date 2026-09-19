@@ -346,7 +346,6 @@ class SystemOrchestratorImpl(
 
             onDeliverBolus = { treatmentLock, amount, handledDeferredBoluses, correctionPart, basalPart ->
                 when (apsMode.value) {
-                    ApsMode.Suspend -> { /* Do nothing */ }
                     ApsMode.AutoCorrection -> {
                         therapyManager.issueBolus(
                             treatmentLock = treatmentLock,
@@ -355,11 +354,8 @@ class SystemOrchestratorImpl(
                             correctionPart = correctionPart,
                             basalPart = basalPart
                         )
-                        if (!handledDeferredBoluses.isNullOrEmpty()) {
-                            androidNotifications.showDeferredBolusNotification(handledDeferredBoluses)
-                        }
                     }
-                    ApsMode.BasalOnly -> {
+                    ApsMode.BasalOnly, ApsMode.Suspend -> {
                         recommendationManager.addBolusRecommendation(
                             amount = amount,
                             handledDeferredBoluses = handledDeferredBoluses,

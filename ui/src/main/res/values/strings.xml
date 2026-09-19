@@ -175,13 +175,17 @@
     <string name="recommendation_notification_channel_name">Behandlungsempfehlungen</string>
     <string name="recommendation_title_carbs">Essensempfehlung</string>
     <string name="recommendation_title_bolus">Insulinempfehlung</string>
+    <string name="recommendation_title_temp_basal">Temp-Basal Empfehlung</string>
     <string name="recommendation_text_carbs">Nimm %1$dg Kohlenhydrate zu dir, um eine Hypoglykämie zu vermeiden.</string>
     <string name="recommendation_text_bolus">Verabreiche dir %1$.2f E Insulin, um einen hohen Blutzucker zu korrigieren.</string>
+    <string name="recommendation_text_temp_basal">Empfohlener Temp-Basal: %1$d%% für %2$dh</string>
 
     <string name="recommendation_carbs_info_title">Nimm %1$dg Kohlenhydrate</string>
     <string name="recommendation_bolus_info_title">Spritze %1$.2f E Insulin</string>
+    <string name="recommendation_temp_basal_info_title">Temp-Basal (%1$d%%)</string>
     <string name="recommendation_carbs_info_text">Nimm %1$dg Kohlenhydrate zu dir, um eine Hypoglykämie zu vermeiden.</string>
     <string name="recommendation_bolus_info_text">Verabreiche dir %1$.2f E Insulin, um einen hohen Blutzucker zu korrigieren.</string>
+    <string name="recommendation_temp_basal_info_text">Empfohlener Temp-Basal von %1$d%% für %2$dh</string>
 
     <string name="algorithm_issue_notification_channel_name">Algorithmus-Warnungen</string>
     <string name="core_issue_title">Berechnungen blockiert</string>

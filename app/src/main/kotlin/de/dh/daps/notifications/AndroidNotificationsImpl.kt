@@ -128,7 +128,7 @@ class AndroidNotificationsImpl(
         val title = when (recommendation) {
             is ApsRecommendation.Carbs -> context.getString(UiR.string.recommendation_title_carbs)
             is ApsRecommendation.Bolus -> context.getString(UiR.string.recommendation_title_bolus)
-            is ApsRecommendation.TempBasal -> "Temp-Basal Empfehlung"
+            is ApsRecommendation.TempBasal -> context.getString(UiR.string.recommendation_title_temp_basal)
         }
         val text = when (recommendation) {
             is ApsRecommendation.Carbs -> context.getString(
@@ -139,7 +139,11 @@ class AndroidNotificationsImpl(
                 UiR.string.recommendation_text_bolus,
                 recommendation.amount.iu
             )
-            is ApsRecommendation.TempBasal -> "Empfohlener Temp-Basal: ${recommendation.percent}% für ${recommendation.durationInHours}h"
+            is ApsRecommendation.TempBasal -> context.getString(
+                UiR.string.recommendation_text_temp_basal,
+                recommendation.percent,
+                recommendation.durationInHours
+            )
         }
 
         val dashboardIntent = MainActivity.createStartDashboardIntent(context)
@@ -172,7 +176,7 @@ class AndroidNotificationsImpl(
         val text = if (mealReminder.description.isNotBlank()) {
             "Erinnerung für Mahlzeit: ${mealReminder.description}"
         } else {
-            "Zeit für Ihre geplante Mahlzeit."
+            "Zeit für deine geplante Mahlzeit."
         }
 
         val dashboardIntent = MainActivity.createStartDashboardIntent(context)

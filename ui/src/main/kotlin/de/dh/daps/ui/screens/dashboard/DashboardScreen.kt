@@ -267,8 +267,8 @@ fun DashboardContent(
                     }
 
                     is ApsRecommendation.TempBasal -> {
-                        "Temp-Basal (${recommendation.percent}%)" to
-                                "Empfohlener Temp-Basal von ${recommendation.percent}% für ${recommendation.durationInHours}h"
+                        stringResource(R.string.recommendation_temp_basal_info_title, recommendation.percent) to
+                                stringResource(R.string.recommendation_temp_basal_info_text, recommendation.percent, recommendation.durationInHours)
                     }
                 }
                 ExpandableInfoCard(
