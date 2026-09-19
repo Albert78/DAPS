@@ -187,6 +187,13 @@
     <string name="recommendation_bolus_info_text">Verabreiche dir %1$.2f E Insulin, um einen hohen Blutzucker zu korrigieren.</string>
     <string name="recommendation_temp_basal_info_text">Empfohlener Temp-Basal von %1$d%% für %2$dh</string>
 
+    <string name="notification_meal_reminder_title">Nahrungserinnerung</string>
+    <string name="notification_meal_reminder_text_with_description">Erinnerung für Mahlzeit: %1$s</string>
+    <string name="notification_meal_reminder_text_default">Zeit für deine geplante Mahlzeit.</string>
+
+    <string name="notification_deferred_bolus_title">Verzögerter Bolus</string>
+    <string name="notification_deferred_bolus_text">Ein verzögerter Bolus über %1$.2f E ist fällig.</string>
+
     <string name="algorithm_issue_notification_channel_name">Algorithmus-Warnungen</string>
     <string name="core_issue_title">Berechnungen blockiert</string>
     <string name="core_issue_no_recent_values">Keine aktuellen Glukosewerte seit %1$d Minuten.</string>

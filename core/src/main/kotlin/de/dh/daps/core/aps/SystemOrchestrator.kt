@@ -355,7 +355,7 @@ class SystemOrchestratorImpl(
                             basalPart = basalPart
                         )
                     }
-                    ApsMode.BasalOnly, ApsMode.Suspend -> {
+                    else -> {
                         recommendationManager.addBolusRecommendation(
                             amount = amount,
                             deferredBoluses = handledDeferredBoluses,
@@ -371,16 +371,14 @@ class SystemOrchestratorImpl(
             onApplyDeferredBolusUpdates = { treatmentLock, updates -> therapyManager.applyDeferredBolusUpdates(treatmentLock, updates) },
             onSetTempBasal = { treatmentLock, durationInHours, percent ->
                 when (apsMode.value) {
-                    ApsMode.Suspend -> { /* Do nothing */ }
                     ApsMode.AutoCorrection -> therapyManager.setTempBasal(treatmentLock, durationInHours, percent)
-                    ApsMode.BasalOnly -> recommendationManager.addTempBasalRecommendation(durationInHours, percent)
+                    else -> recommendationManager.addTempBasalRecommendation(durationInHours, percent)
                 }
             },
             onClearTempBasal = { treatmentLock ->
                 when (apsMode.value) {
-                    ApsMode.Suspend -> { /* Do nothing */ }
                     ApsMode.AutoCorrection -> therapyManager.clearTempBasal(treatmentLock)
-                    ApsMode.BasalOnly -> recommendationManager.clearTempBasalRecommendation()
+                    else -> recommendationManager.clearTempBasalRecommendation()
                 }
             },
             onCarbsHint = { treatmentLock, amountInGram -> recommendationManager.addCarbsRecommendation(amountInGram) },

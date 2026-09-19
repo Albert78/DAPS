@@ -172,11 +172,11 @@ class AndroidNotificationsImpl(
     }
 
     override fun showMealReminderNotification(mealReminder: MealReminder) {
-        val title = "Nahrungserinnerung"
+        val title = context.getString(UiR.string.notification_meal_reminder_title)
         val text = if (mealReminder.description.isNotBlank()) {
-            "Erinnerung für Mahlzeit: ${mealReminder.description}"
+            context.getString(UiR.string.notification_meal_reminder_text_with_description, mealReminder.description)
         } else {
-            "Zeit für deine geplante Mahlzeit."
+            context.getString(UiR.string.notification_meal_reminder_text_default)
         }
 
         val dashboardIntent = MainActivity.createStartDashboardIntent(context)
@@ -200,8 +200,8 @@ class AndroidNotificationsImpl(
 
     override fun showDeferredBolusRecommendationNotification(handledDeferredBoluses: List<DeferredBolus>) {
         val totalAmount = handledDeferredBoluses.sumOf { it.amount.iu }
-        val title = "Verzögerter Bolus"
-        val text = "Ein verzögerter Bolus über ${String.format("%.2f", totalAmount)} E ist fällig."
+        val title = context.getString(UiR.string.notification_deferred_bolus_title)
+        val text = context.getString(UiR.string.notification_deferred_bolus_text, totalAmount)
 
         val dashboardIntent = MainActivity.createStartDashboardIntent(context)
         val pendingIntent = PendingIntent.getActivity(
