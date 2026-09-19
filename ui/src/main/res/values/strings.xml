@@ -550,7 +550,7 @@
     <!-- Manual Control Screen -->
     <string name="manual_control_screen_title">Manuelle Steuerung</string>
     <string name="manual_control_screen_subtitle">Empfehlungen &amp; Pumpensteuerung</string>
-    <string name="manual_control_recommendations_title">Empfehlungen (RecommendationManager)</string>
+    <string name="manual_control_recommendations_title">Empfehlungen</string>
     <string name="manual_control_no_recommendations">Keine aktiven Empfehlungen vorhanden.</string>
     <string name="manual_control_apply_recommendation">Übernehmen</string>
     <string name="manual_control_dismiss_recommendation">Verwerfen</string>

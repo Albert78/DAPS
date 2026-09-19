@@ -82,10 +82,10 @@ import de.dh.daps.ui.common.composables.SecondaryButton
 import de.dh.daps.ui.common.composables.Yellow
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.glucoseValue
-import de.dh.daps.ui.common.insulinUnitLabel
 import de.dh.daps.ui.common.icons.Carbs
 import de.dh.daps.ui.common.icons.Insulin
 import de.dh.daps.ui.common.icons.Syringe
+import de.dh.daps.ui.common.insulinUnitLabel
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.SoftRed
@@ -267,7 +267,17 @@ fun ManualControlContent(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Section 1: Recommendations
+                ManualControlMealsSection(
+                    lastPastMeal = uiState.contextInfo.lastPastMeal,
+                    nextPlannedMeal = uiState.contextInfo.nextPlannedMeal,
+                    onNavigateToMeals = onNavigateToMeals
+                )
+
+                ManualControlMealRemindersSection(
+                    reminders = uiState.activeMealReminders,
+                    onNavigateToMeals = onNavigateToMeals
+                )
+
                 ManualControlRecommendationsSection(
                     recommendations = uiState.recommendations,
                     onOpenBolusDialog = onOpenBolusDialog,
@@ -275,20 +285,6 @@ fun ManualControlContent(
                     onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus
                 )
 
-                // Section 2: Active Meal Reminders
-                ManualControlMealRemindersSection(
-                    reminders = uiState.activeMealReminders,
-                    onNavigateToMeals = onNavigateToMeals
-                )
-
-                // Section 3: Meals (Past & Next Planned)
-                ManualControlMealsSection(
-                    lastPastMeal = uiState.contextInfo.lastPastMeal,
-                    nextPlannedMeal = uiState.contextInfo.nextPlannedMeal,
-                    onNavigateToMeals = onNavigateToMeals
-                )
-
-                // Section 4: Pump Controls (Bolus & Temp-Basal)
                 ManualControlPumpControlsSection(
                     pump = uiState.pump,
                     onOpenBolusDialog = onOpenBolusDialog,
@@ -975,7 +971,7 @@ fun ManualControlScreenPreview() {
                     uiState = ManualControlUiState(
                         contextInfo = ManualControlContextInfoUiModel(
                             lastBgReading = BgReading(
-                                value = BgValue.fromMgDl(125),
+                                value = BgValue.fromMgDl(80),
                                 sampleKind = BgSampleKind.Value,
                                 timestamp = Timestamp.now()
                             ),
@@ -1009,9 +1005,9 @@ fun ManualControlScreenPreview() {
                             ApsRecommendation.Bolus(
                                 amount = InsulinAmount(1.5),
                                 correctionPart = InsulinAmount(1.0),
-                                basalPart = InsulinAmount(0.5)
+                                basalPart = InsulinAmount(0.0)
                             ),
-                            ApsRecommendation.TempBasal(durationInHours = 2, percent = 120)
+                            ApsRecommendation.TempBasal(durationInHours = 2, percent = 80)
                         ),
                         activeMealReminders = listOf(
                             MealReminder(
