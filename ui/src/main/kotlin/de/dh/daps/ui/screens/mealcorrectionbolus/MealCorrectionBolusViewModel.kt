@@ -178,6 +178,7 @@ class MealCorrectionBolusViewModel(
     val uiState: StateFlow<MealCorrectionBolusUiState> = _uiState.asStateFlow()
 
     private val therapyManager = registry.therapyManager
+    private val recommendationManager = registry.recommendationManager
     private val treatmentRepository = registry.treatmentRepository
     private val bolusCorrectionCalculator = registry.systemOrchestrator.getBolusCorrectionCalculator()
 
@@ -497,7 +498,10 @@ class MealCorrectionBolusViewModel(
 
                     // Schedule reminder
                     if (state.isMealReminderEnabled) {
-                        therapyManager.scheduleMealReminder(state.input.mealTimestamp)
+                        recommendationManager.scheduleMealReminder(
+                            mealTimestamp = state.input.mealTimestamp,
+                            mealId = mealEntry.id
+                        )
                     }
                 }
 

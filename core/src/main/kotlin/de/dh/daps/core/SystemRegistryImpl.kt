@@ -139,7 +139,6 @@ class SystemRegistryImpl(
                 treatmentRepository = treatmentRepository,
                 appPreferencesRepository = appPreferencesRepository,
                 pumpManager = pumpManager,
-                systemOrchestrator = systemOrchestrator,
                 alarmRepository = alarmRepository,
                 scope = scope,
                 wakeService = wakeService,

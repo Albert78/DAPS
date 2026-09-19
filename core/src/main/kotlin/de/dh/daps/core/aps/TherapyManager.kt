@@ -3,7 +3,6 @@ package de.dh.daps.core.aps
 import android.content.Intent
 import android.util.Log
 import de.dh.daps.AppPreferencesRepository
-import de.dh.daps.common.model.ApsMode
 import de.dh.daps.common.model.BolusDeliveryState
 import de.dh.daps.common.model.BolusStatus
 import de.dh.daps.common.model.DeferredBolus
@@ -77,7 +76,6 @@ class TherapyManager(
     private val treatmentRepository: TreatmentRepository,
     private val appPreferencesRepository: AppPreferencesRepository,
     private val pumpManager: PumpManager,
-    private val systemOrchestrator: SystemOrchestrator,
     private val alarmRepository: AlarmRepository,
     private val scope: CoroutineScope,
     private val wakeService: SystemWakeService? = null,
@@ -444,9 +442,6 @@ class TherapyManager(
     /**
      * Initiates a bolus delivery.
      *
-     * Depending on the current [ApsMode], this will either directly command the pump
-     * or record a recommendation for the user.
-     *
      * @param treatmentLock The lock held by the caller.
      * @param amount The amount of insulin to deliver.
      * @param handledDeferredBoluses Optional deferred boluses that were handled by this delivery.
@@ -496,12 +491,7 @@ class TherapyManager(
             Log.i(TAG, "Skipping bolus which is too low for pump (amount=$amount, minBolusIncrement=$minBolusIncrement)")
             return
         }
-        when (systemOrchestrator.apsMode.value) {
-            ApsMode.Suspend -> return
-            ApsMode.BasalOnly, ApsMode.AutoCorrection -> {
-                pumpManager.issueCommand(PumpCommand.DeliverBolus(amount, bolusId))
-            }
-        }
+        pumpManager.issueCommand(PumpCommand.DeliverBolus(amount, bolusId))
     }
 
     /**
@@ -513,18 +503,12 @@ class TherapyManager(
      */
     fun setTempBasal(treatmentLock: TreatmentLock, durationInHours: Int, percent: Int) {
         checkLock(treatmentLock)
-        when (systemOrchestrator.apsMode.value) {
-            ApsMode.Suspend -> return
-            ApsMode.BasalOnly -> return
-            ApsMode.AutoCorrection -> {
-                pumpManager.issueCommand(
-                    PumpCommand.SetTempBasal(
-                        percent = percent,
-                        durationHours = durationInHours
-                    )
-                )
-            }
-        }
+        pumpManager.issueCommand(
+            PumpCommand.SetTempBasal(
+                percent = percent,
+                durationHours = durationInHours
+            )
+        )
     }
 
     /**
@@ -532,31 +516,8 @@ class TherapyManager(
      */
     fun clearTempBasal(treatmentLock: TreatmentLock) {
         checkLock(treatmentLock)
-        when (systemOrchestrator.apsMode.value) {
-            ApsMode.Suspend -> return
-            ApsMode.BasalOnly -> return
-            ApsMode.AutoCorrection -> {
-                pumpManager.issueCommand(
-                    PumpCommand.CancelTempBasal
-                )
-            }
-        }
-    }
-
-    /**
-     * Schedules a reminder for the user to eat their meal.
-     */
-    suspend fun scheduleMealReminder(
-        mealTimestamp: Timestamp,
-        reminderTimestamp: Timestamp = mealTimestamp,
-        mealId: Long? = null,
-        description: String = ""
-    ) {
-        recommendationManager?.scheduleMealReminder(
-            mealTimestamp = mealTimestamp,
-            reminderTimestamp = reminderTimestamp,
-            mealId = mealId,
-            description = description
+        pumpManager.issueCommand(
+            PumpCommand.CancelTempBasal
         )
     }
 
