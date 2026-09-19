@@ -324,7 +324,6 @@ private fun ManualControlMealsSection(
         // Last Past Meal
         MealInfoCard(
             title = stringResource(id = R.string.manual_control_past_meal_title),
-            icon = Icons.Filled.Carbs,
             mealEntry = lastPastMeal,
             emptyText = stringResource(id = R.string.manual_control_no_past_meal),
             onClick = onNavigateToMeals
@@ -333,7 +332,6 @@ private fun ManualControlMealsSection(
         // Next Planned Meal
         MealInfoCard(
             title = stringResource(id = R.string.manual_control_next_meal_title),
-            icon = Icons.Default.Schedule,
             mealEntry = nextPlannedMeal,
             emptyText = stringResource(id = R.string.manual_control_no_next_meal),
             onClick = onNavigateToMeals,
@@ -352,7 +350,6 @@ private fun formatTimestamp(timestamp: Timestamp): String {
 @Composable
 private fun MealInfoCard(
     title: String,
-    icon: ImageVector,
     mealEntry: MealEntry?,
     emptyText: String,
     onClick: () -> Unit,
@@ -371,13 +368,6 @@ private fun MealInfoCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = title,
                         style = MaterialTheme.typography.titleSmall,
@@ -959,7 +949,6 @@ fun ManualControlScreenPreview() {
                                 timestamp = Timestamp.now().minusHours(2),
                                 carbGrams = 45.0,
                                 mealType = getDefaultStandardMealType(LocalContext.current),
-                                description = "Pasta mit Tomatensauce",
                                 administeredInsulinAmount = InsulinAmount(3.5)
                             ),
                             nextPlannedMeal = MealEntry(
