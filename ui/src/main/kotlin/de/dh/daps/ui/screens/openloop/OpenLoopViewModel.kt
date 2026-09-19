@@ -9,12 +9,14 @@ import de.dh.daps.common.model.DeferredBolus
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.MealEntry
 import de.dh.daps.common.model.MealReminder
-import de.dh.daps.common.model.PumpCapabilities
+import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.model.toActiveDoses
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.aps.ApsRecommendation
 import de.dh.daps.core.aps.TreatmentLock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -23,27 +25,37 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-sealed interface PlannedMealItem {
-    data class Entry(val meal: MealEntry) : PlannedMealItem
-    data class Reminder(val reminder: MealReminder) : PlannedMealItem
-
-    val timestamp: Timestamp
-        get() = when (this) {
-            is Entry -> meal.timestamp
-            is Reminder -> reminder.mealTimestamp
-        }
-}
-
-data class OpenLoopUiState(
-    val recommendations: List<ApsRecommendation> = emptyList(),
+/**
+ * Beinhaltet den Kontext der aktuellen Therapie- und Stoffwechsellage.
+ */
+data class OpenLoopContextInfoUiModel(
+    val lastBgReading: BgReading? = null,
+    val iob: InsulinAmount = InsulinAmount.ZERO,
+    val cob: Double = 0.0,
     val lastPastMeal: MealEntry? = null,
-    val nextPlannedMeal: PlannedMealItem? = null,
-    val isPumpConnected: Boolean = false,
-    val pumpModel: String? = null,
-    val activeBasalStatus: BasalStatus? = null,
-    val activeBolusStatus: BolusStatus? = null,
+    val nextPlannedMeal: MealEntry? = null
+)
+
+/**
+ * Status und Fähigkeiten der verbundenen Insulinpumpe.
+ */
+data class OpenLoopPumpUiModel(
+    val isConnected: Boolean = false,
+    val model: String? = null,
+    val basalStatus: BasalStatus? = null,
+    val bolusStatus: BolusStatus? = null,
     val minBolusAmount: InsulinAmount = InsulinAmount(0.05),
     val maxBolusSize: InsulinAmount = InsulinAmount(25.0)
+)
+
+/**
+ * Gesamtzustand des OpenLoop-Screens.
+ */
+data class OpenLoopUiState(
+    val contextInfo: OpenLoopContextInfoUiModel = OpenLoopContextInfoUiModel(),
+    val recommendations: List<ApsRecommendation> = emptyList(),
+    val activeMealReminders: List<MealReminder> = emptyList(),
+    val pump: OpenLoopPumpUiModel = OpenLoopPumpUiModel()
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -54,10 +66,44 @@ class OpenLoopViewModel(
     private val treatmentRepository = systemRegistry.treatmentRepository
     private val pumpManager = systemRegistry.pumpManager
     private val therapyManager = systemRegistry.therapyManager
+    private val glucoseRepository = systemRegistry.glucoseRepository
+    private val carbsInsulinCalculator = systemRegistry.carbsInsulinCalculator
 
-    private val pumpData = pumpManager.activeInsulinPump.flatMapLatest { pump ->
+    private val contextInfoFlow: Flow<OpenLoopContextInfoUiModel> = combine(
+        glucoseRepository.currentBg,
+        treatmentRepository.observeInsulinApplications(),
+        treatmentRepository.observeMeals(),
+        therapyManager.currentTherapySettingsFlow
+    ) { currentBg, insulin, meals, settings ->
+        val now = Timestamp.now()
+        val iob = carbsInsulinCalculator.iob(
+            insulinDoses = insulin.toActiveDoses(),
+            timestamp = now,
+            dia = settings.insulinProfile.dia,
+            peak = settings.insulinProfile.peak
+        )
+        val cob = carbsInsulinCalculator.cob(
+            meals = meals,
+            timestamp = now,
+            includeFutureMeals = false
+        )
+
+        // Pure MealEntry objects (excluding MealReminders)
+        val pastMeal = meals.filter { it.timestamp <= now }.maxByOrNull { it.timestamp }
+        val nextMeal = meals.filter { it.timestamp > now }.minByOrNull { it.timestamp }
+
+        OpenLoopContextInfoUiModel(
+            lastBgReading = currentBg,
+            iob = iob,
+            cob = cob,
+            lastPastMeal = pastMeal,
+            nextPlannedMeal = nextMeal
+        )
+    }
+
+    private val pumpFlow: Flow<OpenLoopPumpUiModel> = pumpManager.activeInsulinPump.flatMapLatest { pump ->
         if (pump == null) {
-            flowOf(PumpData())
+            flowOf(OpenLoopPumpUiModel())
         } else {
             combine(
                 pump.isConnected,
@@ -66,43 +112,29 @@ class OpenLoopViewModel(
                 pump.bolusStatus,
                 pump.pumpCapabilities
             ) { connected, hardware, basal, bolus, capabilities ->
-                PumpData(
-                    connected = connected,
+                OpenLoopPumpUiModel(
+                    isConnected = connected,
                     model = hardware?.model,
                     basalStatus = basal,
                     bolusStatus = bolus,
-                    capabilities = capabilities
+                    minBolusAmount = capabilities.minBolusAmount,
+                    maxBolusSize = capabilities.maxBolusSize
                 )
             }
         }
     }
 
     val uiState: StateFlow<OpenLoopUiState> = combine(
+        contextInfoFlow,
         recommendationManager.recommendations,
         recommendationManager.mealReminders,
-        treatmentRepository.observeMeals(),
-        pumpData
-    ) { recommendations, mealReminders, meals, pData ->
-        val now = Timestamp.now()
-
-        // Last meal in the past (timestamp <= now)
-        val pastMeal = meals.filter { it.timestamp <= now }.maxByOrNull { it.timestamp }
-
-        // Next planned meal (timestamp > now or mealReminder.mealTimestamp > now)
-        val futureEntries = meals.filter { it.timestamp > now }.map { PlannedMealItem.Entry(it) }
-        val futureReminders = mealReminders.filter { it.mealTimestamp > now }.map { PlannedMealItem.Reminder(it) }
-        val nextMeal = (futureEntries + futureReminders).minByOrNull { it.timestamp }
-
+        pumpFlow
+    ) { contextInfo, recommendations, mealReminders, pump ->
         OpenLoopUiState(
+            contextInfo = contextInfo,
             recommendations = recommendations,
-            lastPastMeal = pastMeal,
-            nextPlannedMeal = nextMeal,
-            isPumpConnected = pData.connected,
-            pumpModel = pData.model,
-            activeBasalStatus = pData.basalStatus,
-            activeBolusStatus = pData.bolusStatus,
-            minBolusAmount = pData.capabilities?.minBolusAmount ?: InsulinAmount(0.05),
-            maxBolusSize = pData.capabilities?.maxBolusSize ?: InsulinAmount(25.0)
+            activeMealReminders = mealReminders,
+            pump = pump
         )
     }.stateIn(
         scope = viewModelScope,
@@ -161,14 +193,6 @@ class OpenLoopViewModel(
             therapyManager.clearTempBasal(treatmentLock)
         }
     }
-
-    private data class PumpData(
-        val connected: Boolean = false,
-        val model: String? = null,
-        val basalStatus: BasalStatus? = null,
-        val bolusStatus: BolusStatus? = null,
-        val capabilities: PumpCapabilities? = null
-    )
 
     companion object {
         class Factory(private val registry: SystemRegistry) : ViewModelProvider.Factory {

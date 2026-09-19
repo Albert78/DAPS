@@ -19,7 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Fastfood
-import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Stop
@@ -44,6 +44,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -54,7 +56,11 @@ import de.dh.daps.common.model.CarbCurveComponentData
 import de.dh.daps.common.model.DeferredBolus
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.MealEntry
+import de.dh.daps.common.model.MealReminder
 import de.dh.daps.common.model.MealType
+import de.dh.daps.common.model.data.BgReading
+import de.dh.daps.common.model.data.BgSampleKind
+import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.aps.ApsRecommendation
@@ -62,16 +68,24 @@ import de.dh.daps.core.aps.TreatmentLock
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
 import de.dh.daps.ui.common.DefaultSteppingStrategy
+import de.dh.daps.ui.common.carbsGramsValue
 import de.dh.daps.ui.common.composables.EditableValueStepper
+import de.dh.daps.ui.common.composables.LightGreenA700
 import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
+import de.dh.daps.ui.common.composables.Red
 import de.dh.daps.ui.common.composables.SecondaryButton
+import de.dh.daps.ui.common.composables.Yellow
+import de.dh.daps.ui.common.glucoseUnitLabel
+import de.dh.daps.ui.common.glucoseValue
 import de.dh.daps.ui.common.icons.Carbs
 import de.dh.daps.ui.common.icons.Insulin
 import de.dh.daps.ui.common.icons.Syringe
+import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.SoftRed
+import de.dh.daps.ui.common.time
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -118,8 +132,8 @@ fun OpenLoopScreen(
         is OpenLoopDialog.Bolus -> {
             DeliverBolusDialog(
                 dialogData = dialog,
-                minBolusAmount = uiState.minBolusAmount,
-                maxBolusSize = uiState.maxBolusSize,
+                minBolusAmount = uiState.pump.minBolusAmount,
+                maxBolusSize = uiState.pump.maxBolusSize,
                 onDismiss = { activeDialog = null },
                 onConfirm = { amount, handledDeferredBoluses, correctionPart, basalPart, recommendationToDismiss ->
                     viewModel.deliverBolus(
@@ -154,6 +168,76 @@ fun OpenLoopScreen(
 }
 
 @Composable
+fun OpenLoopContextInfo(
+    contextInfo: OpenLoopContextInfoUiModel
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RectangleShape,
+        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                val displayBgValue = contextInfo.lastBgReading?.value ?: BgValue.INVALID
+                val bgText = glucoseValue(displayBgValue, default = "??")
+                val textColor = if (displayBgValue.isInvalid()) {
+                    Color.Gray
+                } else when {
+                    displayBgValue.mgdl < 70 -> Red
+                    displayBgValue.mgdl < 180 -> LightGreenA700
+                    else -> Yellow
+                }
+                Text(
+                    text = bgText,
+                    style = MaterialTheme.typography.displayMedium.copy(fontWeight = FontWeight.Bold),
+                    color = textColor
+                )
+                Text(
+                    text = glucoseUnitLabel(),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.Gray,
+                    modifier = Modifier
+                        .align(Alignment.Bottom)
+                        .padding(bottom = 12.dp)
+                )
+            }
+
+            val timestamp = contextInfo.lastBgReading?.timestamp
+            val timeText = if (timestamp != null && timestamp.isValid()) {
+                stringResource(R.string.at_time_format, time(timestamp))
+            } else {
+                "--"
+            }
+            Text(
+                text = timeText,
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.Gray
+            )
+
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = stringResource(R.string.meal_correction_bolus_active_carbs_format, carbsGramsValue(contextInfo.cob)),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = stringResource(R.string.meal_correction_bolus_active_insulin_format, insulinValue(contextInfo.iob.iu)),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
 fun OpenLoopContent(
     uiState: OpenLoopUiState,
     onNavigateToMealCorrectionBolus: () -> Unit = {},
@@ -168,33 +252,47 @@ fun OpenLoopContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(scrollState)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .verticalScroll(scrollState),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Section 1: Recommendations
-            OpenLoopRecommendationsSection(
-                recommendations = uiState.recommendations,
-                onOpenBolusDialog = onOpenBolusDialog,
-                onOpenTempBasalDialog = onOpenTempBasalDialog,
-                onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus
-            )
+            OpenLoopContextInfo(contextInfo = uiState.contextInfo)
 
-            // Section 2: Meals (Past & Next Planned)
-            OpenLoopMealsSection(
-                lastPastMeal = uiState.lastPastMeal,
-                nextPlannedMeal = uiState.nextPlannedMeal,
-                onNavigateToMeals = onNavigateToMeals
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Section 1: Recommendations
+                OpenLoopRecommendationsSection(
+                    recommendations = uiState.recommendations,
+                    onOpenBolusDialog = onOpenBolusDialog,
+                    onOpenTempBasalDialog = onOpenTempBasalDialog,
+                    onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus
+                )
 
-            // Section 3: Pump Controls (Bolus & Temp-Basal)
-            OpenLoopPumpControlsSection(
-                uiState = uiState,
-                onOpenBolusDialog = onOpenBolusDialog,
-                onCancelBolus = onCancelBolus,
-                onOpenTempBasalDialog = onOpenTempBasalDialog,
-                onCancelTempBasal = onCancelTempBasal
-            )
+                // Section 2: Active Meal Reminders
+                OpenLoopMealRemindersSection(
+                    reminders = uiState.activeMealReminders,
+                    onNavigateToMeals = onNavigateToMeals
+                )
+
+                // Section 3: Meals (Past & Next Planned)
+                OpenLoopMealsSection(
+                    lastPastMeal = uiState.contextInfo.lastPastMeal,
+                    nextPlannedMeal = uiState.contextInfo.nextPlannedMeal,
+                    onNavigateToMeals = onNavigateToMeals
+                )
+
+                // Section 4: Pump Controls (Bolus & Temp-Basal)
+                OpenLoopPumpControlsSection(
+                    pump = uiState.pump,
+                    onOpenBolusDialog = onOpenBolusDialog,
+                    onCancelBolus = onCancelBolus,
+                    onOpenTempBasalDialog = onOpenTempBasalDialog,
+                    onCancelTempBasal = onCancelTempBasal
+                )
+            }
         }
     }
 }
@@ -365,13 +463,69 @@ private fun RecommendationCard(
 }
 
 // -----------------------------------------------------------------------------------------
-// --- Section 2: Meals (Past & Next Planned) ---
+// --- Section 2: Active Meal Reminders ---
+// -----------------------------------------------------------------------------------------
+
+@Composable
+private fun OpenLoopMealRemindersSection(
+    reminders: List<MealReminder>,
+    onNavigateToMeals: () -> Unit
+) {
+    if (reminders.isEmpty()) return
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = stringResource(id = R.string.meal_correction_bolus_reminder_label),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+
+        reminders.forEach { reminder ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onNavigateToMeals),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f))
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Notifications,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = reminder.description.ifBlank { stringResource(R.string.notification_meal_reminder_title) },
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = stringResource(R.string.at_time_format, time(reminder.reminderTimestamp)),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+// -----------------------------------------------------------------------------------------
+// --- Section 3: Meals (Past & Next Planned) ---
 // -----------------------------------------------------------------------------------------
 
 @Composable
 private fun OpenLoopMealsSection(
     lastPastMeal: MealEntry?,
-    nextPlannedMeal: PlannedMealItem?,
+    nextPlannedMeal: MealEntry?,
     onNavigateToMeals: () -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -394,7 +548,7 @@ private fun OpenLoopMealsSection(
         MealInfoCard(
             title = stringResource(id = R.string.open_loop_past_meal_title),
             icon = Icons.Filled.Carbs,
-            mealItem = lastPastMeal?.let { MealDisplayData.FromEntry(it) },
+            mealEntry = lastPastMeal,
             emptyText = stringResource(id = R.string.open_loop_no_past_meal),
             onClick = onNavigateToMeals
         )
@@ -403,34 +557,10 @@ private fun OpenLoopMealsSection(
         MealInfoCard(
             title = stringResource(id = R.string.open_loop_next_meal_title),
             icon = Icons.Default.Schedule,
-            mealItem = nextPlannedMeal?.let { MealDisplayData.FromPlanned(it) },
+            mealEntry = nextPlannedMeal,
             emptyText = stringResource(id = R.string.open_loop_no_next_meal),
             onClick = onNavigateToMeals
         )
-    }
-}
-
-private sealed interface MealDisplayData {
-    val timeFormatted: String
-    val mainText: String
-    val subText: String?
-
-    data class FromEntry(val meal: MealEntry) : MealDisplayData {
-        override val timeFormatted: String = formatTimestamp(meal.timestamp)
-        override val mainText: String = "%.0f g Kohlenhydrate (%s)".format(meal.carbGrams, meal.mealType.name)
-        override val subText: String? = meal.description.ifBlank { null }
-    }
-
-    data class FromPlanned(val item: PlannedMealItem) : MealDisplayData {
-        override val timeFormatted: String = formatTimestamp(item.timestamp)
-        override val mainText: String = when (item) {
-            is PlannedMealItem.Entry -> "%.0f g Kohlenhydrate (%s)".format(item.meal.carbGrams, item.meal.mealType.name)
-            is PlannedMealItem.Reminder -> item.reminder.description.ifBlank { "Geplante Mahlzeit" }
-        }
-        override val subText: String? = when (item) {
-            is PlannedMealItem.Entry -> item.meal.description.ifBlank { null }
-            is PlannedMealItem.Reminder -> null
-        }
     }
 }
 
@@ -445,7 +575,7 @@ private fun formatTimestamp(timestamp: Timestamp): String {
 private fun MealInfoCard(
     title: String,
     icon: ImageVector,
-    mealItem: MealDisplayData?,
+    mealEntry: MealEntry?,
     emptyText: String,
     onClick: () -> Unit
 ) {
@@ -467,57 +597,47 @@ private fun MealInfoCard(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary
+                    fontWeight = FontWeight.SemiBold
                 )
             }
+            Spacer(modifier = Modifier.height(6.dp))
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            if (mealItem == null) {
+            if (mealEntry != null) {
+                Text(
+                    text = "%.0f g Kohlenhydrate (%s)".format(mealEntry.carbGrams, mealEntry.mealType.name),
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = formatTimestamp(mealEntry.timestamp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (mealEntry.description.isNotBlank()) {
+                    Text(
+                        text = mealEntry.description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            } else {
                 Text(
                     text = emptyText,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-            } else {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = mealItem.mainText,
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium
-                        )
-                        mealItem.subText?.let { desc ->
-                            Text(
-                                text = desc,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                    Text(
-                        text = mealItem.timeFormatted,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
             }
         }
     }
 }
 
 // -----------------------------------------------------------------------------------------
-// --- Section 3: Pump Controls (Bolus & Temp-Basal) ---
+// --- Section 4: Pump Controls ---
 // -----------------------------------------------------------------------------------------
 
 @Composable
 private fun OpenLoopPumpControlsSection(
-    uiState: OpenLoopUiState,
+    pump: OpenLoopPumpUiModel,
     onOpenBolusDialog: (OpenLoopDialog.Bolus) -> Unit,
     onCancelBolus: () -> Unit,
     onOpenTempBasalDialog: (OpenLoopDialog.TempBasal) -> Unit,
@@ -553,7 +673,7 @@ private fun OpenLoopPumpControlsSection(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                val activeBolus = uiState.activeBolusStatus
+                val activeBolus = pump.bolusStatus
                 if (activeBolus?.state == BolusDeliveryState.DELIVERING) {
                     Text(
                         text = stringResource(
@@ -593,7 +713,7 @@ private fun OpenLoopPumpControlsSection(
                         onClick = {
                             onOpenBolusDialog(
                                 OpenLoopDialog.Bolus(
-                                    initialAmount = uiState.minBolusAmount.iu.coerceAtLeast(1.0)
+                                    initialAmount = pump.minBolusAmount.iu.coerceAtLeast(1.0)
                                 )
                             )
                         },
@@ -630,7 +750,7 @@ private fun OpenLoopPumpControlsSection(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                val activeBasal = uiState.activeBasalStatus
+                val activeBasal = pump.basalStatus
                 if (activeBasal?.isTempBasal == true) {
                     val percent = activeBasal.tempBasalPercent ?: 100
                     Surface(
@@ -687,7 +807,7 @@ private fun OpenLoopPumpControlsSection(
 }
 
 // -----------------------------------------------------------------------------------------
-// --- Section 4: Action Dialogs ---
+// --- Dialogs ---
 // -----------------------------------------------------------------------------------------
 
 @Composable
@@ -704,97 +824,54 @@ private fun DeliverBolusDialog(
         recommendationToDismiss: ApsRecommendation.Bolus?
     ) -> Unit
 ) {
-    var amount by remember { mutableDoubleStateOf(dialogData.initialAmount) }
+    var amountState by remember { mutableDoubleStateOf(dialogData.initialAmount) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Outlined.Syringe,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = stringResource(id = R.string.open_loop_dialog_deliver_bolus_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        },
+        title = { Text(stringResource(id = R.string.open_loop_dialog_deliver_bolus_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                EditableValueStepper(
-                    currentValue = amount,
-                    onValueChange = { amount = it },
-                    minValue = minBolusAmount.iu,
-                    maxValue = maxBolusSize.iu,
-                    steppingStrategy = DefaultSteppingStrategy(step = 0.5),
-                    displayStrategy = ConfigurableDisplayStrategy(suffix = " E"),
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                // Preset Chips
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    listOf(0.5, 1.0, 2.0, 3.0, 5.0).forEach { preset ->
-                        AssistChip(
-                            onClick = { amount = preset },
-                            label = { Text("+%.1f E".format(preset)) }
+                dialogData.includedDeferredBoluses?.takeIf { it.isNotEmpty() }?.let { deferredList ->
+                    val totalDeferred = deferredList.sumOf { it.amount.iu }
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.secondaryContainer
+                    ) {
+                        Text(
+                            text = stringResource(
+                                id = R.string.open_loop_deferred_boluses_info,
+                                deferredList.size,
+                                totalDeferred
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.padding(10.dp)
                         )
                     }
                 }
 
-                // Deferred Boluses Info Box (if recommendation contained deferred boluses)
-                val deferredBoluses = dialogData.includedDeferredBoluses
-                if (!deferredBoluses.isNullOrEmpty()) {
-                    val totalDeferred = deferredBoluses.sumOf { it.amount.iu }
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = stringResource(
-                                    id = R.string.open_loop_deferred_boluses_info,
-                                    deferredBoluses.size,
-                                    totalDeferred
-                                ),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                        }
-                    }
-                }
+                EditableValueStepper(
+                    currentValue = amountState,
+                    onValueChange = { amountState = it },
+                    minValue = minBolusAmount.iu,
+                    maxValue = maxBolusSize.iu,
+                    steppingStrategy = DefaultSteppingStrategy(step = minBolusAmount.iu),
+                    displayStrategy = ConfigurableDisplayStrategy(suffix = " E"),
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         },
         confirmButton = {
             PrimaryButton(
                 onClick = {
                     onConfirm(
-                        InsulinAmount(amount),
+                        InsulinAmount(amountState),
                         dialogData.includedDeferredBoluses,
                         dialogData.correctionPart,
                         dialogData.basalPart,
                         dialogData.recommendationToDismiss
                     )
-                },
-                enabled = amount > 0.0
+                }
             ) {
                 Text(stringResource(id = R.string.open_loop_dialog_confirm_deliver))
             }
@@ -811,33 +888,14 @@ private fun DeliverBolusDialog(
 private fun SetTempBasalDialog(
     dialogData: OpenLoopDialog.TempBasal,
     onDismiss: () -> Unit,
-    onConfirm: (
-        durationHours: Int,
-        percent: Int,
-        recommendationToDismiss: ApsRecommendation.TempBasal?
-    ) -> Unit
+    onConfirm: (durationHours: Int, percent: Int, recommendationToDismiss: ApsRecommendation.TempBasal?) -> Unit
 ) {
     var percent by remember { mutableIntStateOf(dialogData.initialPercent) }
     var durationHours by remember { mutableIntStateOf(dialogData.initialDurationHours) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.Speed,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = stringResource(id = R.string.open_loop_dialog_set_temp_basal_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        },
+        title = { Text(stringResource(id = R.string.open_loop_dialog_set_temp_basal_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
@@ -847,15 +905,14 @@ private fun SetTempBasalDialog(
                 )
                 EditableValueStepper(
                     currentValue = percent.toDouble(),
-                    onValueChange = { percent = it.toInt() },
+                    onValueChange = { percent = it.toInt().coerceIn(0, 500) },
                     minValue = 0.0,
-                    maxValue = 200.0,
+                    maxValue = 500.0,
                     steppingStrategy = DefaultSteppingStrategy(step = 10.0),
-                    displayStrategy = ConfigurableDisplayStrategy(suffix = " %"),
+                    displayStrategy = ConfigurableDisplayStrategy(suffix = "%"),
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Presets
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -911,28 +968,27 @@ fun OpenLoopScreenPreview() {
         Surface {
             OpenLoopContent(
                 uiState = OpenLoopUiState(
-                    recommendations = listOf(
-                        ApsRecommendation.Bolus(
-                            amount = InsulinAmount(1.5),
-                            correctionPart = InsulinAmount(1.0),
-                            basalPart = InsulinAmount(0.5)
+                    contextInfo = OpenLoopContextInfoUiModel(
+                        lastBgReading = BgReading(
+                            value = BgValue.fromMgDl(125),
+                            sampleKind = BgSampleKind.Value,
+                            timestamp = Timestamp.now()
                         ),
-                        ApsRecommendation.TempBasal(durationInHours = 2, percent = 120)
-                    ),
-                    lastPastMeal = MealEntry(
-                        id = 1L,
-                        timestamp = Timestamp.now().minusHours(2),
-                        carbGrams = 45.0,
-                        mealType = MealType(
-                            name = "Mittagessen",
-                            components = listOf(CarbCurveComponentData(100, Minutes(30))),
-                            cat = Minutes(180)
+                        iob = InsulinAmount(1.2),
+                        cob = 25.0,
+                        lastPastMeal = MealEntry(
+                            id = 1L,
+                            timestamp = Timestamp.now().minusHours(2),
+                            carbGrams = 45.0,
+                            mealType = MealType(
+                                name = "Mittagessen",
+                                components = listOf(CarbCurveComponentData(100, Minutes(30))),
+                                cat = Minutes(180)
+                            ),
+                            description = "Pasta mit Tomatensauce",
+                            administeredInsulinAmount = InsulinAmount(3.5)
                         ),
-                        description = "Pasta mit Tomatensauce",
-                        administeredInsulinAmount = InsulinAmount(3.5)
-                    ),
-                    nextPlannedMeal = PlannedMealItem.Entry(
-                        MealEntry(
+                        nextPlannedMeal = MealEntry(
                             id = 2L,
                             timestamp = Timestamp.now().plusHours(3),
                             carbGrams = 60.0,
@@ -944,7 +1000,24 @@ fun OpenLoopScreenPreview() {
                             description = "Pizza"
                         )
                     ),
-                    isPumpConnected = true
+                    recommendations = listOf(
+                        ApsRecommendation.Bolus(
+                            amount = InsulinAmount(1.5),
+                            correctionPart = InsulinAmount(1.0),
+                            basalPart = InsulinAmount(0.5)
+                        ),
+                        ApsRecommendation.TempBasal(durationInHours = 2, percent = 120)
+                    ),
+                    activeMealReminders = listOf(
+                        MealReminder(
+                            id = 10L,
+                            mealTimestamp = Timestamp.now().plusMinutes(15),
+                            description = "Snack nach dem Sport"
+                        )
+                    ),
+                    pump = OpenLoopPumpUiModel(
+                        isConnected = true
+                    )
                 )
             )
         }
