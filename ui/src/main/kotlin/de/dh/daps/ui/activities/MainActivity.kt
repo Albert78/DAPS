@@ -64,6 +64,7 @@ import de.dh.daps.common.navigation.BolusHistoryRoute
 import de.dh.daps.common.navigation.DashboardRoute
 import de.dh.daps.common.navigation.FeatureNavGraph
 import de.dh.daps.common.navigation.FoodDatabaseRoute
+import de.dh.daps.common.navigation.HistoricalMealRoute
 import de.dh.daps.common.navigation.MasterDataRoute
 import de.dh.daps.common.navigation.MealsRoute
 import de.dh.daps.common.navigation.NavigationViewModel
@@ -91,6 +92,7 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
     private lateinit var navViewModel: NavigationViewModel
     private lateinit var globalViewModel: GlobalViewModel
+    private val intentHandler = IntentHandler()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -110,7 +112,7 @@ class MainActivity : ComponentActivity() {
             GlobalViewModel.Companion.Factory(registry)
         )[GlobalViewModel::class.java]
 
-        handleIntent(intent)
+        intentHandler.handleIntent(intent, navViewModel)
 
         setContent {
             val useDarkTheme = rememberUseDarkTheme(registry.appPreferencesRepository)
@@ -135,18 +137,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        handleIntent(intent)
-    }
-
-    private fun handleIntent(intent: Intent?) {
-        if (intent?.action == Intent.ACTION_VIEW) {
-            val data = intent.data
-            if (data?.scheme == "app" && data.host == "daps.dh.de") {
-                if (data.path == "/dashboard") {
-                    navViewModel.reset(listOf(DashboardRoute))
-                }
-            }
-        }
+        intentHandler.handleIntent(intent, navViewModel)
     }
 
     @Composable
@@ -249,16 +240,57 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    class IntentHandler {
+        fun parseIntent(intent: Intent?): List<NavKey>? {
+            if (intent?.action == Intent.ACTION_VIEW) {
+                val data = intent.data
+                if (data?.scheme == "app" && data.host == "daps.dh.de") {
+                    if (data.path == "/dashboard") {
+                        return listOf(DashboardRoute)
+                    } else if (data.path?.startsWith("/meal/") == true) {
+                        val mealId = data.lastPathSegment?.toLongOrNull()
+                        if (mealId != null) {
+                            return listOf(DashboardRoute, HistoricalMealRoute(mealId))
+                        }
+                    }
+                }
+            }
+            return null
+        }
+
+        fun handleIntent(intent: Intent?, navViewModel: NavigationViewModel) {
+            val routes = parseIntent(intent)
+            if (routes != null) {
+                navViewModel.reset(routes)
+            }
+        }
+
+        companion object {
+            fun createStartDashboardIntent(context: Context): Intent {
+                return Intent(context, MainActivity::class.java).apply {
+                    action = Intent.ACTION_VIEW
+                    data = "app://daps.dh.de/dashboard".toUri()
+                }
+            }
+
+            fun createEditMealIntent(context: Context, mealId: Long): Intent {
+                return Intent(context, MainActivity::class.java).apply {
+                    action = Intent.ACTION_VIEW
+                    data = "app://daps.dh.de/meal/$mealId".toUri()
+                }
+            }
+        }
+    }
+
     companion object {
         // Hack to transport extra nav graphs from MainApplication into MainActivity. Any better solution is welcome...
         var getExtraNavGraphs: ((navViewModel: NavigationViewModel) -> List<FeatureNavGraph>)? = null
 
-        fun createStartDashboardIntent(context: Context): Intent {
-            return Intent(context, MainActivity::class.java).apply {
-                action = Intent.ACTION_VIEW
-                data = "app://daps.dh.de/dashboard".toUri()
-            }
-        }
+        fun createStartDashboardIntent(context: Context): Intent =
+            IntentHandler.createStartDashboardIntent(context)
+
+        fun createEditMealIntent(context: Context, mealId: Long): Intent =
+            IntentHandler.createEditMealIntent(context, mealId)
     }
 }
 

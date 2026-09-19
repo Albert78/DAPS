@@ -12,6 +12,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
 import de.dh.daps.R
 import de.dh.daps.common.model.DeferredBolus
+import de.dh.daps.common.model.ID_UNDEFINED
 import de.dh.daps.common.model.MealReminder
 import de.dh.daps.common.model.data.AlarmType
 import de.dh.daps.common.model.data.BgDelta
@@ -179,10 +180,13 @@ class AndroidNotificationsImpl(
             context.getString(UiR.string.notification_meal_reminder_text_default)
         }
 
-        val dashboardIntent = MainActivity.createStartDashboardIntent(context)
+        val mealId = mealReminder.mealId ?: ID_UNDEFINED
+        val mealIntent = MainActivity.createEditMealIntent(context, mealId)
         val pendingIntent = PendingIntent.getActivity(
-            context, 0,
-            dashboardIntent, PendingIntent.FLAG_IMMUTABLE
+            context,
+            mealId.hashCode(),
+            mealIntent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         val notification = NotificationCompat.Builder(context, RECOMMENDATION_CHANNEL_ID)
