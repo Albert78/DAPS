@@ -547,44 +547,44 @@
     <string name="alarm_snoozed_until_format">%1$s stummgeschaltet bis %2$s</string>
     <string name="full_screen_alarm_title">ACHTUNG: SICHERHEITS-ALARM</string>
 
-    <!-- Open-Loop Screen -->
-    <string name="open_loop_screen_title">Manuelle Steuerung</string>
-    <string name="open_loop_screen_subtitle">Empfehlungen &amp; Pumpensteuerung</string>
-    <string name="open_loop_recommendations_title">Empfehlungen (RecommendationManager)</string>
-    <string name="open_loop_no_recommendations">Keine aktiven Empfehlungen vorhanden.</string>
-    <string name="open_loop_apply_recommendation">Übernehmen</string>
-    <string name="open_loop_dismiss_recommendation">Verwerfen</string>
-    <string name="open_loop_clear_all_recommendations">Alle verwerfen</string>
+    <!-- Manual Control Screen -->
+    <string name="manual_control_screen_title">Manuelle Steuerung</string>
+    <string name="manual_control_screen_subtitle">Empfehlungen &amp; Pumpensteuerung</string>
+    <string name="manual_control_recommendations_title">Empfehlungen (RecommendationManager)</string>
+    <string name="manual_control_no_recommendations">Keine aktiven Empfehlungen vorhanden.</string>
+    <string name="manual_control_apply_recommendation">Übernehmen</string>
+    <string name="manual_control_dismiss_recommendation">Verwerfen</string>
+    <string name="manual_control_clear_all_recommendations">Alle verwerfen</string>
 
-    <string name="open_loop_meals_title">Mahlzeiten-Übersicht</string>
-    <string name="open_loop_past_meal_title">Letzte Mahlzeit (Vergangenheit)</string>
-    <string name="open_loop_no_past_meal">Keine vergangene Mahlzeit registriert.</string>
-    <string name="open_loop_next_meal_title">Geplante, nächste Mahlzeit</string>
-    <string name="open_loop_no_next_meal">Keine geplante Mahlzeit vorhanden.</string>
-    <string name="open_loop_meal_carbs_format">%1$.0f g Kohlenhydrate</string>
-    <string name="open_loop_meal_insulin_format">%1$.2f E Insulin verabreicht</string>
-    <string name="open_loop_meal_reminder_prefix">Erinnerung: %1$s</string>
+    <string name="manual_control_meals_title">Mahlzeiten-Übersicht</string>
+    <string name="manual_control_past_meal_title">Letzte Mahlzeit (Vergangenheit)</string>
+    <string name="manual_control_no_past_meal">Keine vergangene Mahlzeit registriert.</string>
+    <string name="manual_control_next_meal_title">Geplante, nächste Mahlzeit</string>
+    <string name="manual_control_no_next_meal">Keine geplante Mahlzeit vorhanden.</string>
+    <string name="manual_control_meal_carbs_format">%1$.0f g Kohlenhydrate</string>
+    <string name="manual_control_meal_insulin_format">%1$.2f E Insulin verabreicht</string>
+    <string name="manual_control_meal_reminder_prefix">Erinnerung: %1$s</string>
 
-    <string name="open_loop_pump_controls_title">Manuelle Pumpensteuerung</string>
-    <string name="open_loop_bolus_title">Bolus abgeben</string>
-    <string name="open_loop_deliver_bolus">Bolus abgeben&#8230;</string>
-    <string name="open_loop_cancel_bolus">Bolus abbrechen</string>
-    <string name="open_loop_bolus_delivering">Bolus wird verabreicht: %1$.2f / %2$.2f E (%3$d%%)</string>
-    <string name="open_loop_no_active_bolus">Keine aktive Bolusabgabe.</string>
-    <string name="open_loop_temp_basal_title">Temporäre Basalrate (Temp-Basal)</string>
-    <string name="open_loop_set_temp_basal">Temp-Basal setzen&#8230;</string>
-    <string name="open_loop_cancel_temp_basal">Temp-Basal beenden</string>
-    <string name="open_loop_temp_basal_active">Aktiv: Temp-Basal mit %1$d%%</string>
-    <string name="open_loop_no_active_temp_basal">Normale Basalrate aktiv (100%).</string>
-    <string name="open_loop_duration_hours_label">Dauer (Stunden)</string>
-    <string name="open_loop_rate_percent_label">Basalrate (%)</string>
-    <string name="open_loop_pump_not_connected">Pumpe nicht verbunden</string>
-    <string name="open_loop_dialog_deliver_bolus_title">Bolus abgeben</string>
-    <string name="open_loop_dialog_set_temp_basal_title">Temporäre Basalrate setzen</string>
-    <string name="open_loop_dialog_confirm_deliver">Abgeben</string>
-    <string name="open_loop_dialog_confirm_set">Setzen</string>
-    <string name="open_loop_dialog_cancel">Abbrechen</string>
-    <string name="open_loop_deferred_boluses_info">Enthält %1$d zurückgestellte(n) Bolus (insg. %2$.2f E)</string>
-    <string name="menu_item_open_loop_label">Manueller Modus (Open-Loop)</string>
+    <string name="manual_control_pump_controls_title">Manuelle Pumpensteuerung</string>
+    <string name="manual_control_bolus_title">Bolus abgeben</string>
+    <string name="manual_control_deliver_bolus">Bolus abgeben&#8230;</string>
+    <string name="manual_control_cancel_bolus">Bolus abbrechen</string>
+    <string name="manual_control_bolus_delivering">Bolus wird verabreicht: %1$.2f / %2$.2f E (%3$d%%)</string>
+    <string name="manual_control_no_active_bolus">Keine aktive Bolusabgabe.</string>
+    <string name="manual_control_temp_basal_title">Temporäre Basalrate (Temp-Basal)</string>
+    <string name="manual_control_set_temp_basal">Temp-Basal setzen&#8230;</string>
+    <string name="manual_control_cancel_temp_basal">Temp-Basal beenden</string>
+    <string name="manual_control_temp_basal_active">Aktiv: Temp-Basal mit %1$d%%</string>
+    <string name="manual_control_no_active_temp_basal">Normale Basalrate aktiv (100%).</string>
+    <string name="manual_control_duration_hours_label">Dauer (Stunden)</string>
+    <string name="manual_control_rate_percent_label">Basalrate (%)</string>
+    <string name="manual_control_pump_not_connected">Pumpe nicht verbunden</string>
+    <string name="manual_control_dialog_deliver_bolus_title">Bolus abgeben</string>
+    <string name="manual_control_dialog_set_temp_basal_title">Temporäre Basalrate setzen</string>
+    <string name="manual_control_dialog_confirm_deliver">Abgeben</string>
+    <string name="manual_control_dialog_confirm_set">Setzen</string>
+    <string name="manual_control_dialog_cancel">Abbrechen</string>
+    <string name="manual_control_deferred_boluses_info">Enthält %1$d zurückgestellte(n) Bolus (insg. %2$.2f E)</string>
+    <string name="menu_item_manual_control_label">Manuelle Steuerung</string>
 
 </resources>

@@ -55,7 +55,7 @@ import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.crValue
 import de.dh.daps.ui.common.glucoseValue
-import de.dh.daps.ui.common.icons.Icon_OpenLoopMode
+import de.dh.daps.ui.common.icons.Icon_ManualControlMode
 import de.dh.daps.ui.common.isfValue
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.NeutralGrey
@@ -75,7 +75,7 @@ fun ApsControlCard(
     onModeChange: (ApsMode) -> Unit,
     onAdjustmentClick: () -> Unit,
     onProfileClick: () -> Unit,
-    onOpenLoopControlClick: () -> Unit = {}
+    onManualControlClick: () -> Unit = {}
 ) {
     val insulinAdjustmentPercentage = activeTherapyStatus.adjustment.percentage
     val adjustmentHint = activeTherapyStatus.adjustment.adjustmentHint
@@ -252,7 +252,7 @@ fun ApsControlCard(
 
                 if (selectedMode != ApsMode.AutoCorrection) {
                     NormalButton(
-                        onClick = onOpenLoopControlClick,
+                        onClick = onManualControlClick,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(stringResource(R.string.aps_control_button_manual_control), style = MaterialTheme.typography.titleMedium)

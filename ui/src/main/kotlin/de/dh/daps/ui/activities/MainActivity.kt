@@ -68,7 +68,7 @@ import de.dh.daps.common.navigation.HistoricalMealRoute
 import de.dh.daps.common.navigation.MasterDataRoute
 import de.dh.daps.common.navigation.MealsRoute
 import de.dh.daps.common.navigation.NavigationViewModel
-import de.dh.daps.common.navigation.OpenLoopRoute
+import de.dh.daps.common.navigation.ManualControlRoute
 import de.dh.daps.common.navigation.SystemControlRoute
 import de.dh.daps.common.navigation.combineEntryProviders
 import de.dh.daps.core.SystemRegistry
@@ -83,7 +83,7 @@ import de.dh.daps.ui.common.icons.Icon_Menu_Food_Database
 import de.dh.daps.ui.common.icons.Icon_Menu_Master_Data
 import de.dh.daps.ui.common.icons.Icon_Menu_Meals
 import de.dh.daps.ui.common.icons.Icon_Menu_System_Control
-import de.dh.daps.ui.common.icons.Icon_OpenLoopMode
+import de.dh.daps.ui.common.icons.Icon_ManualControlMode
 import de.dh.daps.ui.common.rememberAppFormatters
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.rememberUseDarkTheme
@@ -359,10 +359,10 @@ fun DrawerContent(
                     onClick = { onRouteSelected(FoodDatabaseRoute) }
                 )
                 DrawerItem(
-                    label = stringResource(id = R.string.open_loop_screen_title),
-                    icon = Icon_OpenLoopMode,
-                    selected = currentRoute == OpenLoopRoute,
-                    onClick = { onRouteSelected(OpenLoopRoute) }
+                    label = stringResource(id = R.string.manual_control_screen_title),
+                    icon = Icon_ManualControlMode,
+                    selected = currentRoute == ManualControlRoute,
+                    onClick = { onRouteSelected(ManualControlRoute) }
                 )
                 DrawerItem(
                     label = stringResource(id = R.string.menu_system_control_label),

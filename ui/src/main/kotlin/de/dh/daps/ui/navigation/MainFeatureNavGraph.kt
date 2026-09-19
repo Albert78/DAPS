@@ -35,7 +35,7 @@ import de.dh.daps.common.navigation.MealTypeEditorRoute
 import de.dh.daps.common.navigation.MealTypesRoute
 import de.dh.daps.common.navigation.MealsRoute
 import de.dh.daps.common.navigation.NavigationViewModel
-import de.dh.daps.common.navigation.OpenLoopRoute
+import de.dh.daps.common.navigation.ManualControlRoute
 import de.dh.daps.common.navigation.PermissionsRoute
 import de.dh.daps.common.navigation.PreferencesMainRoute
 import de.dh.daps.common.navigation.PumpManagementRoute
@@ -78,8 +78,8 @@ import de.dh.daps.ui.screens.mealtypes.MealTypeEditorScreen
 import de.dh.daps.ui.screens.mealtypes.MealTypeEditorViewModel
 import de.dh.daps.ui.screens.mealtypes.MealTypesScreen
 import de.dh.daps.ui.screens.mealtypes.MealTypesViewModel
-import de.dh.daps.ui.screens.openloop.OpenLoopScreen
-import de.dh.daps.ui.screens.openloop.OpenLoopViewModel
+import de.dh.daps.ui.screens.manualcontrol.ManualControlScreen
+import de.dh.daps.ui.screens.manualcontrol.ManualControlViewModel
 import de.dh.daps.ui.screens.permissions.PermissionsScreen
 import de.dh.daps.ui.screens.permissions.PermissionsViewModel
 import de.dh.daps.ui.screens.permissions.isPermissionsMissing
@@ -143,7 +143,7 @@ class MainFeatureNavGraph(
                     onNavigateToTherapySettings = { navViewModel.push(CurrentTherapySettingsRoute) },
                     onNavigateToMealCorrectionBolus = { navViewModel.push(MealCorrectionBolusRoute) },
                     onNavigateToSystemControl = { navViewModel.push(SystemControlRoute()) },
-                    onNavigateToOpenLoop = { navViewModel.push(OpenLoopRoute) },
+                    onNavigateToManualControl = { navViewModel.push(ManualControlRoute) },
                     onAdjustmentClick = { navViewModel.push(TherapyAdjustmentRoute) },
                     onHistoryChartClick = { navViewModel.push(HistoryRoute) },
                     extraContent = extraDashboardContent
@@ -263,13 +263,13 @@ class MainFeatureNavGraph(
                 )
             }
 
-            is OpenLoopRoute -> NavEntry(key) {
-                val vm: OpenLoopViewModel = viewModel(
-                    factory = OpenLoopViewModel.Companion.Factory(registry)
+            is ManualControlRoute -> NavEntry(key) {
+                val vm: ManualControlViewModel = viewModel(
+                    factory = ManualControlViewModel.Companion.Factory(registry)
                 )
                 val lockViewModel: TreatmentLockViewModel = viewModel(
                     factory = TreatmentLockViewModel.Companion.Factory(
-                        tag = "OpenLoopScreen",
+                        tag = "ManualControlScreen",
                         registry = registry,
                         requirePumpSync = true
                     )
@@ -291,10 +291,10 @@ class MainFeatureNavGraph(
 
                 TreatmentLockScreen(
                     viewModel = lockViewModel,
-                    title = stringResource(id = R.string.open_loop_screen_title),
+                    title = stringResource(id = R.string.manual_control_screen_title),
                     onNavigateUp = { navViewModel.pop() }
                 ) { treatmentLock ->
-                    OpenLoopScreen(
+                    ManualControlScreen(
                         viewModel = vm,
                         treatmentLock = treatmentLock,
                         onNavigateUp = { navViewModel.pop() },

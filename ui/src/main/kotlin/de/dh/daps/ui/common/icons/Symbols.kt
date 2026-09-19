@@ -102,7 +102,7 @@ val Icon_Vibration_Only = Icons.Outlined.VibrationOnly
 val Icon_Sound_Off = Icons.Outlined.SoundOff
 
 // Mode & Control Icons
-val Icon_OpenLoopMode = Icons.Outlined.OpenLoop
+val Icon_ManualControlMode = Icons.Outlined.ManualControl
 
 // Menu Navigation Icons
 val Icon_Menu_Meals = Icons.Outlined.Restaurant
@@ -120,7 +120,7 @@ private data class IconPreview(
 )
 
 private val iconsForPreview = listOf(
-    IconPreview("Icon_OpenLoopMode", Icon_OpenLoopMode),
+    IconPreview("Icon_ManualControlMode", Icon_ManualControlMode),
     IconPreview("Menu_Meals", Icon_Menu_Meals),
     IconPreview("Menu_Bolus_History", Icon_Menu_Bolus_History),
     IconPreview("Menu_Food_Database", Icon_Menu_Food_Database),

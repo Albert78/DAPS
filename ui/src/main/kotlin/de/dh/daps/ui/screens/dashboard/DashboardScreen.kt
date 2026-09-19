@@ -102,7 +102,7 @@ fun DashboardScreen(
     onNavigateToTherapySettings: () -> Unit,
     onNavigateToMealCorrectionBolus: () -> Unit,
     onNavigateToSystemControl: () -> Unit,
-    onNavigateToOpenLoop: () -> Unit = {},
+    onNavigateToManualControl: () -> Unit = {},
     onAdjustmentClick: () -> Unit,
     onHistoryChartClick: () -> Unit,
     extraContent: @Composable () -> Unit = {}
@@ -130,7 +130,7 @@ fun DashboardScreen(
         onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus,
         isMealCorrectionBolusAllowed = uiState.isMealCorrectionBolusAllowed,
         onNavigateToSystemControl = onNavigateToSystemControl,
-        onNavigateToOpenLoop = onNavigateToOpenLoop,
+        onNavigateToManualControl = onNavigateToManualControl,
         onHistoryChartClick = onHistoryChartClick,
         onApsModeSelect = { viewModel.setApsMode(it) },
         onAdjustmentClick = onAdjustmentClick,
@@ -157,7 +157,7 @@ fun DashboardContent(
     onNavigateToMealCorrectionBolus: () -> Unit,
     isMealCorrectionBolusAllowed: Boolean,
     onNavigateToSystemControl: () -> Unit,
-    onNavigateToOpenLoop: () -> Unit = {},
+    onNavigateToManualControl: () -> Unit = {},
     onHistoryChartClick: (() -> Unit)?,
     onApsModeSelect: (ApsMode) -> Unit,
     onAdjustmentClick: () -> Unit,
@@ -326,7 +326,7 @@ fun DashboardContent(
                 onModeChange = onApsModeSelect,
                 onAdjustmentClick = onAdjustmentClick,
                 onProfileClick = onNavigateToTherapySettings,
-                onOpenLoopControlClick = onNavigateToOpenLoop
+                onManualControlClick = onNavigateToManualControl
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -345,6 +345,98 @@ fun DashboardContent(
             Spacer(modifier = Modifier.height(40.dp))
 
             extraContent()
+        }
+    }
+}
+
+@Composable
+fun ActiveFiringAlarmBanner(
+    alarmType: AlarmType,
+    onSnooze: (Int) -> Unit
+) {
+    val isCritical = alarmType.defaultSeverity == AlarmSeverity.CRITICAL
+    val containerColor = if (isCritical) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.tertiaryContainer
+    val contentColor = if (isCritical) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onTertiaryContainer
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 12.dp),
+        colors = CardDefaults.cardColors(containerColor = containerColor)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Warning,
+                    contentDescription = null,
+                    tint = contentColor,
+                    modifier = Modifier.size(28.dp)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = getAlarmTypeTitle(alarmType),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = contentColor
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                OutlinedButton(onClick = { onSnooze(15) }) {
+                    Text(stringResource(R.string.alarm_action_snooze_15))
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                OutlinedButton(onClick = { onSnooze(30) }) {
+                    Text(stringResource(R.string.alarm_action_snooze_30))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SnoozedAlarmBanner(
+    alarmType: AlarmType,
+    snoozedUntil: Timestamp,
+    onCancelSnooze: () -> Unit
+) {
+    val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+    val timeStr = timeFormat.format(Date(snoozedUntil.ms))
+    val text = stringResource(
+        R.string.alarm_snoozed_until_format,
+        getAlarmTypeTitle(alarmType),
+        timeStr
+    )
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "⚠️ $text",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f)
+            )
+            TextButton(onClick = onCancelSnooze) {
+                Text(stringResource(R.string.alarm_action_unsnooze))
+            }
         }
     }
 }
@@ -471,98 +563,6 @@ fun DashboardPermissionsWarningPreview() {
                 onNavigateToMealCorrectionBolus = {},
                 isMealCorrectionBolusAllowed = true
             )
-        }
-    }
-}
-
-@Composable
-fun ActiveFiringAlarmBanner(
-    alarmType: AlarmType,
-    onSnooze: (Int) -> Unit
-) {
-    val isCritical = alarmType.defaultSeverity == AlarmSeverity.CRITICAL
-    val containerColor = if (isCritical) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.tertiaryContainer
-    val contentColor = if (isCritical) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onTertiaryContainer
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 12.dp),
-        colors = CardDefaults.cardColors(containerColor = containerColor)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Warning,
-                    contentDescription = null,
-                    tint = contentColor,
-                    modifier = Modifier.size(28.dp)
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = getAlarmTypeTitle(alarmType),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = contentColor
-                )
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                OutlinedButton(onClick = { onSnooze(15) }) {
-                    Text(stringResource(R.string.alarm_action_snooze_15))
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                OutlinedButton(onClick = { onSnooze(30) }) {
-                    Text(stringResource(R.string.alarm_action_snooze_30))
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun SnoozedAlarmBanner(
-    alarmType: AlarmType,
-    snoozedUntil: Timestamp,
-    onCancelSnooze: () -> Unit
-) {
-    val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
-    val timeStr = timeFormat.format(Date(snoozedUntil.ms))
-    val text = stringResource(
-        R.string.alarm_snoozed_until_format,
-        getAlarmTypeTitle(alarmType),
-        timeStr
-    )
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = "⚠️ $text",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.weight(1f)
-            )
-            TextButton(onClick = onCancelSnooze) {
-                Text(stringResource(R.string.alarm_action_unsnooze))
-            }
         }
     }
 }

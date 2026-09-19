@@ -1,4 +1,4 @@
-package de.dh.daps.ui.screens.openloop
+package de.dh.daps.ui.screens.manualcontrol
 
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
@@ -35,6 +35,7 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -61,6 +62,7 @@ import de.dh.daps.common.model.MealType
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgSampleKind
 import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.aps.ApsRecommendation
@@ -68,6 +70,7 @@ import de.dh.daps.core.aps.TreatmentLock
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
 import de.dh.daps.ui.common.DefaultSteppingStrategy
+import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.carbsGramsValue
 import de.dh.daps.ui.common.composables.EditableValueStepper
 import de.dh.daps.ui.common.composables.LightGreenA700
@@ -91,34 +94,34 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-sealed interface OpenLoopDialog {
+sealed interface ManualControlDialog {
     data class Bolus(
         val initialAmount: Double,
         val includedDeferredBoluses: List<DeferredBolus>? = null,
         val correctionPart: InsulinAmount = InsulinAmount.ZERO,
         val basalPart: InsulinAmount = InsulinAmount.ZERO,
         val recommendationToDismiss: ApsRecommendation.Bolus? = null
-    ) : OpenLoopDialog
+    ) : ManualControlDialog
 
     data class TempBasal(
         val initialPercent: Int,
         val initialDurationHours: Int,
         val recommendationToDismiss: ApsRecommendation.TempBasal? = null
-    ) : OpenLoopDialog
+    ) : ManualControlDialog
 }
 
 @Composable
-fun OpenLoopScreen(
-    viewModel: OpenLoopViewModel,
+fun ManualControlScreen(
+    viewModel: ManualControlViewModel,
     treatmentLock: TreatmentLock,
     onNavigateUp: () -> Unit,
     onNavigateToMealCorrectionBolus: () -> Unit = {},
     onNavigateToMeals: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var activeDialog by remember { mutableStateOf<OpenLoopDialog?>(null) }
+    var activeDialog by remember { mutableStateOf<ManualControlDialog?>(null) }
 
-    OpenLoopContent(
+    ManualControlContent(
         uiState = uiState,
         onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus,
         onNavigateToMeals = onNavigateToMeals,
@@ -129,7 +132,7 @@ fun OpenLoopScreen(
     )
 
     when (val dialog = activeDialog) {
-        is OpenLoopDialog.Bolus -> {
+        is ManualControlDialog.Bolus -> {
             DeliverBolusDialog(
                 dialogData = dialog,
                 minBolusAmount = uiState.pump.minBolusAmount,
@@ -148,7 +151,7 @@ fun OpenLoopScreen(
                 }
             )
         }
-        is OpenLoopDialog.TempBasal -> {
+        is ManualControlDialog.TempBasal -> {
             SetTempBasalDialog(
                 dialogData = dialog,
                 onDismiss = { activeDialog = null },
@@ -168,8 +171,8 @@ fun OpenLoopScreen(
 }
 
 @Composable
-fun OpenLoopContextInfo(
-    contextInfo: OpenLoopContextInfoUiModel
+fun ManualControlContextInfo(
+    contextInfo: ManualControlContextInfoUiModel
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -238,12 +241,12 @@ fun OpenLoopContextInfo(
 }
 
 @Composable
-fun OpenLoopContent(
-    uiState: OpenLoopUiState,
+fun ManualControlContent(
+    uiState: ManualControlUiState,
     onNavigateToMealCorrectionBolus: () -> Unit = {},
     onNavigateToMeals: () -> Unit = {},
-    onOpenBolusDialog: (OpenLoopDialog.Bolus) -> Unit = {},
-    onOpenTempBasalDialog: (OpenLoopDialog.TempBasal) -> Unit = {},
+    onOpenBolusDialog: (ManualControlDialog.Bolus) -> Unit = {},
+    onOpenTempBasalDialog: (ManualControlDialog.TempBasal) -> Unit = {},
     onCancelBolus: () -> Unit = {},
     onCancelTempBasal: () -> Unit = {}
 ) {
@@ -255,7 +258,7 @@ fun OpenLoopContent(
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            OpenLoopContextInfo(contextInfo = uiState.contextInfo)
+            ManualControlContextInfo(contextInfo = uiState.contextInfo)
 
             Column(
                 modifier = Modifier
@@ -264,7 +267,7 @@ fun OpenLoopContent(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // Section 1: Recommendations
-                OpenLoopRecommendationsSection(
+                ManualControlRecommendationsSection(
                     recommendations = uiState.recommendations,
                     onOpenBolusDialog = onOpenBolusDialog,
                     onOpenTempBasalDialog = onOpenTempBasalDialog,
@@ -272,20 +275,20 @@ fun OpenLoopContent(
                 )
 
                 // Section 2: Active Meal Reminders
-                OpenLoopMealRemindersSection(
+                ManualControlMealRemindersSection(
                     reminders = uiState.activeMealReminders,
                     onNavigateToMeals = onNavigateToMeals
                 )
 
                 // Section 3: Meals (Past & Next Planned)
-                OpenLoopMealsSection(
+                ManualControlMealsSection(
                     lastPastMeal = uiState.contextInfo.lastPastMeal,
                     nextPlannedMeal = uiState.contextInfo.nextPlannedMeal,
                     onNavigateToMeals = onNavigateToMeals
                 )
 
                 // Section 4: Pump Controls (Bolus & Temp-Basal)
-                OpenLoopPumpControlsSection(
+                ManualControlPumpControlsSection(
                     pump = uiState.pump,
                     onOpenBolusDialog = onOpenBolusDialog,
                     onCancelBolus = onCancelBolus,
@@ -302,15 +305,15 @@ fun OpenLoopContent(
 // -----------------------------------------------------------------------------------------
 
 @Composable
-private fun OpenLoopRecommendationsSection(
+private fun ManualControlRecommendationsSection(
     recommendations: List<ApsRecommendation>,
-    onOpenBolusDialog: (OpenLoopDialog.Bolus) -> Unit,
-    onOpenTempBasalDialog: (OpenLoopDialog.TempBasal) -> Unit,
+    onOpenBolusDialog: (ManualControlDialog.Bolus) -> Unit,
+    onOpenTempBasalDialog: (ManualControlDialog.TempBasal) -> Unit,
     onNavigateToMealCorrectionBolus: () -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
-            text = stringResource(id = R.string.open_loop_recommendations_title),
+            text = stringResource(id = R.string.manual_control_recommendations_title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold
         )
@@ -318,7 +321,7 @@ private fun OpenLoopRecommendationsSection(
         if (recommendations.isEmpty()) {
             OutlinedCard(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = stringResource(id = R.string.open_loop_no_recommendations),
+                    text = stringResource(id = R.string.manual_control_no_recommendations),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(16.dp)
@@ -340,8 +343,8 @@ private fun OpenLoopRecommendationsSection(
 @Composable
 private fun RecommendationCard(
     recommendation: ApsRecommendation,
-    onOpenBolusDialog: (OpenLoopDialog.Bolus) -> Unit,
-    onOpenTempBasalDialog: (OpenLoopDialog.TempBasal) -> Unit,
+    onOpenBolusDialog: (ManualControlDialog.Bolus) -> Unit,
+    onOpenTempBasalDialog: (ManualControlDialog.TempBasal) -> Unit,
     onNavigateToMealCorrectionBolus: () -> Unit
 ) {
     Card(
@@ -401,7 +404,7 @@ private fun RecommendationCard(
                         PrimaryButton(
                             onClick = {
                                 onOpenBolusDialog(
-                                    OpenLoopDialog.Bolus(
+                                    ManualControlDialog.Bolus(
                                         initialAmount = recommendation.amount.iu,
                                         includedDeferredBoluses = recommendation.includedDeferredBoluses,
                                         correctionPart = recommendation.correctionPart,
@@ -411,7 +414,7 @@ private fun RecommendationCard(
                                 )
                             }
                         ) {
-                            Text(stringResource(id = R.string.open_loop_apply_recommendation))
+                            Text(stringResource(id = R.string.manual_control_apply_recommendation))
                         }
                     }
                 }
@@ -445,7 +448,7 @@ private fun RecommendationCard(
                         SecondaryButton(
                             onClick = {
                                 onOpenTempBasalDialog(
-                                    OpenLoopDialog.TempBasal(
+                                    ManualControlDialog.TempBasal(
                                         initialPercent = recommendation.percent,
                                         initialDurationHours = recommendation.durationInHours,
                                         recommendationToDismiss = recommendation
@@ -453,7 +456,7 @@ private fun RecommendationCard(
                                 )
                             }
                         ) {
-                            Text(stringResource(id = R.string.open_loop_apply_recommendation))
+                            Text(stringResource(id = R.string.manual_control_apply_recommendation))
                         }
                     }
                 }
@@ -467,7 +470,7 @@ private fun RecommendationCard(
 // -----------------------------------------------------------------------------------------
 
 @Composable
-private fun OpenLoopMealRemindersSection(
+private fun ManualControlMealRemindersSection(
     reminders: List<MealReminder>,
     onNavigateToMeals: () -> Unit
 ) {
@@ -523,7 +526,7 @@ private fun OpenLoopMealRemindersSection(
 // -----------------------------------------------------------------------------------------
 
 @Composable
-private fun OpenLoopMealsSection(
+private fun ManualControlMealsSection(
     lastPastMeal: MealEntry?,
     nextPlannedMeal: MealEntry?,
     onNavigateToMeals: () -> Unit
@@ -535,7 +538,7 @@ private fun OpenLoopMealsSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = stringResource(id = R.string.open_loop_meals_title),
+                text = stringResource(id = R.string.manual_control_meals_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -546,19 +549,19 @@ private fun OpenLoopMealsSection(
 
         // Last Past Meal
         MealInfoCard(
-            title = stringResource(id = R.string.open_loop_past_meal_title),
+            title = stringResource(id = R.string.manual_control_past_meal_title),
             icon = Icons.Filled.Carbs,
             mealEntry = lastPastMeal,
-            emptyText = stringResource(id = R.string.open_loop_no_past_meal),
+            emptyText = stringResource(id = R.string.manual_control_no_past_meal),
             onClick = onNavigateToMeals
         )
 
         // Next Planned Meal
         MealInfoCard(
-            title = stringResource(id = R.string.open_loop_next_meal_title),
+            title = stringResource(id = R.string.manual_control_next_meal_title),
             icon = Icons.Default.Schedule,
             mealEntry = nextPlannedMeal,
-            emptyText = stringResource(id = R.string.open_loop_no_next_meal),
+            emptyText = stringResource(id = R.string.manual_control_no_next_meal),
             onClick = onNavigateToMeals
         )
     }
@@ -636,16 +639,16 @@ private fun MealInfoCard(
 // -----------------------------------------------------------------------------------------
 
 @Composable
-private fun OpenLoopPumpControlsSection(
-    pump: OpenLoopPumpUiModel,
-    onOpenBolusDialog: (OpenLoopDialog.Bolus) -> Unit,
+private fun ManualControlPumpControlsSection(
+    pump: ManualControlPumpUiModel,
+    onOpenBolusDialog: (ManualControlDialog.Bolus) -> Unit,
     onCancelBolus: () -> Unit,
-    onOpenTempBasalDialog: (OpenLoopDialog.TempBasal) -> Unit,
+    onOpenTempBasalDialog: (ManualControlDialog.TempBasal) -> Unit,
     onCancelTempBasal: () -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
-            text = stringResource(id = R.string.open_loop_pump_controls_title),
+            text = stringResource(id = R.string.manual_control_pump_controls_title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold
         )
@@ -665,7 +668,7 @@ private fun OpenLoopPumpControlsSection(
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = stringResource(id = R.string.open_loop_bolus_title),
+                        text = stringResource(id = R.string.manual_control_bolus_title),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -677,7 +680,7 @@ private fun OpenLoopPumpControlsSection(
                 if (activeBolus?.state == BolusDeliveryState.DELIVERING) {
                     Text(
                         text = stringResource(
-                            id = R.string.open_loop_bolus_delivering,
+                            id = R.string.manual_control_bolus_delivering,
                             activeBolus.deliveredAmount.iu,
                             activeBolus.targetAmount.iu,
                             activeBolus.progressPercent
@@ -700,11 +703,11 @@ private fun OpenLoopPumpControlsSection(
                     ) {
                         Icon(imageVector = Icons.Default.Stop, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(id = R.string.open_loop_cancel_bolus))
+                        Text(stringResource(id = R.string.manual_control_cancel_bolus))
                     }
                 } else {
                     Text(
-                        text = stringResource(id = R.string.open_loop_no_active_bolus),
+                        text = stringResource(id = R.string.manual_control_no_active_bolus),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -712,7 +715,7 @@ private fun OpenLoopPumpControlsSection(
                     PrimaryButton(
                         onClick = {
                             onOpenBolusDialog(
-                                OpenLoopDialog.Bolus(
+                                ManualControlDialog.Bolus(
                                     initialAmount = pump.minBolusAmount.iu.coerceAtLeast(1.0)
                                 )
                             )
@@ -721,7 +724,7 @@ private fun OpenLoopPumpControlsSection(
                     ) {
                         Icon(imageVector = Icons.Outlined.Syringe, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(id = R.string.open_loop_deliver_bolus))
+                        Text(stringResource(id = R.string.manual_control_deliver_bolus))
                     }
                 }
             }
@@ -742,7 +745,7 @@ private fun OpenLoopPumpControlsSection(
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = stringResource(id = R.string.open_loop_temp_basal_title),
+                        text = stringResource(id = R.string.manual_control_temp_basal_title),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -759,7 +762,7 @@ private fun OpenLoopPumpControlsSection(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = stringResource(id = R.string.open_loop_temp_basal_active, percent),
+                            text = stringResource(id = R.string.manual_control_temp_basal_active, percent),
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -776,11 +779,11 @@ private fun OpenLoopPumpControlsSection(
                     ) {
                         Icon(imageVector = Icons.Default.Stop, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(id = R.string.open_loop_cancel_temp_basal))
+                        Text(stringResource(id = R.string.manual_control_cancel_temp_basal))
                     }
                 } else {
                     Text(
-                        text = stringResource(id = R.string.open_loop_no_active_temp_basal),
+                        text = stringResource(id = R.string.manual_control_no_active_temp_basal),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -788,7 +791,7 @@ private fun OpenLoopPumpControlsSection(
                     SecondaryButton(
                         onClick = {
                             onOpenTempBasalDialog(
-                                OpenLoopDialog.TempBasal(
+                                ManualControlDialog.TempBasal(
                                     initialPercent = 100,
                                     initialDurationHours = 1
                                 )
@@ -798,7 +801,7 @@ private fun OpenLoopPumpControlsSection(
                     ) {
                         Icon(imageVector = Icons.Default.Speed, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(id = R.string.open_loop_set_temp_basal))
+                        Text(stringResource(id = R.string.manual_control_set_temp_basal))
                     }
                 }
             }
@@ -812,7 +815,7 @@ private fun OpenLoopPumpControlsSection(
 
 @Composable
 private fun DeliverBolusDialog(
-    dialogData: OpenLoopDialog.Bolus,
+    dialogData: ManualControlDialog.Bolus,
     minBolusAmount: InsulinAmount,
     maxBolusSize: InsulinAmount,
     onDismiss: () -> Unit,
@@ -828,7 +831,7 @@ private fun DeliverBolusDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(id = R.string.open_loop_dialog_deliver_bolus_title)) },
+        title = { Text(stringResource(id = R.string.manual_control_dialog_deliver_bolus_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 dialogData.includedDeferredBoluses?.takeIf { it.isNotEmpty() }?.let { deferredList ->
@@ -839,7 +842,7 @@ private fun DeliverBolusDialog(
                     ) {
                         Text(
                             text = stringResource(
-                                id = R.string.open_loop_deferred_boluses_info,
+                                id = R.string.manual_control_deferred_boluses_info,
                                 deferredList.size,
                                 totalDeferred
                             ),
@@ -873,12 +876,12 @@ private fun DeliverBolusDialog(
                     )
                 }
             ) {
-                Text(stringResource(id = R.string.open_loop_dialog_confirm_deliver))
+                Text(stringResource(id = R.string.manual_control_dialog_confirm_deliver))
             }
         },
         dismissButton = {
             NormalTextButton(onClick = onDismiss) {
-                Text(stringResource(id = R.string.open_loop_dialog_cancel))
+                Text(stringResource(id = R.string.manual_control_dialog_cancel))
             }
         }
     )
@@ -886,7 +889,7 @@ private fun DeliverBolusDialog(
 
 @Composable
 private fun SetTempBasalDialog(
-    dialogData: OpenLoopDialog.TempBasal,
+    dialogData: ManualControlDialog.TempBasal,
     onDismiss: () -> Unit,
     onConfirm: (durationHours: Int, percent: Int, recommendationToDismiss: ApsRecommendation.TempBasal?) -> Unit
 ) {
@@ -895,11 +898,11 @@ private fun SetTempBasalDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(id = R.string.open_loop_dialog_set_temp_basal_title)) },
+        title = { Text(stringResource(id = R.string.manual_control_dialog_set_temp_basal_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    text = stringResource(id = R.string.open_loop_rate_percent_label),
+                    text = stringResource(id = R.string.manual_control_rate_percent_label),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -928,7 +931,7 @@ private fun SetTempBasalDialog(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = stringResource(id = R.string.open_loop_duration_hours_label),
+                    text = stringResource(id = R.string.manual_control_duration_hours_label),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -949,12 +952,12 @@ private fun SetTempBasalDialog(
                     onConfirm(durationHours, percent, dialogData.recommendationToDismiss)
                 }
             ) {
-                Text(stringResource(id = R.string.open_loop_dialog_confirm_set))
+                Text(stringResource(id = R.string.manual_control_dialog_confirm_set))
             }
         },
         dismissButton = {
             NormalTextButton(onClick = onDismiss) {
-                Text(stringResource(id = R.string.open_loop_dialog_cancel))
+                Text(stringResource(id = R.string.manual_control_dialog_cancel))
             }
         }
     )
@@ -963,63 +966,65 @@ private fun SetTempBasalDialog(
 @Preview(showBackground = true, name = "Light Mode")
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
-fun OpenLoopScreenPreview() {
+fun ManualControlScreenPreview() {
     AppTheme {
-        Surface {
-            OpenLoopContent(
-                uiState = OpenLoopUiState(
-                    contextInfo = OpenLoopContextInfoUiModel(
-                        lastBgReading = BgReading(
-                            value = BgValue.fromMgDl(125),
-                            sampleKind = BgSampleKind.Value,
-                            timestamp = Timestamp.now()
-                        ),
-                        iob = InsulinAmount(1.2),
-                        cob = 25.0,
-                        lastPastMeal = MealEntry(
-                            id = 1L,
-                            timestamp = Timestamp.now().minusHours(2),
-                            carbGrams = 45.0,
-                            mealType = MealType(
-                                name = "Mittagessen",
-                                components = listOf(CarbCurveComponentData(100, Minutes(30))),
-                                cat = Minutes(180)
+        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
+            Surface {
+                ManualControlContent(
+                    uiState = ManualControlUiState(
+                        contextInfo = ManualControlContextInfoUiModel(
+                            lastBgReading = BgReading(
+                                value = BgValue.fromMgDl(125),
+                                sampleKind = BgSampleKind.Value,
+                                timestamp = Timestamp.now()
                             ),
-                            description = "Pasta mit Tomatensauce",
-                            administeredInsulinAmount = InsulinAmount(3.5)
-                        ),
-                        nextPlannedMeal = MealEntry(
-                            id = 2L,
-                            timestamp = Timestamp.now().plusHours(3),
-                            carbGrams = 60.0,
-                            mealType = MealType(
-                                name = "Abendessen",
-                                components = listOf(CarbCurveComponentData(100, Minutes(30))),
-                                cat = Minutes(180)
+                            iob = InsulinAmount(1.2),
+                            cob = 25.0,
+                            lastPastMeal = MealEntry(
+                                id = 1L,
+                                timestamp = Timestamp.now().minusHours(2),
+                                carbGrams = 45.0,
+                                mealType = MealType(
+                                    name = "Mittagessen",
+                                    components = listOf(CarbCurveComponentData(100, Minutes(30))),
+                                    cat = Minutes(180)
+                                ),
+                                description = "Pasta mit Tomatensauce",
+                                administeredInsulinAmount = InsulinAmount(3.5)
                             ),
-                            description = "Pizza"
-                        )
-                    ),
-                    recommendations = listOf(
-                        ApsRecommendation.Bolus(
-                            amount = InsulinAmount(1.5),
-                            correctionPart = InsulinAmount(1.0),
-                            basalPart = InsulinAmount(0.5)
+                            nextPlannedMeal = MealEntry(
+                                id = 2L,
+                                timestamp = Timestamp.now().plusHours(3),
+                                carbGrams = 60.0,
+                                mealType = MealType(
+                                    name = "Abendessen",
+                                    components = listOf(CarbCurveComponentData(100, Minutes(30))),
+                                    cat = Minutes(180)
+                                ),
+                                description = "Pizza"
+                            )
                         ),
-                        ApsRecommendation.TempBasal(durationInHours = 2, percent = 120)
-                    ),
-                    activeMealReminders = listOf(
-                        MealReminder(
-                            id = 10L,
-                            mealTimestamp = Timestamp.now().plusMinutes(15),
-                            description = "Snack nach dem Sport"
+                        recommendations = listOf(
+                            ApsRecommendation.Bolus(
+                                amount = InsulinAmount(1.5),
+                                correctionPart = InsulinAmount(1.0),
+                                basalPart = InsulinAmount(0.5)
+                            ),
+                            ApsRecommendation.TempBasal(durationInHours = 2, percent = 120)
+                        ),
+                        activeMealReminders = listOf(
+                            MealReminder(
+                                id = 10L,
+                                mealTimestamp = Timestamp.now().plusMinutes(15),
+                                description = "Snack nach dem Sport"
+                            )
+                        ),
+                        pump = ManualControlPumpUiModel(
+                            isConnected = true
                         )
-                    ),
-                    pump = OpenLoopPumpUiModel(
-                        isConnected = true
                     )
                 )
-            )
+            }
         }
     }
 }

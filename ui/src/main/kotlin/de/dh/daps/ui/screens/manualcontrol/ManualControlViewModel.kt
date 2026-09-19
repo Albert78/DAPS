@@ -1,4 +1,4 @@
-package de.dh.daps.ui.screens.openloop
+package de.dh.daps.ui.screens.manualcontrol
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -26,9 +26,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /**
- * Beinhaltet den Kontext der aktuellen Therapie- und Stoffwechsellage.
+ * Contains metabolic and therapy context information (current glucose, IOB, COB, last and next meal).
  */
-data class OpenLoopContextInfoUiModel(
+data class ManualControlContextInfoUiModel(
     val lastBgReading: BgReading? = null,
     val iob: InsulinAmount = InsulinAmount.ZERO,
     val cob: Double = 0.0,
@@ -37,9 +37,9 @@ data class OpenLoopContextInfoUiModel(
 )
 
 /**
- * Status und Fähigkeiten der verbundenen Insulinpumpe.
+ * Represents the status and capabilities of the connected insulin pump.
  */
-data class OpenLoopPumpUiModel(
+data class ManualControlPumpUiModel(
     val isConnected: Boolean = false,
     val model: String? = null,
     val basalStatus: BasalStatus? = null,
@@ -49,17 +49,17 @@ data class OpenLoopPumpUiModel(
 )
 
 /**
- * Gesamtzustand des OpenLoop-Screens.
+ * Overall UI state for the Manual Control screen.
  */
-data class OpenLoopUiState(
-    val contextInfo: OpenLoopContextInfoUiModel = OpenLoopContextInfoUiModel(),
+data class ManualControlUiState(
+    val contextInfo: ManualControlContextInfoUiModel = ManualControlContextInfoUiModel(),
     val recommendations: List<ApsRecommendation> = emptyList(),
     val activeMealReminders: List<MealReminder> = emptyList(),
-    val pump: OpenLoopPumpUiModel = OpenLoopPumpUiModel()
+    val pump: ManualControlPumpUiModel = ManualControlPumpUiModel()
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class OpenLoopViewModel(
+class ManualControlViewModel(
     systemRegistry: SystemRegistry
 ) : ViewModel() {
     private val recommendationManager = systemRegistry.recommendationManager
@@ -69,7 +69,7 @@ class OpenLoopViewModel(
     private val glucoseRepository = systemRegistry.glucoseRepository
     private val carbsInsulinCalculator = systemRegistry.carbsInsulinCalculator
 
-    private val contextInfoFlow: Flow<OpenLoopContextInfoUiModel> = combine(
+    private val contextInfoFlow: Flow<ManualControlContextInfoUiModel> = combine(
         glucoseRepository.currentBg,
         treatmentRepository.observeInsulinApplications(),
         treatmentRepository.observeMeals(),
@@ -92,7 +92,7 @@ class OpenLoopViewModel(
         val pastMeal = meals.filter { it.timestamp <= now }.maxByOrNull { it.timestamp }
         val nextMeal = meals.filter { it.timestamp > now }.minByOrNull { it.timestamp }
 
-        OpenLoopContextInfoUiModel(
+        ManualControlContextInfoUiModel(
             lastBgReading = currentBg,
             iob = iob,
             cob = cob,
@@ -101,9 +101,9 @@ class OpenLoopViewModel(
         )
     }
 
-    private val pumpFlow: Flow<OpenLoopPumpUiModel> = pumpManager.activeInsulinPump.flatMapLatest { pump ->
+    private val pumpFlow: Flow<ManualControlPumpUiModel> = pumpManager.activeInsulinPump.flatMapLatest { pump ->
         if (pump == null) {
-            flowOf(OpenLoopPumpUiModel())
+            flowOf(ManualControlPumpUiModel())
         } else {
             combine(
                 pump.isConnected,
@@ -112,7 +112,7 @@ class OpenLoopViewModel(
                 pump.bolusStatus,
                 pump.pumpCapabilities
             ) { connected, hardware, basal, bolus, capabilities ->
-                OpenLoopPumpUiModel(
+                ManualControlPumpUiModel(
                     isConnected = connected,
                     model = hardware?.model,
                     basalStatus = basal,
@@ -124,13 +124,13 @@ class OpenLoopViewModel(
         }
     }
 
-    val uiState: StateFlow<OpenLoopUiState> = combine(
+    val uiState: StateFlow<ManualControlUiState> = combine(
         contextInfoFlow,
         recommendationManager.recommendations,
         recommendationManager.mealReminders,
         pumpFlow
     ) { contextInfo, recommendations, mealReminders, pump ->
-        OpenLoopUiState(
+        ManualControlUiState(
             contextInfo = contextInfo,
             recommendations = recommendations,
             activeMealReminders = mealReminders,
@@ -139,7 +139,7 @@ class OpenLoopViewModel(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = OpenLoopUiState()
+        initialValue = ManualControlUiState()
     )
 
     fun deliverBolus(
@@ -198,7 +198,7 @@ class OpenLoopViewModel(
         class Factory(private val registry: SystemRegistry) : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return OpenLoopViewModel(registry) as T
+                return ManualControlViewModel(registry) as T
             }
         }
     }

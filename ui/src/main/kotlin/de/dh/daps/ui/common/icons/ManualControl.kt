@@ -14,16 +14,14 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.ui.common.theme.AppTheme
 
 /**
- * Ein maßgeschneidertes OpenLoop-Icon im Material-Stil:
- * Ein geöffneter Kreis/Loop mit Unterbrechung und Öffnungspfeil an der Oberseite.
+ * Custom Material-style icon for Manual Control / Open Loop mode.
  */
-val Icons.Outlined.OpenLoop: ImageVector
+val Icons.Outlined.ManualControl: ImageVector
     get() {
-        if (_openLoop != null) {
-            return _openLoop!!
+        if (_manualControl != null) {
+            return _manualControl!!
         }
-        _openLoop = materialIcon(name = "Outlined.OpenLoop") {
-            // Geöffneter Kreisbogen (Loop mit Lücke oben)
+        _manualControl = materialIcon(name = "Outlined.ManualControl") {
             materialPath {
                 moveTo(12.0f, 3.0f)
                 curveTo(16.97f, 3.0f, 21.0f, 7.03f, 21.0f, 12.0f)
@@ -38,7 +36,6 @@ val Icons.Outlined.OpenLoop: ImageVector
                 verticalLineTo(3.0f)
                 close()
 
-                // Pfeil an der Öffnung
                 moveTo(6.5f, 2.0f)
                 lineTo(10.0f, 5.5f)
                 lineTo(8.58f, 6.92f)
@@ -48,20 +45,20 @@ val Icons.Outlined.OpenLoop: ImageVector
                 close()
             }
         }
-        return _openLoop!!
+        return _manualControl!!
     }
 
-private var _openLoop: ImageVector? = null
+private var _manualControl: ImageVector? = null
 
 @Preview(showBackground = true)
 @Composable
-private fun OpenLoopIconPreview() {
+private fun ManualControlIconPreview() {
     AppTheme {
         Surface {
             Icon(
-                imageVector = Icons.Outlined.OpenLoop,
-                contentDescription = "Open Loop Icon Preview",
-                modifier = Modifier.padding(16.dp),
+                imageVector = Icons.Outlined.ManualControl,
+                contentDescription = "Manual Control Icon Preview",
+                modifier = Modifier.padding(16.dp)
             )
         }
     }
