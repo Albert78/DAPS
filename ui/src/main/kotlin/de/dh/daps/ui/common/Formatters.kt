@@ -296,7 +296,12 @@ fun carbsKeUnitLabel(): String {
 @Composable
 fun carbsKeValue(value: Double?, default: String = "-", withUnit: Boolean = true, signed: Boolean = false): String {
     return value?.let {
-        val format = if (signed) "%+.1f" else "%.1f"
+        var format = if (signed) "%+" else "%"
+        format += if (value % 1.0 == 0.0) {
+            ".0f"
+        } else {
+            ".1f"
+        }
         val valStr = String.format(Locale.getDefault(), format, it)
         if (withUnit) "$valStr ${carbsKeUnitLabel()}"
         else valStr

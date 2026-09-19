@@ -71,6 +71,7 @@ import de.dh.daps.ui.common.ConfigurableDisplayStrategy
 import de.dh.daps.ui.common.DefaultSteppingStrategy
 import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.carbsGramsValue
+import de.dh.daps.ui.common.carbsKeValue
 import de.dh.daps.ui.common.composables.EditableValueStepper
 import de.dh.daps.ui.common.composables.LightGreenA700
 import de.dh.daps.ui.common.composables.NormalButton
@@ -89,6 +90,7 @@ import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.SoftRed
 import de.dh.daps.ui.common.time
+import de.dh.daps.ui.screens.mealtypes.MealTypeIcon
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -394,17 +396,36 @@ private fun MealInfoCard(
             Spacer(modifier = Modifier.height(6.dp))
 
             if (mealEntry != null) {
-                Text(
-                    text = "%.0f g Kohlenhydrate (%s)".format(mealEntry.carbGrams, mealEntry.mealType.name),
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium
-                )
-                Text(
-                    text = formatTimestamp(mealEntry.timestamp),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                val keValue = mealEntry.carbGrams / 10.0
+                val keText = carbsKeValue(keValue)
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = keText,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium
+                        )
+                        MealTypeIcon(
+                            mealType = mealEntry.mealType,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Text(
+                        text = formatTimestamp(mealEntry.timestamp),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 if (mealEntry.description.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = mealEntry.description,
                         style = MaterialTheme.typography.bodyMedium,
