@@ -404,13 +404,37 @@ fun SeverityEditorSectionCard(
             }
 
             // Audio Sound Section (only active if FullScreen)
-            if (config.isFullScreen && sound != null) {
-                // Sound Selection
+            if (config.isFullScreen) {
+                // Sound Enable Toggle
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Text(
+                        text = stringResource(id = R.string.alarm_profile_play_sound),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Switch(
+                        checked = sound != null,
+                        onCheckedChange = { playSound ->
+                            val updatedSound = if (playSound) {
+                                SoundConfig(volume = 80)
+                            } else {
+                                null
+                            }
+                            onConfigChanged(config.copy(displayMode = AlertDisplayMode.FullScreen(sound = updatedSound)))
+                        }
+                    )
+                }
+
+                if (sound != null) {
+                    // Sound Selection
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = stringResource(id = R.string.alarm_profile_sound_label),
@@ -467,6 +491,7 @@ fun SeverityEditorSectionCard(
                     valueRange = 0f..100f,
                     steps = 19
                 )
+            }
             }
 
             // Vibration Mode

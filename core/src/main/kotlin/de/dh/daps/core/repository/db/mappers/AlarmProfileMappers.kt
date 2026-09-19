@@ -36,6 +36,7 @@ private fun AlarmSignalConfig.toJson(): JSONObject {
     val isFS = isFullScreen
     json.put("isFullScreen", isFS)
     val sound = soundConfig
+    json.put("hasSound", sound != null)
     if (sound != null) {
         json.put("volume", sound.volume)
         json.put("soundUri", sound.soundUri ?: JSONObject.NULL)
@@ -47,10 +48,15 @@ private fun AlarmSignalConfig.toJson(): JSONObject {
 
 private fun JSONObject.toAlarmSignalConfig(): AlarmSignalConfig {
     val isFS = optBoolean("isFullScreen", false)
+    val hasSound = if (has("hasSound")) optBoolean("hasSound") else has("volume")
     val displayMode = if (isFS) {
-        val volume = optInt("volume", 80)
-        val soundUri = if (isNull("soundUri") || !has("soundUri")) null else optString("soundUri")
-        AlertDisplayMode.FullScreen(sound = SoundConfig(volume = volume, soundUri = soundUri))
+        if (hasSound) {
+            val volume = optInt("volume", 80)
+            val soundUri = if (isNull("soundUri") || !has("soundUri")) null else optString("soundUri")
+            AlertDisplayMode.FullScreen(sound = SoundConfig(volume = volume, soundUri = soundUri))
+        } else {
+            AlertDisplayMode.FullScreen(sound = null)
+        }
     } else {
         AlertDisplayMode.NotificationOnly
     }
