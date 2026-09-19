@@ -32,6 +32,7 @@ data class EditHistoricalMealUiState(
     val pendingDeferredBoluses: List<PlannedBolusUiModel> = emptyList(),
     val isBolusPlanSheetOpen: Boolean = false,
     val administeredInsulinAmount: InsulinAmount = InsulinAmount.ZERO,
+    val isMealReminderEnabled: Boolean = false,
     val isSaving: Boolean = false,
     val isFormValid: Boolean = false
 )
@@ -44,6 +45,7 @@ class EditHistoricalMealViewModel(
     val uiState: StateFlow<EditHistoricalMealUiState> = _uiState.asStateFlow()
 
     private val treatmentRepository = registry.treatmentRepository
+    private val recommendationManager = registry.recommendationManager
     private val isAddMode = mealId == ID_UNDEFINED
     private var originalDeferredBoluses: List<DeferredBolus> = emptyList()
 
@@ -74,6 +76,11 @@ class EditHistoricalMealViewModel(
                 )
             }
 
+            val allReminders = recommendationManager.mealReminders.value
+            val existingReminder = if (meal != null) {
+                allReminders.find { it.mealId == meal.id }
+            } else null
+
             _uiState.update {
                 it.copy(
                     isLoading = false,
@@ -84,7 +91,8 @@ class EditHistoricalMealViewModel(
                     editedTimestamp = meal?.timestamp ?: (Timestamp.now() - Minutes(15)),
                     editedMealType = meal?.mealType,
                     pendingDeferredBoluses = pendingUiModels,
-                    administeredInsulinAmount = meal?.administeredInsulinAmount ?: InsulinAmount.ZERO
+                    administeredInsulinAmount = meal?.administeredInsulinAmount ?: InsulinAmount.ZERO,
+                    isMealReminderEnabled = existingReminder != null
                 )
             }
             validateForm()
@@ -110,6 +118,10 @@ class EditHistoricalMealViewModel(
     fun onMealTypeChange(mealType: MealType) {
         _uiState.update { it.copy(editedMealType = mealType) }
         validateForm()
+    }
+
+    fun onToggleMealReminder() {
+        _uiState.update { it.copy(isMealReminderEnabled = !it.isMealReminderEnabled) }
     }
 
     fun onOpenBolusPlanSheet() {
@@ -200,6 +212,18 @@ class EditHistoricalMealViewModel(
             treatmentRepository.addMealEntry(mealToSave)
             val savedMealId = mealToSave.id
 
+            // Synchronize meal reminders
+            val existingReminders = recommendationManager.mealReminders.value.filter { it.mealId == savedMealId }
+            for (reminder in existingReminders) {
+                recommendationManager.deleteMealReminder(reminder.id)
+            }
+            if (state.isMealReminderEnabled) {
+                recommendationManager.scheduleMealReminder(
+                    mealTimestamp = state.editedTimestamp,
+                    mealId = savedMealId
+                )
+            }
+
             // Synchronize deferred boluses
             val currentPending = state.pendingDeferredBoluses
             val currentIds = currentPending.map { it.id }.filter { it != ID_UNDEFINED }.toSet()
@@ -238,6 +262,11 @@ class EditHistoricalMealViewModel(
     fun deleteMeal(onSuccess: () -> Unit) {
         viewModelScope.launch {
             _uiState.value.meal?.let { meal ->
+                val existingReminders = recommendationManager.mealReminders.value.filter { it.mealId == meal.id }
+                for (reminder in existingReminders) {
+                    recommendationManager.deleteMealReminder(reminder.id)
+                }
+
                 val mealDeferred = treatmentRepository.getDeferredBoluses().filter { it.mealId == meal.id }
                 if (mealDeferred.isNotEmpty()) {
                     treatmentRepository.removeDeferredBoluses(mealDeferred)

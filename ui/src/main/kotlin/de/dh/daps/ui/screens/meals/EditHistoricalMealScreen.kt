@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -63,6 +64,7 @@ import de.dh.daps.ui.common.carbsKeUnitLabel
 import de.dh.daps.ui.common.composables.AbsoluteTimeStepper
 import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.composables.EditableValueStepper
+import de.dh.daps.ui.common.composables.ImageCaptionWithSwitch
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.theme.AppTheme
@@ -76,7 +78,8 @@ private data class InitialMealValues(
     val carbsKe: Double,
     val timestamp: Timestamp,
     val mealType: MealType?,
-    val pendingDeferredBoluses: List<PlannedBolusUiModel>
+    val pendingDeferredBoluses: List<PlannedBolusUiModel>,
+    val isMealReminderEnabled: Boolean
 )
 
 @Composable
@@ -93,6 +96,7 @@ fun EditHistoricalMealScreen(
         onCarbsChange = { viewModel.onCarbsChange(it) },
         onTimestampChange = { viewModel.onTimestampChange(it) },
         onMealTypeChange = { viewModel.onMealTypeChange(it) },
+        onToggleMealReminder = { viewModel.onToggleMealReminder() },
         onOpenBolusPlanSheet = { viewModel.onOpenBolusPlanSheet() },
         onCloseBolusPlanSheet = { viewModel.onCloseBolusPlanSheet() },
         onAddDeferredBolus = { viewModel.onAddDeferredBolus() },
@@ -112,6 +116,7 @@ fun EditHistoricalMealContent(
     onCarbsChange: (Double) -> Unit,
     onTimestampChange: (Timestamp) -> Unit,
     onMealTypeChange: (MealType) -> Unit,
+    onToggleMealReminder: () -> Unit,
     onOpenBolusPlanSheet: () -> Unit,
     onCloseBolusPlanSheet: () -> Unit,
     onAddDeferredBolus: () -> Unit,
@@ -129,7 +134,8 @@ fun EditHistoricalMealContent(
                 carbsKe = uiState.editedCarbsKe,
                 timestamp = uiState.editedTimestamp,
                 mealType = uiState.editedMealType,
-                pendingDeferredBoluses = uiState.pendingDeferredBoluses
+                pendingDeferredBoluses = uiState.pendingDeferredBoluses,
+                isMealReminderEnabled = uiState.isMealReminderEnabled
             )
         } else null
     }
@@ -139,6 +145,7 @@ fun EditHistoricalMealContent(
         uiState.editedTimestamp,
         uiState.editedMealType,
         uiState.pendingDeferredBoluses,
+        uiState.isMealReminderEnabled,
         initialValues,
         uiState.isAddMode
     ) {
@@ -147,12 +154,14 @@ fun EditHistoricalMealContent(
             uiState.editedCarbsKe > 0.0 ||
                     uiState.editedMealType != null ||
                     uiState.pendingDeferredBoluses.isNotEmpty() ||
+                    uiState.isMealReminderEnabled ||
                     uiState.editedTimestamp != initialValues.timestamp
         } else {
             uiState.editedCarbsKe != initialValues.carbsKe ||
                     uiState.editedTimestamp != initialValues.timestamp ||
                     uiState.editedMealType != initialValues.mealType ||
-                    uiState.pendingDeferredBoluses != initialValues.pendingDeferredBoluses
+                    uiState.pendingDeferredBoluses != initialValues.pendingDeferredBoluses ||
+                    uiState.isMealReminderEnabled != initialValues.isMealReminderEnabled
         }
     }
 
@@ -252,9 +261,11 @@ fun EditHistoricalMealContent(
                     mealTypes = uiState.mealTypes,
                     pendingDeferredBoluses = uiState.pendingDeferredBoluses,
                     administeredInsulinAmount = uiState.administeredInsulinAmount,
+                    isMealReminderEnabled = uiState.isMealReminderEnabled,
                     onCarbsChange = onCarbsChange,
                     onTimestampChange = onTimestampChange,
                     onMealTypeChange = onMealTypeChange,
+                    onToggleMealReminder = onToggleMealReminder,
                     onOpenBolusPlanSheet = onOpenBolusPlanSheet
                 )
             }
@@ -341,9 +352,11 @@ fun EditMealCard(
     mealTypes: List<MealType>,
     pendingDeferredBoluses: List<PlannedBolusUiModel>,
     administeredInsulinAmount: InsulinAmount = InsulinAmount.ZERO,
+    isMealReminderEnabled: Boolean = false,
     onCarbsChange: (Double) -> Unit,
     onTimestampChange: (Timestamp) -> Unit,
     onMealTypeChange: (MealType) -> Unit,
+    onToggleMealReminder: () -> Unit = {},
     onOpenBolusPlanSheet: () -> Unit
 ) {
     Card(
@@ -404,6 +417,14 @@ fun EditMealCard(
                 selectedType = mealType,
                 onTypeSelected = onMealTypeChange,
                 isMandatory = true
+            )
+
+            ImageCaptionWithSwitch(
+                imageVector = Icons.Default.Notifications,
+                text = stringResource(R.string.meal_correction_bolus_reminder_label),
+                checked = isMealReminderEnabled,
+                onCheckedChange = { onToggleMealReminder() },
+                modifier = Modifier.fillMaxWidth()
             )
 
             HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f))
@@ -514,6 +535,7 @@ private fun EditHistoricalMealContentPreview() {
             PlannedBolusUiModel(amount = InsulinAmount(1.5), timestamp = Timestamp.now() + Minutes(30))
         ),
         administeredInsulinAmount = InsulinAmount(2.0),
+        isMealReminderEnabled = true,
         isSaving = false,
         isFormValid = true
     )
@@ -526,6 +548,7 @@ private fun EditHistoricalMealContentPreview() {
             onCarbsChange = {},
             onTimestampChange = {},
             onMealTypeChange = {},
+            onToggleMealReminder = {},
             onOpenBolusPlanSheet = {},
             onCloseBolusPlanSheet = {},
             onAddDeferredBolus = {},
