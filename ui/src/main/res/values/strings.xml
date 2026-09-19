@@ -177,14 +177,14 @@
     <string name="recommendation_title_bolus">Insulinempfehlung</string>
     <string name="recommendation_title_temp_basal">Temp-Basal Empfehlung</string>
     <string name="recommendation_text_carbs">Nimm %1$dg Kohlenhydrate zu dir, um eine Hypoglykämie zu vermeiden.</string>
-    <string name="recommendation_text_bolus">Verabreiche dir %1$.2f E Insulin, um einen hohen Blutzucker zu korrigieren.</string>
+    <string name="recommendation_text_bolus">Verabreiche dir %1$.2f I.E. Insulin, um einen hohen Blutzucker zu korrigieren.</string>
     <string name="recommendation_text_temp_basal">Empfohlener Temp-Basal: %1$d%% für %2$dh</string>
 
     <string name="recommendation_carbs_info_title">Nimm %1$dg Kohlenhydrate</string>
-    <string name="recommendation_bolus_info_title">Spritze %1$.2f E Insulin</string>
+    <string name="recommendation_bolus_info_title">Spritze %1$.2f I.E. Insulin</string>
     <string name="recommendation_temp_basal_info_title">Temp-Basal (%1$d%%)</string>
     <string name="recommendation_carbs_info_text">Nimm %1$dg Kohlenhydrate zu dir, um eine Hypoglykämie zu vermeiden.</string>
-    <string name="recommendation_bolus_info_text">Verabreiche dir %1$.2f E Insulin, um einen hohen Blutzucker zu korrigieren.</string>
+    <string name="recommendation_bolus_info_text">Verabreiche dir %1$.2f I.E. Insulin, um einen hohen Blutzucker zu korrigieren.</string>
     <string name="recommendation_temp_basal_info_text">Empfohlener Temp-Basal von %1$d%% für %2$dh</string>
 
     <string name="notification_meal_reminder_title">Nahrungserinnerung</string>
@@ -221,7 +221,7 @@
     <string name="aps_mode_auto_correction">Automatische Korrektur</string>
     <string name="aps_mode_auto_correction_short">Auto-Korr.</string>
     <string name="aps_mode_auto_correction_desc">Das System steuert die Insulinabgabe vollständig und nimmt automatische Korrekturen vor.</string>
-    <string name="aps_control_basal_label">Basal: %1$s E/h</string>
+    <string name="aps_control_basal_label">Basal: %1$s I.E./h</string>
     <string name="aps_control_cr_label">CR %1$s</string>
     <string name="aps_control_isf_label">ISF %1$s</string>
     <string name="aps_control_adjustment_neutral">neutral</string>
@@ -557,19 +557,19 @@
     <string name="manual_control_clear_all_recommendations">Alle verwerfen</string>
 
     <string name="manual_control_meals_title">Mahlzeiten-Übersicht</string>
-    <string name="manual_control_past_meal_title">Letzte Mahlzeit (Vergangenheit)</string>
+    <string name="manual_control_past_meal_title">Letzte vergangene Mahlzeit</string>
     <string name="manual_control_no_past_meal">Keine vergangene Mahlzeit registriert.</string>
     <string name="manual_control_next_meal_title">Geplante, nächste Mahlzeit</string>
     <string name="manual_control_no_next_meal">Keine geplante Mahlzeit vorhanden.</string>
     <string name="manual_control_meal_carbs_format">%1$.0f g Kohlenhydrate</string>
-    <string name="manual_control_meal_insulin_format">%1$.2f E Insulin verabreicht</string>
+    <string name="manual_control_meal_insulin_format">%1$.2f I.E. Insulin verabreicht</string>
     <string name="manual_control_meal_reminder_prefix">Erinnerung: %1$s</string>
 
     <string name="manual_control_pump_controls_title">Manuelle Pumpensteuerung</string>
     <string name="manual_control_bolus_title">Bolus abgeben</string>
     <string name="manual_control_deliver_bolus">Bolus abgeben&#8230;</string>
     <string name="manual_control_cancel_bolus">Bolus abbrechen</string>
-    <string name="manual_control_bolus_delivering">Bolus wird verabreicht: %1$.2f / %2$.2f E (%3$d%%)</string>
+    <string name="manual_control_bolus_delivering">Bolus wird verabreicht: %1$.2f / %2$.2f I.E. (%3$d%%)</string>
     <string name="manual_control_no_active_bolus">Keine aktive Bolusabgabe.</string>
     <string name="manual_control_temp_basal_title">Temporäre Basalrate (Temp-Basal)</string>
     <string name="manual_control_set_temp_basal">Temp-Basal setzen&#8230;</string>
@@ -584,7 +584,7 @@
     <string name="manual_control_dialog_confirm_deliver">Abgeben</string>
     <string name="manual_control_dialog_confirm_set">Setzen</string>
     <string name="manual_control_dialog_cancel">Abbrechen</string>
-    <string name="manual_control_deferred_boluses_info">Enthält %1$d zurückgestellte(n) Bolus (insg. %2$.2f E)</string>
+    <string name="manual_control_deferred_boluses_info">Enthält %1$d zurückgestellte(n) Bolus (insg. %2$.2f I.E.)</string>
     <string name="menu_item_manual_control_label">Manuelle Steuerung</string>
 
 </resources>

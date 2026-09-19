@@ -82,6 +82,7 @@ import de.dh.daps.ui.common.composables.SecondaryButton
 import de.dh.daps.ui.common.composables.Yellow
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.glucoseValue
+import de.dh.daps.ui.common.insulinUnitLabel
 import de.dh.daps.ui.common.icons.Carbs
 import de.dh.daps.ui.common.icons.Insulin
 import de.dh.daps.ui.common.icons.Syringe
@@ -859,7 +860,7 @@ private fun DeliverBolusDialog(
                     minValue = minBolusAmount.iu,
                     maxValue = maxBolusSize.iu,
                     steppingStrategy = DefaultSteppingStrategy(step = minBolusAmount.iu),
-                    displayStrategy = ConfigurableDisplayStrategy(suffix = " E"),
+                    displayStrategy = ConfigurableDisplayStrategy(suffix = " ${insulinUnitLabel()}"),
                     modifier = Modifier.fillMaxWidth()
                 )
             }

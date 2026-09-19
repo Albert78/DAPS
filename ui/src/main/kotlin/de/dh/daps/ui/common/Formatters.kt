@@ -275,7 +275,7 @@ fun crValue(value: Double?, default: String = "-", withUnit: Boolean = true): St
 
 @Composable
 fun insulinUnitLabel(): String {
-    return stringResource(de.dh.daps.ui.R.string.history_impact_ie_label)
+    return stringResource(CommonR.string.insulin_unit)
 }
 
 @Composable

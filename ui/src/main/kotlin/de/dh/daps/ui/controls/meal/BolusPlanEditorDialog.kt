@@ -55,6 +55,7 @@ import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.StepperDefaults
 import de.dh.daps.ui.common.composables.TimeStepper
 import de.dh.daps.ui.common.composables.contentScrollIndicator
+import de.dh.daps.ui.common.insulinUnitLabel
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.time
@@ -402,7 +403,7 @@ private fun BolusPlanItemCard(
 
                         override fun color(value: Double): Color = Color.Unspecified
                     },
-                    suffix = " IE",
+                    suffix = " ${insulinUnitLabel()}",
                     style = sharedStepperStyle
                 )
             }

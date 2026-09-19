@@ -68,6 +68,7 @@
 
     <string name="glucose_unit_mgdl">mg/dl</string>
     <string name="glucose_unit_mmol">mmol/l</string>
+    <string name="insulin_unit">I.E.</string>
     <string name="unit_u_per_h">E/h</string>
     <string name="unit_g_per_u">g/E</string>
     <string name="unit_mgdl_per_u">mg/dL/E</string>
