@@ -332,12 +332,8 @@ class SystemOrchestratorImpl(
         }
 
         scope.launch {
-            recommendationManager.mealReminders.collect { reminders ->
-                val now = Timestamp.now()
-                reminders.filter { it.reminderTimestamp <= now }.forEach { reminder ->
-                    androidNotifications.showMealReminderNotification(reminder)
-                    recommendationManager.processMealReminderFired(reminder)
-                }
+            recommendationManager.dueMealReminders.collect { reminder ->
+                androidNotifications.showMealReminderNotification(reminder)
             }
         }
 

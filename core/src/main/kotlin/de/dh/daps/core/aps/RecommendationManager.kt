@@ -1,5 +1,6 @@
 package de.dh.daps.core.aps
 
+import android.content.Intent
 import android.util.Log
 import de.dh.daps.common.model.DeferredBolus
 import de.dh.daps.common.model.ID_UNDEFINED
@@ -9,10 +10,15 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.repository.db.dao.MealReminderDao
 import de.dh.daps.core.repository.db.mappers.toEntity
 import de.dh.daps.core.repository.db.mappers.toModel
+import de.dh.daps.core.system.SystemWakeService
+import de.dh.daps.core.system.WakeupHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -27,6 +33,7 @@ import kotlinx.coroutines.sync.withLock
  */
 class RecommendationManager(
     private val mealReminderDao: MealReminderDao,
+    private val wakeService: SystemWakeService,
     private val scope: CoroutineScope
 ) {
     private val mutex = Mutex()
@@ -37,10 +44,23 @@ class RecommendationManager(
     private val _mealReminders = MutableStateFlow<List<MealReminder>>(emptyList())
     val mealReminders: StateFlow<List<MealReminder>> = _mealReminders.asStateFlow()
 
+    private val dueMealRemindersChannel = Channel<MealReminder>(capacity = Channel.UNLIMITED)
+    val dueMealReminders: Flow<MealReminder> = dueMealRemindersChannel.receiveAsFlow()
+
     init {
+        wakeService.registerHandler(WAKE_TAG_MEAL_REMINDER, object : WakeupHandler {
+            override fun onWakeup(wakeupId: UInt?, intent: Intent?) {
+                scope.launch {
+                    checkAndProcessReminders()
+                }
+            }
+        })
+
         scope.launch {
             mealReminderDao.observeAllMealReminders().collect { entities ->
-                _mealReminders.value = entities.map { it.toModel() }
+                val models = entities.map { it.toModel() }
+                _mealReminders.value = models
+                checkAndProcessReminders(models)
             }
         }
     }
@@ -149,15 +169,32 @@ class RecommendationManager(
         }
     }
 
-    /**
-     * Processed when a meal reminder is handed over to the notification system.
-     * The entry is deleted immediately.
-     */
-    suspend fun processMealReminderFired(reminder: MealReminder) = mutex.withLock {
-        deleteMealReminder(reminder.id)
+    private suspend fun checkAndProcessReminders(reminders: List<MealReminder> = _mealReminders.value) = mutex.withLock {
+        val now = Timestamp.now()
+        val dueReminders = reminders.filter { it.reminderTimestamp <= now }
+
+        for (reminder in dueReminders) {
+            Log.i(TAG, "Meal reminder #${reminder.id} fired (reminder time: ${reminder.reminderTimestamp}, now: $now)")
+            dueMealRemindersChannel.send(reminder)
+            if (reminder.id != ID_UNDEFINED) {
+                mealReminderDao.deleteMealReminder(reminder.id)
+                Log.i(TAG, "Deleted fired meal reminder #${reminder.id}")
+            }
+        }
+
+        val currentReminders = mealReminderDao.getAllMealReminders().map { it.toModel() }
+        val futureReminders = currentReminders.filter { it.reminderTimestamp > now }
+        val nextReminder = futureReminders.minByOrNull { it.reminderTimestamp }
+
+        if (nextReminder != null) {
+            Log.d(TAG, "Scheduling wakeup for next meal reminder #${nextReminder.id} at ${nextReminder.reminderTimestamp}")
+            wakeService.scheduleWakeup(WAKE_TAG_MEAL_REMINDER, WAKEUP_ID_MEAL_REMINDER, nextReminder.reminderTimestamp)
+        }
     }
 
     companion object {
         val TAG = RecommendationManager::class.simpleName
+        private const val WAKE_TAG_MEAL_REMINDER = "MealReminder"
+        private const val WAKEUP_ID_MEAL_REMINDER = 1u
     }
 }

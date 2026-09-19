@@ -131,6 +131,7 @@ class SystemRegistryImpl(
 
             val recommendationManager = RecommendationManager(
                 mealReminderDao = appDatabase.mealReminderDao(),
+                wakeService = wakeService,
                 scope = scope
             )
 
