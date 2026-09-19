@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
@@ -31,10 +32,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.ui.text.font.FontWeight
-import de.dh.daps.common.model.data.AlarmSeverity
-import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.ui.screens.alarm.getAlarmTypeTitle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
@@ -46,15 +43,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.ApsMode
 import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.data.AlarmSeverity
 import de.dh.daps.common.model.data.AlarmType
 import de.dh.daps.common.model.data.BgDelta
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.aps.ApsRecommendation
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.LocalGlucoseUnit
@@ -75,6 +75,7 @@ import de.dh.daps.ui.controls.state.CurrentBgUiState
 import de.dh.daps.ui.controls.state.CurrentStateView
 import de.dh.daps.ui.controls.state.SystemViewModel
 import de.dh.daps.ui.controls.state.createSampleGoodBgUiState
+import de.dh.daps.ui.screens.alarm.getAlarmTypeTitle
 import de.dh.daps.ui.screens.history.createSampleHistoryUiState
 import de.dh.daps.ui.screens.permissions.PermissionStatus
 import de.dh.daps.ui.screens.permissions.PermissionsUiModel
@@ -277,6 +278,7 @@ fun DashboardContent(
                 ExpandableInfoCard(
                     infoText = infoText,
                     detailText = detailText,
+                    imageVector = Icons.Default.Lightbulb,
                     initiallyExpanded = false,
                     expandable = true
                 )

@@ -17,7 +17,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Fastfood
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Stop
@@ -45,7 +44,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -55,13 +53,13 @@ import de.dh.daps.common.model.BolusDeliveryState
 import de.dh.daps.common.model.DeferredBolus
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.MealEntry
-import de.dh.daps.common.model.getDefaultSlowMealType
-import de.dh.daps.common.model.getDefaultStandardMealType
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgSampleKind
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.model.getDefaultSlowMealType
+import de.dh.daps.common.model.getDefaultStandardMealType
 import de.dh.daps.core.aps.ApsRecommendation
 import de.dh.daps.core.aps.TreatmentLock
 import de.dh.daps.ui.R
@@ -80,7 +78,6 @@ import de.dh.daps.ui.common.composables.SecondaryButton
 import de.dh.daps.ui.common.composables.Yellow
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.glucoseValue
-import de.dh.daps.ui.common.icons.Carbs
 import de.dh.daps.ui.common.icons.Icon_Meal_Fast
 import de.dh.daps.ui.common.icons.Insulin
 import de.dh.daps.ui.common.icons.Syringe
@@ -91,10 +88,6 @@ import de.dh.daps.ui.common.theme.SoftRed
 import de.dh.daps.ui.common.time
 import de.dh.daps.ui.common.timeWithUnit
 import de.dh.daps.ui.screens.mealtypes.MealTypeIcon
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 sealed interface ManualControlDialog {
     data class Bolus(
