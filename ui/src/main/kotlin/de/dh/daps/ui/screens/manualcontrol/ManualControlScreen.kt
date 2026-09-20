@@ -385,7 +385,7 @@ private fun ManualControlMealsSection(
         MealInfoCard(
             title = stringResource(id = R.string.manual_control_past_meal_title),
             mealEntry = lastPastMeal,
-            emptyText = stringResource(id = R.string.manual_control_no_past_meal),
+            emptyText = stringResource(id = R.string.manual_control_no_past_meal, ManualControlViewModel.PAST_MEAL_LOOKBACK_HOURS),
             onClick = lastPastMeal?.let { meal -> { onEditMeal(meal.id) } }
         )
 

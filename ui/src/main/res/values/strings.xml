@@ -558,9 +558,9 @@
 
     <string name="manual_control_meals_title">Mahlzeiten-Übersicht</string>
     <string name="manual_control_past_meal_title">Letzte vergangene Mahlzeit</string>
-    <string name="manual_control_no_past_meal">Keine vergangene Mahlzeit registriert.</string>
+    <string name="manual_control_no_past_meal">Keine vergangene Mahlzeit in den letzten %1$d Stunden.</string>
     <string name="manual_control_next_meal_title">Geplante, nächste Mahlzeit</string>
-    <string name="manual_control_no_next_meal">Keine geplante Mahlzeit vorhanden.</string>
+    <string name="manual_control_no_next_meal">Keine Mahlzeit geplant.</string>
     <string name="manual_control_meal_carbs_format">%1$.0f g Kohlenhydrate</string>
     <string name="manual_control_meal_insulin_format">%1$.2f I.E. Insulin verabreicht</string>
     <string name="manual_control_meal_reminder_prefix">Erinnerung: %1$s</string>

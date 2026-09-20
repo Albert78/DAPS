@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Contains metabolic and therapy context information (current glucose, IOB, COB, last and next meal).
@@ -95,8 +96,13 @@ class ManualControlViewModel(
         )
 
         // Pure MealEntry objects (excluding MealReminders)
-        val pastMeal = meals.filter { it.timestamp <= now }.maxByOrNull { it.timestamp }
-        val nextMeal = meals.filter { it.timestamp > now }.minByOrNull { it.timestamp }
+        val pastMealCutoff = now.minusHours(PAST_MEAL_LOOKBACK_HOURS)
+        val pastMeal = meals
+            .filter { it.timestamp in pastMealCutoff..now }
+            .maxByOrNull { it.timestamp }
+        val nextMeal = meals
+            .filter { it.timestamp > now }
+            .minByOrNull { it.timestamp }
 
         ManualControlContextInfoUiModel(
             lastBgReading = currentBg,
@@ -177,7 +183,7 @@ class ManualControlViewModel(
                 is LockResult.Success -> return true
                 is LockResult.Busy -> lastOwner = lockResult.owner
             }
-            delay(100L)
+            delay(100L.milliseconds)
         }
         lockErrorFlow.value = lastOwner ?: "System"
         return false
@@ -247,6 +253,7 @@ class ManualControlViewModel(
 
     companion object {
         private const val TAG = "ManualControlScreen"
+        const val PAST_MEAL_LOOKBACK_HOURS = 12
 
         class Factory(private val registry: SystemRegistry) : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
