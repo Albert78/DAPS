@@ -17,6 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Stop
@@ -25,12 +26,16 @@ import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
@@ -61,7 +66,6 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.getDefaultSlowMealType
 import de.dh.daps.common.model.getDefaultStandardMealType
 import de.dh.daps.core.aps.ApsRecommendation
-import de.dh.daps.core.aps.TreatmentLock
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
 import de.dh.daps.ui.common.DefaultSteppingStrategy
@@ -76,6 +80,7 @@ import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.Red
 import de.dh.daps.ui.common.composables.SecondaryButton
 import de.dh.daps.ui.common.composables.Yellow
+import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.glucoseValue
 import de.dh.daps.ui.common.icons.Icon_Meal_Fast
@@ -88,6 +93,7 @@ import de.dh.daps.ui.common.theme.SoftRed
 import de.dh.daps.ui.common.time
 import de.dh.daps.ui.common.timeWithUnit
 import de.dh.daps.ui.screens.mealtypes.MealTypeIcon
+import de.dh.daps.common.R as CommonR
 
 sealed interface ManualControlDialog {
     data class Bolus(
@@ -108,7 +114,6 @@ sealed interface ManualControlDialog {
 @Composable
 fun ManualControlScreen(
     viewModel: ManualControlViewModel,
-    treatmentLock: TreatmentLock,
     onNavigateUp: () -> Unit,
     onNavigateToMealCorrectionBolus: (Double?) -> Unit = {},
     onEditMeal: (Long) -> Unit = {}
@@ -117,11 +122,11 @@ fun ManualControlScreen(
 
     ManualControlContent(
         uiState = uiState,
+        onNavigateUp = onNavigateUp,
         onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus,
         onEditMeal = onEditMeal,
         onDeliverBolus = { amount, handledDeferredBoluses, correctionPart, basalPart, recommendationToDismiss ->
             viewModel.deliverBolus(
-                treatmentLock = treatmentLock,
                 amount = amount,
                 handledDeferredBoluses = handledDeferredBoluses,
                 correctionPart = correctionPart,
@@ -131,16 +136,163 @@ fun ManualControlScreen(
         },
         onSetTempBasal = { durationHours, percent, recommendationToDismiss ->
             viewModel.setTempBasal(
-                treatmentLock = treatmentLock,
                 durationHours = durationHours,
                 percent = percent,
                 recommendationToDismiss = recommendationToDismiss
             )
         },
-        onCancelBolus = { viewModel.cancelBolus(treatmentLock) },
-        onCancelTempBasal = { viewModel.cancelTempBasal(treatmentLock) }
+        onCancelBolus = { viewModel.cancelBolus() },
+        onCancelTempBasal = { viewModel.cancelTempBasal() },
+        onDismissLockError = { viewModel.dismissLockError() }
     )
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ManualControlContent(
+    uiState: ManualControlUiState,
+    onNavigateUp: () -> Unit = {},
+    onNavigateToMealCorrectionBolus: (Double?) -> Unit = {},
+    onEditMeal: (Long) -> Unit = {},
+    onDeliverBolus: (
+        amount: InsulinAmount,
+        handledDeferredBoluses: List<DeferredBolus>?,
+        correctionPart: InsulinAmount,
+        basalPart: InsulinAmount,
+        recommendationToDismiss: ApsRecommendation.Bolus?
+    ) -> Unit = { _, _, _, _, _ -> },
+    onSetTempBasal: (
+        durationHours: Int,
+        percent: Int,
+        recommendationToDismiss: ApsRecommendation.TempBasal?
+    ) -> Unit = { _, _, _ -> },
+    onCancelBolus: () -> Unit = {},
+    onCancelTempBasal: () -> Unit = {},
+    onDismissLockError: () -> Unit = {}
+) {
+    var activeDialog by remember { mutableStateOf<ManualControlDialog?>(null) }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = screenTitle(stringResource(id = R.string.manual_control_screen_title)),
+                navigationIcon = {
+                    IconButton(onClick = onNavigateUp) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(id = CommonR.string.cd_navigate_up)
+                        )
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
+        val scrollState = rememberScrollState()
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                ManualControlContextInfo(contextInfo = uiState.contextInfo)
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    ManualControlMealsSection(
+                        lastPastMeal = uiState.contextInfo.lastPastMeal,
+                        nextPlannedMeal = uiState.contextInfo.nextPlannedMeal,
+                        hasNextPlannedMealReminder = uiState.contextInfo.hasNextPlannedMealReminder,
+                        onEditMeal = onEditMeal
+                    )
+
+                    ManualControlRecommendationsSection(
+                        recommendations = uiState.recommendations,
+                        onOpenBolusDialog = { activeDialog = it },
+                        onOpenTempBasalDialog = { activeDialog = it },
+                        onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus
+                    )
+
+                    ManualControlPumpControlsSection(
+                        pump = uiState.pump,
+                        onOpenBolusDialog = { activeDialog = it },
+                        onCancelBolus = onCancelBolus,
+                        onOpenTempBasalDialog = { activeDialog = it },
+                        onCancelTempBasal = onCancelTempBasal
+                    )
+                }
+            }
+        }
+    }
+
+    when (val dialog = activeDialog) {
+        is ManualControlDialog.Bolus -> {
+            DeliverBolusDialog(
+                dialogData = dialog,
+                minBolusAmount = uiState.pump.minBolusAmount,
+                maxBolusSize = uiState.pump.maxBolusSize,
+                onDismiss = { activeDialog = null },
+                onConfirm = { amount, handledDeferredBoluses, correctionPart, basalPart, recommendationToDismiss ->
+                    onDeliverBolus(
+                        amount,
+                        handledDeferredBoluses,
+                        correctionPart,
+                        basalPart,
+                        recommendationToDismiss
+                    )
+                    activeDialog = null
+                }
+            )
+        }
+        is ManualControlDialog.TempBasal -> {
+            SetTempBasalDialog(
+                dialogData = dialog,
+                onDismiss = { activeDialog = null },
+                onConfirm = { durationHours, percent, recommendationToDismiss ->
+                    onSetTempBasal(
+                        durationHours,
+                        percent,
+                        recommendationToDismiss
+                    )
+                    activeDialog = null
+                }
+            )
+        }
+        null -> {}
+    }
+
+    if (uiState.showLockError) {
+        AlertDialog(
+            onDismissRequest = onDismissLockError,
+            title = { Text(stringResource(id = R.string.core_issue_title)) },
+            text = {
+                Text(
+                    text = stringResource(
+                        id = R.string.treatment_lock_error_message,
+                        uiState.lockErrorOwner ?: stringResource(id = R.string.manual_control_screen_title)
+                    )
+                )
+            },
+            confirmButton = {
+                PrimaryButton(onClick = onDismissLockError) {
+                    Text(stringResource(id = android.R.string.ok))
+                }
+            }
+        )
+    }
+}
+
+// -----------------------------------------------------------------------------------------
+// --- Header: Context info ---
+// -----------------------------------------------------------------------------------------
 
 @Composable
 fun ManualControlContextInfo(
@@ -154,8 +306,7 @@ fun ManualControlContextInfo(
         Column(
             modifier = Modifier
                 .padding(16.dp)
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -209,106 +360,6 @@ fun ManualControlContextInfo(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-    }
-}
-
-@Composable
-fun ManualControlContent(
-    uiState: ManualControlUiState,
-    onNavigateToMealCorrectionBolus: (Double?) -> Unit = {},
-    onEditMeal: (Long) -> Unit = {},
-    onDeliverBolus: (
-        amount: InsulinAmount,
-        handledDeferredBoluses: List<DeferredBolus>?,
-        correctionPart: InsulinAmount,
-        basalPart: InsulinAmount,
-        recommendationToDismiss: ApsRecommendation.Bolus?
-    ) -> Unit = { _, _, _, _, _ -> },
-    onSetTempBasal: (
-        durationHours: Int,
-        percent: Int,
-        recommendationToDismiss: ApsRecommendation.TempBasal?
-    ) -> Unit = { _, _, _ -> },
-    onCancelBolus: () -> Unit = {},
-    onCancelTempBasal: () -> Unit = {}
-) {
-    var activeDialog by remember { mutableStateOf<ManualControlDialog?>(null) }
-
-    val scrollState = rememberScrollState()
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            ManualControlContextInfo(contextInfo = uiState.contextInfo)
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                ManualControlMealsSection(
-                    lastPastMeal = uiState.contextInfo.lastPastMeal,
-                    nextPlannedMeal = uiState.contextInfo.nextPlannedMeal,
-                    hasNextPlannedMealReminder = uiState.contextInfo.hasNextPlannedMealReminder,
-                    onEditMeal = onEditMeal
-                )
-
-                ManualControlRecommendationsSection(
-                    recommendations = uiState.recommendations,
-                    onOpenBolusDialog = { activeDialog = it },
-                    onOpenTempBasalDialog = { activeDialog = it },
-                    onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus
-                )
-
-                ManualControlPumpControlsSection(
-                    pump = uiState.pump,
-                    onOpenBolusDialog = { activeDialog = it },
-                    onCancelBolus = onCancelBolus,
-                    onOpenTempBasalDialog = { activeDialog = it },
-                    onCancelTempBasal = onCancelTempBasal
-                )
-            }
-        }
-    }
-
-    when (val dialog = activeDialog) {
-        is ManualControlDialog.Bolus -> {
-            DeliverBolusDialog(
-                dialogData = dialog,
-                minBolusAmount = uiState.pump.minBolusAmount,
-                maxBolusSize = uiState.pump.maxBolusSize,
-                onDismiss = { activeDialog = null },
-                onConfirm = { amount, handledDeferredBoluses, correctionPart, basalPart, recommendationToDismiss ->
-                    onDeliverBolus(
-                        amount,
-                        handledDeferredBoluses,
-                        correctionPart,
-                        basalPart,
-                        recommendationToDismiss
-                    )
-                    activeDialog = null
-                }
-            )
-        }
-        is ManualControlDialog.TempBasal -> {
-            SetTempBasalDialog(
-                dialogData = dialog,
-                onDismiss = { activeDialog = null },
-                onConfirm = { durationHours, percent, recommendationToDismiss ->
-                    onSetTempBasal(
-                        durationHours,
-                        percent,
-                        recommendationToDismiss
-                    )
-                    activeDialog = null
-                }
-            )
-        }
-        null -> {}
     }
 }
 

@@ -334,6 +334,12 @@ class SystemOrchestratorImpl(
             }
         }
 
+        // Important implicit dependency to the ManualControlScreen:
+        // The ManualControlScreen does not need to request a TreatmentLock because in AutoCorrection mode
+        // we forward insulin callbacks directly to the TherapyManager here, ensuring the ManualControlScreen
+        // does not conflict with the algorithm. In OpenLoop mode, on the other hand, we route all bolus
+        // recommendations to the ManualControlScreen here. Acquiring the TreatmentLock in ManualControlScreen
+        // is therefore not necessary.
         core = Core.createProductiveCore(
             therapyManager = therapyManager,
             treatmentRepository = treatmentRepository,

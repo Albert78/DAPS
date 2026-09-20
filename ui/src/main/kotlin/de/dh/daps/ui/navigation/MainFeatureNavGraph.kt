@@ -245,7 +245,7 @@ class MainFeatureNavGraph(
 
                 TreatmentLockScreen(
                     viewModel = lockViewModel,
-                    title = stringResource(id = de.dh.daps.ui.R.string.meal_add_screen_title),
+                    title = stringResource(id = R.string.meal_add_screen_title),
                     onNavigateUp = { navViewModel.pop() }
                 ) { treatmentLock ->
                     MealCorrectionBolusScreen(
@@ -270,45 +270,17 @@ class MainFeatureNavGraph(
                 val vm: ManualControlViewModel = viewModel(
                     factory = ManualControlViewModel.Companion.Factory(registry)
                 )
-                val lockViewModel: TreatmentLockViewModel = viewModel(
-                    factory = TreatmentLockViewModel.Companion.Factory(
-                        tag = "ManualControlScreen",
-                        registry = registry,
-                        requirePumpSync = true
-                    )
-                )
 
-                // Leave the screen and release therapy manager lock when the screen
-                // stops (display off, app minimized/home, or switching apps). Using ON_STOP
-                // ensures internal dialogs/overlays (which only trigger ON_PAUSE) keep the lock.
-                LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
-                    lockViewModel.releaseLock()
-                    navViewModel.pop()
-                }
-
-                DisposableEffect(Unit) {
-                    onDispose {
-                        lockViewModel.releaseLock()
+                ManualControlScreen(
+                    viewModel = vm,
+                    onNavigateUp = { navViewModel.pop() },
+                    onNavigateToMealCorrectionBolus = { carbs ->
+                        navViewModel.replaceTop(MealCorrectionBolusRoute(prefilledCarbsKe = carbs))
+                    },
+                    onEditMeal = { mealId ->
+                        navViewModel.push(HistoricalMealRoute(mealId = mealId))
                     }
-                }
-
-                TreatmentLockScreen(
-                    viewModel = lockViewModel,
-                    title = stringResource(id = R.string.manual_control_screen_title),
-                    onNavigateUp = { navViewModel.pop() }
-                ) { treatmentLock ->
-                    ManualControlScreen(
-                        viewModel = vm,
-                        treatmentLock = treatmentLock,
-                        onNavigateUp = { navViewModel.pop() },
-                        onNavigateToMealCorrectionBolus = { carbs ->
-                            navViewModel.replaceTop(MealCorrectionBolusRoute(prefilledCarbsKe = carbs))
-                        },
-                        onEditMeal = { mealId ->
-                            navViewModel.push(HistoricalMealRoute(mealId = mealId))
-                        }
-                    )
-                }
+                )
             }
 
             is PermissionsRoute -> NavEntry(key) {

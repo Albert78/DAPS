@@ -13,9 +13,12 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.toActiveDoses
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.aps.ApsRecommendation
+import de.dh.daps.core.aps.LockResult
 import de.dh.daps.core.aps.TreatmentLock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -54,7 +57,9 @@ data class ManualControlPumpUiModel(
 data class ManualControlUiState(
     val contextInfo: ManualControlContextInfoUiModel = ManualControlContextInfoUiModel(),
     val recommendations: List<ApsRecommendation> = emptyList(),
-    val pump: ManualControlPumpUiModel = ManualControlPumpUiModel()
+    val pump: ManualControlPumpUiModel = ManualControlPumpUiModel(),
+    val showLockError: Boolean = false,
+    val lockErrorOwner: String? = null
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -67,6 +72,8 @@ class ManualControlViewModel(
     private val therapyManager = systemRegistry.therapyManager
     private val glucoseRepository = systemRegistry.glucoseRepository
     private val carbsInsulinCalculator = systemRegistry.carbsInsulinCalculator
+
+    private val lockErrorFlow = MutableStateFlow<String?>(null)
 
     private val contextInfoFlow: Flow<ManualControlContextInfoUiModel> = combine(
         glucoseRepository.currentBg,
@@ -127,8 +134,9 @@ class ManualControlViewModel(
         contextInfoFlow,
         recommendationManager.recommendations,
         recommendationManager.mealReminders,
-        pumpFlow
-    ) { contextInfo, recommendations, mealReminders, pump ->
+        pumpFlow,
+        lockErrorFlow
+    ) { contextInfo, recommendations, mealReminders, pump, lockErrorOwner ->
         val nextMeal = contextInfo.nextPlannedMeal
         val hasNextPlannedMealReminder = if (nextMeal != null) {
             mealReminders.any { reminder ->
@@ -140,7 +148,9 @@ class ManualControlViewModel(
         ManualControlUiState(
             contextInfo = contextInfo.copy(hasNextPlannedMealReminder = hasNextPlannedMealReminder),
             recommendations = recommendations,
-            pump = pump
+            pump = pump,
+            showLockError = lockErrorOwner != null,
+            lockErrorOwner = lockErrorOwner
         )
     }.stateIn(
         scope = viewModelScope,
@@ -148,8 +158,32 @@ class ManualControlViewModel(
         initialValue = ManualControlUiState()
     )
 
+    fun dismissLockError() {
+        lockErrorFlow.value = null
+    }
+
+    private suspend fun acquireTreatmentLockAndExecute(
+        tag: String = TAG,
+        timeoutMs: Long = 5000L,
+        block: suspend (TreatmentLock) -> Unit
+    ): Boolean {
+        val startTime = System.currentTimeMillis()
+        var lastOwner: String? = null
+        while (System.currentTimeMillis() - startTime < timeoutMs) {
+            val lockResult = therapyManager.tryAcquire(tag) { lock ->
+                block(lock)
+            }
+            when (lockResult) {
+                is LockResult.Success -> return true
+                is LockResult.Busy -> lastOwner = lockResult.owner
+            }
+            delay(100L)
+        }
+        lockErrorFlow.value = lastOwner ?: "System"
+        return false
+    }
+
     fun deliverBolus(
-        treatmentLock: TreatmentLock,
         amount: InsulinAmount,
         handledDeferredBoluses: List<DeferredBolus>? = null,
         correctionPart: InsulinAmount = InsulinAmount.ZERO,
@@ -157,50 +191,63 @@ class ManualControlViewModel(
         recommendationToDismiss: ApsRecommendation? = null
     ) {
         viewModelScope.launch {
-            therapyManager.issueBolus(
-                treatmentLock = treatmentLock,
-                amount = amount,
-                handledDeferredBoluses = handledDeferredBoluses,
-                correctionPart = correctionPart,
-                basalPart = basalPart
-            )
-            recommendationToDismiss?.let {
-                recommendationManager.removeRecommendation(it)
+            val acquired = acquireTreatmentLockAndExecute { treatmentLock ->
+                therapyManager.issueBolus(
+                    treatmentLock = treatmentLock,
+                    amount = amount,
+                    handledDeferredBoluses = handledDeferredBoluses,
+                    correctionPart = correctionPart,
+                    basalPart = basalPart
+                )
+            }
+            if (acquired) {
+                recommendationToDismiss?.let {
+                    recommendationManager.removeRecommendation(it)
+                }
             }
         }
     }
 
-    fun cancelBolus(treatmentLock: TreatmentLock) {
+    fun cancelBolus() {
         viewModelScope.launch {
-            therapyManager.cancelBolus(treatmentLock)
+            acquireTreatmentLockAndExecute { treatmentLock ->
+                therapyManager.cancelBolus(treatmentLock)
+            }
         }
     }
 
     fun setTempBasal(
-        treatmentLock: TreatmentLock,
         durationHours: Int,
         percent: Int,
         recommendationToDismiss: ApsRecommendation? = null
     ) {
         viewModelScope.launch {
-            therapyManager.setTempBasal(
-                treatmentLock = treatmentLock,
-                durationInHours = durationHours,
-                percent = percent
-            )
-            recommendationToDismiss?.let {
-                recommendationManager.removeRecommendation(it)
+            val acquired = acquireTreatmentLockAndExecute { treatmentLock ->
+                therapyManager.setTempBasal(
+                    treatmentLock = treatmentLock,
+                    durationInHours = durationHours,
+                    percent = percent
+                )
+            }
+            if (acquired) {
+                recommendationToDismiss?.let {
+                    recommendationManager.removeRecommendation(it)
+                }
             }
         }
     }
 
-    fun cancelTempBasal(treatmentLock: TreatmentLock) {
+    fun cancelTempBasal() {
         viewModelScope.launch {
-            therapyManager.clearTempBasal(treatmentLock)
+            acquireTreatmentLockAndExecute { treatmentLock ->
+                therapyManager.clearTempBasal(treatmentLock)
+            }
         }
     }
 
     companion object {
+        private const val TAG = "ManualControlScreen"
+
         class Factory(private val registry: SystemRegistry) : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {

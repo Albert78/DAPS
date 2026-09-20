@@ -54,7 +54,9 @@ sealed interface CoreState {
  * The computation core of the APS system.
  *
  * **Architecture**
- * This class is NOT thread-safe by itself and must be called from a controlled threading environment (like SystemOrchestrator facade).
+ * Thread safety is ensured via an internal [Mutex]. Important methods (such as calculation and event handler
+ * methods) acquire a lock via [Mutex], allowing recalculations and event handlers to be safely called from
+ * different threads.
  *
  * **Android integration**
  * This class should remain as free as possible of workarounds for the Android system.
