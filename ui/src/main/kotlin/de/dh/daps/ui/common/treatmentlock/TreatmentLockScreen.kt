@@ -28,6 +28,11 @@ import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.Red
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.TopAppBar
+import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.common.R as CommonR
 
 @Composable
@@ -185,19 +190,19 @@ private fun LockErrorCard(owner: String?, onNavigateUp: () -> Unit) {
     }
 }
 
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TreatmentLockHeader(
     title: String,
     onNavigateUp: () -> Unit
 ) {
-    androidx.compose.material3.TopAppBar(
+    TopAppBar(
         title = {
             Text(title)
         },
         navigationIcon = {
-            androidx.compose.material3.IconButton(onClick = onNavigateUp) {
-                androidx.compose.material3.Icon(
+            IconButton(onClick = onNavigateUp) {
+                Icon(
                     Icons.Default.Close,
                     contentDescription = stringResource(id = R.string.cd_close)
                 )
@@ -209,7 +214,7 @@ private fun TreatmentLockHeader(
 @androidx.compose.ui.tooling.preview.Preview(showBackground = true, name = "Loading/Busy")
 @Composable
 fun TreatmentLockScreenBusyPreview() {
-    de.dh.daps.ui.common.theme.AppTheme {
+    AppTheme {
         TreatmentLockScreenContent(
             uiState = TreatmentLockUiState(status = LockStatus.Busy, busyOwner = "Core"),
             onNavigateUp = {},
@@ -222,7 +227,7 @@ fun TreatmentLockScreenBusyPreview() {
 @androidx.compose.ui.tooling.preview.Preview(showBackground = true, name = "Syncing")
 @Composable
 fun TreatmentLockScreenSyncingPreview() {
-    de.dh.daps.ui.common.theme.AppTheme {
+    AppTheme {
         TreatmentLockScreenContent(
             uiState = TreatmentLockUiState(status = LockStatus.Syncing),
             onNavigateUp = {},
@@ -235,7 +240,7 @@ fun TreatmentLockScreenSyncingPreview() {
 @androidx.compose.ui.tooling.preview.Preview(showBackground = true, name = "Error")
 @Composable
 fun TreatmentLockScreenErrorPreview() {
-    de.dh.daps.ui.common.theme.AppTheme {
+    AppTheme {
         TreatmentLockScreenContent(
             uiState = TreatmentLockUiState(status = LockStatus.Error, busyOwner = "PumpManager"),
             onNavigateUp = {},
@@ -248,7 +253,7 @@ fun TreatmentLockScreenErrorPreview() {
 @androidx.compose.ui.tooling.preview.Preview(showBackground = true, name = "Acquired")
 @Composable
 fun TreatmentLockScreenAcquiredPreview() {
-    de.dh.daps.ui.common.theme.AppTheme {
+    AppTheme {
         TreatmentLockScreenContent(
             uiState = TreatmentLockUiState(
                 status = LockStatus.Acquired,
@@ -267,7 +272,7 @@ fun TreatmentLockScreenAcquiredPreview() {
 @androidx.compose.ui.tooling.preview.Preview(showBackground = true, name = "Pump Sync Pending")
 @Composable
 fun TreatmentLockScreenPumpSyncPendingPreview() {
-    de.dh.daps.ui.common.theme.AppTheme {
+    AppTheme {
         TreatmentLockScreenContent(
             uiState = TreatmentLockUiState(status = LockStatus.PumpSyncPending),
             onNavigateUp = {},
