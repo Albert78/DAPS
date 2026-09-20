@@ -114,55 +114,32 @@ fun ManualControlScreen(
     onEditMeal: (Long) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var activeDialog by remember { mutableStateOf<ManualControlDialog?>(null) }
 
     ManualControlContent(
         uiState = uiState,
         onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus,
         onEditMeal = onEditMeal,
-        onOpenBolusDialog = { activeDialog = it },
-        onOpenTempBasalDialog = { activeDialog = it },
+        onDeliverBolus = { amount, handledDeferredBoluses, correctionPart, basalPart, recommendationToDismiss ->
+            viewModel.deliverBolus(
+                treatmentLock = treatmentLock,
+                amount = amount,
+                handledDeferredBoluses = handledDeferredBoluses,
+                correctionPart = correctionPart,
+                basalPart = basalPart,
+                recommendationToDismiss = recommendationToDismiss
+            )
+        },
+        onSetTempBasal = { durationHours, percent, recommendationToDismiss ->
+            viewModel.setTempBasal(
+                treatmentLock = treatmentLock,
+                durationHours = durationHours,
+                percent = percent,
+                recommendationToDismiss = recommendationToDismiss
+            )
+        },
         onCancelBolus = { viewModel.cancelBolus(treatmentLock) },
         onCancelTempBasal = { viewModel.cancelTempBasal(treatmentLock) }
     )
-
-    when (val dialog = activeDialog) {
-        is ManualControlDialog.Bolus -> {
-            DeliverBolusDialog(
-                dialogData = dialog,
-                minBolusAmount = uiState.pump.minBolusAmount,
-                maxBolusSize = uiState.pump.maxBolusSize,
-                onDismiss = { activeDialog = null },
-                onConfirm = { amount, handledDeferredBoluses, correctionPart, basalPart, recommendationToDismiss ->
-                    viewModel.deliverBolus(
-                        treatmentLock = treatmentLock,
-                        amount = amount,
-                        handledDeferredBoluses = handledDeferredBoluses,
-                        correctionPart = correctionPart,
-                        basalPart = basalPart,
-                        recommendationToDismiss = recommendationToDismiss
-                    )
-                    activeDialog = null
-                }
-            )
-        }
-        is ManualControlDialog.TempBasal -> {
-            SetTempBasalDialog(
-                dialogData = dialog,
-                onDismiss = { activeDialog = null },
-                onConfirm = { durationHours, percent, recommendationToDismiss ->
-                    viewModel.setTempBasal(
-                        treatmentLock = treatmentLock,
-                        durationHours = durationHours,
-                        percent = percent,
-                        recommendationToDismiss = recommendationToDismiss
-                    )
-                    activeDialog = null
-                }
-            )
-        }
-        null -> {}
-    }
 }
 
 @Composable
@@ -240,11 +217,23 @@ fun ManualControlContent(
     uiState: ManualControlUiState,
     onNavigateToMealCorrectionBolus: (Double?) -> Unit = {},
     onEditMeal: (Long) -> Unit = {},
-    onOpenBolusDialog: (ManualControlDialog.Bolus) -> Unit = {},
-    onOpenTempBasalDialog: (ManualControlDialog.TempBasal) -> Unit = {},
+    onDeliverBolus: (
+        amount: InsulinAmount,
+        handledDeferredBoluses: List<DeferredBolus>?,
+        correctionPart: InsulinAmount,
+        basalPart: InsulinAmount,
+        recommendationToDismiss: ApsRecommendation.Bolus?
+    ) -> Unit = { _, _, _, _, _ -> },
+    onSetTempBasal: (
+        durationHours: Int,
+        percent: Int,
+        recommendationToDismiss: ApsRecommendation.TempBasal?
+    ) -> Unit = { _, _, _ -> },
     onCancelBolus: () -> Unit = {},
     onCancelTempBasal: () -> Unit = {}
 ) {
+    var activeDialog by remember { mutableStateOf<ManualControlDialog?>(null) }
+
     val scrollState = rememberScrollState()
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -270,20 +259,56 @@ fun ManualControlContent(
 
                 ManualControlRecommendationsSection(
                     recommendations = uiState.recommendations,
-                    onOpenBolusDialog = onOpenBolusDialog,
-                    onOpenTempBasalDialog = onOpenTempBasalDialog,
+                    onOpenBolusDialog = { activeDialog = it },
+                    onOpenTempBasalDialog = { activeDialog = it },
                     onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus
                 )
 
                 ManualControlPumpControlsSection(
                     pump = uiState.pump,
-                    onOpenBolusDialog = onOpenBolusDialog,
+                    onOpenBolusDialog = { activeDialog = it },
                     onCancelBolus = onCancelBolus,
-                    onOpenTempBasalDialog = onOpenTempBasalDialog,
+                    onOpenTempBasalDialog = { activeDialog = it },
                     onCancelTempBasal = onCancelTempBasal
                 )
             }
         }
+    }
+
+    when (val dialog = activeDialog) {
+        is ManualControlDialog.Bolus -> {
+            DeliverBolusDialog(
+                dialogData = dialog,
+                minBolusAmount = uiState.pump.minBolusAmount,
+                maxBolusSize = uiState.pump.maxBolusSize,
+                onDismiss = { activeDialog = null },
+                onConfirm = { amount, handledDeferredBoluses, correctionPart, basalPart, recommendationToDismiss ->
+                    onDeliverBolus(
+                        amount,
+                        handledDeferredBoluses,
+                        correctionPart,
+                        basalPart,
+                        recommendationToDismiss
+                    )
+                    activeDialog = null
+                }
+            )
+        }
+        is ManualControlDialog.TempBasal -> {
+            SetTempBasalDialog(
+                dialogData = dialog,
+                onDismiss = { activeDialog = null },
+                onConfirm = { durationHours, percent, recommendationToDismiss ->
+                    onSetTempBasal(
+                        durationHours,
+                        percent,
+                        recommendationToDismiss
+                    )
+                    activeDialog = null
+                }
+            )
+        }
+        null -> {}
     }
 }
 
