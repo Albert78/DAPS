@@ -141,7 +141,7 @@ class MainFeatureNavGraph(
                     onNavigateToPermissions = { navViewModel.push(PermissionsRoute) },
                     onNavigateToPreferences = { navViewModel.push(PreferencesMainRoute) },
                     onNavigateToTherapySettings = { navViewModel.push(CurrentTherapySettingsRoute) },
-                    onNavigateToMealCorrectionBolus = { navViewModel.push(MealCorrectionBolusRoute()) },
+                    onNavigateToMealCorrectionBolus = { carbsInG -> navViewModel.push(MealCorrectionBolusRoute(prefilledCarbsInG = carbsInG)) },
                     onNavigateToSystemControl = { navViewModel.push(SystemControlRoute()) },
                     onNavigateToManualControl = { initialDialog -> navViewModel.push(ManualControlRoute(initialDialog = initialDialog)) },
                     onAdjustmentClick = { navViewModel.push(TherapyAdjustmentRoute) },
@@ -218,7 +218,7 @@ class MainFeatureNavGraph(
                 val vm: MealCorrectionBolusViewModel = viewModel(
                     factory = MealCorrectionBolusViewModel.Companion.Factory(
                         registry = registry,
-                        prefilledCarbsKe = key.prefilledCarbsKe
+                        prefilledCarbsInG = key.prefilledCarbsInG
                     )
                 )
                 val lockViewModel: TreatmentLockViewModel = viewModel(
@@ -275,8 +275,8 @@ class MainFeatureNavGraph(
                     viewModel = vm,
                     initialDialog = key.initialDialog,
                     onNavigateUp = { navViewModel.pop() },
-                    onNavigateToMealCorrectionBolus = { carbs ->
-                        navViewModel.replaceTop(MealCorrectionBolusRoute(prefilledCarbsKe = carbs))
+                    onNavigateToMealCorrectionBolus = { carbsInG ->
+                        navViewModel.replaceTop(MealCorrectionBolusRoute(prefilledCarbsInG = carbsInG))
                     },
                     onEditMeal = { mealId ->
                         navViewModel.push(HistoricalMealRoute(mealId = mealId))

@@ -65,6 +65,7 @@ import de.dh.daps.common.navigation.DashboardRoute
 import de.dh.daps.common.navigation.FeatureNavGraph
 import de.dh.daps.common.navigation.FoodDatabaseRoute
 import de.dh.daps.common.navigation.HistoricalMealRoute
+import de.dh.daps.common.navigation.ManualControlInitialDialog
 import de.dh.daps.common.navigation.ManualControlRoute
 import de.dh.daps.common.navigation.MasterDataRoute
 import de.dh.daps.common.navigation.MealCorrectionBolusRoute
@@ -244,27 +245,36 @@ class MainActivity : ComponentActivity() {
         fun parseIntent(intent: Intent?): List<NavKey>? {
             if (intent == null) return null
 
-            if (intent.action == Intent.ACTION_VIEW) {
-                val data = intent.data
-                if (data?.scheme == "app" && data.host == "daps.dh.de") {
-                    val path = data.path
-                    if (path == "/dashboard") {
-                        return listOf(DashboardRoute)
-                    } else if (path?.startsWith("/meal/") == true) {
-                        val mealId = data.lastPathSegment?.toLongOrNull()
-                        if (mealId != null) {
-                            return listOf(DashboardRoute, HistoricalMealRoute(mealId))
-                        }
-                    } else if (path == "/mealcorrectionbolus") {
-                        val carbs = data.getDoubleQueryParameter("carbs")
-                            ?: intent.getDoubleExtraOrNull("carbs")
-
-                        return listOf(DashboardRoute, MealCorrectionBolusRoute(prefilledCarbsKe = carbs))
+            val data = intent.data
+            if (intent.action == Intent.ACTION_VIEW && data?.scheme == "app" && data.host == "daps.dh.de") {
+                val path = data.path
+                if (path == "/dashboard") {
+                    return listOf(DashboardRoute)
+                } else if (path?.startsWith("/meal/") == true) {
+                    val mealId = data.lastPathSegment?.toLongOrNull()
+                    if (mealId != null) {
+                        return listOf(DashboardRoute, HistoricalMealRoute(mealId))
                     }
+                } else if (path == "/mealcorrectionbolus") {
+                    val carbsInG = data.getDoubleQueryParameter("carbsInG")
+                        ?: data.getDoubleQueryParameter("carbs")
+                        ?: intent.getDoubleExtraOrNull("carbsInG")
+                        ?: intent.getDoubleExtraOrNull("carbs")
+                        ?: intent.getDoubleExtraOrNull("prefilledCarbsInG")
+
+                    return listOf(DashboardRoute, MealCorrectionBolusRoute(prefilledCarbsInG = carbsInG))
+                } else if (path == "/manualcontrol") {
+                    val dialogStr = data.getQueryParameter("dialog")
+                        ?: intent.getStringExtra("dialog")
+                        ?: intent.getStringExtra("initial_dialog")
+
+                    val initialDialog = when (dialogStr?.lowercase()) {
+                        "bolus" -> ManualControlInitialDialog.BOLUS
+                        "temp_basal", "tempbasal" -> ManualControlInitialDialog.TEMP_BASAL
+                        else -> ManualControlInitialDialog.NONE
+                    }
+                    return listOf(DashboardRoute, ManualControlRoute(initialDialog = initialDialog))
                 }
-            } else if (intent.action == ACTION_MEAL_CORRECTION_BOLUS || intent.hasExtra("carbs")) {
-                val carbs = intent.getDoubleExtraOrNull("carbs")
-                return listOf(DashboardRoute, MealCorrectionBolusRoute(prefilledCarbsKe = carbs))
             }
 
             return null
@@ -278,8 +288,9 @@ class MainActivity : ComponentActivity() {
         }
 
         companion object {
-            const val ACTION_MEAL_CORRECTION_BOLUS = "de.dh.daps.action.MEAL_CORRECTION_BOLUS"
-            const val EXTRA_CARBS = "carbs"
+            const val EXTRA_CARBS_IN_G = "carbsInG"
+            const val EXTRA_DIALOG = "dialog"
+            const val EXTRA_INITIAL_DIALOG = "initial_dialog"
 
             fun createStartDashboardIntent(context: Context): Intent {
                 return Intent(context, MainActivity::class.java).apply {
@@ -297,14 +308,35 @@ class MainActivity : ComponentActivity() {
 
             fun createMealCorrectionBolusIntent(
                 context: Context,
-                carbs: Double? = null
+                carbsInG: Double? = null
             ): Intent {
                 return Intent(context, MainActivity::class.java).apply {
                     action = Intent.ACTION_VIEW
                     val uriBuilder = "app://daps.dh.de/mealcorrectionbolus".toUri().buildUpon()
-                    if (carbs != null) {
-                        uriBuilder.appendQueryParameter("carbs", carbs.toString())
-                        putExtra(EXTRA_CARBS, carbs)
+                    if (carbsInG != null) {
+                        uriBuilder.appendQueryParameter("carbsInG", carbsInG.toString())
+                        putExtra(EXTRA_CARBS_IN_G, carbsInG)
+                    }
+                    data = uriBuilder.build()
+                }
+            }
+
+            fun createManualControlIntent(
+                context: Context,
+                initialDialog: ManualControlInitialDialog = ManualControlInitialDialog.NONE
+            ): Intent {
+                return Intent(context, MainActivity::class.java).apply {
+                    action = Intent.ACTION_VIEW
+                    val uriBuilder = "app://daps.dh.de/manualcontrol".toUri().buildUpon()
+                    val dialogStr = when (initialDialog) {
+                        ManualControlInitialDialog.BOLUS -> "bolus"
+                        ManualControlInitialDialog.TEMP_BASAL -> "temp_basal"
+                        ManualControlInitialDialog.NONE -> null
+                    }
+                    if (dialogStr != null) {
+                        uriBuilder.appendQueryParameter("dialog", dialogStr)
+                        putExtra(EXTRA_DIALOG, dialogStr)
+                        putExtra(EXTRA_INITIAL_DIALOG, dialogStr)
                     }
                     data = uriBuilder.build()
                 }
@@ -324,8 +356,13 @@ class MainActivity : ComponentActivity() {
 
         fun createMealCorrectionBolusIntent(
             context: Context,
-            carbs: Double? = null
-        ): Intent = IntentHandler.createMealCorrectionBolusIntent(context, carbs)
+            carbsInG: Double? = null
+        ): Intent = IntentHandler.createMealCorrectionBolusIntent(context, carbsInG)
+
+        fun createManualControlIntent(
+            context: Context,
+            initialDialog: ManualControlInitialDialog = ManualControlInitialDialog.NONE
+        ): Intent = IntentHandler.createManualControlIntent(context, initialDialog)
     }
 }
 

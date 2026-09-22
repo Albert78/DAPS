@@ -101,7 +101,7 @@ fun DashboardScreen(
     onNavigateToPermissions: () -> Unit,
     onNavigateToPreferences: () -> Unit,
     onNavigateToTherapySettings: () -> Unit,
-    onNavigateToMealCorrectionBolus: () -> Unit,
+    onNavigateToMealCorrectionBolus: (Double?) -> Unit = {},
     onNavigateToSystemControl: () -> Unit,
     onNavigateToManualControl: (ManualControlInitialDialog) -> Unit = {},
     onAdjustmentClick: () -> Unit,
@@ -155,7 +155,7 @@ fun DashboardContent(
     onNavigateToPermissions: () -> Unit,
     onNavigateToPreferences: () -> Unit,
     onNavigateToTherapySettings: () -> Unit,
-    onNavigateToMealCorrectionBolus: () -> Unit,
+    onNavigateToMealCorrectionBolus: (Double?) -> Unit = {},
     isMealCorrectionBolusAllowed: Boolean,
     onNavigateToSystemControl: () -> Unit,
     onNavigateToManualControl: (ManualControlInitialDialog) -> Unit = {},
@@ -261,10 +261,11 @@ fun DashboardContent(
                 Spacer(modifier = Modifier.height(8.dp))
                 val (infoText, detailText, actionClick) = when (recommendation) {
                     is ApsRecommendation.Carbs -> {
+                        val carbsKe = recommendation.amountInGram / 10.0
                         Triple(
                             stringResource(R.string.recommendation_carbs_info_title, recommendation.amountInGram),
                             stringResource(R.string.recommendation_carbs_info_text, recommendation.amountInGram),
-                            { onNavigateToMealCorrectionBolus() }
+                            { onNavigateToMealCorrectionBolus(carbsKe) }
                         )
                     }
 
@@ -345,7 +346,7 @@ fun DashboardContent(
             Spacer(modifier = Modifier.height(16.dp))
 
             PrimaryButton(
-                onClick = onNavigateToMealCorrectionBolus,
+                onClick = { onNavigateToMealCorrectionBolus(null) },
                 enabled = isMealCorrectionBolusAllowed,
                 modifier = Modifier.fillMaxWidth()
             ) {

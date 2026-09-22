@@ -51,10 +51,10 @@
                     android:scheme="app"
                     android:host="daps.dh.de"
                     android:pathPrefix="/mealcorrectionbolus" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="de.dh.daps.action.MEAL_CORRECTION_BOLUS" />
-                <category android:name="android.intent.category.DEFAULT" />
+                <data
+                    android:scheme="app"
+                    android:host="daps.dh.de"
+                    android:pathPrefix="/manualcontrol" />
             </intent-filter>
         </activity>
 

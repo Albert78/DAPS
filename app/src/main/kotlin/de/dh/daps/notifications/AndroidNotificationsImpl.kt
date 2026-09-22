@@ -18,6 +18,7 @@ import de.dh.daps.common.model.data.AlarmType
 import de.dh.daps.common.model.data.BgDelta
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.common.navigation.ManualControlInitialDialog
 import de.dh.daps.core.aps.ApsRecommendation
 import de.dh.daps.core.repository.GlucoseRepository
 import de.dh.daps.core.system.AndroidNotifications
@@ -147,13 +148,25 @@ class AndroidNotificationsImpl(
             )
         }
 
-        val dashboardIntent = MainActivity.createStartDashboardIntent(context)
+        val intent = when (recommendation) {
+            is ApsRecommendation.Carbs -> {
+                MainActivity.createMealCorrectionBolusIntent(context, recommendation.amountInGram.toDouble())
+            }
+            is ApsRecommendation.Bolus -> {
+                MainActivity.createManualControlIntent(context, ManualControlInitialDialog.BOLUS)
+            }
+            is ApsRecommendation.TempBasal -> {
+                MainActivity.createManualControlIntent(context, ManualControlInitialDialog.TEMP_BASAL)
+            }
+        }
+
         val pendingIntent = PendingIntent.getActivity(
-            context, 0,
-            dashboardIntent, PendingIntent.FLAG_IMMUTABLE
+            context,
+            RECOMMENDATION_NOTIFICATION_ID,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        // TODO: Add content click handler which goes to add meal/insulin screen with prefilled value
         val notification = NotificationCompat.Builder(context, RECOMMENDATION_CHANNEL_ID)
             .setContentTitle(title)
             .setContentText(text)

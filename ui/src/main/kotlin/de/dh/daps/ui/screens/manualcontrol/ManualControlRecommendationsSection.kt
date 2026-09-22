@@ -181,8 +181,8 @@ fun RecommendationCard(
                     ) {
                         PrimaryButton(
                             onClick = {
-                                val carbsKe = recommendation.amountInGram / 10.0
-                                onNavigateToMealCorrectionBolus(carbsKe)
+                                val carbsInG = recommendation.amountInGram.toDouble()
+                                onNavigateToMealCorrectionBolus(carbsInG)
                             }
                         ) {
                             Text(stringResource(id = R.string.manual_control_apply_recommendation))
