@@ -6,8 +6,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -50,6 +52,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -206,7 +209,7 @@ fun ManualControlContent(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                        .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 24.dp),
                     verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
                     // Meals Overview
@@ -305,14 +308,10 @@ fun ManualControlContent(
 fun ManualControlContextInfo(
     contextInfo: ManualControlContextInfoUiModel
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-        )
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RectangleShape,
+        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
     ) {
         Column(
             modifier = Modifier
@@ -341,10 +340,10 @@ fun ManualControlContextInfo(
                 Text(
                     text = glucoseUnitLabel(),
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = Color.Gray,
                     modifier = Modifier
                         .align(Alignment.Bottom)
-                        .padding(bottom = 10.dp)
+                        .padding(bottom = 12.dp)
                 )
             }
 
@@ -357,7 +356,7 @@ fun ManualControlContextInfo(
             Text(
                 text = timeText,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = Color.Gray
             )
 
             Spacer(Modifier.height(12.dp))
@@ -436,7 +435,9 @@ private fun ManualControlMealsSection(
         )
 
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Max),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             // Last Past Meal (Compact)
@@ -444,7 +445,9 @@ private fun ManualControlMealsSection(
                 title = stringResource(id = R.string.manual_control_past_meal_title),
                 mealEntry = lastPastMeal,
                 emptyText = stringResource(id = R.string.manual_control_no_past_meal, ManualControlViewModel.PAST_MEAL_LOOKBACK_HOURS),
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
                 onClick = lastPastMeal?.let { meal -> { onEditMeal(meal.id) } }
             )
 
@@ -454,7 +457,9 @@ private fun ManualControlMealsSection(
                 mealEntry = nextPlannedMeal,
                 emptyText = stringResource(id = R.string.manual_control_no_next_meal),
                 hasReminder = hasNextPlannedMealReminder,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
                 onClick = nextPlannedMeal?.let { meal -> { onEditMeal(meal.id) } }
             )
         }
@@ -480,7 +485,9 @@ private fun CompactMealInfoCard(
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
         Column(
-            modifier = Modifier.padding(10.dp)
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(10.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -541,7 +548,7 @@ private fun CompactMealInfoCard(
                         text = mealEntry.description,
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
@@ -550,7 +557,6 @@ private fun CompactMealInfoCard(
                     text = emptyText,
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
             }
