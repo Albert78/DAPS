@@ -941,9 +941,9 @@ private fun ManualControlPumpControlsSection(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.35f)
+                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
             ),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.4f))
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f))
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 val activeBasal = pump.basalStatus
@@ -961,13 +961,13 @@ private fun ManualControlPumpControlsSection(
                         Box(
                             modifier = Modifier
                                 .size(40.dp)
-                                .background(MaterialTheme.colorScheme.tertiaryContainer, CircleShape),
+                                .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Speed,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.tertiary,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(22.dp)
                             )
                         }
@@ -995,12 +995,12 @@ private fun ManualControlPumpControlsSection(
 
                     Surface(
                         shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.15f)
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
                     ) {
                         Text(
                             text = if (isTempActive) "Temp-Basal" else "Basal",
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.tertiary,
+                            color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold,
                             maxLines = 1,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
@@ -1027,7 +1027,7 @@ private fun ManualControlPumpControlsSection(
                             )
                         }
                         Spacer(modifier = Modifier.height(12.dp))
-                        SecondaryButton(
+                        PrimaryButton(
                             onClick = {
                                 onOpenTempBasalDialog(
                                     ManualControlDialog.TempBasal(
@@ -1046,7 +1046,7 @@ private fun ManualControlPumpControlsSection(
                         val percent = activeBasal.tempBasalPercent ?: 100
                         Surface(
                             shape = RoundedCornerShape(12.dp),
-                            color = MaterialTheme.colorScheme.tertiaryContainer,
+                            color = MaterialTheme.colorScheme.primaryContainer,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Column(modifier = Modifier.padding(12.dp)) {
@@ -1054,13 +1054,13 @@ private fun ManualControlPumpControlsSection(
                                     text = stringResource(id = R.string.manual_control_temp_basal_active, percent),
                                     style = MaterialTheme.typography.bodyLarge,
                                     fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
                                     text = "Aktuelle Rate: $activeRateFormatted I.E./h",
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
                             }
                         }
@@ -1083,7 +1083,7 @@ private fun ManualControlPumpControlsSection(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.height(14.dp))
-                        SecondaryButton(
+                        PrimaryButton(
                             onClick = {
                                 onOpenTempBasalDialog(
                                     ManualControlDialog.TempBasal(
@@ -1106,7 +1106,7 @@ private fun ManualControlPumpControlsSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(14.dp))
-                    SecondaryButton(
+                    PrimaryButton(
                         onClick = {
                             onOpenTempBasalDialog(
                                 ManualControlDialog.TempBasal(
