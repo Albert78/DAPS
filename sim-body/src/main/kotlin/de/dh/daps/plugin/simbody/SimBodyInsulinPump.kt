@@ -20,6 +20,7 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.data.getAmountForMinute
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -30,6 +31,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
@@ -41,6 +43,7 @@ import kotlin.time.Duration.Companion.milliseconds
  * the real-world scenario where the pump is a standalone device connected via
  * a wireless communication protocol.
  */
+@OptIn(FlowPreview::class)
 class SimBodyInsulinPump(
     private val device: SimBodyPumpDevice,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
@@ -106,12 +109,14 @@ class SimBodyInsulinPump(
             override val reservoirRemainingUnits: InsulinAmount = reservoir
             override val lastSyncTimestamp: Timestamp = if (connected) Timestamp.now() else Timestamp.INVALID
         }
-    }.stateIn(scope, SharingStarted.Eagerly, object : InsulinPumpStatus {
-        override val pumpSuspended: Boolean = false
-        override val batteryRemainingPercent: Int = 100
-        override val reservoirRemainingUnits: InsulinAmount = InsulinAmount(300.0)
-        override val lastSyncTimestamp: Timestamp = Timestamp.now()
-    })
+    }
+        .debounce(300.milliseconds)
+        .stateIn(scope, SharingStarted.Eagerly, object : InsulinPumpStatus {
+            override val pumpSuspended: Boolean = false
+            override val batteryRemainingPercent: Int = 100
+            override val reservoirRemainingUnits: InsulinAmount = InsulinAmount(300.0)
+            override val lastSyncTimestamp: Timestamp = Timestamp.now()
+        })
 
     override val alerts: StateFlow<PumpAlerts> = combine(
         device.batteryLevel,
@@ -125,7 +130,9 @@ class SimBodyInsulinPump(
             reservoirLow = reservoir < InsulinAmount(20.0),
             other = occluded || hwError || broken || !primed
         )
-    }.stateIn(scope, SharingStarted.Eagerly, PumpAlerts())
+    }
+        .debounce(300.milliseconds)
+        .stateIn(scope, SharingStarted.Eagerly, PumpAlerts())
 
     override val basalStatus: StateFlow<BasalStatus> = combine(
         device.tempBasalPercent,
@@ -144,7 +151,9 @@ class SimBodyInsulinPump(
             tempBasalExpiry = tempExpiry,
             isSuspended = isSuspended
         )
-    }.stateIn(scope, SharingStarted.Eagerly, BasalStatus())
+    }
+        .debounce(300.milliseconds)
+        .stateIn(scope, SharingStarted.Eagerly, BasalStatus())
 
     private val _bolusStatus = MutableStateFlow(BolusStatus())
     override val bolusStatus: StateFlow<BolusStatus> = _bolusStatus.asStateFlow()
