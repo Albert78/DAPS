@@ -41,28 +41,13 @@ fun SimBodyEatMealDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.dialog_title_eat_meal)) },
         text = {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.label_carbs_g, carbsGramsUnitLabel()), style = MaterialTheme.typography.bodyMedium)
-                Spacer(modifier = Modifier.height(16.dp))
-                EditableValueStepper(
-                    currentValue = carbs,
-                    onValueChange = { carbs = it },
-                    minValue = 0.0,
-                    maxValue = 200.0,
-                    steppingStrategy = carbsGramsSteppingStrategy(),
-                    suffix = carbsGramsUnitLabel(),
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-                Text(stringResource(R.string.label_meal_type), style = MaterialTheme.typography.bodyMedium)
-                Spacer(modifier = Modifier.height(8.dp))
-                FoodTypeSelector(
-                    mealTypes = mealTypes,
-                    selectedType = selectedType,
-                    onTypeSelected = { selectedType = it }
-                )
-            }
+            SimBodyEatMealDialogContent(
+                carbs = carbs,
+                onCarbsChange = { carbs = it },
+                mealTypes = mealTypes,
+                selectedType = selectedType,
+                onTypeSelected = { selectedType = it }
+            )
         },
         confirmButton = {
             NormalTextButton(onClick = {
@@ -80,13 +65,50 @@ fun SimBodyEatMealDialog(
     )
 }
 
+@Composable
+fun SimBodyEatMealDialogContent(
+    carbs: Double,
+    onCarbsChange: (Double) -> Unit,
+    mealTypes: List<MealType>,
+    selectedType: MealType,
+    onTypeSelected: (MealType) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        Text(stringResource(R.string.label_carbs_g, carbsGramsUnitLabel()), style = MaterialTheme.typography.bodyMedium)
+        Spacer(modifier = Modifier.height(16.dp))
+        EditableValueStepper(
+            currentValue = carbs,
+            onValueChange = onCarbsChange,
+            minValue = 0.0,
+            maxValue = 200.0,
+            steppingStrategy = carbsGramsSteppingStrategy(),
+            suffix = carbsGramsUnitLabel(),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(stringResource(R.string.label_meal_type), style = MaterialTheme.typography.bodyMedium)
+        Spacer(modifier = Modifier.height(8.dp))
+        FoodTypeSelector(
+            mealTypes = mealTypes,
+            selectedType = selectedType,
+            onTypeSelected = onTypeSelected
+        )
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun SimBodyEatMealDialogPreview() {
+    val mealTypes = BodyModel.SIM_MEAL_TYPES
     AppPreview {
-        SimBodyEatMealDialog(
-            onDismiss = {},
-            onConfirm = { _, _ -> }
+        SimBodyEatMealDialogContent(
+            carbs = 30.0,
+            onCarbsChange = {},
+            mealTypes = mealTypes,
+            selectedType = mealTypes.first(),
+            onTypeSelected = {}
         )
     }
 }
