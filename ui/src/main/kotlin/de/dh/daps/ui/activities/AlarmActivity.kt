@@ -5,11 +5,8 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import de.dh.daps.common.model.data.AlarmType
-import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.core.system.RegistryProvider
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.screens.alarm.FullScreenAlarmScreen
@@ -28,19 +25,17 @@ class AlarmActivity : ComponentActivity() {
             val currentBgReading by registry.glucoseRepository.currentBg.collectAsState()
             val glucoseUnit by registry.appPreferencesRepository.glucoseUnit.collectAsState()
 
-            LaunchedEffect(activeFiringAlarm) {
-                if (activeFiringAlarm == null) {
-                    finish()
-                }
+            val alarmType = activeFiringAlarm
+            if (alarmType == null) {
+                finish()
+                return@setContent
             }
-
-            val alarmType = activeFiringAlarm ?: AlarmType.CRITICAL_LOW_BG
 
             AppTheme(darkTheme = true) {
                 FullScreenAlarmScreen(
                     alarmType = alarmType,
                     bgValue = currentBgReading?.value,
-                    glucoseUnit = glucoseUnit ?: GlucoseUnit.MG_DL,
+                    glucoseUnit = glucoseUnit,
                     onSnooze = { minutes ->
                         registry.alarmSnoozeManager.snoozeAlarm(alarmType, minutes)
                         finish()

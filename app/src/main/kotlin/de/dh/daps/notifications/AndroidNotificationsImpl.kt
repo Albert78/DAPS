@@ -270,6 +270,7 @@ class AndroidNotificationsImpl(
                 context.getString(UiR.string.alarm_action_snooze_30),
                 snooze30PendingIntent
             )
+            .setDeleteIntent(snooze15PendingIntent)
             .setAutoCancel(false)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
