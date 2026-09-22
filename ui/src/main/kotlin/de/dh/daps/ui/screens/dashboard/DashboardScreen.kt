@@ -53,14 +53,15 @@ import de.dh.daps.common.model.data.BgDelta
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.navigation.ManualControlInitialDialog
 import de.dh.daps.core.aps.ApsRecommendation
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.ExpandableInfoCard
 import de.dh.daps.ui.common.composables.PrimaryButton
-import de.dh.daps.ui.common.getBolusRecommendationText
 import de.dh.daps.ui.common.composables.WarningBanner
 import de.dh.daps.ui.common.composables.screenTitle
+import de.dh.daps.ui.common.getBolusRecommendationText
 import de.dh.daps.ui.common.icons.Icon_Menu_Permissions
 import de.dh.daps.ui.common.icons.Icon_Settings
 import de.dh.daps.ui.common.theme.AppPreview
@@ -102,7 +103,7 @@ fun DashboardScreen(
     onNavigateToTherapySettings: () -> Unit,
     onNavigateToMealCorrectionBolus: () -> Unit,
     onNavigateToSystemControl: () -> Unit,
-    onNavigateToManualControl: () -> Unit = {},
+    onNavigateToManualControl: (ManualControlInitialDialog) -> Unit = {},
     onAdjustmentClick: () -> Unit,
     onHistoryChartClick: () -> Unit,
     extraContent: @Composable () -> Unit = {}
@@ -157,7 +158,7 @@ fun DashboardContent(
     onNavigateToMealCorrectionBolus: () -> Unit,
     isMealCorrectionBolusAllowed: Boolean,
     onNavigateToSystemControl: () -> Unit,
-    onNavigateToManualControl: () -> Unit = {},
+    onNavigateToManualControl: (ManualControlInitialDialog) -> Unit = {},
     onHistoryChartClick: (() -> Unit)?,
     onApsModeSelect: (ApsMode) -> Unit,
     onAdjustmentClick: () -> Unit,
@@ -258,26 +259,37 @@ fun DashboardContent(
 
             dashboardUiState.recommendations.forEach { recommendation ->
                 Spacer(modifier = Modifier.height(8.dp))
-                val (infoText, detailText) = when (recommendation) {
+                val (infoText, detailText, actionClick) = when (recommendation) {
                     is ApsRecommendation.Carbs -> {
-                        stringResource(R.string.recommendation_carbs_info_title, recommendation.amountInGram) to
-                                stringResource(R.string.recommendation_carbs_info_text, recommendation.amountInGram)
+                        Triple(
+                            stringResource(R.string.recommendation_carbs_info_title, recommendation.amountInGram),
+                            stringResource(R.string.recommendation_carbs_info_text, recommendation.amountInGram),
+                            { onNavigateToMealCorrectionBolus() }
+                        )
                     }
 
                     is ApsRecommendation.Bolus -> {
-                        stringResource(R.string.recommendation_bolus_info_title, recommendation.amount.iu) to
-                                getBolusRecommendationText(recommendation)
+                        Triple(
+                            stringResource(R.string.recommendation_bolus_info_title, recommendation.amount.iu),
+                            getBolusRecommendationText(recommendation),
+                            { onNavigateToManualControl(ManualControlInitialDialog.BOLUS) }
+                        )
                     }
 
                     is ApsRecommendation.TempBasal -> {
-                        stringResource(R.string.recommendation_temp_basal_info_title, recommendation.percent) to
-                                stringResource(R.string.recommendation_temp_basal_info_text, recommendation.percent, recommendation.durationInHours)
+                        Triple(
+                            stringResource(R.string.recommendation_temp_basal_info_title, recommendation.percent),
+                            stringResource(R.string.recommendation_temp_basal_info_text, recommendation.percent, recommendation.durationInHours),
+                            { onNavigateToManualControl(ManualControlInitialDialog.TEMP_BASAL) }
+                        )
                     }
                 }
                 ExpandableInfoCard(
                     infoText = infoText,
                     detailText = detailText,
                     imageVector = Icons.Default.Lightbulb,
+                    actionButtonText = stringResource(R.string.manual_control_apply_recommendation),
+                    onActionButtonClick = actionClick,
                     initiallyExpanded = false,
                     expandable = true
                 )
@@ -327,7 +339,7 @@ fun DashboardContent(
                 onModeChange = onApsModeSelect,
                 onAdjustmentClick = onAdjustmentClick,
                 onProfileClick = onNavigateToTherapySettings,
-                onManualControlClick = onNavigateToManualControl
+                onManualControlClick = { onNavigateToManualControl(ManualControlInitialDialog.NONE) }
             )
 
             Spacer(modifier = Modifier.height(16.dp))

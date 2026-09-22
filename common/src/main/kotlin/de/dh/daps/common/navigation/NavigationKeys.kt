@@ -31,4 +31,8 @@ import kotlinx.serialization.Serializable
 @Serializable data class InsulinTypeEditorRoute(val insulinTypeId: String? = null) : NavKey
 @Serializable object AlarmProfilesRoute : NavKey
 @Serializable data class AlarmProfileEditorRoute(val profileId: Long? = null) : NavKey
-@Serializable object ManualControlRoute : NavKey
+enum class ManualControlInitialDialog { NONE, BOLUS, TEMP_BASAL }
+
+@Serializable data class ManualControlRoute(
+    val initialDialog: ManualControlInitialDialog = ManualControlInitialDialog.NONE
+) : NavKey

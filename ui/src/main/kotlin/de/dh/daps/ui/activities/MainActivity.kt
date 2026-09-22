@@ -411,8 +411,8 @@ fun DrawerContent(
                 DrawerItem(
                     label = stringResource(id = R.string.manual_control_screen_title),
                     icon = Icon_ManualControlMode,
-                    selected = currentRoute == ManualControlRoute,
-                    onClick = { onRouteSelected(ManualControlRoute) }
+                    selected = currentRoute is ManualControlRoute,
+                    onClick = { onRouteSelected(ManualControlRoute()) }
                 )
                 DrawerItem(
                     label = stringResource(id = R.string.menu_system_control_label),

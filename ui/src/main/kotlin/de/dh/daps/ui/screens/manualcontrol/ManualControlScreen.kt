@@ -21,10 +21,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,16 +48,20 @@ import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.getDefaultSlowMealType
 import de.dh.daps.common.model.getDefaultStandardMealType
+import de.dh.daps.common.navigation.ManualControlInitialDialog
 import de.dh.daps.core.aps.ApsRecommendation
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppPreview
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 import de.dh.daps.common.R as CommonR
 
 @Composable
 fun ManualControlScreen(
     viewModel: ManualControlViewModel,
+    initialDialog: ManualControlInitialDialog = ManualControlInitialDialog.NONE,
     onNavigateUp: () -> Unit,
     onNavigateToMealCorrectionBolus: (Double?) -> Unit = {},
     onEditMeal: (Long) -> Unit = {}
@@ -64,6 +70,7 @@ fun ManualControlScreen(
 
     ManualControlContent(
         uiState = uiState,
+        initialDialog = initialDialog,
         onNavigateUp = onNavigateUp,
         onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus,
         onEditMeal = onEditMeal,
@@ -94,6 +101,7 @@ fun ManualControlScreen(
 @Composable
 fun ManualControlContent(
     uiState: ManualControlUiState,
+    initialDialog: ManualControlInitialDialog = ManualControlInitialDialog.NONE,
     onNavigateUp: () -> Unit = {},
     onNavigateToMealCorrectionBolus: (Double?) -> Unit = {},
     onEditMeal: (Long) -> Unit = {},
@@ -115,6 +123,65 @@ fun ManualControlContent(
     onDismissRecommendation: (ApsRecommendation) -> Unit = {}
 ) {
     var activeDialog by remember { mutableStateOf<ManualControlDialog?>(null) }
+    var handledInitialDialog by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(initialDialog, uiState.recommendations) {
+        if (!handledInitialDialog) {
+            val bolusRec = uiState.recommendations.filterIsInstance<ApsRecommendation.Bolus>().firstOrNull()
+            val tempBasalRec = uiState.recommendations.filterIsInstance<ApsRecommendation.TempBasal>().firstOrNull()
+
+            when (initialDialog) {
+                ManualControlInitialDialog.BOLUS -> {
+                    if (bolusRec != null) {
+                        activeDialog = ManualControlDialog.Bolus(
+                            initialAmount = bolusRec.amount.iu,
+                            includedDeferredBoluses = bolusRec.includedDeferredBoluses,
+                            correctionPart = bolusRec.correctionPart,
+                            basalPart = bolusRec.basalPart,
+                            recommendationToDismiss = bolusRec
+                        )
+                        handledInitialDialog = true
+                    } else {
+                        delay(200L.milliseconds)
+                        if (!handledInitialDialog) {
+                            val retryBolusRec = uiState.recommendations.filterIsInstance<ApsRecommendation.Bolus>().firstOrNull()
+                            activeDialog = ManualControlDialog.Bolus(
+                                initialAmount = retryBolusRec?.amount?.iu ?: 0.0,
+                                includedDeferredBoluses = retryBolusRec?.includedDeferredBoluses,
+                                correctionPart = retryBolusRec?.correctionPart ?: InsulinAmount.ZERO,
+                                basalPart = retryBolusRec?.basalPart ?: InsulinAmount.ZERO,
+                                recommendationToDismiss = retryBolusRec
+                            )
+                            handledInitialDialog = true
+                        }
+                    }
+                }
+                ManualControlInitialDialog.TEMP_BASAL -> {
+                    if (tempBasalRec != null) {
+                        activeDialog = ManualControlDialog.TempBasal(
+                            initialPercent = tempBasalRec.percent,
+                            initialDurationHours = tempBasalRec.durationInHours,
+                            recommendationToDismiss = tempBasalRec
+                        )
+                        handledInitialDialog = true
+                    } else {
+                        delay(200L.milliseconds)
+                        if (!handledInitialDialog) {
+                            val retryTempBasalRec = uiState.recommendations.filterIsInstance<ApsRecommendation.TempBasal>().firstOrNull()
+                            val currentPercent = uiState.pump.basalStatus?.tempBasalPercent ?: 100
+                            activeDialog = ManualControlDialog.TempBasal(
+                                initialPercent = retryTempBasalRec?.percent ?: currentPercent,
+                                initialDurationHours = retryTempBasalRec?.durationInHours ?: 1,
+                                recommendationToDismiss = retryTempBasalRec
+                            )
+                            handledInitialDialog = true
+                        }
+                    }
+                }
+                ManualControlInitialDialog.NONE -> {}
+            }
+        }
+    }
 
     Scaffold(
         topBar = {

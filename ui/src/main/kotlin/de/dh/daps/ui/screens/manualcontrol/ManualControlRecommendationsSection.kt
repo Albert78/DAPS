@@ -42,12 +42,11 @@ import de.dh.daps.common.model.getDefaultStandardMealType
 import de.dh.daps.core.aps.ApsRecommendation
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.PrimaryButton
-import de.dh.daps.ui.common.getBolusRecommendationText
 import de.dh.daps.ui.common.composables.SecondaryButton
+import de.dh.daps.ui.common.getBolusRecommendationText
 import de.dh.daps.ui.common.icons.Icon_Meal_Fast
 import de.dh.daps.ui.common.icons.Syringe
 import de.dh.daps.ui.common.theme.AppPreview
-import de.dh.daps.ui.common.timeWithUnit
 
 @Composable
 fun ManualControlRecommendationsSection(

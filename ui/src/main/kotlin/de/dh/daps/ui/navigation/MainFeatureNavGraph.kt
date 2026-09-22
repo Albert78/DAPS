@@ -143,7 +143,7 @@ class MainFeatureNavGraph(
                     onNavigateToTherapySettings = { navViewModel.push(CurrentTherapySettingsRoute) },
                     onNavigateToMealCorrectionBolus = { navViewModel.push(MealCorrectionBolusRoute()) },
                     onNavigateToSystemControl = { navViewModel.push(SystemControlRoute()) },
-                    onNavigateToManualControl = { navViewModel.push(ManualControlRoute) },
+                    onNavigateToManualControl = { initialDialog -> navViewModel.push(ManualControlRoute(initialDialog = initialDialog)) },
                     onAdjustmentClick = { navViewModel.push(TherapyAdjustmentRoute) },
                     onHistoryChartClick = { navViewModel.push(HistoryRoute) },
                     extraContent = extraDashboardContent
@@ -273,6 +273,7 @@ class MainFeatureNavGraph(
 
                 ManualControlScreen(
                     viewModel = vm,
+                    initialDialog = key.initialDialog,
                     onNavigateUp = { navViewModel.pop() },
                     onNavigateToMealCorrectionBolus = { carbs ->
                         navViewModel.replaceTop(MealCorrectionBolusRoute(prefilledCarbsKe = carbs))
