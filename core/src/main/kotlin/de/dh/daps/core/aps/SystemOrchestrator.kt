@@ -12,6 +12,7 @@ import de.dh.daps.common.model.data.TickHandler
 import de.dh.daps.common.model.data.TickPriority
 import de.dh.daps.common.model.data.TimeService
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.model.MealEntry
 import de.dh.daps.core.pump.PumpIssue
 import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.repository.GlucoseRepository
@@ -363,9 +364,24 @@ class SystemOrchestratorImpl(
                         )
                     }
                     else -> {
+                        val associatedMeal = if (!handledDeferredBoluses.isNullOrEmpty()) {
+                            val tr = treatmentRepository
+                            val mealIds = handledDeferredBoluses.mapNotNull { it.mealId }.distinct()
+                            var latestMeal: MealEntry? = null
+                            if (mealIds.isNotEmpty()) {
+                                val meals = mealIds.mapNotNull { tr.getMeal(it) }
+                                latestMeal = meals.maxByOrNull { it.timestamp }
+                            }
+                            if (latestMeal == null) {
+                                latestMeal = tr.getMeals().maxByOrNull { it.timestamp }
+                            }
+                            latestMeal
+                        } else null
+
                         recommendationManager.addBolusRecommendation(
                             amount = amount,
                             includedDeferredBoluses = handledDeferredBoluses,
+                            associatedMeal = associatedMeal,
                             correctionPart = correctionPart,
                             basalPart = basalPart
                         )

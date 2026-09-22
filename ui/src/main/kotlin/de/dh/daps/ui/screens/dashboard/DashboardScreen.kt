@@ -58,6 +58,7 @@ import de.dh.daps.ui.R
 import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.ExpandableInfoCard
 import de.dh.daps.ui.common.composables.PrimaryButton
+import de.dh.daps.ui.common.getBolusRecommendationText
 import de.dh.daps.ui.common.composables.WarningBanner
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.icons.Icon_Menu_Permissions
@@ -265,7 +266,7 @@ fun DashboardContent(
 
                     is ApsRecommendation.Bolus -> {
                         stringResource(R.string.recommendation_bolus_info_title, recommendation.amount.iu) to
-                                stringResource(R.string.recommendation_bolus_info_text, recommendation.amount.iu)
+                                getBolusRecommendationText(recommendation)
                     }
 
                     is ApsRecommendation.TempBasal -> {

@@ -177,15 +177,17 @@
     <string name="recommendation_title_bolus">Insulinempfehlung</string>
     <string name="recommendation_title_temp_basal">Temp-Basal Empfehlung</string>
     <string name="recommendation_text_carbs">Nimm %1$dg Kohlenhydrate zu dir, um den Blutzucker zu korrigieren.</string>
-    <string name="recommendation_text_bolus">Verabreiche dir %1$.2f I.E. Insulin, um einen hohen Blutzucker zu korrigieren.</string>
+    <string name="recommendation_text_bolus">Verabreiche dir %1$.2f I.E. Insulin zur Korrektur des Blutzuckerspiegels.</string>
     <string name="recommendation_text_temp_basal">Empfohlener Temp-Basal: %1$d%% für %2$dh</string>
 
     <string name="recommendation_carbs_info_title">Nimm %1$dg Kohlenhydrate</string>
     <string name="recommendation_bolus_info_title">Spritze %1$.2f I.E. Insulin</string>
     <string name="recommendation_temp_basal_info_title">Setze Temp-Basal (%1$d%%)</string>
     <string name="recommendation_carbs_info_text">Nimm %1$dg Kohlenhydrate zu dir, um den Blutzucker zu korrigieren.</string>
-    <string name="recommendation_bolus_info_text">Verabreiche dir %1$.2f I.E. Insulin, um einen hohen Blutzucker zu korrigieren.</string>
-    <string name="recommendation_temp_basal_info_text">Empfohlener Temp-Basal von %1$d%% für %2$dh</string>
+    <string name="recommendation_bolus_info_text">Verabreiche dir %1$.2f I.E. Insulin zur Korrektur des Blutzuckerspiegels.</string>
+    <string name="recommendation_bolus_deferred_info_text">Verabreiche dir %1$.2f I.E. Insulin als verzögerten Bolus für die Mahlzeit um %2$s (%3$s).</string>
+    <string name="recommendation_bolus_deferred_info_text_no_meal">Verabreiche dir %1$.2f I.E. Insulin als verzögerten Bolus.</string>
+    <string name="recommendation_temp_basal_info_text">Empfohlener Temp-Basal von %1$d%% für %2$dh.</string>
 
     <string name="notification_meal_reminder_title">Nahrungserinnerung</string>
     <string name="notification_meal_reminder_text_with_description">Erinnerung für Mahlzeit: %1$s</string>

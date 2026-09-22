@@ -29,18 +29,25 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.model.DeferredBolus
 import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.MealEntry
+import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.model.getDefaultStandardMealType
 import de.dh.daps.core.aps.ApsRecommendation
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.PrimaryButton
+import de.dh.daps.ui.common.getBolusRecommendationText
 import de.dh.daps.ui.common.composables.SecondaryButton
 import de.dh.daps.ui.common.icons.Icon_Meal_Fast
 import de.dh.daps.ui.common.icons.Syringe
 import de.dh.daps.ui.common.theme.AppPreview
+import de.dh.daps.ui.common.timeWithUnit
 
 @Composable
 fun ManualControlRecommendationsSection(
@@ -228,7 +235,7 @@ fun RecommendationCard(
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = stringResource(R.string.recommendation_bolus_info_text, recommendation.amount.iu),
+                        text = getBolusRecommendationText(recommendation),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -370,6 +377,33 @@ fun RecommendationBolusPreview() {
         RecommendationCard(
             recommendation = ApsRecommendation.Bolus(
                 amount = InsulinAmount(1.8),
+                correctionPart = InsulinAmount(1.8)
+            ),
+            onOpenBolusDialog = {},
+            onOpenTempBasalDialog = {},
+            onNavigateToMealCorrectionBolus = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Recommendation - Deferred Bolus")
+@Composable
+fun RecommendationDeferredBolusPreview() {
+    AppPreview(modifier = Modifier.padding(16.dp)) {
+        RecommendationCard(
+            recommendation = ApsRecommendation.Bolus(
+                amount = InsulinAmount(1.8),
+                includedDeferredBoluses = listOf(
+                    DeferredBolus(
+                        amount = InsulinAmount(1.8),
+                        timestamp = Timestamp.now()
+                    )
+                ),
+                associatedMeal = MealEntry(
+                    timestamp = Timestamp.now().minusMinutes(30),
+                    carbGrams = 30.0,
+                    mealType = getDefaultStandardMealType(LocalContext.current)
+                ),
                 correctionPart = InsulinAmount(1.8)
             ),
             onOpenBolusDialog = {},

@@ -5,6 +5,7 @@ import android.util.Log
 import de.dh.daps.common.model.DeferredBolus
 import de.dh.daps.common.model.ID_UNDEFINED
 import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.MealEntry
 import de.dh.daps.common.model.MealReminder
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.repository.db.dao.MealReminderDao
@@ -82,12 +83,14 @@ class RecommendationManager(
     fun addBolusRecommendation(
         amount: InsulinAmount,
         includedDeferredBoluses: List<DeferredBolus>? = null,
+        associatedMeal: MealEntry? = null,
         correctionPart: InsulinAmount = InsulinAmount.ZERO,
         basalPart: InsulinAmount = InsulinAmount.ZERO
     ) {
         _recommendations.value = _recommendations.value.filterNot { it is ApsRecommendation.Bolus } + ApsRecommendation.Bolus(
             amount = amount,
             includedDeferredBoluses = includedDeferredBoluses,
+            associatedMeal = associatedMeal,
             correctionPart = correctionPart,
             basalPart = basalPart
         )
