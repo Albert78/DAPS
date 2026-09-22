@@ -69,10 +69,11 @@ class AlarmEvaluator(
         val bg = input.bgReading?.value
         if (bg != null && bg.isValid()) {
             val mgdl = bg.mgdl
-            if (mgdl < CRITICAL_LOW_THRESHOLD_MGDL) {
-                activeSet.add(AlarmType.CRITICAL_LOW_BG)
-            } else if (mgdl < LOW_THRESHOLD_MGDL) {
+            if (mgdl < LOW_THRESHOLD_MGDL) {
                 activeSet.add(AlarmType.LOW_BG)
+                if (mgdl < CRITICAL_LOW_THRESHOLD_MGDL) {
+                    activeSet.add(AlarmType.CRITICAL_LOW_BG)
+                }
             } else if (mgdl > HIGH_THRESHOLD_MGDL) {
                 activeSet.add(AlarmType.HIGH_BG)
             }

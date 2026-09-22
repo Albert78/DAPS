@@ -29,7 +29,11 @@ class AlarmSnoozeManager {
         }
         val snoozedUntil = Timestamp.now() + Minutes(actualMinutes.toShort())
         _snoozedAlarms.update { current ->
-            current + (alarmType to AlarmSnoozeState(alarmType, snoozedUntil, actualMinutes))
+            var updatedMap = current + (alarmType to AlarmSnoozeState(alarmType, snoozedUntil, actualMinutes))
+            for (subsumed in alarmType.subsumedAlarms) {
+                updatedMap += (subsumed to AlarmSnoozeState(subsumed, snoozedUntil, actualMinutes))
+            }
+            updatedMap
         }
     }
 
@@ -60,11 +64,11 @@ class AlarmSnoozeManager {
     }
 
     /**
-     * Removes the snooze state for [alarmType].
+     * Removes the snooze state for [alarmType] and any subsumed alarms.
      */
     fun clearSnooze(alarmType: AlarmType) {
         _snoozedAlarms.update { current ->
-            current - alarmType
+            current - alarmType - alarmType.subsumedAlarms
         }
     }
 

@@ -42,4 +42,14 @@ enum class AlarmType(
         defaultSeverity = AlarmSeverity.INFO,
         category = AlarmCategory.SYSTEM
     );
+
+    /**
+     * Set of lower-severity alarms that are subsumed when this alarm is snoozed.
+     * For example, snoozing [CRITICAL_LOW_BG] also snoozes [LOW_BG].
+     */
+    val subsumedAlarms: Set<AlarmType>
+        get() = when (this) {
+            CRITICAL_LOW_BG -> setOf(LOW_BG)
+            else -> emptySet()
+        }
 }
