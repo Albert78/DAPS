@@ -572,6 +572,11 @@
     <string name="manual_control_bolus_delivering">Bolus wird verabreicht: %1$.2f / %2$.2f I.E. (%3$d%%)</string>
     <string name="manual_control_no_active_bolus">Keine aktive Bolusabgabe.</string>
     <string name="manual_control_basal_title">Basalrate</string>
+    <string name="manual_control_subtitle_normal_basal">Normale Basalrate</string>
+    <string name="manual_control_subtitle_temp_basal">Temp Basal</string>
+    <string name="manual_control_basal_rate_format">Basalrate: %1$s/h</string>
+    <string name="manual_control_temp_basal_chip_label">Temp-Basal</string>
+    <string name="manual_control_basal_suspended">Basalabgabe ist unterbrochen (Suspended)</string>
     <string name="manual_control_temp_basal_title">Temporäre Basalrate (Temp-Basal)</string>
     <string name="manual_control_set_temp_basal">Temp-Basal setzen&#8230;</string>
     <string name="manual_control_cancel_temp_basal">Temp-Basal beenden</string>
@@ -579,6 +584,7 @@
     <string name="manual_control_normal_basal_active">Normale Basalrate aktiv (%1$s I.E./h)</string>
     <string name="manual_control_no_active_temp_basal">Normale Basalrate aktiv (100%).</string>
     <string name="manual_control_duration_hours_label">Dauer (Stunden)</string>
+    <string name="manual_control_unit_hours_short">Std</string>
     <string name="manual_control_rate_percent_label">Basalrate (%)</string>
     <string name="manual_control_pump_not_connected">Pumpe nicht verbunden</string>
     <string name="manual_control_dialog_deliver_bolus_title">Bolus abgeben</string>

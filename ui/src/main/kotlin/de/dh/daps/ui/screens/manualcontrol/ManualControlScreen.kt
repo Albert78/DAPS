@@ -59,6 +59,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.model.BasalStatus
 import de.dh.daps.common.model.BolusDeliveryState
 import de.dh.daps.common.model.DeferredBolus
 import de.dh.daps.common.model.InsulinAmount
@@ -828,68 +829,46 @@ private fun ManualControlPumpControlsSection(
             Column(modifier = Modifier.padding(16.dp)) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f)
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Syringe,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(22.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = stringResource(id = R.string.manual_control_bolus_title),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            val lastBolusText = if (lastBolus != null) {
-                                stringResource(
-                                    id = R.string.manual_control_last_bolus_format,
-                                    insulinValue(lastBolus.amount.iu),
-                                    timeWithUnit(lastBolus.timestamp)
-                                )
-                            } else {
-                                stringResource(id = R.string.manual_control_no_last_bolus)
-                            }
-                            Text(
-                                text = lastBolusText,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Outlined.Syringe,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(22.dp)
+                        )
                     }
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-                    ) {
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Bolus",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary,
+                            text = stringResource(id = R.string.manual_control_bolus_title),
+                            style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
                             maxLines = 1,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        val lastBolusText = if (lastBolus != null) {
+                            stringResource(
+                                id = R.string.manual_control_last_bolus_format,
+                                insulinValue(lastBolus.amount.iu),
+                                timeWithUnit(lastBolus.timestamp)
+                            )
+                        } else {
+                            stringResource(id = R.string.manual_control_no_last_bolus)
+                        }
+                        Text(
+                            text = lastBolusText,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
@@ -966,59 +945,42 @@ private fun ManualControlPumpControlsSection(
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f)
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Speed,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(22.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = stringResource(id = R.string.manual_control_basal_title),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            Text(
-                                text = "Laufende Hintergrundabgabe",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Default.Speed,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(22.dp)
+                        )
                     }
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-                    ) {
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = if (isTempActive) "Temp-Basal" else "Basal",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary,
+                            text = stringResource(id = R.string.manual_control_basal_title),
+                            style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
                             maxLines = 1,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        val basalSubtitle = if (isTempActive) {
+                            stringResource(id = R.string.manual_control_subtitle_temp_basal)
+                        } else {
+                            stringResource(id = R.string.manual_control_subtitle_normal_basal)
+                        }
+                        Text(
+                            text = basalSubtitle,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
@@ -1034,7 +996,7 @@ private fun ManualControlPumpControlsSection(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = "Basalabgabe ist unterbrochen (Suspended)",
+                                text = stringResource(id = R.string.manual_control_basal_suspended),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onErrorContainer,
@@ -1073,7 +1035,7 @@ private fun ManualControlPumpControlsSection(
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = "Aktuelle Rate: $activeRateFormatted I.E./h",
+                                    text = stringResource(id = R.string.manual_control_basal_rate_format, activeRateFormatted),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
@@ -1093,7 +1055,7 @@ private fun ManualControlPumpControlsSection(
                         }
                     } else {
                         Text(
-                            text = stringResource(id = R.string.manual_control_normal_basal_active, activeRateFormatted),
+                            text = stringResource(id = R.string.manual_control_basal_rate_format, activeRateFormatted),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -1116,7 +1078,7 @@ private fun ManualControlPumpControlsSection(
                     }
                 } else {
                     Text(
-                        text = stringResource(id = R.string.manual_control_no_active_temp_basal),
+                        text = stringResource(id = R.string.manual_control_basal_rate_format, "--"),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -1274,7 +1236,7 @@ private fun SetTempBasalDialog(
                     minValue = 1.0,
                     maxValue = 24.0,
                     steppingStrategy = DefaultSteppingStrategy(step = 1.0),
-                    displayStrategy = ConfigurableDisplayStrategy(suffix = " Std"),
+                    displayStrategy = ConfigurableDisplayStrategy(suffix = " ${stringResource(id = R.string.manual_control_unit_hours_short)}"),
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -1302,11 +1264,19 @@ fun ManualControlPumpControlsPreview() {
     AppTheme {
         Surface(modifier = Modifier.padding(16.dp)) {
             ManualControlPumpControlsSection(
-                pump = ManualControlPumpUiModel(isConnected = true),
+                pump = ManualControlPumpUiModel(
+                    isConnected = true,
+                    basalStatus = BasalStatus(
+                        isSuspended = false,
+                        activeRate = InsulinAmount(0.5),
+                        isTempBasal = false,
+                        tempBasalPercent = 80
+                    )
+                ),
                 lastBolus = InsulinApplication(
                     timestamp = Timestamp.now().minusHours(1),
                     amount = InsulinAmount(2.5),
-                    insulinType = InsulinType(name = "Rapid", peak = Minutes(45), dia = Minutes(300)),
+                    insulinType = InsulinType(name = "NovoRapid", peak = Minutes(75), dia = Minutes(300)),
                     origin = InsulinOrigin.Pump
                 ),
                 onOpenBolusDialog = {},
@@ -1366,7 +1336,12 @@ fun ManualControlScreenPreview() {
                             ApsRecommendation.TempBasal(durationInHours = 2, percent = 80)
                         ),
                         pump = ManualControlPumpUiModel(
-                            isConnected = true
+                            isConnected = true,
+                            basalStatus = BasalStatus(
+                                isSuspended = false,
+                                activeRate = InsulinAmount(0.5),
+                                isTempBasal = false,
+                            )
                         )
                     )
                 )
