@@ -22,9 +22,11 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -53,6 +55,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.BOLUS_MAX
@@ -298,7 +301,17 @@ fun BolusItem(
     ListItem(
         modifier = if (isEditable) Modifier.clickable(onClick = onEditClick) else Modifier,
         headlineContent = {
-            Text(text = stringResource(id = R.string.insulin_unit_label_format, entry.amount.iu))
+            Text(
+                text = stringResource(id = R.string.insulin_unit_label_format, entry.amount.iu),
+                style = if (entry.status == InsulinStatus.Invalidated) {
+                    MaterialTheme.typography.bodyLarge.copy(
+                        textDecoration = TextDecoration.LineThrough,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else {
+                    MaterialTheme.typography.bodyLarge
+                }
+            )
         },
         supportingContent = {
             Column {
@@ -320,39 +333,84 @@ fun BolusItem(
             }
         },
         trailingContent = {
-            Column(horizontalAlignment = Alignment.End) {
+            var menuExpanded by remember { mutableStateOf(false) }
+            val isInvalidated = entry.status == InsulinStatus.Invalidated
+            val canInvalidate = onToggleInvalidateClick != null && (entry.status == InsulinStatus.Confirmed || isInvalidated)
+            val hasActions = isEditable || canInvalidate
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = timeString,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold
                 )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (onToggleInvalidateClick != null && (entry.status == InsulinStatus.Confirmed || entry.status == InsulinStatus.Invalidated)) {
-                        IconButton(onClick = onToggleInvalidateClick, modifier = Modifier.size(24.dp)) {
+                if (hasActions) {
+                    Spacer(Modifier.width(4.dp))
+                    Box {
+                        IconButton(onClick = { menuExpanded = true }, modifier = Modifier.size(32.dp)) {
                             Icon(
-                                imageVector = Icons.Default.Block,
-                                contentDescription = if (entry.status == InsulinStatus.Invalidated) stringResource(R.string.action_restore) else stringResource(R.string.action_invalidate),
-                                tint = if (entry.status == InsulinStatus.Invalidated) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
-                                modifier = Modifier.size(16.dp)
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = stringResource(id = CommonR.string.cd_more_options),
+                                modifier = Modifier.size(20.dp)
                             )
                         }
-                    }
-                    if (isEditable) {
-                        IconButton(onClick = onEditClick, modifier = Modifier.size(24.dp)) {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = stringResource(id = CommonR.string.cd_edit),
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                        IconButton(onClick = onDeleteClick, modifier = Modifier.size(24.dp)) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = stringResource(id = CommonR.string.action_delete),
-                                tint = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.size(16.dp)
-                            )
+                        DropdownMenu(
+                            expanded = menuExpanded,
+                            onDismissRequest = { menuExpanded = false }
+                        ) {
+                            if (isEditable) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(id = CommonR.string.cd_edit)) },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.Default.Edit,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                    },
+                                    onClick = {
+                                        menuExpanded = false
+                                        onEditClick()
+                                    }
+                                )
+                            }
+                            if (canInvalidate) {
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            if (isInvalidated) stringResource(R.string.action_restore)
+                                            else stringResource(R.string.action_invalidate)
+                                        )
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.Default.Block,
+                                            contentDescription = null,
+                                            tint = if (isInvalidated) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                                        )
+                                    },
+                                    onClick = {
+                                        menuExpanded = false
+                                        onToggleInvalidateClick()
+                                    }
+                                )
+                            }
+                            if (isEditable) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(id = CommonR.string.action_delete)) },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.error
+                                        )
+                                    },
+                                    onClick = {
+                                        menuExpanded = false
+                                        onDeleteClick()
+                                    }
+                                )
+                            }
                         }
                     }
                 }

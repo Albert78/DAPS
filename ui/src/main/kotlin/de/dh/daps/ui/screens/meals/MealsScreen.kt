@@ -223,6 +223,8 @@ fun MealItem(
             .format(timeFormatter)
     }
 
+    var menuExpanded by remember { mutableStateOf(false) }
+
     ListItem(
         modifier = if (isEditable) Modifier.clickable(onClick = onEditClick) else Modifier,
         headlineContent = {
@@ -239,14 +241,34 @@ fun MealItem(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 if (isEditable) {
-                    Spacer(Modifier.width(8.dp))
-                    IconButton(onClick = onEditClick, modifier = Modifier.size(24.dp)) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = stringResource(id = CommonR.string.cd_edit),
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(16.dp),
-                        )
+                    Spacer(Modifier.width(4.dp))
+                    Box {
+                        IconButton(onClick = { menuExpanded = true }, modifier = Modifier.size(32.dp)) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = stringResource(id = CommonR.string.cd_more_options),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = menuExpanded,
+                            onDismissRequest = { menuExpanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(id = CommonR.string.cd_edit)) },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                },
+                                onClick = {
+                                    menuExpanded = false
+                                    onEditClick()
+                                }
+                            )
+                        }
                     }
                 }
             }
