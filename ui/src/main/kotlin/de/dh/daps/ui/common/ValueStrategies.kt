@@ -1,8 +1,10 @@
 package de.dh.daps.ui.common
 
 import androidx.compose.ui.graphics.Color
+import java.math.BigDecimal
 import kotlin.math.ceil
 import kotlin.math.floor
+import kotlin.math.round
 
 /**
  * Defines how a numeric value should be incremented or decremented.
@@ -36,6 +38,19 @@ interface ValueDisplayStrategy {
      * Returns the [Color] that should be used to display the given [value].
      */
     fun color(value: Double): Color
+}
+
+/**
+ * Helper function to format a [Double] value without floating point precision artifacts (e.g. 1.400000001 -> 1.4).
+ * Integers are formatted without decimal places (e.g. 10.0 -> "10").
+ */
+private fun formatDoubleValue(value: Double): String {
+    val rounded = round(value * 1_000_000.0) / 1_000_000.0
+    return if (rounded % 1.0 == 0.0) {
+        rounded.toLong().toString()
+    } else {
+        BigDecimal.valueOf(rounded).stripTrailingZeros().toPlainString()
+    }
 }
 
 /**
@@ -121,8 +136,7 @@ class ConfigurableDisplayStrategy(
     override fun format(value: Double): String {
         if (value == 0.0 && neutralLabel != null) return neutralLabel
         val prefix = if (value > 0) positivePrefix else ""
-        // Use precision based on whether it has decimals
-        val formattedValue = if (value % 1.0 == 0.0) value.toInt().toString() else value.toString()
+        val formattedValue = formatDoubleValue(value)
         return "$prefix$formattedValue$suffix"
     }
 
@@ -152,7 +166,7 @@ class DefaultValueDisplayStrategy(private val color: Color = Color.Unspecified) 
      * Returns a simple string representation of the [value].
      */
     override fun format(value: Double): String {
-        return if (value % 1.0 == 0.0) value.toInt().toString() else value.toString()
+        return formatDoubleValue(value)
     }
 
     /**
