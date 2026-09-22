@@ -553,6 +553,7 @@
     <string name="manual_control_recommendations_title">Empfehlungen</string>
     <string name="manual_control_no_recommendations">Aktuell keine Empfehlungen.</string>
     <string name="manual_control_apply_recommendation">Übernehmen</string>
+    <string name="cd_manual_control_dismiss_recommendation">Empfehlung verwerfen</string>
 
     <string name="manual_control_meals_title">Mahlzeiten</string>
     <string name="manual_control_past_meal_title">Letzte Mahlzeit</string>

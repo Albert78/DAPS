@@ -183,6 +183,10 @@ class ManualControlViewModel(
         lockErrorFlow.value = null
     }
 
+    fun dismissRecommendation(recommendation: ApsRecommendation) {
+        recommendationManager.removeRecommendation(recommendation)
+    }
+
     private suspend fun acquireTreatmentLockAndExecute(
         tag: String = TAG,
         timeoutMs: Long = 5000L,
