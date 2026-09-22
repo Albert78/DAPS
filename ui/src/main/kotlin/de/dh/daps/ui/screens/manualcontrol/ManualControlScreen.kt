@@ -18,11 +18,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,17 +42,15 @@ import de.dh.daps.common.model.MealEntry
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgSampleKind
 import de.dh.daps.common.model.data.BgValue
-import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.getDefaultSlowMealType
 import de.dh.daps.common.model.getDefaultStandardMealType
 import de.dh.daps.core.aps.ApsRecommendation
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.screenTitle
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.common.R as CommonR
 
 @Composable
@@ -250,61 +246,57 @@ fun ManualControlContent(
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
 fun ManualControlScreenPreview() {
-    AppTheme {
-        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-            Surface {
-                ManualControlContent(
-                    uiState = ManualControlUiState(
-                        contextInfo = ManualControlContextInfoUiModel(
-                            lastBgReading = BgReading(
-                                value = BgValue.fromMgDl(80),
-                                sampleKind = BgSampleKind.Value,
-                                timestamp = Timestamp.now()
-                            ),
-                            iob = InsulinAmount(1.2),
-                            cob = 25.0,
-                            lastPastMeal = MealEntry(
-                                id = 1L,
-                                timestamp = Timestamp.now().minusHours(2),
-                                carbGrams = 45.0,
-                                mealType = getDefaultStandardMealType(LocalContext.current),
-                                administeredInsulinAmount = InsulinAmount(3.5)
-                            ),
-                            nextPlannedMeal = MealEntry(
-                                id = 2L,
-                                timestamp = Timestamp.now().plusHours(3),
-                                carbGrams = 60.0,
-                                mealType = getDefaultSlowMealType(LocalContext.current),
-                                description = "Pizza"
-                            ),
-                            hasNextPlannedMealReminder = true,
-                            lastBolus = InsulinApplication(
-                                timestamp = Timestamp.now().minusHours(1),
-                                amount = InsulinAmount(2.5),
-                                insulinType = InsulinType(name = "NovoRapid", peak = Minutes(75), dia = Minutes(300)),
-                                origin = InsulinOrigin.Pump
-                            )
-                        ),
-                        recommendations = listOf(
-                            ApsRecommendation.Carbs(amountInGram = 20),
-                            ApsRecommendation.Bolus(
-                                amount = InsulinAmount(1.5),
-                                correctionPart = InsulinAmount(1.0),
-                                basalPart = InsulinAmount(0.0)
-                            ),
-                            ApsRecommendation.TempBasal(durationInHours = 2, percent = 80)
-                        ),
-                        pump = ManualControlPumpUiModel(
-                            isConnected = true,
-                            basalStatus = BasalStatus(
-                                isSuspended = false,
-                                activeRate = InsulinAmount(0.5),
-                                isTempBasal = false,
-                            )
-                        )
+    AppPreview {
+        ManualControlContent(
+            uiState = ManualControlUiState(
+                contextInfo = ManualControlContextInfoUiModel(
+                    lastBgReading = BgReading(
+                        value = BgValue.fromMgDl(80),
+                        sampleKind = BgSampleKind.Value,
+                        timestamp = Timestamp.now()
+                    ),
+                    iob = InsulinAmount(1.2),
+                    cob = 25.0,
+                    lastPastMeal = MealEntry(
+                        id = 1L,
+                        timestamp = Timestamp.now().minusHours(2),
+                        carbGrams = 45.0,
+                        mealType = getDefaultStandardMealType(LocalContext.current),
+                        administeredInsulinAmount = InsulinAmount(3.5)
+                    ),
+                    nextPlannedMeal = MealEntry(
+                        id = 2L,
+                        timestamp = Timestamp.now().plusHours(3),
+                        carbGrams = 60.0,
+                        mealType = getDefaultSlowMealType(LocalContext.current),
+                        description = "Pizza"
+                    ),
+                    hasNextPlannedMealReminder = true,
+                    lastBolus = InsulinApplication(
+                        timestamp = Timestamp.now().minusHours(1),
+                        amount = InsulinAmount(2.5),
+                        insulinType = InsulinType(name = "NovoRapid", peak = Minutes(75), dia = Minutes(300)),
+                        origin = InsulinOrigin.Pump
+                    )
+                ),
+                recommendations = listOf(
+                    ApsRecommendation.Carbs(amountInGram = 20),
+                    ApsRecommendation.Bolus(
+                        amount = InsulinAmount(1.5),
+                        correctionPart = InsulinAmount(1.0),
+                        basalPart = InsulinAmount(0.0)
+                    ),
+                    ApsRecommendation.TempBasal(durationInHours = 2, percent = 80)
+                ),
+                pump = ManualControlPumpUiModel(
+                    isConnected = true,
+                    basalStatus = BasalStatus(
+                        isSuspended = false,
+                        activeRate = InsulinAmount(0.5),
+                        isTempBasal = false,
                     )
                 )
-            }
-        }
+            )
+        )
     }
 }

@@ -45,19 +45,16 @@ import de.dh.daps.common.model.ApsMode
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.data.BgDelta
 import de.dh.daps.common.model.data.BgValue
-import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
-import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.crValue
 import de.dh.daps.ui.common.glucoseValue
-import de.dh.daps.ui.common.icons.Icon_ManualControlMode
 import de.dh.daps.ui.common.isfValue
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.NeutralGrey
 import de.dh.daps.ui.common.theme.SoftBlue
 import de.dh.daps.ui.common.theme.SoftGreen
@@ -340,20 +337,16 @@ private fun createSampleTherapyStatus() = ActiveTherapyStatusUiState(
 @Preview(name = "AutoCorrection - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun PreviewApsControlCardAutoCorrection() {
-    AppTheme {
-        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-            Surface {
-                ApsControlCard(
-                    modifier = Modifier.padding(16.dp),
-                    activeTherapyStatus = createSampleTherapyStatus(),
-                    selectedMode = ApsMode.AutoCorrection,
-                    availableModes = ApsMode.entries,
-                    onModeChange = {},
-                    onAdjustmentClick = {},
-                    onProfileClick = {}
-                )
-            }
-        }
+    AppPreview {
+        ApsControlCard(
+            modifier = Modifier.padding(16.dp),
+            activeTherapyStatus = createSampleTherapyStatus(),
+            selectedMode = ApsMode.AutoCorrection,
+            availableModes = ApsMode.entries,
+            onModeChange = {},
+            onAdjustmentClick = {},
+            onProfileClick = {}
+        )
     }
 }
 
@@ -361,20 +354,16 @@ private fun PreviewApsControlCardAutoCorrection() {
 @Preview(name = "BasalOnly - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun PreviewApsControlCardBasalOnly() {
-    AppTheme {
-        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-            Surface {
-                ApsControlCard(
-                    modifier = Modifier.padding(16.dp),
-                    activeTherapyStatus = createSampleTherapyStatus(),
-                    selectedMode = ApsMode.BasalOnly,
-                    availableModes = ApsMode.entries,
-                    onModeChange = {},
-                    onAdjustmentClick = {},
-                    onProfileClick = {}
-                )
-            }
-        }
+    AppPreview {
+        ApsControlCard(
+            modifier = Modifier.padding(16.dp),
+            activeTherapyStatus = createSampleTherapyStatus(),
+            selectedMode = ApsMode.BasalOnly,
+            availableModes = ApsMode.entries,
+            onModeChange = {},
+            onAdjustmentClick = {},
+            onProfileClick = {}
+        )
     }
 }
 
@@ -382,19 +371,15 @@ private fun PreviewApsControlCardBasalOnly() {
 @Preview(name = "Suspend - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun PreviewApsControlCardSuspend() {
-    AppTheme {
-        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-            Surface {
-                ApsControlCard(
-                    modifier = Modifier.padding(16.dp),
-                    activeTherapyStatus = createSampleTherapyStatus(),
-                    selectedMode = ApsMode.Suspend,
-                    availableModes = ApsMode.entries,
-                    onModeChange = {},
-                    onAdjustmentClick = {},
-                    onProfileClick = {}
-                )
-            }
-        }
+    AppPreview {
+        ApsControlCard(
+            modifier = Modifier.padding(16.dp),
+            activeTherapyStatus = createSampleTherapyStatus(),
+            selectedMode = ApsMode.Suspend,
+            availableModes = ApsMode.entries,
+            onModeChange = {},
+            onAdjustmentClick = {},
+            onProfileClick = {}
+        )
     }
 }

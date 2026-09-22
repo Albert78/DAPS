@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -27,7 +28,6 @@ import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.glucoseValue
 import de.dh.daps.ui.common.icons.Icon_Next
 import de.dh.daps.ui.common.icons.Icon_Previous
@@ -36,7 +36,6 @@ import de.dh.daps.ui.common.shortRelativeTimeUntil
 import de.dh.daps.ui.common.theme.AppTheme
 import java.text.SimpleDateFormat
 import java.util.Date
-import androidx.compose.ui.platform.LocalLocale
 
 @Composable
 fun CgmTabContent(

@@ -25,7 +25,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import de.dh.daps.common.R as CommonR
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.icons.Icon_Config
@@ -33,6 +32,7 @@ import de.dh.daps.ui.common.icons.Icon_Insulin
 import de.dh.daps.ui.common.icons.Icon_Menu_Alarms
 import de.dh.daps.ui.common.icons.Icon_Menu_Meal_Types
 import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.common.R as CommonR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

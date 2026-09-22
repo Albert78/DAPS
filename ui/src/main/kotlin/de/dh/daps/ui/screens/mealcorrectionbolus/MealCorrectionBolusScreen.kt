@@ -40,7 +40,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -62,18 +61,16 @@ import de.dh.daps.common.model.CARBS_KE_MAX
 import de.dh.daps.common.model.CARBS_KE_MIN
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.MealType
-import de.dh.daps.common.model.getDefaultMealTypes
 import de.dh.daps.common.model.data.BgDelta
 import de.dh.daps.common.model.data.BgValue
-import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.model.getDefaultMealTypes
 import de.dh.daps.core.aps.BolusProjections
 import de.dh.daps.core.aps.ProjectedBg
 import de.dh.daps.core.aps.TreatmentLock
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.DefaultSteppingStrategy
-import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.ModuloSteppingStrategy
 import de.dh.daps.ui.common.ValueDisplayStrategy
 import de.dh.daps.ui.common.carbsGramsValue
@@ -95,7 +92,7 @@ import de.dh.daps.ui.common.glucoseValue
 import de.dh.daps.ui.common.insulinUnitLabel
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.isfValue
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.time
 import de.dh.daps.ui.common.withinTimeDescription
 import de.dh.daps.ui.controls.meal.BolusPlanEditorDialog
@@ -910,83 +907,75 @@ fun ConflictingMealBadge(
 @Preview(showBackground = true, name = "Loading State")
 @Composable
 fun MealCorrectionBolusLoadingPreview() {
-    AppTheme {
-        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-            Surface {
-                MealCorrectionBolusContent(
-                    uiState = MealCorrectionBolusUiState(
-                        isLoading = true,
-                    ),
-                    onCarbsChange = {},
-                    onMealTimeChange = {},
-                    onApplySuggestedCarbs = {},
-                    onApplySuggestedImi = {},
-                    onMealTypeChange = {},
-                    onManualBolusChange = {},
-                    onOpenBolusPlanDialog = {},
-                    onCloseBolusPlanDialog = {},
-                    onUpdateBolusTime = { _, _ -> },
-                    onUpdateBolusAmount = { _, _ -> },
-                    onAddDeferredBolus = {},
-                    onRemoveDeferredBolus = {},
-                    onToggleMealReminder = {},
-                    onRefreshProjections = {},
-                    onClose = {},
-                    onSubmit = {}
-                )
-            }
-        }
+    AppPreview {
+        MealCorrectionBolusContent(
+            uiState = MealCorrectionBolusUiState(
+                isLoading = true,
+            ),
+            onCarbsChange = {},
+            onMealTimeChange = {},
+            onApplySuggestedCarbs = {},
+            onApplySuggestedImi = {},
+            onMealTypeChange = {},
+            onManualBolusChange = {},
+            onOpenBolusPlanDialog = {},
+            onCloseBolusPlanDialog = {},
+            onUpdateBolusTime = { _, _ -> },
+            onUpdateBolusAmount = { _, _ -> },
+            onAddDeferredBolus = {},
+            onRemoveDeferredBolus = {},
+            onToggleMealReminder = {},
+            onRefreshProjections = {},
+            onClose = {},
+            onSubmit = {}
+        )
     }
 }
 
 @Preview(showBackground = true, name = "0 KE Mode")
 @Composable
 fun MealCorrectionBolusZeroKePreview() {
-    AppTheme {
-        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-            Surface {
-                MealCorrectionBolusContent(
-                    uiState = MealCorrectionBolusUiState(
-                        isLoading = false,
-                        suggestedImi = Minutes(10),
-                        suggestedCarbsKe = 4.5,
-                        input = MealInput(
-                            carbsKe = 0.0,
-                            manualBolus = InsulinAmount(0.8),
-                        ),
-                        mealTypes = emptyList(),
-                        projections = BolusProjections(
-                            bg = BgValue.fromMgDl(140),
-                        ),
-                        targetBg = BgValue.fromMgDl(100),
-                        isf = BgDelta.fromMgDl(50),
-                        cr = 10.0,
-                        calculation = BolusCalculationDetails(
-                            proposedTotal = InsulinAmount(0.8)
-                        ),
-                        submissionStatus = SubmissionStatus.NotSubmitted,
-                        isMealReminderAllowed = true,
-                        isMealReminderEnabled = true
-                    ),
-                    onCarbsChange = {},
-                    onMealTimeChange = {},
-                    onApplySuggestedCarbs = {},
-                    onApplySuggestedImi = {},
-                    onMealTypeChange = {},
-                    onManualBolusChange = {},
-                    onOpenBolusPlanDialog = {},
-                    onCloseBolusPlanDialog = {},
-                    onUpdateBolusTime = { _, _ -> },
-                    onUpdateBolusAmount = { _, _ -> },
-                    onAddDeferredBolus = {},
-                    onRemoveDeferredBolus = {},
-                    onToggleMealReminder = {},
-                    onRefreshProjections = {},
-                    onClose = {},
-                    onSubmit = {}
-                )
-            }
-        }
+    AppPreview {
+        MealCorrectionBolusContent(
+            uiState = MealCorrectionBolusUiState(
+                isLoading = false,
+                suggestedImi = Minutes(10),
+                suggestedCarbsKe = 4.5,
+                input = MealInput(
+                    carbsKe = 0.0,
+                    manualBolus = InsulinAmount(0.8),
+                ),
+                mealTypes = emptyList(),
+                projections = BolusProjections(
+                    bg = BgValue.fromMgDl(140),
+                ),
+                targetBg = BgValue.fromMgDl(100),
+                isf = BgDelta.fromMgDl(50),
+                cr = 10.0,
+                calculation = BolusCalculationDetails(
+                    proposedTotal = InsulinAmount(0.8)
+                ),
+                submissionStatus = SubmissionStatus.NotSubmitted,
+                isMealReminderAllowed = true,
+                isMealReminderEnabled = true
+            ),
+            onCarbsChange = {},
+            onMealTimeChange = {},
+            onApplySuggestedCarbs = {},
+            onApplySuggestedImi = {},
+            onMealTypeChange = {},
+            onManualBolusChange = {},
+            onOpenBolusPlanDialog = {},
+            onCloseBolusPlanDialog = {},
+            onUpdateBolusTime = { _, _ -> },
+            onUpdateBolusAmount = { _, _ -> },
+            onAddDeferredBolus = {},
+            onRemoveDeferredBolus = {},
+            onToggleMealReminder = {},
+            onRefreshProjections = {},
+            onClose = {},
+            onSubmit = {}
+        )
     }
 }
 
@@ -995,59 +984,55 @@ fun MealCorrectionBolusZeroKePreview() {
 @Composable
 fun MealCorrectionBolusDefaultPreview() {
     val sampleMealTypes = getDefaultMealTypes()
-    AppTheme {
-        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-            Surface {
-                MealCorrectionBolusContent(
-                    uiState = MealCorrectionBolusUiState(
-                        isLoading = false,
-                        suggestedImi = Minutes(15),
-                        suggestedCarbsKe = 3.0,
-                        input = MealInput(
-                            carbsKe = 4.5,
-                            selectedMealType = sampleMealTypes[0],
-                            manualBolus = InsulinAmount(5.3),
-                            mealTimestamp = Timestamp.now().plusMinutes(15),
-                        ),
-                        mealTypes = sampleMealTypes,
-                        projections = BolusProjections(
-                            timestamp = Timestamp.now().plusMinutes(15),
-                            bg = BgValue.fromMgDl(145),
-                            isProjected = true,
-                            iob = InsulinAmount(1.2),
-                            cob = 25.0,
-                            futureCarbs = 10.0
-                        ),
-                        targetBg = BgValue.fromMgDl(100),
-                        isf = BgDelta.fromMgDl(50),
-                        cr = 10.0,
-                        calculation = BolusCalculationDetails(
-                            mealPart = InsulinAmount(4.5),
-                            correctionPart = InsulinAmount(0.8),
-                            proposedTotal = InsulinAmount(5.3),
-                        ),
-                        submissionStatus = SubmissionStatus.NotSubmitted,
-                        isMealReminderAllowed = true,
-                        isMealReminderEnabled = true
-                    ),
-                    onCarbsChange = {},
-                    onMealTimeChange = {},
-                    onApplySuggestedCarbs = {},
-                    onApplySuggestedImi = {},
-                    onMealTypeChange = {},
-                    onManualBolusChange = {},
-                    onOpenBolusPlanDialog = {},
-                    onCloseBolusPlanDialog = {},
-                    onUpdateBolusTime = { _, _ -> },
-                    onUpdateBolusAmount = { _, _ -> },
-                    onAddDeferredBolus = {},
-                    onRemoveDeferredBolus = {},
-                    onToggleMealReminder = {},
-                    onRefreshProjections = {},
-                    onClose = {},
-                    onSubmit = {}
-                )
-            }
-        }
+    AppPreview {
+        MealCorrectionBolusContent(
+            uiState = MealCorrectionBolusUiState(
+                isLoading = false,
+                suggestedImi = Minutes(15),
+                suggestedCarbsKe = 3.0,
+                input = MealInput(
+                    carbsKe = 4.5,
+                    selectedMealType = sampleMealTypes[0],
+                    manualBolus = InsulinAmount(5.3),
+                    mealTimestamp = Timestamp.now().plusMinutes(15),
+                ),
+                mealTypes = sampleMealTypes,
+                projections = BolusProjections(
+                    timestamp = Timestamp.now().plusMinutes(15),
+                    bg = BgValue.fromMgDl(145),
+                    isProjected = true,
+                    iob = InsulinAmount(1.2),
+                    cob = 25.0,
+                    futureCarbs = 10.0
+                ),
+                targetBg = BgValue.fromMgDl(100),
+                isf = BgDelta.fromMgDl(50),
+                cr = 10.0,
+                calculation = BolusCalculationDetails(
+                    mealPart = InsulinAmount(4.5),
+                    correctionPart = InsulinAmount(0.8),
+                    proposedTotal = InsulinAmount(5.3),
+                ),
+                submissionStatus = SubmissionStatus.NotSubmitted,
+                isMealReminderAllowed = true,
+                isMealReminderEnabled = true
+            ),
+            onCarbsChange = {},
+            onMealTimeChange = {},
+            onApplySuggestedCarbs = {},
+            onApplySuggestedImi = {},
+            onMealTypeChange = {},
+            onManualBolusChange = {},
+            onOpenBolusPlanDialog = {},
+            onCloseBolusPlanDialog = {},
+            onUpdateBolusTime = { _, _ -> },
+            onUpdateBolusAmount = { _, _ -> },
+            onAddDeferredBolus = {},
+            onRemoveDeferredBolus = {},
+            onToggleMealReminder = {},
+            onRefreshProjections = {},
+            onClose = {},
+            onSubmit = {}
+        )
     }
 }

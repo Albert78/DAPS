@@ -32,9 +32,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.R as CommonR
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.screenTitle
+import de.dh.daps.common.R as CommonR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,21 +65,21 @@ fun PumpManagementScreen(
             item {
                 Spacer(modifier = Modifier.height(16.dp))
                 SectionHeader(title = "Wartung & Wechsel")
-                
+
                 ManagementCard(
                     icon = Icons.Default.BatteryChargingFull,
                     title = stringResource(id = R.string.pump_management_battery_change),
                     description = "Führt den Dialog für einen Batteriewechsel durch.",
                     onClick = { /* TODO */ }
                 )
-                
+
                 ManagementCard(
                     icon = Icons.Default.EvStation,
                     title = stringResource(id = R.string.pump_management_reservoir_change),
                     description = "Dialog zum Auffüllen oder Wechseln des Reservoirs.",
                     onClick = { /* TODO */ }
                 )
-                
+
                 ManagementCard(
                     icon = Icons.Default.Opacity,
                     title = stringResource(id = R.string.pump_management_cannula_change),
@@ -91,14 +91,14 @@ fun PumpManagementScreen(
             item {
                 Spacer(modifier = Modifier.height(24.dp))
                 SectionHeader(title = stringResource(id = R.string.pump_management_special_commands))
-                
+
                 ManagementCard(
                     icon = Icons.Default.Construction,
                     title = stringResource(id = R.string.pump_management_prime_cannula),
                     description = "Füllt den Katheter mit einer definierten Menge Insulin.",
                     onClick = { /* TODO */ }
                 )
-                
+
                 ManagementCard(
                     icon = Icons.Default.Construction,
                     title = stringResource(id = R.string.pump_management_prime_tubing),

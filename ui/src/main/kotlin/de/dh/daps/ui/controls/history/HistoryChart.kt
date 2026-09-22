@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -67,11 +66,10 @@ import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgSampleKind
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.BlueA200
 import de.dh.daps.ui.common.composables.DeepOrangeA700
 import de.dh.daps.ui.common.composables.RedA700
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.ExtendedTheme
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -613,24 +611,18 @@ fun createSampleDiagramData(size: Int, minsInterval: Short): HistoryDiagramData 
 @Composable
 fun HistoryChart5Preview() {
     val diagramData = remember { createSampleDiagramData(120, 5) }
-    CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-        AppTheme { BgHistoryChart(diagramData, modifier = Modifier.height(300.dp)) }
-    }
+    AppPreview { BgHistoryChart(diagramData, modifier = Modifier.height(300.dp)) }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun HistoryChart1Preview() {
     val diagramData = remember { createSampleDiagramData(600, 1) }
-    CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-        AppTheme { BgHistoryChart(diagramData, modifier = Modifier.height(300.dp)) }
-    }
+    AppPreview { BgHistoryChart(diagramData, modifier = Modifier.height(300.dp)) }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun HistoryChartDefaultPreview() {
-    CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-        AppTheme { BgHistoryChartOrDefault(diagramData = null, modifier = Modifier.height(300.dp)) }
-    }
+    AppPreview { BgHistoryChartOrDefault(diagramData = null, modifier = Modifier.height(300.dp)) }
 }

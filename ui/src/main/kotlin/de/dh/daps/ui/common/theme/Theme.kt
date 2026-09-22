@@ -2,14 +2,18 @@ package de.dh.daps.ui.common.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.ui.common.LocalAppFormatters
+import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.rememberAppFormatters
 
 @Immutable
@@ -137,6 +141,7 @@ private val DarkColors = darkColorScheme(
 @Composable
 fun AppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    glucoseUnit: GlucoseUnit = GlucoseUnit.MG_DL,
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) {
@@ -160,10 +165,34 @@ fun AppTheme(
     CompositionLocalProvider(
         LocalStatusColors provides statusColors,
         LocalSemanticColors provides semanticColors,
-        LocalAppFormatters provides rememberAppFormatters()
+        LocalAppFormatters provides rememberAppFormatters(),
+        LocalGlucoseUnit provides glucoseUnit
     ) {
         MaterialTheme(
             colorScheme = colorScheme,
+            content = content
+        )
+    }
+}
+
+/**
+ * Preview wrapper that combines [AppTheme] and [Surface] to provide a consistent
+ * background, content color, and app context (like [LocalGlucoseUnit]) for Compose Previews.
+ */
+@Composable
+fun AppPreview(
+    modifier: Modifier = Modifier,
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    glucoseUnit: GlucoseUnit = GlucoseUnit.MG_DL,
+    content: @Composable () -> Unit
+) {
+    AppTheme(
+        darkTheme = darkTheme,
+        glucoseUnit = glucoseUnit
+    ) {
+        Surface(
+            modifier = modifier,
+            color = MaterialTheme.colorScheme.background,
             content = content
         )
     }

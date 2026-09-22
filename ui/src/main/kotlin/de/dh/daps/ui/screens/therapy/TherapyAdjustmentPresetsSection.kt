@@ -9,10 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SuggestionChip
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,13 +18,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.data.BgValue
-import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.TherapyAdjustment
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
-import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.glucoseValue
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.NeutralGrey
 import de.dh.daps.ui.common.theme.SoftBlue
 import de.dh.daps.ui.common.theme.SoftRed
@@ -103,17 +99,13 @@ fun TherapyAdjustmentPresetsSection(
 @Preview(showBackground = true, name = "Presets Section")
 @Composable
 private fun TherapyAdjustmentPresetsSectionPreview() {
-    AppTheme {
-        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-            Surface(modifier = Modifier.padding(16.dp)) {
-                TherapyAdjustmentPresetsSection(
-                    presets = listOf(
-                        TherapyAdjustment(name = "Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
-                        TherapyAdjustment(name = "Stress", percentage = 20, targetBgMgDl = 115, lowThresholdMgDl = 75)
-                    ),
-                    onPresetApplied = {}
-                )
-            }
-        }
+    AppPreview(modifier = Modifier.padding(16.dp)) {
+        TherapyAdjustmentPresetsSection(
+            presets = listOf(
+                TherapyAdjustment(name = "Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
+                TherapyAdjustment(name = "Stress", percentage = 20, targetBgMgDl = 115, lowThresholdMgDl = 75)
+            ),
+            onPresetApplied = {}
+        )
     }
 }

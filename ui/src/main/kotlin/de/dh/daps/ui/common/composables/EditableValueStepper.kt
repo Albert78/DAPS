@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import de.dh.daps.ui.common.icons.Icon_Minus
-import de.dh.daps.ui.common.icons.Icon_Plus
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -48,6 +46,8 @@ import de.dh.daps.ui.common.DefaultSteppingStrategy
 import de.dh.daps.ui.common.DefaultValueDisplayStrategy
 import de.dh.daps.ui.common.SteppingStrategy
 import de.dh.daps.ui.common.ValueDisplayStrategy
+import de.dh.daps.ui.common.icons.Icon_Minus
+import de.dh.daps.ui.common.icons.Icon_Plus
 import de.dh.daps.ui.common.theme.AppTheme
 
 @Composable

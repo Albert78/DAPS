@@ -28,7 +28,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,16 +39,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.data.BgValue
-import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.TherapyAdjustment
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
-import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.glucoseValue
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.NeutralGrey
 import de.dh.daps.ui.common.theme.SoftBlue
 import de.dh.daps.ui.common.theme.SoftRed
@@ -233,20 +230,18 @@ fun TherapyAdjustmentListItem(
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
 fun TherapyAdjustmentsPreview() {
-    AppTheme {
-        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-            TherapyAdjustmentsContent(
-                uiState = TherapyAdjustmentsUiState(
-                    adjustments = listOf(
-                        TherapyAdjustment(name = "Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
-                        TherapyAdjustment(name = "Stress", percentage = 20, targetBgMgDl = 115, lowThresholdMgDl = 75)
-                    )
-                ),
-                onDeleteAdjustment = {},
-                onAddAdjustment = {},
-                onEditAdjustment = {},
-                onNavigateUp = {}
-            )
-        }
+    AppPreview {
+        TherapyAdjustmentsContent(
+            uiState = TherapyAdjustmentsUiState(
+                adjustments = listOf(
+                    TherapyAdjustment(name = "Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
+                    TherapyAdjustment(name = "Stress", percentage = 20, targetBgMgDl = 115, lowThresholdMgDl = 75)
+                )
+            ),
+            onDeleteAdjustment = {},
+            onAddAdjustment = {},
+            onEditAdjustment = {},
+            onNavigateUp = {}
+        )
     }
 }

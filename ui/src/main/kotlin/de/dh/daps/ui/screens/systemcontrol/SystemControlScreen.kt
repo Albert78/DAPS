@@ -31,7 +31,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.R as CommonR
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.data.BgReadingsInterval
@@ -46,6 +45,7 @@ import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlin.time.Duration.Companion.milliseconds
+import de.dh.daps.common.R as CommonR
 
 const val SYSTEM_CONTROL_TAB_CGM = 0
 const val SYSTEM_CONTROL_TAB_PUMP = 1

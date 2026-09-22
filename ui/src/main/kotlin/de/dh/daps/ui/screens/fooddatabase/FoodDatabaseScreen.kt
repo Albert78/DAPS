@@ -18,10 +18,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import de.dh.daps.common.R as CommonR
+import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppTheme
-import de.dh.daps.ui.R
+import de.dh.daps.common.R as CommonR
 
 @Composable
 fun FoodDatabaseScreen(

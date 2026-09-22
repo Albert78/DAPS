@@ -14,8 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import de.dh.daps.common.R as CommonR
 import de.dh.daps.common.model.data.InsulinProfile
+import de.dh.daps.common.R as CommonR
 
 @Composable
 fun InsulinProfileSelectionDialog(

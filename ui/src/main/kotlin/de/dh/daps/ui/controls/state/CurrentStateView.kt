@@ -26,7 +26,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,11 +43,9 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.data.BgDelta
 import de.dh.daps.common.model.data.BgValue
-import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.aps.CoreState
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.carbsGramsValue
 import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.composables.LightGreenA700
@@ -61,7 +58,7 @@ import de.dh.daps.ui.common.icons.CarbsBlood
 import de.dh.daps.ui.common.icons.InsulinBlood
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.shortRelativeTimeAgo
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -383,17 +380,13 @@ fun CurrentStateViewPreview() {
         coreState = CoreState.Active(issues = emptySet()),
         apsIssues = emptySet()
     )
-    AppTheme {
-        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-            Surface {
-                Box(Modifier.padding(16.dp)) {
-                    CurrentStateView(
-                        currentBgUiState = state,
-                        iob = InsulinAmount(1.57),
-                        cob = 12.0
-                    )
-                }
-            }
+    AppPreview {
+        Box(Modifier.padding(16.dp)) {
+            CurrentStateView(
+                currentBgUiState = state,
+                iob = InsulinAmount(1.57),
+                cob = 12.0
+            )
         }
     }
 }

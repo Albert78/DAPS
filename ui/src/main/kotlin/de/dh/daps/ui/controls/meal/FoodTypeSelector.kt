@@ -36,10 +36,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.CarbCurveComponentData
 import de.dh.daps.common.model.MealType
+import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.getDefaultFastMealType
 import de.dh.daps.common.model.getDefaultSlowMealType
 import de.dh.daps.common.model.getDefaultStandardMealType
-import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.screens.mealtypes.MealTypeIcon

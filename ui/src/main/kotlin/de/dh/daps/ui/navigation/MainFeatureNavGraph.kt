@@ -29,13 +29,13 @@ import de.dh.daps.common.navigation.HistoryRoute
 import de.dh.daps.common.navigation.InsulinProfileEditorRoute
 import de.dh.daps.common.navigation.InsulinTypeEditorRoute
 import de.dh.daps.common.navigation.InsulinTypesRoute
+import de.dh.daps.common.navigation.ManualControlRoute
 import de.dh.daps.common.navigation.MasterDataRoute
 import de.dh.daps.common.navigation.MealCorrectionBolusRoute
 import de.dh.daps.common.navigation.MealTypeEditorRoute
 import de.dh.daps.common.navigation.MealTypesRoute
 import de.dh.daps.common.navigation.MealsRoute
 import de.dh.daps.common.navigation.NavigationViewModel
-import de.dh.daps.common.navigation.ManualControlRoute
 import de.dh.daps.common.navigation.PermissionsRoute
 import de.dh.daps.common.navigation.PreferencesMainRoute
 import de.dh.daps.common.navigation.PumpManagementRoute
@@ -67,6 +67,8 @@ import de.dh.daps.ui.screens.insulintypes.InsulinTypeEditorScreen
 import de.dh.daps.ui.screens.insulintypes.InsulinTypeEditorViewModel
 import de.dh.daps.ui.screens.insulintypes.InsulinTypesScreen
 import de.dh.daps.ui.screens.insulintypes.InsulinTypesViewModel
+import de.dh.daps.ui.screens.manualcontrol.ManualControlScreen
+import de.dh.daps.ui.screens.manualcontrol.ManualControlViewModel
 import de.dh.daps.ui.screens.masterdata.MasterDataScreen
 import de.dh.daps.ui.screens.mealcorrectionbolus.MealCorrectionBolusScreen
 import de.dh.daps.ui.screens.mealcorrectionbolus.MealCorrectionBolusViewModel
@@ -78,8 +80,6 @@ import de.dh.daps.ui.screens.mealtypes.MealTypeEditorScreen
 import de.dh.daps.ui.screens.mealtypes.MealTypeEditorViewModel
 import de.dh.daps.ui.screens.mealtypes.MealTypesScreen
 import de.dh.daps.ui.screens.mealtypes.MealTypesViewModel
-import de.dh.daps.ui.screens.manualcontrol.ManualControlScreen
-import de.dh.daps.ui.screens.manualcontrol.ManualControlViewModel
 import de.dh.daps.ui.screens.permissions.PermissionsScreen
 import de.dh.daps.ui.screens.permissions.PermissionsViewModel
 import de.dh.daps.ui.screens.permissions.isPermissionsMissing

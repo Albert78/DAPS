@@ -1,7 +1,5 @@
 package de.dh.daps.ui.screens.therapy
 
-import de.dh.daps.common.model.data.TherapyAdjustment
-
 import android.app.TimePickerDialog
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
@@ -43,7 +41,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -61,14 +58,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.data.AlarmProfile
 import de.dh.daps.common.model.data.BgValue
-import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.common.model.data.TherapyAdjustment
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -475,28 +471,24 @@ fun ScheduledTherapyAdjustmentContent(
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode", heightDp = 1200)
 @Composable
 private fun ScheduledTherapyAdjustmentPreview() {
-    AppTheme {
-        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-            Surface {
-                ScheduledTherapyAdjustmentContent(
-                    formState = TherapyAdjustmentFormState(
-                        percentage = -20,
-                        targetBgOverride = BgValue.fromMgDl(130)
-                    ),
-                    startTime = Timestamp.now(),
-                    endTime = Timestamp(System.currentTimeMillis() + 3600_000),
-                    baseTarget = BgValue.fromMgDl(100),
-                    baseLow = BgValue.fromMgDl(70),
-                    isDirty = true,
-                    onValuesChange = { _, _, _, _, _ -> },
-                    onStartTimeChange = {},
-                    onEndTimeChange = {},
-                    onPresetApplied = {},
-                    onScheduleClicked = {},
-                    onDiscardClicked = {},
-                    onNavigateUp = {}
-                )
-            }
-        }
+    AppPreview {
+        ScheduledTherapyAdjustmentContent(
+            formState = TherapyAdjustmentFormState(
+                percentage = -20,
+                targetBgOverride = BgValue.fromMgDl(130)
+            ),
+            startTime = Timestamp.now(),
+            endTime = Timestamp(System.currentTimeMillis() + 3600_000),
+            baseTarget = BgValue.fromMgDl(100),
+            baseLow = BgValue.fromMgDl(70),
+            isDirty = true,
+            onValuesChange = { _, _, _, _, _ -> },
+            onStartTimeChange = {},
+            onEndTimeChange = {},
+            onPresetApplied = {},
+            onScheduleClicked = {},
+            onDiscardClicked = {},
+            onNavigateUp = {}
+        )
     }
 }

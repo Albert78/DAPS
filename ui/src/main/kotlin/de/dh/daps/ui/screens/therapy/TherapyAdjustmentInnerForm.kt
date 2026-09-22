@@ -1,5 +1,6 @@
 package de.dh.daps.ui.screens.therapy
 
+import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -33,11 +34,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
-import android.content.res.Configuration
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,7 +51,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.R as CommonR
 import de.dh.daps.common.model.ADJUSTMENT_PERCENTAGE_MAX
 import de.dh.daps.common.model.ADJUSTMENT_PERCENTAGE_MIN
 import de.dh.daps.common.model.LOW_THRESHOLD_MAX
@@ -62,19 +59,18 @@ import de.dh.daps.common.model.TARGET_MAX
 import de.dh.daps.common.model.TARGET_MIN
 import de.dh.daps.common.model.data.AlarmProfile
 import de.dh.daps.common.model.data.BgValue
-import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
-import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.ModuloSteppingStrategy
 import de.dh.daps.ui.common.composables.EditableValueStepper
 import de.dh.daps.ui.common.composables.StepperDefaults
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.glucoseValue
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.NeutralGrey
 import de.dh.daps.ui.common.theme.SoftBlue
 import de.dh.daps.ui.common.theme.SoftRed
+import de.dh.daps.common.R as CommonR
 
 /**
  * Shared reusable form component for the inner section of therapy adjustments
@@ -477,52 +473,44 @@ private fun StandardValueDisplay(
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode - All Active", heightDp = 850)
 @Composable
 private fun TherapyAdjustmentInnerFormPreview() {
-    AppTheme {
-        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-            Surface(modifier = Modifier.padding(16.dp)) {
-                TherapyAdjustmentInnerForm(
-                    formState = TherapyAdjustmentFormState(
-                        percentage = -15,
-                        targetBgOverride = BgValue.fromMgDl(130),
-                        lowThresholdOverride = BgValue.fromMgDl(85),
-                        alarmProfileOverrideId = 1L,
-                        adjustmentHint = "Fahrrad fahren"
-                    ),
-                    baseTarget = BgValue.fromMgDl(100),
-                    baseLow = BgValue.fromMgDl(70),
-                    availableAlarmProfiles = listOf(
-                        AlarmProfile(id = 1L, name = "Sport"),
-                        AlarmProfile(id = 2L, name = "Schlafen")
-                    ),
-                    onValuesChange = { _, _, _, _, _ -> }
-                )
-            }
-        }
+    AppPreview(modifier = Modifier.padding(16.dp)) {
+        TherapyAdjustmentInnerForm(
+            formState = TherapyAdjustmentFormState(
+                percentage = -15,
+                targetBgOverride = BgValue.fromMgDl(130),
+                lowThresholdOverride = BgValue.fromMgDl(85),
+                alarmProfileOverrideId = 1L,
+                adjustmentHint = "Fahrrad fahren"
+            ),
+            baseTarget = BgValue.fromMgDl(100),
+            baseLow = BgValue.fromMgDl(70),
+            availableAlarmProfiles = listOf(
+                AlarmProfile(id = 1L, name = "Sport"),
+                AlarmProfile(id = 2L, name = "Schlafen")
+            ),
+            onValuesChange = { _, _, _, _, _ -> }
+        )
     }
 }
 
 @Preview(showBackground = true, name = "Light Mode - Collapsed Inactive")
 @Composable
 private fun TherapyAdjustmentInnerFormCollapsedPreview() {
-    AppTheme {
-        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-            Surface(modifier = Modifier.padding(16.dp)) {
-                TherapyAdjustmentInnerForm(
-                    formState = TherapyAdjustmentFormState(
-                        percentage = 0,
-                        targetBgOverride = null,
-                        lowThresholdOverride = null,
-                        alarmProfileOverrideId = null,
-                        adjustmentHint = null
-                    ),
-                    baseTarget = BgValue.fromMgDl(100),
-                    baseLow = BgValue.fromMgDl(70),
-                    availableAlarmProfiles = listOf(
-                        AlarmProfile(id = 1L, name = "Sport")
-                    ),
-                    onValuesChange = { _, _, _, _, _ -> }
-                )
-            }
-        }
+    AppPreview(modifier = Modifier.padding(16.dp)) {
+        TherapyAdjustmentInnerForm(
+            formState = TherapyAdjustmentFormState(
+                percentage = 0,
+                targetBgOverride = null,
+                lowThresholdOverride = null,
+                alarmProfileOverrideId = null,
+                adjustmentHint = null
+            ),
+            baseTarget = BgValue.fromMgDl(100),
+            baseLow = BgValue.fromMgDl(70),
+            availableAlarmProfiles = listOf(
+                AlarmProfile(id = 1L, name = "Sport")
+            ),
+            onValuesChange = { _, _, _, _, _ -> }
+        )
     }
 }

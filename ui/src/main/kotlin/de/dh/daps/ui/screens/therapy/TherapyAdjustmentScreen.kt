@@ -1,7 +1,5 @@
 package de.dh.daps.ui.screens.therapy
 
-import de.dh.daps.common.model.data.TherapyAdjustment
-
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
@@ -35,7 +33,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,14 +50,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.data.AlarmProfile
 import de.dh.daps.common.model.data.BgValue
-import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.common.model.data.TherapyAdjustment
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import java.text.SimpleDateFormat
 import java.util.Locale
 import de.dh.daps.common.R as CommonR
@@ -350,31 +346,27 @@ fun TherapyAdjustmentContent(
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode", heightDp = 1000)
 @Composable
 private fun TherapyAdjustmentPreviewValues() {
-    AppTheme {
-        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-            Surface {
-                TherapyAdjustmentContent(
-                    formState = TherapyAdjustmentFormState(
-                        percentage = -10,
-                        targetBgOverride = BgValue.fromMgDl(120),
-                        lowThresholdOverride = BgValue.fromMgDl(80)
-                    ),
-                    adjustmentEndTime = Timestamp(System.currentTimeMillis() + 3600_000),
-                    baseTarget = BgValue.fromMgDl(100),
-                    baseLow = BgValue.fromMgDl(70),
-                    isDirty = false,
-                    onValuesChange = { _, _, _, _, _ -> },
-                    onEndTimeChange = {},
-                    onPresetApplied = {},
-                    onApplyClicked = {},
-                    onDiscardClicked = {},
-                    onNavigateUp = {},
-                    presets = listOf(
-                        TherapyAdjustment(name = "Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
-                        TherapyAdjustment(name = "Stress", percentage = 20, targetBgMgDl = 115, lowThresholdMgDl = 75)
-                    )
-                )
-            }
-        }
+    AppPreview {
+        TherapyAdjustmentContent(
+            formState = TherapyAdjustmentFormState(
+                percentage = -10,
+                targetBgOverride = BgValue.fromMgDl(120),
+                lowThresholdOverride = BgValue.fromMgDl(80)
+            ),
+            adjustmentEndTime = Timestamp(System.currentTimeMillis() + 3600_000),
+            baseTarget = BgValue.fromMgDl(100),
+            baseLow = BgValue.fromMgDl(70),
+            isDirty = false,
+            onValuesChange = { _, _, _, _, _ -> },
+            onEndTimeChange = {},
+            onPresetApplied = {},
+            onApplyClicked = {},
+            onDiscardClicked = {},
+            onNavigateUp = {},
+            presets = listOf(
+                TherapyAdjustment(name = "Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
+                TherapyAdjustment(name = "Stress", percentage = 20, targetBgMgDl = 115, lowThresholdMgDl = 75)
+            )
+        )
     }
 }

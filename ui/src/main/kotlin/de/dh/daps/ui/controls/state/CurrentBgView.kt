@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,7 +34,6 @@ import de.dh.daps.common.model.data.BgDelta
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.composables.LightGreenA700
 import de.dh.daps.ui.common.composables.Red
@@ -43,7 +41,7 @@ import de.dh.daps.ui.common.composables.Yellow
 import de.dh.daps.ui.common.deltaValue
 import de.dh.daps.ui.common.glucoseValue
 import de.dh.daps.ui.common.shortRelativeTimeAgo
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import kotlinx.coroutines.delay
 
 @Composable
@@ -226,154 +224,138 @@ fun createSampleGoodBgUiState(): CurrentBgUiState {
 @Preview(showBackground = true)
 @Composable
 fun BgInvalidViewPreview() {
-    AppTheme {
-        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-            CurrentBgView(
-                currentBgUiState = CurrentBgUiState(
-                    isLoading = false,
-                    isError = false,
-                    currentBgValue = CurrentBgData.invalid()
-                )
+    AppPreview {
+        CurrentBgView(
+            currentBgUiState = CurrentBgUiState(
+                isLoading = false,
+                isError = false,
+                currentBgValue = CurrentBgData.invalid()
             )
-        }
+        )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun BgOldViewPreview() {
-    AppTheme {
-        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-            CurrentBgView(
-                currentBgUiState = CurrentBgUiState(
-                    isLoading = false,
-                    isError = false,
-                    currentBgValue = CurrentBgData.oldValue(
-                        bgValue = BgValue.fromMgDl(110),
-                        timestamp = Timestamp.now().minusHours(3)
-                    )
+    AppPreview {
+        CurrentBgView(
+            currentBgUiState = CurrentBgUiState(
+                isLoading = false,
+                isError = false,
+                currentBgValue = CurrentBgData.oldValue(
+                    bgValue = BgValue.fromMgDl(110),
+                    timestamp = Timestamp.now().minusHours(3)
                 )
             )
-        }
+        )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun BgVeryHighViewPreview() {
-    AppTheme {
-        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-            CurrentBgView(
-                currentBgUiState = CurrentBgUiState(
-                    isLoading = false,
-                    isError = false,
-                    currentBgValue = CurrentBgData.valid(
-                        bgValue = BgValue.fromMgDl(325),
-                        delta = BgDelta.fromMgDl(+20),
-                        trend = BgTrend.DoubleUp,
-                        timestamp = Timestamp.now().minusMinutes(3)
-                    )
+    AppPreview {
+        CurrentBgView(
+            currentBgUiState = CurrentBgUiState(
+                isLoading = false,
+                isError = false,
+                currentBgValue = CurrentBgData.valid(
+                    bgValue = BgValue.fromMgDl(325),
+                    delta = BgDelta.fromMgDl(+20),
+                    trend = BgTrend.DoubleUp,
+                    timestamp = Timestamp.now().minusMinutes(3)
                 )
             )
-        }
+        )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun BgHighViewPreview() {
-    AppTheme {
-        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-            CurrentBgView(
-                currentBgUiState = CurrentBgUiState(
-                    isLoading = false,
-                    isError = false,
-                    currentBgValue = CurrentBgData.valid(
-                        bgValue = BgValue.fromMgDl(225),
-                        delta = BgDelta.fromMgDl(+15),
-                        trend = BgTrend.SingleUp,
-                        timestamp = Timestamp.now().minusSeconds(20)
-                    )
+    AppPreview {
+        CurrentBgView(
+            currentBgUiState = CurrentBgUiState(
+                isLoading = false,
+                isError = false,
+                currentBgValue = CurrentBgData.valid(
+                    bgValue = BgValue.fromMgDl(225),
+                    delta = BgDelta.fromMgDl(+15),
+                    trend = BgTrend.SingleUp,
+                    timestamp = Timestamp.now().minusSeconds(20)
                 )
             )
-        }
+        )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun BgGoodUpViewPreview() {
-    AppTheme {
-        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-            CurrentBgView(
-                currentBgUiState = createSampleGoodBgUiState()
-            )
-        }
+    AppPreview {
+        CurrentBgView(
+            currentBgUiState = createSampleGoodBgUiState()
+        )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun BgGoodFlatViewPreview() {
-    AppTheme {
-        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-            CurrentBgView(
-                currentBgUiState = CurrentBgUiState(
-                    isLoading = false,
-                    isError = false,
-                    currentBgValue = CurrentBgData.valid(
-                        bgValue = BgValue.fromMgDl(125),
-                        delta = BgDelta.fromMgDl(+0),
-                        trend = BgTrend.Flat,
-                        timestamp = Timestamp.now(),
-                        glucoseUnit = GlucoseUnit.MG_DL
-                    )
+    AppPreview {
+        CurrentBgView(
+            currentBgUiState = CurrentBgUiState(
+                isLoading = false,
+                isError = false,
+                currentBgValue = CurrentBgData.valid(
+                    bgValue = BgValue.fromMgDl(125),
+                    delta = BgDelta.fromMgDl(+0),
+                    trend = BgTrend.Flat,
+                    timestamp = Timestamp.now(),
+                    glucoseUnit = GlucoseUnit.MG_DL
                 )
             )
-        }
+        )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun BgLowViewPreview() {
-    AppTheme {
-        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-            CurrentBgView(
-                currentBgUiState = CurrentBgUiState(
-                    isLoading = false,
-                    isError = false,
-                    currentBgValue = CurrentBgData.valid(
-                        bgValue = BgValue.fromMgDl(60),
-                        delta = BgDelta.fromMgDl(-5),
-                        trend = BgTrend.FortyFiveDown,
-                        timestamp = Timestamp.now(),
-                        glucoseUnit = GlucoseUnit.MG_DL
-                    )
+    AppPreview {
+        CurrentBgView(
+            currentBgUiState = CurrentBgUiState(
+                isLoading = false,
+                isError = false,
+                currentBgValue = CurrentBgData.valid(
+                    bgValue = BgValue.fromMgDl(60),
+                    delta = BgDelta.fromMgDl(-5),
+                    trend = BgTrend.FortyFiveDown,
+                    timestamp = Timestamp.now(),
+                    glucoseUnit = GlucoseUnit.MG_DL
                 )
             )
-        }
+        )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun BgVeryLowViewPreview() {
-    AppTheme {
-        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-            CurrentBgView(
-                currentBgUiState = CurrentBgUiState(
-                    isLoading = false,
-                    isError = false,
-                    currentBgValue = CurrentBgData.valid(
-                        bgValue = BgValue.fromMgDl(45),
-                        delta = BgDelta.fromMgDl(-10),
-                        trend = BgTrend.SingleDown,
-                        timestamp = Timestamp.now(),
-                        glucoseUnit = GlucoseUnit.MG_DL
-                    )
+    AppPreview {
+        CurrentBgView(
+            currentBgUiState = CurrentBgUiState(
+                isLoading = false,
+                isError = false,
+                currentBgValue = CurrentBgData.valid(
+                    bgValue = BgValue.fromMgDl(45),
+                    delta = BgDelta.fromMgDl(-10),
+                    trend = BgTrend.SingleDown,
+                    timestamp = Timestamp.now(),
+                    glucoseUnit = GlucoseUnit.MG_DL
                 )
             )
-        }
+        )
     }
 }

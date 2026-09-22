@@ -33,7 +33,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,7 +51,6 @@ import de.dh.daps.common.model.data.AlarmSeverity
 import de.dh.daps.common.model.data.AlarmType
 import de.dh.daps.common.model.data.BgDelta
 import de.dh.daps.common.model.data.BgValue
-import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.aps.ApsRecommendation
@@ -64,7 +62,7 @@ import de.dh.daps.ui.common.composables.WarningBanner
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.icons.Icon_Menu_Permissions
 import de.dh.daps.ui.common.icons.Icon_Settings
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.controls.apscontrol.ApsControlCard
 import de.dh.daps.ui.controls.history.HistoryAndImpactChartOrDefault
 import de.dh.daps.ui.controls.history.HistoryAndImpactDiagramData
@@ -447,62 +445,60 @@ fun SnoozedAlarmBanner(
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
 fun DashboardPreview() {
-    AppTheme {
-        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-            DashboardContent(
-                dashboardUiState = DashboardUiState(isLoading = false, isError = false),
-                currentBgUiState = createSampleGoodBgUiState(),
-                historyUiState = createSampleHistoryUiState(),
-                iob = InsulinAmount(1.57),
-                cob = 12.0,
-                currentTherapyUiState = CurrentTherapyUiState(
-                    activeTherapyStatus = ActiveTherapyStatusUiState(
-                        profile = InsulinProfileUiState(
-                            name = "Normal",
-                            activeProfileId = null,
-                            isfRange = "50",
-                            crRange = "10.0",
-                            basalRange = "0.50",
-                            dia = Minutes(300),
-                            peak = Minutes(75)
-                        ),
-                        adjustment = TherapyAdjustmentUiState(
-                            percentage = 0,
-                            targetBgOverride = null,
-                            lowThresholdOverride = null,
-                            adjustmentHint = null
-                        ),
-                        currentIsf = BgDelta.fromMgDl(50),
-                        currentCr = 10.0,
-                        currentBasal = InsulinAmount(0.5),
-                        target = BgValue.fromMgDl(110),
-                        lowThreshold = BgValue.fromMgDl(70),
-                        baseTarget = BgValue.fromMgDl(110),
-                        baseLow = BgValue.fromMgDl(70)
-                    )
-                ),
-                permissionsUiState = PermissionsUiModel(
-                    isLoading = false,
-                    alarmPermissionStatus = PermissionStatus.Granted,
-                    notificationPermissionStatus = PermissionStatus.Granted,
-                    fullscreenPermissionStatus = PermissionStatus.Granted,
-                    ignoreBatteryOptimizationPermissionStatus = PermissionStatus.Granted,
-                    autoRevokePermissionsPermissionStatus = PermissionStatus.Granted,
-                    numPermissionsMissing = 0,
-                    permissionsMissingText = ""
-                ),
-                onFixPermissionsClick = {},
-                onNavigateToPermissions = {},
-                onNavigateToPreferences = {},
-                onNavigateToTherapySettings = {},
-                onNavigateToSystemControl = {},
-                onHistoryChartClick = {},
-                onApsModeSelect = {},
-                onAdjustmentClick = {},
-                onNavigateToMealCorrectionBolus = {},
-                isMealCorrectionBolusAllowed = true
-            )
-        }
+    AppPreview {
+        DashboardContent(
+            dashboardUiState = DashboardUiState(isLoading = false, isError = false),
+            currentBgUiState = createSampleGoodBgUiState(),
+            historyUiState = createSampleHistoryUiState(),
+            iob = InsulinAmount(1.57),
+            cob = 12.0,
+            currentTherapyUiState = CurrentTherapyUiState(
+                activeTherapyStatus = ActiveTherapyStatusUiState(
+                    profile = InsulinProfileUiState(
+                        name = "Normal",
+                        activeProfileId = null,
+                        isfRange = "50",
+                        crRange = "10.0",
+                        basalRange = "0.50",
+                        dia = Minutes(300),
+                        peak = Minutes(75)
+                    ),
+                    adjustment = TherapyAdjustmentUiState(
+                        percentage = 0,
+                        targetBgOverride = null,
+                        lowThresholdOverride = null,
+                        adjustmentHint = null
+                    ),
+                    currentIsf = BgDelta.fromMgDl(50),
+                    currentCr = 10.0,
+                    currentBasal = InsulinAmount(0.5),
+                    target = BgValue.fromMgDl(110),
+                    lowThreshold = BgValue.fromMgDl(70),
+                    baseTarget = BgValue.fromMgDl(110),
+                    baseLow = BgValue.fromMgDl(70)
+                )
+            ),
+            permissionsUiState = PermissionsUiModel(
+                isLoading = false,
+                alarmPermissionStatus = PermissionStatus.Granted,
+                notificationPermissionStatus = PermissionStatus.Granted,
+                fullscreenPermissionStatus = PermissionStatus.Granted,
+                ignoreBatteryOptimizationPermissionStatus = PermissionStatus.Granted,
+                autoRevokePermissionsPermissionStatus = PermissionStatus.Granted,
+                numPermissionsMissing = 0,
+                permissionsMissingText = ""
+            ),
+            onFixPermissionsClick = {},
+            onNavigateToPermissions = {},
+            onNavigateToPreferences = {},
+            onNavigateToTherapySettings = {},
+            onNavigateToSystemControl = {},
+            onHistoryChartClick = {},
+            onApsModeSelect = {},
+            onAdjustmentClick = {},
+            onNavigateToMealCorrectionBolus = {},
+            isMealCorrectionBolusAllowed = true
+        )
     }
 }
 
@@ -510,9 +506,8 @@ fun DashboardPreview() {
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
 fun DashboardPermissionsWarningPreview() {
-    AppTheme {
-        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-            DashboardContent(
+    AppPreview {
+        DashboardContent(
                 dashboardUiState = DashboardUiState(isLoading = false, isError = false),
                 currentBgUiState = createSampleGoodBgUiState(),
                 historyUiState = createSampleHistoryUiState(),
@@ -565,6 +560,5 @@ fun DashboardPermissionsWarningPreview() {
                 onNavigateToMealCorrectionBolus = {},
                 isMealCorrectionBolusAllowed = true
             )
-        }
     }
 }

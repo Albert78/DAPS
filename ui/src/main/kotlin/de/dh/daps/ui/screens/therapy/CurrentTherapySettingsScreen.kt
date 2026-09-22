@@ -29,8 +29,6 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material.icons.filled.VerticalAlignBottom
-import de.dh.daps.common.model.data.ScheduledTherapyAdjustment
-import de.dh.daps.common.model.data.TherapyAdjustment
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -47,7 +45,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -69,12 +66,12 @@ import de.dh.daps.common.model.data.BgBlock
 import de.dh.daps.common.model.data.BgDelta
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Block
-import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.ScheduledTherapyAdjustment
+import de.dh.daps.common.model.data.TherapyAdjustment
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
-import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.composables.InsulinProfileSelectionDialog
 import de.dh.daps.ui.common.composables.NormalTextButton
@@ -83,7 +80,7 @@ import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.glucoseValue
 import de.dh.daps.ui.common.isfUnitLabel
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.NeutralGrey
 import de.dh.daps.ui.common.theme.SoftBlue
 import de.dh.daps.ui.common.theme.SoftRed
@@ -953,18 +950,16 @@ fun CurrentTherapySettingsPreview() {
         )
     )
 
-    AppTheme {
-        CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-            CurrentTherapySettingsContent(
-                uiState = mockUiState,
-                onNavigateUp = {},
-                onNavigateToInsulinProfileEditor = {},
-                onNavigateToBgEditor = {},
-                onNavigateToTherapyAdjustment = {},
-                onNavigateToScheduledTherapyAdjustment = {},
-                onSelectProfile = {}
-            )
-        }
+    AppPreview {
+        CurrentTherapySettingsContent(
+            uiState = mockUiState,
+            onNavigateUp = {},
+            onNavigateToInsulinProfileEditor = {},
+            onNavigateToBgEditor = {},
+            onNavigateToTherapyAdjustment = {},
+            onNavigateToScheduledTherapyAdjustment = {},
+            onSelectProfile = {}
+        )
     }
 }
 

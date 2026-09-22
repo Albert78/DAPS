@@ -13,7 +13,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
@@ -75,9 +74,8 @@ import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timeline
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.glucoseUnitLabel
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.ColorBg
 import de.dh.daps.ui.common.theme.ColorCarbs
 import de.dh.daps.ui.common.theme.ColorInsulin
@@ -682,25 +680,21 @@ fun HistoryAndImpactChartOrDefault(
 @Composable
 fun HistoryAndImpactChartPreview() {
     val diagramData = remember { createSampleImpactDiagramData() }
-    CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-        AppTheme {
-            HistoryAndImpactChart(
-                diagramData = diagramData,
-                modifier = Modifier.height(300.dp)
-            )
-        }
+    AppPreview {
+        HistoryAndImpactChart(
+            diagramData = diagramData,
+            modifier = Modifier.height(300.dp)
+        )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun HistoryAndImpactChartDefaultPreview() {
-    CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-        AppTheme {
-            HistoryAndImpactChartOrDefault(
-                diagramData = null,
-                modifier = Modifier.height(300.dp)
-            )
-        }
+    AppPreview {
+        HistoryAndImpactChartOrDefault(
+            diagramData = null,
+            modifier = Modifier.height(300.dp)
+        )
     }
 }

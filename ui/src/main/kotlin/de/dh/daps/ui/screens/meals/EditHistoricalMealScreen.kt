@@ -18,10 +18,10 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -51,9 +51,9 @@ import de.dh.daps.common.model.CARBS_KE_MIN
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.MealEntry
 import de.dh.daps.common.model.MealType
-import de.dh.daps.common.model.getDefaultMealTypes
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.model.getDefaultMealTypes
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.DefaultSteppingStrategy
 import de.dh.daps.ui.common.ValueDisplayStrategy

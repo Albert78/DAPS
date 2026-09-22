@@ -13,7 +13,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,10 +25,8 @@ import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgSampleKind
 import de.dh.daps.common.model.data.BgValue
-import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.carbsGramsValue
 import de.dh.daps.ui.common.composables.LightGreenA700
 import de.dh.daps.ui.common.composables.Red
@@ -37,7 +34,7 @@ import de.dh.daps.ui.common.composables.Yellow
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.glucoseValue
 import de.dh.daps.ui.common.insulinValue
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.time
 import de.dh.daps.common.R as CommonR
 
@@ -156,21 +153,17 @@ fun ManualControlContextInfo(
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
 private fun ManualControlContextInfoPreview() {
-    AppTheme {
-        Surface {
-            CompositionLocalProvider(LocalGlucoseUnit provides GlucoseUnit.MG_DL) {
-                ManualControlContextInfo(
-                    contextInfo = ManualControlContextInfoUiModel(
-                        lastBgReading = BgReading(
-                            value = BgValue.fromMgDl(120),
-                            sampleKind = BgSampleKind.Value,
-                            timestamp = Timestamp.now()
-                        ),
-                        iob = InsulinAmount(1.5),
-                        cob = 25.0
-                    )
-                )
-            }
-        }
+    AppPreview {
+        ManualControlContextInfo(
+            contextInfo = ManualControlContextInfoUiModel(
+                lastBgReading = BgReading(
+                    value = BgValue.fromMgDl(120),
+                    sampleKind = BgSampleKind.Value,
+                    timestamp = Timestamp.now()
+                ),
+                iob = InsulinAmount(1.5),
+                cob = 25.0
+            )
+        )
     }
 }

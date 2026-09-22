@@ -2,6 +2,7 @@ package de.dh.daps.ui.activities
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -36,7 +37,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -60,33 +60,29 @@ import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDe
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import android.net.Uri
 import de.dh.daps.common.navigation.BolusHistoryRoute
 import de.dh.daps.common.navigation.DashboardRoute
 import de.dh.daps.common.navigation.FeatureNavGraph
 import de.dh.daps.common.navigation.FoodDatabaseRoute
 import de.dh.daps.common.navigation.HistoricalMealRoute
+import de.dh.daps.common.navigation.ManualControlRoute
 import de.dh.daps.common.navigation.MasterDataRoute
 import de.dh.daps.common.navigation.MealCorrectionBolusRoute
 import de.dh.daps.common.navigation.MealsRoute
 import de.dh.daps.common.navigation.NavigationViewModel
-import de.dh.daps.common.navigation.ManualControlRoute
 import de.dh.daps.common.navigation.SystemControlRoute
 import de.dh.daps.common.navigation.combineEntryProviders
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.system.RegistryProvider
 import de.dh.daps.ui.GlobalViewModel
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.LocalAppFormatters
-import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.EdgeToEdgeHandler
+import de.dh.daps.ui.common.icons.Icon_ManualControlMode
 import de.dh.daps.ui.common.icons.Icon_Menu_Bolus_History
 import de.dh.daps.ui.common.icons.Icon_Menu_Food_Database
 import de.dh.daps.ui.common.icons.Icon_Menu_Master_Data
 import de.dh.daps.ui.common.icons.Icon_Menu_Meals
 import de.dh.daps.ui.common.icons.Icon_Menu_System_Control
-import de.dh.daps.ui.common.icons.Icon_ManualControlMode
-import de.dh.daps.ui.common.rememberAppFormatters
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.rememberUseDarkTheme
 import de.dh.daps.ui.navigation.MainFeatureNavGraph
@@ -124,17 +120,15 @@ class MainActivity : ComponentActivity() {
             val glucoseUnit by globalViewModel.glucoseUnit.collectAsState()
 
             EdgeToEdgeHandler(useDarkTheme)
-            AppTheme(darkTheme = useDarkTheme) {
-                CompositionLocalProvider(
-                    LocalAppFormatters provides rememberAppFormatters(),
-                    LocalGlucoseUnit provides glucoseUnit
+            AppTheme(
+                darkTheme = useDarkTheme,
+                glucoseUnit = glucoseUnit
+            ) {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
                 ) {
-                    Surface(
-                        modifier = Modifier.fillMaxSize(),
-                        color = MaterialTheme.colorScheme.background
-                    ) {
-                        MainApp(registry)
-                    }
+                    MainApp(registry)
                 }
             }
         }
