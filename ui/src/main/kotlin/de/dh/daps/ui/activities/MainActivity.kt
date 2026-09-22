@@ -2,7 +2,6 @@ package de.dh.daps.ui.activities
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -255,94 +254,79 @@ class MainActivity : ComponentActivity() {
                     if (mealId != null) {
                         return listOf(DashboardRoute, HistoricalMealRoute(mealId))
                     }
-                } else if (path == "/mealcorrectionbolus") {
-                    val carbsInG = data.getDoubleQueryParameter("carbsInG")
-                        ?: data.getDoubleQueryParameter("carbs")
-                        ?: intent.getDoubleExtraOrNull("carbsInG")
-                        ?: intent.getDoubleExtraOrNull("carbs")
-                        ?: intent.getDoubleExtraOrNull("prefilledCarbsInG")
-
-                    return listOf(DashboardRoute, MealCorrectionBolusRoute(prefilledCarbsInG = carbsInG))
-                } else if (path == "/manualcontrol") {
-                    val dialogStr = data.getQueryParameter("dialog")
-                        ?: intent.getStringExtra("dialog")
-                        ?: intent.getStringExtra("initial_dialog")
-
-                    val initialDialog = when (dialogStr?.lowercase()) {
-                        "bolus" -> ManualControlInitialDialog.BOLUS
-                        "temp_basal", "tempbasal" -> ManualControlInitialDialog.TEMP_BASAL
-                        else -> ManualControlInitialDialog.NONE
-                    }
-                    return listOf(DashboardRoute, ManualControlRoute(initialDialog = initialDialog))
+            } else if (path == "/mealcorrectionbolus") {
+                val carbsInG = data.getQueryParameter("carbsInG")?.toDoubleOrNull()
+                return listOf(DashboardRoute, MealCorrectionBolusRoute(prefilledCarbsInG = carbsInG))
+            } else if (path == "/manualcontrol") {
+                val dialogStr = data.getQueryParameter("dialog")
+                val initialDialog = when (dialogStr) {
+                    "bolus" -> ManualControlInitialDialog.BOLUS
+                    "temp_basal" -> ManualControlInitialDialog.TEMP_BASAL
+                    else -> ManualControlInitialDialog.NONE
                 }
-            }
-
-            return null
-        }
-
-        fun handleIntent(intent: Intent?, navViewModel: NavigationViewModel) {
-            val routes = parseIntent(intent)
-            if (routes != null) {
-                navViewModel.reset(routes)
+                return listOf(DashboardRoute, ManualControlRoute(initialDialog = initialDialog))
             }
         }
 
-        companion object {
-            const val EXTRA_CARBS_IN_G = "carbsInG"
-            const val EXTRA_DIALOG = "dialog"
-            const val EXTRA_INITIAL_DIALOG = "initial_dialog"
+        return null
+    }
 
-            fun createStartDashboardIntent(context: Context): Intent {
-                return Intent(context, MainActivity::class.java).apply {
-                    action = Intent.ACTION_VIEW
-                    data = "app://daps.dh.de/dashboard".toUri()
-                }
+    fun handleIntent(intent: Intent?, navViewModel: NavigationViewModel) {
+        val routes = parseIntent(intent)
+        if (routes != null) {
+            navViewModel.reset(routes)
+        }
+    }
+
+    companion object {
+        fun createStartDashboardIntent(context: Context): Intent {
+            return Intent(context, MainActivity::class.java).apply {
+                action = Intent.ACTION_VIEW
+                data = "app://daps.dh.de/dashboard".toUri()
             }
+        }
 
-            fun createEditMealIntent(context: Context, mealId: Long): Intent {
-                return Intent(context, MainActivity::class.java).apply {
-                    action = Intent.ACTION_VIEW
-                    data = "app://daps.dh.de/meal/$mealId".toUri()
-                }
+        fun createEditMealIntent(context: Context, mealId: Long): Intent {
+            return Intent(context, MainActivity::class.java).apply {
+                action = Intent.ACTION_VIEW
+                data = "app://daps.dh.de/meal/$mealId".toUri()
             }
+        }
 
-            fun createMealCorrectionBolusIntent(
-                context: Context,
-                carbsInG: Double? = null
-            ): Intent {
-                return Intent(context, MainActivity::class.java).apply {
-                    action = Intent.ACTION_VIEW
-                    val uriBuilder = "app://daps.dh.de/mealcorrectionbolus".toUri().buildUpon()
-                    if (carbsInG != null) {
-                        uriBuilder.appendQueryParameter("carbsInG", carbsInG.toString())
-                        putExtra(EXTRA_CARBS_IN_G, carbsInG)
-                    }
-                    data = uriBuilder.build()
+        fun createMealCorrectionBolusIntent(
+            context: Context,
+            carbsInG: Double? = null
+        ): Intent {
+            return Intent(context, MainActivity::class.java).apply {
+                action = Intent.ACTION_VIEW
+                val uriBuilder = "app://daps.dh.de/mealcorrectionbolus".toUri().buildUpon()
+                if (carbsInG != null) {
+                    uriBuilder.appendQueryParameter("carbsInG", carbsInG.toString())
                 }
+                data = uriBuilder.build()
             }
+        }
 
-            fun createManualControlIntent(
-                context: Context,
-                initialDialog: ManualControlInitialDialog = ManualControlInitialDialog.NONE
-            ): Intent {
-                return Intent(context, MainActivity::class.java).apply {
-                    action = Intent.ACTION_VIEW
-                    val uriBuilder = "app://daps.dh.de/manualcontrol".toUri().buildUpon()
-                    val dialogStr = when (initialDialog) {
-                        ManualControlInitialDialog.BOLUS -> "bolus"
-                        ManualControlInitialDialog.TEMP_BASAL -> "temp_basal"
-                        ManualControlInitialDialog.NONE -> null
-                    }
-                    if (dialogStr != null) {
-                        uriBuilder.appendQueryParameter("dialog", dialogStr)
-                        putExtra(EXTRA_DIALOG, dialogStr)
-                        putExtra(EXTRA_INITIAL_DIALOG, dialogStr)
-                    }
-                    data = uriBuilder.build()
+        fun createManualControlIntent(
+            context: Context,
+            initialDialog: ManualControlInitialDialog = ManualControlInitialDialog.NONE
+        ): Intent {
+            return Intent(context, MainActivity::class.java).apply {
+                action = Intent.ACTION_VIEW
+                val uriBuilder = "app://daps.dh.de/manualcontrol".toUri().buildUpon()
+                val dialogStr = when (initialDialog) {
+                    ManualControlInitialDialog.BOLUS -> "bolus"
+                    ManualControlInitialDialog.TEMP_BASAL -> "temp_basal"
+                    ManualControlInitialDialog.NONE -> null
                 }
+                if (dialogStr != null) {
+                    uriBuilder.appendQueryParameter("dialog", dialogStr)
+                }
+                data = uriBuilder.build()
             }
         }
     }
+}
 
     companion object {
         // Hack to transport extra nav graphs from MainApplication into MainActivity. Any better solution is welcome...
@@ -363,23 +347,6 @@ class MainActivity : ComponentActivity() {
             context: Context,
             initialDialog: ManualControlInitialDialog = ManualControlInitialDialog.NONE
         ): Intent = IntentHandler.createManualControlIntent(context, initialDialog)
-    }
-}
-
-private fun Uri.getDoubleQueryParameter(key: String): Double? {
-    return getQueryParameter(key)?.toDoubleOrNull()
-}
-
-private fun Intent.getDoubleExtraOrNull(key: String): Double? {
-    if (!hasExtra(key)) return null
-    return try {
-        getDoubleExtra(key, 0.0)
-    } catch (_: Exception) {
-        try {
-            getFloatExtra(key, 0f).toDouble()
-        } catch (_: Exception) {
-            getStringExtra(key)?.toDoubleOrNull()
-        }
     }
 }
 
