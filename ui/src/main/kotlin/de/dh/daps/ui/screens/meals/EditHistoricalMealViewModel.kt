@@ -27,7 +27,7 @@ data class EditHistoricalMealUiState(
     val isLoading: Boolean = true,
     val isAddMode: Boolean = false,
     val meal: MealEntry? = null,
-    val editedCarbsKe: Double = 0.0,
+    val editedCarbsGrams: Double = 0.0,
     val editedTimestamp: Timestamp = Timestamp.now(),
     val editedMealType: MealType? = null,
     val mealTypes: List<MealType> = emptyList(),
@@ -94,7 +94,7 @@ class EditHistoricalMealViewModel(
                     isAddMode = isAddMode,
                     meal = meal,
                     mealTypes = mealTypes,
-                    editedCarbsKe = meal?.let { m -> m.carbGrams / 10.0 } ?: 0.0,
+                    editedCarbsGrams = meal?.carbGrams ?: 0.0,
                     editedTimestamp = editedTime,
                     editedMealType = meal?.mealType,
                     pendingDeferredBoluses = pendingUiModels,
@@ -107,8 +107,8 @@ class EditHistoricalMealViewModel(
         }
     }
 
-    fun onCarbsChange(ke: Double) {
-        _uiState.update { it.copy(editedCarbsKe = ke) }
+    fun onCarbsChange(grams: Double) {
+        _uiState.update { it.copy(editedCarbsGrams = grams) }
         validateForm()
     }
 
@@ -200,7 +200,7 @@ class EditHistoricalMealViewModel(
 
     private fun validateForm() {
         _uiState.update {
-            it.copy(isFormValid = it.editedCarbsKe > 0.0 && it.editedMealType != null)
+            it.copy(isFormValid = it.editedCarbsGrams > 0.0 && it.editedMealType != null)
         }
     }
 
@@ -214,12 +214,12 @@ class EditHistoricalMealViewModel(
                 MealEntry(
                     id = ID_UNDEFINED,
                     timestamp = state.editedTimestamp,
-                    carbGrams = state.editedCarbsKe * 10.0,
+                    carbGrams = state.editedCarbsGrams,
                     mealType = mealType
                 )
             } else {
                 state.meal?.copy(
-                    carbGrams = state.editedCarbsKe * 10.0,
+                    carbGrams = state.editedCarbsGrams,
                     timestamp = state.editedTimestamp,
                     mealType = mealType
                 ) ?: return@launch

@@ -350,7 +350,7 @@ class Core(
         }
 
         override suspend fun calculateBolusParts(
-            carbsKe: Double,
+            carbsGrams: Double,
             mealTimestamp: Timestamp,
             projectedBg: BgValue,
             impendingLow: ProjectedBg?,
@@ -360,7 +360,7 @@ class Core(
             deferredBolusAmount: InsulinAmount
         ): BolusParts = mutex.withLock {
             delegate.calculateBolusParts(
-                carbsKe,
+                carbsGrams,
                 mealTimestamp,
                 projectedBg,
                 impendingLow,

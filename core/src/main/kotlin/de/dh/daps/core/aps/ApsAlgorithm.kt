@@ -240,7 +240,7 @@ class NoopAlgorithm: ApsAlgorithm {
             override suspend fun calculateBolusProjections(mealTimestamp: Timestamp) = BolusProjections()
 
             override suspend fun calculateBolusParts(
-                carbsKe: Double,
+                carbsGrams: Double,
                 mealTimestamp: Timestamp,
                 projectedBg: BgValue,
                 impendingLow: ProjectedBg?,

@@ -72,7 +72,7 @@ interface BolusCorrectionCalculator {
      * for the given meal time.
      */
     suspend fun calculateBolusParts(
-        carbsKe: Double,
+        carbsGrams: Double,
         mealTimestamp: Timestamp,
         projectedBg: BgValue,
         impendingLow: ProjectedBg?,
@@ -100,17 +100,16 @@ interface BolusCorrectionCalculator {
 object BolusCalculationMath {
     const val MIN_PLANNED_BOLUS_AMOUNT = 0.05
 
-    fun calculateSuggestedCarbsKe(bg: BgValue, targetBg: BgValue, isf: BgDelta, cr: Double, futureCarbs: Double): Double {
-        var suggestedCarbsKe = 0.0
+    fun calculateSuggestedCarbsGrams(bg: BgValue, targetBg: BgValue, isf: BgDelta, cr: Double, futureCarbs: Double): Double {
+        var suggestedCarbsGrams = 0.0
         if (bg.isValid() && bg < targetBg) {
             val bgDiff = targetBg - bg
             val carbsGrams = convertToCarbsFromBgDelta(bgDiff, isf, cr)
             val remainingCarbsGrams = (carbsGrams - futureCarbs).coerceAtLeast(0.0)
             // Round up to whole 5g
-            val roundedCarbsGrams = ceil(remainingCarbsGrams / 5.0) * 5.0
-            suggestedCarbsKe = roundedCarbsGrams / 10.0
+            suggestedCarbsGrams = ceil(remainingCarbsGrams / 5.0) * 5.0
         }
-        return suggestedCarbsKe
+        return suggestedCarbsGrams
     }
 
     fun roundTo5Minutes(minutes: Minutes): Minutes {
@@ -150,14 +149,14 @@ object BolusCalculationMath {
      * valid/calculated for this specific point in time.
      *
      * This method breaks down the total required insulin into its contributing parts:
-     * - Meal: Based on current carb intake (KE).
+     * - Meal: Based on current carb intake (grams).
      * - Correction: To reach the BG target from the current projected BG.
      * - IOB: Active insulin that is subtracted.
      * - COB: Remaining active carbohydrates that require insulin.
      * - Future Carbs: Pre-announced carbohydrates.
      * - Deferred Bolus: Already planned insulin amounts that should not be double-dosed.
      *
-     * @param carbsKe The amount of carbohydrates in KE (1 KE = 10g).
+     * @param carbsGrams The amount of carbohydrates in grams.
      * @param mealTimestamp The planned time of the meal.
      * @param bg The projected blood glucose value.
      * @param cr The Carb Ratio (CR) factor.
@@ -171,7 +170,7 @@ object BolusCalculationMath {
      * @return A [BolusParts] object containing all calculated components.
      */
     fun calculateBolusParts(
-        carbsKe: Double,
+        carbsGrams: Double,
         mealTimestamp: Timestamp,
         bg: BgValue,
         cr: Double,
@@ -183,8 +182,7 @@ object BolusCalculationMath {
         futureCarbs: Double,
         deferredBolusAmount: InsulinAmount
     ): BolusParts {
-        // Calculate insulin needed for the current meal (KE -> Grams -> IU)
-        val carbsGrams = carbsKe * 10.0
+        // Calculate insulin needed for the current meal (Grams -> IU)
         val mealPart = convertToInsulinAmountFromCarbs(carbsGrams, cr)
 
         // Determine BG deviation from target at the time of the meal.
@@ -319,7 +317,7 @@ class SimpleBolusCorrectionCalculator(
     )
 
     override suspend fun calculateBolusParts(
-        carbsKe: Double,
+        carbsGrams: Double,
         mealTimestamp: Timestamp,
         projectedBg: BgValue,
         impendingLow: ProjectedBg?,
@@ -328,7 +326,7 @@ class SimpleBolusCorrectionCalculator(
         futureCarbs: Double,
         deferredBolusAmount: InsulinAmount
     ) = BolusCalculationMath.calculateBolusParts(
-            carbsKe = carbsKe,
+            carbsGrams = carbsGrams,
             mealTimestamp = mealTimestamp,
             bg = projectedBg,
             cr = therapyManager.getCrFactor(mealTimestamp),

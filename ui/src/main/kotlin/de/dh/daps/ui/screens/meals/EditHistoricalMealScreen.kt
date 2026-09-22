@@ -72,7 +72,7 @@ import java.util.Locale
 import de.dh.daps.common.R as CommonR
 
 private data class InitialMealValues(
-    val carbsKe: Double,
+    val carbsGrams: Double,
     val timestamp: Timestamp,
     val mealType: MealType?,
     val pendingDeferredBoluses: List<PlannedBolusUiModel>,
@@ -128,7 +128,7 @@ fun EditHistoricalMealContent(
     val initialValues = remember(uiState.isLoading) {
         if (!uiState.isLoading) {
             InitialMealValues(
-                carbsKe = uiState.editedCarbsKe,
+                carbsGrams = uiState.editedCarbsGrams,
                 timestamp = uiState.editedTimestamp,
                 mealType = uiState.editedMealType,
                 pendingDeferredBoluses = uiState.pendingDeferredBoluses,
@@ -138,7 +138,7 @@ fun EditHistoricalMealContent(
     }
 
     val hasChanges = remember(
-        uiState.editedCarbsKe,
+        uiState.editedCarbsGrams,
         uiState.editedTimestamp,
         uiState.editedMealType,
         uiState.pendingDeferredBoluses,
@@ -148,13 +148,13 @@ fun EditHistoricalMealContent(
     ) {
         if (initialValues == null) false
         else if (uiState.isAddMode) {
-            uiState.editedCarbsKe > 0.0 ||
+            uiState.editedCarbsGrams > 0.0 ||
                     uiState.editedMealType != null ||
                     uiState.pendingDeferredBoluses.isNotEmpty() ||
                     uiState.isMealReminderEnabled ||
                     uiState.editedTimestamp != initialValues.timestamp
         } else {
-            uiState.editedCarbsKe != initialValues.carbsKe ||
+            uiState.editedCarbsGrams != initialValues.carbsGrams ||
                     uiState.editedTimestamp != initialValues.timestamp ||
                     uiState.editedMealType != initialValues.mealType ||
                     uiState.pendingDeferredBoluses != initialValues.pendingDeferredBoluses ||
@@ -252,7 +252,7 @@ fun EditHistoricalMealContent(
                 }
 
                 EditMealCard(
-                    carbsKe = uiState.editedCarbsKe,
+                    carbsGrams = uiState.editedCarbsGrams,
                     timestamp = uiState.editedTimestamp,
                     mealType = uiState.editedMealType,
                     mealTypes = uiState.mealTypes,
@@ -344,7 +344,7 @@ fun EditHistoricalMealContent(
 
 @Composable
 fun EditMealCard(
-    carbsKe: Double,
+    carbsGrams: Double,
     timestamp: Timestamp,
     mealType: MealType?,
     mealTypes: List<MealType>,
@@ -395,9 +395,10 @@ fun EditMealCard(
                     style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(Modifier.height(8.dp))
+                val carbsKe = carbsGrams / 10.0
                 EditableValueStepper(
                     currentValue = carbsKe,
-                    onValueChange = onCarbsChange,
+                    onValueChange = { ke -> onCarbsChange(ke * 10.0) },
                     minValue = CARBS_KE_MIN,
                     maxValue = CARBS_KE_MAX,
                     steppingStrategy = carbsKeSteppingStrategy(),
@@ -523,7 +524,7 @@ private fun EditHistoricalMealContentPreview() {
         isLoading = false,
         isAddMode = false,
         meal = sampleMeal,
-        editedCarbsKe = 4.0,
+        editedCarbsGrams = 40.0,
         editedTimestamp = Timestamp.now(),
         editedMealType = sampleMealType,
         mealTypes = sampleMealTypes,

@@ -131,7 +131,7 @@ data class PlannedInsulinUiModel(
  * User inputs for the meal bolus.
  */
 data class MealInput(
-    val carbsKe: Double = 0.0,
+    val carbsGrams: Double = 0.0,
     val selectedMealType: MealType? = null,
     val manualBolus: InsulinAmount = InsulinAmount.ZERO,
     val mealTimestamp: Timestamp = Timestamp.now(),
@@ -156,7 +156,7 @@ data class MealCorrectionBolusUiState(
     val input: MealInput = MealInput(),
     val projections: BolusProjections = BolusProjections(),
     val isProjectionsStale: Boolean = false,
-    val suggestedCarbsKe: Double = 0.0,
+    val suggestedCarbsGrams: Double = 0.0,
     val suggestedImi: Minutes? = null,
     val calculation: BolusCalculationDetails = BolusCalculationDetails(),
     val insulinPlan: List<PlannedInsulinUiModel> = emptyList(),
@@ -206,10 +206,9 @@ class MealCorrectionBolusViewModel(
                 targetBg = targetBg,
                 lowThreshold = lowThreshold
             )
-            val suggestedCarbsKe = BolusCalculationMath.calculateSuggestedCarbsKe(projectedBg, targetBg, isf, cr, projections.futureCarbs)
+            val suggestedCarbsGrams = BolusCalculationMath.calculateSuggestedCarbsGrams(projectedBg, targetBg, isf, cr, projections.futureCarbs)
 
-            val prefilledCarbsKe = prefilledCarbsInG?.let { it / 10.0 }
-            val initialCarbsKe = maxOf(prefilledCarbsKe?.coerceAtLeast(0.0) ?: 0.0, suggestedCarbsKe)
+            val initialCarbsGrams = maxOf(prefilledCarbsInG?.coerceAtLeast(0.0) ?: 0.0, suggestedCarbsGrams)
 
             _uiState.update {
                 val mealTimeFromNow = max(Minutes.ZERO, suggestedImi ?: Minutes.ZERO)
@@ -217,12 +216,12 @@ class MealCorrectionBolusViewModel(
                 val isReminderAllowed = initialMealTimestamp >= now + Minutes(MEAL_REMINDER_MIN_FUTURE_MINUTES.toShort())
                 it.copy(
                     isLoading = false,
-                    suggestedCarbsKe = suggestedCarbsKe,
+                    suggestedCarbsGrams = suggestedCarbsGrams,
                     suggestedImi = suggestedImi,
                     input = MealInput(
                         mealTimestamp = initialMealTimestamp,
                         mealTimeFromNow = mealTimeFromNow,
-                        carbsKe = initialCarbsKe,
+                        carbsGrams = initialCarbsGrams,
                     ),
                     mealTypes = mealTypes,
                     projections = projections,
@@ -255,15 +254,15 @@ class MealCorrectionBolusViewModel(
         _uiState.update { it.copy(conflictingMealTime = conflictingTime) }
     }
 
-    fun onCarbsChange(ke: Double) {
-        _uiState.update { it.copy(input = it.input.copy(carbsKe = max(0.0, ke))) }
+    fun onCarbsChange(grams: Double) {
+        _uiState.update { it.copy(input = it.input.copy(carbsGrams = max(0.0, grams))) }
         calculateBolus()
     }
 
     fun onApplySuggestedCarbs() {
         val state = _uiState.value
-        if (state.suggestedCarbsKe > 0.0) {
-            onCarbsChange(state.suggestedCarbsKe)
+        if (state.suggestedCarbsGrams > 0.0) {
+            onCarbsChange(state.suggestedCarbsGrams)
         }
     }
 
@@ -313,14 +312,14 @@ class MealCorrectionBolusViewModel(
                 targetBg = state.targetBg,
                 lowThreshold = state.lowThreshold
             )
-            val suggestedCarbsKe = BolusCalculationMath.calculateSuggestedCarbsKe(
+            val suggestedCarbsGrams = BolusCalculationMath.calculateSuggestedCarbsGrams(
                 projectedBg, state.targetBg, state.isf, state.cr, projections.futureCarbs
             )
 
             _uiState.update {
                 it.copy(
                     projections = projections,
-                    suggestedCarbsKe = suggestedCarbsKe,
+                    suggestedCarbsGrams = suggestedCarbsGrams,
                     suggestedImi = suggestedImi,
                 )
             }
@@ -419,7 +418,7 @@ class MealCorrectionBolusViewModel(
             val state = _uiState.value
 
             val result = bolusCorrectionCalculator.calculateBolusParts(
-                carbsKe = state.input.carbsKe,
+                carbsGrams = state.input.carbsGrams,
                 mealTimestamp = state.input.mealTimestamp,
                 projectedBg = state.projections.bg,
                 impendingLow = state.projections.impendingLow,
@@ -495,7 +494,7 @@ class MealCorrectionBolusViewModel(
             try {
                 // 1. Record Meal
                 var mealEntry: MealEntry? = null
-                if (state.input.carbsKe > 0) {
+                if (state.input.carbsGrams > 0) {
                     var mealType = state.input.selectedMealType
                     if (mealType == null) {
                         mealType = treatmentRepository.getAllMealTypes().find { it.id == ID_MEAL_STANDARD }
@@ -505,7 +504,7 @@ class MealCorrectionBolusViewModel(
                     }
                     mealEntry = MealEntry(
                         timestamp = state.input.mealTimestamp,
-                        carbGrams = state.input.carbsKe * 10.0,
+                        carbGrams = state.input.carbsGrams,
                         mealType = mealType
                     )
                     treatmentRepository.addMealEntry(mealEntry)

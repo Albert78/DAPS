@@ -194,13 +194,16 @@ fun MealCorrectionBolusContent(
                                 text = stringResource(R.string.meal_correction_bolus_carbs_label),
                                 style = MaterialTheme.typography.titleMedium
                             )
-                            if (uiState.suggestedCarbsKe > 0.0) {
+                            val suggestedCarbsKe = uiState.suggestedCarbsGrams / 10.0
+                            val carbsKe = uiState.input.carbsGrams / 10.0
+
+                            if (suggestedCarbsKe > 0.0) {
                                 Spacer(Modifier.height(4.dp))
-                                val isCarbsBelowSuggestion = uiState.input.carbsKe < uiState.suggestedCarbsKe - 0.01
+                                val isCarbsBelowSuggestion = carbsKe < suggestedCarbsKe - 0.01
                                 SuggestionBadge(
                                     label = stringResource(
                                         R.string.meal_correction_bolus_suggested_carbs_format,
-                                        uiState.suggestedCarbsKe,
+                                        suggestedCarbsKe,
                                         carbsKeUnitLabel()
                                     ),
                                     isHighlighted = isCarbsBelowSuggestion,
@@ -209,8 +212,8 @@ fun MealCorrectionBolusContent(
                             }
                             Spacer(Modifier.height(8.dp))
                             EditableValueStepper(
-                                currentValue = uiState.input.carbsKe,
-                                onValueChange = onCarbsChange,
+                                currentValue = carbsKe,
+                                onValueChange = { ke -> onCarbsChange(ke * 10.0) },
                                 minValue = CARBS_KE_MIN,
                                 maxValue = CARBS_KE_MAX,
                                 steppingStrategy = carbsKeSteppingStrategy(),
@@ -225,7 +228,7 @@ fun MealCorrectionBolusContent(
                             )
                         }
 
-                        if (uiState.input.carbsKe > 0.0) {
+                        if (uiState.input.carbsGrams > 0.0) {
                             FoodTypeSelector(
                                 mealTypes = uiState.mealTypes,
                                 selectedType = uiState.input.selectedMealType,
@@ -390,7 +393,7 @@ fun MealCorrectionBolusContent(
                 }
 
                 // Bottom Button
-                val isInputValid = if (uiState.input.carbsKe > 0.0) {
+                val isInputValid = if (uiState.input.carbsGrams > 0.0) {
                     uiState.input.selectedMealType != null
                 } else {
                     uiState.input.manualBolus > InsulinAmount.ZERO
@@ -940,9 +943,9 @@ fun MealCorrectionBolusZeroKePreview() {
             uiState = MealCorrectionBolusUiState(
                 isLoading = false,
                 suggestedImi = Minutes(10),
-                suggestedCarbsKe = 4.5,
+                suggestedCarbsGrams = 45.0,
                 input = MealInput(
-                    carbsKe = 0.0,
+                    carbsGrams = 0.0,
                     manualBolus = InsulinAmount(0.8),
                 ),
                 mealTypes = emptyList(),
@@ -989,9 +992,9 @@ fun MealCorrectionBolusDefaultPreview() {
             uiState = MealCorrectionBolusUiState(
                 isLoading = false,
                 suggestedImi = Minutes(15),
-                suggestedCarbsKe = 3.0,
+                suggestedCarbsGrams = 30.0,
                 input = MealInput(
-                    carbsKe = 4.5,
+                    carbsGrams = 45.0,
                     selectedMealType = sampleMealTypes[0],
                     manualBolus = InsulinAmount(5.3),
                     mealTimestamp = Timestamp.now().plusMinutes(15),

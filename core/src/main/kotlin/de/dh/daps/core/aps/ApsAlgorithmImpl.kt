@@ -158,7 +158,7 @@ class ApsAlgorithmImpl(
         }
 
         override suspend fun calculateBolusParts(
-            carbsKe: Double,
+            carbsGrams: Double,
             mealTimestamp: Timestamp,
             projectedBg: BgValue,
             impendingLow: ProjectedBg?,
@@ -167,7 +167,7 @@ class ApsAlgorithmImpl(
             futureCarbs: Double,
             deferredBolusAmount: InsulinAmount
         ) = BolusCalculationMath.calculateBolusParts(
-            carbsKe = carbsKe,
+            carbsGrams = carbsGrams,
             mealTimestamp = mealTimestamp,
             bg = projectedBg,
             cr = therapyManager.getCrFactor(mealTimestamp),
