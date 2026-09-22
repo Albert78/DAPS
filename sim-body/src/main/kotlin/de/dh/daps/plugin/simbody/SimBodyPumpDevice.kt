@@ -12,14 +12,47 @@ import de.dh.daps.plugin.simbody.repository.db.PumpDao
 import de.dh.daps.plugin.simbody.repository.db.PumpDeliveryType
 import de.dh.daps.plugin.simbody.repository.db.PumpHistoryEntity
 import de.dh.daps.plugin.simbody.repository.db.PumpStateEntity
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.UUID
 import java.util.concurrent.CopyOnWriteArrayList
+import kotlin.time.Duration.Companion.milliseconds
+
+/**
+ * State snapshot of the bolus delivery inside the device hardware.
+ */
+sealed interface DeviceBolusState {
+    data object Idle : DeviceBolusState
+
+    data class Delivering(
+        val bolusId: String?,
+        val targetAmount: InsulinAmount,
+        val deliveredAmount: InsulinAmount,
+        val timestamp: Timestamp = Timestamp.now()
+    ) : DeviceBolusState
+
+    data class Completed(
+        val bolusId: String?,
+        val targetAmount: InsulinAmount,
+        val deliveredAmount: InsulinAmount,
+        val timestamp: Timestamp = Timestamp.now()
+    ) : DeviceBolusState
+
+    data class Stopped(
+        val bolusId: String?,
+        val targetAmount: InsulinAmount,
+        val deliveredAmount: InsulinAmount,
+        val reason: String? = null,
+        val timestamp: Timestamp = Timestamp.now()
+    ) : DeviceBolusState
+}
 
 /**
  * Represents the physical (simulated) insulin pump device.
@@ -34,6 +67,11 @@ class SimBodyPumpDevice(
     private val pumpDao: PumpDao? = null
 ) {
     private val scope = CoroutineScope(Dispatchers.IO)
+
+    private val _deviceBolusState = MutableStateFlow<DeviceBolusState>(DeviceBolusState.Idle)
+    val deviceBolusState: StateFlow<DeviceBolusState> = _deviceBolusState.asStateFlow()
+
+    private var activeBolusJob: Job? = null
 
     private val _batteryLevel = MutableStateFlow(0.85) // 0.0 to 1.0
     val batteryLevel: StateFlow<Double> = _batteryLevel.asStateFlow()
@@ -284,10 +322,13 @@ class SimBodyPumpDevice(
     }
 
     /**
-     * Simulates insulin delivery. Reduces reservoir level and reports to BodyModel.
-     * Throws [PumpCommandException] if delivery fails.
+     * Starts an asynchronous bolus delivery process in the device.
+     * The delivery process runs at 12 seconds per Unit (1 IU = 12s) and updates state periodically.
+     *
+     * @return The [Job] representing the device's async bolus delivery process.
+     * @throws PumpCommandException if initial checks fail.
      */
-    fun deliverBolus(amount: InsulinAmount) {
+    fun deliverBolus(amount: InsulinAmount, bolusId: String? = null): Job {
         checkGeneralErrors("deliverBolus")
         checkOcclusion("deliverBolus")
         if (!isPrimed.value) {
@@ -311,8 +352,183 @@ class SimBodyPumpDevice(
                 vendorMessage = "Insulin reservoir level (${reservoirLevel.value.iu} IU) is less than requested amount (${amount.iu} IU)"
             )
         }
+        if (_deviceBolusState.value is DeviceBolusState.Delivering) {
+            throw PumpCommandException(
+                status = PumpStatus.REJECTED,
+                commandName = "deliverBolus",
+                vendorMessage = "Bolus delivery already in progress"
+            )
+        }
 
-        deliverInternalBolus(amount, Timestamp.now(), PumpDeliveryType.Bolus)
+        val job = scope.launch {
+            executeAsyncBolus(amount, bolusId)
+        }
+        activeBolusJob = job
+        return job
+    }
+
+    /**
+     * Cancels any active bolus delivery currently running in the device.
+     */
+    fun stopBolus() {
+        activeBolusJob?.let { job ->
+            if (job.isActive) {
+                job.cancel()
+            }
+        }
+    }
+
+    private suspend fun executeAsyncBolus(targetAmount: InsulinAmount, bolusId: String?) {
+        val startTimestamp = Timestamp.now()
+        var deliveredAmount = InsulinAmount.ZERO
+
+        _deviceBolusState.value = DeviceBolusState.Delivering(
+            bolusId = bolusId,
+            targetAmount = targetAmount,
+            deliveredAmount = deliveredAmount,
+            timestamp = startTimestamp
+        )
+
+        val tickIntervalMs = 250L
+        val startTimeMs = System.currentTimeMillis()
+        val totalDurationMs = maxOf((targetAmount.iu * 12_000.0).toLong(), 250L)
+
+        var unreportedInsulin = 0.0
+        var lastDeliveredIu = 0.0
+
+        try {
+            while (true) {
+                delay(tickIntervalMs.milliseconds)
+
+                // Check hardware state mid-delivery
+                if (isBroken.value || hasHardwareError.value || isOccluded.value) {
+                    val reason = when {
+                        isOccluded.value -> "Occlusion detected during bolus"
+                        isBroken.value -> "Pump broken during bolus"
+                        else -> "Hardware error during bolus"
+                    }
+                    finishBolusStopped(targetAmount, deliveredAmount, bolusId, reason, unreportedInsulin)
+                    return
+                }
+
+                val elapsedMs = System.currentTimeMillis() - startTimeMs
+                if (elapsedMs >= totalDurationMs) {
+                    break
+                }
+
+                val progressFraction = (elapsedMs.toDouble() / totalDurationMs.toDouble()).coerceIn(0.0, 1.0)
+                val currentDeliveredIu = (targetAmount.iu * progressFraction).coerceIn(0.0, targetAmount.iu)
+                val stepIu = currentDeliveredIu - lastDeliveredIu
+
+                if (stepIu > 0.0) {
+                    val stepAmount = InsulinAmount(stepIu)
+                    _reservoirLevel.value = (_reservoirLevel.value - stepAmount).coerceAtLeast(InsulinAmount.ZERO)
+                    persistState()
+
+                    unreportedInsulin += stepIu
+                    if (unreportedInsulin >= 0.05) {
+                        bodyModel.bolus(InsulinAmount(unreportedInsulin), timestamp = Timestamp.now())
+                        unreportedInsulin = 0.0
+                    }
+
+                    deliveredAmount = InsulinAmount(currentDeliveredIu)
+                    lastDeliveredIu = currentDeliveredIu
+
+                    _deviceBolusState.value = DeviceBolusState.Delivering(
+                        bolusId = bolusId,
+                        targetAmount = targetAmount,
+                        deliveredAmount = deliveredAmount,
+                        timestamp = Timestamp.now()
+                    )
+                }
+            }
+
+            // Finish remaining insulin for exact match
+            val remainingIu = targetAmount.iu - lastDeliveredIu
+            if (remainingIu > 0.0) {
+                val remainingAmount = InsulinAmount(remainingIu)
+                _reservoirLevel.value = (_reservoirLevel.value - remainingAmount).coerceAtLeast(InsulinAmount.ZERO)
+                persistState()
+                unreportedInsulin += remainingIu
+            }
+
+            if (unreportedInsulin > 0.0) {
+                bodyModel.bolus(InsulinAmount(unreportedInsulin), timestamp = Timestamp.now())
+                unreportedInsulin = 0.0
+            }
+
+            deliveredAmount = targetAmount
+            val completedTimestamp = Timestamp.now()
+
+            recordBolusHistory(deliveredAmount, completedTimestamp)
+
+            _deviceBolusState.value = DeviceBolusState.Completed(
+                bolusId = bolusId,
+                targetAmount = targetAmount,
+                deliveredAmount = deliveredAmount,
+                timestamp = completedTimestamp
+            )
+
+        } catch (e: CancellationException) {
+            finishBolusStopped(targetAmount, deliveredAmount, bolusId, "Bolus stopped by user", unreportedInsulin)
+            throw e
+        } catch (e: Exception) {
+            finishBolusStopped(targetAmount, deliveredAmount, bolusId, e.message ?: "Error during bolus delivery", unreportedInsulin)
+        }
+    }
+
+    private fun finishBolusStopped(
+        targetAmount: InsulinAmount,
+        deliveredAmount: InsulinAmount,
+        bolusId: String?,
+        reason: String,
+        unreportedInsulin: Double
+    ) {
+        if (unreportedInsulin > 0.0) {
+            bodyModel.bolus(InsulinAmount(unreportedInsulin), timestamp = Timestamp.now())
+        }
+        val stoppedTimestamp = Timestamp.now()
+        if (deliveredAmount > InsulinAmount.ZERO) {
+            recordBolusHistory(deliveredAmount, stoppedTimestamp)
+        }
+        _deviceBolusState.value = DeviceBolusState.Stopped(
+            bolusId = bolusId,
+            targetAmount = targetAmount,
+            deliveredAmount = deliveredAmount,
+            reason = reason,
+            timestamp = stoppedTimestamp
+        )
+    }
+
+    private fun recordBolusHistory(amount: InsulinAmount, timestamp: Timestamp) {
+        if (amount < SimBodyInsulinPump.SIM_PUMP_MIN_BOLUS_INCREMENT) {
+            return
+        }
+        val tempId = UUID.randomUUID().toString()
+        val entry = HistoryEntry(
+            id = tempId,
+            timestamp = timestamp,
+            amount = amount,
+            category = InsulinCategory.Bolus
+        )
+        _history.add(entry)
+
+        pumpDao?.let { dao ->
+            scope.launch {
+                val dbId = dao.insertHistoryEntry(
+                    PumpHistoryEntity(
+                        timestamp = entry.timestamp,
+                        amount = entry.amount,
+                        deliveryType = PumpDeliveryType.Bolus
+                    )
+                )
+                val index = _history.indexOf(entry)
+                if (index != -1) {
+                    _history[index] = entry.copy(id = dbId.toString())
+                }
+            }
+        }
+        cleanupHistory()
     }
 
     /**

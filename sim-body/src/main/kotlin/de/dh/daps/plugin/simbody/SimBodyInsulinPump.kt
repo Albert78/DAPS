@@ -153,62 +153,65 @@ class SimBodyInsulinPump(
     private val _history = MutableStateFlow<InsulinHistory?>(null)
     override val history: StateFlow<InsulinHistory?> = _history
 
-    override suspend fun bolus(amount: InsulinAmount, bolusId: String?) {
-        if (!_isConnected.value) throw PumpConnectionException("Pump not connected to App")
-
-        val startTimestamp = Timestamp.now()
-        _bolusStatus.value = BolusStatus(
-            state = BolusDeliveryState.DELIVERING,
-            bolusId = bolusId,
-            targetAmount = amount,
-            deliveredAmount = InsulinAmount.ZERO,
-            timestamp = startTimestamp
-        )
-        _bolusEvents.emit(BolusEvent.Started(bolusId, amount, startTimestamp))
-
-        try {
-            device.deliverBolus(amount)
-            val completedTimestamp = Timestamp.now()
-            _bolusStatus.value = BolusStatus(
-                state = BolusDeliveryState.COMPLETED,
-                bolusId = bolusId,
-                targetAmount = amount,
-                deliveredAmount = amount,
-                timestamp = completedTimestamp
-            )
-            _bolusEvents.emit(BolusEvent.Completed(bolusId, amount, amount, completedTimestamp))
-            refreshStatus()
-        } catch (e: Exception) {
-            val stoppedTimestamp = Timestamp.now()
-            _bolusStatus.value = BolusStatus(
-                state = BolusDeliveryState.STOPPED,
-                bolusId = bolusId,
-                targetAmount = amount,
-                deliveredAmount = InsulinAmount.ZERO,
-                timestamp = stoppedTimestamp
-            )
-            _bolusEvents.emit(BolusEvent.Stopped(bolusId, amount, InsulinAmount.ZERO, stoppedTimestamp))
-            throw e
+    init {
+        scope.launch {
+            device.deviceBolusState.collect { state ->
+                when (state) {
+                    is DeviceBolusState.Idle -> {
+                        _bolusStatus.value = BolusStatus(state = BolusDeliveryState.IDLE)
+                    }
+                    is DeviceBolusState.Delivering -> {
+                        val currentStatus = _bolusStatus.value
+                        val isNew = currentStatus.state != BolusDeliveryState.DELIVERING || currentStatus.bolusId != state.bolusId
+                        _bolusStatus.value = BolusStatus(
+                            state = BolusDeliveryState.DELIVERING,
+                            bolusId = state.bolusId,
+                            targetAmount = state.targetAmount,
+                            deliveredAmount = state.deliveredAmount,
+                            timestamp = state.timestamp
+                        )
+                        if (isNew) {
+                            _bolusEvents.emit(BolusEvent.Started(state.bolusId, state.targetAmount, state.timestamp))
+                        } else {
+                            _bolusEvents.emit(BolusEvent.Progress(state.bolusId, state.targetAmount, state.deliveredAmount, state.timestamp))
+                        }
+                    }
+                    is DeviceBolusState.Completed -> {
+                        _bolusStatus.value = BolusStatus(
+                            state = BolusDeliveryState.COMPLETED,
+                            bolusId = state.bolusId,
+                            targetAmount = state.targetAmount,
+                            deliveredAmount = state.deliveredAmount,
+                            timestamp = state.timestamp
+                        )
+                        _bolusEvents.emit(BolusEvent.Completed(state.bolusId, state.targetAmount, state.deliveredAmount, state.timestamp))
+                        syncHistory()
+                    }
+                    is DeviceBolusState.Stopped -> {
+                        _bolusStatus.value = BolusStatus(
+                            state = BolusDeliveryState.STOPPED,
+                            bolusId = state.bolusId,
+                            targetAmount = state.targetAmount,
+                            deliveredAmount = state.deliveredAmount,
+                            timestamp = state.timestamp
+                        )
+                        _bolusEvents.emit(BolusEvent.Stopped(state.bolusId, state.targetAmount, state.deliveredAmount, state.timestamp))
+                        syncHistory()
+                    }
+                }
+            }
         }
     }
 
+    override suspend fun bolus(amount: InsulinAmount, bolusId: String?) {
+        if (!_isConnected.value) throw PumpConnectionException("Pump not connected to App")
+
+        device.deliverBolus(amount, bolusId)
+    }
+
     override suspend fun stopBolus() {
-        val current = _bolusStatus.value
-        if (current.state == BolusDeliveryState.DELIVERING) {
-            val timestamp = Timestamp.now()
-            _bolusStatus.value = current.copy(
-                state = BolusDeliveryState.STOPPED,
-                timestamp = timestamp
-            )
-            _bolusEvents.emit(
-                BolusEvent.Stopped(
-                    bolusId = current.bolusId,
-                    targetAmount = current.targetAmount,
-                    deliveredAmount = current.deliveredAmount,
-                    timestamp = timestamp
-                )
-            )
-        }
+        if (!_isConnected.value) throw PumpConnectionException("Pump not connected to App")
+        device.stopBolus()
     }
 
     override suspend fun tempBasal(percent: Int, durationHours: Int) {
