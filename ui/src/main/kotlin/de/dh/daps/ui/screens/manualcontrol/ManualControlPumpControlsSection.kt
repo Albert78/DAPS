@@ -26,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -41,6 +42,9 @@ import de.dh.daps.common.model.InsulinOrigin
 import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.PrimaryButton
@@ -290,6 +294,25 @@ fun ManualControlPumpControlsSection(
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
+                                activeBasal.tempBasalExpiry?.let { expiry ->
+                                    val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+                                    val endTimeStr = timeFormat.format(Date(expiry.ms))
+                                    val diffMs = expiry.ms - System.currentTimeMillis()
+                                    val totalMinutes = (diffMs / 60_000).coerceAtLeast(0)
+                                    val hours = totalMinutes / 60
+                                    val minutes = totalMinutes % 60
+                                    val expiryText = if (hours > 0) {
+                                        stringResource(id = R.string.manual_control_temp_basal_expiry_hours_info, endTimeStr, hours, minutes)
+                                    } else {
+                                        stringResource(id = R.string.manual_control_temp_basal_expiry_info, endTimeStr, minutes)
+                                    }
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = expiryText,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                }
                             }
                         }
                         Spacer(modifier = Modifier.height(12.dp))
@@ -368,6 +391,35 @@ fun ManualControlPumpControlsPreview() {
                     activeRate = InsulinAmount(0.5),
                     isTempBasal = false,
                     tempBasalPercent = 80
+                )
+            ),
+            lastBolus = InsulinApplication(
+                timestamp = Timestamp.now().minusHours(1),
+                amount = InsulinAmount(2.5),
+                insulinType = InsulinType(name = "NovoRapid", peak = Minutes(75), dia = Minutes(300)),
+                origin = InsulinOrigin.Pump
+            ),
+            onOpenBolusDialog = {},
+            onCancelBolus = {},
+            onOpenTempBasalDialog = {},
+            onCancelTempBasal = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Pump Controls - Temp Basal Active")
+@Composable
+fun ManualControlPumpControlsTempBasalActivePreview() {
+    AppPreview(modifier = Modifier.padding(16.dp)) {
+        ManualControlPumpControlsSection(
+            pump = ManualControlPumpUiModel(
+                isConnected = true,
+                basalStatus = BasalStatus(
+                    isSuspended = false,
+                    activeRate = InsulinAmount(0.6),
+                    isTempBasal = true,
+                    tempBasalPercent = 120,
+                    tempBasalExpiry = Timestamp.now().plusMinutes(45)
                 )
             ),
             lastBolus = InsulinApplication(

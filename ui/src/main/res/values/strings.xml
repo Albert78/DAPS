@@ -590,6 +590,8 @@
     <string name="manual_control_set_temp_basal">Temp-Basal setzen&#8230;</string>
     <string name="manual_control_cancel_temp_basal">Temp-Basal beenden</string>
     <string name="manual_control_temp_basal_active">Aktiv: Temp-Basal mit %1$d%%</string>
+    <string name="manual_control_temp_basal_expiry_info">Aktiv bis %1$s (noch %2$d Min.)</string>
+    <string name="manual_control_temp_basal_expiry_hours_info">Aktiv bis %1$s (noch %2$dh %3$dm)</string>
     <string name="manual_control_normal_basal_active">Normale Basalrate aktiv (%1$s I.E./h)</string>
     <string name="manual_control_no_active_temp_basal">Normale Basalrate aktiv (100%).</string>
     <string name="manual_control_duration_hours_label">Dauer (Stunden)</string>

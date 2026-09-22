@@ -74,6 +74,12 @@ data class BasalStatus(
     val tempBasalPercent: Int? = null,
 
     /**
+     * Timestamp when the active temporary basal rate expires.
+     * Only set if [isTempBasal] is true and an expiry time is known.
+     */
+    val tempBasalExpiry: Timestamp? = null,
+
+    /**
      * True if insulin delivery is globally suspended on the hardware level.
      * While suspended, [activeRate] is always 0.0. This state is distinct
      * from a 0% temporary basal rate as it usually requires a manual 'resume' action.

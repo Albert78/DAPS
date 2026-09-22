@@ -129,9 +129,10 @@ class SimBodyInsulinPump(
 
     override val basalStatus: StateFlow<BasalStatus> = combine(
         device.tempBasalPercent,
+        device.tempBasalExpiry,
         device.activeProfile,
         combine(device.isBroken, device.hasHardwareError, device.isOccluded) { b, h, o -> b || h || o }
-    ) { tempPercent, profile, isSuspended ->
+    ) { tempPercent, tempExpiry, profile, isSuspended ->
         val normalRate = profile.basalBlocks.getAmountForMinute(Timestamp.now().minutesSinceMidnight())
         val activeRate = if (isSuspended) 0.0 else {
             if (tempPercent != null) normalRate * (tempPercent / 100.0) else normalRate
@@ -140,6 +141,7 @@ class SimBodyInsulinPump(
             activeRate = InsulinAmount(activeRate),
             isTempBasal = tempPercent != null,
             tempBasalPercent = tempPercent,
+            tempBasalExpiry = tempExpiry,
             isSuspended = isSuspended
         )
     }.stateIn(scope, SharingStarted.Eagerly, BasalStatus())
