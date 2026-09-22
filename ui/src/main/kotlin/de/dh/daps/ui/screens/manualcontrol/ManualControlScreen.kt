@@ -25,7 +25,6 @@ import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -377,7 +376,7 @@ fun ManualControlContextInfo(
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Text(
-                            text = "COB",
+                            text = stringResource(CommonR.string.label_cob),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
@@ -400,7 +399,7 @@ fun ManualControlContextInfo(
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Text(
-                            text = "IOB",
+                            text = stringResource(CommonR.string.label_iob),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
@@ -931,7 +930,7 @@ private fun ManualControlPumpControlsSection(
             }
         }
 
-        // Card 2: Basal (Tertiary Color Scheme - Warm Amber/Peach tone)
+        // Card 2: Basal
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
@@ -1022,7 +1021,7 @@ private fun ManualControlPumpControlsSection(
                             )
                         }
                         Spacer(modifier = Modifier.height(12.dp))
-                        Button(
+                        SecondaryButton(
                             onClick = {
                                 onOpenTempBasalDialog(
                                     ManualControlDialog.TempBasal(
@@ -1031,10 +1030,6 @@ private fun ManualControlPumpControlsSection(
                                     )
                                 )
                             },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.tertiary,
-                                contentColor = MaterialTheme.colorScheme.onTertiary
-                            ),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(imageVector = Icons.Default.Speed, contentDescription = null, modifier = Modifier.size(20.dp))
@@ -1082,7 +1077,7 @@ private fun ManualControlPumpControlsSection(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.height(14.dp))
-                        Button(
+                        SecondaryButton(
                             onClick = {
                                 onOpenTempBasalDialog(
                                     ManualControlDialog.TempBasal(
@@ -1091,10 +1086,6 @@ private fun ManualControlPumpControlsSection(
                                     )
                                 )
                             },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.tertiary,
-                                contentColor = MaterialTheme.colorScheme.onTertiary
-                            ),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(imageVector = Icons.Default.Speed, contentDescription = null, modifier = Modifier.size(20.dp))
@@ -1109,7 +1100,7 @@ private fun ManualControlPumpControlsSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(14.dp))
-                    Button(
+                    SecondaryButton(
                         onClick = {
                             onOpenTempBasalDialog(
                                 ManualControlDialog.TempBasal(
@@ -1118,10 +1109,6 @@ private fun ManualControlPumpControlsSection(
                                 )
                             )
                         },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.tertiary,
-                            contentColor = MaterialTheme.colorScheme.onTertiary
-                        ),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Icon(imageVector = Icons.Default.Speed, contentDescription = null, modifier = Modifier.size(20.dp))
