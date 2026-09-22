@@ -29,8 +29,8 @@ import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.icons.Icon_Config
 import de.dh.daps.ui.common.icons.Icon_Insulin
-import de.dh.daps.ui.common.icons.Icon_Menu_Alarms
-import de.dh.daps.ui.common.icons.Icon_Menu_Meal_Types
+import de.dh.daps.ui.common.icons.Icon_Alarms
+import de.dh.daps.ui.common.icons.Icon_Meal_Types
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.common.R as CommonR
 
@@ -133,7 +133,7 @@ fun MasterDataScreen(
                 supportingContent = { Text(stringResource(id = R.string.master_data_item_meal_types_desc)) },
                 leadingContent = {
                     Icon(
-                        imageVector = Icon_Menu_Meal_Types,
+                        imageVector = Icon_Meal_Types,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -173,7 +173,7 @@ fun MasterDataScreen(
                 supportingContent = { Text(stringResource(id = R.string.master_data_item_alarm_profiles_desc)) },
                 leadingContent = {
                     Icon(
-                        imageVector = Icon_Menu_Alarms,
+                        imageVector = Icon_Alarms,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary
                     )

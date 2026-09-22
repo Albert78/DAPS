@@ -51,7 +51,7 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
-import de.dh.daps.ui.common.icons.Icon_Menu_Meal_Types
+import de.dh.daps.ui.common.icons.Icon_Meal_Types
 import de.dh.daps.ui.common.theme.AppPreview
 import java.time.Instant
 import java.time.LocalDate
@@ -115,7 +115,7 @@ fun MealsContent(
                     ) {
                         DropdownMenuItem(
                             text = { Text(stringResource(id = R.string.menu_meal_types_label)) },
-                            leadingIcon = { Icon(imageVector = Icon_Menu_Meal_Types, contentDescription = null) },
+                            leadingIcon = { Icon(imageVector = Icon_Meal_Types, contentDescription = null) },
                             onClick = {
                                 showMenu = false
                                 onNavigateToMealTypes()

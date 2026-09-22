@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -45,6 +44,8 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.PrimaryButton
+import de.dh.daps.ui.common.icons.Icon_Basal
+import de.dh.daps.ui.common.icons.Icon_Temp_Basal
 import de.dh.daps.ui.common.icons.Syringe
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.theme.AppPreview
@@ -204,7 +205,7 @@ fun ManualControlPumpControlsSection(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Speed,
+                            imageVector = Icon_Basal,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(22.dp)
@@ -265,7 +266,7 @@ fun ManualControlPumpControlsSection(
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Icon(imageVector = Icons.Default.Speed, contentDescription = null, modifier = Modifier.size(20.dp))
+                            Icon(imageVector = Icon_Temp_Basal, contentDescription = null, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(stringResource(id = R.string.manual_control_set_temp_basal))
                         }
@@ -321,7 +322,7 @@ fun ManualControlPumpControlsSection(
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Icon(imageVector = Icons.Default.Speed, contentDescription = null, modifier = Modifier.size(20.dp))
+                            Icon(imageVector = Icon_Temp_Basal, contentDescription = null, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(stringResource(id = R.string.manual_control_set_temp_basal))
                         }
@@ -344,7 +345,7 @@ fun ManualControlPumpControlsSection(
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Icon(imageVector = Icons.Default.Speed, contentDescription = null, modifier = Modifier.size(20.dp))
+                        Icon(imageVector = Icon_Temp_Basal, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(stringResource(id = R.string.manual_control_set_temp_basal))
                     }

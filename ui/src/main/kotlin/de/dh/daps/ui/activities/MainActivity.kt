@@ -78,11 +78,11 @@ import de.dh.daps.ui.GlobalViewModel
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.EdgeToEdgeHandler
 import de.dh.daps.ui.common.icons.Icon_ManualControlMode
-import de.dh.daps.ui.common.icons.Icon_Menu_Bolus_History
-import de.dh.daps.ui.common.icons.Icon_Menu_Food_Database
-import de.dh.daps.ui.common.icons.Icon_Menu_Master_Data
-import de.dh.daps.ui.common.icons.Icon_Menu_Meals
-import de.dh.daps.ui.common.icons.Icon_Menu_System_Control
+import de.dh.daps.ui.common.icons.Icon_Bolus
+import de.dh.daps.ui.common.icons.Icon_Meal
+import de.dh.daps.ui.common.icons.Icon_Food_Database
+import de.dh.daps.ui.common.icons.Icon_Master_Data
+import de.dh.daps.ui.common.icons.Icon_System_Control
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.rememberUseDarkTheme
@@ -392,19 +392,19 @@ fun DrawerContent(
 
                 DrawerItem(
                     label = stringResource(id = R.string.menu_meals_label),
-                    icon = Icon_Menu_Meals,
+                    icon = Icon_Meal,
                     selected = currentRoute == MealsRoute,
                     onClick = { onRouteSelected(MealsRoute) }
                 )
                 DrawerItem(
                     label = stringResource(id = R.string.menu_bolus_history_label),
-                    icon = Icon_Menu_Bolus_History,
+                    icon = Icon_Bolus,
                     selected = currentRoute == BolusHistoryRoute,
                     onClick = { onRouteSelected(BolusHistoryRoute) }
                 )
                 DrawerItem(
                     label = stringResource(id = R.string.menu_food_database_label),
-                    icon = Icon_Menu_Food_Database,
+                    icon = Icon_Food_Database,
                     selected = currentRoute == FoodDatabaseRoute,
                     onClick = { onRouteSelected(FoodDatabaseRoute) }
                 )
@@ -416,14 +416,14 @@ fun DrawerContent(
                 )
                 DrawerItem(
                     label = stringResource(id = R.string.menu_system_control_label),
-                    icon = Icon_Menu_System_Control,
+                    icon = Icon_System_Control,
                     selected = currentRoute is SystemControlRoute,
                     onClick = { onRouteSelected(SystemControlRoute()) }
                 )
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                 DrawerItem(
                     label = stringResource(id = R.string.menu_master_data_label),
-                    icon = Icon_Menu_Master_Data,
+                    icon = Icon_Master_Data,
                     selected = currentRoute == MasterDataRoute,
                     onClick = { onRouteSelected(MasterDataRoute) }
                 )

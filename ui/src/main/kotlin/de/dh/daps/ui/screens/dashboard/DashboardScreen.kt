@@ -62,7 +62,7 @@ import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.WarningBanner
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.getBolusRecommendationText
-import de.dh.daps.ui.common.icons.Icon_Menu_Permissions
+import de.dh.daps.ui.common.icons.Icon_Permissions
 import de.dh.daps.ui.common.icons.Icon_Settings
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.controls.apscontrol.ApsControlCard
@@ -192,7 +192,7 @@ fun DashboardContent(
                         ) {
                             DropdownMenuItem(
                                 text = { Text(stringResource(id = R.string.menu_item_permissions_label)) },
-                                leadingIcon = { Icon(imageVector = Icon_Menu_Permissions, contentDescription = null) },
+                                leadingIcon = { Icon(imageVector = Icon_Permissions, contentDescription = null) },
                                 onClick = {
                                     menuExpanded = false
                                     onNavigateToPermissions()

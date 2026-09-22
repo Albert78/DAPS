@@ -61,10 +61,21 @@ val Icon_Meal_Slow = Icons.Outlined.Timer
 val Icon_Meal_Custom = Icons.Outlined.StarOutline
 
 // Menu and header icons
-val Menu_More = Icons.Default.MoreVert
-val Menu_Delete = Icons.Default.Delete
+val Icon_More = Icons.Default.MoreVert
+val Icon_Delete_Filled = Icons.Default.Delete
 val Icon_Screen_Back = Icons.AutoMirrored.Filled.ArrowBack
 val Icon_Screen_Close = Icons.Default.Clear
+val Icon_Meal = Icons.Outlined.Restaurant
+val Icon_Bolus = Icons.Outlined.Syringe
+val Icon_Basal = Icons.Outlined.Basal
+val Icon_Temp_Basal = Icons.Outlined.Temp_Basal
+val Icon_Basal_Alternative = Icons.Outlined.Basal_Alternative
+val Icon_Food_Database = Icons.AutoMirrored.Outlined.MenuBook
+val Icon_System_Control = Icons.Outlined.Build
+val Icon_Alarms = Icons.Outlined.NotificationsActive
+val Icon_Permissions = Icons.Outlined.Security
+val Icon_Meal_Types = Icon_Meal_Custom
+val Icon_Master_Data = Icons.Outlined.Tune
 
 val Icon_Add = Icons.Outlined.Add
 val Icon_Edit = Icons.Outlined.Edit
@@ -104,16 +115,6 @@ val Icon_Sound_Off = Icons.Outlined.SoundOff
 // Mode & Control Icons
 val Icon_ManualControlMode = Icons.Outlined.ManualControl
 
-// Menu Navigation Icons
-val Icon_Menu_Meals = Icons.Outlined.Restaurant
-val Icon_Menu_Bolus_History = Icons.Outlined.Syringe
-val Icon_Menu_Food_Database = Icons.AutoMirrored.Outlined.MenuBook
-val Icon_Menu_System_Control = Icons.Outlined.Build
-val Icon_Menu_Alarms = Icons.Outlined.NotificationsActive
-val Icon_Menu_Permissions = Icons.Outlined.Security
-val Icon_Menu_Meal_Types = Icon_Meal_Custom
-val Icon_Menu_Master_Data = Icons.Outlined.Tune
-
 private data class IconPreview(
     val name: String,
     val imageVector: ImageVector
@@ -121,20 +122,24 @@ private data class IconPreview(
 
 private val iconsForPreview = listOf(
     IconPreview("Icon_ManualControlMode", Icon_ManualControlMode),
-    IconPreview("Menu_Meals", Icon_Menu_Meals),
-    IconPreview("Menu_Bolus_History", Icon_Menu_Bolus_History),
-    IconPreview("Menu_Food_Database", Icon_Menu_Food_Database),
-    IconPreview("Menu_System_Control", Icon_Menu_System_Control),
-    IconPreview("Menu_Alarms", Icon_Menu_Alarms),
-    IconPreview("Menu_Permissions", Icon_Menu_Permissions),
-    IconPreview("Menu_Meal_Types", Icon_Menu_Meal_Types),
+    IconPreview("Meal", Icon_Meal),
+    IconPreview("Bolus", Icon_Bolus),
+    IconPreview("Basal", Icon_Basal),
+    IconPreview("Temp_Basal", Icon_Temp_Basal),
+    IconPreview("Basal_Alternative", Icon_Basal_Alternative),
+    IconPreview("Food_Database", Icon_Food_Database),
+    IconPreview("System_Control", Icon_System_Control),
+    IconPreview("Alarms", Icon_Alarms),
+    IconPreview("Permissions", Icon_Permissions),
+    IconPreview("Meal_Types", Icon_Meal_Types),
+    IconPreview("Master_Data", Icon_Master_Data),
+    IconPreview("More", Icon_More),
+    IconPreview("Delete_Filled", Icon_Delete_Filled),
     IconPreview("Meal_Fast", Icon_Meal_Fast),
     IconPreview("Meal_Standard", Icon_Meal_Standard),
     IconPreview("Meal_High_Fat", Icon_Meal_High_Fat),
     IconPreview("Meal_Slow", Icon_Meal_Slow),
     IconPreview("Meal_Custom", Icon_Meal_Custom),
-    IconPreview("Menu_More", Menu_More),
-    IconPreview("Menu_Delete", Menu_Delete),
     IconPreview("Icon_Screen_Back", Icon_Screen_Back),
     IconPreview("Icon_Screen_Close", Icon_Screen_Close),
     IconPreview("Add", Icon_Add),
@@ -173,7 +178,7 @@ private val iconsForPreview = listOf(
     IconPreview("Sound_Off", Icon_Sound_Off)
 )
 
-@Preview(showBackground = true, widthDp = 320, heightDp = 1800, name = "Icon Catalog")
+@Preview(showBackground = true, widthDp = 320, heightDp = 1900, name = "Icon Catalog")
 @Composable
 fun IconCatalogPreview() {
     AppTheme {

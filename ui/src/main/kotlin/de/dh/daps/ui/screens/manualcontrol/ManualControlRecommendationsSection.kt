@@ -17,7 +17,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -45,6 +44,7 @@ import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.SecondaryButton
 import de.dh.daps.ui.common.getBolusRecommendationText
 import de.dh.daps.ui.common.icons.Icon_Meal_Fast
+import de.dh.daps.ui.common.icons.Icon_Temp_Basal
 import de.dh.daps.ui.common.icons.Syringe
 import de.dh.daps.ui.common.theme.AppPreview
 
@@ -278,7 +278,7 @@ fun RecommendationCard(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Speed,
+                                    imageVector = Icon_Temp_Basal,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onTertiaryContainer,
                                     modifier = Modifier.size(20.dp)
