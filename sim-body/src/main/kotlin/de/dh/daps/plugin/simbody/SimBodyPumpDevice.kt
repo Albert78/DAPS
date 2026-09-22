@@ -66,6 +66,13 @@ class SimBodyPumpDevice(
     initialProfile: InsulinProfile,
     private val pumpDao: PumpDao? = null
 ) {
+    companion object {
+        /**
+         * Duration in seconds required to deliver 1 Unit (IU) of insulin in the simulated device.
+         */
+        const val BOLUS_SECONDS_PER_UNIT = 12.0
+    }
+
     private val scope = CoroutineScope(Dispatchers.IO)
 
     private val _deviceBolusState = MutableStateFlow<DeviceBolusState>(DeviceBolusState.Idle)
@@ -323,7 +330,7 @@ class SimBodyPumpDevice(
 
     /**
      * Starts an asynchronous bolus delivery process in the device.
-     * The delivery process runs at 12 seconds per Unit (1 IU = 12s) and updates state periodically.
+     * The delivery process runs based on [BOLUS_SECONDS_PER_UNIT] per Unit and updates state periodically.
      *
      * @return The [Job] representing the device's async bolus delivery process.
      * @throws PumpCommandException if initial checks fail.
@@ -391,7 +398,7 @@ class SimBodyPumpDevice(
 
         val tickIntervalMs = 250L
         val startTimeMs = System.currentTimeMillis()
-        val totalDurationMs = maxOf((targetAmount.iu * 12_000.0).toLong(), 250L)
+        val totalDurationMs = maxOf((targetAmount.iu * BOLUS_SECONDS_PER_UNIT * 1000.0).toLong(), 250L)
 
         var unreportedInsulin = 0.0
         var lastDeliveredIu = 0.0
