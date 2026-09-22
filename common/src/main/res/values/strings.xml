@@ -77,5 +77,6 @@
     <string name="unit_mgdl_per_u">mg/dL/E</string>
     <string name="unit_mmol_per_u">mmol/l/E</string>
     <string name="unit_g">g</string>
+    <string name="unit_ke">KE</string>
     <string name="time_unit">Uhr</string>
 </resources>

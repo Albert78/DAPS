@@ -11,8 +11,10 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import de.dh.daps.common.model.data.CarbsUnit
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.ui.common.LocalAppFormatters
+import de.dh.daps.ui.common.LocalCarbsUnit
 import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.rememberAppFormatters
 
@@ -142,6 +144,7 @@ private val DarkColors = darkColorScheme(
 fun AppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     glucoseUnit: GlucoseUnit = GlucoseUnit.MG_DL,
+    carbsUnit: CarbsUnit = CarbsUnit.GRAMS,
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) {
@@ -166,7 +169,8 @@ fun AppTheme(
         LocalStatusColors provides statusColors,
         LocalSemanticColors provides semanticColors,
         LocalAppFormatters provides rememberAppFormatters(),
-        LocalGlucoseUnit provides glucoseUnit
+        LocalGlucoseUnit provides glucoseUnit,
+        LocalCarbsUnit provides carbsUnit
     ) {
         MaterialTheme(
             colorScheme = colorScheme,
@@ -184,11 +188,13 @@ fun AppPreview(
     modifier: Modifier = Modifier,
     darkTheme: Boolean = isSystemInDarkTheme(),
     glucoseUnit: GlucoseUnit = GlucoseUnit.MG_DL,
+    carbsUnit: CarbsUnit = CarbsUnit.GRAMS,
     content: @Composable () -> Unit
 ) {
     AppTheme(
         darkTheme = darkTheme,
-        glucoseUnit = glucoseUnit
+        glucoseUnit = glucoseUnit,
+        carbsUnit = carbsUnit
     ) {
         Surface(
             modifier = modifier,

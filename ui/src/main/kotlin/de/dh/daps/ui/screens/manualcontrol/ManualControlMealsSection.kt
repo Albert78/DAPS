@@ -34,7 +34,7 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.getDefaultSlowMealType
 import de.dh.daps.common.model.getDefaultStandardMealType
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.carbsKeValue
+import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.timeWithUnit
 import de.dh.daps.ui.screens.mealtypes.MealTypeIcon
@@ -134,8 +134,7 @@ fun CompactMealInfoCard(
             Spacer(modifier = Modifier.height(4.dp))
 
             if (mealEntry != null) {
-                val keValue = mealEntry.carbGrams / 10.0
-                val keText = carbsKeValue(keValue)
+                val carbText = carbsValue(mealEntry.carbGrams)
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -147,7 +146,7 @@ fun CompactMealInfoCard(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
-                            text = keText,
+                            text = carbText,
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold
                         )

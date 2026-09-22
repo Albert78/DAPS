@@ -59,6 +59,7 @@ import de.dh.daps.ui.common.ValueDisplayStrategy
 import de.dh.daps.ui.common.carbsKeSteppingStrategy
 import de.dh.daps.ui.common.carbsKeUnitLabel
 import de.dh.daps.ui.common.composables.AbsoluteTimeStepper
+import de.dh.daps.ui.common.composables.CarbsValueStepper
 import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.composables.EditableValueStepper
 import de.dh.daps.ui.common.composables.ImageCaptionWithSwitch
@@ -395,20 +396,9 @@ fun EditMealCard(
                     style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(Modifier.height(8.dp))
-                val carbsKe = carbsGrams / 10.0
-                EditableValueStepper(
-                    currentValue = carbsKe,
-                    onValueChange = { ke -> onCarbsChange(ke * 10.0) },
-                    minValue = CARBS_KE_MIN,
-                    maxValue = CARBS_KE_MAX,
-                    steppingStrategy = carbsKeSteppingStrategy(),
-                    displayStrategy = object : ValueDisplayStrategy {
-                        override fun format(value: Double): String =
-                            String.format(Locale.getDefault(), "%.1f", value)
-
-                        override fun color(value: Double): Color = Color.Unspecified
-                    },
-                    suffix = " ${carbsKeUnitLabel()}"
+                CarbsValueStepper(
+                    carbsGrams = carbsGrams,
+                    onValueChange = onCarbsChange
                 )
             }
 

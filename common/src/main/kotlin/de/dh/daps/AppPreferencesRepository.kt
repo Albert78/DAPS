@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import de.dh.daps.common.model.data.CarbsUnit
 import de.dh.daps.common.model.data.GlucoseUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
@@ -37,8 +38,18 @@ suspend fun AppPreferencesRepository.setGlucoseUnit(value: GlucoseUnit) {
     }
 }
 
+val Preferences?.carbsUnit: CarbsUnit
+    get() = this?.get(CARBS_UNIT_KEY)?.let { CarbsUnit.valueOf(it) } ?: CarbsUnit.GRAMS
+
+suspend fun AppPreferencesRepository.setCarbsUnit(value: CarbsUnit) {
+    editPreferences { mutablePreferences ->
+        mutablePreferences[CARBS_UNIT_KEY] = value.name
+    }
+}
+
 val USER_DECLINED_PERMISSIONS_KEY = booleanPreferencesKey("user_declined_permissions")
 val GLUCOSE_UNIT_KEY = stringPreferencesKey("glucose_unit")
+val CARBS_UNIT_KEY = stringPreferencesKey("carbs_unit")
 
 class AppPreferencesRepository(private val context: Context, private val scope: CoroutineScope) {
     /**
@@ -59,6 +70,14 @@ class AppPreferencesRepository(private val context: Context, private val scope: 
             scope = scope,
             started = SharingStarted.Eagerly,
             initialValue = GlucoseUnit.MG_DL
+        )
+
+    val carbsUnit: StateFlow<CarbsUnit> = cachedPreferences
+        .map { it.carbsUnit }
+        .stateIn(
+            scope = scope,
+            started = SharingStarted.Eagerly,
+            initialValue = CarbsUnit.GRAMS
         )
 
     /**

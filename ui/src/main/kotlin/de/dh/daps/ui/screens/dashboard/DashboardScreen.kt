@@ -56,6 +56,7 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.navigation.ManualControlInitialDialog
 import de.dh.daps.core.aps.ApsRecommendation
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.LocalCarbsUnit
 import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.ExpandableInfoCard
 import de.dh.daps.ui.common.composables.PrimaryButton
@@ -308,6 +309,7 @@ fun DashboardContent(
             ) {
                 val chartState = rememberBgHistoryChartState()
                 val glucoseUnit = LocalGlucoseUnit.current
+                val carbsUnit = LocalCarbsUnit.current
                 if (historyUiState.isLoading || currentTherapyUiState.isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center)
@@ -317,6 +319,7 @@ fun DashboardContent(
                         diagramData = HistoryAndImpactDiagramData.create(
                             readings = historyUiState.readings,
                             glucoseUnit = glucoseUnit,
+                            carbsUnit = carbsUnit,
                             insulinApplications = historyUiState.insulinApplications,
                             meals = historyUiState.meals,
                             dia = currentTherapyUiState.activeTherapyStatus.profile.dia,

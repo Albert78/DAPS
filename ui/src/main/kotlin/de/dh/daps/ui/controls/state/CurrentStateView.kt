@@ -46,7 +46,7 @@ import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.aps.CoreState
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.carbsGramsValue
+import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.composables.LightGreenA700
 import de.dh.daps.ui.common.composables.Red
@@ -117,7 +117,7 @@ fun CurrentStateView(
         else -> 0f
     }
 
-    val cobText = carbsGramsValue(cob)
+    val cobText = carbsValue(cob)
     val iobText = insulinValue(iob.iu)
 
     Surface(

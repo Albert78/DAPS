@@ -27,7 +27,7 @@ import de.dh.daps.common.model.data.BgSampleKind
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.carbsGramsValue
+import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.composables.LightGreenA700
 import de.dh.daps.ui.common.composables.Red
 import de.dh.daps.ui.common.composables.Yellow
@@ -115,7 +115,7 @@ fun ManualControlContextInfo(
                             color = MaterialTheme.colorScheme.primary
                         )
                         Text(
-                            text = carbsGramsValue(contextInfo.cob),
+                            text = carbsValue(contextInfo.cob),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold
                         )

@@ -31,8 +31,8 @@ import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.plugin.simbody.BodyModel
 import de.dh.daps.plugin.simbody.R
 import de.dh.daps.plugin.simbody.model.BodyProfile
-import de.dh.daps.ui.common.carbsGramsUnitLabel
-import de.dh.daps.ui.common.carbsGramsValue
+import de.dh.daps.ui.common.carbsUnitLabel
+import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.crValue
@@ -87,7 +87,7 @@ fun SimBodyDashboardCard(
 
             ParameterRow(
                 stringResource(R.string.label_iob_cob),
-                if (isLoaded) "${insulinValue(bodyModel.iob.iu)} / ${carbsGramsValue(bodyModel.cob)}" else "---"
+                if (isLoaded) "${insulinValue(bodyModel.iob.iu)} / ${carbsValue(bodyModel.cob)}" else "---"
             ) { }
 
             ParameterRow(
@@ -124,7 +124,7 @@ fun SimBodyDashboardCard(
             ) { }
             ParameterRow(
                 stringResource(R.string.label_liver_output),
-                if (isLoaded) "${String.format(locale, "%.1f", bodyModel.liverGlucoseOutputGph)} ${carbsGramsUnitLabel()}/h" else "---"
+                if (isLoaded) "${String.format(locale, "%.1f", bodyModel.liverGlucoseOutputGph)} ${carbsUnitLabel()}/h" else "---"
             ) { }
         }
     }

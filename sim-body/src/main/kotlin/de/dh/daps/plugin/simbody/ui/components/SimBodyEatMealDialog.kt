@@ -21,9 +21,8 @@ import de.dh.daps.common.model.ID_MEAL_STANDARD
 import de.dh.daps.common.model.MealType
 import de.dh.daps.plugin.simbody.BodyModel
 import de.dh.daps.plugin.simbody.R
-import de.dh.daps.ui.common.carbsGramsSteppingStrategy
-import de.dh.daps.ui.common.carbsGramsUnitLabel
-import de.dh.daps.ui.common.composables.EditableValueStepper
+import de.dh.daps.ui.common.carbsUnitLabel
+import de.dh.daps.ui.common.composables.CarbsValueStepper
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.controls.meal.FoodTypeSelector
@@ -75,15 +74,11 @@ fun SimBodyEatMealDialogContent(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(stringResource(R.string.label_carbs_g, carbsGramsUnitLabel()), style = MaterialTheme.typography.bodyMedium)
+        Text(stringResource(R.string.label_carbs_g, carbsUnitLabel()), style = MaterialTheme.typography.bodyMedium)
         Spacer(modifier = Modifier.height(16.dp))
-        EditableValueStepper(
-            currentValue = carbs,
+        CarbsValueStepper(
+            carbsGrams = carbs,
             onValueChange = onCarbsChange,
-            minValue = 0.0,
-            maxValue = 200.0,
-            steppingStrategy = carbsGramsSteppingStrategy(),
-            suffix = carbsGramsUnitLabel(),
             modifier = Modifier.fillMaxWidth()
         )
 

@@ -150,7 +150,11 @@
 
     <string name="pref_category_therapy_title">Therapie</string>
     <string name="pref_glucose_unit_title">Glukose-Einheit</string>
-    <string name="pref_glucose_unit_dialog_title">Einheit wählen</string>
+    <string name="pref_glucose_unit_dialog_title">Glukose-Einheit wählen</string>
+    <string name="pref_carbs_unit_title">Kohlenhydrate-Einheit</string>
+    <string name="pref_carbs_unit_dialog_title">Kohlenhydrate-Einheit wählen</string>
+    <string name="carbs_unit_grams_label">Gramm (g)</string>
+    <string name="carbs_unit_ke_label">Kohlenhydrateinheiten (KE)</string>
 
     <string name="aps_service_notification_channel_name">DAPS Service</string>
     <string name="aps_service_notification_content_no_value_yet">Kein Glukosewert</string>
@@ -292,6 +296,8 @@
 
     <string name="history_impact_ie_label">I.E.</string>
     <string name="history_impact_ke_label">KE</string>
+    <string name="history_impact_carbs_10_grams_per_h_label">10g/h</string>
+    <string name="history_impact_carbs_ke_per_h_label">KE/h</string>
     <string name="cd_copy_profile">Profil kopieren</string>
     <string name="label_increased">erhöht</string>
     <string name="label_decreased">reduziert</string>
@@ -309,7 +315,7 @@
     <string name="meal_correction_bolus_active_carbs_format">Aktive Kohlenhydrate: %1$s</string>
     <string name="meal_correction_bolus_active_insulin_format">Aktives Insulin: %1$s</string>
     <string name="meal_correction_bolus_carbs_label">Mahlzeit</string>
-    <string name="meal_correction_bolus_suggested_carbs_format">Vorschlag: mind. %1$.1f %2$s</string>
+    <string name="meal_correction_bolus_suggested_carbs_format">Vorschlag: mind. %1$s</string>
     <string name="meal_correction_bolus_suggested_insulin_format">Vorschlag: %1$s</string>
     <string name="meal_correction_bolus_suggested_time_format">Vorschlag: mind. +%1$d Min.</string>
     <string name="meal_correction_bolus_suggested_time_zero">Vorschlag: Jetzt</string>

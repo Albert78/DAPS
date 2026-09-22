@@ -33,7 +33,7 @@ import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.plugin.simbody.BodyModel
 import de.dh.daps.plugin.simbody.DEFAULT_SIM_BODY_PROFILE
 import de.dh.daps.plugin.simbody.R
-import de.dh.daps.ui.common.carbsGramsValue
+import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.theme.AppPreview
@@ -101,7 +101,7 @@ fun SimBodyHistoryScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(carbsGramsValue(meal.carbGrams))
+                            Text(carbsValue(meal.carbGrams))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = meal.mealType.name,

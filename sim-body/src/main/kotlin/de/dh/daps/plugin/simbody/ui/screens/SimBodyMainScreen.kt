@@ -45,7 +45,7 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.plugin.simbody.BodyModel
 import de.dh.daps.plugin.simbody.R
 import de.dh.daps.plugin.simbody.ui.components.SimBodyEatMealDialog
-import de.dh.daps.ui.common.carbsGramsValue
+import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.glucoseUnitLabel
@@ -127,7 +127,7 @@ fun SimBodyMainScreen(
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         StatusItem(stringResource(R.string.label_iob), insulinValue(bodyModel.iob.iu))
-                        StatusItem(stringResource(R.string.label_cob), carbsGramsValue(bodyModel.cob))
+                        StatusItem(stringResource(R.string.label_cob), carbsValue(bodyModel.cob))
                     }
                 }
             }

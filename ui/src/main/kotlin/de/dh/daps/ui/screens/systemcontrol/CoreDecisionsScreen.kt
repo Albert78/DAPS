@@ -38,6 +38,7 @@ import de.dh.daps.core.aps.CoreInsight
 import de.dh.daps.core.aps.CoreReasoning
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.LocalGlucoseUnit
+import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.crValue
 import de.dh.daps.ui.common.glucoseValue
@@ -146,7 +147,7 @@ fun InsightCard(insight: CoreInsight) {
                 Spacer(modifier = Modifier.width(16.dp))
                 MetricItem(stringResource(id = R.string.core_insight_label_iob), insulinValue(insight.futureActiveInsulin.iu))
                 Spacer(modifier = Modifier.width(16.dp))
-                MetricItem(stringResource(id = R.string.core_insight_label_cob), "%.1f g".format(insight.futureActiveCarbs))
+                MetricItem(stringResource(id = R.string.core_insight_label_cob), carbsValue(insight.futureActiveCarbs))
             }
             Spacer(modifier = Modifier.height(8.dp))
             Row(modifier = Modifier.fillMaxWidth()) {

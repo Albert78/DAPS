@@ -15,6 +15,7 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Science
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -40,9 +41,11 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import de.dh.daps.common.model.data.CarbsUnit
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ThemeMode
+import de.dh.daps.ui.common.carbsUnitLabel
 import de.dh.daps.ui.common.composables.DialogDismissButton
 import de.dh.daps.ui.common.composables.DialogSurface
 import de.dh.daps.ui.common.composables.DialogTitle
@@ -68,6 +71,9 @@ fun PreferencesScreen(
         },
         onGlucoseUnitSelected = { newValue ->
             viewModel.setGlucoseUnit(newValue)
+        },
+        onCarbsUnitSelected = { newValue ->
+            viewModel.setCarbsUnit(newValue)
         }
     )
 }
@@ -79,10 +85,12 @@ fun PreferencesContent(
     onNavigateUp: () -> Unit,
     onThemeSelected: (ThemeMode) -> Unit,
     onGlucoseUnitSelected: (GlucoseUnit) -> Unit,
+    onCarbsUnitSelected: (CarbsUnit) -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     var showThemeDialog by remember { mutableStateOf(false) }
     var showGlucoseUnitDialog by remember { mutableStateOf(false) }
+    var showCarbsUnitDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -129,6 +137,13 @@ fun PreferencesContent(
                 onClick = { showGlucoseUnitDialog = true }
             )
 
+            PreferenceItem(
+                title = stringResource(R.string.pref_carbs_unit_title),
+                summary = carbsUnitLabel(uiState.carbsUnit),
+                icon = Icons.Default.Restaurant,
+                onClick = { showCarbsUnitDialog = true }
+            )
+
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
         }
     }
@@ -151,6 +166,17 @@ fun PreferencesContent(
             onSelected = { newValue ->
                 onGlucoseUnitSelected(newValue)
                 showGlucoseUnitDialog = false
+            }
+        )
+    }
+
+    if (showCarbsUnitDialog) {
+        CarbsUnitSelectionDialog(
+            currentValue = uiState.carbsUnit,
+            onDismiss = { showCarbsUnitDialog = false },
+            onSelected = { newValue ->
+                onCarbsUnitSelected(newValue)
+                showCarbsUnitDialog = false
             }
         )
     }
@@ -281,6 +307,72 @@ fun GlucoseUnitSelectionDialog(
 }
 
 @Composable
+fun CarbsUnitSelectionDialog(
+    currentValue: CarbsUnit,
+    onDismiss: () -> Unit,
+    onSelected: (CarbsUnit) -> Unit
+) {
+    val units = CarbsUnit.entries
+
+    Dialog(onDismissRequest = onDismiss) {
+        DialogSurface {
+            Column(modifier = Modifier
+                .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally) {
+
+                DialogTitle(
+                    stringResource(id = R.string.pref_carbs_unit_dialog_title),
+                    modifier = Modifier
+                        .padding(24.dp)
+                )
+
+                Column(
+                    Modifier.selectableGroup(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    units.forEach { unit ->
+                        val labelResId = when (unit) {
+                            CarbsUnit.GRAMS -> R.string.carbs_unit_grams_label
+                            CarbsUnit.KE -> R.string.carbs_unit_ke_label
+                        }
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .height(56.dp)
+                                .selectable(
+                                    selected = (unit == currentValue),
+                                    onClick = { onSelected(unit) },
+                                    role = Role.RadioButton
+                                )
+                                .padding(horizontal = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = (unit == currentValue),
+                                onClick = null
+                            )
+                            Text(
+                                text = stringResource(labelResId),
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(start = 16.dp)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                DialogDismissButton(
+                    modifier = Modifier
+                        .padding(24.dp),
+                    onDismiss = onDismiss
+                )
+            }
+        }
+    }
+}
+
+@Composable
 fun PreferenceCategory(title: String) {
     Text(
         text = title,
@@ -341,6 +433,7 @@ fun PreferencesContentPreview() {
             onNavigateUp = {},
             onThemeSelected = {},
             onGlucoseUnitSelected = {},
+            onCarbsUnitSelected = {},
         )
     }
 }

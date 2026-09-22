@@ -15,14 +15,13 @@ fun getBolusRecommendationText(recommendation: ApsRecommendation.Bolus): String 
     return if (hasDeferred) {
         val meal = recommendation.associatedMeal
         if (meal != null) {
-            val keValue = meal.carbGrams / 10.0
-            val keText = carbsKeValue(keValue)
+            val carbText = carbsValue(meal.carbGrams)
             val timeText = timeWithUnit(meal.timestamp)
             stringResource(
                 R.string.recommendation_bolus_deferred_info_text,
                 recommendation.amount.iu,
                 timeText,
-                keText
+                carbText
             )
         } else {
             stringResource(

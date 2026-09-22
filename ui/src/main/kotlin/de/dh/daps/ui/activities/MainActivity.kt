@@ -119,11 +119,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             val useDarkTheme = rememberUseDarkTheme(registry.appPreferencesRepository)
             val glucoseUnit by globalViewModel.glucoseUnit.collectAsState()
+            val carbsUnit by globalViewModel.carbsUnit.collectAsState()
 
             EdgeToEdgeHandler(useDarkTheme)
             AppTheme(
                 darkTheme = useDarkTheme,
-                glucoseUnit = glucoseUnit
+                glucoseUnit = glucoseUnit,
+                carbsUnit = carbsUnit
             ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),

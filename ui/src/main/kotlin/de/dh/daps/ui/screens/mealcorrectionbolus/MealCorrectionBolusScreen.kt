@@ -74,6 +74,8 @@ import de.dh.daps.ui.common.ValueDisplayStrategy
 import de.dh.daps.ui.common.carbsGramsValue
 import de.dh.daps.ui.common.carbsKeSteppingStrategy
 import de.dh.daps.ui.common.carbsKeUnitLabel
+import de.dh.daps.ui.common.carbsValue
+import de.dh.daps.ui.common.composables.CarbsValueStepper
 import de.dh.daps.ui.common.insulinSteppingStrategy
 import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.composables.EditableValueStepper
@@ -194,36 +196,22 @@ fun MealCorrectionBolusContent(
                                 text = stringResource(R.string.meal_correction_bolus_carbs_label),
                                 style = MaterialTheme.typography.titleMedium
                             )
-                            val suggestedCarbsKe = uiState.suggestedCarbsGrams / 10.0
-                            val carbsKe = uiState.input.carbsGrams / 10.0
-
-                            if (suggestedCarbsKe > 0.0) {
+                            if (uiState.suggestedCarbsGrams > 0.0) {
                                 Spacer(Modifier.height(4.dp))
-                                val isCarbsBelowSuggestion = carbsKe < suggestedCarbsKe - 0.01
+                                val isCarbsBelowSuggestion = uiState.input.carbsGrams < uiState.suggestedCarbsGrams - 0.1
                                 SuggestionBadge(
                                     label = stringResource(
                                         R.string.meal_correction_bolus_suggested_carbs_format,
-                                        suggestedCarbsKe,
-                                        carbsKeUnitLabel()
+                                        carbsValue(uiState.suggestedCarbsGrams)
                                     ),
                                     isHighlighted = isCarbsBelowSuggestion,
                                     onClick = onApplySuggestedCarbs
                                 )
                             }
                             Spacer(Modifier.height(8.dp))
-                            EditableValueStepper(
-                                currentValue = carbsKe,
-                                onValueChange = { ke -> onCarbsChange(ke * 10.0) },
-                                minValue = CARBS_KE_MIN,
-                                maxValue = CARBS_KE_MAX,
-                                steppingStrategy = carbsKeSteppingStrategy(),
-                                displayStrategy = object : ValueDisplayStrategy {
-                                    override fun format(value: Double): String =
-                                        String.format(Locale.getDefault(), "%.1f", value)
-
-                                    override fun color(value: Double): Color = Color.Unspecified
-                                },
-                                suffix = " ${carbsKeUnitLabel()}",
+                            CarbsValueStepper(
+                                carbsGrams = uiState.input.carbsGrams,
+                                onValueChange = onCarbsChange,
                                 style = StepperDefaults.defaultStyle()
                             )
                         }
@@ -505,7 +493,7 @@ fun MealCorrectionBolusContextInfo(
                                 color = MaterialTheme.colorScheme.primary
                             )
                             Text(
-                                text = carbsGramsValue(uiState.projections.cob),
+                                text = carbsValue(uiState.projections.cob),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.SemiBold
                             )

@@ -5,9 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import de.dh.daps.carbsUnit
+import de.dh.daps.common.model.data.CarbsUnit
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.glucoseUnit
+import de.dh.daps.setCarbsUnit
 import de.dh.daps.setGlucoseUnit
 import de.dh.daps.ui.common.ThemeMode
 import de.dh.daps.ui.common.setThemeMode
@@ -26,6 +29,7 @@ data class PreferencesUiState(
     val isError: Boolean,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val glucoseUnit: GlucoseUnit = GlucoseUnit.MG_DL,
+    val carbsUnit: CarbsUnit = CarbsUnit.GRAMS,
 )
 
 /**
@@ -61,12 +65,14 @@ class PreferencesViewModel(
         }
         val themeMode = preferences.themeMode
         val glucoseUnit = preferences.glucoseUnit
+        val carbsUnit = preferences.carbsUnit
 
         _uiState.update { PreferencesUiState(
             isLoading = false,
             isError = false,
             themeMode = themeMode,
             glucoseUnit = glucoseUnit,
+            carbsUnit = carbsUnit,
         ) }
     }
 
@@ -86,6 +92,15 @@ class PreferencesViewModel(
     fun setGlucoseUnit(newUnit: GlucoseUnit) {
         viewModelScope.launch {
             appPreferencesRepository.setGlucoseUnit(newUnit)
+        }
+    }
+
+    /**
+     * Updates the carbs unit in the repository.
+     */
+    fun setCarbsUnit(newUnit: CarbsUnit) {
+        viewModelScope.launch {
+            appPreferencesRepository.setCarbsUnit(newUnit)
         }
     }
 

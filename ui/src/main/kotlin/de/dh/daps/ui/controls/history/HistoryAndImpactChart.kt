@@ -69,6 +69,7 @@ import de.dh.daps.common.model.calculation.CarbCurveComponent
 import de.dh.daps.common.model.calculation.InsulinCurve
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgSampleKind
+import de.dh.daps.common.model.data.CarbsUnit
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timeline
@@ -93,6 +94,7 @@ data class HistoryAndImpactDiagramData(
     val bgXValues: List<Double>,
     val bgYValues: List<Double>,
     val glucoseUnit: GlucoseUnit,
+    val carbsUnit: CarbsUnit = CarbsUnit.GRAMS,
     val insulinXValues: List<Double> = emptyList(),
     val insulinYValues: List<Double> = emptyList(),
     val carbXValues: List<Double> = emptyList(),
@@ -103,6 +105,7 @@ data class HistoryAndImpactDiagramData(
         fun create(
             readings: List<BgReading>,
             glucoseUnit: GlucoseUnit,
+            carbsUnit: CarbsUnit = CarbsUnit.GRAMS,
             insulinApplications: List<InsulinApplication> = emptyList(),
             meals: List<MealEntry> = emptyList(),
             dia: Minutes = Minutes(DEFAULT_DIA_MINUTES.toShort()),
@@ -177,7 +180,8 @@ data class HistoryAndImpactDiagramData(
                         for ((curve, weight) in components) {
                             mealAbsorptionRate += curve.normalizedActivity(timeSinceMeal) * weight
                         }
-                        // Multiply by 60.0 for hourly rate (g/h), divide by 10.0 for KE/h
+                        // Multiply by 60.0 for hourly rate, divide by 10.0 so 1 unit = 10g/h or 1 KE/h
+                        // This keeps carb curve values visually on a comparable scale with insulin activity (IU/h)
                         totalCarbAbsorption += (meal.carbGrams * mealAbsorptionRate * 60.0) / 10.0
                     }
                 }
@@ -194,15 +198,16 @@ data class HistoryAndImpactDiagramData(
                     else it.value.mmol
                 },
                 glucoseUnit = glucoseUnit,
+                carbsUnit = carbsUnit,
                 insulinXValues = insulinX,
                 insulinYValues = insulinY,
                 carbXValues = carbX,
                 carbYValues = carbY,
-                dataSignature = "${validReadings.size}_${validReadings.first().timestamp.ms}_${validReadings.last().timestamp.ms}_${insulinApplications.size}_${meals.size}_$glucoseUnit"
+                dataSignature = "${validReadings.size}_${validReadings.first().timestamp.ms}_${validReadings.last().timestamp.ms}_${insulinApplications.size}_${meals.size}_${glucoseUnit}_$carbsUnit"
             )
         }
 
-        fun empty(glucoseUnit: GlucoseUnit = GlucoseUnit.MG_DL): HistoryAndImpactDiagramData {
+        fun empty(glucoseUnit: GlucoseUnit = GlucoseUnit.MG_DL, carbsUnit: CarbsUnit = CarbsUnit.GRAMS): HistoryAndImpactDiagramData {
             val now = Timestamp.now().ms
             val baseTimestamp = (now / MS_PER_HOUR) * MS_PER_HOUR
             val maxX = INITIAL_SHOW_HOURS * 60.0
@@ -213,11 +218,12 @@ data class HistoryAndImpactDiagramData(
                 bgXValues = listOf(0.0, maxX),
                 bgYValues = listOf(0.0, 0.0),
                 glucoseUnit = glucoseUnit,
+                carbsUnit = carbsUnit,
                 insulinXValues = emptyList(),
                 insulinYValues = emptyList(),
                 carbXValues = emptyList(),
                 carbYValues = emptyList(),
-                dataSignature = "empty_${baseTimestamp}_$glucoseUnit"
+                dataSignature = "empty_${baseTimestamp}_${glucoseUnit}_$carbsUnit"
             )
         }
     }
@@ -537,11 +543,14 @@ fun HistoryAndImpactChart(
     }
 
     val ieLabel = stringResource(R.string.history_impact_ie_label)
-    val keLabel = stringResource(R.string.history_impact_ke_label)
-    val impactLabel = remember(showInsulin, showCarbs, ieLabel, keLabel) {
+    val carbsImpactLabel = when (diagramData.carbsUnit) {
+        CarbsUnit.GRAMS -> stringResource(R.string.history_impact_carbs_10_grams_per_h_label)
+        CarbsUnit.KE -> stringResource(R.string.history_impact_carbs_ke_per_h_label)
+    }
+    val impactLabel = remember(showInsulin, showCarbs, ieLabel, carbsImpactLabel) {
         listOfNotNull(
             if (showInsulin) "$ieLabel/h" else null,
-            if (showCarbs) "$keLabel/h" else null
+            if (showCarbs) carbsImpactLabel else null
         ).joinToString(" | ")
     }
 

@@ -7,6 +7,7 @@ import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.stringResource
 import de.dh.daps.common.model.data.BgDelta
 import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.CarbsUnit
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
@@ -34,6 +35,10 @@ val LocalAppFormatters = staticCompositionLocalOf<AppFormatters> {
 
 val LocalGlucoseUnit = staticCompositionLocalOf<GlucoseUnit> {
     error("No GlucoseUnit provided")
+}
+
+val LocalCarbsUnit = staticCompositionLocalOf<CarbsUnit> {
+    error("No CarbsUnit provided")
 }
 
 @Composable
@@ -325,8 +330,35 @@ const val INSULIN_STEP_SIZE = 0.1
 fun insulinSteppingStrategy(step: Double = INSULIN_STEP_SIZE): SteppingStrategy = ModuloSteppingStrategy(step)
 
 @Composable
+fun carbsUnitLabel(unit: CarbsUnit = LocalCarbsUnit.current): String {
+    return when (unit) {
+        CarbsUnit.GRAMS -> stringResource(CommonR.string.unit_g)
+        CarbsUnit.KE -> stringResource(CommonR.string.unit_ke)
+    }
+}
+
+@Composable
+fun carbsValue(
+    valueInGrams: Double?,
+    unit: CarbsUnit = LocalCarbsUnit.current,
+    default: String = "-",
+    withUnit: Boolean = true,
+    signed: Boolean = false
+): String {
+    return valueInGrams?.let {
+        when (unit) {
+            CarbsUnit.GRAMS -> carbsGramsValue(valueInGrams, default = default, withUnit = withUnit, signed = signed)
+            CarbsUnit.KE -> {
+                val keValue = valueInGrams / 10.0
+                carbsKeValue(keValue, default = default, withUnit = withUnit, signed = signed)
+            }
+        }
+    } ?: default
+}
+
+@Composable
 fun carbsKeUnitLabel(): String {
-    return stringResource(de.dh.daps.ui.R.string.history_impact_ke_label)
+    return stringResource(CommonR.string.unit_ke)
 }
 
 @Composable
