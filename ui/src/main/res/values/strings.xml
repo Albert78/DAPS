@@ -571,10 +571,12 @@
     <string name="manual_control_cancel_bolus">Bolus abbrechen</string>
     <string name="manual_control_bolus_delivering">Bolus wird verabreicht: %1$.2f / %2$.2f I.E. (%3$d%%)</string>
     <string name="manual_control_no_active_bolus">Keine aktive Bolusabgabe.</string>
+    <string name="manual_control_basal_title">Basalrate</string>
     <string name="manual_control_temp_basal_title">Temporäre Basalrate (Temp-Basal)</string>
     <string name="manual_control_set_temp_basal">Temp-Basal setzen&#8230;</string>
     <string name="manual_control_cancel_temp_basal">Temp-Basal beenden</string>
     <string name="manual_control_temp_basal_active">Aktiv: Temp-Basal mit %1$d%%</string>
+    <string name="manual_control_normal_basal_active">Normale Basalrate aktiv (%1$s I.E./h)</string>
     <string name="manual_control_no_active_temp_basal">Normale Basalrate aktiv (100%).</string>
     <string name="manual_control_duration_hours_label">Dauer (Stunden)</string>
     <string name="manual_control_rate_percent_label">Basalrate (%)</string>

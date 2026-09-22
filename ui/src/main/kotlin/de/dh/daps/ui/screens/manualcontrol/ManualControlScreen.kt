@@ -103,7 +103,7 @@ sealed interface ManualControlDialog {
         val includedDeferredBoluses: List<DeferredBolus>? = null,
         val correctionPart: InsulinAmount = InsulinAmount.ZERO,
         val basalPart: InsulinAmount = InsulinAmount.ZERO,
-        val recommendationToDismiss: ApsRecommendation.Bolus? = null
+        val recommendationToDismiss: ApsRecommendation.Bolus? = null,
     ) : ManualControlDialog
 
     data class TempBasal(
@@ -210,7 +210,7 @@ fun ManualControlContent(
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
-                    // Subordinate Info: Compact Meals Row
+                    // Meals Overview
                     ManualControlMealsSection(
                         lastPastMeal = uiState.contextInfo.lastPastMeal,
                         nextPlannedMeal = uiState.contextInfo.nextPlannedMeal,
@@ -218,7 +218,7 @@ fun ManualControlContent(
                         onEditMeal = onEditMeal
                     )
 
-                    // Important Info: Recommendations Section
+                    // Recommendations
                     ManualControlRecommendationsSection(
                         recommendations = uiState.recommendations,
                         onOpenBolusDialog = { activeDialog = it },
@@ -226,7 +226,7 @@ fun ManualControlContent(
                         onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus
                     )
 
-                    // Most Important Section: Pump Controls (Bolus vs. Basal visually distinguished)
+                    // Manual Pump Control
                     ManualControlPumpControlsSection(
                         pump = uiState.pump,
                         onOpenBolusDialog = { activeDialog = it },
@@ -418,7 +418,7 @@ fun ManualControlContextInfo(
 }
 
 // -----------------------------------------------------------------------------------------
-// --- Section: Meals (Subordinate / Secondary Info) ---
+// --- Section: Meals ---
 // -----------------------------------------------------------------------------------------
 
 @Composable
@@ -560,7 +560,7 @@ private fun CompactMealInfoCard(
 }
 
 // -----------------------------------------------------------------------------------------
-// --- Section: Recommendations (Important Info) ---
+// --- Section: Recommendations ---
 // -----------------------------------------------------------------------------------------
 
 @Composable
@@ -586,7 +586,7 @@ private fun ManualControlRecommendationsSection(
                     color = MaterialTheme.colorScheme.primaryContainer
                 ) {
                     Text(
-                        text = "${recommendations.size}",
+                        text = recommendations.size.toString(),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                         fontWeight = FontWeight.Bold,
@@ -787,7 +787,7 @@ private fun RecommendationCard(
 }
 
 // -----------------------------------------------------------------------------------------
-// --- Section: Pump Controls (Most Important - Bolus & Basal visually distinguished) ---
+// --- Section: Pump Controls ---
 // -----------------------------------------------------------------------------------------
 
 @Composable
@@ -820,7 +820,10 @@ private fun ManualControlPumpControlsSection(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
+                    ) {
                         Box(
                             modifier = Modifier
                                 .size(40.dp)
@@ -835,20 +838,26 @@ private fun ManualControlPumpControlsSection(
                             )
                         }
                         Spacer(modifier = Modifier.width(12.dp))
-                        Column {
+                        Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = stringResource(id = R.string.manual_control_bolus_title),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = MaterialTheme.colorScheme.onSurface,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                             Text(
                                 text = "Schnellwirksame Einmalgabe",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
                     }
+
+                    Spacer(modifier = Modifier.width(8.dp))
 
                     Surface(
                         shape = RoundedCornerShape(12.dp),
@@ -859,6 +868,7 @@ private fun ManualControlPumpControlsSection(
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold,
+                            maxLines = 1,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                         )
                     }
@@ -921,7 +931,7 @@ private fun ManualControlPumpControlsSection(
             }
         }
 
-        // Card 2: Temp Basal (Tertiary Color Scheme - Warm Amber/Peach tone)
+        // Card 2: Basal (Tertiary Color Scheme - Warm Amber/Peach tone)
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
@@ -931,12 +941,18 @@ private fun ManualControlPumpControlsSection(
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.4f))
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
+                val activeBasal = pump.basalStatus
+                val isTempActive = activeBasal?.isTempBasal == true
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
+                    ) {
                         Box(
                             modifier = Modifier
                                 .size(40.dp)
@@ -951,30 +967,37 @@ private fun ManualControlPumpControlsSection(
                             )
                         }
                         Spacer(modifier = Modifier.width(12.dp))
-                        Column {
+                        Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = stringResource(id = R.string.manual_control_temp_basal_title),
+                                text = stringResource(id = R.string.manual_control_basal_title),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = MaterialTheme.colorScheme.onSurface,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                             Text(
-                                text = "Laufende Hintergrundrate",
+                                text = "Laufende Hintergrundabgabe",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
                     }
+
+                    Spacer(modifier = Modifier.width(8.dp))
 
                     Surface(
                         shape = RoundedCornerShape(12.dp),
                         color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.15f)
                     ) {
                         Text(
-                            text = "Basal",
+                            text = if (isTempActive) "Temp-Basal" else "Basal",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.tertiary,
                             fontWeight = FontWeight.Bold,
+                            maxLines = 1,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                         )
                     }
@@ -982,33 +1005,102 @@ private fun ManualControlPumpControlsSection(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                val activeBasal = pump.basalStatus
-                if (activeBasal?.isTempBasal == true) {
-                    val percent = activeBasal.tempBasalPercent ?: 100
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.tertiaryContainer,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
+                if (activeBasal != null) {
+                    val activeRateFormatted = insulinValue(activeBasal.activeRate.iu)
+                    if (activeBasal.isSuspended) {
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.errorContainer,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Basalabgabe ist unterbrochen (Suspended)",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.padding(12.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Button(
+                            onClick = {
+                                onOpenTempBasalDialog(
+                                    ManualControlDialog.TempBasal(
+                                        initialPercent = 100,
+                                        initialDurationHours = 1
+                                    )
+                                )
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.tertiary,
+                                contentColor = MaterialTheme.colorScheme.onTertiary
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(imageVector = Icons.Default.Speed, contentDescription = null, modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(stringResource(id = R.string.manual_control_set_temp_basal))
+                        }
+                    } else if (activeBasal.isTempBasal) {
+                        val percent = activeBasal.tempBasalPercent ?: 100
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.tertiaryContainer,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Text(
+                                    text = stringResource(id = R.string.manual_control_temp_basal_active, percent),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = "Aktuelle Rate: $activeRateFormatted I.E./h",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        NormalButton(
+                            onClick = onCancelTempBasal,
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = SoftRed
+                            ),
+                            border = BorderStroke(1.dp, SoftRed)
+                        ) {
+                            Icon(imageVector = Icons.Default.Stop, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(stringResource(id = R.string.manual_control_cancel_temp_basal))
+                        }
+                    } else {
                         Text(
-                            text = stringResource(id = R.string.manual_control_temp_basal_active, percent),
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onTertiaryContainer,
-                            modifier = Modifier.padding(12.dp)
+                            text = stringResource(id = R.string.manual_control_normal_basal_active, activeRateFormatted),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                    }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    NormalButton(
-                        onClick = onCancelTempBasal,
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = SoftRed
-                        ),
-                        border = BorderStroke(1.dp, SoftRed)
-                    ) {
-                        Icon(imageVector = Icons.Default.Stop, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(id = R.string.manual_control_cancel_temp_basal))
+                        Spacer(modifier = Modifier.height(14.dp))
+                        Button(
+                            onClick = {
+                                onOpenTempBasalDialog(
+                                    ManualControlDialog.TempBasal(
+                                        initialPercent = 100,
+                                        initialDurationHours = 1
+                                    )
+                                )
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.tertiary,
+                                contentColor = MaterialTheme.colorScheme.onTertiary
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(imageVector = Icons.Default.Speed, contentDescription = null, modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(stringResource(id = R.string.manual_control_set_temp_basal))
+                        }
                     }
                 } else {
                     Text(
@@ -1194,6 +1286,22 @@ private fun SetTempBasalDialog(
             }
         }
     )
+}
+
+@Preview(showBackground = true, name = "Pump Controls Preview")
+@Composable
+fun ManualControlPumpControlsPreview() {
+    AppTheme {
+        Surface(modifier = Modifier.padding(16.dp)) {
+            ManualControlPumpControlsSection(
+                pump = ManualControlPumpUiModel(isConnected = true),
+                onOpenBolusDialog = {},
+                onCancelBolus = {},
+                onOpenTempBasalDialog = {},
+                onCancelTempBasal = {}
+            )
+        }
+    }
 }
 
 @Preview(showBackground = true, name = "Light Mode")
