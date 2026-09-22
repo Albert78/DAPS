@@ -248,6 +248,7 @@ class ManualControlViewModel(
     ) {
         viewModelScope.launch {
             val acquired = acquireTreatmentLockAndExecute { treatmentLock ->
+                therapyManager.clearTempBasal(treatmentLock)
                 therapyManager.setTempBasal(
                     treatmentLock = treatmentLock,
                     durationInHours = durationHours,
