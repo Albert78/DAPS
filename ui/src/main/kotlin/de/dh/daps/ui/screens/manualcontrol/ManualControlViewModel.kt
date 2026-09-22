@@ -7,6 +7,8 @@ import de.dh.daps.common.model.BasalStatus
 import de.dh.daps.common.model.BolusStatus
 import de.dh.daps.common.model.DeferredBolus
 import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.InsulinApplication
+import de.dh.daps.common.model.InsulinStatus
 import de.dh.daps.common.model.MealEntry
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.Timestamp
@@ -38,6 +40,7 @@ data class ManualControlContextInfoUiModel(
     val lastPastMeal: MealEntry? = null,
     val nextPlannedMeal: MealEntry? = null,
     val hasNextPlannedMealReminder: Boolean = false,
+    val lastBolus: InsulinApplication? = null,
 )
 
 /**
@@ -104,12 +107,17 @@ class ManualControlViewModel(
             .filter { it.timestamp > now }
             .minByOrNull { it.timestamp }
 
+        val lastBolus = insulin
+            .filter { !it.basal && it.status != InsulinStatus.Cancelled && it.timestamp <= now.plusMinutes(5) }
+            .maxByOrNull { it.timestamp }
+
         ManualControlContextInfoUiModel(
             lastBgReading = currentBg,
             iob = iob,
             cob = cob,
             lastPastMeal = pastMeal,
-            nextPlannedMeal = nextMeal
+            nextPlannedMeal = nextMeal,
+            lastBolus = lastBolus
         )
     }
 

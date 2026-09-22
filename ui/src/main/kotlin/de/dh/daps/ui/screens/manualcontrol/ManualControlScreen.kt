@@ -62,11 +62,15 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.BolusDeliveryState
 import de.dh.daps.common.model.DeferredBolus
 import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.InsulinApplication
+import de.dh.daps.common.model.InsulinOrigin
+import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.MealEntry
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgSampleKind
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.getDefaultSlowMealType
 import de.dh.daps.common.model.getDefaultStandardMealType
@@ -231,6 +235,7 @@ fun ManualControlContent(
                     // Manual Pump Control
                     ManualControlPumpControlsSection(
                         pump = uiState.pump,
+                        lastBolus = uiState.contextInfo.lastBolus,
                         onOpenBolusDialog = { activeDialog = it },
                         onCancelBolus = onCancelBolus,
                         onOpenTempBasalDialog = { activeDialog = it },
@@ -798,6 +803,7 @@ private fun RecommendationCard(
 @Composable
 private fun ManualControlPumpControlsSection(
     pump: ManualControlPumpUiModel,
+    lastBolus: InsulinApplication? = null,
     onOpenBolusDialog: (ManualControlDialog.Bolus) -> Unit,
     onCancelBolus: () -> Unit,
     onOpenTempBasalDialog: (ManualControlDialog.TempBasal) -> Unit,
@@ -852,8 +858,17 @@ private fun ManualControlPumpControlsSection(
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
+                            val lastBolusText = if (lastBolus != null) {
+                                stringResource(
+                                    id = R.string.manual_control_last_bolus_format,
+                                    insulinValue(lastBolus.amount.iu),
+                                    timeWithUnit(lastBolus.timestamp)
+                                )
+                            } else {
+                                stringResource(id = R.string.manual_control_no_last_bolus)
+                            }
                             Text(
-                                text = "Schnellwirksame Einmalgabe",
+                                text = lastBolusText,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 1,
@@ -1288,6 +1303,12 @@ fun ManualControlPumpControlsPreview() {
         Surface(modifier = Modifier.padding(16.dp)) {
             ManualControlPumpControlsSection(
                 pump = ManualControlPumpUiModel(isConnected = true),
+                lastBolus = InsulinApplication(
+                    timestamp = Timestamp.now().minusHours(1),
+                    amount = InsulinAmount(2.5),
+                    insulinType = InsulinType(name = "Rapid", peak = Minutes(45), dia = Minutes(300)),
+                    origin = InsulinOrigin.Pump
+                ),
                 onOpenBolusDialog = {},
                 onCancelBolus = {},
                 onOpenTempBasalDialog = {},
@@ -1328,7 +1349,13 @@ fun ManualControlScreenPreview() {
                                 mealType = getDefaultSlowMealType(LocalContext.current),
                                 description = "Pizza"
                             ),
-                            hasNextPlannedMealReminder = true
+                            hasNextPlannedMealReminder = true,
+                            lastBolus = InsulinApplication(
+                                timestamp = Timestamp.now().minusHours(1),
+                                amount = InsulinAmount(2.5),
+                                insulinType = InsulinType(name = "Rapid", peak = Minutes(45), dia = Minutes(300)),
+                                origin = InsulinOrigin.Pump
+                            )
                         ),
                         recommendations = listOf(
                             ApsRecommendation.Bolus(

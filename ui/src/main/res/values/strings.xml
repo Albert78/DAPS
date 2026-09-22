@@ -567,6 +567,8 @@
     <string name="manual_control_bolus_title">Bolus abgeben</string>
     <string name="manual_control_deliver_bolus">Bolus abgeben&#8230;</string>
     <string name="manual_control_cancel_bolus">Bolus abbrechen</string>
+    <string name="manual_control_last_bolus_format">Letzter Bolus: %1$s um %2$s</string>
+    <string name="manual_control_no_last_bolus">Letzter Bolus: --</string>
     <string name="manual_control_bolus_delivering">Bolus wird verabreicht: %1$.2f / %2$.2f I.E. (%3$d%%)</string>
     <string name="manual_control_no_active_bolus">Keine aktive Bolusabgabe.</string>
     <string name="manual_control_basal_title">Basalrate</string>
