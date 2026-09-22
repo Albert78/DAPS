@@ -36,7 +36,7 @@ import de.dh.daps.plugin.simbody.R
 import de.dh.daps.ui.common.carbsGramsValue
 import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.insulinValue
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -189,7 +189,7 @@ fun SimBodyHistoryScreenPreview() {
             bolus(InsulinAmount(2.5))
         }
     }
-    AppTheme {
+    AppPreview {
         SimBodyHistoryScreen(bodyModel = bodyModel)
     }
 }

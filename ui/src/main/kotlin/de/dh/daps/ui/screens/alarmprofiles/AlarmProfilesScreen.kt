@@ -56,7 +56,7 @@ import de.dh.daps.ui.common.icons.Icon_Sound_Off
 import de.dh.daps.ui.common.icons.Icon_Sound_Only
 import de.dh.daps.ui.common.icons.Icon_Sound_Vibration
 import de.dh.daps.ui.common.icons.Icon_Vibration_Only
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.common.R as CommonR
 
 @Composable
@@ -430,7 +430,7 @@ fun AlarmProfilesPreview() {
         )
     )
 
-    AppTheme {
+    AppPreview {
         AlarmProfilesContent(
             uiState = AlarmProfilesUiState(
                 profiles = listOf(sampleStandard, sampleQuiet, sampleLoud),

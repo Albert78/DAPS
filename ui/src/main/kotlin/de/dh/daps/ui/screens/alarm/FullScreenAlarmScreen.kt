@@ -35,7 +35,7 @@ import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.PrimaryButton
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 
 @Composable
 fun FullScreenAlarmScreen(
@@ -220,7 +220,7 @@ fun getAlarmTypeDescription(alarmType: AlarmType): String = when (alarmType) {
 @Preview(showBackground = true, name = "Critical Low BG Alarm")
 @Composable
 fun FullScreenAlarmScreenCriticalPreview() {
-    AppTheme {
+    AppPreview {
         FullScreenAlarmScreen(
             alarmType = AlarmType.CRITICAL_LOW_BG,
             bgValue = BgValue.fromMgDl(55),
@@ -234,7 +234,7 @@ fun FullScreenAlarmScreenCriticalPreview() {
 @Preview(showBackground = true, name = "High BG Alarm")
 @Composable
 fun FullScreenAlarmScreenHighBgPreview() {
-    AppTheme {
+    AppPreview {
         FullScreenAlarmScreen(
             alarmType = AlarmType.HIGH_BG,
             bgValue = BgValue.fromMgDl(240),

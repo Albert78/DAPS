@@ -62,7 +62,7 @@ import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.common.R as CommonR
 
 private data class InitialMealTypeValues(
@@ -416,7 +416,7 @@ fun ComponentItem(
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
 fun MealTypeEditorPreview() {
-    AppTheme {
+    AppPreview {
         MealTypeEditorContent(
             uiState = MealTypeEditorUiState(
                 name = "Normale Mahlzeit",
@@ -439,7 +439,7 @@ fun MealTypeEditorPreview() {
 @Preview(showBackground = true, name = "Standard Meal Type Editor")
 @Composable
 fun StandardMealTypeEditorPreview() {
-    AppTheme {
+    AppPreview {
         MealTypeEditorContent(
             uiState = MealTypeEditorUiState(
                 id = ID_MEAL_STANDARD,

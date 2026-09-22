@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -42,7 +41,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import kotlinx.coroutines.launch
 
 @Immutable
@@ -244,43 +243,39 @@ private fun pixelsToDp(pixels: Int): Dp = with(LocalDensity.current) { pixels.to
 @Preview(showBackground = true, name = "Picker Finite")
 @Composable
 private fun PickerPreviewFinite() {
-    AppTheme {
-        Surface {
-            var selectedItem by remember { mutableStateOf("Sonntag") }
-            Picker(
-                items = PickerItems(
-                    listOf(
-                        "Montag",
-                        "Dienstag",
-                        "Mittwoch",
-                        "Donnerstag",
-                        "Freitag",
-                        "Samstag",
-                        "Sonntag"
-                    )
-                ),
-                selectedItem = selectedItem,
-                onItemSelected = { selectedItem = it },
-                textStyle = MaterialTheme.typography.headlineMedium,
-                wrapSelectorWheel = false
-            )
-        }
+    AppPreview {
+        var selectedItem by remember { mutableStateOf("Sonntag") }
+        Picker(
+            items = PickerItems(
+                listOf(
+                    "Montag",
+                    "Dienstag",
+                    "Mittwoch",
+                    "Donnerstag",
+                    "Freitag",
+                    "Samstag",
+                    "Sonntag"
+                )
+            ),
+            selectedItem = selectedItem,
+            onItemSelected = { selectedItem = it },
+            textStyle = MaterialTheme.typography.headlineMedium,
+            wrapSelectorWheel = false
+        )
     }
 }
 
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Picker Infinite")
 @Composable
 private fun PickerPreviewInfinite() {
-    AppTheme {
-        Surface {
-            var selectedItem by remember { mutableStateOf(10) }
-            Picker(
-                items = PickerItems((0..23).toList()),
-                selectedItem = selectedItem,
-                onItemSelected = { selectedItem = it },
-                textStyle = MaterialTheme.typography.headlineMedium,
-                label = { "%02d".format(it) }
-            )
-        }
+    AppPreview {
+        var selectedItem by remember { mutableStateOf(10) }
+        Picker(
+            items = PickerItems((0..23).toList()),
+            selectedItem = selectedItem,
+            onItemSelected = { selectedItem = it },
+            textStyle = MaterialTheme.typography.headlineMedium,
+            label = { "%02d".format(it) }
+        )
     }
 }

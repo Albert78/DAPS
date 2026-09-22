@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.screenTitle
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.controls.history.BgHistoryChartOrDefault
 import de.dh.daps.ui.controls.history.BgOverviewChart
 import de.dh.daps.ui.controls.history.HistoryDiagramData
@@ -105,7 +105,7 @@ fun createSampleHistoryUiState(): HistoryUiState {
 @Preview(showBackground = true)
 @Composable
 fun HistoryScreenPreview() {
-    AppTheme {
+    AppPreview {
         HistoryContent(
             historyUiState = createSampleHistoryUiState()
         )

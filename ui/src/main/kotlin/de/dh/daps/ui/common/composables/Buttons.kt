@@ -10,7 +10,6 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -18,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 
 fun smallPaddingValues(): PaddingValues = PaddingValues(
     start = 16.dp,
@@ -132,14 +131,12 @@ fun NormalTextButton(
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun PrimaryButtonPreview() {
-    AppTheme {
-        Surface() {
-            PrimaryButton(
-                modifier = Modifier.padding(8.dp),
-                onClick = {}
-            ) {
-                Text(text = "Primary Button")
-            }
+    AppPreview {
+        PrimaryButton(
+            modifier = Modifier.padding(8.dp),
+            onClick = {}
+        ) {
+            Text(text = "Primary Button")
         }
     }
 }
@@ -148,14 +145,12 @@ fun PrimaryButtonPreview() {
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun SecondaryButtonPreview() {
-    AppTheme {
-        Surface() {
-            SecondaryButton(
-                modifier = Modifier.padding(8.dp),
-                onClick = {}
-            ) {
-                Text(text = "Secondary Button")
-            }
+    AppPreview {
+        SecondaryButton(
+            modifier = Modifier.padding(8.dp),
+            onClick = {}
+        ) {
+            Text(text = "Secondary Button")
         }
     }
 }
@@ -164,14 +159,12 @@ fun SecondaryButtonPreview() {
 @Preview(showBackground = false, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun OutlinedButtonPreview() {
-    AppTheme {
-        Surface() {
-            NormalButton(
-                modifier = Modifier.padding(8.dp),
-                onClick = {}
-            ) {
-                Text(text = "Normal Button")
-            }
+    AppPreview {
+        NormalButton(
+            modifier = Modifier.padding(8.dp),
+            onClick = {}
+        ) {
+            Text(text = "Normal Button")
         }
     }
 }
@@ -180,14 +173,12 @@ fun OutlinedButtonPreview() {
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun NormalTextButtonPreview() {
-    AppTheme {
-        Surface() {
-            NormalTextButton(
-                modifier = Modifier.padding(8.dp),
-                onClick = {}
-            ) {
-                Text(text = "Normal Text Button")
-            }
+    AppPreview {
+        NormalTextButton(
+            modifier = Modifier.padding(8.dp),
+            onClick = {}
+        ) {
+            Text(text = "Normal Text Button")
         }
     }
 }

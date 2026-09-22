@@ -20,7 +20,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -41,7 +40,7 @@ import de.dh.daps.ui.common.icons.Icon_Check_No
 import de.dh.daps.ui.common.icons.Icon_Check_Yes
 import de.dh.daps.ui.common.icons.Icon_Info
 import de.dh.daps.ui.common.icons.Icon_Screen_Back
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.common.R as CommonR
 
 @Composable
@@ -292,7 +291,7 @@ fun PermissionItem(
 @Preview(showBackground = true, heightDp = 1300)
 @Composable
 fun PermissionsScreenPreview() {
-    AppTheme {
+    AppPreview {
         PermissionsScreenContent(
             uiModel = PermissionsUiModel.create(
                 alarmPermissionStatus = PermissionStatus.create(isGranted = true, isNeeded = true),
@@ -313,16 +312,14 @@ fun PermissionsScreenPreview() {
 
 @Composable
 fun PermissionsItemPreview(status: PermissionStatus) {
-    AppTheme {
-        Surface {
-            PermissionItem(
-                description = "Dies ist die Beschreibung der Berechtigung",
-                grantedText = "Berechtigung erteilt",
-                notGrantedText = "Berechtigung nicht freigegeben",
-                status = status,
-                onClick = {}
-            )
-        }
+    AppPreview {
+        PermissionItem(
+            description = "Dies ist die Beschreibung der Berechtigung",
+            grantedText = "Berechtigung erteilt",
+            notGrantedText = "Berechtigung nicht freigegeben",
+            status = status,
+            onClick = {}
+        )
     }
 }
 

@@ -15,7 +15,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,7 +47,7 @@ import de.dh.daps.ui.common.SteppingStrategy
 import de.dh.daps.ui.common.ValueDisplayStrategy
 import de.dh.daps.ui.common.icons.Icon_Minus
 import de.dh.daps.ui.common.icons.Icon_Plus
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 
 @Composable
 fun EditableValueStepper(
@@ -272,12 +271,11 @@ object StepperDefaults {
 @Composable
 fun EditableValueStepperPreview() {
     var value by remember { mutableStateOf(100.0) }
-    AppTheme {
-        Surface {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
+    AppPreview {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
                 Column {
                     Text("Default Style", style = MaterialTheme.typography.labelSmall)
                     EditableValueStepper(
@@ -322,4 +320,3 @@ fun EditableValueStepperPreview() {
             }
         }
     }
-}

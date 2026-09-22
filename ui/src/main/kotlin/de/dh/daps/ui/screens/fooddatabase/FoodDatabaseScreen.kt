@@ -20,7 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.screenTitle
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.common.R as CommonR
 
 @Composable
@@ -70,7 +70,7 @@ fun FoodDatabaseContent(
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
 fun FoodDatabasePreview() {
-    AppTheme {
+    AppPreview {
         FoodDatabaseContent(
             onNavigateUp = {}
         )

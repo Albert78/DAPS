@@ -19,7 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.PrimaryButton
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 
 @Composable
 fun CoreTabContent(
@@ -64,7 +64,7 @@ fun CoreTabContent(
 @Preview(showBackground = true)
 @Composable
 fun CoreTabPreview() {
-    AppTheme {
+    AppPreview {
         CoreTabContent(onNavigateToCoreDecisions = {})
     }
 }

@@ -33,7 +33,7 @@ import de.dh.daps.ui.common.icons.Icon_Next
 import de.dh.daps.ui.common.icons.Icon_Previous
 import de.dh.daps.ui.common.shortRelativeTimeAgo
 import de.dh.daps.ui.common.shortRelativeTimeUntil
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -227,7 +227,7 @@ fun GlucoseFragments(value: String, time: String, extra: String?, stackVertical:
 @Preview(showBackground = true)
 @Composable
 fun CgmTabPreview() {
-    AppTheme {
+    AppPreview {
         CgmTabContent(
             uiState = SystemControlUiState(
                 glucoseSourceName = "Dexcom G6",

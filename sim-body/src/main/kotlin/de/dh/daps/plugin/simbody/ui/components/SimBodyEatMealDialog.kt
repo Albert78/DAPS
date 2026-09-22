@@ -25,7 +25,7 @@ import de.dh.daps.ui.common.DefaultSteppingStrategy
 import de.dh.daps.ui.common.carbsGramsUnitLabel
 import de.dh.daps.ui.common.composables.EditableValueStepper
 import de.dh.daps.ui.common.composables.NormalTextButton
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.controls.meal.FoodTypeSelector
 
 @Composable
@@ -83,7 +83,7 @@ fun SimBodyEatMealDialog(
 @Preview(showBackground = true)
 @Composable
 fun SimBodyEatMealDialogPreview() {
-    AppTheme {
+    AppPreview {
         SimBodyEatMealDialog(
             onDismiss = {},
             onConfirm = { _, _ -> }

@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,7 +26,7 @@ import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.common.icons.Icon_Minus
 import de.dh.daps.ui.common.icons.Icon_Plus
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.time
 
 @Composable
@@ -129,13 +128,11 @@ fun AbsoluteTimeStepper(
 @Composable
 private fun AbsoluteTimeStepperPreview() {
     var time by remember { mutableStateOf(Timestamp.now()) }
-    AppTheme {
-        Surface {
-            AbsoluteTimeStepper(
-                currentTime = time,
-                onTimeChange = { time = it },
-                modifier = Modifier.padding(16.dp)
-            )
-        }
+    AppPreview {
+        AbsoluteTimeStepper(
+            currentTime = time,
+            onTimeChange = { time = it },
+            modifier = Modifier.padding(16.dp)
+        )
     }
 }

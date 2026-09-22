@@ -54,7 +54,7 @@ import androidx.core.net.toUri
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
@@ -377,7 +377,7 @@ private fun getRingtoneTitle(context: Context, soundUriString: String?): String 
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
 fun RingtonePickerDialogPreview() {
-    AppTheme {
+    AppPreview {
         RingtonePickerDialogContent(
             selectedUri = "content://media/internal/audio/media/1",
             selectedVolume = 80,

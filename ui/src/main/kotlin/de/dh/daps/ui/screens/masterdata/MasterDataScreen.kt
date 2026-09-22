@@ -31,7 +31,7 @@ import de.dh.daps.ui.common.icons.Icon_Config
 import de.dh.daps.ui.common.icons.Icon_Insulin
 import de.dh.daps.ui.common.icons.Icon_Menu_Alarms
 import de.dh.daps.ui.common.icons.Icon_Menu_Meal_Types
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.common.R as CommonR
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -195,7 +195,7 @@ fun MasterDataScreen(
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
 fun MasterDataScreenPreview() {
-    AppTheme {
+    AppPreview {
         MasterDataScreen(
             onNavigateToInsulinTypes = {},
             onNavigateToInsulinProfileEditor = {},

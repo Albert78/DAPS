@@ -47,7 +47,7 @@ import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.icons.Syringe
 import de.dh.daps.ui.common.insulinValue
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.SoftRed
 import de.dh.daps.ui.common.timeWithUnit
 
@@ -358,29 +358,27 @@ fun ManualControlPumpControlsSection(
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Pump Controls - Dark Mode")
 @Composable
 fun ManualControlPumpControlsPreview() {
-    AppTheme {
-        Surface(modifier = Modifier.padding(16.dp)) {
-            ManualControlPumpControlsSection(
-                pump = ManualControlPumpUiModel(
-                    isConnected = true,
-                    basalStatus = BasalStatus(
-                        isSuspended = false,
-                        activeRate = InsulinAmount(0.5),
-                        isTempBasal = false,
-                        tempBasalPercent = 80
-                    )
-                ),
-                lastBolus = InsulinApplication(
-                    timestamp = Timestamp.now().minusHours(1),
-                    amount = InsulinAmount(2.5),
-                    insulinType = InsulinType(name = "NovoRapid", peak = Minutes(75), dia = Minutes(300)),
-                    origin = InsulinOrigin.Pump
-                ),
-                onOpenBolusDialog = {},
-                onCancelBolus = {},
-                onOpenTempBasalDialog = {},
-                onCancelTempBasal = {}
-            )
-        }
+    AppPreview(modifier = Modifier.padding(16.dp)) {
+        ManualControlPumpControlsSection(
+            pump = ManualControlPumpUiModel(
+                isConnected = true,
+                basalStatus = BasalStatus(
+                    isSuspended = false,
+                    activeRate = InsulinAmount(0.5),
+                    isTempBasal = false,
+                    tempBasalPercent = 80
+                )
+            ),
+            lastBolus = InsulinApplication(
+                timestamp = Timestamp.now().minusHours(1),
+                amount = InsulinAmount(2.5),
+                insulinType = InsulinType(name = "NovoRapid", peak = Minutes(75), dia = Minutes(300)),
+                origin = InsulinOrigin.Pump
+            ),
+            onOpenBolusDialog = {},
+            onCancelBolus = {},
+            onOpenTempBasalDialog = {},
+            onCancelTempBasal = {}
+        )
     }
 }

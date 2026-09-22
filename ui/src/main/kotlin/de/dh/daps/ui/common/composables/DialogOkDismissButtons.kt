@@ -5,14 +5,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 
 @Composable
 fun DialogOkDismissButtons(
@@ -71,24 +70,20 @@ fun DialogOkButton(
 @Preview
 @Composable
 fun DialogOkDismissButtonsPreview() {
-    AppTheme {
-        Surface {
-            DialogOkDismissButtons(
-                onConfirm = {},
-                onDismiss = {}
-            )
-        }
+    AppPreview {
+        DialogOkDismissButtons(
+            onConfirm = {},
+            onDismiss = {}
+        )
     }
 }
 
 @Preview
 @Composable
 fun DialogOkButtonPreview() {
-    AppTheme {
-        Surface {
-            DialogOkButton(
-                onConfirm = {}
-            )
-        }
+    AppPreview {
+        DialogOkButton(
+            onConfirm = {}
+        )
     }
 }

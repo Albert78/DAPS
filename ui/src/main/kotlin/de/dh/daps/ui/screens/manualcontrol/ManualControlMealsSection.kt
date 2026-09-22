@@ -18,7 +18,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -36,7 +35,7 @@ import de.dh.daps.common.model.getDefaultSlowMealType
 import de.dh.daps.common.model.getDefaultStandardMealType
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.carbsKeValue
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.timeWithUnit
 import de.dh.daps.ui.screens.mealtypes.MealTypeIcon
 
@@ -189,8 +188,8 @@ fun CompactMealInfoCard(
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Meals Section - Dark Mode")
 @Composable
 fun ManualControlMealsSectionPreview() {
-    AppTheme {
-        Surface(modifier = Modifier.padding(16.dp)) {
+    AppPreview {
+        Column(modifier = Modifier.padding(16.dp)) {
             ManualControlMealsSection(
                 lastPastMeal = MealEntry(
                     id = 1L,

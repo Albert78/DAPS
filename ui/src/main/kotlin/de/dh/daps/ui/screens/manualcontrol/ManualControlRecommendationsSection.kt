@@ -40,7 +40,7 @@ import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.SecondaryButton
 import de.dh.daps.ui.common.icons.Icon_Meal_Fast
 import de.dh.daps.ui.common.icons.Syringe
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 
 @Composable
 fun ManualControlRecommendationsSection(
@@ -332,70 +332,62 @@ fun RecommendationCard(
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Recommendations - Dark Mode")
 @Composable
 fun ManualControlRecommendationsPreview() {
-    AppTheme {
-        Surface(modifier = Modifier.padding(16.dp)) {
-            ManualControlRecommendationsSection(
-                recommendations = listOf(
-                    ApsRecommendation.Carbs(amountInGram = 20),
-                    ApsRecommendation.Bolus(
-                        amount = InsulinAmount(2.5),
-                        correctionPart = InsulinAmount(1.5),
-                        basalPart = InsulinAmount(1.0)
-                    ),
-                    ApsRecommendation.TempBasal(durationInHours = 2, percent = 150)
+    AppPreview(modifier = Modifier.padding(16.dp)) {
+        ManualControlRecommendationsSection(
+            recommendations = listOf(
+                ApsRecommendation.Carbs(amountInGram = 20),
+                ApsRecommendation.Bolus(
+                    amount = InsulinAmount(2.5),
+                    correctionPart = InsulinAmount(1.5),
+                    basalPart = InsulinAmount(1.0)
                 ),
-                onOpenBolusDialog = {},
-                onOpenTempBasalDialog = {},
-                onNavigateToMealCorrectionBolus = {}
-            )
-        }
+                ApsRecommendation.TempBasal(durationInHours = 2, percent = 150)
+            ),
+            onOpenBolusDialog = {},
+            onOpenTempBasalDialog = {},
+            onNavigateToMealCorrectionBolus = {}
+        )
     }
 }
 
 @Preview(showBackground = true, name = "Recommendation - Carbs")
 @Composable
 fun RecommendationCarbsPreview() {
-    AppTheme {
-        Surface(modifier = Modifier.padding(16.dp)) {
-            RecommendationCard(
-                recommendation = ApsRecommendation.Carbs(amountInGram = 25),
-                onOpenBolusDialog = {},
-                onOpenTempBasalDialog = {},
-                onNavigateToMealCorrectionBolus = {}
-            )
-        }
+    AppPreview(modifier = Modifier.padding(16.dp)) {
+        RecommendationCard(
+            recommendation = ApsRecommendation.Carbs(amountInGram = 25),
+            onOpenBolusDialog = {},
+            onOpenTempBasalDialog = {},
+            onNavigateToMealCorrectionBolus = {}
+        )
     }
 }
 
 @Preview(showBackground = true, name = "Recommendation - Bolus")
 @Composable
 fun RecommendationBolusPreview() {
-    AppTheme {
-        Surface(modifier = Modifier.padding(16.dp)) {
-            RecommendationCard(
-                recommendation = ApsRecommendation.Bolus(
-                    amount = InsulinAmount(1.8),
-                    correctionPart = InsulinAmount(1.8)
-                ),
-                onOpenBolusDialog = {},
-                onOpenTempBasalDialog = {},
-                onNavigateToMealCorrectionBolus = {}
-            )
-        }
+    AppPreview(modifier = Modifier.padding(16.dp)) {
+        RecommendationCard(
+            recommendation = ApsRecommendation.Bolus(
+                amount = InsulinAmount(1.8),
+                correctionPart = InsulinAmount(1.8)
+            ),
+            onOpenBolusDialog = {},
+            onOpenTempBasalDialog = {},
+            onNavigateToMealCorrectionBolus = {}
+        )
     }
 }
 
 @Preview(showBackground = true, name = "Recommendation - Temp Basal")
 @Composable
 fun RecommendationTempBasalPreview() {
-    AppTheme {
-        Surface(modifier = Modifier.padding(16.dp)) {
-            RecommendationCard(
-                recommendation = ApsRecommendation.TempBasal(durationInHours = 1, percent = 0),
-                onOpenBolusDialog = {},
-                onOpenTempBasalDialog = {},
-                onNavigateToMealCorrectionBolus = {}
-            )
-        }
+    AppPreview(modifier = Modifier.padding(16.dp)) {
+        RecommendationCard(
+            recommendation = ApsRecommendation.TempBasal(durationInHours = 1, percent = 0),
+            onOpenBolusDialog = {},
+            onOpenTempBasalDialog = {},
+            onNavigateToMealCorrectionBolus = {}
+        )
     }
 }

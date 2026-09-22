@@ -64,7 +64,7 @@ import de.dh.daps.ui.common.composables.EditableValueStepper
 import de.dh.daps.ui.common.composables.ImageCaptionWithSwitch
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.insulinValue
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.controls.meal.BolusPlanEditorDialog
 import de.dh.daps.ui.controls.meal.FoodTypeSelector
 import de.dh.daps.ui.controls.meal.PlannedBolusUiModel
@@ -536,7 +536,7 @@ private fun EditHistoricalMealContentPreview() {
         isFormValid = true
     )
 
-    AppTheme {
+    AppPreview {
         EditHistoricalMealContent(
             uiState = sampleUiState,
             onNavigateUp = {},

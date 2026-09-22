@@ -40,7 +40,7 @@ import de.dh.daps.core.pump.PumpCommand
 import de.dh.daps.core.pump.PumpJob
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.screenTitle
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -170,7 +170,7 @@ fun SystemControlContent(
 @Preview(showBackground = true, name = "CGM Tab")
 @Composable
 fun SystemControlCgmPreview() {
-    AppTheme {
+    AppPreview {
         SystemControlContent(
             uiState = previewUiState(),
             initialTab = SYSTEM_CONTROL_TAB_CGM,
@@ -186,7 +186,7 @@ fun SystemControlCgmPreview() {
 @Preview(showBackground = true, name = "Pump Tab")
 @Composable
 fun SystemControlPumpPreview() {
-    AppTheme {
+    AppPreview {
         SystemControlContent(
             uiState = previewUiState().copy(
                 pendingPumpJobs = listOf(
@@ -208,7 +208,7 @@ fun SystemControlPumpPreview() {
 @Preview(showBackground = true, name = "Core Tab")
 @Composable
 fun SystemControlCorePreview() {
-    AppTheme {
+    AppPreview {
         SystemControlContent(
             uiState = previewUiState(),
             initialTab = SYSTEM_CONTROL_TAB_CORE,

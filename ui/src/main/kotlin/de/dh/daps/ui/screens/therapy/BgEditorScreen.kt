@@ -57,7 +57,7 @@ import de.dh.daps.ui.common.composables.StepperDefaults
 import de.dh.daps.ui.common.composables.TimeHourSelector
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.screens.insulinprofile.InsertButton
 import kotlin.math.roundToInt
 import de.dh.daps.common.R as CommonR
@@ -397,14 +397,12 @@ private fun BgEditorPreview() {
             lowThreshold = BgValue.fromMgDl(80)
         )
     )
-    AppTheme {
-        Surface {
-            BgEditorContent(
-                blocks = mockBlocks,
-                onBlocksChanged = {},
-                onSave = {},
-                onNavigateUp = {}
-            )
-        }
+    AppPreview {
+        BgEditorContent(
+            blocks = mockBlocks,
+            onBlocksChanged = {},
+            onSave = {},
+            onNavigateUp = {}
+        )
     }
 }

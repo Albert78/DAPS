@@ -21,7 +21,6 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -41,7 +40,7 @@ import de.dh.daps.common.model.getDefaultFastMealType
 import de.dh.daps.common.model.getDefaultSlowMealType
 import de.dh.daps.common.model.getDefaultStandardMealType
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.screens.mealtypes.MealTypeIcon
 import de.dh.daps.common.R as CommonR
 
@@ -198,18 +197,16 @@ private fun FoodTypeSelectorPreview() {
     val sampleMealTypes = getPreviewMealTypes()
     var selectedType by remember { mutableStateOf<MealType?>(sampleMealTypes[3]) }
 
-    AppTheme {
-        Surface {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                FoodTypeSelector(
-                    mealTypes = sampleMealTypes,
-                    selectedType = selectedType,
-                    onTypeSelected = { selectedType = it }
-                )
-            }
+    AppPreview {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            FoodTypeSelector(
+                mealTypes = sampleMealTypes,
+                selectedType = selectedType,
+                onTypeSelected = { selectedType = it }
+            )
         }
     }
 }
@@ -220,19 +217,17 @@ private fun FoodTypeSelectorExpandedPreview() {
     val sampleMealTypes = getPreviewMealTypes()
     var selectedType by remember { mutableStateOf<MealType?>(sampleMealTypes[3]) }
 
-    AppTheme {
-        Surface {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                FoodTypeSelector(
-                    mealTypes = sampleMealTypes,
-                    selectedType = selectedType,
-                    onTypeSelected = { selectedType = it },
-                    initialExpanded = true
-                )
-            }
+    AppPreview {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            FoodTypeSelector(
+                mealTypes = sampleMealTypes,
+                selectedType = selectedType,
+                onTypeSelected = { selectedType = it },
+                initialExpanded = true
+            )
         }
     }
 }

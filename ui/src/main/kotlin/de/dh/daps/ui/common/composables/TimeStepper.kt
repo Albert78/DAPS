@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,7 +27,7 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.common.icons.Icon_Minus
 import de.dh.daps.ui.common.icons.Icon_Plus
 import de.dh.daps.ui.common.relativeTimeMinutes
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import kotlin.math.abs
 import kotlin.math.round
 import de.dh.daps.common.R as CommonR
@@ -148,13 +147,12 @@ fun TimeStepperPreview() {
     var timePast by remember { mutableStateOf(Timestamp(now.ms - 90 * 60 * 1000)) }
     var timeFuture by remember { mutableStateOf(Timestamp(now.ms + 90 * 60 * 1000)) }
 
-    AppTheme {
-        Surface {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+    AppPreview {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Default Style", style = MaterialTheme.typography.labelSmall)
                     TimeStepper(
@@ -191,5 +189,4 @@ fun TimeStepperPreview() {
                 }
             }
         }
-    }
 }

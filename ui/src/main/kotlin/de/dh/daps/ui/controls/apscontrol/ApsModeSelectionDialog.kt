@@ -9,7 +9,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -23,7 +22,7 @@ import de.dh.daps.common.model.ApsMode
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.SoftBlue
 import de.dh.daps.ui.common.theme.SoftGreen
 import de.dh.daps.ui.common.theme.SoftRed
@@ -150,13 +149,11 @@ private fun ApsMode.toDescriptionString(): String = stringResource(id = when (th
 @Preview(showBackground = true)
 @Composable
 private fun PreviewApsModeSelectionContent() {
-    AppTheme {
-        Surface(modifier = Modifier.padding(16.dp)) {
-            ApsModeSelectionContent(
-                selectedMode = ApsMode.AutoCorrection,
-                availableModes = ApsMode.entries,
-                onModeChange = {}
-            )
-        }
+    AppPreview(modifier = Modifier.padding(16.dp)) {
+        ApsModeSelectionContent(
+            selectedMode = ApsMode.AutoCorrection,
+            availableModes = ApsMode.entries,
+            onModeChange = {}
+        )
     }
 }

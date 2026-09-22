@@ -52,7 +52,7 @@ import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.icons.Icon_Menu_Meal_Types
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -258,7 +258,7 @@ fun MealItem(
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
 fun MealsPreview() {
-    AppTheme {
+    AppPreview {
         MealsContent(
             uiState = MealsUiState(),
             onNavigateToMealTypes = {},
@@ -283,7 +283,7 @@ fun MealsWithDataPreview() {
         MealEntry(id = 3, timestamp = Timestamp.now().minusHours(26), carbGrams = 60.0, mealType = sampleMealType)
     )
 
-    AppTheme {
+    AppPreview {
         MealsContent(
             uiState = MealsUiState(meals = sampleMeals),
             onNavigateToMealTypes = {},

@@ -72,7 +72,7 @@ import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.insulinUnitLabel
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -524,7 +524,7 @@ fun AddManualBolusDialog(
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
 fun BolusHistoryPreview() {
-    AppTheme {
+    AppPreview {
         BolusHistoryContent(
             uiState = BolusHistoryUiState(),
             onAddManualBolus = { _, _, _, _, _ -> },
@@ -545,7 +545,7 @@ fun BolusHistoryWithDataPreview() {
         InsulinApplication(id = 3, timestamp = Timestamp.now().minusHours(1), amount = InsulinAmount(3.0), insulinType = sampleInsulinType, origin = InsulinOrigin.Manual, basal = true)
     )
 
-    AppTheme {
+    AppPreview {
         BolusHistoryContent(
             uiState = BolusHistoryUiState(bolusEntries = sampleEntries),
             onAddManualBolus = { _, _, _, _, _ -> },

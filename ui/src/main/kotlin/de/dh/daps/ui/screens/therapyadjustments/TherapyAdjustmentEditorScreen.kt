@@ -67,7 +67,7 @@ import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.glucoseValue
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.NeutralGrey
 import de.dh.daps.ui.common.theme.SoftBlue
 import de.dh.daps.ui.common.theme.SoftRed
@@ -425,7 +425,7 @@ fun TherapyAdjustmentEditorContent(
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
 fun TherapyAdjustmentEditorPreview() {
-    AppTheme {
+    AppPreview {
         TherapyAdjustmentEditorContent(
             uiState = TherapyAdjustmentEditorUiState(
                 name = "Fahrrad fahren",

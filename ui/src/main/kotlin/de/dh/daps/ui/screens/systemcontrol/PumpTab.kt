@@ -40,7 +40,7 @@ import de.dh.daps.core.pump.JobErrorCode
 import de.dh.daps.core.pump.PumpCommand
 import de.dh.daps.core.pump.PumpJob
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -354,7 +354,7 @@ private fun ActionButton(
 @Preview(showBackground = true)
 @Composable
 fun PumpTabPreview() {
-    AppTheme {
+    AppPreview {
         PumpTabContent(
             uiState = SystemControlUiState(
                 pumpConnected = true,

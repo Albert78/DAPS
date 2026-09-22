@@ -49,7 +49,7 @@ import de.dh.daps.ui.common.composables.DialogTitle
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.icons.Icon_Screen_Back
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.common.R as CommonR
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -335,7 +335,7 @@ fun PreferenceItem(
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun PreferencesContentPreview() {
-    AppTheme {
+    AppPreview {
         PreferencesContent(
             uiState = PreferencesUiState(isLoading = false, isError = false),
             onNavigateUp = {},

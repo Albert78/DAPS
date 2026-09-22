@@ -16,7 +16,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,7 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.ui.common.icons.Icon_Clear
 import de.dh.daps.ui.common.icons.Icon_Info
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.common.R as CommonR
 
 @Composable
@@ -138,16 +137,14 @@ fun ExpandableInfoCard(
 @Preview(showBackground = true, name = "Collapsed State (Dark)", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun ExpandableInfoCardPreview() {
-    AppTheme {
-        Surface {
-            ExpandableInfoCard(
-                imageVector = Icon_Info,
-                infoText = "Short Text",
-                detailText = "This is the invisible detail text.",
-                actionButtonText = "Action",
-                onActionButtonClick = {}
-            )
-        }
+    AppPreview {
+        ExpandableInfoCard(
+            imageVector = Icon_Info,
+            infoText = "Short Text",
+            detailText = "This is the invisible detail text.",
+            actionButtonText = "Action",
+            onActionButtonClick = {}
+        )
     }
 }
 
@@ -155,7 +152,7 @@ private fun ExpandableInfoCardPreview() {
 @Preview(showBackground = true, name = "Expanded State (Dark)", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun ExpandableInfoCardExpandedDarkPreview() {
-    AppTheme {
+    AppPreview {
         ExpandableInfoCard(
             imageVector = Icon_Info,
             infoText = "Invisible Short Text",

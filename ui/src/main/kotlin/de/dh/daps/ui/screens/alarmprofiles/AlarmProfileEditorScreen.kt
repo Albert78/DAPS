@@ -59,7 +59,7 @@ import de.dh.daps.ui.common.icons.Icon_Sound_Off
 import de.dh.daps.ui.common.icons.Icon_Sound_Only
 import de.dh.daps.ui.common.icons.Icon_Sound_Vibration
 import de.dh.daps.ui.common.icons.Icon_Vibration_Only
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import kotlin.math.roundToInt
 import de.dh.daps.common.R as CommonR
 
@@ -555,7 +555,7 @@ private fun getRingtoneTitle(context: Context, soundUriString: String?): String 
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
 fun AlarmProfileEditorPreview() {
-    AppTheme {
+    AppPreview {
         AlarmProfileEditorContent(
             uiState = AlarmProfileEditorUiState(
                 profileId = 1L,

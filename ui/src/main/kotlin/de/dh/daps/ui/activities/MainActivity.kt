@@ -83,6 +83,7 @@ import de.dh.daps.ui.common.icons.Icon_Menu_Food_Database
 import de.dh.daps.ui.common.icons.Icon_Menu_Master_Data
 import de.dh.daps.ui.common.icons.Icon_Menu_Meals
 import de.dh.daps.ui.common.icons.Icon_Menu_System_Control
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.rememberUseDarkTheme
 import de.dh.daps.ui.navigation.MainFeatureNavGraph
@@ -450,7 +451,7 @@ private fun DrawerItem(
 @androidx.compose.ui.tooling.preview.Preview(showBackground = true, widthDp = 320)
 @Composable
 fun DrawerPreview() {
-    AppTheme {
+    AppPreview {
         DrawerContent(
             currentRoute = DashboardRoute,
             onRouteSelected = {},

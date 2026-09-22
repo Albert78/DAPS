@@ -93,7 +93,7 @@ import de.dh.daps.ui.common.composables.TimeHourSelector
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.isfUnitLabel
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.common.R as CommonR
 
 @Composable
@@ -840,7 +840,7 @@ private fun InsulinProfileListPreview() {
         )
     )
 
-    AppTheme {
+    AppPreview {
         InsulinProfileList(
             uiState = InsulinProfileSettingsUiState(profiles = sampleProfiles),
             onNavigateUp = {},
@@ -870,7 +870,7 @@ private fun InsulinProfileDetailEditorPreview() {
         peak = sampleInsulinType.peak
     )
 
-    AppTheme {
+    AppPreview {
         InsulinProfileDetailEditor(
             profile = sampleProfile,
             insulinTypes = listOf(sampleInsulinType, InsulinType(name = "NovoRapid", dia = Minutes.ofHours(5), peak = Minutes.ofHours(1))),

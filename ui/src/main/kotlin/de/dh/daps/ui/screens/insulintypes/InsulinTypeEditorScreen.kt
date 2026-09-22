@@ -42,7 +42,7 @@ import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.common.R as CommonR
 
 private data class InitialInsulinTypeValues(
@@ -269,7 +269,7 @@ fun InsulinTypeEditorContent(
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
 fun InsulinTypeEditorPreview() {
-    AppTheme {
+    AppPreview {
         InsulinTypeEditorContent(
             uiState = InsulinTypeEditorUiState(
                 id = "1",

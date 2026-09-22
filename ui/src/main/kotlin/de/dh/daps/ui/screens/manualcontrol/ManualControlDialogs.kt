@@ -35,7 +35,7 @@ import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.SecondaryButton
 import de.dh.daps.ui.common.insulinUnitLabel
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 
 sealed interface ManualControlDialog {
     data class Bolus(
@@ -207,7 +207,7 @@ fun SetTempBasalDialog(
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Deliver Bolus Dialog - Dark Mode")
 @Composable
 fun DeliverBolusDialogPreview() {
-    AppTheme {
+    AppPreview {
         DeliverBolusDialog(
             dialogData = ManualControlDialog.Bolus(initialAmount = 1.5),
             minBolusAmount = InsulinAmount(0.05),
@@ -222,7 +222,7 @@ fun DeliverBolusDialogPreview() {
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Set Temp Basal Dialog - Dark Mode")
 @Composable
 fun SetTempBasalDialogPreview() {
-    AppTheme {
+    AppPreview {
         SetTempBasalDialog(
             dialogData = ManualControlDialog.TempBasal(initialPercent = 120, initialDurationHours = 2),
             onDismiss = {},

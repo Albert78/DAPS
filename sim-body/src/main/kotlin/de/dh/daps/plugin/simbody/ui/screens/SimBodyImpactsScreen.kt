@@ -27,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.common.R as CommonR
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.plugin.simbody.BodyModel
@@ -180,5 +181,7 @@ fun SimBodyImpactsScreenPreview() {
             )
         }
     }
-    SimBodyImpactsScreen(bodyModel = bodyModel, onNavigateUp = {})
+    AppPreview {
+        SimBodyImpactsScreen(bodyModel = bodyModel, onNavigateUp = {})
+    }
 }

@@ -39,7 +39,7 @@ import de.dh.daps.ui.common.crValue
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.isfUnitLabel
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import java.util.Locale
 
 @Composable
@@ -211,7 +211,7 @@ fun SimBodyDashboardCardPreview() {
         }
     }
 
-    AppTheme {
+    AppPreview {
         Column(modifier = Modifier.padding(16.dp)) {
             SimBodyDashboardCard(
                 bodyModel = bodyModel,

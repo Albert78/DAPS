@@ -32,7 +32,7 @@ import de.dh.daps.core.aps.TreatmentLock
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.Red
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.common.R as CommonR
 
 @Composable
@@ -214,7 +214,7 @@ private fun TreatmentLockHeader(
 @androidx.compose.ui.tooling.preview.Preview(showBackground = true, name = "Loading/Busy")
 @Composable
 fun TreatmentLockScreenBusyPreview() {
-    AppTheme {
+    AppPreview {
         TreatmentLockScreenContent(
             uiState = TreatmentLockUiState(status = LockStatus.Busy, busyOwner = "Core"),
             onNavigateUp = {},
@@ -227,7 +227,7 @@ fun TreatmentLockScreenBusyPreview() {
 @androidx.compose.ui.tooling.preview.Preview(showBackground = true, name = "Syncing")
 @Composable
 fun TreatmentLockScreenSyncingPreview() {
-    AppTheme {
+    AppPreview {
         TreatmentLockScreenContent(
             uiState = TreatmentLockUiState(status = LockStatus.Syncing),
             onNavigateUp = {},
@@ -240,7 +240,7 @@ fun TreatmentLockScreenSyncingPreview() {
 @androidx.compose.ui.tooling.preview.Preview(showBackground = true, name = "Error")
 @Composable
 fun TreatmentLockScreenErrorPreview() {
-    AppTheme {
+    AppPreview {
         TreatmentLockScreenContent(
             uiState = TreatmentLockUiState(status = LockStatus.Error, busyOwner = "PumpManager"),
             onNavigateUp = {},
@@ -253,7 +253,7 @@ fun TreatmentLockScreenErrorPreview() {
 @androidx.compose.ui.tooling.preview.Preview(showBackground = true, name = "Acquired")
 @Composable
 fun TreatmentLockScreenAcquiredPreview() {
-    AppTheme {
+    AppPreview {
         TreatmentLockScreenContent(
             uiState = TreatmentLockUiState(
                 status = LockStatus.Acquired,
@@ -272,7 +272,7 @@ fun TreatmentLockScreenAcquiredPreview() {
 @androidx.compose.ui.tooling.preview.Preview(showBackground = true, name = "Pump Sync Pending")
 @Composable
 fun TreatmentLockScreenPumpSyncPendingPreview() {
-    AppTheme {
+    AppPreview {
         TreatmentLockScreenContent(
             uiState = TreatmentLockUiState(status = LockStatus.PumpSyncPending),
             onNavigateUp = {},

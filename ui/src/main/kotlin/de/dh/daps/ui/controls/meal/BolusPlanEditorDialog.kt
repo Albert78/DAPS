@@ -57,7 +57,7 @@ import de.dh.daps.ui.common.composables.TimeStepper
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.insulinUnitLabel
 import de.dh.daps.ui.common.insulinValue
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.time
 import java.util.Locale
 import kotlin.math.round
@@ -426,7 +426,7 @@ private fun BolusPlanEditorContentPreview() {
         )
     )
 
-    AppTheme {
+    AppPreview {
         BolusPlanEditorContent(
             title = stringResource(R.string.bolus_plan_editor_title_pending),
             administeredInsulinAmount = InsulinAmount(2.5),
@@ -456,7 +456,7 @@ private fun BolusPlanEditorDialogPreview() {
         )
     )
 
-    AppTheme {
+    AppPreview {
         BolusPlanEditorDialog(
             title = stringResource(R.string.bolus_plan_editor_title_pending),
             administeredInsulinAmount = InsulinAmount(2.5),
