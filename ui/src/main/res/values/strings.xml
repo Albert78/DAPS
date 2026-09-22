@@ -412,6 +412,9 @@
     <string name="menu_bolus_history_label">Bolus-History</string>
     <string name="bolus_status_scheduled">Geplant</string>
     <string name="bolus_status_cancelled">Abgebrochen</string>
+    <string name="bolus_status_invalidated">Entwertet</string>
+    <string name="action_invalidate">Entwerten</string>
+    <string name="action_restore">Reaktivieren</string>
     <string name="bolus_history_empty_list">Keine Bolus-Einträge vorhanden</string>
     <string name="bolus_history_add_manual_title">Pen-Bolus</string>
     <string name="bolus_history_edit_manual_title">Bolus bearbeiten</string>

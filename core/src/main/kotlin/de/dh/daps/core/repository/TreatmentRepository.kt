@@ -58,7 +58,7 @@ class TreatmentRepository(
             entities.mapNotNull { entity ->
                 val type = insulinTypesMap[entity.insulin_type_id]?.toModel()
                 type?.let { entity.toModel(it) }
-            }.filter { includeCancelled || it.status != InsulinStatus.Cancelled }
+            }.filter { includeCancelled || (it.status != InsulinStatus.Cancelled && it.status != InsulinStatus.Invalidated) }
         }
 
     /**
@@ -169,9 +169,14 @@ class TreatmentRepository(
 
             if (match != null) {
                 matchedExistingIds.add(match.id)
+                val newStatus = if (match.status == InsulinStatus.Invalidated || match.status == InsulinStatus.Cancelled) {
+                    match.status
+                } else {
+                    InsulinStatus.Confirmed
+                }
                 val updated = match.copy(
                     dose = match.dose.copy(timestamp = timestamp, amount = point.amount),
-                    status = InsulinStatus.Confirmed,
+                    status = newStatus,
                     basal = point.category == InsulinCategory.Basal || match.basal,
                     pumpId = point.pumpId ?: match.pumpId
                 )
@@ -335,6 +340,20 @@ class TreatmentRepository(
     }
 
     /**
+     * Updates the status of an existing insulin application (e.g. Setting it to Invalidated or Confirmed).
+     */
+    suspend fun setInsulinApplicationStatus(id: Long, status: InsulinStatus): Boolean = mutex.withLock {
+        val index = insulinHistory.indexOfFirst { it.id == id }
+        if (index == -1) return@withLock false
+
+        val updated = insulinHistory[index].copy(status = status)
+        insulinHistory[index] = updated
+
+        metabolicEventsDao.updateInsulinApplication(updated.toEntity())
+        return@withLock true
+    }
+
+    /**
      * Returns a flattened list of meal entries within the optional timestamp range from the cache.
      */
     suspend fun getMeals(from: Timestamp? = null, to: Timestamp? = null): List<MealEntry> = mutex.withLock {
@@ -352,7 +371,7 @@ class TreatmentRepository(
         includeCancelled: Boolean = false
     ): List<InsulinApplication> = mutex.withLock {
         return insulinHistory.filter { insulin ->
-            (includeCancelled || insulin.status != InsulinStatus.Cancelled) &&
+            (includeCancelled || (insulin.status != InsulinStatus.Cancelled && insulin.status != InsulinStatus.Invalidated)) &&
             (from == null || insulin.timestamp >= from) &&
             (to == null || insulin.timestamp <= to)
         }.toList()

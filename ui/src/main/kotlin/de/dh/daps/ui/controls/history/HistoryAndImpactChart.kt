@@ -162,7 +162,7 @@ data class HistoryAndImpactDiagramData(
 
                 var totalInsulinActivity = 0.0
                 for (app in insulinApplications) {
-                    if (app.status == InsulinStatus.Cancelled) continue
+                    if (app.status == InsulinStatus.Cancelled || app.status == InsulinStatus.Invalidated) continue
                     val xStart = (app.timestamp.ms - baseTimestamp).toDouble() / MS_PER_MINUTE
                     val timeSinceApp = x - xStart
                     // normalizedActivity * 60.0 gives activity as hourly rate (IU/h)

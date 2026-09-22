@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinApplication
 import de.dh.daps.common.model.InsulinOrigin
+import de.dh.daps.common.model.InsulinStatus
 import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.MEAL_EDIT_THRESHOLD_HOURS
 import de.dh.daps.common.model.data.Timestamp
@@ -111,6 +112,17 @@ class BolusHistoryViewModel(
     fun deleteBolus(application: InsulinApplication) {
         viewModelScope.launch {
             treatmentRepository.removeInsulinApplication(application)
+        }
+    }
+
+    fun toggleInvalidated(application: InsulinApplication) {
+        viewModelScope.launch {
+            val newStatus = if (application.status == InsulinStatus.Invalidated) {
+                InsulinStatus.Confirmed
+            } else {
+                InsulinStatus.Invalidated
+            }
+            treatmentRepository.setInsulinApplicationStatus(application.id, newStatus)
         }
     }
 }

@@ -143,7 +143,8 @@ enum class InsulinCategory {
 enum class InsulinStatus {
     Scheduled,
     Confirmed,
-    Cancelled
+    Cancelled,
+    Invalidated
 }
 
 /**
@@ -202,10 +203,10 @@ data class InsulinApplication(
 
 /**
  * Converts a list of [InsulinApplication] entries into a list of pure [InsulinDose] objects,
- * filtering out cancelled applications and optionally basal applications.
+ * filtering out cancelled or invalidated applications and optionally basal applications.
  */
 fun List<InsulinApplication>.toActiveDoses(excludeBasal: Boolean = false): List<InsulinDose> =
-    filter { it.status != InsulinStatus.Cancelled && (!excludeBasal || !it.basal) }
+    filter { it.status != InsulinStatus.Cancelled && it.status != InsulinStatus.Invalidated && (!excludeBasal || !it.basal) }
         .map { it.dose }
 
 /**

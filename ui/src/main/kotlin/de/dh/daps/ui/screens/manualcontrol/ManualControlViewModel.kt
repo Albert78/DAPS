@@ -108,7 +108,7 @@ class ManualControlViewModel(
             .minByOrNull { it.timestamp }
 
         val lastBolus = insulin
-            .filter { !it.basal && it.status != InsulinStatus.Cancelled && it.timestamp <= now.plusMinutes(5) }
+            .filter { !it.basal && it.status != InsulinStatus.Cancelled && it.status != InsulinStatus.Invalidated && it.timestamp <= now.plusMinutes(5) }
             .maxByOrNull { it.timestamp }
 
         ManualControlContextInfoUiModel(

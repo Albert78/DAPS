@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
@@ -96,6 +97,7 @@ fun BolusHistoryScreen(
             viewModel.updateManualBolus(app, amount, type, basal, correction, meal)
         },
         onDeleteBolus = { viewModel.deleteBolus(it) },
+        onToggleInvalidateBolus = { viewModel.toggleInvalidated(it) },
         onNavigateUp = onNavigateUp,
     )
 }
@@ -107,6 +109,7 @@ fun BolusHistoryContent(
     onAddManualBolus: (InsulinAmount, InsulinType, Boolean, Boolean, Boolean) -> Unit,
     onUpdateManualBolus: (InsulinApplication, InsulinAmount, InsulinType, Boolean, Boolean, Boolean) -> Unit,
     onDeleteBolus: (InsulinApplication) -> Unit,
+    onToggleInvalidateBolus: (InsulinApplication) -> Unit = {},
     onNavigateUp: () -> Unit,
 ) {
     var showAddDialog by remember { mutableStateOf(false) }
@@ -242,7 +245,8 @@ fun BolusHistoryContent(
                             entry = entry,
                             isEditable = isEditable,
                             onEditClick = { editingBolus = entry },
-                            onDeleteClick = { deletingBolus = entry }
+                            onDeleteClick = { deletingBolus = entry },
+                            onToggleInvalidateClick = { onToggleInvalidateBolus(entry) }
                         )
                         HorizontalDivider()
                     }
@@ -275,7 +279,8 @@ fun BolusItem(
     entry: InsulinApplication,
     isEditable: Boolean,
     onEditClick: () -> Unit,
-    onDeleteClick: () -> Unit
+    onDeleteClick: () -> Unit,
+    onToggleInvalidateClick: (() -> Unit)? = null
 ) {
     val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm", Locale.getDefault()) }
 
@@ -321,8 +326,18 @@ fun BolusItem(
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold
                 )
-                if (isEditable) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (onToggleInvalidateClick != null && (entry.status == InsulinStatus.Confirmed || entry.status == InsulinStatus.Invalidated)) {
+                        IconButton(onClick = onToggleInvalidateClick, modifier = Modifier.size(24.dp)) {
+                            Icon(
+                                imageVector = Icons.Default.Block,
+                                contentDescription = if (entry.status == InsulinStatus.Invalidated) stringResource(R.string.action_restore) else stringResource(R.string.action_invalidate),
+                                tint = if (entry.status == InsulinStatus.Invalidated) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                    if (isEditable) {
                         IconButton(onClick = onEditClick, modifier = Modifier.size(24.dp)) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
@@ -360,6 +375,11 @@ fun StatusBadge(status: InsulinStatus) {
             stringResource(R.string.bolus_status_cancelled),
             MaterialTheme.colorScheme.errorContainer,
             MaterialTheme.colorScheme.onErrorContainer
+        )
+        InsulinStatus.Invalidated -> Triple(
+            stringResource(R.string.bolus_status_invalidated),
+            MaterialTheme.colorScheme.outlineVariant,
+            MaterialTheme.colorScheme.onSurfaceVariant
         )
         InsulinStatus.Confirmed -> return
     }
