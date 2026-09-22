@@ -313,6 +313,17 @@ fun insulinValue(value: Double?, default: String = "-", withUnit: Boolean = true
     } ?: default
 }
 
+/**
+ * Default step size for insulin amounts in units (IU).
+ */
+const val INSULIN_STEP_SIZE = 0.1
+
+/**
+ * Creates a [SteppingStrategy] tailored for insulin amounts, using [ModuloSteppingStrategy]
+ * with the standard [INSULIN_STEP_SIZE] (0.1 IU) by default.
+ */
+fun insulinSteppingStrategy(step: Double = INSULIN_STEP_SIZE): SteppingStrategy = ModuloSteppingStrategy(step)
+
 @Composable
 fun carbsKeUnitLabel(): String {
     return stringResource(de.dh.daps.ui.R.string.history_impact_ke_label)
@@ -347,3 +358,25 @@ fun carbsGramsValue(value: Double?, default: String = "-", withUnit: Boolean = t
         else valStr
     } ?: default
 }
+
+/**
+ * Default step size for carbohydrate units (KE / Bread Units).
+ */
+const val CARBS_KE_STEP_SIZE = 0.5
+
+/**
+ * Creates a [SteppingStrategy] tailored for carbohydrate units (KE), using [ModuloSteppingStrategy]
+ * with the standard [CARBS_KE_STEP_SIZE] (0.5 KE) by default.
+ */
+fun carbsKeSteppingStrategy(step: Double = CARBS_KE_STEP_SIZE): SteppingStrategy = ModuloSteppingStrategy(step)
+
+/**
+ * Default step size for carbohydrate grams (g).
+ */
+const val CARBS_GRAMS_STEP_SIZE = 5.0
+
+/**
+ * Creates a [SteppingStrategy] tailored for carbohydrate grams, using [ModuloSteppingStrategy]
+ * with the standard [CARBS_GRAMS_STEP_SIZE] (5.0 g) by default.
+ */
+fun carbsGramsSteppingStrategy(step: Double = CARBS_GRAMS_STEP_SIZE): SteppingStrategy = ModuloSteppingStrategy(step)

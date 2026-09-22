@@ -55,8 +55,8 @@ import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.getDefaultMealTypes
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.DefaultSteppingStrategy
 import de.dh.daps.ui.common.ValueDisplayStrategy
+import de.dh.daps.ui.common.carbsKeSteppingStrategy
 import de.dh.daps.ui.common.carbsKeUnitLabel
 import de.dh.daps.ui.common.composables.AbsoluteTimeStepper
 import de.dh.daps.ui.common.composables.AppColorBlue
@@ -400,7 +400,7 @@ fun EditMealCard(
                     onValueChange = onCarbsChange,
                     minValue = CARBS_KE_MIN,
                     maxValue = CARBS_KE_MAX,
-                    steppingStrategy = DefaultSteppingStrategy(0.5),
+                    steppingStrategy = carbsKeSteppingStrategy(),
                     displayStrategy = object : ValueDisplayStrategy {
                         override fun format(value: Double): String =
                             String.format(Locale.getDefault(), "%.1f", value)

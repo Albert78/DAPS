@@ -30,6 +30,7 @@ import de.dh.daps.core.aps.ApsRecommendation
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
 import de.dh.daps.ui.common.DefaultSteppingStrategy
+import de.dh.daps.ui.common.insulinSteppingStrategy
 import de.dh.daps.ui.common.composables.EditableValueStepper
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
@@ -141,7 +142,7 @@ fun DeliverBolusDialogContent(
             onValueChange = onAmountChange,
             minValue = minBolusAmount.iu,
             maxValue = maxBolusSize.iu,
-            steppingStrategy = DefaultSteppingStrategy(step = minBolusAmount.iu),
+            steppingStrategy = insulinSteppingStrategy(),
             displayStrategy = ConfigurableDisplayStrategy(suffix = " ${insulinUnitLabel()}"),
             modifier = Modifier.fillMaxWidth()
         )

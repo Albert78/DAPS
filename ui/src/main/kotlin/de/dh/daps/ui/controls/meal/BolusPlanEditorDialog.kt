@@ -47,8 +47,8 @@ import androidx.compose.ui.window.DialogProperties
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.DefaultSteppingStrategy
 import de.dh.daps.ui.common.ValueDisplayStrategy
+import de.dh.daps.ui.common.insulinSteppingStrategy
 import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.composables.EditableValueStepper
 import de.dh.daps.ui.common.composables.PrimaryButton
@@ -396,7 +396,7 @@ private fun BolusPlanItemCard(
                     onValueChange = { onAmountChange(InsulinAmount(it)) },
                     minValue = 0.1,
                     maxValue = 30.0,
-                    steppingStrategy = DefaultSteppingStrategy(0.1),
+                    steppingStrategy = insulinSteppingStrategy(),
                     displayStrategy = object : ValueDisplayStrategy {
                         override fun format(value: Double): String =
                             String.format(Locale.getDefault(), "%.1f", value)

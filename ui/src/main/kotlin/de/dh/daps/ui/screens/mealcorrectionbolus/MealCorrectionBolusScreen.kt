@@ -70,11 +70,11 @@ import de.dh.daps.core.aps.BolusProjections
 import de.dh.daps.core.aps.ProjectedBg
 import de.dh.daps.core.aps.TreatmentLock
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.DefaultSteppingStrategy
-import de.dh.daps.ui.common.ModuloSteppingStrategy
 import de.dh.daps.ui.common.ValueDisplayStrategy
 import de.dh.daps.ui.common.carbsGramsValue
+import de.dh.daps.ui.common.carbsKeSteppingStrategy
 import de.dh.daps.ui.common.carbsKeUnitLabel
+import de.dh.daps.ui.common.insulinSteppingStrategy
 import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.composables.EditableValueStepper
 import de.dh.daps.ui.common.composables.ImageCaptionWithSwitch
@@ -213,7 +213,7 @@ fun MealCorrectionBolusContent(
                                 onValueChange = onCarbsChange,
                                 minValue = CARBS_KE_MIN,
                                 maxValue = CARBS_KE_MAX,
-                                steppingStrategy = DefaultSteppingStrategy(0.5), // 0.5 KE steps
+                                steppingStrategy = carbsKeSteppingStrategy(),
                                 displayStrategy = object : ValueDisplayStrategy {
                                     override fun format(value: Double): String =
                                         String.format(Locale.getDefault(), "%.1f", value)
@@ -345,7 +345,7 @@ fun MealCorrectionBolusContent(
                                 onValueChange = onManualBolusChange,
                                 minValue = 0.0,
                                 maxValue = BOLUS_MAX,
-                                steppingStrategy = ModuloSteppingStrategy(0.1), // 0.1 U steps
+                                steppingStrategy = insulinSteppingStrategy(),
                                 displayStrategy = object : ValueDisplayStrategy {
                                     override fun format(value: Double): String =
                                         String.format(Locale.getDefault(), "%.2f", value)
