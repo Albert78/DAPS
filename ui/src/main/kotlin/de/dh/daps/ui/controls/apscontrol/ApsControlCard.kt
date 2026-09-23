@@ -53,6 +53,7 @@ import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.crValue
 import de.dh.daps.ui.common.glucoseValue
 import de.dh.daps.ui.common.icons.Icon_Insulin_Adjustment
+import de.dh.daps.ui.common.icons.Icon_Insulin_Profile
 import de.dh.daps.ui.common.isfValue
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.NeutralGrey
@@ -110,15 +111,26 @@ fun ApsControlCard(
                 } else {
                     activeTherapyStatus.profile.name
                 }
-                Text(
-                    text = nameText,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Center,
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier.padding(bottom = 4.dp)
-                )
+                ) {
+                    Icon(
+                        imageVector = Icon_Insulin_Profile,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = nameText,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center
+                    )
+                }
 
                 // Chips (Basal, I:C, ISF)
                 CompositionLocalProvider(
