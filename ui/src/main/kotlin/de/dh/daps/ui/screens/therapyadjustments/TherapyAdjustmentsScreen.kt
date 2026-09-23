@@ -15,7 +15,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -46,6 +45,7 @@ import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.glucoseValue
+import de.dh.daps.ui.common.icons.Icon_Therapy_Adjustment
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.NeutralGrey
 import de.dh.daps.ui.common.theme.SoftBlue
@@ -209,7 +209,7 @@ fun TherapyAdjustmentListItem(
         },
         leadingContent = {
             Icon(
-                imageVector = Icons.Default.Tune,
+                imageVector = Icon_Therapy_Adjustment,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary
             )

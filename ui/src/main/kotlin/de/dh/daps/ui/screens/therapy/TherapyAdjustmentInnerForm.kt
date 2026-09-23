@@ -24,7 +24,6 @@ import androidx.compose.material.icons.filled.Adjust
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material.icons.filled.VerticalAlignBottom
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
@@ -66,6 +65,7 @@ import de.dh.daps.ui.common.composables.EditableValueStepper
 import de.dh.daps.ui.common.composables.StepperDefaults
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.glucoseValue
+import de.dh.daps.ui.common.icons.Icon_Insulin_Adjustment
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.NeutralGrey
 import de.dh.daps.ui.common.theme.SoftBlue
@@ -139,7 +139,7 @@ fun TherapyAdjustmentInnerForm(
         // Insulin Adjustment Section
         val insulinAdjustmentActive = currentPercentage != 0
         AdjustmentSection(
-            icon = Icons.Default.UnfoldMore,
+            icon = Icon_Insulin_Adjustment,
             title = stringResource(R.string.therapy_adjustment_insulin_adjustment_label),
             description = stringResource(R.string.therapy_adjustment_insulin_adjustment_description),
             isActive = insulinAdjustmentActive,

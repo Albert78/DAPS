@@ -26,8 +26,6 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Adjust
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Tune
-import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material.icons.filled.VerticalAlignBottom
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -80,6 +78,9 @@ import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.glucoseValue
 import de.dh.daps.ui.common.isfUnitLabel
+import de.dh.daps.ui.common.icons.Icon_Insulin_Adjustment
+import de.dh.daps.ui.common.icons.Icon_Insulin_Profile
+import de.dh.daps.ui.common.icons.Icon_Therapy_Adjustment
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.NeutralGrey
 import de.dh.daps.ui.common.theme.SoftBlue
@@ -170,7 +171,7 @@ fun CurrentTherapySettingsContent(
 
                 // Active Insulin Profile Card
                 SectionHeader(
-                    icon = Icons.Default.Tune,
+                    icon = Icon_Insulin_Profile,
                     title = stringResource(id = R.string.current_therapy_active_insulin_profile_label)
                 )
 
@@ -204,7 +205,7 @@ fun CurrentTherapySettingsContent(
 
                 // Temporary Adjustment Card
                 SectionHeader(
-                    icon = Icons.Default.UnfoldMore,
+                    icon = Icon_Therapy_Adjustment,
                     title = stringResource(id = R.string.therapy_adjustment_label)
                 )
 
@@ -728,7 +729,7 @@ private fun TemporaryAdjustmentCard(
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 // Insulin Adjustment
                 AdjustmentItem(
-                    icon = Icons.Default.UnfoldMore,
+                    icon = Icon_Insulin_Adjustment,
                     label = stringResource(R.string.therapy_adjustment_insulin_adjustment_label),
                     value = displayStrategy.format(adjustment.percentage.toDouble()),
                     valueColor = if (adjustment.percentage == 0)

@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Adjust
-import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material.icons.filled.VerticalAlignBottom
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -54,6 +53,7 @@ import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.crValue
 import de.dh.daps.ui.common.glucoseValue
 import de.dh.daps.ui.common.isfValue
+import de.dh.daps.ui.common.icons.Icon_Insulin_Adjustment
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.NeutralGrey
 import de.dh.daps.ui.common.theme.SoftBlue
@@ -274,7 +274,7 @@ fun ApsControlCard(
                             enabled = !isSuspended,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Icon(Icons.Default.UnfoldMore, null, modifier = Modifier.size(18.dp))
+                            Icon(Icon_Insulin_Adjustment, null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
                             Text(adjustmentText, style = MaterialTheme.typography.titleMedium)
                         }
@@ -287,7 +287,7 @@ fun ApsControlCard(
                                 containerColor = displayStrategy.color(insulinAdjustmentPercentage.toDouble())
                             )
                         ) {
-                            Icon(Icons.Default.UnfoldMore, null, modifier = Modifier.size(18.dp))
+                            Icon(Icon_Insulin_Adjustment, null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
                             Text(
                                 adjustmentText,

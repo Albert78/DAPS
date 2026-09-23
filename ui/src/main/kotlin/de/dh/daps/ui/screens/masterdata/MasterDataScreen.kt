@@ -11,7 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Adjust
-import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -27,10 +26,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.screenTitle
-import de.dh.daps.ui.common.icons.Icon_Config
-import de.dh.daps.ui.common.icons.Icon_Insulin
 import de.dh.daps.ui.common.icons.Icon_Alarms
+import de.dh.daps.ui.common.icons.Icon_Insulin
+import de.dh.daps.ui.common.icons.Icon_Insulin_Profile
 import de.dh.daps.ui.common.icons.Icon_Meal_Types
+import de.dh.daps.ui.common.icons.Icon_Therapy_Adjustment
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.common.R as CommonR
 
@@ -93,7 +93,7 @@ fun MasterDataScreen(
                 supportingContent = { Text(stringResource(id = R.string.master_data_item_insulin_profiles_desc)) },
                 leadingContent = {
                     Icon(
-                        imageVector = Icon_Config,
+                        imageVector = Icon_Insulin_Profile,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -153,7 +153,7 @@ fun MasterDataScreen(
                 supportingContent = { Text(stringResource(id = R.string.master_data_item_therapy_adjustments_desc)) },
                 leadingContent = {
                     Icon(
-                        imageVector = Icons.Default.Tune,
+                        imageVector = Icon_Therapy_Adjustment,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary
                     )
