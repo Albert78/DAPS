@@ -97,6 +97,9 @@ class AlarmEvaluator(
 
         _activeAlarms.value = activeSet
 
+        // Sync snooze states: remove snoozes for resolved or expired alarms
+        alarmSnoozeManager.clearInactiveAndExpiredSnoozes(activeSet)
+
         // 3. Filter unsnoozed active alarms
         val unsnoozedActiveAlarms = activeSet.filter { alarmType ->
             !alarmSnoozeManager.isSnoozed(alarmType)

@@ -39,4 +39,28 @@ class AlarmSnoozeManagerTest {
         assertFalse(snoozeManager.isSnoozed(AlarmType.CRITICAL_LOW_BG))
         assertFalse(snoozeManager.isSnoozed(AlarmType.LOW_BG))
     }
+
+    @Test
+    fun `clearInactiveAndExpiredSnoozes removes snoozes for inactive alarms`() {
+        snoozeManager.snoozeAlarm(AlarmType.LOW_BG, 15)
+        assertTrue(snoozeManager.isSnoozed(AlarmType.LOW_BG))
+
+        // Alarm condition cleared (active alarms set is now empty)
+        snoozeManager.clearInactiveAndExpiredSnoozes(emptySet())
+
+        assertFalse(snoozeManager.isSnoozed(AlarmType.LOW_BG))
+        assertTrue(snoozeManager.snoozedAlarms.value.isEmpty())
+    }
+
+    @Test
+    fun `clearInactiveAndExpiredSnoozes retains snoozes for active alarms`() {
+        snoozeManager.snoozeAlarm(AlarmType.LOW_BG, 15)
+        snoozeManager.snoozeAlarm(AlarmType.HIGH_BG, 15)
+
+        // HIGH_BG condition cleared, LOW_BG still active
+        snoozeManager.clearInactiveAndExpiredSnoozes(setOf(AlarmType.LOW_BG))
+
+        assertTrue(snoozeManager.isSnoozed(AlarmType.LOW_BG))
+        assertFalse(snoozeManager.isSnoozed(AlarmType.HIGH_BG))
+    }
 }

@@ -3,6 +3,7 @@ package de.dh.daps.core.alarms
 import de.dh.daps.common.model.data.AlarmType
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.core.alarms.AlarmSnoozeManager.Companion.MAX_SAFETY_CRITICAL_SNOOZE_MINUTES
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,7 +14,6 @@ import kotlinx.coroutines.flow.update
  * Enforces safety boundaries for safety-critical alarms.
  */
 class AlarmSnoozeManager {
-
     private val _snoozedAlarms = MutableStateFlow<Map<AlarmType, AlarmSnoozeState>>(emptyMap())
     val snoozedAlarms: StateFlow<Map<AlarmType, AlarmSnoozeState>> = _snoozedAlarms.asStateFlow()
 
@@ -42,12 +42,7 @@ class AlarmSnoozeManager {
      */
     fun isSnoozed(alarmType: AlarmType): Boolean {
         val state = _snoozedAlarms.value[alarmType] ?: return false
-        return if (Timestamp.now() < state.snoozedUntil) {
-            true
-        } else {
-            clearSnooze(alarmType)
-            false
-        }
+        return Timestamp.now() < state.snoozedUntil
     }
 
     /**
@@ -58,8 +53,20 @@ class AlarmSnoozeManager {
         return if (Timestamp.now() < state.snoozedUntil) {
             state
         } else {
-            clearSnooze(alarmType)
             null
+        }
+    }
+
+    /**
+     * Clears snooze states for alarms that are no longer active in [activeAlarms]
+     * or whose snooze duration has expired.
+     */
+    fun clearInactiveAndExpiredSnoozes(activeAlarms: Set<AlarmType>) {
+        val now = Timestamp.now()
+        _snoozedAlarms.update { current ->
+            current.filter { (type, state) ->
+                type in activeAlarms && now < state.snoozedUntil
+            }
         }
     }
 
