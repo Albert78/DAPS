@@ -50,11 +50,10 @@ import de.dh.daps.ui.common.ConfigurableDisplayStrategy
 import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.PrimaryButton
-import de.dh.daps.ui.common.crValue
 import de.dh.daps.ui.common.glucoseValue
+import de.dh.daps.ui.common.icons.Icon_Alarms
 import de.dh.daps.ui.common.icons.Icon_Insulin_Adjustment
 import de.dh.daps.ui.common.icons.Icon_Insulin_Profile
-import de.dh.daps.ui.common.isfValue
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.NeutralGrey
 import de.dh.daps.ui.common.theme.SoftBlue
@@ -106,6 +105,7 @@ fun ApsControlCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // 1. Insulinprofile
                 val nameText = if (insulinAdjustmentPercentage != 0) {
                     "${activeTherapyStatus.profile.name} (${displayStrategy.format(insulinAdjustmentPercentage.toDouble())})"
                 } else {
@@ -113,8 +113,7 @@ fun ApsControlCard(
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.padding(bottom = 4.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Icon(
                         imageVector = Icon_Insulin_Profile,
@@ -123,7 +122,7 @@ fun ApsControlCard(
                         modifier = Modifier.size(16.dp)
                     )
                     Text(
-                        text = nameText,
+                        text = nameText.ifEmpty { "-" },
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.primary,
                         maxLines = 2,
@@ -132,57 +131,36 @@ fun ApsControlCard(
                     )
                 }
 
-                // Chips (Basal, I:C, ISF)
+                // 2. (Temp-)Basalrate aus dem PumpManager-Basalstatus
                 CompositionLocalProvider(
                     LocalContentColor provides if (isSuspended) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) else LocalContentColor.current
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        // Basal Chip
-                        Surface(
-                            color = if (isSuspended) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) else MaterialTheme.colorScheme.secondaryContainer,
-                            shape = MaterialTheme.shapes.extraSmall,
-                        ) {
-                            val basalValue = String.format(LocalLocale.current.platformLocale, "%.1f", if (isSuspended) 0.0 else activeTherapyStatus.currentBasal.iu)
-                            Text(
-                                text = " ${stringResource(R.string.aps_control_basal_label, basalValue)} ",
-                                style = MaterialTheme.typography.labelSmall,
-                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-                            )
-                        }
+                    val basalStatus = activeTherapyStatus.basalStatus
+                    val isTempBasal = basalStatus?.isTempBasal == true
+                    val rateValue = if (isSuspended || basalStatus?.isSuspended == true) {
+                        0.0
+                    } else {
+                        basalStatus?.activeRate?.iu ?: activeTherapyStatus.currentBasal.iu
+                    }
+                    val basalValue = String.format(LocalLocale.current.platformLocale, "%.1f", rateValue)
+                    val basalLabelRes = if (isTempBasal) R.string.aps_control_temp_basal_label else R.string.aps_control_basal_label
 
-                        // I:C & ISF Chips
-                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Surface(
-                                color = if (isSuspended) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) else MaterialTheme.colorScheme.surfaceVariant,
-                                shape = MaterialTheme.shapes.extraSmall,
-                            ) {
-                                Text(
-                                    text = " ${stringResource(R.string.aps_control_cr_label, crValue(activeTherapyStatus.currentCr, withUnit = false))} ",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-                                )
-                            }
-                            Surface(
-                                color = if (isSuspended) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) else MaterialTheme.colorScheme.surfaceVariant,
-                                shape = MaterialTheme.shapes.extraSmall,
-                            ) {
-                                Text(
-                                    text = " ${stringResource(R.string.aps_control_isf_label, isfValue(activeTherapyStatus.currentIsf))} ",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-                                )
-                            }
-                        }
+                    Surface(
+                        color = if (isSuspended) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) else MaterialTheme.colorScheme.secondaryContainer,
+                        shape = MaterialTheme.shapes.extraSmall,
+                    ) {
+                        Text(
+                            text = " ${stringResource(basalLabelRes, basalValue)} ",
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                        )
                     }
                 }
 
+                // 3. BZ-Ziel- und Low-Schwelle
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.padding(top = 8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     // Target
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -215,6 +193,27 @@ fun ApsControlCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
+                }
+
+                // 4. Aktives Alarm-Profil
+                val alarmProfileName = activeTherapyStatus.activeAlarmProfileName
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icon_Alarms,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = alarmProfileName ?: "-",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
             }
 
@@ -322,7 +321,7 @@ private fun ApsMode.toDisplayStringShort(): String = stringResource(id = when (t
 
 private fun createSampleTherapyStatus() = ActiveTherapyStatusUiState(
     profile = InsulinProfileUiState(
-        name = "Standard",
+        name = "Normal",
         activeProfileId = null,
         isfRange = "50",
         crRange = "12.0",
@@ -339,6 +338,7 @@ private fun createSampleTherapyStatus() = ActiveTherapyStatusUiState(
     currentIsf = BgDelta.fromMgDl(50),
     currentCr = 12.0,
     currentBasal = InsulinAmount(0.8),
+    activeAlarmProfileName = "Kino / Diskret",
     target = BgValue.fromMgDl(100),
     lowThreshold = BgValue.fromMgDl(70),
     baseTarget = BgValue.fromMgDl(110),

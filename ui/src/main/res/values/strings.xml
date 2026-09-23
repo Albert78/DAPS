@@ -228,6 +228,7 @@
     <string name="aps_mode_auto_correction_short">Auto-Korr.</string>
     <string name="aps_mode_auto_correction_desc">Das System steuert die Insulinabgabe vollständig und nimmt automatische Korrekturen vor.</string>
     <string name="aps_control_basal_label">Basal: %1$s I.E./h</string>
+    <string name="aps_control_temp_basal_label">Temp-Basal: %1$s I.E./h</string>
     <string name="aps_control_cr_label">CR %1$s</string>
     <string name="aps_control_isf_label">ISF %1$s</string>
     <string name="aps_control_adjustment_neutral">neutral</string>

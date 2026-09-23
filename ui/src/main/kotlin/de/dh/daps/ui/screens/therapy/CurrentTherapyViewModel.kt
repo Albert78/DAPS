@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import de.dh.daps.common.model.BasalStatus
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.data.AlarmProfile
 import de.dh.daps.common.model.data.BgBlock
@@ -19,10 +20,13 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.data.getBgForMinute
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.glucoseUnit
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -56,10 +60,12 @@ data class ActiveTherapyStatusUiState(
     val currentIsf: BgDelta = BgDelta.ZERO,
     val currentCr: Double = 0.0,
     val currentBasal: InsulinAmount = InsulinAmount.ZERO,
-    val target: BgValue = BgValue.fromMgDl(0),
-    val lowThreshold: BgValue = BgValue.fromMgDl(0),
-    val baseTarget: BgValue = BgValue.fromMgDl(0),
-    val baseLow: BgValue = BgValue.fromMgDl(0)
+    val basalStatus: BasalStatus? = null,
+    val activeAlarmProfileName: String? = null,
+    val target: BgValue = BgValue.INVALID,
+    val lowThreshold: BgValue = BgValue.INVALID,
+    val baseTarget: BgValue = BgValue.INVALID,
+    val baseLow: BgValue = BgValue.INVALID
 )
 
 data class CurrentTherapyUiState(
@@ -76,6 +82,7 @@ data class CurrentTherapyUiState(
 /**
  * ViewModel for viewing and selecting the current therapy settings.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class CurrentTherapyViewModel(
     private val systemRegistry: SystemRegistry
 ) : ViewModel() {
@@ -87,13 +94,17 @@ class CurrentTherapyViewModel(
 
     init {
         val glucoseUnitFlow = appPreferencesRepository.cachedPreferences.map { it.glucoseUnit }
+        val basalStatusFlow = systemRegistry.pumpManager.activeInsulinPump.flatMapLatest { pump ->
+            pump?.basalStatus ?: flowOf(null)
+        }
         combine(
             therapyManager.currentTherapySettingsFlow,
             therapyManager.observeAllInsulinProfiles(),
             systemRegistry.alarmRepository.observeAllAlarmProfiles(),
             glucoseUnitFlow,
             therapyManager.observeScheduledTherapyAdjustment(),
-            therapyManager.observeAllTherapyAdjustments()
+            therapyManager.observeAllTherapyAdjustments(),
+            basalStatusFlow
         ) { flows ->
             @Suppress("UNCHECKED_CAST")
             updateState(
@@ -102,7 +113,8 @@ class CurrentTherapyViewModel(
                 alarmProfiles = flows[2] as List<AlarmProfile>,
                 unit = flows[3] as GlucoseUnit,
                 scheduledAdjustment = flows[4] as ScheduledTherapyAdjustment?,
-                presets = flows[5] as List<TherapyAdjustment>
+                presets = flows[5] as List<TherapyAdjustment>,
+                basalStatus = flows[6] as BasalStatus?
             )
         }.launchIn(viewModelScope)
     }
@@ -113,7 +125,8 @@ class CurrentTherapyViewModel(
         alarmProfiles: List<AlarmProfile>,
         unit: GlucoseUnit,
         scheduledAdjustment: ScheduledTherapyAdjustment?,
-        presets: List<TherapyAdjustment>
+        presets: List<TherapyAdjustment>,
+        basalStatus: BasalStatus?
     ) {
         val now = Timestamp.now()
         val isf = therapyManager.getIsfFactor(now)
@@ -154,6 +167,8 @@ class CurrentTherapyViewModel(
             currentIsf = isf,
             currentCr = cr,
             currentBasal = basal,
+            basalStatus = basalStatus,
+            activeAlarmProfileName = currentSettings.effectiveAlarmProfile?.name,
             target = bgSettings.first,
             lowThreshold = bgSettings.second,
             baseTarget = baseBg.first,
