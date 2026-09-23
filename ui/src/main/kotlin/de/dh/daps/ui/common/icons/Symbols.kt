@@ -10,15 +10,20 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.Assignment
 import androidx.compose.material.icons.automirrored.outlined.Comment
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.UnfoldMore
+import androidx.compose.material.icons.outlined.AccountBox
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Archive
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
+import androidx.compose.material.icons.outlined.Assignment
+import androidx.compose.material.icons.outlined.Badge
 import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material.icons.outlined.Check
@@ -31,15 +36,19 @@ import androidx.compose.material.icons.outlined.Fastfood
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
+import androidx.compose.material.icons.outlined.Medication
 import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.Palette
-import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.ShowChart
 import androidx.compose.material.icons.outlined.Snooze
+import androidx.compose.material.icons.outlined.StackedLineChart
 import androidx.compose.material.icons.outlined.StarOutline
+import androidx.compose.material.icons.outlined.Timeline
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.material.icons.outlined.Vaccines
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -55,7 +64,7 @@ import de.dh.daps.ui.screens.mealtypes.BadgedStarIcon
 
 // Meal Type Icons
 val Icon_Meal_Fast = Icons.Outlined.Bolt
-val Icon_Meal_Standard = Icons.Outlined.Restaurant
+val Icon_Meal_Standard = Icons.Outlined.Meal
 val Icon_Meal_High_Fat = Icons.Outlined.Fastfood
 val Icon_Meal_Slow = Icons.Outlined.Timer
 val Icon_Meal_Custom = Icons.Outlined.StarOutline
@@ -65,17 +74,20 @@ val Icon_More = Icons.Default.MoreVert
 val Icon_Delete_Filled = Icons.Default.Delete
 val Icon_Screen_Back = Icons.AutoMirrored.Filled.ArrowBack
 val Icon_Screen_Close = Icons.Default.Clear
-val Icon_Meal = Icons.Outlined.Restaurant
+val Icon_Meal = Icons.Outlined.Meal
 val Icon_Bolus = Icons.Outlined.Syringe
 val Icon_Basal = Icons.Outlined.Basal
 val Icon_Temp_Basal = Icons.Outlined.Temp_Basal
 val Icon_Basal_Alternative = Icons.Outlined.Basal_Alternative
+val Icon_Insulin_Profile = Icons.Outlined.StackedLineChart
+val Icon_Therapy_Adjustment = Icons.Outlined.Tune
+val Icon_Insulin_Adjustment = Icons.Default.UnfoldMore
 val Icon_Food_Database = Icons.AutoMirrored.Outlined.MenuBook
 val Icon_System_Control = Icons.Outlined.Build
 val Icon_Alarms = Icons.Outlined.NotificationsActive
 val Icon_Permissions = Icons.Outlined.Security
-val Icon_Meal_Types = Icon_Meal_Custom
-val Icon_Master_Data = Icons.Outlined.Tune
+val Icon_Meal_Types = Icons.Outlined.Meal_Types
+val Icon_Master_Data = Icons.Outlined.Badge
 
 val Icon_Add = Icons.Outlined.Add
 val Icon_Edit = Icons.Outlined.Edit
@@ -121,12 +133,21 @@ private data class IconPreview(
 )
 
 private val iconsForPreview = listOf(
-    IconPreview("Icon_ManualControlMode", Icon_ManualControlMode),
+    IconPreview("Meal_Fast", Icon_Meal_Fast),
+    IconPreview("Meal_Standard", Icon_Meal_Standard),
+    IconPreview("Meal_High_Fat", Icon_Meal_High_Fat),
+    IconPreview("Meal_Slow", Icon_Meal_Slow),
+    IconPreview("Meal_Custom", Icon_Meal_Custom),
+
+    IconPreview("ManualControlMode", Icon_ManualControlMode),
     IconPreview("Meal", Icon_Meal),
     IconPreview("Bolus", Icon_Bolus),
     IconPreview("Basal", Icon_Basal),
     IconPreview("Temp_Basal", Icon_Temp_Basal),
     IconPreview("Basal_Alternative", Icon_Basal_Alternative),
+    IconPreview("Insulin_Profile", Icon_Insulin_Profile),
+    IconPreview("Therapy_Adjustment", Icon_Therapy_Adjustment),
+    IconPreview("Insulin_Adjustment", Icon_Insulin_Adjustment),
     IconPreview("Food_Database", Icon_Food_Database),
     IconPreview("System_Control", Icon_System_Control),
     IconPreview("Alarms", Icon_Alarms),
@@ -135,11 +156,6 @@ private val iconsForPreview = listOf(
     IconPreview("Master_Data", Icon_Master_Data),
     IconPreview("More", Icon_More),
     IconPreview("Delete_Filled", Icon_Delete_Filled),
-    IconPreview("Meal_Fast", Icon_Meal_Fast),
-    IconPreview("Meal_Standard", Icon_Meal_Standard),
-    IconPreview("Meal_High_Fat", Icon_Meal_High_Fat),
-    IconPreview("Meal_Slow", Icon_Meal_Slow),
-    IconPreview("Meal_Custom", Icon_Meal_Custom),
     IconPreview("Icon_Screen_Back", Icon_Screen_Back),
     IconPreview("Icon_Screen_Close", Icon_Screen_Close),
     IconPreview("Add", Icon_Add),
@@ -192,8 +208,14 @@ fun IconCatalogPreview() {
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(bottom = 8.dp)
                     ) {
-                        Text("Icon", modifier = Modifier.weight(1f))
-                        Text("Name", modifier = Modifier.weight(3f))
+                        Text(text = "Icon",
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(text = "Name",
+                            modifier = Modifier
+                                .weight(3f)
+                                .padding(start = 16.dp)
+                        )
                     }
                 }
                 item {
