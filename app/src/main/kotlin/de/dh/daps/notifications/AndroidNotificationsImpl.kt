@@ -142,7 +142,7 @@ class AndroidNotificationsImpl(
         val text = when (recommendation) {
             is ApsRecommendation.Carbs -> context.getString(
                 UiR.string.recommendation_text_carbs,
-                formatCarbsValue(recommendation.amountInGram.toDouble(), getCarbsUnit())
+                formatCarbsValue(recommendation.amountInGram.toDouble(), getCarbsUnit(), context)
             )
             is ApsRecommendation.Bolus -> context.getString(
                 UiR.string.recommendation_text_bolus,
