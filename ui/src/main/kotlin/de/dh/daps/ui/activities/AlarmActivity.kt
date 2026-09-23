@@ -39,10 +39,6 @@ class AlarmActivity : ComponentActivity() {
                     onSnooze = { minutes ->
                         registry.alarmSnoozeManager.snoozeAlarm(alarmType, minutes)
                         finish()
-                    },
-                    onDismiss = {
-                        registry.alarmSnoozeManager.snoozeAlarm(alarmType, 15)
-                        finish()
                     }
                 )
             }

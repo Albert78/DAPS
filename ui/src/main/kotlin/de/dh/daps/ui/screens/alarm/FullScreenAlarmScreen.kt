@@ -2,14 +2,12 @@ package de.dh.daps.ui.screens.alarm
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
@@ -17,7 +15,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,7 +25,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import de.dh.daps.common.model.data.AlarmSeverity
 import de.dh.daps.common.model.data.AlarmType
 import de.dh.daps.common.model.data.BgValue
@@ -42,8 +38,7 @@ fun FullScreenAlarmScreen(
     alarmType: AlarmType,
     bgValue: BgValue?,
     glucoseUnit: GlucoseUnit,
-    onSnooze: (minutes: Int) -> Unit,
-    onDismiss: () -> Unit
+    onSnooze: (minutes: Int) -> Unit
 ) {
     val isCritical = alarmType.defaultSeverity == AlarmSeverity.CRITICAL
     val backgroundColor = if (isCritical) {
@@ -72,6 +67,11 @@ fun FullScreenAlarmScreen(
 
             // Header Icon & Title
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = stringResource(id = R.string.full_screen_alarm_title),
+                    style = MaterialTheme.typography.labelLarge,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
                 Icon(
                     imageVector = Icons.Default.Warning,
                     contentDescription = null,
@@ -79,14 +79,6 @@ fun FullScreenAlarmScreen(
                     modifier = Modifier.size(72.dp)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = stringResource(id = R.string.full_screen_alarm_title),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = contentColor,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.2.sp
-                )
-                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = getAlarmTypeTitle(alarmType),
                     style = MaterialTheme.typography.headlineMedium,
@@ -146,45 +138,38 @@ fun FullScreenAlarmScreen(
             ) {
                 Text(
                     text = stringResource(id = R.string.alarm_action_snooze),
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.titleMedium,
                     color = contentColor,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 12.dp)
                 )
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    OutlinedButton(
-                        onClick = { onSnooze(15) },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(stringResource(id = R.string.alarm_action_snooze_15))
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    OutlinedButton(
-                        onClick = { onSnooze(30) },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(stringResource(id = R.string.alarm_action_snooze_30))
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    OutlinedButton(
-                        onClick = { onSnooze(60) },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(stringResource(id = R.string.alarm_action_snooze_60))
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
                 PrimaryButton(
-                    onClick = onDismiss,
+                    onClick = { onSnooze(15) },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = stringResource(id = R.string.alarm_action_dismiss),
+                        text = stringResource(id = R.string.alarm_action_snooze_15),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                PrimaryButton(
+                    onClick = { onSnooze(30) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.alarm_action_snooze_30),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                PrimaryButton(
+                    onClick = { onSnooze(60) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.alarm_action_snooze_60),
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
@@ -225,8 +210,7 @@ fun FullScreenAlarmScreenCriticalPreview() {
             alarmType = AlarmType.CRITICAL_LOW_BG,
             bgValue = BgValue.fromMgDl(55),
             glucoseUnit = GlucoseUnit.MG_DL,
-            onSnooze = {},
-            onDismiss = {}
+            onSnooze = {}
         )
     }
 }
@@ -239,8 +223,7 @@ fun FullScreenAlarmScreenHighBgPreview() {
             alarmType = AlarmType.HIGH_BG,
             bgValue = BgValue.fromMgDl(240),
             glucoseUnit = GlucoseUnit.MG_DL,
-            onSnooze = {},
-            onDismiss = {}
+            onSnooze = {}
         )
     }
 }

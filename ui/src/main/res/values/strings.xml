@@ -557,7 +557,7 @@
     <string name="alarm_type_cgm_signal_loss">CGM-Signal verloren</string>
     <string name="alarm_type_system_battery_low">Akkustand niedrig</string>
     <string name="alarm_snoozed_until_format">%1$s stummgeschaltet bis %2$s</string>
-    <string name="full_screen_alarm_title">ACHTUNG: SICHERHEITS-ALARM</string>
+    <string name="full_screen_alarm_title">DAPS</string>
 
     <!-- Manual Control Screen -->
     <string name="manual_control_screen_title">Manuelle Steuerung</string>
