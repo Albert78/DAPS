@@ -192,23 +192,23 @@ object BolusCalculationMath {
 
         // Calculate correction, COB and future carb parts using meal-time factors
 
-        val correctionPart = if (impendingLow != null && impendingLow.timestamp < mealTimestamp.plusMinutes(60)) {
-            InsulinAmount.ZERO
-        } else {
-            convertToInsulinAmountFromBgDelta(BgDelta.fromMgDl(bgDiff), isf)
-        }
+        val correctionPart = convertToInsulinAmountFromBgDelta(BgDelta.fromMgDl(bgDiff), isf)
 
         // Safety first: If we are too low, the COB part might be incorrect, so just ignore it for now.
         val cobPart = if (bgDiff < -15) InsulinAmount.ZERO else convertToInsulinAmountFromCarbs(cob, cr)
         val futureCarbsPart = convertToInsulinAmountFromCarbs(futureCarbs, cr)
 
-        // Sum up all parts: Add requirements (Meal, Correction, COB, Future Carbs),
-        // subtract already active/planned resources (IOB, Deferred Boluses).
-        val total = (mealPart + correctionPart - iob + cobPart + futureCarbsPart - deferredBolusAmount).coerceAtLeast(InsulinAmount.ZERO)
+        val bolusAmount = if (impendingLow != null && impendingLow.timestamp < mealTimestamp.plusMinutes(60)) {
+            InsulinAmount.ZERO
+        } else {
+            // Sum up all parts: Add requirements (Meal, Correction, COB, Future Carbs),
+            // subtract already active/planned resources (IOB, Deferred Boluses).
+            val total = (mealPart + correctionPart - iob + cobPart + futureCarbsPart - deferredBolusAmount).coerceAtLeast(InsulinAmount.ZERO)
 
-        // Round to 2 decimal places for insulin pump precision
-        val roundedTotal = round(total.iu * 100.0) / 100.0
-        val bolusAmount = InsulinAmount(roundedTotal)
+            // Round to 2 decimal places for insulin pump precision
+            val roundedTotal = round(total.iu * 100.0) / 100.0
+            InsulinAmount(roundedTotal)
+        }
 
         return BolusParts(
             mealPart = mealPart,

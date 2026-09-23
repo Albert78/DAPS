@@ -632,31 +632,35 @@ fun CalculationDetailsDialog(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    text = stringResource(
-                        R.string.meal_correction_bolus_calc_factors_label,
-                        isfValue(uiState.isf),
-                        crValue(uiState.cr, withUnit = false)
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                val impendingLow = uiState.projections.impendingLow
+                val bgProjection = impendingLow ?:
+                ProjectedBg(uiState.projections.bg, uiState.projections.timestamp)
 
-                val lowBgProjection = uiState.projections.impendingLow ?:
-                    ProjectedBg(uiState.projections.bg, uiState.projections.timestamp)
-                if (lowBgProjection.bg.isInvalid()) {
+                if (impendingLow == null) {
+                    Text(
+                        text = stringResource(
+                            R.string.meal_correction_bolus_calc_factors_label,
+                            isfValue(uiState.isf),
+                            crValue(uiState.cr, withUnit = false)
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                if (bgProjection.bg.isInvalid()) {
                     Text(
                         text = stringResource(R.string.meal_correction_bolus_calc_no_bg_warning),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error,
                         fontWeight = FontWeight.Bold
                     )
-                } else if (lowBgProjection.bg <= uiState.lowThreshold) {
+                } else if (bgProjection.bg <= uiState.lowThreshold) {
                     Text(
                         text = stringResource(
                             R.string.meal_correction_bolus_calc_low_bg_warning,
                             glucoseValue(uiState.lowThreshold, withUnit = true),
-                            time(lowBgProjection.timestamp)
+                            time(bgProjection.timestamp)
                         ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error,
@@ -664,45 +668,47 @@ fun CalculationDetailsDialog(
                     )
                 }
 
-                HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
+                if (impendingLow == null) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
 
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(
-                        text = stringResource(R.string.meal_correction_bolus_calc_meal_part, insulinValue(uiState.calculation.mealPart.iu, signed = true)),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Text(
-                        text = stringResource(R.string.meal_correction_bolus_calc_correction_part, insulinValue(uiState.calculation.correctionPart.iu, signed = true)),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    if (uiState.calculation.iobPart > InsulinAmount.ZERO) {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(
-                            text = stringResource(R.string.meal_correction_bolus_calc_iob_part, insulinValue(-uiState.calculation.iobPart.iu, signed = true)),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.error
+                            text = stringResource(R.string.meal_correction_bolus_calc_meal_part, insulinValue(uiState.calculation.mealPart.iu, signed = true)),
+                            style = MaterialTheme.typography.bodyMedium
                         )
-                    }
-                    if (uiState.calculation.cobPart > InsulinAmount.ZERO) {
                         Text(
-                            text = stringResource(R.string.meal_correction_bolus_calc_cob_part, insulinValue(uiState.calculation.cobPart.iu, signed = true)),
+                            text = stringResource(R.string.meal_correction_bolus_calc_correction_part, insulinValue(uiState.calculation.correctionPart.iu, signed = true)),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                    }
-                    if (uiState.calculation.futureCarbsPart > InsulinAmount.ZERO) {
-                        Text(
-                            text = stringResource(R.string.meal_correction_bolus_calc_future_carbs_part, insulinValue(uiState.calculation.futureCarbsPart.iu, signed = true)),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    if (uiState.calculation.deferredBolusPart > InsulinAmount.ZERO) {
-                        Text(
-                            text = stringResource(R.string.meal_correction_bolus_calc_deferred_part, insulinValue(-uiState.calculation.deferredBolusPart.iu, signed = true)),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.error
-                        )
+                        if (uiState.calculation.iobPart > InsulinAmount.ZERO) {
+                            Text(
+                                text = stringResource(R.string.meal_correction_bolus_calc_iob_part, insulinValue(-uiState.calculation.iobPart.iu, signed = true)),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                        if (uiState.calculation.cobPart > InsulinAmount.ZERO) {
+                            Text(
+                                text = stringResource(R.string.meal_correction_bolus_calc_cob_part, insulinValue(uiState.calculation.cobPart.iu, signed = true)),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        if (uiState.calculation.futureCarbsPart > InsulinAmount.ZERO) {
+                            Text(
+                                text = stringResource(R.string.meal_correction_bolus_calc_future_carbs_part, insulinValue(uiState.calculation.futureCarbsPart.iu, signed = true)),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        if (uiState.calculation.deferredBolusPart > InsulinAmount.ZERO) {
+                            Text(
+                                text = stringResource(R.string.meal_correction_bolus_calc_deferred_part, insulinValue(-uiState.calculation.deferredBolusPart.iu, signed = true)),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
                     }
                 }
 
