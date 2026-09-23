@@ -67,6 +67,24 @@ fun getDefaultAlarmProfiles(context: Context): List<AlarmProfile> {
         )
     )
 
+    val silentDefaults = mapOf(
+        AlarmSeverity.CRITICAL to AlarmSignalConfig(
+            displayMode = AlertDisplayMode.NotificationOnly,
+            vibrationMode = VibrationMode.OFF,
+            overrideDnd = false
+        ),
+        AlarmSeverity.WARNING to AlarmSignalConfig(
+            displayMode = AlertDisplayMode.NotificationOnly,
+            vibrationMode = VibrationMode.OFF,
+            overrideDnd = false
+        ),
+        AlarmSeverity.INFO to AlarmSignalConfig(
+            displayMode = AlertDisplayMode.NotificationOnly,
+            vibrationMode = VibrationMode.OFF,
+            overrideDnd = false
+        )
+    )
+
     return listOf(
         AlarmProfile(
             id = ID_UNDEFINED,
@@ -85,6 +103,12 @@ fun getDefaultAlarmProfiles(context: Context): List<AlarmProfile> {
             name = context.getString(R.string.alarm_profile_default_loud_name),
             isDefault = false,
             severityDefaults = loudDefaults
+        ),
+        AlarmProfile(
+            id = ID_UNDEFINED,
+            name = context.getString(R.string.alarm_profile_default_silent_name),
+            isDefault = false,
+            severityDefaults = silentDefaults
         )
     )
 }
