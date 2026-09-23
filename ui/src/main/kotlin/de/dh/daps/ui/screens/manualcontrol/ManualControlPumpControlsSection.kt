@@ -145,7 +145,9 @@ fun ManualControlPumpControlsSection(
                     Spacer(modifier = Modifier.height(8.dp))
                     LinearProgressIndicator(
                         progress = { activeBolus.progressPercent / 100f },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .padding(horizontal = 4.dp)
+                            .fillMaxWidth(),
                         color = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.height(12.dp))
