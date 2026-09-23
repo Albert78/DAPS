@@ -17,7 +17,13 @@ data class TherapyAdjustmentFormState(
     val alarmProfileOverrideId: Long? = null,
     val alarmProfileOverrideName: String? = null,
     val adjustmentHint: String? = null
-)
+) {
+    val isAdjustmentActive: Boolean
+        get() = percentage != 0 ||
+                targetBgOverride != null ||
+                lowThresholdOverride != null ||
+                alarmProfileOverrideId != null
+}
 
 /**
  * State holder managing form state, presets, and changes for therapy adjustments.

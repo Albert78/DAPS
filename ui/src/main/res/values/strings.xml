@@ -257,6 +257,7 @@
     <string name="therapy_adjustment_description_description">Optionale, kurze Beschreibung oder Grund für diese Therapie-Anpassung.</string>
     <string name="therapy_adjustment_description_placeholder">z. B. Sport, Spaziergang, Stress…</string>
     <string name="therapy_adjustment_presets_title">Schnellauswahl</string>
+    <string name="therapy_adjustment_preset_neutral_subtitle">0% • Basiswerte</string>
 
     <string name="therapy_adjustment_unlimited">Festlegen</string>
     <string name="therapy_adjustment_duration">Begrenzte Dauer</string>

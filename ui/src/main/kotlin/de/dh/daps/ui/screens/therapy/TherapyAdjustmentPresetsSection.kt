@@ -47,7 +47,8 @@ fun TherapyAdjustmentPresetsSection(
             positiveColor = SoftRed,
             negativeColor = SoftBlue,
             neutralColor = NeutralGrey,
-            positivePrefix = "+"
+            positivePrefix = "+",
+            suffix = "%"
         )
     }
 
@@ -78,6 +79,11 @@ fun TherapyAdjustmentPresetsSection(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             presets.forEach { preset ->
+                val isNeutral = preset.percentage == 0 &&
+                        preset.targetBgMgDl == null &&
+                        preset.lowThresholdMgDl == null &&
+                        preset.alarmProfileOverrideId == null
+
                 SuggestionChip(
                     onClick = { onPresetApplied(preset) },
                     label = {
@@ -87,19 +93,27 @@ fun TherapyAdjustmentPresetsSection(
                                 style = MaterialTheme.typography.bodyLarge
                             )
                             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                Text(
-                                    text = displayStrategyInsulin.format(preset.percentage.toDouble()),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = displayStrategyInsulin.color(preset.percentage.toDouble())
-                                )
-                                val targetBg = preset.targetBgMgDl
-                                if (targetBg != null) {
-                                    val targetValue = BgValue.fromMgDl(targetBg.toInt())
+                                if (isNeutral) {
                                     Text(
-                                        text = "• ${glucoseValue(targetValue, withUnit = true)}",
+                                        text = stringResource(R.string.therapy_adjustment_preset_neutral_subtitle),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
+                                } else {
+                                    Text(
+                                        text = displayStrategyInsulin.format(preset.percentage.toDouble()),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = displayStrategyInsulin.color(preset.percentage.toDouble())
+                                    )
+                                    val targetBg = preset.targetBgMgDl
+                                    if (targetBg != null) {
+                                        val targetValue = BgValue.fromMgDl(targetBg.toInt())
+                                        Text(
+                                            text = "• ${glucoseValue(targetValue, withUnit = true)}",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -116,6 +130,7 @@ private fun TherapyAdjustmentPresetsSectionPreview() {
     AppPreview(modifier = Modifier.padding(16.dp)) {
         TherapyAdjustmentPresetsSection(
             presets = listOf(
+                TherapyAdjustment(name = "Neutral"),
                 TherapyAdjustment(name = "Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
                 TherapyAdjustment(name = "Stress", percentage = 20, targetBgMgDl = 115, lowThresholdMgDl = 75)
             ),

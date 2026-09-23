@@ -169,10 +169,7 @@ fun TherapyAdjustmentContent(
             val scrollState = rememberScrollState()
 
             val isAdjustmentActive = remember(formState) {
-                formState.percentage != 0 ||
-                formState.targetBgOverride != null ||
-                formState.lowThresholdOverride != null ||
-                formState.alarmProfileOverrideId != null
+                formState.isAdjustmentActive
             }
 
             Box(

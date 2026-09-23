@@ -52,7 +52,13 @@ data class TherapyAdjustmentUiState(
     val alarmProfileOverrideName: String? = null,
     val adjustmentHint: String? = null,
     val adjustmentEndTime: Timestamp? = null
-)
+) {
+    val isAdjustmentActive: Boolean
+        get() = percentage != 0 ||
+                targetBgOverride != null ||
+                lowThresholdOverride != null ||
+                alarmProfileOverrideId != null
+}
 
 data class ActiveTherapyStatusUiState(
     val profile: InsulinProfileUiState = InsulinProfileUiState(),
