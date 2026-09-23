@@ -49,6 +49,7 @@ import de.dh.daps.common.model.MealType
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.icons.Icon_Meal_Types
@@ -228,7 +229,7 @@ fun MealItem(
     ListItem(
         modifier = if (isEditable) Modifier.clickable(onClick = onEditClick) else Modifier,
         headlineContent = {
-            Text(text = stringResource(id = R.string.meal_entry_grams_format, meal.carbGrams))
+            Text(text = carbsValue(meal.carbGrams))
         },
         supportingContent = {
             Text(text = meal.mealType.name)

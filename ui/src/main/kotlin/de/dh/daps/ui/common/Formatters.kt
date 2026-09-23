@@ -329,6 +329,51 @@ const val INSULIN_STEP_SIZE = 0.1
  */
 fun insulinSteppingStrategy(step: Double = INSULIN_STEP_SIZE): SteppingStrategy = ModuloSteppingStrategy(step)
 
+fun formatCarbsValue(
+    valueInGrams: Double?,
+    unit: CarbsUnit,
+    default: String = "-",
+    withUnit: Boolean = true,
+    signed: Boolean = false
+): String {
+    return valueInGrams?.let {
+        when (unit) {
+            CarbsUnit.GRAMS -> formatCarbsGramsValue(valueInGrams, default = default, withUnit = withUnit, signed = signed)
+            CarbsUnit.KE -> {
+                val keValue = valueInGrams / 10.0
+                formatCarbsKeValue(keValue, default = default, withUnit = withUnit, signed = signed)
+            }
+        }
+    } ?: default
+}
+
+fun formatCarbsKeUnitLabel(): String = "KE"
+
+fun formatCarbsKeValue(value: Double?, default: String = "-", withUnit: Boolean = true, signed: Boolean = false): String {
+    return value?.let {
+        var format = if (signed) "%+" else "%"
+        format += if (value % 1.0 == 0.0) {
+            ".0f"
+        } else {
+            ".1f"
+        }
+        val valStr = String.format(Locale.getDefault(), format, it)
+        if (withUnit) "$valStr ${formatCarbsKeUnitLabel()}"
+        else valStr
+    } ?: default
+}
+
+fun formatCarbsGramsUnitLabel(): String = "g"
+
+fun formatCarbsGramsValue(value: Double?, default: String = "-", withUnit: Boolean = true, signed: Boolean = false): String {
+    return value?.let {
+        val format = if (signed) "%+.0f" else "%.0f"
+        val valStr = String.format(Locale.getDefault(), format, it)
+        if (withUnit) "$valStr ${formatCarbsGramsUnitLabel()}"
+        else valStr
+    } ?: default
+}
+
 @Composable
 fun carbsUnitLabel(unit: CarbsUnit = LocalCarbsUnit.current): String {
     return when (unit) {
@@ -345,15 +390,7 @@ fun carbsValue(
     withUnit: Boolean = true,
     signed: Boolean = false
 ): String {
-    return valueInGrams?.let {
-        when (unit) {
-            CarbsUnit.GRAMS -> carbsGramsValue(valueInGrams, default = default, withUnit = withUnit, signed = signed)
-            CarbsUnit.KE -> {
-                val keValue = valueInGrams / 10.0
-                carbsKeValue(keValue, default = default, withUnit = withUnit, signed = signed)
-            }
-        }
-    } ?: default
+    return formatCarbsValue(valueInGrams, unit, default = default, withUnit = withUnit, signed = signed)
 }
 
 @Composable
@@ -363,17 +400,7 @@ fun carbsKeUnitLabel(): String {
 
 @Composable
 fun carbsKeValue(value: Double?, default: String = "-", withUnit: Boolean = true, signed: Boolean = false): String {
-    return value?.let {
-        var format = if (signed) "%+" else "%"
-        format += if (value % 1.0 == 0.0) {
-            ".0f"
-        } else {
-            ".1f"
-        }
-        val valStr = String.format(Locale.getDefault(), format, it)
-        if (withUnit) "$valStr ${carbsKeUnitLabel()}"
-        else valStr
-    } ?: default
+    return formatCarbsKeValue(value, default = default, withUnit = withUnit, signed = signed)
 }
 
 @Composable
@@ -383,12 +410,7 @@ fun carbsGramsUnitLabel(): String {
 
 @Composable
 fun carbsGramsValue(value: Double?, default: String = "-", withUnit: Boolean = true, signed: Boolean = false): String {
-    return value?.let {
-        val format = if (signed) "%+.0f" else "%.0f"
-        val valStr = String.format(Locale.getDefault(), format, it)
-        if (withUnit) "$valStr ${carbsGramsUnitLabel()}"
-        else valStr
-    } ?: default
+    return formatCarbsGramsValue(value, default = default, withUnit = withUnit, signed = signed)
 }
 
 /**

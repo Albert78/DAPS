@@ -17,6 +17,7 @@ import de.dh.daps.common.model.MealReminder
 import de.dh.daps.common.model.data.AlarmType
 import de.dh.daps.common.model.data.BgDelta
 import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.CarbsUnit
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.navigation.ManualControlInitialDialog
 import de.dh.daps.core.aps.ApsRecommendation
@@ -25,6 +26,7 @@ import de.dh.daps.core.system.AndroidNotifications
 import de.dh.daps.core.system.RegistryProvider
 import de.dh.daps.ui.activities.AlarmActivity
 import de.dh.daps.ui.activities.MainActivity
+import de.dh.daps.ui.common.formatCarbsValue
 import de.dh.daps.ui.screens.permissions.canPostNotifications
 import de.dh.daps.common.R as CommonR
 import de.dh.daps.ui.R as UiR
@@ -67,6 +69,11 @@ class AndroidNotificationsImpl(
     private fun getGlucoseUnit(): GlucoseUnit {
         val registry = (context.applicationContext as? RegistryProvider)?.registry
         return registry?.appPreferencesRepository?.glucoseUnit?.value ?: GlucoseUnit.MG_DL
+    }
+
+    private fun getCarbsUnit(): CarbsUnit {
+        val registry = (context.applicationContext as? RegistryProvider)?.registry
+        return registry?.appPreferencesRepository?.carbsUnit?.value ?: CarbsUnit.GRAMS
     }
 
     fun getBgValueString(sample: BgValue?, unit: GlucoseUnit, forceSign: Boolean): String? {
@@ -135,7 +142,7 @@ class AndroidNotificationsImpl(
         val text = when (recommendation) {
             is ApsRecommendation.Carbs -> context.getString(
                 UiR.string.recommendation_text_carbs,
-                recommendation.amountInGram
+                formatCarbsValue(recommendation.amountInGram.toDouble(), getCarbsUnit())
             )
             is ApsRecommendation.Bolus -> context.getString(
                 UiR.string.recommendation_text_bolus,

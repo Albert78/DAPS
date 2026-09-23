@@ -62,6 +62,7 @@ import de.dh.daps.ui.common.composables.ExpandableInfoCard
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.WarningBanner
 import de.dh.daps.ui.common.composables.screenTitle
+import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.getBolusRecommendationText
 import de.dh.daps.ui.common.icons.Icon_Permissions
 import de.dh.daps.ui.common.icons.Icon_Settings
@@ -262,11 +263,12 @@ fun DashboardContent(
                 Spacer(modifier = Modifier.height(8.dp))
                 val (infoText, detailText, actionClick) = when (recommendation) {
                     is ApsRecommendation.Carbs -> {
-                        val carbsKe = recommendation.amountInGram / 10.0
+                        val carbsGrams = recommendation.amountInGram.toDouble()
+                        val carbsText = carbsValue(carbsGrams)
                         Triple(
-                            stringResource(R.string.recommendation_carbs_info_title, recommendation.amountInGram),
-                            stringResource(R.string.recommendation_carbs_info_text, recommendation.amountInGram),
-                            { onNavigateToMealCorrectionBolus(carbsKe) }
+                            stringResource(R.string.recommendation_carbs_info_title, carbsText),
+                            stringResource(R.string.recommendation_carbs_info_text, carbsText),
+                            { onNavigateToMealCorrectionBolus(carbsGrams) }
                         )
                     }
 

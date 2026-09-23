@@ -40,6 +40,7 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.getDefaultStandardMealType
 import de.dh.daps.core.aps.ApsRecommendation
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.SecondaryButton
 import de.dh.daps.ui.common.getBolusRecommendationText
@@ -127,6 +128,7 @@ fun RecommendationCard(
         Column(modifier = Modifier.padding(16.dp)) {
             when (recommendation) {
                 is ApsRecommendation.Carbs -> {
+                    val carbText = carbsValue(recommendation.amountInGram.toDouble())
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
@@ -151,7 +153,7 @@ fun RecommendationCard(
                             }
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = stringResource(R.string.recommendation_carbs_info_title, recommendation.amountInGram),
+                                text = stringResource(R.string.recommendation_carbs_info_title, carbText),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold
                             )
@@ -170,7 +172,7 @@ fun RecommendationCard(
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = stringResource(R.string.recommendation_carbs_info_text, recommendation.amountInGram),
+                        text = stringResource(R.string.recommendation_carbs_info_text, carbText),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
