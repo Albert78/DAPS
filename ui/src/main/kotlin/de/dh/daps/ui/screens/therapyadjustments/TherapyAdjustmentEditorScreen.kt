@@ -58,6 +58,11 @@ import de.dh.daps.common.model.data.AlarmProfile
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
+import de.dh.daps.ui.common.icons.Icon_Alarms
+import de.dh.daps.ui.common.icons.Icon_Edit
+import de.dh.daps.ui.common.icons.Icon_Insulin_Adjustment
+import de.dh.daps.ui.common.icons.Icon_Low_Threshold
+import de.dh.daps.ui.common.icons.Icon_Target_Bg
 import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.ModuloSteppingStrategy
 import de.dh.daps.ui.common.ValueDisplayStrategy
@@ -228,6 +233,12 @@ fun TherapyAdjustmentEditorContent(
                         value = uiState.name,
                         onValueChange = onNameChange,
                         label = { Text(stringResource(R.string.therapy_adjustment_name_label)) },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icon_Edit,
+                                contentDescription = null
+                            )
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
@@ -237,11 +248,21 @@ fun TherapyAdjustmentEditorContent(
                 // Insulin percentage
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(
-                            text = stringResource(R.string.therapy_adjustment_percentage_label),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icon_Insulin_Adjustment,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = stringResource(R.string.therapy_adjustment_percentage_label),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                         EditableValueStepper(
                             currentValue = uiState.percentage.toDouble(),
                             onValueChange = { onPercentageChange(it.toInt()) },
@@ -265,11 +286,22 @@ fun TherapyAdjustmentEditorContent(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(
-                                text = stringResource(R.string.therapy_adjustment_target_bg_override_label),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.weight(1f, fill = false)
+                            ) {
+                                Icon(
+                                    imageVector = Icon_Target_Bg,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = stringResource(R.string.therapy_adjustment_target_bg_override_label),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                             FilterChip(
                                 selected = hasTargetOverride,
                                 onClick = {
@@ -315,11 +347,22 @@ fun TherapyAdjustmentEditorContent(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(
-                                text = stringResource(R.string.therapy_adjustment_low_threshold_override_label),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.weight(1f, fill = false)
+                            ) {
+                                Icon(
+                                    imageVector = Icon_Low_Threshold,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = stringResource(R.string.therapy_adjustment_low_threshold_override_label),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
 
                             Spacer(modifier = Modifier.width(16.dp))
 
@@ -362,11 +405,21 @@ fun TherapyAdjustmentEditorContent(
                 if (uiState.availableAlarmProfiles.isNotEmpty()) {
                     item {
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text(
-                                text = stringResource(R.string.therapy_adjustment_alarm_profile_override_label),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icon_Alarms,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = stringResource(R.string.therapy_adjustment_alarm_profile_override_label),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
 
                             FlowRow(
                                 modifier = Modifier.fillMaxWidth(),

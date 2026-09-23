@@ -20,11 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Adjust
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.VerticalAlignBottom
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
@@ -65,7 +61,11 @@ import de.dh.daps.ui.common.composables.EditableValueStepper
 import de.dh.daps.ui.common.composables.StepperDefaults
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.glucoseValue
+import de.dh.daps.ui.common.icons.Icon_Alarms
+import de.dh.daps.ui.common.icons.Icon_Edit
 import de.dh.daps.ui.common.icons.Icon_Insulin_Adjustment
+import de.dh.daps.ui.common.icons.Icon_Low_Threshold
+import de.dh.daps.ui.common.icons.Icon_Target_Bg
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.NeutralGrey
 import de.dh.daps.ui.common.theme.SoftBlue
@@ -110,7 +110,7 @@ fun TherapyAdjustmentInnerForm(
         // Description / Reason Section
         val hintActive = !currentHint.isNullOrBlank()
         AdjustmentSection(
-            icon = Icons.Default.Edit,
+            icon = Icon_Edit,
             title = stringResource(R.string.therapy_adjustment_description_label),
             description = stringResource(R.string.therapy_adjustment_description_description),
             isActive = hintActive,
@@ -159,12 +159,12 @@ fun TherapyAdjustmentInnerForm(
             )
         }
 
-        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
         // BG Override Section
         val bgOverrideActive = currentTarget != null || currentLow != null
         AdjustmentSection(
-            icon = Icons.Default.Adjust,
+            icon = Icon_Target_Bg,
             title = stringResource(R.string.therapy_adjustment_bg_adjustment_label),
             description = stringResource(R.string.therapy_adjustment_bg_adjustment_description),
             isActive = bgOverrideActive,
@@ -184,7 +184,7 @@ fun TherapyAdjustmentInnerForm(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight(),
-                    icon = Icons.Default.Adjust,
+                    icon = Icon_Target_Bg,
                     label = stringResource(R.string.current_therapy_target_label),
                     active = currentTarget != null,
                     onActiveChange = { active ->
@@ -219,7 +219,7 @@ fun TherapyAdjustmentInnerForm(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight(),
-                    icon = Icons.Default.VerticalAlignBottom,
+                    icon = Icon_Low_Threshold,
                     label = stringResource(R.string.current_therapy_low_threshold_label),
                     active = currentLow != null,
                     onActiveChange = { active ->
@@ -256,7 +256,7 @@ fun TherapyAdjustmentInnerForm(
         // Alarm Profile Section
         val alarmProfileActive = currentAlarmProfileId != null
         AdjustmentSection(
-            icon = Icons.Default.Notifications,
+            icon = Icon_Alarms,
             title = stringResource(R.string.therapy_adjustment_alarm_profile_label),
             description = stringResource(R.string.therapy_adjustment_alarm_profile_description),
             isActive = alarmProfileActive,

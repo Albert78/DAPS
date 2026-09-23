@@ -12,10 +12,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.Comment
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
+import androidx.compose.material.icons.filled.Adjust
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.UnfoldMore
+import androidx.compose.material.icons.filled.VerticalAlignBottom
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Archive
 import androidx.compose.material.icons.outlined.ArrowDownward
@@ -75,6 +77,8 @@ val Icon_Basal_Alternative = Icons.Outlined.Basal_Alternative
 val Icon_Insulin_Profile = Icons.Outlined.StackedLineChart
 val Icon_Therapy_Adjustment = Icons.Outlined.Tune
 val Icon_Insulin_Adjustment = Icons.Default.UnfoldMore
+val Icon_Target_Bg = Icons.Default.Adjust
+val Icon_Low_Threshold = Icons.Default.VerticalAlignBottom
 val Icon_Food_Database = Icons.AutoMirrored.Outlined.MenuBook
 val Icon_System_Control = Icons.Outlined.Build
 val Icon_Alarms = Icons.Outlined.NotificationsActive
@@ -141,6 +145,8 @@ private val iconsForPreview = listOf(
     IconPreview("Insulin_Profile", Icon_Insulin_Profile),
     IconPreview("Therapy_Adjustment", Icon_Therapy_Adjustment),
     IconPreview("Insulin_Adjustment", Icon_Insulin_Adjustment),
+    IconPreview("Target_Bg", Icon_Target_Bg),
+    IconPreview("Low_Threshold", Icon_Low_Threshold),
     IconPreview("Food_Database", Icon_Food_Database),
     IconPreview("System_Control", Icon_System_Control),
     IconPreview("Alarms", Icon_Alarms),
