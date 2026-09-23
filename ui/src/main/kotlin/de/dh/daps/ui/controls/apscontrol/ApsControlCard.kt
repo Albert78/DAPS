@@ -52,8 +52,8 @@ import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.crValue
 import de.dh.daps.ui.common.glucoseValue
-import de.dh.daps.ui.common.isfValue
 import de.dh.daps.ui.common.icons.Icon_Insulin_Adjustment
+import de.dh.daps.ui.common.isfValue
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.NeutralGrey
 import de.dh.daps.ui.common.theme.SoftBlue

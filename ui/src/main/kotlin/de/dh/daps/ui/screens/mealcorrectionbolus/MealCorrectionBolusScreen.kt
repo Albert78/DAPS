@@ -57,8 +57,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.BOLUS_MAX
-import de.dh.daps.common.model.CARBS_KE_MAX
-import de.dh.daps.common.model.CARBS_KE_MIN
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.MealType
 import de.dh.daps.common.model.data.BgDelta
@@ -71,13 +69,9 @@ import de.dh.daps.core.aps.ProjectedBg
 import de.dh.daps.core.aps.TreatmentLock
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ValueDisplayStrategy
-import de.dh.daps.ui.common.carbsGramsValue
-import de.dh.daps.ui.common.carbsKeSteppingStrategy
-import de.dh.daps.ui.common.carbsKeUnitLabel
 import de.dh.daps.ui.common.carbsValue
-import de.dh.daps.ui.common.composables.CarbsValueStepper
-import de.dh.daps.ui.common.insulinSteppingStrategy
 import de.dh.daps.ui.common.composables.AppColorBlue
+import de.dh.daps.ui.common.composables.CarbsValueStepper
 import de.dh.daps.ui.common.composables.EditableValueStepper
 import de.dh.daps.ui.common.composables.ImageCaptionWithSwitch
 import de.dh.daps.ui.common.composables.LightGreenA700
@@ -91,6 +85,7 @@ import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.crValue
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.glucoseValue
+import de.dh.daps.ui.common.insulinSteppingStrategy
 import de.dh.daps.ui.common.insulinUnitLabel
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.isfValue

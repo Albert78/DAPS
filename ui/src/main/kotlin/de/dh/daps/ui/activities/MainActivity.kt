@@ -77,11 +77,11 @@ import de.dh.daps.core.system.RegistryProvider
 import de.dh.daps.ui.GlobalViewModel
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.EdgeToEdgeHandler
-import de.dh.daps.ui.common.icons.Icon_ManualControlMode
 import de.dh.daps.ui.common.icons.Icon_Bolus
-import de.dh.daps.ui.common.icons.Icon_Meal
 import de.dh.daps.ui.common.icons.Icon_Food_Database
+import de.dh.daps.ui.common.icons.Icon_ManualControlMode
 import de.dh.daps.ui.common.icons.Icon_Master_Data
+import de.dh.daps.ui.common.icons.Icon_Meal
 import de.dh.daps.ui.common.icons.Icon_System_Control
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.AppTheme

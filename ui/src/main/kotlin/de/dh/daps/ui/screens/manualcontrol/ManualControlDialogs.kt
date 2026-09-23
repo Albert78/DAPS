@@ -30,11 +30,11 @@ import de.dh.daps.core.aps.ApsRecommendation
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
 import de.dh.daps.ui.common.DefaultSteppingStrategy
-import de.dh.daps.ui.common.insulinSteppingStrategy
 import de.dh.daps.ui.common.composables.EditableValueStepper
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.SecondaryButton
+import de.dh.daps.ui.common.insulinSteppingStrategy
 import de.dh.daps.ui.common.insulinUnitLabel
 import de.dh.daps.ui.common.theme.AppPreview
 

@@ -41,13 +41,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.model.CARBS_KE_MAX
-import de.dh.daps.common.model.CARBS_KE_MIN
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.MealEntry
 import de.dh.daps.common.model.MealType
@@ -55,13 +52,9 @@ import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.getDefaultMealTypes
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.ValueDisplayStrategy
-import de.dh.daps.ui.common.carbsKeSteppingStrategy
-import de.dh.daps.ui.common.carbsKeUnitLabel
 import de.dh.daps.ui.common.composables.AbsoluteTimeStepper
-import de.dh.daps.ui.common.composables.CarbsValueStepper
 import de.dh.daps.ui.common.composables.AppColorBlue
-import de.dh.daps.ui.common.composables.EditableValueStepper
+import de.dh.daps.ui.common.composables.CarbsValueStepper
 import de.dh.daps.ui.common.composables.ImageCaptionWithSwitch
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.insulinValue
@@ -69,7 +62,6 @@ import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.controls.meal.BolusPlanEditorDialog
 import de.dh.daps.ui.controls.meal.FoodTypeSelector
 import de.dh.daps.ui.controls.meal.PlannedBolusUiModel
-import java.util.Locale
 import de.dh.daps.common.R as CommonR
 
 private data class InitialMealValues(

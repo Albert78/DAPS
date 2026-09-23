@@ -42,9 +42,6 @@ import de.dh.daps.common.model.InsulinOrigin
 import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.PrimaryButton
@@ -55,6 +52,9 @@ import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.SoftRed
 import de.dh.daps.ui.common.timeWithUnit
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun ManualControlPumpControlsSection(
