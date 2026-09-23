@@ -239,13 +239,18 @@ fun DashboardContent(
             }
 
             // Snoozed alarms banners
-            dashboardUiState.snoozedAlarms.forEach { (alarmType, snoozeState) ->
-                SnoozedAlarmBanner(
-                    alarmType = alarmType,
-                    snoozedUntil = snoozeState.snoozedUntil,
-                    onCancelSnooze = { onCancelSnooze(alarmType) }
-                )
-            }
+            val subsumedSnoozedAlarms = dashboardUiState.snoozedAlarms.map { (alarmType, _) ->
+                alarmType.subsumedAlarms
+            }.flatten()
+            dashboardUiState.snoozedAlarms
+                .filter { (alarmType, _) -> !subsumedSnoozedAlarms.contains(alarmType) }
+                .forEach { (alarmType, snoozeState) ->
+                    SnoozedAlarmBanner(
+                        alarmType = alarmType,
+                        snoozedUntil = snoozeState.snoozedUntil,
+                        onCancelSnooze = { onCancelSnooze(alarmType) }
+                    )
+                }
 
             CurrentStateView(
                 currentBgUiState = currentBgUiState,
