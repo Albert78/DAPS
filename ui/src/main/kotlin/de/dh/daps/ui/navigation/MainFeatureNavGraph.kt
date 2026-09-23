@@ -139,7 +139,6 @@ class MainFeatureNavGraph(
                     permissionsViewModel = permissionsViewModel,
                     onFixPermissions = { navViewModel.push(PermissionsRoute) },
                     onNavigateToPermissions = { navViewModel.push(PermissionsRoute) },
-                    onNavigateToPreferences = { navViewModel.push(PreferencesMainRoute) },
                     onNavigateToTherapySettings = { navViewModel.push(CurrentTherapySettingsRoute) },
                     onNavigateToMealCorrectionBolus = { carbsInG -> navViewModel.push(MealCorrectionBolusRoute(prefilledCarbsInG = carbsInG)) },
                     onNavigateToSystemControl = { navViewModel.push(SystemControlRoute()) },

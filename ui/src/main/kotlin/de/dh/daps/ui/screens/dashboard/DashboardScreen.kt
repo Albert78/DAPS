@@ -65,7 +65,6 @@ import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.getBolusRecommendationText
 import de.dh.daps.ui.common.icons.Icon_Permissions
-import de.dh.daps.ui.common.icons.Icon_Settings
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.controls.apscontrol.ApsControlCard
 import de.dh.daps.ui.controls.history.HistoryAndImpactChartOrDefault
@@ -101,7 +100,6 @@ fun DashboardScreen(
     permissionsViewModel: PermissionsViewModel,
     onFixPermissions: () -> Unit,
     onNavigateToPermissions: () -> Unit,
-    onNavigateToPreferences: () -> Unit,
     onNavigateToTherapySettings: () -> Unit,
     onNavigateToMealCorrectionBolus: (Double?) -> Unit = {},
     onNavigateToSystemControl: () -> Unit,
@@ -128,7 +126,6 @@ fun DashboardScreen(
         permissionsUiState = permissionsUiState,
         onFixPermissionsClick = onFixPermissions,
         onNavigateToPermissions = onNavigateToPermissions,
-        onNavigateToPreferences = onNavigateToPreferences,
         onNavigateToTherapySettings = onNavigateToTherapySettings,
         onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus,
         isMealCorrectionBolusAllowed = uiState.isMealCorrectionBolusAllowed,
@@ -155,7 +152,6 @@ fun DashboardContent(
     permissionsUiState: PermissionsUiModel,
     onFixPermissionsClick: () -> Unit,
     onNavigateToPermissions: () -> Unit,
-    onNavigateToPreferences: () -> Unit,
     onNavigateToTherapySettings: () -> Unit,
     onNavigateToMealCorrectionBolus: (Double?) -> Unit = {},
     isMealCorrectionBolusAllowed: Boolean,
@@ -198,14 +194,6 @@ fun DashboardContent(
                                 onClick = {
                                     menuExpanded = false
                                     onNavigateToPermissions()
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(id = R.string.menu_item_preferences_label)) },
-                                leadingIcon = { Icon(imageVector = Icon_Settings, contentDescription = null) },
-                                onClick = {
-                                    menuExpanded = false
-                                    onNavigateToPreferences()
                                 }
                             )
                         }
@@ -514,7 +502,6 @@ fun DashboardPreview() {
             ),
             onFixPermissionsClick = {},
             onNavigateToPermissions = {},
-            onNavigateToPreferences = {},
             onNavigateToTherapySettings = {},
             onNavigateToSystemControl = {},
             onHistoryChartClick = {},
@@ -575,7 +562,6 @@ fun DashboardPermissionsWarningPreview() {
                 ),
                 onFixPermissionsClick = {},
                 onNavigateToPermissions = {},
-                onNavigateToPreferences = {},
                 onNavigateToTherapySettings = {},
                 onNavigateToSystemControl = {},
                 onHistoryChartClick = {},

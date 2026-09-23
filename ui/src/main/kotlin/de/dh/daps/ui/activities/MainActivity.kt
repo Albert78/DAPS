@@ -70,6 +70,7 @@ import de.dh.daps.common.navigation.MasterDataRoute
 import de.dh.daps.common.navigation.MealCorrectionBolusRoute
 import de.dh.daps.common.navigation.MealsRoute
 import de.dh.daps.common.navigation.NavigationViewModel
+import de.dh.daps.common.navigation.PreferencesMainRoute
 import de.dh.daps.common.navigation.SystemControlRoute
 import de.dh.daps.common.navigation.combineEntryProviders
 import de.dh.daps.core.SystemRegistry
@@ -82,6 +83,7 @@ import de.dh.daps.ui.common.icons.Icon_Food_Database
 import de.dh.daps.ui.common.icons.Icon_ManualControlMode
 import de.dh.daps.ui.common.icons.Icon_Master_Data
 import de.dh.daps.ui.common.icons.Icon_Meal
+import de.dh.daps.ui.common.icons.Icon_Settings
 import de.dh.daps.ui.common.icons.Icon_System_Control
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.AppTheme
@@ -432,6 +434,12 @@ fun DrawerContent(
                     icon = Icon_Master_Data,
                     selected = currentRoute == MasterDataRoute,
                     onClick = { onRouteSelected(MasterDataRoute) }
+                )
+                DrawerItem(
+                    label = stringResource(id = R.string.menu_item_preferences_label),
+                    icon = Icon_Settings,
+                    selected = currentRoute == PreferencesMainRoute,
+                    onClick = { onRouteSelected(PreferencesMainRoute) }
                 )
             }
         }
