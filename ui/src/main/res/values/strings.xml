@@ -608,7 +608,10 @@
     <string name="manual_control_dialog_confirm_deliver">Abgeben</string>
     <string name="manual_control_dialog_confirm_set">Setzen</string>
     <string name="manual_control_dialog_cancel">Abbrechen</string>
-    <string name="manual_control_deferred_boluses_info">Enthält %1$d zurückgestellte(n) Bolus (insg. %2$.2f I.E.)</string>
+    <plurals name="manual_control_deferred_boluses_info">
+        <item quantity="one">Enthält %1$d zurückgestellten Bolus (insg. %2$.2f I.E.)</item>
+        <item quantity="other">Enthält %1$d zurückgestellte Boli (insg. %2$.2f I.E.)</item>
+    </plurals>
     <string name="menu_item_manual_control_label">Manuelle Steuerung</string>
 
 </resources>

@@ -21,6 +21,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -124,8 +125,9 @@ fun DeliverBolusDialogContent(
                 color = MaterialTheme.colorScheme.secondaryContainer
             ) {
                 Text(
-                    text = stringResource(
-                        id = R.string.manual_control_deferred_boluses_info,
+                    text = pluralStringResource(
+                        id = R.plurals.manual_control_deferred_boluses_info,
+                        count = deferredList.size,
                         deferredList.size,
                         totalDeferred
                     ),
