@@ -36,7 +36,9 @@ val status_light_warning = Color(0xFFF9A825) // Orange/Yellow
 val status_light_overdue = Color(0xFFC62828) // Red
 
 // Custom Semantic Colors Dark
+val semantic_light_good = Color(0xFF2E7D32) // Green
 val semantic_light_warning = Color(0xFFF9A825) // Orange/Yellow
+val semantic_light_bad = Color(0xFFC62828) // Red
 
 val md_theme_dark_primary = Color(0xFF8FCEF3)
 val md_theme_dark_onPrimary = Color(0xFF003549)
@@ -72,7 +74,9 @@ val status_dark_warning = Color(0xFFFFF176)
 val status_dark_overdue = Color(0xFFE57373)
 
 // Custom Semantic Colors Dark
+val semantic_dark_good = Color(0xFF81C784)
 val semantic_dark_warning = Color(0xFFFFF176)
+val semantic_dark_bad = Color(0xFFE57373)
 
 // TODO: Currently hard coded, rework to have a light and a dark variant
 val ColorBg = Color(0xFF00BCD4)

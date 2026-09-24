@@ -43,14 +43,15 @@ fun CgmTabContent(
     timeFormat: SimpleDateFormat,
     tick: Long
 ) {
-    Spacer(modifier = Modifier.height(16.dp))
-    CgmOverviewCard(uiState, timeFormat, tick)
+    Column {
+        CgmOverviewCard(uiState, timeFormat, tick)
 
-    if (uiState.cgmPluginUiProvider != null) {
-        Spacer(modifier = Modifier.height(24.dp))
-        SectionHeader(title = "Plugin")
-        Spacer(modifier = Modifier.height(8.dp))
-        uiState.cgmPluginUiProvider.CgmControlSection()
+        if (uiState.cgmPluginUiProvider != null) {
+            Spacer(modifier = Modifier.height(24.dp))
+            SectionHeader(title = "Plugin")
+            Spacer(modifier = Modifier.height(8.dp))
+            uiState.cgmPluginUiProvider.CgmControlSection()
+        }
     }
 }
 

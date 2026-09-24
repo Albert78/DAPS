@@ -35,7 +35,9 @@ val LocalStatusColors = staticCompositionLocalOf {
 
 @Immutable
 data class SemanticColors(
+    val good: Color,
     val warning: Color,
+    val bad: Color,
     val highContrast: Color,
     // If we need more colors, place them here, e.g.
     // val success: Color,
@@ -44,7 +46,9 @@ data class SemanticColors(
 
 val LocalSemanticColors = staticCompositionLocalOf {
     SemanticColors(
+        good = Color.Unspecified,
         warning = Color.Unspecified,
+        bad = Color.Unspecified,
         highContrast = Color.Unspecified
         // ...
     )
@@ -73,12 +77,16 @@ private val DarkStatusColors = StatusColors(
 )
 
 private val LightSemanticColors = SemanticColors(
+    good = semantic_light_good,
     warning = semantic_light_warning,
+    bad = semantic_light_bad,
     highContrast = Color.Black
 )
 
 private val DarkSemanticColors = SemanticColors(
+    good = semantic_dark_good,
     warning = semantic_dark_warning,
+    bad = semantic_dark_bad,
     highContrast = Color.White
 )
 

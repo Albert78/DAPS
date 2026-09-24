@@ -53,7 +53,6 @@ fun PumpTabContent(
     onCancelPumpJob: (String) -> Unit
 ) {
     Column {
-        Spacer(modifier = Modifier.height(16.dp))
         PumpOverviewCard(uiState, timeFormat)
         PumpActionsCard(
             uiState = uiState,
