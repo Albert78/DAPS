@@ -347,9 +347,9 @@ fun shortRelativeTimeUntil(timestamp: Timestamp): String {
 @Composable
 fun relativeTimeMinutes(minutes: Int): String {
     return when {
-        minutes == 0 -> stringResource(de.dh.daps.ui.R.string.relative_time_now)
-        minutes > 0 -> stringResource(de.dh.daps.ui.R.string.relative_time_minutes_positive, minutes)
-        else -> stringResource(de.dh.daps.ui.R.string.relative_time_minutes_negative, abs(minutes))
+        minutes == 0 -> stringResource(CommonR.string.relative_time_now)
+        minutes > 0 -> stringResource(CommonR.string.relative_time_minutes_positive, minutes)
+        else -> stringResource(CommonR.string.relative_time_minutes_negative, abs(minutes))
     }
 }
 
@@ -373,7 +373,7 @@ fun withinTimeDescription(minutes: Minutes): String {
         else -> stringResource(CommonR.string.duration_hours_and_minutes_format, hours, mins)
     }
 
-    return stringResource(de.dh.daps.ui.R.string.within_time_format, timeStr)
+    return stringResource(CommonR.string.within_time_format, timeStr)
 }
 
 /////////////////////////////////////////////// Glucose & Therapy //////////////////////////////////////

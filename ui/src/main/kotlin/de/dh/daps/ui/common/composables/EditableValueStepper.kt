@@ -40,7 +40,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import de.dh.daps.ui.R
+import de.dh.daps.common.R as CommonR
 import de.dh.daps.ui.common.DefaultSteppingStrategy
 import de.dh.daps.ui.common.DefaultValueDisplayStrategy
 import de.dh.daps.ui.common.SteppingStrategy
@@ -104,7 +104,7 @@ fun EditableValueStepper(
             modifier = Modifier.size(style.buttonSize),
             enabled = currentValue > minValue
         ) {
-            Icon(Icon_Minus, contentDescription = stringResource(R.string.cd_decrease_value), modifier = Modifier.size(style.buttonSize * 0.5f))
+            Icon(Icon_Minus, contentDescription = stringResource(CommonR.string.cd_decrease_value), modifier = Modifier.size(style.buttonSize * 0.5f))
         }
 
         Spacer(Modifier.width(style.spacing))
@@ -212,7 +212,7 @@ fun EditableValueStepper(
             modifier = Modifier.size(style.buttonSize),
             enabled = currentValue < maxValue
         ) {
-            Icon(Icon_Plus, contentDescription = stringResource(R.string.cd_increase_value), modifier = Modifier.size(style.buttonSize * 0.5f))
+            Icon(Icon_Plus, contentDescription = stringResource(CommonR.string.cd_increase_value), modifier = Modifier.size(style.buttonSize * 0.5f))
         }
     }
 }

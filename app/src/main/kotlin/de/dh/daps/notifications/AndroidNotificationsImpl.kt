@@ -99,7 +99,7 @@ class AndroidNotificationsImpl(
             GlucoseUnit.MG_DL -> context.getString(CommonR.string.glucose_unit_mgdl)
             GlucoseUnit.MMOL -> context.getString(CommonR.string.glucose_unit_mmol)
         }
-        return context.getString(UiR.string.bg_delta_format, valStr, unitStr)
+        return context.getString(CommonR.string.bg_delta_format, valStr, unitStr)
     }
 
     override fun createMainAppNotification(glucoseRepository: GlucoseRepository): Notification {

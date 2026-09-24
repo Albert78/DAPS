@@ -204,7 +204,7 @@ private fun TreatmentLockHeader(
             IconButton(onClick = onNavigateUp) {
                 Icon(
                     Icons.Default.Close,
-                    contentDescription = stringResource(id = R.string.cd_close)
+                    contentDescription = stringResource(id = CommonR.string.cd_close)
                 )
             }
         }

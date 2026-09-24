@@ -59,6 +59,8 @@ import de.dh.daps.ui.common.icons.InsulinBlood
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.shortRelativeTimeAgo
 import de.dh.daps.ui.common.theme.AppPreview
+import de.dh.daps.ui.common.theme.ColorCarbs
+import de.dh.daps.ui.common.theme.ColorInsulin
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -198,7 +200,7 @@ fun CurrentStateView(
                                 imageVector = Icons.Filled.CarbsBlood,
                                 contentDescription = null,
                                 modifier = Modifier.size(14.dp),
-                                tint = if (carbsVisible) Color(0xFFFFC107) else Color.Gray.copy(alpha = 0.4f)
+                                tint = if (carbsVisible) ColorCarbs else Color.Gray.copy(alpha = 0.4f)
                             )
                             Spacer(Modifier.width(4.dp))
                             Text(
@@ -217,7 +219,7 @@ fun CurrentStateView(
                             HorizontalDivider(
                                 modifier = Modifier.width(16.dp).padding(top = 2.dp),
                                 thickness = 2.dp,
-                                color = Color(0xFFFFC107)
+                                color = ColorCarbs
                             )
                         }
                     }
@@ -235,7 +237,7 @@ fun CurrentStateView(
                                 imageVector = Icons.Filled.InsulinBlood,
                                 contentDescription = null,
                                 modifier = Modifier.size(14.dp),
-                                tint = if (insulinVisible) Color(0xFFF44336) else Color.Gray.copy(alpha = 0.4f)
+                                tint = if (insulinVisible) ColorInsulin else Color.Gray.copy(alpha = 0.4f)
                             )
                             Spacer(Modifier.width(4.dp))
                             Text(
@@ -254,7 +256,7 @@ fun CurrentStateView(
                             HorizontalDivider(
                                 modifier = Modifier.width(16.dp).padding(top = 2.dp),
                                 thickness = 2.dp,
-                                color = Color(0xFFF44336)
+                                color = ColorInsulin
                             )
                         }
                     }

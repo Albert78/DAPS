@@ -244,7 +244,7 @@ fun MealCorrectionBolusContent(
                                 )
                                 Spacer(Modifier.height(4.dp))
                                 Text(
-                                    text = stringResource(R.string.approx_time_format, time(uiState.input.mealTimestamp)),
+                                    text = stringResource(CommonR.string.approx_time_format, time(uiState.input.mealTimestamp)),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.primary
                                 )
@@ -416,7 +416,7 @@ fun MealCorrectionBolusContextInfo(
                 ) {
                     if (uiState.projections.isProjected) {
                         Text(
-                            text = stringResource(R.string.approx_prefix),
+                            text = stringResource(CommonR.string.approx_prefix),
                             style = MaterialTheme.typography.bodySmall,
                             color = Color.Gray,
                             modifier = Modifier.align(Alignment.CenterVertically)
@@ -448,7 +448,7 @@ fun MealCorrectionBolusContextInfo(
                 }
 
                 Text(
-                    text = stringResource(R.string.at_time_format, time(uiState.projections.timestamp)),
+                    text = stringResource(CommonR.string.at_time_format, time(uiState.projections.timestamp)),
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray
                 )

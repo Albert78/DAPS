@@ -52,10 +52,6 @@
 
     <string name="alarm_profiles_screen_title">Alarmprofile</string>
 
-    <string name="theme_system">Systemstandard</string>
-    <string name="theme_light">Hell</string>
-    <string name="theme_dark">Dunkel</string>
-
     <string name="insulin_profile_editor_screen_title">Insulin-Profile verwalten</string>
     <string name="insulin_profile_editor_new_profile">Neues Insulin-Profil</string>
     <string name="insulin_profile_editor_edit_profile">Insulin-Profil bearbeiten</string>
@@ -98,8 +94,6 @@
     <string name="cd_save_profile">Insulin-Profil speichern</string>
     <string name="cd_delete_profile">Insulin-Profil löschen</string>
     <string name="cd_insert_block">Einfügen</string>
-    <string name="cd_decrease_value">Weniger</string>
-    <string name="cd_increase_value">Mehr</string>
     <string name="cd_help">Hilfe anzeigen</string>
     <string name="cd_refresh_calculations">Berechnungen aktualisieren</string>
 
@@ -282,16 +276,6 @@
     <string name="scheduled_therapy_adjustment_scheduled_time">Geplant: %1$s – %2$s Uhr</string>
     <string name="scheduled_therapy_adjustment_delete_button">Geplante Anpassung löschen</string>
 
-    <string name="approx_prefix">ca.</string>
-    <string name="unknown_label">Unbekannt</string>
-    <string name="bg_delta_format">Delta: %1$s %2$s</string>
-    <string name="bg_raw_format">(raw: %1$s)</string>
-    <string name="at_time_format">um %1$s</string>
-    <string name="approx_time_format">ca. %1$s</string>
-    <string name="relative_time_now">Jetzt</string>
-    <string name="relative_time_minutes_positive">in %1$d Min</string>
-    <string name="relative_time_minutes_negative">vor %1$d Min</string>
-    <string name="within_time_format">innerhalb von %1$s</string>
     <string name="current_state_carbs_label_short">KH</string>
     <string name="current_state_insulin_label_short">INSULIN</string>
     <string name="current_state_algorithm_label_short">SYSTEM</string>
@@ -361,7 +345,6 @@
     <string name="menu_food_database_label">Essensdatenbank</string>
     <string name="menu_system_control_label">Systemsteuerung</string>
     <string name="cd_open_navigation_drawer">Hauptmenü öffnen</string>
-    <string name="cd_close">Schließen</string>
 
     <string name="meals_screen_title">Mahlzeiten</string>
     <string name="meal_history_detail_title">Mahlzeit Details</string>

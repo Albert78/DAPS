@@ -26,7 +26,6 @@ import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgSampleKind
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.ui.R
 import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.composables.LightGreenA700
 import de.dh.daps.ui.common.composables.Red
@@ -83,7 +82,7 @@ fun ManualControlContextInfo(
 
             val timestamp = contextInfo.lastBgReading?.timestamp
             val timeText = if (timestamp != null && timestamp.isValid()) {
-                stringResource(R.string.at_time_format, time(timestamp))
+                stringResource(CommonR.string.at_time_format, time(timestamp))
             } else {
                 "--"
             }
