@@ -17,8 +17,15 @@
 ### Jetpack Compose Previews
 - **Use `AppPreview`**: Always wrap Jetpack Compose Previews in `AppPreview { ... }` (or `AppTheme` for raw vector icons) instead of the generic `MaterialTheme { ... }` to ensure the correct project styling, background surface, and app context (like `LocalGlucoseUnit`) are applied.
 
-## Tonalität und Ansprache
-- **Duzen**: Der Nutzer wird in der gesamten App konsequent geduzt (z. B. "Möchtest du...", "Gib deinen Wert ein...").
+### Code Comments
+- **Code comments in English**: All comments in code must be in English.
+- **Code-focused only**: Comments should explain the code or domain logic itself, never the current task, prompt context, or meta-reasons (e.g., do not write "Added because user asked to...").
+
+### Domain Base Classes & Common Types
+- **Use common base types**: Whenever possible, use domain value objects and base classes from the `:common` module (e.g., `Timestamp`, `Tick`, `Minutes`, `InsulinAmount`, `BgValue`) instead of raw primitives.
+
+## Tone and Form of Address
+- **Informal Form of Address ("Du")**: Always address the user informally throughout the entire app (e.g., in German using "Du" / "Möchtest du...", "Gib deinen Wert ein...").
 
 ## Unit Handling and Formatting
 
@@ -33,3 +40,6 @@
 - **Unit Labels**: Use `glucoseUnitLabel()` or `isfUnitLabel()` if you only need the unit string itself.
 - **Strings resources**: Avoid hardcoding units like "mg/dL" or "mmol/l" in `strings.xml` descriptions. Keep descriptions neutral and show the unit dynamically in the UI next to the value field.
 - **ViewModels**: ViewModels should provide data using specific domain types (`BgValue`, `BgDelta`, `InsulinAmount`) or raw numeric values. Do not pre-format values with units in the ViewModel; let the UI handle the formatting based on the current `LocalGlucoseUnit`.
+
+## Localization & String Resources
+- **Localize UI Strings**: All user-visible strings in UI code should be localized using Android string resources (`R.string...` / `stringResource(...)`) whenever possible.
