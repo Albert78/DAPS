@@ -47,9 +47,9 @@ import java.util.Locale
 import kotlin.time.Duration.Companion.milliseconds
 import de.dh.daps.common.R as CommonR
 
-const val SYSTEM_CONTROL_TAB_CGM = 0
-const val SYSTEM_CONTROL_TAB_PUMP = 1
-const val SYSTEM_CONTROL_TAB_CORE = 2
+const val SYSTEM_CONTROL_TAB_OVERVIEW = 0
+const val SYSTEM_CONTROL_TAB_CGM = 1
+const val SYSTEM_CONTROL_TAB_PUMP = 2
 
 @Composable
 fun SystemControlScreen(
@@ -57,7 +57,7 @@ fun SystemControlScreen(
     onNavigateToCoreDecisions: () -> Unit,
     onNavigateToPumpManagement: () -> Unit,
     viewModel: SystemControlViewModel,
-    initialTab: Int = SYSTEM_CONTROL_TAB_CGM
+    initialTab: Int = SYSTEM_CONTROL_TAB_OVERVIEW
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -76,7 +76,7 @@ fun SystemControlScreen(
 @Composable
 fun SystemControlContent(
     uiState: SystemControlUiState,
-    initialTab: Int = SYSTEM_CONTROL_TAB_CGM,
+    initialTab: Int = SYSTEM_CONTROL_TAB_OVERVIEW,
     onNavigateUp: () -> Unit,
     onNavigateToCoreDecisions: () -> Unit,
     onNavigateToPumpManagement: () -> Unit,
@@ -97,9 +97,9 @@ fun SystemControlContent(
     }
 
     val tabs = listOf(
+        stringResource(id = R.string.system_control_tab_overview),
         stringResource(id = R.string.system_control_tab_cgm),
-        stringResource(id = R.string.system_control_tab_pump),
-        stringResource(id = R.string.system_control_tab_core)
+        stringResource(id = R.string.system_control_tab_pump)
     )
 
     Scaffold(
@@ -149,6 +149,7 @@ fun SystemControlContent(
         ) {
             item {
                 when (selectedTabIndex) {
+                    SYSTEM_CONTROL_TAB_OVERVIEW -> OverviewTabContent(onNavigateToCoreDecisions)
                     SYSTEM_CONTROL_TAB_CGM -> CgmTabContent(uiState, timeFormat, tick)
                     SYSTEM_CONTROL_TAB_PUMP -> PumpTabContent(
                         uiState = uiState,
@@ -157,13 +158,28 @@ fun SystemControlContent(
                         onRefreshPumpStatus = onRefreshPumpStatus,
                         onCancelPumpJob = onCancelPumpJob
                     )
-                    SYSTEM_CONTROL_TAB_CORE -> CoreTabContent(onNavigateToCoreDecisions)
                 }
             }
             item {
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Overview Tab")
+@Composable
+fun SystemControlOverviewPreview() {
+    AppPreview {
+        SystemControlContent(
+            uiState = previewUiState(),
+            initialTab = SYSTEM_CONTROL_TAB_OVERVIEW,
+            onNavigateUp = {},
+            onNavigateToCoreDecisions = {},
+            onNavigateToPumpManagement = {},
+            onCancelPumpJob = {},
+            onRefreshPumpStatus = {}
+        )
     }
 }
 
@@ -196,22 +212,6 @@ fun SystemControlPumpPreview() {
                 )
             ),
             initialTab = SYSTEM_CONTROL_TAB_PUMP,
-            onNavigateUp = {},
-            onNavigateToCoreDecisions = {},
-            onNavigateToPumpManagement = {},
-            onCancelPumpJob = {},
-            onRefreshPumpStatus = {}
-        )
-    }
-}
-
-@Preview(showBackground = true, name = "Core Tab")
-@Composable
-fun SystemControlCorePreview() {
-    AppPreview {
-        SystemControlContent(
-            uiState = previewUiState(),
-            initialTab = SYSTEM_CONTROL_TAB_CORE,
             onNavigateUp = {},
             onNavigateToCoreDecisions = {},
             onNavigateToPumpManagement = {},

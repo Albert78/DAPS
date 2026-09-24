@@ -482,7 +482,7 @@
     <string name="pump_management_prime_cannula">Katheter füllen (Prime)</string>
     <string name="pump_management_prime_tubing">Schlauch füllen</string>
 
-    <string name="system_control_tab_core">System</string>
+    <string name="system_control_tab_overview">Übersicht</string>
     <string name="system_control_core_history_button">Verlauf</string>
 
     <string name="core_decisions_screen_title">System-Ereignisse</string>

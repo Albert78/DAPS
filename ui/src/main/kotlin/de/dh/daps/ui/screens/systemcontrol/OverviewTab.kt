@@ -22,7 +22,7 @@ import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.theme.AppPreview
 
 @Composable
-fun CoreTabContent(
+fun OverviewTabContent(
     onNavigateToCoreDecisions: () -> Unit
 ) {
     Spacer(modifier = Modifier.height(16.dp))
@@ -63,8 +63,8 @@ fun CoreTabContent(
 
 @Preview(showBackground = true)
 @Composable
-fun CoreTabPreview() {
+fun OverviewTabPreview() {
     AppPreview {
-        CoreTabContent(onNavigateToCoreDecisions = {})
+        OverviewTabContent(onNavigateToCoreDecisions = {})
     }
 }
