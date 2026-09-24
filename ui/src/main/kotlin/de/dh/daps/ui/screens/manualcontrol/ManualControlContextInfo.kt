@@ -27,13 +27,11 @@ import de.dh.daps.common.model.data.BgSampleKind
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.common.carbsValue
-import de.dh.daps.ui.common.composables.LightGreenA700
-import de.dh.daps.ui.common.composables.Red
-import de.dh.daps.ui.common.composables.Yellow
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.glucoseValue
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.theme.AppPreview
+import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.daps.ui.common.time
 import de.dh.daps.common.R as CommonR
 
@@ -58,12 +56,15 @@ fun ManualControlContextInfo(
             ) {
                 val displayBgValue = contextInfo.lastBgReading?.value ?: BgValue.INVALID
                 val bgText = glucoseValue(displayBgValue, default = "??")
+                val colors = ExtendedTheme.semanticColors
                 val textColor = if (displayBgValue.isInvalid()) {
                     Color.Gray
                 } else when {
-                    displayBgValue.mgdl < 70 -> Red
-                    displayBgValue.mgdl < 180 -> LightGreenA700
-                    else -> Yellow
+                    displayBgValue.mgdl < 55 -> colors.glucoseVeryLow
+                    displayBgValue.mgdl < 70 -> colors.glucoseLow
+                    displayBgValue.mgdl < 180 -> colors.glucoseTarget
+                    displayBgValue.mgdl < 220 -> colors.glucoseElevated
+                    else -> colors.glucoseHigh
                 }
                 Text(
                     text = bgText,

@@ -30,9 +30,6 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.data.BgDelta
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.ui.common.composables.LightGreenA700
-import de.dh.daps.ui.common.composables.Red
-import de.dh.daps.ui.common.composables.Yellow
 import de.dh.daps.ui.common.deltaValue
 import de.dh.daps.ui.common.glucoseValue
 import de.dh.daps.ui.common.shortRelativeTimeAgo
@@ -70,12 +67,16 @@ fun CurrentBgViewSquare(
 
     val deltaText = deltaValue(currentBgValue?.delta, default = "")
 
+    val colors = ExtendedTheme.semanticColors
+
     val textColor = if (currentBgValue == null || (currentBgValue.isValueOld)) {
         Color.Gray
     } else when {
-        currentBgValue.bgValue.mgdl < 70 -> Red
-        currentBgValue.bgValue.mgdl < 180 -> LightGreenA700
-        else -> Yellow
+        currentBgValue.bgValue.mgdl < 55 -> colors.glucoseVeryLow
+        currentBgValue.bgValue.mgdl < 70 -> colors.glucoseLow
+        currentBgValue.bgValue.mgdl < 180 -> colors.glucoseTarget
+        currentBgValue.bgValue.mgdl < 220 -> colors.glucoseElevated
+        else -> colors.glucoseHigh
     }
 
     val trendRotation = when (currentBgValue?.trend) {

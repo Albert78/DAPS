@@ -35,9 +35,6 @@ import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.common.composables.AppColorBlue
-import de.dh.daps.ui.common.composables.LightGreenA700
-import de.dh.daps.ui.common.composables.Red
-import de.dh.daps.ui.common.composables.Yellow
 import de.dh.daps.ui.common.deltaValue
 import de.dh.daps.ui.common.glucoseValue
 import de.dh.daps.ui.common.shortRelativeTimeAgo
@@ -169,17 +166,19 @@ fun CurrentBgView(
 
     val centerText = glucoseValue(currentBgValue?.bgValue, default = "?")
 
+    val colors = ExtendedTheme.semanticColors
+
     val textColor =
         if (currentBgValue == null) {
             Color.DarkGray
         } else if (currentBgValue.isValueOld) {
             Color.DarkGray
         } else when {
-            currentBgValue.bgValue.mgdl < 50 -> Red
-            currentBgValue.bgValue.mgdl < 70 -> Yellow
-            currentBgValue.bgValue.mgdl < 180 -> LightGreenA700
-            currentBgValue.bgValue.mgdl < 250 -> Yellow
-            else -> Red
+            currentBgValue.bgValue.mgdl < 55 -> colors.glucoseVeryLow
+            currentBgValue.bgValue.mgdl < 70 -> colors.glucoseLow
+            currentBgValue.bgValue.mgdl < 180 -> colors.glucoseTarget
+            currentBgValue.bgValue.mgdl < 220 -> colors.glucoseElevated
+            else -> colors.glucoseHigh
         }
 
     val textLight = currentBgValue?.isValueOld ?: false

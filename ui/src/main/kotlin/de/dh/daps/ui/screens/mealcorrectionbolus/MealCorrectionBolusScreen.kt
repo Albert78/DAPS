@@ -72,13 +72,10 @@ import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.composables.CarbsValueStepper
 import de.dh.daps.ui.common.composables.ImageCaptionWithSwitch
 import de.dh.daps.ui.common.composables.InsulinAmountStepper
-import de.dh.daps.ui.common.composables.LightGreenA700
 import de.dh.daps.ui.common.composables.PrimaryButton
-import de.dh.daps.ui.common.composables.Red
 import de.dh.daps.ui.common.composables.StepperDefaults
 import de.dh.daps.ui.common.composables.TimeStepper
 import de.dh.daps.ui.common.composables.TimeStepperDefaults
-import de.dh.daps.ui.common.composables.Yellow
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.crValue
 import de.dh.daps.ui.common.glucoseUnitLabel
@@ -425,12 +422,15 @@ fun MealCorrectionBolusContextInfo(
 
                     val displayBgValue = uiState.projections.bg
                     val bgText = glucoseValue(displayBgValue, default = "??")
+                    val colors = ExtendedTheme.semanticColors
                     val textColor = if (displayBgValue.isInvalid()) {
                         Color.Gray
                     } else when {
-                        displayBgValue.mgdl < 70 -> Red
-                        displayBgValue.mgdl < 180 -> LightGreenA700
-                        else -> Yellow
+                        displayBgValue.mgdl < 55 -> colors.glucoseVeryLow
+                        displayBgValue.mgdl < 70 -> colors.glucoseLow
+                        displayBgValue.mgdl < 180 -> colors.glucoseTarget
+                        displayBgValue.mgdl < 220 -> colors.glucoseElevated
+                        else -> colors.glucoseHigh
                     }
                     Text(
                         text = bgText,

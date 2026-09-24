@@ -17,6 +17,8 @@ import de.dh.daps.ui.common.LocalAppFormatters
 import de.dh.daps.ui.common.LocalCarbsUnit
 import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.AppColorBlue
+import de.dh.daps.ui.common.composables.LightGreenA700
+import de.dh.daps.ui.common.composables.Yellow
 import de.dh.daps.ui.common.rememberAppFormatters
 
 @Immutable
@@ -41,6 +43,11 @@ data class SemanticColors(
     val bad: Color,
     val highContrast: Color,
     val border: Color,
+    val glucoseVeryLow: Color,
+    val glucoseLow: Color,
+    val glucoseTarget: Color,
+    val glucoseElevated: Color,
+    val glucoseHigh: Color,
 )
 
 val LocalSemanticColors = staticCompositionLocalOf {
@@ -49,7 +56,12 @@ val LocalSemanticColors = staticCompositionLocalOf {
         warning = Color.Unspecified,
         bad = Color.Unspecified,
         highContrast = Color.Unspecified,
-        border = Color.Unspecified
+        border = Color.Unspecified,
+        glucoseVeryLow = Color.Unspecified,
+        glucoseLow = Color.Unspecified,
+        glucoseTarget = Color.Unspecified,
+        glucoseElevated = Color.Unspecified,
+        glucoseHigh = Color.Unspecified
     )
 }
 
@@ -80,7 +92,12 @@ private val LightSemanticColors = SemanticColors(
     warning = semantic_light_warning,
     bad = semantic_light_bad,
     highContrast = Color.Black,
-    border = AppColorBlue.copy(alpha = 0.3f)
+    border = AppColorBlue.copy(alpha = 0.3f),
+    glucoseVeryLow = Color(0xFFB71C1C),
+    glucoseLow = Color(0xFFF44336),
+    glucoseTarget = LightGreenA700,
+    glucoseElevated = Yellow,
+    glucoseHigh = Color(0xFFFF5722)
 )
 
 private val DarkSemanticColors = SemanticColors(
@@ -88,7 +105,12 @@ private val DarkSemanticColors = SemanticColors(
     warning = semantic_dark_warning,
     bad = semantic_dark_bad,
     highContrast = Color.White,
-    border = AppColorBlue.copy(alpha = 0.3f)
+    border = AppColorBlue.copy(alpha = 0.3f),
+    glucoseVeryLow = Color(0xFFEF5350),
+    glucoseLow = Color(0xFFE57373),
+    glucoseTarget = Color(0xFF81C784),
+    glucoseElevated = Color(0xFFFFF176),
+    glucoseHigh = Color(0xFFFF8A65)
 )
 
 private val LightColors = lightColorScheme(

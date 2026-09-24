@@ -47,9 +47,6 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.aps.CoreState
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.carbsValue
-import de.dh.daps.ui.common.composables.LightGreenA700
-import de.dh.daps.ui.common.composables.Red
-import de.dh.daps.ui.common.composables.Yellow
 import de.dh.daps.ui.common.deltaValue
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.glucoseValue
@@ -100,12 +97,16 @@ fun CurrentStateView(
 
     val deltaText = deltaValue(currentBgValue?.delta, default = "")
 
+    val colors = ExtendedTheme.semanticColors
+
     val textColor = if (currentBgValue == null || (currentBgValue.isValueOld)) {
         Color.Gray
     } else when {
-        currentBgValue.bgValue.mgdl < 70 -> Red
-        currentBgValue.bgValue.mgdl < 180 -> LightGreenA700
-        else -> Yellow
+        currentBgValue.bgValue.mgdl < 55 -> colors.glucoseVeryLow
+        currentBgValue.bgValue.mgdl < 70 -> colors.glucoseLow
+        currentBgValue.bgValue.mgdl < 180 -> colors.glucoseTarget
+        currentBgValue.bgValue.mgdl < 220 -> colors.glucoseElevated
+        else -> colors.glucoseHigh
     }
 
     val trendRotation = when (currentBgValue?.trend) {
@@ -266,9 +267,9 @@ fun CurrentStateView(
                     val (statusColor, hasIssues) = when (coreState) {
                         is CoreState.Active -> {
                             if (currentBgUiState.apsIssues.isEmpty()) {
-                                LightGreenA700 to false
+                                colors.glucoseTarget to false
                             } else {
-                                Red to true
+                                colors.glucoseLow to true
                             }
                         }
                         else -> Color.Gray to false
@@ -302,7 +303,7 @@ fun CurrentStateView(
                                 imageVector = Icons.Default.Warning,
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp).padding(vertical = 2.dp),
-                                tint = Red
+                                tint = colors.glucoseLow
                             )
                         } else {
                             Text(
