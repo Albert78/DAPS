@@ -68,12 +68,11 @@ import de.dh.daps.core.aps.BolusProjections
 import de.dh.daps.core.aps.ProjectedBg
 import de.dh.daps.core.aps.TreatmentLock
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.ValueDisplayStrategy
 import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.composables.CarbsValueStepper
-import de.dh.daps.ui.common.composables.EditableValueStepper
 import de.dh.daps.ui.common.composables.ImageCaptionWithSwitch
+import de.dh.daps.ui.common.composables.InsulinAmountStepper
 import de.dh.daps.ui.common.composables.LightGreenA700
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.Red
@@ -85,8 +84,6 @@ import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.crValue
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.glucoseValue
-import de.dh.daps.ui.common.insulinSteppingStrategy
-import de.dh.daps.ui.common.insulinUnitLabel
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.isfValue
 import de.dh.daps.ui.common.theme.AppPreview
@@ -95,7 +92,6 @@ import de.dh.daps.ui.common.withinTimeDescription
 import de.dh.daps.ui.controls.meal.BolusPlanEditorDialog
 import de.dh.daps.ui.controls.meal.FoodTypeSelector
 import de.dh.daps.ui.controls.meal.PlannedBolusUiModel
-import java.util.Locale
 import kotlin.math.abs
 import de.dh.daps.common.R as CommonR
 
@@ -326,20 +322,11 @@ fun MealCorrectionBolusContent(
 
                             Spacer(Modifier.height(8.dp))
 
-                            EditableValueStepper(
+                            InsulinAmountStepper(
                                 currentValue = uiState.input.manualBolus.iu,
                                 onValueChange = onManualBolusChange,
                                 minValue = 0.0,
-                                maxValue = BOLUS_MAX,
-                                steppingStrategy = insulinSteppingStrategy(),
-                                displayStrategy = object : ValueDisplayStrategy {
-                                    override fun format(value: Double): String =
-                                        String.format(Locale.getDefault(), "%.2f", value)
-
-                                    override fun color(value: Double): Color = Color.Unspecified
-                                },
-                                suffix = " ${insulinUnitLabel()}",
-                                style = StepperDefaults.defaultStyle()
+                                maxValue = BOLUS_MAX
                             )
                         }
                     }

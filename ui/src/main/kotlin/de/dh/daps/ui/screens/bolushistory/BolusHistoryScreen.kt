@@ -68,14 +68,11 @@ import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.ValueDisplayStrategy
-import de.dh.daps.ui.common.composables.EditableValueStepper
+import de.dh.daps.ui.common.composables.InsulinAmountStepper
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
-import de.dh.daps.ui.common.insulinSteppingStrategy
-import de.dh.daps.ui.common.insulinUnitLabel
 import de.dh.daps.ui.common.theme.AppPreview
 import java.time.Instant
 import java.time.LocalDate
@@ -544,18 +541,11 @@ fun AddManualBolusDialog(
                 }
 
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    EditableValueStepper(
+                    InsulinAmountStepper(
                         currentValue = amount,
                         onValueChange = { amount = it },
                         minValue = BOLUS_MIN,
-                        maxValue = BOLUS_MAX,
-                        steppingStrategy = insulinSteppingStrategy(),
-                        displayStrategy = object : ValueDisplayStrategy {
-                            override fun format(value: Double): String = String.format(Locale.getDefault(), "%.2f", value)
-                            override fun color(value: Double): Color =
-                                Color.Unspecified
-                        },
-                        suffix = " ${insulinUnitLabel()}"
+                        maxValue = BOLUS_MAX
                     )
                 }
 

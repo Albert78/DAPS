@@ -3,6 +3,7 @@ package de.dh.daps.ui.common.composables
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import de.dh.daps.common.model.CARBS_GRAMS_MAX
+import de.dh.daps.common.model.CARBS_GRAMS_MIN
 import de.dh.daps.common.model.CARBS_KE_MAX
 import de.dh.daps.common.model.CARBS_KE_MIN
 import de.dh.daps.common.model.data.CarbsUnit
@@ -27,7 +28,7 @@ fun CarbsValueStepper(
                 currentValue = carbsGrams,
                 onValueChange = { grams -> onValueChange(grams) },
                 modifier = modifier,
-                minValue = 0.0,
+                minValue = CARBS_GRAMS_MIN,
                 maxValue = CARBS_GRAMS_MAX,
                 steppingStrategy = carbsGramsSteppingStrategy(),
                 suffix = " $unitLabel",
