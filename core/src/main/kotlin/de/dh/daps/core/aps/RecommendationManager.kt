@@ -87,8 +87,10 @@ class RecommendationManager(
         correctionPart: InsulinAmount = InsulinAmount.ZERO,
         basalPart: InsulinAmount = InsulinAmount.ZERO
     ) {
+        val roundedAmount = amount.roundToTwoDecimals()
+        if (roundedAmount <= InsulinAmount.EPSILON) return
         _recommendations.value = _recommendations.value.filterNot { it is ApsRecommendation.Bolus } + ApsRecommendation.Bolus(
-            amount = amount,
+            amount = roundedAmount,
             includedDeferredBoluses = includedDeferredBoluses,
             associatedMeal = associatedMeal,
             correctionPart = correctionPart,

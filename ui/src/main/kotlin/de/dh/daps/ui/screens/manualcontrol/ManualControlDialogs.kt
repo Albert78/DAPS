@@ -40,7 +40,7 @@ import de.dh.daps.ui.common.theme.AppPreview
 
 sealed interface ManualControlDialog {
     data class Bolus(
-        val initialAmount: Double,
+        val initialAmount: InsulinAmount,
         val includedDeferredBoluses: List<DeferredBolus>? = null,
         val correctionPart: InsulinAmount = InsulinAmount.ZERO,
         val basalPart: InsulinAmount = InsulinAmount.ZERO,
@@ -68,7 +68,7 @@ fun DeliverBolusDialog(
         recommendationToDismiss: ApsRecommendation.Bolus?
     ) -> Unit
 ) {
-    var amountState by remember { mutableDoubleStateOf(dialogData.initialAmount) }
+    var amountState by remember { mutableDoubleStateOf(dialogData.initialAmount.iu) }
 
     AlertDialog(
         onDismissRequest = onDismiss,

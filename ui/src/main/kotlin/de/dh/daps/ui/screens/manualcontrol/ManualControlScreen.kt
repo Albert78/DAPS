@@ -134,7 +134,7 @@ fun ManualControlContent(
                 ManualControlInitialDialog.BOLUS -> {
                     if (bolusRec != null) {
                         activeDialog = ManualControlDialog.Bolus(
-                            initialAmount = bolusRec.amount.iu,
+                            initialAmount = bolusRec.amount,
                             includedDeferredBoluses = bolusRec.includedDeferredBoluses,
                             correctionPart = bolusRec.correctionPart,
                             basalPart = bolusRec.basalPart,
@@ -146,7 +146,7 @@ fun ManualControlContent(
                         if (!handledInitialDialog) {
                             val retryBolusRec = uiState.recommendations.filterIsInstance<ApsRecommendation.Bolus>().firstOrNull()
                             activeDialog = ManualControlDialog.Bolus(
-                                initialAmount = retryBolusRec?.amount?.iu ?: 0.0,
+                                initialAmount = retryBolusRec?.amount ?: InsulinAmount.ZERO,
                                 includedDeferredBoluses = retryBolusRec?.includedDeferredBoluses,
                                 correctionPart = retryBolusRec?.correctionPart ?: InsulinAmount.ZERO,
                                 basalPart = retryBolusRec?.basalPart ?: InsulinAmount.ZERO,

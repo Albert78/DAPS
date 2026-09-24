@@ -6,6 +6,7 @@ import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import java.util.UUID
 import kotlin.math.abs
+import kotlin.math.round
 
 
 /**
@@ -34,6 +35,11 @@ value class InsulinAmount(val iu: Double): Comparable<InsulinAmount> {
     operator fun unaryMinus() = InsulinAmount(-iu)
 
     fun abs(): InsulinAmount = InsulinAmount(abs(iu))
+
+    /**
+     * Rounds this insulin amount to two decimal places.
+     */
+    fun roundToTwoDecimals(): InsulinAmount = InsulinAmount(round(iu * 100.0) / 100.0)
 
     override operator fun compareTo(other: InsulinAmount): Int = iu.compareTo(other.iu)
 

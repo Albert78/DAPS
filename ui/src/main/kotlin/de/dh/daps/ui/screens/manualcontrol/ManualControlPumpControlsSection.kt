@@ -173,7 +173,7 @@ fun ManualControlPumpControlsSection(
                         onClick = {
                             onOpenBolusDialog(
                                 ManualControlDialog.Bolus(
-                                    initialAmount = pump.minBolusAmount.iu.coerceAtLeast(1.0)
+                                    initialAmount = pump.minBolusAmount.coerceAtLeast(InsulinAmount(1.0))
                                 )
                             )
                         },

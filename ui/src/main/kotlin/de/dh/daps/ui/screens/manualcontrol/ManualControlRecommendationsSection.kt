@@ -249,7 +249,7 @@ fun RecommendationCard(
                             onClick = {
                                 onOpenBolusDialog(
                                     ManualControlDialog.Bolus(
-                                        initialAmount = recommendation.amount.iu,
+                                        initialAmount = recommendation.amount,
                                         includedDeferredBoluses = recommendation.includedDeferredBoluses,
                                         correctionPart = recommendation.correctionPart,
                                         basalPart = recommendation.basalPart,
