@@ -48,7 +48,6 @@ import de.dh.daps.common.model.BOLUS_MIN
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.composables.InsulinAmountStepper
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.StepperDefaults
@@ -56,6 +55,7 @@ import de.dh.daps.ui.common.composables.TimeStepper
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.theme.AppPreview
+import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.daps.ui.common.time
 import kotlin.math.round
 import de.dh.daps.common.R as CommonR
@@ -306,7 +306,7 @@ private fun BolusPlanItemCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(1.dp, AppColorBlue.copy(alpha = 0.3f)),
+        border = BorderStroke(1.dp, ExtendedTheme.semanticColors.border),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
         )

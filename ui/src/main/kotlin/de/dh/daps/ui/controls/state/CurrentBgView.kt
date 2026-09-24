@@ -42,6 +42,7 @@ import de.dh.daps.ui.common.deltaValue
 import de.dh.daps.ui.common.glucoseValue
 import de.dh.daps.ui.common.shortRelativeTimeAgo
 import de.dh.daps.ui.common.theme.AppPreview
+import de.dh.daps.ui.common.theme.ExtendedTheme
 import kotlinx.coroutines.delay
 
 @Composable
@@ -72,6 +73,7 @@ fun CurrentBgView(
         }
     }
 
+    val borderColor = ExtendedTheme.semanticColors.border
     Box(
         modifier = modifier
             .size(150.dp)
@@ -85,7 +87,7 @@ fun CurrentBgView(
 
             // Background: Pale Blue Ring
             drawCircle(
-                color = AppColorBlue.copy(alpha = 0.3f),
+                color = borderColor,
                 radius = mainRadius,
                 center = center,
                 style = Stroke(width = strokeWidth)

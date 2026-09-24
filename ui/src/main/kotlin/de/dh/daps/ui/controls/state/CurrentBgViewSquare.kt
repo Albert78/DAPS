@@ -30,7 +30,6 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.data.BgDelta
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.composables.LightGreenA700
 import de.dh.daps.ui.common.composables.Red
 import de.dh.daps.ui.common.composables.Yellow
@@ -94,7 +93,7 @@ fun CurrentBgViewSquare(
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-        border = BorderStroke(6.dp, AppColorBlue.copy(alpha = 0.3f))
+        border = BorderStroke(6.dp, ExtendedTheme.semanticColors.border)
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),

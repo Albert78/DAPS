@@ -16,6 +16,7 @@ import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.ui.common.LocalAppFormatters
 import de.dh.daps.ui.common.LocalCarbsUnit
 import de.dh.daps.ui.common.LocalGlucoseUnit
+import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.rememberAppFormatters
 
 @Immutable
@@ -39,9 +40,7 @@ data class SemanticColors(
     val warning: Color,
     val bad: Color,
     val highContrast: Color,
-    // If we need more colors, place them here, e.g.
-    // val success: Color,
-    // val info: Color
+    val border: Color,
 )
 
 val LocalSemanticColors = staticCompositionLocalOf {
@@ -49,8 +48,8 @@ val LocalSemanticColors = staticCompositionLocalOf {
         good = Color.Unspecified,
         warning = Color.Unspecified,
         bad = Color.Unspecified,
-        highContrast = Color.Unspecified
-        // ...
+        highContrast = Color.Unspecified,
+        border = Color.Unspecified
     )
 }
 
@@ -80,14 +79,16 @@ private val LightSemanticColors = SemanticColors(
     good = semantic_light_good,
     warning = semantic_light_warning,
     bad = semantic_light_bad,
-    highContrast = Color.Black
+    highContrast = Color.Black,
+    border = AppColorBlue.copy(alpha = 0.3f)
 )
 
 private val DarkSemanticColors = SemanticColors(
     good = semantic_dark_good,
     warning = semantic_dark_warning,
     bad = semantic_dark_bad,
-    highContrast = Color.White
+    highContrast = Color.White,
+    border = AppColorBlue.copy(alpha = 0.3f)
 )
 
 private val LightColors = lightColorScheme(

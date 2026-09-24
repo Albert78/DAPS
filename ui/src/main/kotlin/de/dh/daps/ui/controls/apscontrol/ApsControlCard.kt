@@ -47,7 +47,6 @@ import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
-import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.glucoseValue
@@ -55,6 +54,7 @@ import de.dh.daps.ui.common.icons.Icon_Alarms
 import de.dh.daps.ui.common.icons.Icon_Insulin_Adjustment
 import de.dh.daps.ui.common.icons.Icon_Insulin_Profile
 import de.dh.daps.ui.common.theme.AppPreview
+import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.daps.ui.common.theme.NeutralGrey
 import de.dh.daps.ui.common.theme.SoftBlue
 import de.dh.daps.ui.common.theme.SoftGreen
@@ -90,7 +90,7 @@ fun ApsControlCard(
         modifier = modifier.height(IntrinsicSize.Min),
         shape = RoundedCornerShape(12.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-        border = BorderStroke(2.dp, AppColorBlue.copy(alpha = 0.3f))
+        border = BorderStroke(2.dp, ExtendedTheme.semanticColors.border)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),

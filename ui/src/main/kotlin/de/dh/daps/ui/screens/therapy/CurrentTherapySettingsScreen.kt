@@ -70,7 +70,6 @@ import de.dh.daps.common.model.data.ScheduledTherapyAdjustment
 import de.dh.daps.common.model.data.TherapyAdjustment
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
-import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.composables.InsulinProfileSelectionDialog
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
@@ -82,6 +81,7 @@ import de.dh.daps.ui.common.icons.Icon_Insulin_Profile
 import de.dh.daps.ui.common.icons.Icon_Therapy_Adjustment
 import de.dh.daps.ui.common.isfUnitLabel
 import de.dh.daps.ui.common.theme.AppPreview
+import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.daps.ui.common.theme.NeutralGrey
 import de.dh.daps.ui.common.theme.SoftBlue
 import de.dh.daps.ui.common.theme.SoftRed
@@ -350,7 +350,7 @@ private fun ActiveInsulinProfileCard(
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(2.dp, AppColorBlue.copy(alpha = 0.3f)),
+        border = BorderStroke(2.dp, ExtendedTheme.semanticColors.border),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
         )
@@ -527,7 +527,7 @@ private fun BgTargetCard(
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(2.dp, AppColorBlue.copy(alpha = 0.3f)),
+        border = BorderStroke(2.dp, ExtendedTheme.semanticColors.border),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
         )
@@ -684,7 +684,7 @@ private fun TemporaryAdjustmentCard(
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(2.dp, AppColorBlue.copy(alpha = 0.3f)),
+        border = BorderStroke(2.dp, ExtendedTheme.semanticColors.border),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
         )

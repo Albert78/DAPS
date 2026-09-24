@@ -69,7 +69,6 @@ import de.dh.daps.core.aps.ProjectedBg
 import de.dh.daps.core.aps.TreatmentLock
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.carbsValue
-import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.composables.CarbsValueStepper
 import de.dh.daps.ui.common.composables.ImageCaptionWithSwitch
 import de.dh.daps.ui.common.composables.InsulinAmountStepper
@@ -87,6 +86,7 @@ import de.dh.daps.ui.common.glucoseValue
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.isfValue
 import de.dh.daps.ui.common.theme.AppPreview
+import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.daps.ui.common.time
 import de.dh.daps.ui.common.withinTimeDescription
 import de.dh.daps.ui.controls.meal.BolusPlanEditorDialog
@@ -170,7 +170,7 @@ fun MealCorrectionBolusContent(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(2.dp, AppColorBlue.copy(alpha = 0.3f)),
+                    border = BorderStroke(2.dp, ExtendedTheme.semanticColors.border),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                     )
@@ -273,7 +273,7 @@ fun MealCorrectionBolusContent(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(2.dp, AppColorBlue.copy(alpha = 0.3f)),
+                    border = BorderStroke(2.dp, ExtendedTheme.semanticColors.border),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                     )
@@ -732,7 +732,7 @@ fun InsulinPlanCard(
             .fillMaxWidth()
             .clickable { onOpenBolusPlanDialog() },
         shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(1.dp, AppColorBlue.copy(alpha = 0.3f)),
+        border = BorderStroke(1.dp, ExtendedTheme.semanticColors.border),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
         )

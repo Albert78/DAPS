@@ -53,12 +53,12 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.getDefaultMealTypes
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.AbsoluteTimeStepper
-import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.composables.CarbsValueStepper
 import de.dh.daps.ui.common.composables.ImageCaptionWithSwitch
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.theme.AppPreview
+import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.daps.ui.controls.meal.BolusPlanEditorDialog
 import de.dh.daps.ui.controls.meal.FoodTypeSelector
 import de.dh.daps.ui.controls.meal.PlannedBolusUiModel
@@ -354,7 +354,7 @@ fun EditMealCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(2.dp, AppColorBlue.copy(alpha = 0.3f)),
+        border = BorderStroke(2.dp, ExtendedTheme.semanticColors.border),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
         )
