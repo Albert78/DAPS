@@ -8,8 +8,14 @@ import de.dh.daps.common.model.data.Timestamp
  */
 interface ReplaceableComponent {
     /**
-     * The date and time of the next scheduled replacement or change,
-     * or `null` if no change date is currently available or set.
+     * The start date and time when the component was activated or inserted,
+     * or `null` if no start date is currently available or set.
      */
-    val nextChangeDate: Timestamp?
+    val startDate: Timestamp?
+
+    /**
+     * The scheduled end date and time for the component replacement or expiration,
+     * or `null` if no end date is currently available or set.
+     */
+    val endDate: Timestamp?
 }
