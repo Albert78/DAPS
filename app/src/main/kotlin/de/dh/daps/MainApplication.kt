@@ -43,6 +43,9 @@ class MainApplication : Application(), RegistryProvider {
 
         val pluginManager = PluginManagerImpl(this)
 
+        // Dynamic plugin registration - function depends on chosen flavor
+        registerPlugins(pluginManager, this)
+
         registry = SystemRegistryImpl.create(
             application = this,
             scope = applicationScope,
@@ -56,8 +59,8 @@ class MainApplication : Application(), RegistryProvider {
 
         startApsService()
 
-        // Dynamic injection setup - called function depends on chosen flavor
-        setupSystem(registry, pluginManager, this)
+        // Initial device setup - connects default devices on first launch if not configured yet
+        setupInitialDevices(registry)
 
         MainActivity.getExtraNavGraphs = ::getExtraNavGraphs
 

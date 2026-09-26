@@ -1,7 +1,9 @@
 package de.dh.daps
 
 import android.app.Application
+import de.dh.daps.common.model.CgmConnectionDescriptor
 import de.dh.daps.common.model.PluginManager
+import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.navigation.FeatureNavGraph
 import de.dh.daps.common.navigation.NavigationViewModel
 import de.dh.daps.core.SystemRegistry
@@ -10,24 +12,44 @@ import de.dh.daps.plugin.glucose.receiver.ReceiverGlucoseDriver
 import de.dh.daps.plugin.glucose.receiver.ReceiverGlucosePlugin
 import de.dh.daps.plugin.pump.SampleInsulinPumpDriver
 import de.dh.daps.plugin.pump.SampleInsulinPumpPlugin
+import kotlinx.coroutines.runBlocking
 
-fun setupSystem(registry: SystemRegistry, pluginManager: PluginManager, application: Application) {
-    val pumpManager = registry.pumpManager
-    val glucosePlugin = ReceiverGlucosePlugin(
-        application,
-        ExternalSourceType.xDrip5Min,
-    )
-    pluginManager.addPlugin(glucosePlugin)
-    registry.glucoseSourceManager.glucoseSource = glucosePlugin
+/**
+ * Registers all plugins and drivers available for the productive flavor with the [PluginManager].
+ */
+fun registerPlugins(pluginManager: PluginManager, application: Application) {
+    pluginManager.addPlugin(ReceiverGlucosePlugin(application, ExternalSourceType.xDrip5Min))
+    pluginManager.addPlugin(ReceiverGlucoseDriver(application))
+    pluginManager.addPlugin(SampleInsulinPumpPlugin())
+    pluginManager.addPlugin(SampleInsulinPumpDriver())
+}
 
-    val receiverCgmDriver = ReceiverGlucoseDriver(application)
-    pluginManager.addPlugin(receiverCgmDriver)
+/**
+ * Connects initial default hardware devices if no device configuration exists yet in [DeviceManagementRepository].
+ */
+fun setupInitialDevices(registry: SystemRegistry) {
+    runBlocking {
+        val deviceRepository = registry.deviceManagementRepository
+        val connectionManager = registry.deviceConnectionManager
 
-    val sampleDriver = SampleInsulinPumpDriver()
-    pluginManager.addPlugin(sampleDriver)
+        if (deviceRepository.getGlucoseSourceDescriptor() == null) {
+            val cgmDescriptor = CgmConnectionDescriptor(
+                driverId = "de.dh.daps.plugin.glucose.receiver",
+                sourceId = ExternalSourceType.xDrip5Min.name,
+                displayName = "xDrip Receiver (5 Min)"
+            )
+            connectionManager.connectGlucoseSource(cgmDescriptor)
+        }
 
-    val pumpPlugin = SampleInsulinPumpPlugin()
-    pumpManager.insulinPump = pumpPlugin
+        if (deviceRepository.getPumpDescriptor() == null) {
+            val pumpDescriptor = PumpConnectionDescriptor(
+                driverId = "de.dh.daps.plugin.pump.sample",
+                deviceId = "sample_pump_1",
+                displayName = "Sample Insulin Pump"
+            )
+            connectionManager.connectPump(pumpDescriptor)
+        }
+    }
 }
 
 fun getExtraNavGraphs(

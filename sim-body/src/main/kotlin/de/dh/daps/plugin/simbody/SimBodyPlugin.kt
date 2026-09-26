@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.asSharedFlow
  */
 class SimBodyPlugin(
     val application: Application,
-    val wakeService: SystemWakeService
+    var wakeService: SystemWakeService? = null
 ) : Plugin {
     private val database = SimBodyDatabase.getInstance(application)
     val bodyModel = BodyModel(DEFAULT_SIM_BODY_PROFILE, database.impactDao())
@@ -30,12 +30,7 @@ class SimBodyPlugin(
         extraBufferCapacity = 16
     )
 
-    private val heartbeat = SimBodyHeartbeat(
-        wakeService = wakeService,
-        bodyModel = bodyModel,
-        pumpDevice = pumpDevice,
-        onBgReading = { _glucoseReadings.tryEmit(it) }
-    )
+    private var heartbeat: SimBodyHeartbeat? = null
 
     override val name: String = "Sim Body Plugin"
     override val neededPermissions: Collection<String> = emptyList()
@@ -43,7 +38,19 @@ class SimBodyPlugin(
     override fun initialize(pluginManager: PluginManager) {
         bodyModel.loadState()
         pumpDevice.loadState()
-        heartbeat.start()
+        wakeService?.let { attachWakeService(it) }
+    }
+
+    fun attachWakeService(wakeService: SystemWakeService) {
+        this.wakeService = wakeService
+        if (heartbeat == null) {
+            heartbeat = SimBodyHeartbeat(
+                wakeService = wakeService,
+                bodyModel = bodyModel,
+                pumpDevice = pumpDevice,
+                onBgReading = { _glucoseReadings.tryEmit(it) }
+            ).apply { start() }
+        }
     }
 
     fun getGlucoseSource(): GlucoseSource = SimBodyCgmSource(_glucoseReadings.asSharedFlow())

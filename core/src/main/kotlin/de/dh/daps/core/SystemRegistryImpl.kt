@@ -4,6 +4,8 @@ import android.app.Application
 import android.app.Service
 import android.content.Context
 import de.dh.daps.AppPreferencesRepository
+import de.dh.daps.common.model.CgmDriver
+import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.METABOLIC_EVENTS_HISTORY_HOURS
 import de.dh.daps.common.model.PluginManager
 import de.dh.daps.common.model.calculation.CarbsInsulinCalculator
@@ -120,12 +122,16 @@ class SystemRegistryImpl(
                 scope = scope
             )
             val pumpManager = PumpManagerImpl(scope = scope, wakeService = wakeService)
-            val pumpDriverManager = PumpDriverManager()
+            val pumpDriverManager = PumpDriverManager(
+                drivers = pluginManager.getPlugins().filterIsInstance<InsulinPumpDriver>()
+            )
 
             val glucoseSourceManager = GlucoseSourceManager(
                 glucoseRepository = glucoseRepository
             )
-            val cgmDriverManager = CgmDriverManager()
+            val cgmDriverManager = CgmDriverManager(
+                drivers = pluginManager.getPlugins().filterIsInstance<CgmDriver>()
+            )
 
             val deviceConnectionManager = DeviceConnectionManager(
                 deviceManagementRepository = deviceManagementRepository,

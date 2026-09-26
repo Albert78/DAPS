@@ -1,33 +1,61 @@
 package de.dh.daps
 
 import android.app.Application
+import de.dh.daps.common.model.CgmConnectionDescriptor
 import de.dh.daps.common.model.PluginManager
+import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.navigation.FeatureNavGraph
 import de.dh.daps.common.navigation.NavigationViewModel
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.plugin.simbody.SimBodyPlugin
 import de.dh.daps.plugin.simbody.ui.SimBodyNavGraph
+import kotlinx.coroutines.runBlocking
 
 private var simBodyPlugin: SimBodyPlugin? = null
 
 /**
- * Setup for a system where glucose source and insulin pump are provided by the [SimBodyPlugin],
- * which simulates real situations like food intake, sports, illness, stress etc.
- * With this plugin, we can interactively test our core calculation algorithms and the behavior
- * of the app in simulated, "real" situations.
+ * Registers all plugins provided by the [SimBodyPlugin] package with the [PluginManager].
  */
-fun setupSystem(registry: SystemRegistry, pluginManager: PluginManager, application: Application) {
-    val pumpManager = registry.pumpManager
-    val plugin = SimBodyPlugin(application, registry.wakeService)
+fun registerPlugins(pluginManager: PluginManager, application: Application) {
+    val plugin = SimBodyPlugin(application)
     simBodyPlugin = plugin
     pluginManager.addPlugin(plugin)
-    pluginManager.addPlugin(plugin.pumpDriver)
     pluginManager.addPlugin(plugin.cgmDriver)
+    pluginManager.addPlugin(plugin.pumpDriver)
+}
 
-    val glucoseSource = plugin.getGlucoseSource()
-    registry.glucoseSourceManager.glucoseSource = glucoseSource
-    val insulinPump = plugin.getInsulinPump()
-    pumpManager.insulinPump = insulinPump
+/**
+ * Attaches the [SystemWakeService] to [SimBodyPlugin] and connects initial simulation devices
+ * if no device configuration exists yet in [DeviceManagementRepository].
+ */
+fun setupInitialDevices(registry: SystemRegistry) {
+    val plugin = simBodyPlugin
+    if (plugin != null) {
+        plugin.attachWakeService(registry.wakeService)
+    }
+
+    runBlocking {
+        val deviceRepository = registry.deviceManagementRepository
+        val connectionManager = registry.deviceConnectionManager
+
+        if (deviceRepository.getGlucoseSourceDescriptor() == null && plugin != null) {
+            val cgmDescriptor = CgmConnectionDescriptor(
+                driverId = plugin.cgmDriver.driverId,
+                sourceId = "sim_body_glucose",
+                displayName = "SimBody Glucose Source"
+            )
+            connectionManager.connectGlucoseSource(cgmDescriptor)
+        }
+
+        if (deviceRepository.getPumpDescriptor() == null && plugin != null) {
+            val pumpDescriptor = PumpConnectionDescriptor(
+                driverId = plugin.pumpDriver.driverId,
+                deviceId = "sim_body_pump",
+                displayName = "SimBody Insulin Pump"
+            )
+            connectionManager.connectPump(pumpDescriptor)
+        }
+    }
 }
 
 fun getExtraNavGraphs(
