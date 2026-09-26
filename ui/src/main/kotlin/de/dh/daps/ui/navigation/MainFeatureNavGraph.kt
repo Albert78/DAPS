@@ -38,7 +38,7 @@ import de.dh.daps.common.navigation.MealsRoute
 import de.dh.daps.common.navigation.NavigationViewModel
 import de.dh.daps.common.navigation.PermissionsRoute
 import de.dh.daps.common.navigation.PreferencesMainRoute
-import de.dh.daps.common.navigation.PumpManagementRoute
+import de.dh.daps.common.navigation.PumpSetupRoute
 import de.dh.daps.common.navigation.ScheduledTherapyAdjustmentRoute
 import de.dh.daps.common.navigation.SystemControlRoute
 import de.dh.daps.common.navigation.TherapyAdjustmentEditorRoute
@@ -89,8 +89,9 @@ import de.dh.daps.ui.screens.permissions.openNotificationSettings
 import de.dh.daps.ui.screens.permissions.requestIgnoreBatteryOptimizations
 import de.dh.daps.ui.screens.preferences.PreferencesScreen
 import de.dh.daps.ui.screens.preferences.PreferencesViewModel
+import de.dh.daps.ui.screens.pumpsetup.PumpSetupScreen
+import de.dh.daps.ui.screens.pumpsetup.PumpSetupViewModel
 import de.dh.daps.ui.screens.systemcontrol.CoreDecisionsScreen
-import de.dh.daps.ui.screens.systemcontrol.PumpManagementScreen
 import de.dh.daps.ui.screens.systemcontrol.SystemControlScreen
 import de.dh.daps.ui.screens.systemcontrol.SystemControlViewModel
 import de.dh.daps.ui.screens.therapy.BgEditorScreen
@@ -401,12 +402,16 @@ class MainFeatureNavGraph(
                     initialTab = key.initialTab,
                     onNavigateUp = { navViewModel.pop() },
                     onNavigateToCoreDecisions = { navViewModel.push(CoreDecisionsRoute) },
-                    onNavigateToPumpManagement = { navViewModel.push(PumpManagementRoute) }
+                    onNavigateToPumpSetup = { navViewModel.push(PumpSetupRoute()) }
                 )
             }
 
-            is PumpManagementRoute -> NavEntry(key) {
-                PumpManagementScreen(
+            is PumpSetupRoute -> NavEntry(key) {
+                val vm: PumpSetupViewModel = viewModel(
+                    factory = PumpSetupViewModel.Companion.Factory(registry, key.driverId)
+                )
+                PumpSetupScreen(
+                    viewModel = vm,
                     onNavigateUp = { navViewModel.pop() }
                 )
             }

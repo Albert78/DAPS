@@ -131,7 +131,7 @@ fun PumpOverviewCard(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = if (uiState.pumpModel != null) "Wechseln..." else "Auswählen...",
+                        text = if (uiState.pumpModel != null) "Wechseln..." else "Einrichten...",
                         style = MaterialTheme.typography.labelMedium
                     )
                 }

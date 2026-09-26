@@ -413,7 +413,7 @@
     <string name="bolus_origin_manual">Manuell</string>
 
     <string name="system_control_screen_title">Systemsteuerung</string>
-    <string name="system_control_tab_glucose_source">Glukosequelle</string>
+    <string name="system_control_tab_glucose_source">CGM</string>
     <string name="system_control_cgm_source_label">Quelle:</string>
     <string name="system_control_cgm_sensor_type_label">Sensortyp:</string>
     <string name="system_control_cgm_interval_label">Intervall:</string>
@@ -457,13 +457,14 @@
     <string name="system_control_pump_job_error_command_failed">Fehler (%1$s)%2$s</string>
     <string name="system_control_pump_job_error_technical">Fehler%1$s</string>
 
-    <string name="pump_management_screen_title">Pumpen-Management</string>
-    <string name="pump_management_battery_change">Batteriewechsel</string>
-    <string name="pump_management_cannula_change">Katheterwechsel</string>
-    <string name="pump_management_reservoir_change">Reservoirwechsel</string>
-    <string name="pump_management_special_commands">Spezielle Kommandos</string>
-    <string name="pump_management_prime_cannula">Katheter füllen (Prime)</string>
-    <string name="pump_management_prime_tubing">Schlauch füllen</string>
+    <string name="pump_setup_screen_title">Insulinpumpe einrichten</string>
+    <string name="pump_setup_select_driver_subtitle">Wähle den passenden Treiber für deine Insulinpumpe aus, um das Gerät zu verbinden:</string>
+    <string name="pump_setup_active_pump_header">Aktuell konfigurierte Pumpe</string>
+    <string name="pump_setup_available_drivers_header">Verfügbare Pumpentreiber</string>
+    <string name="pump_setup_no_drivers_found">Keine Pumpentreiber verfügbar</string>
+    <string name="pump_setup_no_drivers_description">Es wurden keine registrierten Pumpentreiber-Plugins gefunden.</string>
+    <string name="pump_setup_active_badge">Aktiv</string>
+    <string name="pump_setup_connecting">Pumpe wird verbunden…</string>
 
     <string name="system_control_tab_overview">Übersicht</string>
     <string name="system_control_core_history_button">Verlauf</string>

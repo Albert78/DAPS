@@ -125,7 +125,7 @@ fun GlucoseSourceOverviewCard(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = if (uiState.glucoseSourceName != null) "Wechseln..." else "Auswählen...",
+                        text = if (uiState.glucoseSourceName != null) "Wechseln..." else "Einrichten...",
                         style = MaterialTheme.typography.labelMedium
                     )
                 }

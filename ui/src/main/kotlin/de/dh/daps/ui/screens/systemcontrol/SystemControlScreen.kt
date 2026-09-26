@@ -46,7 +46,7 @@ const val SYSTEM_CONTROL_TAB_PUMP = 2
 fun SystemControlScreen(
     onNavigateUp: () -> Unit,
     onNavigateToCoreDecisions: () -> Unit,
-    onNavigateToPumpManagement: () -> Unit,
+    onNavigateToPumpSetup: () -> Unit = {},
     viewModel: SystemControlViewModel,
     initialTab: Int = SYSTEM_CONTROL_TAB_OVERVIEW
 ) {
@@ -57,7 +57,7 @@ fun SystemControlScreen(
         initialTab = initialTab,
         onNavigateUp = onNavigateUp,
         onNavigateToCoreDecisions = onNavigateToCoreDecisions,
-        onNavigateToPumpManagement = onNavigateToPumpManagement,
+        onNavigateToPumpSetup = onNavigateToPumpSetup,
         onStopGlucoseSource = viewModel::stopActiveGlucoseSource,
         onDisconnectForMaintenance = viewModel::disconnectPumpForMaintenance,
         onCancelPumpJob = viewModel::cancelPumpJob,
@@ -72,7 +72,7 @@ fun SystemControlContent(
     initialTab: Int = SYSTEM_CONTROL_TAB_OVERVIEW,
     onNavigateUp: () -> Unit,
     onNavigateToCoreDecisions: () -> Unit,
-    onNavigateToPumpManagement: () -> Unit,
+    onNavigateToPumpSetup: () -> Unit = {},
     onStopGlucoseSource: () -> Unit = {},
     onDisconnectForMaintenance: () -> Unit = {},
     onCancelPumpJob: (String) -> Unit = {},
@@ -148,7 +148,7 @@ fun SystemControlContent(
                     )
                     SYSTEM_CONTROL_TAB_PUMP -> PumpTabContent(
                         uiState = uiState.pumpTabUiState,
-                        onChangePumpDriver = onNavigateToPumpManagement,
+                        onChangePumpDriver = onNavigateToPumpSetup,
                         onRefreshPumpStatus = onRefreshPumpStatus,
                         onDisconnectForMaintenance = onDisconnectForMaintenance,
                         onCancelPumpJob = onCancelPumpJob
@@ -172,7 +172,6 @@ fun SystemControlOverviewPreview() {
             initialTab = SYSTEM_CONTROL_TAB_OVERVIEW,
             onNavigateUp = {},
             onNavigateToCoreDecisions = {},
-            onNavigateToPumpManagement = {},
             onStopGlucoseSource = {},
             onDisconnectForMaintenance = {},
             onCancelPumpJob = {},
@@ -191,7 +190,6 @@ fun SystemControlGlucosePreview() {
             initialTab = SYSTEM_CONTROL_TAB_GLUCOSE_SOURCE,
             onNavigateUp = {},
             onNavigateToCoreDecisions = {},
-            onNavigateToPumpManagement = {},
             onStopGlucoseSource = {},
             onDisconnectForMaintenance = {},
             onCancelPumpJob = {},
@@ -210,7 +208,6 @@ fun SystemControlPumpPreview() {
             initialTab = SYSTEM_CONTROL_TAB_PUMP,
             onNavigateUp = {},
             onNavigateToCoreDecisions = {},
-            onNavigateToPumpManagement = {},
             onStopGlucoseSource = {},
             onDisconnectForMaintenance = {},
             onCancelPumpJob = {},
