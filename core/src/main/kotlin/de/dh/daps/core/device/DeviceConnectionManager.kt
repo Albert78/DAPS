@@ -1,11 +1,11 @@
 package de.dh.daps.core.device
 
 import android.util.Log
-import de.dh.daps.common.model.CgmConnectionDescriptor
 import de.dh.daps.common.model.GlucoseSource
+import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.PumpConnectionDescriptor
-import de.dh.daps.core.aps.CgmDriverManager
+import de.dh.daps.core.aps.GlucoseSourceDriverManager
 import de.dh.daps.core.aps.GlucoseSourceManager
 import de.dh.daps.core.pump.PumpDriverManager
 import de.dh.daps.core.pump.PumpManager
@@ -25,7 +25,7 @@ data class DeviceConnectionResult(
  */
 class DeviceConnectionManager(
     private val deviceManagementRepository: DeviceManagementRepository,
-    private val cgmDriverManager: CgmDriverManager,
+    private val glucoseSourceDriverManager: GlucoseSourceDriverManager,
     private val pumpDriverManager: PumpDriverManager,
     private val glucoseSourceManager: GlucoseSourceManager,
     private val pumpManager: PumpManager
@@ -40,7 +40,7 @@ class DeviceConnectionManager(
         val glucoseSourceDescriptor = deviceManagementRepository.getGlucoseSourceDescriptor()
         val glucoseSourceResult = if (glucoseSourceDescriptor != null) {
             Log.d(TAG, "Attempting to reconnect glucose source: ${glucoseSourceDescriptor.displayName}")
-            cgmDriverManager.connect(glucoseSourceDescriptor).onSuccess { glucoseSource ->
+            glucoseSourceDriverManager.connect(glucoseSourceDescriptor).onSuccess { glucoseSource ->
                 glucoseSourceManager.glucoseSource = glucoseSource
             }.onFailure { error ->
                 Log.e(TAG, "Failed to reconnect glucose source '${glucoseSourceDescriptor.displayName}': ${error.message}", error)
@@ -73,9 +73,9 @@ class DeviceConnectionManager(
      * Connects to a glucose source using the provided [descriptor], updates the active [GlucoseSourceManager],
      * and saves the descriptor upon successful connection.
      */
-    suspend fun connectGlucoseSource(descriptor: CgmConnectionDescriptor): Result<GlucoseSource> {
+    suspend fun connectGlucoseSource(descriptor: GlucoseSourceConnectionDescriptor): Result<GlucoseSource> {
         Log.d(TAG, "Connecting to glucose source: ${descriptor.displayName}")
-        return cgmDriverManager.connect(descriptor).onSuccess { glucoseSource ->
+        return glucoseSourceDriverManager.connect(descriptor).onSuccess { glucoseSource ->
             glucoseSourceManager.glucoseSource = glucoseSource
             deviceManagementRepository.saveGlucoseSourceDescriptor(descriptor)
         }

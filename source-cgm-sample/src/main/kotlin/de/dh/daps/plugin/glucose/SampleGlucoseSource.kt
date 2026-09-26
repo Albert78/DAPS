@@ -18,7 +18,7 @@ import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.RawBg
 import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.ui.screens.systemcontrol.CgmPluginUiProvider
+import de.dh.daps.ui.screens.systemcontrol.GlucoseSourcePluginUiProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -26,9 +26,9 @@ import kotlinx.coroutines.flow.map
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 
-class SampleCgmSource : GlucoseSource, CgmPluginUiProvider {
+class SampleGlucoseSource : GlucoseSource, GlucoseSourcePluginUiProvider {
 
-    override val name: String = "Sample CGM Source"
+    override val name: String = "Sample Glucose Source"
 
     override val dataProviderType: String = "CGM"
 
@@ -48,7 +48,7 @@ class SampleCgmSource : GlucoseSource, CgmPluginUiProvider {
     }
 
     @Composable
-    override fun CgmControlSection() {
+    override fun GlucoseSourceControlSection() {
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
@@ -57,7 +57,7 @@ class SampleCgmSource : GlucoseSource, CgmPluginUiProvider {
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "This content is provided by the Sample CGM Source.",
+                    text = "This content is provided by the Sample Glucose Source.",
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(

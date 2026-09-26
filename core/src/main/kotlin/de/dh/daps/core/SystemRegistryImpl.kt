@@ -4,7 +4,7 @@ import android.app.Application
 import android.app.Service
 import android.content.Context
 import de.dh.daps.AppPreferencesRepository
-import de.dh.daps.common.model.CgmDriver
+import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.METABOLIC_EVENTS_HISTORY_HOURS
 import de.dh.daps.common.model.PluginManager
@@ -15,7 +15,7 @@ import de.dh.daps.core.alarms.AlarmEvaluator
 import de.dh.daps.core.alarms.AlarmPlayerManager
 import de.dh.daps.core.alarms.AlarmPlayerManagerImpl
 import de.dh.daps.core.alarms.AlarmSnoozeManager
-import de.dh.daps.core.aps.CgmDriverManager
+import de.dh.daps.core.aps.GlucoseSourceDriverManager
 import de.dh.daps.core.aps.GlucoseSourceManager
 import de.dh.daps.core.aps.RecommendationManager
 import de.dh.daps.core.aps.SystemOrchestrator
@@ -62,7 +62,7 @@ class SystemRegistryImpl(
     override val systemMetricsRepository: SystemMetricsRepository,
     override val appPreferencesRepository: AppPreferencesRepository,
     override val glucoseSourceManager: GlucoseSourceManager,
-    override val cgmDriverManager: CgmDriverManager,
+    override val glucoseSourceDriverManager: GlucoseSourceDriverManager,
     override val therapyManager: TherapyManager,
     override val recommendationManager: RecommendationManager,
     override val systemOrchestrator: SystemOrchestrator,
@@ -129,13 +129,13 @@ class SystemRegistryImpl(
             val glucoseSourceManager = GlucoseSourceManager(
                 glucoseRepository = glucoseRepository
             )
-            val cgmDriverManager = CgmDriverManager(
-                drivers = pluginManager.getPlugins().filterIsInstance<CgmDriver>()
+            val glucoseSourceDriverManager = GlucoseSourceDriverManager(
+                drivers = pluginManager.getPlugins().filterIsInstance<GlucoseSourceDriver>()
             )
 
             val deviceConnectionManager = DeviceConnectionManager(
                 deviceManagementRepository = deviceManagementRepository,
-                cgmDriverManager = cgmDriverManager,
+                glucoseSourceDriverManager = glucoseSourceDriverManager,
                 pumpDriverManager = pumpDriverManager,
                 glucoseSourceManager = glucoseSourceManager,
                 pumpManager = pumpManager
@@ -198,7 +198,7 @@ class SystemRegistryImpl(
                 therapyManager = therapyManager,
                 recommendationManager = recommendationManager,
                 glucoseSourceManager = glucoseSourceManager,
-                cgmDriverManager = cgmDriverManager,
+                glucoseSourceDriverManager = glucoseSourceDriverManager,
                 systemOrchestrator = systemOrchestrator,
                 pluginManager = pluginManager,
                 wakeService = wakeService,

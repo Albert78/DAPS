@@ -104,7 +104,7 @@ class SimBodyHeartbeat(
             }
 
             val baseBg = bodyModel.getDelayedBloodGlucose(
-                SimBodyCgmSource.DEFAULT_READINGS_DELAY.value.toInt(),
+                SimBodyGlucoseSource.DEFAULT_READINGS_DELAY.value.toInt(),
                 now
             )
             val noiseFactor = bodyModel.sensorNoiseFactor

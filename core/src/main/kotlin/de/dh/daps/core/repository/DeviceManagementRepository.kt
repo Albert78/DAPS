@@ -2,7 +2,7 @@ package de.dh.daps.core.repository
 
 import androidx.datastore.preferences.core.stringPreferencesKey
 import de.dh.daps.AppPreferencesRepository
-import de.dh.daps.common.model.CgmConnectionDescriptor
+import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.core.repository.db.AppDatabase
 import kotlinx.coroutines.CoroutineScope
@@ -25,12 +25,12 @@ class DeviceManagementRepository(
     private val scope: CoroutineScope
 ) {
     /**
-     * Flow emitting the currently saved [CgmConnectionDescriptor] for the glucose source, or null if none is configured.
+     * Flow emitting the currently saved [GlucoseSourceConnectionDescriptor] for the glucose source, or null if none is configured.
      */
-    val glucoseSourceDescriptor: StateFlow<CgmConnectionDescriptor?> = appPreferencesRepository.cachedPreferences
+    val glucoseSourceDescriptor: StateFlow<GlucoseSourceConnectionDescriptor?> = appPreferencesRepository.cachedPreferences
         .map { preferences ->
             preferences?.get(GLUCOSE_SOURCE_DESCRIPTOR_KEY)?.let { jsonStr ->
-                runCatching { Json.decodeFromString<CgmConnectionDescriptor>(jsonStr) }.getOrNull()
+                runCatching { Json.decodeFromString<GlucoseSourceConnectionDescriptor>(jsonStr) }.getOrNull()
             }
         }
         .stateIn(
@@ -57,15 +57,15 @@ class DeviceManagementRepository(
     /**
      * Retrieves the saved glucose source connection descriptor.
      */
-    suspend fun getGlucoseSourceDescriptor(): CgmConnectionDescriptor? {
+    suspend fun getGlucoseSourceDescriptor(): GlucoseSourceConnectionDescriptor? {
         val jsonStr = appPreferencesRepository.getPreferences()[GLUCOSE_SOURCE_DESCRIPTOR_KEY] ?: return null
-        return runCatching { Json.decodeFromString<CgmConnectionDescriptor>(jsonStr) }.getOrNull()
+        return runCatching { Json.decodeFromString<GlucoseSourceConnectionDescriptor>(jsonStr) }.getOrNull()
     }
 
     /**
      * Persists or removes the glucose source connection descriptor.
      */
-    suspend fun saveGlucoseSourceDescriptor(descriptor: CgmConnectionDescriptor?) {
+    suspend fun saveGlucoseSourceDescriptor(descriptor: GlucoseSourceConnectionDescriptor?) {
         appPreferencesRepository.editPreferences { mutablePreferences ->
             if (descriptor != null) {
                 mutablePreferences[GLUCOSE_SOURCE_DESCRIPTOR_KEY] = Json.encodeToString(descriptor)

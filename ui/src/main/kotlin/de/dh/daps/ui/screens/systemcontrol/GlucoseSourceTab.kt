@@ -38,25 +38,25 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 @Composable
-fun CgmTabContent(
+fun GlucoseSourceTabContent(
     uiState: SystemControlUiState,
     timeFormat: SimpleDateFormat,
     tick: Long
 ) {
     Column {
-        CgmOverviewCard(uiState, timeFormat, tick)
+        GlucoseSourceOverviewCard(uiState, timeFormat, tick)
 
-        if (uiState.cgmPluginUiProvider != null) {
+        if (uiState.glucoseSourcePluginUiProvider != null) {
             Spacer(modifier = Modifier.height(24.dp))
             SectionHeader(title = "Plugin")
             Spacer(modifier = Modifier.height(8.dp))
-            uiState.cgmPluginUiProvider.CgmControlSection()
+            uiState.glucoseSourcePluginUiProvider.GlucoseSourceControlSection()
         }
     }
 }
 
 @Composable
-fun CgmOverviewCard(uiState: SystemControlUiState, timeFormat: SimpleDateFormat, tick: Long) {
+fun GlucoseSourceOverviewCard(uiState: SystemControlUiState, timeFormat: SimpleDateFormat, tick: Long) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -227,9 +227,9 @@ fun GlucoseFragments(value: String, time: String, extra: String?, stackVertical:
 
 @Preview(showBackground = true)
 @Composable
-fun CgmTabPreview() {
+fun GlucoseSourceTabPreview() {
     AppPreview {
-        CgmTabContent(
+        GlucoseSourceTabContent(
             uiState = SystemControlUiState(
                 glucoseSourceName = "Dexcom G6",
                 sensorTypeName = "G6-Sensor",
@@ -239,9 +239,9 @@ fun CgmTabPreview() {
                 glucoseUnit = GlucoseUnit.MG_DL,
                 pumpConnected = true,
                 pumpModel = "DANA-i",
-                cgmPluginUiProvider = object : CgmPluginUiProvider {
+                glucoseSourcePluginUiProvider = object : GlucoseSourcePluginUiProvider {
                     @Composable
-                    override fun CgmControlSection() {
+                    override fun GlucoseSourceControlSection() {
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)

@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
  * Driver interface for CGM / blood glucose source plugins.
  * Encapsulates driver-specific scanning, transmitter setup, and connection workflows.
  */
-interface CgmDriver {
+interface GlucoseSourceDriver {
     /**
      * Unique identifier for this driver plugin (e.g. "de.dh.daps.plugin.glucose.receiver").
      */
@@ -20,11 +20,11 @@ interface CgmDriver {
     /**
      * Renders the driver's custom UI workflow for initial setup, transmitter pairing, or configuration.
      * When setup succeeds, [onConnected] is invoked with the active [GlucoseSource] instance
-     * and its persistable [CgmConnectionDescriptor].
+     * and its persistable [GlucoseSourceConnectionDescriptor].
      */
     @Composable
     fun SetupScreen(
-        onConnected: (GlucoseSource, CgmConnectionDescriptor) -> Unit,
+        onConnected: (GlucoseSource, GlucoseSourceConnectionDescriptor) -> Unit,
         onCancel: () -> Unit,
     )
 
@@ -32,5 +32,5 @@ interface CgmDriver {
      * Re-establishes a connection with a previously configured glucose source using its stored [descriptor].
      * Invoked upon application launch or when loading a configured glucose source.
      */
-    suspend fun connect(descriptor: CgmConnectionDescriptor): Result<GlucoseSource>
+    suspend fun connect(descriptor: GlucoseSourceConnectionDescriptor): Result<GlucoseSource>
 }

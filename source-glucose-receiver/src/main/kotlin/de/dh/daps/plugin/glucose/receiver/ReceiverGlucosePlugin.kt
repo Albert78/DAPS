@@ -20,9 +20,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.model.CgmConnectionDescriptor
-import de.dh.daps.common.model.CgmDriver
 import de.dh.daps.common.model.GlucoseSource
+import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
+import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
@@ -34,12 +34,12 @@ import kotlinx.coroutines.flow.asSharedFlow
 
 /**
  * Glucose plugin which receives glucose values from other Android apps via a BroadcastReceiver.
- * Acts both as a [CgmDriver] for connection setup and as a [GlucoseSource] for data streaming.
+ * Acts both as a [GlucoseSourceDriver] for connection setup and as a [GlucoseSource] for data streaming.
  */
 class ReceiverGlucosePlugin(
     val application: Application,
     var externalSourceType: ExternalSourceType = ExternalSourceType.xDrip5Min,
-) : CgmDriver, GlucoseSource, Plugin {
+) : GlucoseSourceDriver, GlucoseSource, Plugin {
 
     override val driverId: String = DRIVER_ID
     override val displayName: String = "External Broadcast Receiver Driver"
@@ -108,7 +108,7 @@ class ReceiverGlucosePlugin(
      */
     @Composable
     override fun SetupScreen(
-        onConnected: (GlucoseSource, CgmConnectionDescriptor) -> Unit,
+        onConnected: (GlucoseSource, GlucoseSourceConnectionDescriptor) -> Unit,
         onCancel: () -> Unit,
     ) {
         Card(
@@ -141,7 +141,7 @@ class ReceiverGlucosePlugin(
                     Button(
                         onClick = {
                             externalSourceType = ExternalSourceType.xDrip5Min
-                            val descriptor = CgmConnectionDescriptor(
+                            val descriptor = GlucoseSourceConnectionDescriptor(
                                 driverId = DRIVER_ID,
                                 sourceId = "xdrip-5min-receiver",
                                 displayName = "xDrip+ Broadcast Receiver (5 Min)",
@@ -161,7 +161,7 @@ class ReceiverGlucosePlugin(
     /**
      * Re-connects to an external BroadcastReceiver glucose source using a stored connection descriptor.
      */
-    override suspend fun connect(descriptor: CgmConnectionDescriptor): Result<GlucoseSource> {
+    override suspend fun connect(descriptor: GlucoseSourceConnectionDescriptor): Result<GlucoseSource> {
         if (descriptor.driverId != DRIVER_ID) {
             return Result.failure(
                 IllegalArgumentException("Invalid driver ID for Receiver Glucose Driver: ${descriptor.driverId}"),

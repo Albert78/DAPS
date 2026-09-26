@@ -6,10 +6,10 @@ import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.Minutes
 import kotlinx.coroutines.flow.Flow
 
-class SimBodyCgmSource(
+class SimBodyGlucoseSource(
     private val glucoseReadings: Flow<BgReading>
 ): GlucoseSource {
-    override val name: String = "Sim Body CGM Plugin"
+    override val name: String = "Sim Body Glucose Source Plugin"
 
     override val dataProviderType: String = "CGM"
 

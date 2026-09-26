@@ -12,20 +12,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.model.CgmConnectionDescriptor
-import de.dh.daps.common.model.CgmDriver
 import de.dh.daps.common.model.GlucoseSource
+import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
+import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.PluginContext
 
 /**
- * Lightweight sample implementation of [CgmDriver].
- * Demonstrates the basic structure of a CGM driver plugin without complex logic.
+ * Lightweight sample implementation of [GlucoseSourceDriver].
+ * Demonstrates the basic structure of a glucose source driver plugin without complex logic.
  */
-class SampleCgmDriver : CgmDriver, Plugin {
+class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
     override val driverId: String = DRIVER_ID
-    override val displayName: String = "Sample CGM Driver"
-    override val name: String = "Sample CGM Driver Plugin"
+    override val displayName: String = "Sample Glucose Source Driver"
+    override val name: String = "Sample Glucose Source Driver Plugin"
     override val neededPermissions: Collection<String> = emptyList()
 
     override fun initialize(context: PluginContext) {
@@ -33,11 +33,11 @@ class SampleCgmDriver : CgmDriver, Plugin {
     }
 
     /**
-     * Renders a basic setup screen allowing the user to confirm pairing with the sample CGM source.
+     * Renders a basic setup screen allowing the user to confirm pairing with the sample glucose source.
      */
     @Composable
     override fun SetupScreen(
-        onConnected: (GlucoseSource, CgmConnectionDescriptor) -> Unit,
+        onConnected: (GlucoseSource, GlucoseSourceConnectionDescriptor) -> Unit,
         onCancel: () -> Unit,
     ) {
         Card(
@@ -47,22 +47,22 @@ class SampleCgmDriver : CgmDriver, Plugin {
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "Sample CGM Setup",
+                    text = "Sample Glucose Source Setup",
                     style = MaterialTheme.typography.titleMedium,
                 )
                 Text(
-                    text = "Confirm connection to the simulated sample CGM sensor.",
+                    text = "Confirm connection to the simulated sample glucose sensor.",
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = {
                         // Sketch: In a real driver, perform transmitter scanning & pairing here
-                        val source = SampleCgmSource()
-                        val descriptor = CgmConnectionDescriptor(
+                        val source = SampleGlucoseSource()
+                        val descriptor = GlucoseSourceConnectionDescriptor(
                             driverId = DRIVER_ID,
                             sourceId = "sample-cgm-sensor-01",
-                            displayName = "Sample CGM Sensor 01",
+                            displayName = "Sample Glucose Sensor 01",
                         )
                         onConnected(source, descriptor)
                     },
@@ -75,14 +75,14 @@ class SampleCgmDriver : CgmDriver, Plugin {
     }
 
     /**
-     * Re-connects to a sample CGM source using a stored connection descriptor.
+     * Re-connects to a sample glucose source using a stored connection descriptor.
      */
-    override suspend fun connect(descriptor: CgmConnectionDescriptor): Result<GlucoseSource> {
+    override suspend fun connect(descriptor: GlucoseSourceConnectionDescriptor): Result<GlucoseSource> {
         // Sketch: Validate descriptor parameters and establish connection with sensor
         if (descriptor.driverId != DRIVER_ID) {
-            return Result.failure(IllegalArgumentException("Invalid driver ID for Sample CGM Driver: ${descriptor.driverId}"))
+            return Result.failure(IllegalArgumentException("Invalid driver ID for Sample Glucose Source Driver: ${descriptor.driverId}"))
         }
-        return Result.success(SampleCgmSource())
+        return Result.success(SampleGlucoseSource())
     }
 
     companion object {

@@ -10,7 +10,7 @@ import de.dh.daps.common.model.data.TimeService
 import de.dh.daps.core.alarms.AlarmEvaluator
 import de.dh.daps.core.alarms.AlarmPlayerManager
 import de.dh.daps.core.alarms.AlarmSnoozeManager
-import de.dh.daps.core.aps.CgmDriverManager
+import de.dh.daps.core.aps.GlucoseSourceDriverManager
 import de.dh.daps.core.aps.GlucoseSourceManager
 import de.dh.daps.core.aps.RecommendationManager
 import de.dh.daps.core.aps.SystemOrchestrator
@@ -144,7 +144,7 @@ interface SystemRegistry : PluginContext {
     /**
      * Manages registered CGM / blood glucose driver plugins.
      */
-    val cgmDriverManager: CgmDriverManager
+    val glucoseSourceDriverManager: GlucoseSourceDriverManager
 
     /**
      * Central interface for monitoring and interacting with the insulin pump hardware.

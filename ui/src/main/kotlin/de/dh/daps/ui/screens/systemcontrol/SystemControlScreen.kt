@@ -156,7 +156,7 @@ fun SystemControlContent(
             item {
                 when (selectedTabIndex) {
                     SYSTEM_CONTROL_TAB_OVERVIEW -> OverviewTabContent(onNavigateToCoreDecisions)
-                    SYSTEM_CONTROL_TAB_CGM -> CgmTabContent(uiState, timeFormat, tick)
+                    SYSTEM_CONTROL_TAB_CGM -> GlucoseSourceTabContent(uiState, timeFormat, tick)
                     SYSTEM_CONTROL_TAB_PUMP -> PumpTabContent(
                         uiState = uiState,
                         timeFormat = timeFormat,
@@ -190,10 +190,10 @@ fun SystemControlOverviewPreview() {
     }
 }
 
-@Preview(showBackground = true, name = "CGM Tab")
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "CGM Tab - Dark Mode")
+@Preview(showBackground = true, name = "Glucose Source Tab")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Glucose Source Tab - Dark Mode")
 @Composable
-fun SystemControlCgmPreview() {
+fun SystemControlGlucosePreview() {
     AppPreview {
         SystemControlContent(
             uiState = previewUiState(),

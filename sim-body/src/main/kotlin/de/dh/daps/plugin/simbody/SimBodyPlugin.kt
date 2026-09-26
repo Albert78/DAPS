@@ -22,7 +22,7 @@ class SimBodyPlugin(
     val bodyModel = BodyModel(DEFAULT_SIM_BODY_PROFILE, database.impactDao())
     val pumpDevice = SimBodyPumpDevice(bodyModel, DEFAULT_SIM_INSULIN_PROFILE, database.pumpDao())
     val pumpDriver = SimBodyInsulinPumpDriver(this)
-    val cgmDriver = SimBodyCgmDriver(this)
+    val glucoseSourceDriver = SimBodyGlucoseSourceDriver(this)
 
     private val _glucoseReadings = MutableSharedFlow<BgReading>(
         replay = 0,
@@ -50,6 +50,6 @@ class SimBodyPlugin(
         heartbeat?.start()
     }
 
-    fun getGlucoseSource(): GlucoseSource = SimBodyCgmSource(_glucoseReadings.asSharedFlow())
+    fun getGlucoseSource(): GlucoseSource = SimBodyGlucoseSource(_glucoseReadings.asSharedFlow())
     fun getInsulinPump(): InsulinPump = SimBodyInsulinPump(pumpDevice)
 }

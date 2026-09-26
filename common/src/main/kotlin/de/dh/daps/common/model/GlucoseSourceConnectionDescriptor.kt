@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
  * to re-establish a connection with a glucose data source.
  */
 @Serializable
-data class CgmConnectionDescriptor(
+data class GlucoseSourceConnectionDescriptor(
     /**
      * Unique ID of the driver handling this CGM / glucose source type (e.g. "de.dh.daps.plugin.glucose.receiver").
      */

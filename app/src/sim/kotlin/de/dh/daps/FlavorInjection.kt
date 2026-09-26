@@ -1,7 +1,7 @@
 package de.dh.daps
 
 import android.app.Application
-import de.dh.daps.common.model.CgmConnectionDescriptor
+import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.PluginManager
 import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.navigation.FeatureNavGraph
@@ -20,7 +20,7 @@ fun registerPlugins(pluginManager: PluginManager, application: Application) {
     val plugin = SimBodyPlugin(application)
     simBodyPlugin = plugin
     pluginManager.addPlugin(plugin)
-    pluginManager.addPlugin(plugin.cgmDriver)
+    pluginManager.addPlugin(plugin.glucoseSourceDriver)
     pluginManager.addPlugin(plugin.pumpDriver)
 }
 
@@ -35,12 +35,12 @@ fun setupInitialDevices(registry: SystemRegistry) {
         val connectionManager = registry.deviceConnectionManager
 
         if (deviceRepository.getGlucoseSourceDescriptor() == null && plugin != null) {
-            val cgmDescriptor = CgmConnectionDescriptor(
-                driverId = plugin.cgmDriver.driverId,
+            val glucoseSourceDescriptor = GlucoseSourceConnectionDescriptor(
+                driverId = plugin.glucoseSourceDriver.driverId,
                 sourceId = "sim_body_glucose",
                 displayName = "SimBody Glucose Source"
             )
-            connectionManager.connectGlucoseSource(cgmDescriptor)
+            connectionManager.connectGlucoseSource(glucoseSourceDescriptor)
         }
 
         if (deviceRepository.getPumpDescriptor() == null && plugin != null) {

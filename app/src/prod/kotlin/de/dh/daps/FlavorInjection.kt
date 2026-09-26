@@ -1,7 +1,7 @@
 package de.dh.daps
 
 import android.app.Application
-import de.dh.daps.common.model.CgmConnectionDescriptor
+import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.PluginManager
 import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.navigation.FeatureNavGraph
@@ -29,12 +29,12 @@ fun setupInitialDevices(registry: SystemRegistry) {
         val connectionManager = registry.deviceConnectionManager
 
         if (deviceRepository.getGlucoseSourceDescriptor() == null) {
-            val cgmDescriptor = CgmConnectionDescriptor(
+            val glucoseSourceDescriptor = GlucoseSourceConnectionDescriptor(
                 driverId = "de.dh.daps.plugin.glucose.receiver",
                 sourceId = ExternalSourceType.xDrip5Min.name,
                 displayName = "xDrip Receiver (5 Min)"
             )
-            connectionManager.connectGlucoseSource(cgmDescriptor)
+            connectionManager.connectGlucoseSource(glucoseSourceDescriptor)
         }
 
         if (deviceRepository.getPumpDescriptor() == null) {

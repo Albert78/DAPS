@@ -31,7 +31,7 @@ data class SystemControlUiState(
     val nextPredictedTimestamp: Timestamp = Timestamp.INVALID,
     val glucoseUnit: GlucoseUnit = GlucoseUnit.MG_DL,
 
-    val cgmPluginUiProvider: CgmPluginUiProvider? = null,
+    val glucoseSourcePluginUiProvider: GlucoseSourcePluginUiProvider? = null,
     val pumpPluginUiProvider: PumpPluginUiProvider? = null,
 
     // Pump Subsystem
@@ -64,7 +64,7 @@ class SystemControlViewModel(
             lastBgReading = currentBg,
             nextPredictedTimestamp = glucoseSourceManager.predictNextValueTimestamp(),
             glucoseUnit = preferences.glucoseUnit,
-            pluginUiProvider = source as? CgmPluginUiProvider
+            pluginUiProvider = source as? GlucoseSourcePluginUiProvider
         )
     }
 
@@ -98,7 +98,7 @@ class SystemControlViewModel(
             lastBgReading = gInfo.lastBgReading,
             nextPredictedTimestamp = gInfo.nextPredictedTimestamp,
             glucoseUnit = gInfo.glucoseUnit,
-            cgmPluginUiProvider = gInfo.pluginUiProvider,
+            glucoseSourcePluginUiProvider = gInfo.pluginUiProvider,
             pumpPluginUiProvider = pInfo.pluginUiProvider,
             pumpConnected = pInfo.connected,
             pumpModel = pInfo.model,
@@ -127,7 +127,7 @@ class SystemControlViewModel(
         val lastBgReading: BgReading?,
         val nextPredictedTimestamp: Timestamp,
         val glucoseUnit: GlucoseUnit,
-        val pluginUiProvider: CgmPluginUiProvider?
+        val pluginUiProvider: GlucoseSourcePluginUiProvider?
     )
 
     private data class PumpUiData(
