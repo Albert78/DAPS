@@ -59,7 +59,7 @@ data class ApsSystemUiState(
     val status: StatusValueItem = StatusValueItem("Status", "Aktiv", status = ValueStatus.GOOD)
 )
 
-data class OverviewCgmUiState(
+data class OverviewGlucoseSourceUiState(
     val sensorName: String = "--",
     val lastConnection: StatusValueItem = StatusValueItem("Letzte Verbindung", "--", status = ValueStatus.GOOD),
     val lastReading: StatusValueItem = StatusValueItem("Letzter Messwert", "--", status = ValueStatus.GOOD),
@@ -79,11 +79,11 @@ data class OverviewPumpUiState(
 data class OverviewTabUiState(
     val androidSystem: AndroidSystemUiState = AndroidSystemUiState(),
     val apsSystem: ApsSystemUiState = ApsSystemUiState(),
-    val cgm: OverviewCgmUiState = OverviewCgmUiState(),
+    val glucoseSource: OverviewGlucoseSourceUiState = OverviewGlucoseSourceUiState(),
     val pump: OverviewPumpUiState = OverviewPumpUiState()
 )
 
-data class CgmTabUiState(
+data class GlucoseSourceTabUiState(
     val glucoseSourceName: String? = null,
     val manufacturer: String? = null,
     val serialNumber: String? = null,
@@ -102,7 +102,7 @@ data class CgmTabUiState(
     val estimatedExpirationTimestamp: Timestamp? = null,
     val estimatedExpirationDateText: String? = null,
     val showPluginSection: Boolean = false,
-    val cgmPluginSection: (@Composable () -> Unit)? = null
+    val glucoseSourcePluginSection: (@Composable () -> Unit)? = null
 )
 
 data class PumpJobItem(
@@ -130,12 +130,12 @@ data class PumpTabUiState(
 
 data class SystemControlUiState(
     val overviewUiState: OverviewTabUiState = OverviewTabUiState(),
-    val cgmTabUiState: CgmTabUiState = CgmTabUiState(),
+    val glucoseSourceTabUiState: GlucoseSourceTabUiState = GlucoseSourceTabUiState(),
     val pumpTabUiState: PumpTabUiState = PumpTabUiState(),
 
     val coreInsights: List<CoreInsight> = emptyList(),
-    val glucoseSourceName: String? = cgmTabUiState.glucoseSourceName,
-    val sensorTypeName: String? = cgmTabUiState.sensorTypeName,
+    val glucoseSourceName: String? = glucoseSourceTabUiState.glucoseSourceName,
+    val sensorTypeName: String? = glucoseSourceTabUiState.sensorTypeName,
     val readingsInterval: BgReadingsInterval? = null,
     val lastBgReading: BgReading? = null,
     val nextPredictedTimestamp: Timestamp = Timestamp.INVALID,
@@ -263,7 +263,7 @@ class SystemControlViewModel(
                 lastCalculation = StatusValueItem("Letzte Berechnung", lastCalcTimeText, timestamp = lastCalcInsight?.timestamp, status = ValueStatus.GOOD),
                 status = StatusValueItem("Status", if (insights.isNotEmpty()) "Aktiv" else "Inaktiv", status = ValueStatus.GOOD)
             ),
-            cgm = OverviewCgmUiState(
+            glucoseSource = OverviewGlucoseSourceUiState(
                 sensorName = gInfo.sourceName ?: "Nicht verbunden",
                 lastConnection = StatusValueItem("Letzte Verbindung", cgmLastConnText, timestamp = gInfo.lastInputTimestamp, status = if (gInfo.source != null) ValueStatus.GOOD else ValueStatus.BAD),
                 lastReading = StatusValueItem("Letzter Messwert", gInfo.lastBgValueText ?: "--", timestamp = gInfo.lastBgReading?.timestamp, status = ValueStatus.GOOD),
@@ -280,8 +280,8 @@ class SystemControlViewModel(
             )
         )
 
-        // CGM Tab State
-        val cgmTabState = CgmTabUiState(
+        // Glucose Source Tab State
+        val glucoseSourceTabState = GlucoseSourceTabUiState(
             glucoseSourceName = gInfo.sourceName,
             manufacturer = gInfo.sourceName?.split(" ")?.firstOrNull(),
             sensorTypeName = gInfo.sensorTypeName,
@@ -294,7 +294,7 @@ class SystemControlViewModel(
             hasNextPrediction = gInfo.hasNextPrediction,
             estimatedExpirationTimestamp = gInfo.estimatedExpirationTimestamp,
             showPluginSection = gInfo.source != null,
-            cgmPluginSection = gInfo.pluginUiProvider?.let { provider -> { provider.GlucoseSourceControlSection() } }
+            glucoseSourcePluginSection = gInfo.pluginUiProvider?.let { provider -> { provider.GlucoseSourceControlSection() } }
         )
 
         // Pump Tab State
@@ -349,7 +349,7 @@ class SystemControlViewModel(
 
         SystemControlUiState(
             overviewUiState = overviewState,
-            cgmTabUiState = cgmTabState,
+            glucoseSourceTabUiState = glucoseSourceTabState,
             pumpTabUiState = pumpTabState,
             coreInsights = insights,
             glucoseSourceName = gInfo.sourceName,

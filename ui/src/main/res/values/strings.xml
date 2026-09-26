@@ -413,7 +413,7 @@
     <string name="bolus_origin_manual">Manuell</string>
 
     <string name="system_control_screen_title">Systemsteuerung</string>
-    <string name="system_control_tab_cgm">CGM</string>
+    <string name="system_control_tab_glucose_source">Glukosequelle</string>
     <string name="system_control_cgm_source_label">Quelle:</string>
     <string name="system_control_cgm_sensor_type_label">Sensortyp:</string>
     <string name="system_control_cgm_interval_label">Intervall:</string>

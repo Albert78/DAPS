@@ -73,11 +73,11 @@ fun OverviewTabContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Section CGM
-        SectionHeader(title = "Blutzucker-Sensor (CGM)")
+        // Section Glucose Source
+        SectionHeader(title = "Blutzucker-Quelle")
         Spacer(modifier = Modifier.height(8.dp))
 
-        OverviewCgmCard(state = uiState.cgm)
+        OverviewGlucoseSourceCard(state = uiState.glucoseSource)
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -235,8 +235,8 @@ private fun ApsCard(
 }
 
 @Composable
-private fun OverviewCgmCard(
-    state: OverviewCgmUiState
+private fun OverviewGlucoseSourceCard(
+    state: OverviewGlucoseSourceUiState
 ) {
     OutlinedCard(
         modifier = Modifier

@@ -39,7 +39,7 @@ import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.common.R as CommonR
 
 const val SYSTEM_CONTROL_TAB_OVERVIEW = 0
-const val SYSTEM_CONTROL_TAB_CGM = 1
+const val SYSTEM_CONTROL_TAB_GLUCOSE_SOURCE = 1
 const val SYSTEM_CONTROL_TAB_PUMP = 2
 
 @Composable
@@ -82,7 +82,7 @@ fun SystemControlContent(
 
     val tabs = listOf(
         stringResource(id = R.string.system_control_tab_overview),
-        stringResource(id = R.string.system_control_tab_cgm),
+        stringResource(id = R.string.system_control_tab_glucose_source),
         stringResource(id = R.string.system_control_tab_pump)
     )
 
@@ -141,8 +141,8 @@ fun SystemControlContent(
                         onRefreshPumpStatus = onRefreshPumpStatus,
                         onNavigateToCoreDecisions = onNavigateToCoreDecisions
                     )
-                    SYSTEM_CONTROL_TAB_CGM -> GlucoseSourceTabContent(
-                        uiState = uiState.cgmTabUiState,
+                    SYSTEM_CONTROL_TAB_GLUCOSE_SOURCE -> GlucoseSourceTabContent(
+                        uiState = uiState.glucoseSourceTabUiState,
                         onChangeGlucoseSource = { },
                         onStopSensor = onStopGlucoseSource
                     )
@@ -188,7 +188,7 @@ fun SystemControlGlucosePreview() {
     AppPreview {
         SystemControlContent(
             uiState = previewUiState(),
-            initialTab = SYSTEM_CONTROL_TAB_CGM,
+            initialTab = SYSTEM_CONTROL_TAB_GLUCOSE_SOURCE,
             onNavigateUp = {},
             onNavigateToCoreDecisions = {},
             onNavigateToPumpManagement = {},
@@ -221,7 +221,7 @@ fun SystemControlPumpPreview() {
 
 private fun previewUiState() = SystemControlUiState(
     overviewUiState = OverviewTabUiState(),
-    cgmTabUiState = CgmTabUiState(
+    glucoseSourceTabUiState = GlucoseSourceTabUiState(
         glucoseSourceName = "Dexcom G6",
         sensorTypeName = "G6-Sensor",
         readingsIntervalText = "5 Minuten",

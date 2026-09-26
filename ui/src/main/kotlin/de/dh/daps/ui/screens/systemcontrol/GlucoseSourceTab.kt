@@ -48,12 +48,12 @@ import java.time.ZoneId
 @Composable
 fun GlucoseSourceTabContent(
     modifier: Modifier = Modifier,
-    uiState: CgmTabUiState = CgmTabUiState(),
+    uiState: GlucoseSourceTabUiState = GlucoseSourceTabUiState(),
     onChangeGlucoseSource: () -> Unit = {},
     onStopSensor: () -> Unit = {}
 ) {
     Column(modifier = modifier) {
-        CgmOverviewCard(
+        GlucoseSourceOverviewCard(
             uiState = uiState,
             onChangeGlucoseSource = onChangeGlucoseSource
         )
@@ -64,10 +64,10 @@ fun GlucoseSourceTabContent(
                 title = "Datenquelle"
             )
             Spacer(modifier = Modifier.height(8.dp))
-            if (uiState.cgmPluginSection != null) {
-                uiState.cgmPluginSection.invoke()
+            if (uiState.glucoseSourcePluginSection != null) {
+                uiState.glucoseSourcePluginSection.invoke()
             } else {
-                CgmPluginControlCard(
+                GlucoseSourcePluginControlCard(
                     sensorCode = uiState.sensorCode,
                     transmitterSerialNumber = uiState.transmitterSerialNumber,
                     estimatedExpirationDateText = uiState.estimatedExpirationDateText,
@@ -80,8 +80,8 @@ fun GlucoseSourceTabContent(
 }
 
 @Composable
-fun CgmOverviewCard(
-    uiState: CgmTabUiState,
+fun GlucoseSourceOverviewCard(
+    uiState: GlucoseSourceTabUiState,
     modifier: Modifier = Modifier,
     onChangeGlucoseSource: () -> Unit = {}
 ) {
@@ -102,7 +102,7 @@ fun CgmOverviewCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     ControlDetailRow(
-                        label = "CGM-Quelle",
+                        label = "Glukose-Quelle",
                         icon = Icons.Default.Info
                     ) {
                         Text(
@@ -313,7 +313,7 @@ fun GlucoseFragments(
 }
 
 @Composable
-fun CgmPluginControlCard(
+fun GlucoseSourcePluginControlCard(
     sensorCode: String?,
     transmitterSerialNumber: String?,
     estimatedExpirationDateText: String?,
@@ -423,26 +423,27 @@ fun CgmPluginControlCard(
     }
 }
 
-@Preview(showBackground = true, name = "CGM Tab - Light Mode")
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "CGM Tab - Dark Mode")
+@Preview(showBackground = true, name = "Glucose Source Tab - Light Mode")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Glucose Source Tab - Dark Mode")
 @Composable
-fun CgmTabPreview() {
+fun GlucoseSourceTabPreview() {
     AppTheme {
         Surface {
             GlucoseSourceTabContent(
+                uiState = sampleGlucoseSourceTabUiState(),
                 modifier = Modifier.padding(16.dp)
             )
         }
     }
 }
 
-@Preview(showBackground = true, name = "CGM Tab - Disconnected")
+@Preview(showBackground = true, name = "Glucose Source Tab - Disconnected")
 @Composable
-fun CgmTabDisconnectedPreview() {
+fun GlucoseSourceTabDisconnectedPreview() {
     AppTheme {
         Surface {
             GlucoseSourceTabContent(
-                uiState = CgmTabUiState(
+                uiState = GlucoseSourceTabUiState(
                     glucoseSourceName = null,
                     sensorTypeName = null,
                     readingsIntervalText = null,
@@ -460,3 +461,21 @@ fun CgmTabDisconnectedPreview() {
         }
     }
 }
+
+private fun sampleGlucoseSourceTabUiState() = GlucoseSourceTabUiState(
+    glucoseSourceName = "Dexcom G6",
+    manufacturer = "Dexcom",
+    serialNumber = "SN-98765432",
+    sensorTypeName = "G6-Sensor",
+    readingsIntervalText = "5 Minuten",
+    lastBgValueText = "124 mg/dl",
+    lastReadingTimeText = "12:32:40",
+    lastReadingRelativeTimeText = "vor 2 Min.",
+    hasNextPrediction = true,
+    nextReadingTimeText = "12:37:40",
+    nextReadingRelativeTimeText = "in 3 Min.",
+    sensorCode = "8132",
+    transmitterSerialNumber = "8G1234",
+    estimatedExpirationDateText = "24.10.2024, 18:30",
+    showPluginSection = true
+)
