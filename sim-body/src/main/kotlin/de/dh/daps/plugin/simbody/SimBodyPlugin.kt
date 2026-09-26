@@ -31,7 +31,7 @@ class SimBodyPlugin(
 
     private var heartbeat: SimBodyHeartbeat? = null
 
-    override val name: String = "Sim Body Plugin"
+    override val pluginName: String = "Sim Body Plugin"
     override val neededPermissions: Collection<String> = emptyList()
 
     override fun setup(context: PluginContext) {

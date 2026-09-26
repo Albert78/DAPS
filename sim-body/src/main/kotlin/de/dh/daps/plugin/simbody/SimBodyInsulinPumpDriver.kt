@@ -30,7 +30,7 @@ class SimBodyInsulinPumpDriver(
 ) : InsulinPumpDriver, Plugin {
     override val driverId: String = DRIVER_ID
     override val displayName: String = "SimBody Virtual Pump Driver"
-    override val name: String = "SimBody Pump Driver Plugin"
+    override val pluginName: String = "SimBody Pump Driver Plugin"
     override val neededPermissions: Collection<String> = emptyList()
 
     /**

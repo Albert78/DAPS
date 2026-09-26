@@ -25,7 +25,7 @@ import de.dh.daps.common.model.PluginContext
 class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
     override val driverId: String = DRIVER_ID
     override val displayName: String = "Sample Glucose Source Driver"
-    override val name: String = "Sample Glucose Source Driver Plugin"
+    override val pluginName: String = "Sample Glucose Source Driver Plugin"
     override val neededPermissions: Collection<String> = emptyList()
 
     override fun initialize(context: PluginContext) {

@@ -43,7 +43,7 @@ class ReceiverGlucosePlugin(
 
     override val driverId: String = DRIVER_ID
     override val displayName: String = "External Broadcast Receiver Driver"
-    override val name: String = "Receiver Glucose Plugin"
+    override val pluginName: String = "Receiver Glucose Plugin"
     override val neededPermissions: Collection<String> = listOf("com.eveningoutpost.dexdrip.permissions.RECEIVE_BG_ESTIMATE")
 
     override val readingsInterval: BgReadingsInterval

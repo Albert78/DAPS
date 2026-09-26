@@ -15,6 +15,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
@@ -29,8 +30,8 @@ class SimBodyGlucoseSourceDriver(
     private val simBodyPlugin: SimBodyPlugin,
 ) : GlucoseSourceDriver, Plugin {
     override val driverId: String = DRIVER_ID
-    override val displayName: String = "SimBody Virtual Glucose Source Driver"
-    override val name: String = "SimBody Glucose Source Driver Plugin"
+    override val displayName: String = "SimBody Virtueller Glukosesensor-Treiber"
+    override val pluginName: String = "SimBody Glukosesensor-Treiber-Plugin"
     override val neededPermissions: Collection<String> = emptyList()
 
     /**
@@ -41,6 +42,8 @@ class SimBodyGlucoseSourceDriver(
         onConnected: (GlucoseSource, GlucoseSourceConnectionDescriptor) -> Unit,
         onCancel: () -> Unit,
     ) {
+        val sensorDisplayName = stringResource(R.string.sim_body_cgm_sensor_display_name)
+
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -51,12 +54,12 @@ class SimBodyGlucoseSourceDriver(
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "SimBody Virtual Glucose Source Setup",
+                    text = stringResource(R.string.sim_body_cgm_setup_title),
                     style = MaterialTheme.typography.titleMedium,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Connect to the simulated glucose sensor attached to the virtual human body model.",
+                    text = stringResource(R.string.sim_body_cgm_setup_description),
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -65,7 +68,7 @@ class SimBodyGlucoseSourceDriver(
                         onClick = onCancel,
                         modifier = Modifier.weight(1f),
                     ) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.btn_cancel))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
@@ -74,14 +77,14 @@ class SimBodyGlucoseSourceDriver(
                             val descriptor = GlucoseSourceConnectionDescriptor(
                                 driverId = DRIVER_ID,
                                 sourceId = "simbody-virtual-cgm-01",
-                                displayName = "SimBody Virtual Glucose Sensor",
+                                displayName = sensorDisplayName,
                                 connectionParameters = mapOf("simulated" to "true"),
                             )
                             onConnected(source, descriptor)
                         },
                         modifier = Modifier.weight(1f),
                     ) {
-                        Text("Connect")
+                        Text(stringResource(R.string.btn_connect))
                     }
                 }
             }

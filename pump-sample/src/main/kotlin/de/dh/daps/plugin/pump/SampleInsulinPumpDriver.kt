@@ -24,7 +24,7 @@ import de.dh.daps.common.model.PumpConnectionDescriptor
 class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
     override val driverId: String = DRIVER_ID
     override val displayName: String = "Sample Pump Driver"
-    override val name: String = "Sample Pump Driver Plugin"
+    override val pluginName: String = "Sample Pump Driver Plugin"
     override val neededPermissions: Collection<String> = emptyList()
 
     /**

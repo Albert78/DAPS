@@ -7,7 +7,7 @@ package de.dh.daps.common.model
  * The set of active plugins is determined by build flavors.
  */
 interface Plugin {
-    val name: String
+    val pluginName: String
     val neededPermissions: Collection<String>
 
     /**
