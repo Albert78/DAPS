@@ -30,10 +30,6 @@ class ReceiverGlucosePlugin(
 
     val dataReceiver: DataReceiver = DataReceiver()
 
-    override fun initialize(pluginManager: PluginManager) {
-        // Nothing to do
-    }
-
     override fun start() {
         if (instance != null) {
             throw IllegalStateException("Plugin ${ReceiverGlucosePlugin::class.simpleName} is already started")

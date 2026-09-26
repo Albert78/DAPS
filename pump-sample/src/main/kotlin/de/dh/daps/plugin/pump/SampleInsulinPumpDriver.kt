@@ -27,10 +27,6 @@ class SampleInsulinPumpDriver : InsulinPumpDriver {
     override val name: String = "Sample Pump Driver Plugin"
     override val neededPermissions: Collection<String> = emptyList()
 
-    override fun initialize(pluginManager: PluginManager) {
-        // Driver initialization sketch: Register background services or BLE managers here
-    }
-
     /**
      * Renders a basic setup screen allowing the user to confirm pairing with the sample pump.
      */

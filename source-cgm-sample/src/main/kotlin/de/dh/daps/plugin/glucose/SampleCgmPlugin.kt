@@ -41,10 +41,6 @@ class SampleCgmPlugin : GlucoseSource, Plugin, CgmPluginUiProvider {
 
     override fun getSensorTypeName() = "Dexcom G6"
 
-    override fun initialize(pluginManager: PluginManager) {
-        // Nothing to do
-    }
-
     override fun start() {
         // Nothing to do
     }

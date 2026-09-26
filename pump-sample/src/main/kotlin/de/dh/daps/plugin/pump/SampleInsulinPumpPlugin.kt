@@ -38,10 +38,6 @@ class SampleInsulinPumpPlugin : InsulinPump, Plugin, PumpPluginUiProvider {
 
     override val name: String = "Sample Pump Plugin"
 
-    override fun initialize(pluginManager: PluginManager) {
-        // Nothing to do
-    }
-
     // *************************** Insulin pump members ********************************
 
     override var insulinConcentration: InsulinConcentration = InsulinConcentration.U100

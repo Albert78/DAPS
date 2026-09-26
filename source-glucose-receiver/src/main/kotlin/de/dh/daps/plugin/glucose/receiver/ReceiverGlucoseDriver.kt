@@ -33,10 +33,6 @@ class ReceiverGlucoseDriver(
     override val name: String = "Receiver Glucose Driver Plugin"
     override val neededPermissions: Collection<String> = listOf("com.eveningoutpost.dexdrip.permissions.RECEIVE_BG_ESTIMATE")
 
-    override fun initialize(pluginManager: PluginManager) {
-        // Driver initialized alongside application
-    }
-
     /**
      * Renders the setup screen for configuring the external BroadcastReceiver glucose source.
      */

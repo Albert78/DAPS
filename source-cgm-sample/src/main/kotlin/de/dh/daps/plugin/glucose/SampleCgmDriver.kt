@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.CgmConnectionDescriptor
 import de.dh.daps.common.model.CgmDriver
 import de.dh.daps.common.model.GlucoseSource
-import de.dh.daps.common.model.PluginManager
+import de.dh.daps.common.model.PluginContext
 
 /**
  * Lightweight sample implementation of [CgmDriver].
@@ -27,7 +27,7 @@ class SampleCgmDriver : CgmDriver {
     override val name: String = "Sample CGM Driver Plugin"
     override val neededPermissions: Collection<String> = emptyList()
 
-    override fun initialize(pluginManager: PluginManager) {
+    override fun initialize(context: PluginContext) {
         // Driver initialization sketch: Register background services or sensor listeners here
     }
 

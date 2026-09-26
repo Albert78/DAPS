@@ -25,15 +25,11 @@ fun registerPlugins(pluginManager: PluginManager, application: Application) {
 }
 
 /**
- * Attaches the [SystemWakeService] to [SimBodyPlugin] and connects initial simulation devices
- * if no device configuration exists yet in [DeviceManagementRepository].
+ * Connects initial simulation devices if no device configuration exists yet in [DeviceManagementRepository].
  */
+// TODO: This method will be removed once we have a proper initial system setup
 fun setupInitialDevices(registry: SystemRegistry) {
     val plugin = simBodyPlugin
-    if (plugin != null) {
-        plugin.attachWakeService(registry.wakeService)
-    }
-
     runBlocking {
         val deviceRepository = registry.deviceManagementRepository
         val connectionManager = registry.deviceConnectionManager

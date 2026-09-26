@@ -4,9 +4,9 @@ import android.app.Application
 import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.Plugin
-import de.dh.daps.common.model.PluginManager
+import de.dh.daps.common.model.PluginContext
 import de.dh.daps.common.model.data.BgReading
-import de.dh.daps.core.system.SystemWakeService
+import de.dh.daps.core.SystemRegistry
 import de.dh.daps.plugin.simbody.repository.db.SimBodyDatabase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -16,8 +16,7 @@ import kotlinx.coroutines.flow.asSharedFlow
  * "virtual human body", simulating the influence of meals and insulin.
  */
 class SimBodyPlugin(
-    val application: Application,
-    var wakeService: SystemWakeService? = null
+    val application: Application
 ) : Plugin {
     private val database = SimBodyDatabase.getInstance(application)
     val bodyModel = BodyModel(DEFAULT_SIM_BODY_PROFILE, database.impactDao())
@@ -35,22 +34,20 @@ class SimBodyPlugin(
     override val name: String = "Sim Body Plugin"
     override val neededPermissions: Collection<String> = emptyList()
 
-    override fun initialize(pluginManager: PluginManager) {
+    override fun setup(context: PluginContext) {
+        val registry = context as SystemRegistry
         bodyModel.loadState()
         pumpDevice.loadState()
-        wakeService?.let { attachWakeService(it) }
+        heartbeat = SimBodyHeartbeat(
+            wakeService = registry.wakeService,
+            bodyModel = bodyModel,
+            pumpDevice = pumpDevice,
+            onBgReading = { _glucoseReadings.tryEmit(it) }
+        )
     }
 
-    fun attachWakeService(wakeService: SystemWakeService) {
-        this.wakeService = wakeService
-        if (heartbeat == null) {
-            heartbeat = SimBodyHeartbeat(
-                wakeService = wakeService,
-                bodyModel = bodyModel,
-                pumpDevice = pumpDevice,
-                onBgReading = { _glucoseReadings.tryEmit(it) }
-            ).apply { start() }
-        }
+    override fun initialize(context: PluginContext) {
+        heartbeat?.start()
     }
 
     fun getGlucoseSource(): GlucoseSource = SimBodyCgmSource(_glucoseReadings.asSharedFlow())

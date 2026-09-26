@@ -141,20 +141,6 @@ class SystemRegistryImpl(
                 pumpManager = pumpManager
             )
 
-            runBlocking {
-                glucoseRepository.initialize()
-            }
-
-            val systemOrchestrator = SystemOrchestratorImpl(
-                glucoseSourceManager = glucoseSourceManager,
-                glucoseRepository = glucoseRepository,
-                wakeService = wakeService,
-                settingsRepository = settingsRepository,
-                timeService = timeService,
-                androidNotifications = androidNotifications,
-                scope = scope
-            )
-
             val recommendationManager = RecommendationManager(
                 mealReminderDao = appDatabase.mealReminderDao(),
                 wakeService = wakeService,
@@ -170,22 +156,14 @@ class SystemRegistryImpl(
             )
             val carbsInsulinCalculator = CarbsInsulinCalculator(timeService.tickInterval)
 
-            runBlocking {
-                treatmentRepository.load()
-                DatabaseInitializer.initialize(application, treatmentRepository, therapyRepository, settingsRepository, alarmRepository)
-                deviceConnectionManager.restoreConnections()
-            }
-
-            therapyManager.startInitialization()
-
-            systemOrchestrator.startInitialization(
-                treatmentRepository = treatmentRepository,
-                therapyManager = therapyManager,
-                recommendationManager = recommendationManager,
-                pumpManager = pumpManager,
-                appPreferencesRepository = appPreferencesRepository,
-                carbsInsulinCalculator = carbsInsulinCalculator,
-                systemMetricsRepository = systemMetricsRepository
+            val systemOrchestrator = SystemOrchestratorImpl(
+                glucoseSourceManager = glucoseSourceManager,
+                glucoseRepository = glucoseRepository,
+                wakeService = wakeService,
+                settingsRepository = settingsRepository,
+                timeService = timeService,
+                androidNotifications = androidNotifications,
+                scope = scope
             )
 
             val alarmSnoozeManager = AlarmSnoozeManager()
@@ -197,14 +175,13 @@ class SystemRegistryImpl(
                 androidNotifications = androidNotifications,
                 scope = scope
             )
-            alarmEvaluator.start()
 
             val permissionsHandler = PermissionsChangedHandler {
                 pluginManager.triggerUpdatesAfterPermissionsChange()
                 onPermissionsChanged()
             }
 
-            return SystemRegistryImpl(
+            val registryInstance = SystemRegistryImpl(
                 appContext = application,
                 glucoseRepository = glucoseRepository,
                 therapyRepository = therapyRepository,
@@ -233,6 +210,40 @@ class SystemRegistryImpl(
                 permissionsChangedHandler = permissionsHandler,
                 apsServiceClass = apsServiceClass
             )
+
+            // Phase 1: Provide PluginContext to all registered plugins early (setup)
+            pluginManager.getPlugins().forEach { plugin ->
+                plugin.setup(registryInstance)
+            }
+
+            // Phase 2: Core initialization (load repositories, restore connections & start managers)
+            runBlocking {
+                glucoseRepository.initialize()
+                treatmentRepository.load()
+                DatabaseInitializer.initialize(application, treatmentRepository, therapyRepository, settingsRepository, alarmRepository)
+                deviceConnectionManager.restoreConnections()
+            }
+
+            therapyManager.startInitialization()
+
+            systemOrchestrator.startInitialization(
+                treatmentRepository = treatmentRepository,
+                therapyManager = therapyManager,
+                recommendationManager = recommendationManager,
+                pumpManager = pumpManager,
+                appPreferencesRepository = appPreferencesRepository,
+                carbsInsulinCalculator = carbsInsulinCalculator,
+                systemMetricsRepository = systemMetricsRepository
+            )
+
+            alarmEvaluator.start()
+
+            // Phase 3: Trigger post-initialization for plugins on the fully initialized system
+            pluginManager.getPlugins().forEach { plugin ->
+                plugin.initialize(registryInstance)
+            }
+
+            return registryInstance
         }
     }
 }

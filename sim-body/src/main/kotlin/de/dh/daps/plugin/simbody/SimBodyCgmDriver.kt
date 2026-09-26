@@ -33,10 +33,6 @@ class SimBodyCgmDriver(
     override val name: String = "SimBody CGM Driver Plugin"
     override val neededPermissions: Collection<String> = emptyList()
 
-    override fun initialize(pluginManager: PluginManager) {
-        // Driver initialized alongside SimBodyPlugin
-    }
-
     /**
      * Renders the setup screen for connecting to the virtual human body simulation glucose source.
      */

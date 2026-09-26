@@ -8,12 +8,11 @@ import de.dh.daps.common.model.PluginManager
 
 class PluginManagerImpl(
     val context: Context
-): PluginManager {
+) : PluginManager {
     private val plugins: MutableList<Plugin> = ArrayList()
 
     override fun addPlugin(plugin: Plugin) {
         plugins.add(plugin)
-        plugin.initialize(this)
     }
 
     override fun getPlugins(): List<Plugin> {

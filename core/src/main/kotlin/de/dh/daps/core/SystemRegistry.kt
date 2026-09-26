@@ -3,6 +3,7 @@ package de.dh.daps.core
 import android.app.Service
 import android.content.Context
 import de.dh.daps.AppPreferencesRepository
+import de.dh.daps.common.model.PluginContext
 import de.dh.daps.common.model.PluginManager
 import de.dh.daps.common.model.calculation.CarbsInsulinCalculator
 import de.dh.daps.common.model.data.TimeService
@@ -42,11 +43,11 @@ fun interface PermissionsChangedHandler {
  * Central registry for all core services, repositories, and coordinators.
  * This acts as the single source of truth for component access within the application.
  */
-interface SystemRegistry {
+interface SystemRegistry : PluginContext {
     /**
      * The global application context.
      */
-    val appContext: Context
+    override val appContext: Context
 
     // Data Repositories
 
@@ -109,14 +110,14 @@ interface SystemRegistry {
     /**
      * Repository for lightweight application preferences and key-value pairs.
      */
-    val appPreferencesRepository: AppPreferencesRepository
+    override val appPreferencesRepository: AppPreferencesRepository
 
     // System Managers and Services
 
     /**
      * Central coordinator for managing system plugins (e.g., pump or glucose source drivers).
      */
-    val pluginManager: PluginManager
+    override val pluginManager: PluginManager
 
     /**
      * Manages system wakeups and wake locks to ensure critical background tasks are executed.
@@ -126,14 +127,14 @@ interface SystemRegistry {
     /**
      * Provides the system-wide time reference and handles synchronized ticking for background processes.
      */
-    val timeService: TimeService
+    override val timeService: TimeService
 
     // Domain Managers and Services
 
     /**
      * The mathematical core for calculating insulin-on-board (IOB) and carbs-on-board (COB).
      */
-    val carbsInsulinCalculator: CarbsInsulinCalculator
+    override val carbsInsulinCalculator: CarbsInsulinCalculator
 
     /**
      * Manages the active glucose data source and processes incoming blood glucose readings.
