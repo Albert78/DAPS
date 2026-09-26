@@ -24,6 +24,7 @@ import de.dh.daps.common.navigation.CurrentTherapySettingsRoute
 import de.dh.daps.common.navigation.DashboardRoute
 import de.dh.daps.common.navigation.FeatureNavGraph
 import de.dh.daps.common.navigation.FoodDatabaseRoute
+import de.dh.daps.common.navigation.GlucoseSourceSetupRoute
 import de.dh.daps.common.navigation.HistoricalMealRoute
 import de.dh.daps.common.navigation.HistoryRoute
 import de.dh.daps.common.navigation.InsulinProfileEditorRoute
@@ -87,6 +88,8 @@ import de.dh.daps.ui.screens.permissions.openAppUseFullScreenSettings
 import de.dh.daps.ui.screens.permissions.openAutoRevokeSettings
 import de.dh.daps.ui.screens.permissions.openNotificationSettings
 import de.dh.daps.ui.screens.permissions.requestIgnoreBatteryOptimizations
+import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupScreen
+import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupViewModel
 import de.dh.daps.ui.screens.preferences.PreferencesScreen
 import de.dh.daps.ui.screens.preferences.PreferencesViewModel
 import de.dh.daps.ui.screens.pumpsetup.PumpSetupScreen
@@ -402,7 +405,8 @@ class MainFeatureNavGraph(
                     initialTab = key.initialTab,
                     onNavigateUp = { navViewModel.pop() },
                     onNavigateToCoreDecisions = { navViewModel.push(CoreDecisionsRoute) },
-                    onNavigateToPumpSetup = { navViewModel.push(PumpSetupRoute()) }
+                    onNavigateToPumpSetup = { navViewModel.push(PumpSetupRoute()) },
+                    onNavigateToGlucoseSourceSetup = { navViewModel.push(GlucoseSourceSetupRoute()) }
                 )
             }
 
@@ -411,6 +415,16 @@ class MainFeatureNavGraph(
                     factory = PumpSetupViewModel.Companion.Factory(registry, key.driverId)
                 )
                 PumpSetupScreen(
+                    viewModel = vm,
+                    onNavigateUp = { navViewModel.pop() }
+                )
+            }
+
+            is GlucoseSourceSetupRoute -> NavEntry(key) {
+                val vm: GlucoseSourceSetupViewModel = viewModel(
+                    factory = GlucoseSourceSetupViewModel.Companion.Factory(registry, key.driverId)
+                )
+                GlucoseSourceSetupScreen(
                     viewModel = vm,
                     onNavigateUp = { navViewModel.pop() }
                 )

@@ -47,6 +47,7 @@ fun SystemControlScreen(
     onNavigateUp: () -> Unit,
     onNavigateToCoreDecisions: () -> Unit,
     onNavigateToPumpSetup: () -> Unit = {},
+    onNavigateToGlucoseSourceSetup: () -> Unit = {},
     viewModel: SystemControlViewModel,
     initialTab: Int = SYSTEM_CONTROL_TAB_OVERVIEW
 ) {
@@ -58,6 +59,7 @@ fun SystemControlScreen(
         onNavigateUp = onNavigateUp,
         onNavigateToCoreDecisions = onNavigateToCoreDecisions,
         onNavigateToPumpSetup = onNavigateToPumpSetup,
+        onNavigateToGlucoseSourceSetup = onNavigateToGlucoseSourceSetup,
         onStopGlucoseSource = viewModel::stopActiveGlucoseSource,
         onDisconnectForMaintenance = viewModel::disconnectPumpForMaintenance,
         onCancelPumpJob = viewModel::cancelPumpJob,
@@ -73,6 +75,7 @@ fun SystemControlContent(
     onNavigateUp: () -> Unit,
     onNavigateToCoreDecisions: () -> Unit,
     onNavigateToPumpSetup: () -> Unit = {},
+    onNavigateToGlucoseSourceSetup: () -> Unit = {},
     onStopGlucoseSource: () -> Unit = {},
     onDisconnectForMaintenance: () -> Unit = {},
     onCancelPumpJob: (String) -> Unit = {},
@@ -143,7 +146,7 @@ fun SystemControlContent(
                     )
                     SYSTEM_CONTROL_TAB_GLUCOSE_SOURCE -> GlucoseSourceTabContent(
                         uiState = uiState.glucoseSourceTabUiState,
-                        onChangeGlucoseSource = { },
+                        onChangeGlucoseSource = onNavigateToGlucoseSourceSetup,
                         onStopSensor = onStopGlucoseSource
                     )
                     SYSTEM_CONTROL_TAB_PUMP -> PumpTabContent(
