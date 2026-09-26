@@ -13,7 +13,6 @@ import de.dh.daps.common.model.data.GlucoseUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -84,7 +83,7 @@ class AppPreferencesRepository(private val context: Context, private val scope: 
      * Gets the current preferences as a suspend function.
      */
     suspend fun getPreferences(): Preferences {
-        return cachedPreferences.filterNotNull().first()
+        return context.dataStore.data.first()
     }
 
     suspend fun editPreferences(block: (MutablePreferences) -> Unit) {
