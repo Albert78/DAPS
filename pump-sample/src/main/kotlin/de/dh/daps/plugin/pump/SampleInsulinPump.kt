@@ -19,8 +19,6 @@ import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinHistory
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpStatus
-import de.dh.daps.common.model.Plugin
-import de.dh.daps.common.model.PluginManager
 import de.dh.daps.common.model.PumpAlerts
 import de.dh.daps.common.model.PumpCapabilities
 import de.dh.daps.common.model.data.InsulinProfile
@@ -31,12 +29,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class SampleInsulinPumpPlugin : InsulinPump, Plugin, PumpPluginUiProvider {
-    // *************************** Plugin members ********************************
-
-    override val neededPermissions: Collection<String> = emptyList()
-
-    override val name: String = "Sample Pump Plugin"
+class SampleInsulinPump : InsulinPump, PumpPluginUiProvider {
 
     // *************************** Insulin pump members ********************************
 
@@ -117,7 +110,7 @@ class SampleInsulinPumpPlugin : InsulinPump, Plugin, PumpPluginUiProvider {
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "This content is provided by the Sample Pump Plugin.",
+                    text = "This content is provided by the Sample Pump.",
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(

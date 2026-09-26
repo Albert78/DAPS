@@ -18,7 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpDriver
-import de.dh.daps.common.model.PluginManager
+import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.PumpConnectionDescriptor
 
 /**
@@ -27,7 +27,7 @@ import de.dh.daps.common.model.PumpConnectionDescriptor
  */
 class SimBodyInsulinPumpDriver(
     private val simBodyPlugin: SimBodyPlugin,
-) : InsulinPumpDriver {
+) : InsulinPumpDriver, Plugin {
     override val driverId: String = DRIVER_ID
     override val displayName: String = "SimBody Virtual Pump Driver"
     override val name: String = "SimBody Pump Driver Plugin"

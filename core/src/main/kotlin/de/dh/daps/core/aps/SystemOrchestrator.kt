@@ -4,6 +4,7 @@ import android.app.Notification
 import android.content.Intent
 import de.dh.daps.AppPreferencesRepository
 import de.dh.daps.common.model.ApsMode
+import de.dh.daps.common.model.MealEntry
 import de.dh.daps.common.model.calculation.CarbsInsulinCalculator
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.BgValue
@@ -12,7 +13,6 @@ import de.dh.daps.common.model.data.TickHandler
 import de.dh.daps.common.model.data.TickPriority
 import de.dh.daps.common.model.data.TimeService
 import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.common.model.MealEntry
 import de.dh.daps.core.pump.PumpIssue
 import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.repository.GlucoseRepository

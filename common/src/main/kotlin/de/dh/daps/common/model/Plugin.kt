@@ -2,7 +2,6 @@ package de.dh.daps.common.model
 
 /**
  * Abstraction of functionality which is maintained independently of the main app.
- * Plugins declare their own needed permissions.
  *
  * Plugins are static components of an assembled app.
  * The set of active plugins is determined by build flavors.

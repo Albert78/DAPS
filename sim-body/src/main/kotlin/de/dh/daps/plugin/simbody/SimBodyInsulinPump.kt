@@ -1,6 +1,5 @@
 package de.dh.daps.plugin.simbody
 
-import de.dh.pump.PumpConnectionException
 import de.dh.daps.common.model.BasalStatus
 import de.dh.daps.common.model.BolusDeliveryState
 import de.dh.daps.common.model.BolusEvent
@@ -18,6 +17,7 @@ import de.dh.daps.common.model.PumpCapabilities
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.data.getAmountForMinute
+import de.dh.pump.PumpConnectionException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview

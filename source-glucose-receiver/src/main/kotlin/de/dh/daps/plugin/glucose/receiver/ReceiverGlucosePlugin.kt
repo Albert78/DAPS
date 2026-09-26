@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.CgmConnectionDescriptor
 import de.dh.daps.common.model.CgmDriver
 import de.dh.daps.common.model.GlucoseSource
+import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.Minutes
@@ -38,7 +39,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 class ReceiverGlucosePlugin(
     val application: Application,
     var externalSourceType: ExternalSourceType = ExternalSourceType.xDrip5Min,
-) : CgmDriver, GlucoseSource {
+) : CgmDriver, GlucoseSource, Plugin {
 
     override val driverId: String = DRIVER_ID
     override val displayName: String = "External Broadcast Receiver Driver"

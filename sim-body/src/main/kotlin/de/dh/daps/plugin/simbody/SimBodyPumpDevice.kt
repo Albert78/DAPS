@@ -1,17 +1,18 @@
 package de.dh.daps.plugin.simbody
 
 import android.util.Log
-import de.dh.pump.PumpCommandException
-import de.dh.pump.PumpStatus
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinCategory
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.data.getAmountForMinute
+import de.dh.daps.plugin.simbody.SimBodyPumpDevice.Companion.BOLUS_SECONDS_PER_UNIT
 import de.dh.daps.plugin.simbody.repository.db.PumpDao
 import de.dh.daps.plugin.simbody.repository.db.PumpDeliveryType
 import de.dh.daps.plugin.simbody.repository.db.PumpHistoryEntity
 import de.dh.daps.plugin.simbody.repository.db.PumpStateEntity
+import de.dh.pump.PumpCommandException
+import de.dh.pump.PumpStatus
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

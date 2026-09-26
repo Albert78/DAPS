@@ -2,8 +2,8 @@ package de.dh.daps.common.model.mock
 
 import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.data.Block
-import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.InsulinProfile
+import de.dh.daps.common.model.data.Minutes
 
 fun mockInsulinType() = InsulinType(
     name = "Mock Insulin",

@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
  * Driver interface for CGM / blood glucose source plugins.
  * Encapsulates driver-specific scanning, transmitter setup, and connection workflows.
  */
-interface CgmDriver : Plugin {
+interface CgmDriver {
     /**
      * Unique identifier for this driver plugin (e.g. "de.dh.daps.plugin.glucose.receiver").
      */

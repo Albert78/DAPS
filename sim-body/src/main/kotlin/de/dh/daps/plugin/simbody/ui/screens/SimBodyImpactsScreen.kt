@@ -27,17 +27,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.ui.common.theme.AppPreview
-import de.dh.daps.common.R as CommonR
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.plugin.simbody.BodyModel
 import de.dh.daps.plugin.simbody.DEFAULT_SIM_BODY_PROFILE
 import de.dh.daps.plugin.simbody.Impacts
 import de.dh.daps.plugin.simbody.R
 import de.dh.daps.ui.common.glucoseUnitLabel
+import de.dh.daps.ui.common.theme.AppPreview
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import de.dh.daps.common.R as CommonR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

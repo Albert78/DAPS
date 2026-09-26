@@ -19,8 +19,6 @@ import de.dh.daps.core.repository.db.entities.AlarmProfileEntity
 import de.dh.daps.core.repository.db.entities.CoreInsightEntity
 import de.dh.daps.core.repository.db.entities.CurrentSettingsEntity
 import de.dh.daps.core.repository.db.entities.CurrentTherapySettingsEntity
-import de.dh.daps.core.repository.db.entities.ScheduledTherapyAdjustmentEntity
-import de.dh.daps.core.repository.db.entities.TherapyAdjustmentEntity
 import de.dh.daps.core.repository.db.entities.DataProviderEntity
 import de.dh.daps.core.repository.db.entities.DeferredBolusEntity
 import de.dh.daps.core.repository.db.entities.GlucoseReadingEntity
@@ -30,7 +28,9 @@ import de.dh.daps.core.repository.db.entities.InsulinTypeEntity
 import de.dh.daps.core.repository.db.entities.MealEntity
 import de.dh.daps.core.repository.db.entities.MealReminderEntity
 import de.dh.daps.core.repository.db.entities.MealTypeEntity
+import de.dh.daps.core.repository.db.entities.ScheduledTherapyAdjustmentEntity
 import de.dh.daps.core.repository.db.entities.SensorTypeEntity
+import de.dh.daps.core.repository.db.entities.TherapyAdjustmentEntity
 import de.dh.daps.core.repository.db.entities.TickMetricEntity
 import de.dh.daps.core.repository.db.entities.WakeupMetricEntity
 import kotlinx.coroutines.flow.Flow

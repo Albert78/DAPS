@@ -1,8 +1,16 @@
 package de.dh.daps.plugin.glucose
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.GlucoseSource
-import de.dh.daps.common.model.Plugin
-import de.dh.daps.common.model.PluginManager
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.BgSampleKind
@@ -11,15 +19,6 @@ import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.RawBg
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.screens.systemcontrol.CgmPluginUiProvider
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -27,10 +26,9 @@ import kotlinx.coroutines.flow.map
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 
-class SampleCgmPlugin : GlucoseSource, Plugin, CgmPluginUiProvider {
-    override val neededPermissions: Collection<String> = emptyList()
+class SampleCgmSource : GlucoseSource, CgmPluginUiProvider {
 
-    override val name: String = "Sample CGM Plugin"
+    override val name: String = "Sample CGM Source"
 
     override val dataProviderType: String = "CGM"
 
@@ -53,17 +51,17 @@ class SampleCgmPlugin : GlucoseSource, Plugin, CgmPluginUiProvider {
     override fun CgmControlSection() {
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = androidx.compose.material3.CardDefaults.cardColors(
+            colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant
             )
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "This content is provided by the Sample CGM Plugin.",
+                    text = "This content is provided by the Sample CGM Source.",
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
-                    text = "Plugin Version: 1.0.0-sample",
+                    text = "Version: 1.0.0-sample",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.secondary
                 )
@@ -78,7 +76,7 @@ class SampleCgmPlugin : GlucoseSource, Plugin, CgmPluginUiProvider {
                 timestamp = Timestamp(System.currentTimeMillis()),
             )
             emit(reading)
-            delay((1000*60).milliseconds) // Emit minute for demo purposes
+            delay((1000 * 60).milliseconds) // Emit minute for demo purposes
         }
     }
 

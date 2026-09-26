@@ -3,9 +3,6 @@ package de.dh.daps.core.repository
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.aps.CoreInsight
 import de.dh.daps.core.repository.db.AppDatabase
-import de.dh.daps.core.repository.db.entities.CoreInsightEntity
-import de.dh.daps.core.repository.db.entities.TickMetricEntity
-import de.dh.daps.core.repository.db.entities.WakeupMetricEntity
 import de.dh.daps.core.repository.db.mappers.toDomain
 import de.dh.daps.core.repository.db.mappers.toEntity
 import kotlinx.coroutines.flow.Flow

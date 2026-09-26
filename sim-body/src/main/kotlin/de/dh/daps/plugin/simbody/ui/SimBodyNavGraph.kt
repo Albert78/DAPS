@@ -6,14 +6,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
-import androidx.compose.ui.res.stringResource
-import de.dh.daps.plugin.simbody.R
 import de.dh.daps.common.navigation.FeatureNavGraph
 import de.dh.daps.common.navigation.NavigationViewModel
 import de.dh.daps.plugin.simbody.BodyModel
+import de.dh.daps.plugin.simbody.R
 import de.dh.daps.plugin.simbody.ui.components.SimBodyDashboardCard
 import de.dh.daps.plugin.simbody.ui.screens.SimBodyHistoryScreen
 import de.dh.daps.plugin.simbody.ui.screens.SimBodyImpactsScreen

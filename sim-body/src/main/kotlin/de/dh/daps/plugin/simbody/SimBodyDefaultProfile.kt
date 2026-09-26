@@ -2,8 +2,8 @@ package de.dh.daps.plugin.simbody
 
 import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.data.Block
-import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.InsulinProfile
+import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.plugin.simbody.model.BodyProfile
 
 /**

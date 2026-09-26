@@ -6,14 +6,14 @@ import de.dh.daps.common.model.InsulinOrigin
 import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.MealEntry
 import de.dh.daps.common.model.MealType
-import de.dh.daps.common.model.getDefaultMealTypes
-import de.dh.daps.common.model.getDefaultStandardMealType
 import de.dh.daps.common.model.calculation.CarbCurveComponent
 import de.dh.daps.common.model.calculation.InsulinCurve
 import de.dh.daps.common.model.data.Block
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.data.getAmountForMinute
+import de.dh.daps.common.model.getDefaultMealTypes
+import de.dh.daps.common.model.getDefaultStandardMealType
 import de.dh.daps.plugin.simbody.model.BodyProfile
 import de.dh.daps.plugin.simbody.repository.db.SimBodyDao
 import de.dh.daps.plugin.simbody.repository.db.SimEventEntity

@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.CgmConnectionDescriptor
 import de.dh.daps.common.model.CgmDriver
 import de.dh.daps.common.model.GlucoseSource
-import de.dh.daps.common.model.PluginManager
+import de.dh.daps.common.model.Plugin
 
 /**
  * Driver implementation for the SimBody virtual glucose source simulation.
@@ -27,7 +27,7 @@ import de.dh.daps.common.model.PluginManager
  */
 class SimBodyCgmDriver(
     private val simBodyPlugin: SimBodyPlugin,
-) : CgmDriver {
+) : CgmDriver, Plugin {
     override val driverId: String = DRIVER_ID
     override val displayName: String = "SimBody Virtual CGM Driver"
     override val name: String = "SimBody CGM Driver Plugin"

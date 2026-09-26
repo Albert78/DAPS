@@ -1,6 +1,5 @@
 package de.dh.daps.plugin.simbody
 
-import android.app.Application
 import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval

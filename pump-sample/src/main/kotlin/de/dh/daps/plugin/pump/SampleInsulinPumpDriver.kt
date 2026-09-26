@@ -14,14 +14,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpDriver
-import de.dh.daps.common.model.PluginManager
+import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.PumpConnectionDescriptor
 
 /**
  * Lightweight sample implementation of [InsulinPumpDriver].
  * Demonstrates the basic structure of a pump driver plugin without complex logic.
  */
-class SampleInsulinPumpDriver : InsulinPumpDriver {
+class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
     override val driverId: String = DRIVER_ID
     override val displayName: String = "Sample Pump Driver"
     override val name: String = "Sample Pump Driver Plugin"
@@ -53,7 +53,7 @@ class SampleInsulinPumpDriver : InsulinPumpDriver {
                 Button(
                     onClick = {
                         // Sketch: In a real driver, perform scanning, pairing & key exchange here
-                        val pump = SampleInsulinPumpPlugin()
+                        val pump = SampleInsulinPump()
                         val descriptor = PumpConnectionDescriptor(
                             driverId = DRIVER_ID,
                             deviceId = "sample-pump-device-01",
@@ -77,7 +77,7 @@ class SampleInsulinPumpDriver : InsulinPumpDriver {
         if (descriptor.driverId != DRIVER_ID) {
             return Result.failure(IllegalArgumentException("Invalid driver ID for Sample Pump Driver: ${descriptor.driverId}"))
         }
-        return Result.success(SampleInsulinPumpPlugin())
+        return Result.success(SampleInsulinPump())
     }
 
     companion object {

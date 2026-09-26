@@ -10,7 +10,6 @@ import de.dh.daps.core.SystemRegistry
 import de.dh.daps.plugin.glucose.receiver.ExternalSourceType
 import de.dh.daps.plugin.glucose.receiver.ReceiverGlucosePlugin
 import de.dh.daps.plugin.pump.SampleInsulinPumpDriver
-import de.dh.daps.plugin.pump.SampleInsulinPumpPlugin
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -18,7 +17,6 @@ import kotlinx.coroutines.runBlocking
  */
 fun registerPlugins(pluginManager: PluginManager, application: Application) {
     pluginManager.addPlugin(ReceiverGlucosePlugin(application))
-    pluginManager.addPlugin(SampleInsulinPumpPlugin())
     pluginManager.addPlugin(SampleInsulinPumpDriver())
 }
 

@@ -15,13 +15,14 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.CgmConnectionDescriptor
 import de.dh.daps.common.model.CgmDriver
 import de.dh.daps.common.model.GlucoseSource
+import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.PluginContext
 
 /**
  * Lightweight sample implementation of [CgmDriver].
  * Demonstrates the basic structure of a CGM driver plugin without complex logic.
  */
-class SampleCgmDriver : CgmDriver {
+class SampleCgmDriver : CgmDriver, Plugin {
     override val driverId: String = DRIVER_ID
     override val displayName: String = "Sample CGM Driver"
     override val name: String = "Sample CGM Driver Plugin"
@@ -57,7 +58,7 @@ class SampleCgmDriver : CgmDriver {
                 Button(
                     onClick = {
                         // Sketch: In a real driver, perform transmitter scanning & pairing here
-                        val source = SampleCgmPlugin()
+                        val source = SampleCgmSource()
                         val descriptor = CgmConnectionDescriptor(
                             driverId = DRIVER_ID,
                             sourceId = "sample-cgm-sensor-01",
@@ -81,7 +82,7 @@ class SampleCgmDriver : CgmDriver {
         if (descriptor.driverId != DRIVER_ID) {
             return Result.failure(IllegalArgumentException("Invalid driver ID for Sample CGM Driver: ${descriptor.driverId}"))
         }
-        return Result.success(SampleCgmPlugin())
+        return Result.success(SampleCgmSource())
     }
 
     companion object {

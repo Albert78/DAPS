@@ -8,8 +8,8 @@ import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.aps.CoreReasoning
-import de.dh.daps.core.repository.db.entities.DBBlock
 import de.dh.daps.core.repository.db.entities.DBBgBlock
+import de.dh.daps.core.repository.db.entities.DBBlock
 import org.json.JSONArray
 import org.json.JSONObject
 

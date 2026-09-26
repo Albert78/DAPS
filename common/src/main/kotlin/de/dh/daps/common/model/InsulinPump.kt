@@ -1,9 +1,9 @@
 package de.dh.daps.common.model
 
-import de.dh.pump.PumpCommandException
-import de.dh.pump.PumpConnectionException
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.pump.PumpCommandException
+import de.dh.pump.PumpConnectionException
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 

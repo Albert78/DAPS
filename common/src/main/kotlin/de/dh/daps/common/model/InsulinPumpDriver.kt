@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
  * Driver interface for insulin pump plugins.
  * Encapsulates driver-specific scanning, pairing, and connection workflows.
  */
-interface InsulinPumpDriver : Plugin {
+interface InsulinPumpDriver {
     /**
      * Unique identifier for this driver plugin (e.g. "de.dh.daps.plugin.ypso").
      */

@@ -4,7 +4,6 @@ import de.dh.daps.common.model.DataProvider
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.SensorType
-import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.repository.db.entities.DataProviderEntity
 import de.dh.daps.core.repository.db.entities.GlucoseReadingEntity
 import de.dh.daps.core.repository.db.entities.SensorTypeEntity

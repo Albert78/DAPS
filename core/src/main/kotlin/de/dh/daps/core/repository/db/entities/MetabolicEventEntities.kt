@@ -5,14 +5,12 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import de.dh.daps.common.model.ID_UNDEFINED
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinOrigin
-import de.dh.daps.common.model.InsulinCategory
-import de.dh.daps.common.model.ID_UNDEFINED
+import de.dh.daps.common.model.InsulinStatus
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
-
-import de.dh.daps.common.model.InsulinStatus
 
 @Entity(
     tableName = "meal_type"
