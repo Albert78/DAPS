@@ -33,6 +33,9 @@
     <string name="sim_body_cgm_setup_description">Verbinden mit dem simulierten Glukosesensor des virtuellen menschlichen Körpermodells.</string>
     <string name="sim_body_cgm_sensor_display_name">SimBody Virtueller Glukosesensor</string>
     <string name="sim_body_pump_driver_display_name">SimBody Virtuelle Insulinpumpe</string>
+    <string name="sim_body_pump_setup_title">SimBody Virtuelle Insulinpumpe Setup</string>
+    <string name="sim_body_pump_setup_description">Verbinden mit der simulierten Insulinpumpe des virtuellen menschlichen Körpermodells.</string>
+    <string name="sim_body_pump_device_display_name">SimBody Virtuelle Insulinpumpe</string>
 
     <!-- Dialogs -->
     <string name="dialog_title_eat_meal">Mahlzeit essen</string>

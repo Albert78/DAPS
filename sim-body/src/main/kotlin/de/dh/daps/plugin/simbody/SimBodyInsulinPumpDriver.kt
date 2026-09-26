@@ -43,6 +43,8 @@ class SimBodyInsulinPumpDriver(
         onConnected: (InsulinPump, PumpConnectionDescriptor) -> Unit,
         onCancel: () -> Unit,
     ) {
+        val pumpDisplayName = stringResource(R.string.sim_body_pump_device_display_name)
+
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -53,12 +55,12 @@ class SimBodyInsulinPumpDriver(
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "SimBody Virtual Pump Setup",
+                    text = stringResource(R.string.sim_body_pump_setup_title),
                     style = MaterialTheme.typography.titleMedium,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Connect to the simulated insulin pump attached to the virtual human body model.",
+                    text = stringResource(R.string.sim_body_pump_setup_description),
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -76,7 +78,7 @@ class SimBodyInsulinPumpDriver(
                             val descriptor = PumpConnectionDescriptor(
                                 driverId = DRIVER_ID,
                                 deviceId = "simbody-virtual-pump-01",
-                                displayName = "SimBody Virtual Insulin Pump",
+                                displayName = pumpDisplayName,
                                 connectionParameters = mapOf("simulated" to "true"),
                             )
                             onConnected(pump, descriptor)
