@@ -127,7 +127,6 @@ class SystemRegistryImpl(
             )
 
             val glucoseSourceManager = GlucoseSourceManager(
-                context = application,
                 glucoseRepository = glucoseRepository
             )
             val glucoseSourceDriverManager = GlucoseSourceDriverManager(

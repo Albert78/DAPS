@@ -1,4 +1,3 @@
 <resources>
-    <string name="sample_cgm_source_name">Beispiel-CGM</string>
     <string name="sample_cgm_driver_display_name">Treiber für Beispiel-CGM</string>
 </resources>

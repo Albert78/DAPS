@@ -63,10 +63,10 @@ class GlucoseRepository(appDatabase: AppDatabase) {
         return entity.toModel()
     }
 
-    suspend fun getOrCreateDataProviderByName(name: String, type: String): DataProvider {
-        var entity = providerDao.getDataProviderByName(name)
+    suspend fun getOrCreateDataProvider(glucoseSourceId: String): DataProvider {
+        var entity = providerDao.getDataProviderByName(glucoseSourceId)
         if (entity == null) {
-            entity = DataProviderEntity(name = name, type = type)
+            entity = DataProviderEntity(name = glucoseSourceId)
             val id = providerDao.insertDataProvider(entity)
             if (id != -1L) {
                 entity.id = id

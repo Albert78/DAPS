@@ -28,7 +28,6 @@
     <string name="btn_connect">Verbinden</string>
 
     <!-- Glucose & Pump Driver Setup -->
-    <string name="sim_body_glucose_source_name">Sim Body Glukosequelle</string>
     <string name="sim_body_cgm_driver_display_name">Treiber für Virtuellen SimBody Glukosesensor</string>
     <string name="sim_body_cgm_setup_title">SimBody Virtueller Glukosesensor Setup</string>
     <string name="sim_body_cgm_setup_description">Verbinden mit dem simulierten Glukosesensor des virtuellen menschlichen Körpermodells.</string>

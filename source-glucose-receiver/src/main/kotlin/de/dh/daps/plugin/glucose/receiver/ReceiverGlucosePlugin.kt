@@ -43,7 +43,7 @@ class ReceiverGlucosePlugin(
 ) : GlucoseSourceDriver, GlucoseSource, Plugin {
 
     override val driverId: String = DRIVER_ID
-    override val glucoseSourceName: UiText = UiText.StringResource(R.string.glucose_broadcast_receiver_display_name)
+    override val glucoseSourceId: String = SOURCE_ID
     override val displayName: UiText = UiText.StringResource(R.string.glucose_broadcast_receiver_driver_display_name)
     override val pluginId: String = DRIVER_ID
     override val neededPermissions: Collection<String> = listOf("com.eveningoutpost.dexdrip.permissions.RECEIVE_BG_ESTIMATE")
@@ -53,9 +53,6 @@ class ReceiverGlucosePlugin(
 
     override val readingsTimeDelay: Minutes
         get() = externalSourceType.readingsTimeDelay
-
-    override val dataProviderType: String
-        get() = "Glucose $readingsInterval"
 
     override fun getSensorTypeName(): String = "External Receiver"
 
@@ -179,6 +176,7 @@ class ReceiverGlucosePlugin(
 
     companion object {
         const val DRIVER_ID = "de.dh.daps.plugin.glucose.receiver"
+        const val SOURCE_ID = "receiver-glucose-source"
         val TAG = ReceiverGlucosePlugin::class.simpleName
         var instance: ReceiverGlucosePlugin? = null
     }

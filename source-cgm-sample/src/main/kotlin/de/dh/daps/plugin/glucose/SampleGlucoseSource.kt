@@ -18,7 +18,6 @@ import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.RawBg
 import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.screens.systemcontrol.GlucoseSourcePluginUiProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -28,8 +27,7 @@ import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 
 class SampleGlucoseSource : GlucoseSource, GlucoseSourcePluginUiProvider {
-    override val glucoseSourceName: UiText = UiText.StringResource(R.string.sample_cgm_source_name)
-    override val dataProviderType: String = "CGM"
+    override val glucoseSourceId: String = SOURCE_ID
     override val readingsInterval: BgReadingsInterval
         get() = BgReadingsInterval.OneMinute
     override val readingsTimeDelay = Minutes(5)
@@ -95,5 +93,9 @@ class SampleGlucoseSource : GlucoseSource, GlucoseSourcePluginUiProvider {
             sampleKind = kind,
             timestamp = raw.timestamp
         )
+    }
+
+    companion object {
+        const val SOURCE_ID = "sample-glucose-source"
     }
 }

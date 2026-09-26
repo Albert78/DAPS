@@ -39,12 +39,10 @@ fun SensorTypeEntity.toModel() = SensorType(
 // DataProvider Converters
 fun DataProvider.toEntity() = DataProviderEntity(
     id = this.id,
-    name = this.name,
-    type = this.type
+    name = this.name
 )
 
 fun DataProviderEntity.toModel() = DataProvider(
     id = this.id,
-    name = this.name,
-    type = this.type
+    name = this.name
 )

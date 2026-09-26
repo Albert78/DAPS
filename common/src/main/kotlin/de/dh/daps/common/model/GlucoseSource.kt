@@ -3,7 +3,6 @@ package de.dh.daps.common.model
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.Minutes
-import de.dh.daps.common.ui.UiText
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -11,8 +10,12 @@ import kotlinx.coroutines.flow.Flow
  * Provides a stream of [BgReading]s and metadata about the sensor and its update frequency.
  */
 interface GlucoseSource {
-    val glucoseSourceName: UiText
-    val dataProviderType: String
+    /**
+     * Gets a stable, technical name for the data provider (e.g. "Dexcom_Source_Plugin").
+     * This is used to identify the data provider in the database.
+     */
+    val glucoseSourceId: String
+
     val readingsInterval: BgReadingsInterval
 
     /**
@@ -20,6 +23,11 @@ interface GlucoseSource {
      * are behind blood glucose.
      */
     val readingsTimeDelay: Minutes
+
+    /**
+     * Gets a stable, technical name for the sensor, e.g. "Dexcom_G7".
+     * This is used to identify the sensor in the database.
+     */
     fun getSensorTypeName(): String
     fun getValues(): Flow<BgReading>
 

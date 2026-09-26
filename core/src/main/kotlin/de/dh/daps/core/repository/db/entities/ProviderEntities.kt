@@ -29,8 +29,7 @@ data class SensorTypeEntity(
 data class DataProviderEntity(
     @PrimaryKey(autoGenerate = true)
     var id: Long = ID_UNDEFINED,
-    val name: String,
-    val type: String
+    val name: String
 )
 
 @Entity(

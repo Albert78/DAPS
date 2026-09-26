@@ -1,6 +1,5 @@
 package de.dh.daps.core.aps
 
-import android.content.Context
 import android.util.Log
 import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.data.BgReadingsInterval
@@ -21,7 +20,6 @@ import kotlinx.coroutines.launch
  * Manages the glucose source plugin and its pipeline.
  */
 class GlucoseSourceManager(
-    private val context: Context,
     private val glucoseRepository: GlucoseRepository,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default.limitedParallelism(1))
@@ -58,11 +56,10 @@ class GlucoseSourceManager(
         val gs = glucoseSource ?: return
 
         glucoseJob = scope.launch {
-            val sourceNameStr = gs.glucoseSourceName.asString(context)
-            Log.d(TAG, "Installing glucose pipeline: $sourceNameStr")
+            Log.d(TAG, "Installing glucose pipeline: ${gs.glucoseSourceId}")
 
             val sensorType = glucoseRepository.getOrCreateSensorTypeByName(gs.getSensorTypeName())
-            val dataProvider = glucoseRepository.getOrCreateDataProviderByName(sourceNameStr, gs.dataProviderType)
+            val dataProvider = glucoseRepository.getOrCreateDataProvider(gs.glucoseSourceId)
 
             readingsTimeDelay = gs.readingsTimeDelay
             readingsInterval = gs.readingsInterval
