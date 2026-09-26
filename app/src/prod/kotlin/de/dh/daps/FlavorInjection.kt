@@ -7,22 +7,27 @@ import de.dh.daps.common.navigation.NavigationViewModel
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.plugin.glucose.receiver.ExternalSourceType
 import de.dh.daps.plugin.glucose.receiver.ReceiverGlucosePlugin
+import de.dh.daps.plugin.pump.SampleInsulinPumpDriver
 import de.dh.daps.plugin.pump.SampleInsulinPumpPlugin
 
 fun setupSystem(registry: SystemRegistry, pluginManager: PluginManager, application: Application) {
     val pumpManager = registry.pumpManager
     val glucosePlugin = ReceiverGlucosePlugin(
         application,
-        ExternalSourceType.xDrip5Min
+        ExternalSourceType.xDrip5Min,
     )
     pluginManager.addPlugin(glucosePlugin)
     registry.glucoseSourceManager.glucoseSource = glucosePlugin
+
+    val sampleDriver = SampleInsulinPumpDriver()
+    pluginManager.addPlugin(sampleDriver)
+
     val pumpPlugin = SampleInsulinPumpPlugin()
     pumpManager.insulinPump = pumpPlugin
 }
 
 fun getExtraNavGraphs(
-    navViewModel: NavigationViewModel
+    navViewModel: NavigationViewModel,
 ): List<FeatureNavGraph> {
     return emptyList()
 }

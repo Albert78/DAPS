@@ -18,6 +18,7 @@ import de.dh.daps.core.aps.RecommendationManager
 import de.dh.daps.core.aps.SystemOrchestrator
 import de.dh.daps.core.aps.SystemOrchestratorImpl
 import de.dh.daps.core.aps.TherapyManager
+import de.dh.daps.core.pump.PumpDriverManager
 import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.pump.PumpManagerImpl
 import de.dh.daps.core.repository.AlarmRepository
@@ -64,9 +65,10 @@ class SystemRegistryImpl(
     override val wakeService: SystemWakeService,
     override val timeService: TimeService,
     override val pumpManager: PumpManager,
+    override val pumpDriverManager: PumpDriverManager,
     override val carbsInsulinCalculator: CarbsInsulinCalculator,
     override val permissionsChangedHandler: PermissionsChangedHandler,
-    override val apsServiceClass: Class<out Service>
+    override val apsServiceClass: Class<out Service>,
 ) : SystemRegistry {
     companion object {
         /**
@@ -110,6 +112,7 @@ class SystemRegistryImpl(
                 scope = scope
             )
             val pumpManager = PumpManagerImpl(scope = scope, wakeService = wakeService)
+            val pumpDriverManager = PumpDriverManager()
 
             val glucoseSourceManager = GlucoseSourceManager(
                 glucoseRepository = glucoseRepository
@@ -199,6 +202,7 @@ class SystemRegistryImpl(
                 wakeService = wakeService,
                 timeService = timeService,
                 pumpManager = pumpManager,
+                pumpDriverManager = pumpDriverManager,
                 carbsInsulinCalculator = carbsInsulinCalculator,
                 permissionsChangedHandler = permissionsHandler,
                 apsServiceClass = apsServiceClass

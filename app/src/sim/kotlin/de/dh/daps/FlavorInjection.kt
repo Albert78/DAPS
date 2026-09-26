@@ -21,6 +21,8 @@ fun setupSystem(registry: SystemRegistry, pluginManager: PluginManager, applicat
     val plugin = SimBodyPlugin(application, registry.wakeService)
     simBodyPlugin = plugin
     pluginManager.addPlugin(plugin)
+    pluginManager.addPlugin(plugin.pumpDriver)
+
     val glucoseSource = plugin.getGlucoseSource()
     registry.glucoseSourceManager.glucoseSource = glucoseSource
     val insulinPump = plugin.getInsulinPump()
@@ -28,7 +30,7 @@ fun setupSystem(registry: SystemRegistry, pluginManager: PluginManager, applicat
 }
 
 fun getExtraNavGraphs(
-    navViewModel: NavigationViewModel
+    navViewModel: NavigationViewModel,
 ): List<FeatureNavGraph> {
     val bodyModel = simBodyPlugin?.bodyModel
     return listOf(SimBodyNavGraph(navViewModel, bodyModel))

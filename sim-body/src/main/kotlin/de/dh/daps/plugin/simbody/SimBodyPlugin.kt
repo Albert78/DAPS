@@ -22,6 +22,7 @@ class SimBodyPlugin(
     private val database = SimBodyDatabase.getInstance(application)
     val bodyModel = BodyModel(DEFAULT_SIM_BODY_PROFILE, database.impactDao())
     val pumpDevice = SimBodyPumpDevice(bodyModel, DEFAULT_SIM_INSULIN_PROFILE, database.pumpDao())
+    val pumpDriver = SimBodyInsulinPumpDriver(this)
 
     private val _glucoseReadings = MutableSharedFlow<BgReading>(
         replay = 0,
