@@ -1,6 +1,10 @@
 package de.dh.daps.ui.screens.systemcontrol
 
+import android.content.res.Configuration
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,75 +13,81 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BatteryFull
+import androidx.compose.material.icons.filled.Battery5Bar
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.Sync
-import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalLocale
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.model.InsulinAmount
-import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.core.pump.JobErrorCode
-import de.dh.daps.core.pump.PumpCommand
-import de.dh.daps.core.pump.PumpJob
-import de.dh.daps.ui.R
-import de.dh.daps.ui.common.theme.AppPreview
-import java.text.SimpleDateFormat
-import java.util.Date
+import de.dh.daps.ui.common.icons.PumpReservoir
+import de.dh.daps.ui.common.theme.AppTheme
 
 @Composable
 fun PumpTabContent(
-    uiState: SystemControlUiState,
-    timeFormat: SimpleDateFormat,
-    onNavigateToPumpManagement: () -> Unit,
-    onRefreshPumpStatus: () -> Unit,
-    onCancelPumpJob: (String) -> Unit
+    modifier: Modifier = Modifier,
+    uiState: PumpTabUiState = PumpTabUiState(),
+    onChangePumpDriver: () -> Unit = {},
+    onRefreshPumpStatus: () -> Unit = {},
+    onDisconnectForMaintenance: () -> Unit = {},
+    onCancelPumpJob: (String) -> Unit = {}
 ) {
-    Column {
-        PumpOverviewCard(uiState, timeFormat)
+    Column(modifier = modifier) {
+        PumpOverviewCard(
+            uiState = uiState,
+            onChangePumpDriver = onChangePumpDriver
+        )
+
+        PumpJobsCard(
+            pendingJobs = uiState.pendingJobs,
+            onCancelJob = onCancelPumpJob
+        )
+
         PumpActionsCard(
             uiState = uiState,
-            onNavigateToPumpManagement = onNavigateToPumpManagement,
+            onDisconnectForMaintenance = onDisconnectForMaintenance,
             onRefreshPumpStatus = onRefreshPumpStatus
         )
 
-        if (uiState.pendingPumpJobs.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(16.dp))
-            PumpJobsCard(uiState, onCancelPumpJob)
-        }
-
-        if (uiState.pumpPluginUiProvider != null) {
+        if (uiState.pumpPluginSection != null) {
             Spacer(modifier = Modifier.height(24.dp))
-            SectionHeader(title = stringResource(id = R.string.system_control_plugin_title))
+            SectionHeader(
+                title = "Insulinpumpe"
+            )
             Spacer(modifier = Modifier.height(8.dp))
-            uiState.pumpPluginUiProvider.PumpControlSection()
+            uiState.pumpPluginSection.invoke()
         }
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun PumpOverviewCard(uiState: SystemControlUiState, timeFormat: SimpleDateFormat) {
+fun PumpOverviewCard(
+    uiState: PumpTabUiState,
+    modifier: Modifier = Modifier,
+    onChangePumpDriver: () -> Unit = {}
+) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -87,72 +97,184 @@ fun PumpOverviewCard(uiState: SystemControlUiState, timeFormat: SimpleDateFormat
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
-            ControlDetailRow(
-                label = stringResource(id = R.string.system_control_pump_model_label),
-                icon = Icons.Default.Info
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = uiState.pumpModel ?: stringResource(id = R.string.system_control_cgm_not_connected),
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-            val statusText = when {
-                !uiState.pumpConnected -> stringResource(id = R.string.system_control_pump_state_disconnected)
-                uiState.pumpStatus?.pumpSuspended == true -> stringResource(id = R.string.system_control_pump_state_suspended)
-                else -> stringResource(id = R.string.system_control_pump_state_active)
-            }
-            val statusColor = when {
-                !uiState.pumpConnected -> MaterialTheme.colorScheme.error
-                uiState.pumpStatus?.pumpSuspended == true -> MaterialTheme.colorScheme.tertiary
-                else -> MaterialTheme.colorScheme.primary
-            }
-            ControlDetailRow(
-                label = stringResource(id = R.string.system_control_pump_status_label),
-                icon = if (uiState.pumpConnected) Icons.Default.Settings else Icons.Default.Cancel
-            ) {
-                Text(
-                    text = statusText,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = statusColor
-                )
-            }
-
-            if (uiState.pumpConnected && uiState.pumpStatus != null) {
-                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        StatusItem(
-                            icon = Icons.Default.BatteryFull,
-                            label = stringResource(id = R.string.system_control_pump_battery_label),
-                            value = "${uiState.pumpStatus.batteryRemainingPercent}%"
+                Column(modifier = Modifier.weight(1f)) {
+                    ControlDetailRow(
+                        label = "Pumpenmodell",
+                        icon = Icons.Default.Info
+                    ) {
+                        Text(
+                            text = uiState.pumpModel ?: "Nicht verbunden",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                OutlinedButton(
+                    onClick = onChangePumpDriver
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.SwapHoriz,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = if (uiState.pumpModel != null) "Wechseln..." else "Auswählen...",
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                }
+            }
+
+            if (uiState.pumpConnected) {
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        StatusItem(
-                            icon = Icons.Default.WaterDrop,
-                            label = stringResource(id = R.string.system_control_pump_reservoir_label),
-                            value = stringResource(id = R.string.insulin_unit_label_format, uiState.pumpStatus.reservoirRemainingUnits.iu)
-                        )
+                        ControlDetailRow(
+                            label = "Hersteller",
+                            reserveIconSpace = true
+                        ) {
+                            Text(
+                                text = uiState.manufacturer ?: "--",
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        ControlDetailRow(
+                            label = "Seriennummer",
+                            reserveIconSpace = true
+                        ) {
+                            Text(
+                                text = uiState.serialNumber ?: "--",
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-            val lastConnText = if (uiState.lastPumpConnection != Timestamp.INVALID) {
-                timeFormat.format(Date(uiState.lastPumpConnection.ms))
-            } else "--"
-            ControlDetailRow(
-                label = stringResource(id = R.string.system_control_pump_last_conn_label),
-                icon = Icons.Default.Sync
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 12.dp),
+                thickness = 0.5.dp,
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
+
+            val statusText = when {
+                !uiState.pumpConnected -> "Nicht verbunden"
+                uiState.isSuspended -> "Unterbrochen"
+                else -> "Aktiv"
+            }
+            val statusColor = when {
+                !uiState.pumpConnected -> MaterialTheme.colorScheme.error
+                uiState.isSuspended -> MaterialTheme.colorScheme.tertiary
+                else -> MaterialTheme.colorScheme.secondary
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                Text(
-                    text = lastConnText,
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    ControlDetailRow(
+                        label = "Status",
+                        icon = if (uiState.pumpConnected) Icons.Default.Settings else Icons.Default.Cancel
+                    ) {
+                        Text(
+                            text = statusText,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = statusColor,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    ControlDetailRow(
+                        label = "Letzte Verbindung",
+                        icon = Icons.Default.Sync
+                    ) {
+                        FlowRow(
+                            verticalArrangement = Arrangement.Center,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = uiState.lastConnectionTimeText,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            if (!uiState.lastConnectionRelativeTimeText.isNullOrEmpty()) {
+                                val relativeText = uiState.lastConnectionRelativeTimeText
+                                val formattedRelative = if (relativeText.startsWith("(") && relativeText.endsWith(")")) {
+                                    relativeText
+                                } else {
+                                    "($relativeText)"
+                                }
+                                Text(
+                                    text = formattedRelative,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.secondary,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (uiState.pumpConnected) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        ControlDetailRow(
+                            label = "Batterie",
+                            icon = Icons.Default.Battery5Bar
+                        ) {
+                            Text(
+                                text = uiState.batteryPercentText,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        ControlDetailRow(
+                            label = "Reservoir",
+                            icon = Icons.Outlined.PumpReservoir
+                        ) {
+                            Text(
+                                text = uiState.reservoirText,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -160,55 +282,48 @@ fun PumpOverviewCard(uiState: SystemControlUiState, timeFormat: SimpleDateFormat
 
 @Composable
 fun PumpActionsCard(
-    uiState: SystemControlUiState,
-    onNavigateToPumpManagement: () -> Unit,
-    onRefreshPumpStatus: () -> Unit
+    uiState: PumpTabUiState,
+    modifier: Modifier = Modifier,
+    onDisconnectForMaintenance: () -> Unit = {},
+    onRefreshPumpStatus: () -> Unit = {}
 ) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .padding(8.dp)
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                val isSuspended = uiState.pumpStatus?.pumpSuspended == true
-                ActionButton(
-                    icon = if (isSuspended) Icons.Default.PlayArrow else Icons.Default.Pause,
-                    label = if (isSuspended) stringResource(id = R.string.system_control_pump_action_resume)
-                            else stringResource(id = R.string.system_control_pump_action_suspend),
-                    onClick = { /* TODO: Implement Suspend/Resume */ },
-                    enabled = uiState.pumpConnected,
-                    modifier = Modifier.weight(1f)
-                )
-                ActionButton(
-                    icon = Icons.Default.Sync,
-                    label = stringResource(id = R.string.system_control_pump_action_sync),
-                    onClick = onRefreshPumpStatus,
-                    enabled = uiState.pumpConnected,
-                    modifier = Modifier.weight(1f)
-                )
-                ActionButton(
-                    icon = Icons.Default.Settings,
-                    label = stringResource(id = R.string.system_control_pump_action_manage),
-                    onClick = onNavigateToPumpManagement,
-                    modifier = Modifier.weight(1f)
-                )
-            }
+            ActionButton(
+                icon = Icons.Default.Build,
+                label = "Zur Wartung trennen",
+                onClick = onDisconnectForMaintenance,
+                enabled = uiState.pumpConnected
+            )
+            ActionButton(
+                icon = Icons.Default.Refresh,
+                label = "Status aktualisieren",
+                onClick = onRefreshPumpStatus,
+                enabled = uiState.pumpConnected
+            )
         }
     }
 }
 
 @Composable
-fun PumpJobsCard(uiState: SystemControlUiState, onCancelJob: (String) -> Unit) {
+fun PumpJobsCard(
+    pendingJobs: List<PumpJobItem>,
+    onCancelJob: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
@@ -219,101 +334,62 @@ fun PumpJobsCard(uiState: SystemControlUiState, onCancelJob: (String) -> Unit) {
                 .fillMaxWidth()
         ) {
             Text(
-                text = stringResource(id = R.string.system_control_pump_jobs_title),
+                text = "Ausstehende Befehle",
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
-            uiState.pendingPumpJobs.forEach { job ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    val hasError = job.lastError != null
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = if (hasError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.secondary
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    val commandText = when (val cmd = job.command) {
-                        is PumpCommand.RefreshStatus -> stringResource(id = R.string.system_control_pump_job_type_refresh_status)
-                        is PumpCommand.SyncHistory -> stringResource(id = R.string.system_control_pump_job_type_history_sync)
-                        is PumpCommand.DeliverBolus -> stringResource(id = R.string.system_control_pump_job_type_bolus, cmd.amount.iu)
-                        is PumpCommand.SetTempBasal -> stringResource(id = R.string.system_control_pump_job_type_temp_basal, cmd.percent)
-                        is PumpCommand.SetProfile -> stringResource(id = R.string.system_control_pump_job_type_profile)
-                        is PumpCommand.CancelTempBasal -> stringResource(id = R.string.system_control_pump_job_type_cancel_temp_basal)
-                        is PumpCommand.CancelBolus -> stringResource(id = R.string.system_control_pump_job_type_cancel_bolus)
-                    }
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = commandText,
-                            style = MaterialTheme.typography.bodyMedium
+            if (pendingJobs.isEmpty()) {
+                Text(
+                    text = "Alle Pumpenjobs sind abgearbeitet",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                pendingJobs.forEach { job ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = if (job.hasError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.secondary
                         )
-                        job.lastError?.let { error ->
-                            val errorText = when (error) {
-                                JobErrorCode.Expired -> stringResource(id = R.string.system_control_pump_job_error_expired)
-                                is JobErrorCode.ConnectionFailed -> stringResource(
-                                    id = R.string.system_control_pump_job_error_connection_failed,
-                                    error.message?.let { ": $it" } ?: ""
-                                )
-                                is JobErrorCode.CommandFailed -> stringResource(
-                                    id = R.string.system_control_pump_job_error_command_failed,
-                                    error.status.name,
-                                    error.message?.let { ": $it" } ?: ""
-                                )
-                                is JobErrorCode.TechnicalError -> stringResource(
-                                    id = R.string.system_control_pump_job_error_technical,
-                                    error.message?.let { ": $it" } ?: ""
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = job.title,
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            job.errorMessage?.let { error ->
+                                Text(
+                                    text = error,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.error,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
-                            Text(
-                                text = errorText,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.error
+                        }
+                        IconButton(
+                            onClick = { onCancelJob(job.id) },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Cancel,
+                                contentDescription = "Befehl abbrechen",
+                                tint = MaterialTheme.colorScheme.error
                             )
                         }
                     }
-                    IconButton(
-                        onClick = { onCancelJob(job.id) },
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Cancel,
-                            contentDescription = stringResource(id = R.string.system_control_pump_job_cancel),
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                    }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun StatusItem(icon: ImageVector, label: String, value: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            modifier = Modifier.size(16.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        Column {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = value,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold
-            )
         }
     }
 }
@@ -350,39 +426,35 @@ private fun ActionButton(
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "Pump Tab - Light Mode")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Pump Tab - Dark Mode")
 @Composable
 fun PumpTabPreview() {
-    AppPreview {
-        PumpTabContent(
-            uiState = SystemControlUiState(
-                pumpConnected = true,
-                pumpModel = "DANA-i",
-                pendingPumpJobs = listOf(
-                    PumpJob(
-                        command = PumpCommand.DeliverBolus(InsulinAmount(1.5))
-                    )
+    AppTheme {
+        Surface {
+            PumpTabContent(
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Pump Tab - Disconnected")
+@Composable
+fun PumpTabDisconnectedPreview() {
+    AppTheme {
+        Surface {
+            PumpTabContent(
+                uiState = PumpTabUiState(
+                    pumpModel = null,
+                    pumpConnected = false,
+                    lastConnectionTimeText = "--",
+                    lastConnectionRelativeTimeText = null,
+                    pendingJobs = emptyList(),
+                    pumpPluginSection = null
                 ),
-                pumpPluginUiProvider = object : PumpPluginUiProvider {
-                    @Composable
-                    override fun PumpControlSection() {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                        ) {
-                            Text(
-                                "Sample Pump Plugin Content from Provider",
-                                modifier = Modifier.padding(16.dp),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                    }
-                }
-            ),
-            timeFormat = SimpleDateFormat("HH:mm:ss", LocalLocale.current.platformLocale),
-            onNavigateToPumpManagement = {},
-            onRefreshPumpStatus = {},
-            onCancelPumpJob = {}
-        )
+                modifier = Modifier.padding(16.dp)
+            )
+        }
     }
 }

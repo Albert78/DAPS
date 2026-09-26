@@ -1,5 +1,6 @@
 package de.dh.daps.ui.screens.systemcontrol
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -9,56 +10,74 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.SwapHoriz
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLocale
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.model.data.BgReadingsInterval
-import de.dh.daps.common.model.data.GlucoseUnit
-import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.ui.R
-import de.dh.daps.ui.common.glucoseValue
 import de.dh.daps.ui.common.icons.Icon_Next
 import de.dh.daps.ui.common.icons.Icon_Previous
-import de.dh.daps.ui.common.shortRelativeTimeAgo
-import de.dh.daps.ui.common.shortRelativeTimeUntil
-import de.dh.daps.ui.common.theme.AppPreview
-import java.text.SimpleDateFormat
-import java.util.Date
+import de.dh.daps.ui.common.theme.AppTheme
 
 @Composable
 fun GlucoseSourceTabContent(
-    uiState: SystemControlUiState,
-    timeFormat: SimpleDateFormat,
-    tick: Long
+    modifier: Modifier = Modifier,
+    uiState: CgmTabUiState = CgmTabUiState(),
+    onChangeGlucoseSource: () -> Unit = {},
+    onStopSensor: () -> Unit = {}
 ) {
-    Column {
-        GlucoseSourceOverviewCard(uiState, timeFormat, tick)
+    Column(modifier = modifier) {
+        CgmOverviewCard(
+            uiState = uiState,
+            onChangeGlucoseSource = onChangeGlucoseSource
+        )
 
-        if (uiState.glucoseSourcePluginUiProvider != null) {
-            Spacer(modifier = Modifier.height(24.dp))
-            SectionHeader(title = "Plugin")
+        if (uiState.showPluginSection) {
             Spacer(modifier = Modifier.height(8.dp))
-            uiState.glucoseSourcePluginUiProvider.GlucoseSourceControlSection()
+            SectionHeader(
+                title = "Datenquelle"
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            if (uiState.cgmPluginSection != null) {
+                uiState.cgmPluginSection.invoke()
+            } else {
+                CgmPluginControlCard(
+                    sensorCode = uiState.sensorCode,
+                    transmitterSerialNumber = uiState.transmitterSerialNumber,
+                    estimatedExpirationDateText = uiState.estimatedExpirationDateText,
+                    onStopSensor = onStopSensor
+                )
+            }
         }
     }
 }
 
 @Composable
-fun GlucoseSourceOverviewCard(uiState: SystemControlUiState, timeFormat: SimpleDateFormat, tick: Long) {
+fun CgmOverviewCard(
+    uiState: CgmTabUiState,
+    modifier: Modifier = Modifier,
+    onChangeGlucoseSource: () -> Unit = {}
+) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -68,46 +87,70 @@ fun GlucoseSourceOverviewCard(uiState: SystemControlUiState, timeFormat: SimpleD
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
-            ControlDetailRow(
-                label = stringResource(id = R.string.system_control_cgm_source_label),
-                icon = Icons.Default.Info
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = uiState.glucoseSourceName ?: stringResource(id = R.string.system_control_cgm_not_connected),
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    ControlDetailRow(
+                        label = "CGM-Quelle",
+                        icon = Icons.Default.Info
+                    ) {
+                        Text(
+                            text = uiState.glucoseSourceName ?: "Nicht verbunden",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                OutlinedButton(
+                    onClick = onChangeGlucoseSource
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.SwapHoriz,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = if (uiState.glucoseSourceName != null) "Wechseln..." else "Auswählen...",
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                }
             }
 
             if (uiState.glucoseSourceName != null) {
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         ControlDetailRow(
-                            label = stringResource(id = R.string.system_control_cgm_sensor_type_label)
+                            label = "Sensor-Typ",
+                            reserveIconSpace = true
                         ) {
                             Text(
                                 text = uiState.sensorTypeName ?: "--",
-                                style = MaterialTheme.typography.bodyMedium
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
                     }
                     Column(modifier = Modifier.weight(1f)) {
                         ControlDetailRow(
-                            label = stringResource(id = R.string.system_control_cgm_interval_label)
+                            label = "Messintervall",
+                            reserveIconSpace = true
                         ) {
-                            val intervalText = when (uiState.readingsInterval) {
-                                BgReadingsInterval.OneMinute -> stringResource(id = R.string.system_control_cgm_interval_1min)
-                                BgReadingsInterval.FiveMinutes -> stringResource(id = R.string.system_control_cgm_interval_5min)
-                                BgReadingsInterval.AdHoc -> stringResource(id = R.string.system_control_cgm_interval_adhoc)
-                                null -> "--"
-                            }
                             Text(
-                                text = intervalText,
-                                style = MaterialTheme.typography.bodyMedium
+                                text = uiState.readingsIntervalText ?: "--",
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
                     }
@@ -120,41 +163,27 @@ fun GlucoseSourceOverviewCard(uiState: SystemControlUiState, timeFormat: SimpleD
                 )
 
                 ControlDetailRow(
-                    label = stringResource(id = R.string.system_control_cgm_last_value_label),
+                    label = "Letzter Messwert",
                     icon = Icon_Previous
                 ) {
-                    val bgValueText = glucoseValue(uiState.lastBgReading?.value, withUnit = true, default = "--")
-                    val timeText = uiState.lastBgReading?.timestamp?.let { timeFormat.format(Date(it.ms)) } ?: "--"
-                    val relativeTime = uiState.lastBgReading?.timestamp?.let {
-                        shortRelativeTimeAgo(tick - it.ms)
-                    }
-
                     GlucoseFragments(
-                        value = bgValueText,
-                        time = timeText,
-                        extra = relativeTime,
+                        value = uiState.lastBgValueText ?: "--",
+                        time = uiState.lastReadingTimeText ?: "--",
+                        extra = uiState.lastReadingRelativeTimeText,
                         stackVertical = true
                     )
                 }
 
-                if (uiState.nextPredictedTimestamp.isValid()) {
+                if (uiState.hasNextPrediction && uiState.nextReadingTimeText != null) {
                     Spacer(modifier = Modifier.height(12.dp))
                     ControlDetailRow(
-                        label = stringResource(id = R.string.system_control_cgm_next_value_label),
+                        label = "Nächste Messung",
                         icon = Icon_Next
                     ) {
-                        val nextTimeText = timeFormat.format(Date(uiState.nextPredictedTimestamp.ms))
-                        val remainingTime = run {
-                            val diffMs = uiState.nextPredictedTimestamp.ms - tick
-                            if (diffMs > 0) {
-                                shortRelativeTimeUntil(diffMs)
-                            } else null
-                        }
-
                         GlucoseFragments(
                             value = "--",
-                            time = nextTimeText,
-                            extra = remainingTime,
+                            time = uiState.nextReadingTimeText,
+                            extra = uiState.nextReadingRelativeTimeText,
                             stackVertical = true
                         )
                     }
@@ -166,23 +195,32 @@ fun GlucoseSourceOverviewCard(uiState: SystemControlUiState, timeFormat: SimpleD
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun GlucoseFragments(value: String, time: String, extra: String?, stackVertical: Boolean = false) {
+fun GlucoseFragments(
+    value: String,
+    time: String,
+    extra: String?,
+    stackVertical: Boolean = false
+) {
     if (stackVertical) {
         Column {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
+            FlowRow(
+                verticalArrangement = Arrangement.Center,
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
                     text = time,
                     style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
                 if (extra != null) {
                     Text(
                         text = "($extra)",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = MaterialTheme.colorScheme.secondary,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
@@ -191,7 +229,9 @@ fun GlucoseFragments(value: String, time: String, extra: String?, stackVertical:
                     text = value,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }
@@ -205,58 +245,167 @@ fun GlucoseFragments(value: String, time: String, extra: String?, stackVertical:
                     text = value,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
             Text(
                 text = time,
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.align(Alignment.CenterVertically)
+                modifier = Modifier.align(Alignment.CenterVertically),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
             if (extra != null) {
                 Text(
                     text = "($extra)",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.align(Alignment.CenterVertically)
+                    modifier = Modifier.align(Alignment.CenterVertically),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun GlucoseSourceTabPreview() {
-    AppPreview {
-        GlucoseSourceTabContent(
-            uiState = SystemControlUiState(
-                glucoseSourceName = "Dexcom G6",
-                sensorTypeName = "G6-Sensor",
-                readingsInterval = BgReadingsInterval.FiveMinutes,
-                lastBgReading = null,
-                nextPredictedTimestamp = Timestamp(System.currentTimeMillis() + 300000),
-                glucoseUnit = GlucoseUnit.MG_DL,
-                pumpConnected = true,
-                pumpModel = "DANA-i",
-                glucoseSourcePluginUiProvider = object : GlucoseSourcePluginUiProvider {
-                    @Composable
-                    override fun GlucoseSourceControlSection() {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                        ) {
-                            Text(
-                                "Sample Plugin Content from Provider",
-                                modifier = Modifier.padding(16.dp),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
+fun CgmPluginControlCard(
+    sensorCode: String?,
+    transmitterSerialNumber: String?,
+    estimatedExpirationDateText: String?,
+    onStopSensor: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+        ) {
+            Text(
+                text = "Sensor-Steuerung",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    ControlDetailRow(
+                        label = "Sensor-Code"
+                    ) {
+                        Text(
+                            text = sensorCode ?: "--",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
                     }
                 }
-            ),
-            timeFormat = SimpleDateFormat("HH:mm:ss", LocalLocale.current.platformLocale),
-            tick = System.currentTimeMillis()
-        )
+                Column(modifier = Modifier.weight(1f)) {
+                    ControlDetailRow(
+                        label = "Transmitter-Seriennummer"
+                    ) {
+                        Text(
+                            text = transmitterSerialNumber ?: "--",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            ControlDetailRow(
+                label = "Geschätztes Ablaufdatum"
+            ) {
+                Text(
+                    text = estimatedExpirationDateText ?: "--",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Button(
+                onClick = onStopSensor,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError
+                ),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Stop,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Sensor stoppen",
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "CGM Tab - Light Mode")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "CGM Tab - Dark Mode")
+@Composable
+fun CgmTabPreview() {
+    AppTheme {
+        Surface {
+            GlucoseSourceTabContent(
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "CGM Tab - Disconnected")
+@Composable
+fun CgmTabDisconnectedPreview() {
+    AppTheme {
+        Surface {
+            GlucoseSourceTabContent(
+                uiState = CgmTabUiState(
+                    glucoseSourceName = null,
+                    sensorTypeName = null,
+                    readingsIntervalText = null,
+                    lastBgValueText = null,
+                    lastReadingTimeText = null,
+                    lastReadingRelativeTimeText = null,
+                    hasNextPrediction = false,
+                    sensorCode = null,
+                    transmitterSerialNumber = null,
+                    estimatedExpirationDateText = null,
+                    showPluginSection = false
+                ),
+                modifier = Modifier.padding(16.dp)
+            )
+        }
     }
 }

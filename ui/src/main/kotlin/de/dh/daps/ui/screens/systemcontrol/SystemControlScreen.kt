@@ -21,11 +21,8 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -34,20 +31,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import de.dh.daps.common.model.InsulinAmount
-import de.dh.daps.common.model.data.BgReadingsInterval
-import de.dh.daps.common.model.data.GlucoseUnit
-import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.core.pump.PumpCommand
-import de.dh.daps.core.pump.PumpJob
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppPreview
-import kotlinx.coroutines.delay
-import java.text.SimpleDateFormat
-import java.util.Locale
-import kotlin.time.Duration.Companion.milliseconds
 import de.dh.daps.common.R as CommonR
 
 const val SYSTEM_CONTROL_TAB_OVERVIEW = 0
@@ -70,6 +57,8 @@ fun SystemControlScreen(
         onNavigateUp = onNavigateUp,
         onNavigateToCoreDecisions = onNavigateToCoreDecisions,
         onNavigateToPumpManagement = onNavigateToPumpManagement,
+        onStopGlucoseSource = viewModel::stopActiveGlucoseSource,
+        onDisconnectForMaintenance = viewModel::disconnectPumpForMaintenance,
         onCancelPumpJob = viewModel::cancelPumpJob,
         onRefreshPumpStatus = viewModel::refreshPumpStatus
     )
@@ -83,21 +72,12 @@ fun SystemControlContent(
     onNavigateUp: () -> Unit,
     onNavigateToCoreDecisions: () -> Unit,
     onNavigateToPumpManagement: () -> Unit,
-    onCancelPumpJob: (String) -> Unit,
-    onRefreshPumpStatus: () -> Unit
+    onStopGlucoseSource: () -> Unit = {},
+    onDisconnectForMaintenance: () -> Unit = {},
+    onCancelPumpJob: (String) -> Unit = {},
+    onRefreshPumpStatus: () -> Unit = {}
 ) {
-    val timeFormat = remember { SimpleDateFormat("HH:mm:ss", Locale.getDefault()) }
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(initialTab) }
-
-    var tick by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    LaunchedEffect(Unit) {
-        while (true) {
-            val now = System.currentTimeMillis()
-            tick = now
-            val next10s = ((now / 10000) + 1) * 10000
-            delay((next10s - now).milliseconds)
-        }
-    }
 
     val tabs = listOf(
         stringResource(id = R.string.system_control_tab_overview),
@@ -155,13 +135,21 @@ fun SystemControlContent(
         ) {
             item {
                 when (selectedTabIndex) {
-                    SYSTEM_CONTROL_TAB_OVERVIEW -> OverviewTabContent(onNavigateToCoreDecisions)
-                    SYSTEM_CONTROL_TAB_CGM -> GlucoseSourceTabContent(uiState, timeFormat, tick)
-                    SYSTEM_CONTROL_TAB_PUMP -> PumpTabContent(
-                        uiState = uiState,
-                        timeFormat = timeFormat,
-                        onNavigateToPumpManagement = onNavigateToPumpManagement,
+                    SYSTEM_CONTROL_TAB_OVERVIEW -> OverviewTabContent(
+                        uiState = uiState.overviewUiState,
                         onRefreshPumpStatus = onRefreshPumpStatus,
+                        onNavigateToCoreDecisions = onNavigateToCoreDecisions
+                    )
+                    SYSTEM_CONTROL_TAB_CGM -> GlucoseSourceTabContent(
+                        uiState = uiState.cgmTabUiState,
+                        onChangeGlucoseSource = { },
+                        onStopSensor = onStopGlucoseSource
+                    )
+                    SYSTEM_CONTROL_TAB_PUMP -> PumpTabContent(
+                        uiState = uiState.pumpTabUiState,
+                        onChangePumpDriver = onNavigateToPumpManagement,
+                        onRefreshPumpStatus = onRefreshPumpStatus,
+                        onDisconnectForMaintenance = onDisconnectForMaintenance,
                         onCancelPumpJob = onCancelPumpJob
                     )
                 }
@@ -184,6 +172,8 @@ fun SystemControlOverviewPreview() {
             onNavigateUp = {},
             onNavigateToCoreDecisions = {},
             onNavigateToPumpManagement = {},
+            onStopGlucoseSource = {},
+            onDisconnectForMaintenance = {},
             onCancelPumpJob = {},
             onRefreshPumpStatus = {}
         )
@@ -201,6 +191,8 @@ fun SystemControlGlucosePreview() {
             onNavigateUp = {},
             onNavigateToCoreDecisions = {},
             onNavigateToPumpManagement = {},
+            onStopGlucoseSource = {},
+            onDisconnectForMaintenance = {},
             onCancelPumpJob = {},
             onRefreshPumpStatus = {}
         )
@@ -213,17 +205,13 @@ fun SystemControlGlucosePreview() {
 fun SystemControlPumpPreview() {
     AppPreview {
         SystemControlContent(
-            uiState = previewUiState().copy(
-                pendingPumpJobs = listOf(
-                    PumpJob(
-                        command = PumpCommand.DeliverBolus(InsulinAmount(1.5))
-                    )
-                )
-            ),
+            uiState = previewUiState(),
             initialTab = SYSTEM_CONTROL_TAB_PUMP,
             onNavigateUp = {},
             onNavigateToCoreDecisions = {},
             onNavigateToPumpManagement = {},
+            onStopGlucoseSource = {},
+            onDisconnectForMaintenance = {},
             onCancelPumpJob = {},
             onRefreshPumpStatus = {}
         )
@@ -231,12 +219,32 @@ fun SystemControlPumpPreview() {
 }
 
 private fun previewUiState() = SystemControlUiState(
-    glucoseSourceName = "Dexcom G6",
-    sensorTypeName = "G6-Sensor",
-    readingsInterval = BgReadingsInterval.FiveMinutes,
-    lastBgReading = null,
-    nextPredictedTimestamp = Timestamp(System.currentTimeMillis() + 300000),
-    glucoseUnit = GlucoseUnit.MG_DL,
-    pumpConnected = true,
-    pumpModel = "DANA-i"
+    overviewUiState = OverviewTabUiState(),
+    cgmTabUiState = CgmTabUiState(
+        glucoseSourceName = "Dexcom G6",
+        sensorTypeName = "G6-Sensor",
+        readingsIntervalText = "5 Minuten",
+        lastBgValueText = "124 mg/dl",
+        lastReadingTimeText = "12:32:40",
+        lastReadingRelativeTimeText = "vor 2 Min.",
+        hasNextPrediction = true,
+        nextReadingTimeText = "12:37:40",
+        nextReadingRelativeTimeText = "in 3 Min."
+    ),
+    pumpTabUiState = PumpTabUiState(
+        pumpModel = "DANA-i",
+        manufacturer = "SOOIL",
+        serialNumber = "12345678",
+        pumpConnected = true,
+        batteryPercentText = "85%",
+        reservoirText = "140 I.E.",
+        lastConnectionTimeText = "12:34:56",
+        lastConnectionRelativeTimeText = "vor 1 Min.",
+        pendingJobs = listOf(
+            PumpJobItem(
+                id = "job_1",
+                title = "Bolus abgeben: 1,50 I.E."
+            )
+        )
+    )
 )
