@@ -8,6 +8,8 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
+import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.model.data.CarbsUnit
 import de.dh.daps.common.model.data.GlucoseUnit
 import kotlinx.coroutines.CoroutineScope
@@ -16,6 +18,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.serialization.json.Json
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
@@ -46,9 +49,41 @@ suspend fun AppPreferencesRepository.setCarbsUnit(value: CarbsUnit) {
     }
 }
 
+val Preferences?.glucoseSourceDescriptor: GlucoseSourceConnectionDescriptor?
+    get() = this?.get(GLUCOSE_SOURCE_DESCRIPTOR_KEY)?.let { jsonStr ->
+        runCatching { Json.decodeFromString<GlucoseSourceConnectionDescriptor>(jsonStr) }.getOrNull()
+    }
+
+suspend fun AppPreferencesRepository.setGlucoseSourceDescriptor(descriptor: GlucoseSourceConnectionDescriptor?) {
+    editPreferences { mutablePreferences ->
+        if (descriptor != null) {
+            mutablePreferences[GLUCOSE_SOURCE_DESCRIPTOR_KEY] = Json.encodeToString(descriptor)
+        } else {
+            mutablePreferences.remove(GLUCOSE_SOURCE_DESCRIPTOR_KEY)
+        }
+    }
+}
+
+val Preferences?.pumpDescriptor: PumpConnectionDescriptor?
+    get() = this?.get(PUMP_DESCRIPTOR_KEY)?.let { jsonStr ->
+        runCatching { Json.decodeFromString<PumpConnectionDescriptor>(jsonStr) }.getOrNull()
+    }
+
+suspend fun AppPreferencesRepository.setPumpDescriptor(descriptor: PumpConnectionDescriptor?) {
+    editPreferences { mutablePreferences ->
+        if (descriptor != null) {
+            mutablePreferences[PUMP_DESCRIPTOR_KEY] = Json.encodeToString(descriptor)
+        } else {
+            mutablePreferences.remove(PUMP_DESCRIPTOR_KEY)
+        }
+    }
+}
+
 val USER_DECLINED_PERMISSIONS_KEY = booleanPreferencesKey("user_declined_permissions")
 val GLUCOSE_UNIT_KEY = stringPreferencesKey("glucose_unit")
 val CARBS_UNIT_KEY = stringPreferencesKey("carbs_unit")
+val GLUCOSE_SOURCE_DESCRIPTOR_KEY = stringPreferencesKey("glucose_source_descriptor")
+val PUMP_DESCRIPTOR_KEY = stringPreferencesKey("pump_descriptor")
 
 class AppPreferencesRepository(private val context: Context, private val scope: CoroutineScope) {
     /**
@@ -62,6 +97,8 @@ class AppPreferencesRepository(private val context: Context, private val scope: 
             started = SharingStarted.Eagerly,
             initialValue = null
         )
+
+    val preferences = context.dataStore.data
 
     val glucoseUnit: StateFlow<GlucoseUnit> = cachedPreferences
         .map { it.glucoseUnit }

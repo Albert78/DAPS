@@ -1,19 +1,18 @@
 package de.dh.daps.core.repository
 
-import androidx.datastore.preferences.core.stringPreferencesKey
 import de.dh.daps.AppPreferencesRepository
 import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.core.repository.db.AppDatabase
+import de.dh.daps.glucoseSourceDescriptor
+import de.dh.daps.pumpDescriptor
+import de.dh.daps.setGlucoseSourceDescriptor
+import de.dh.daps.setPumpDescriptor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.serialization.json.Json
-
-val GLUCOSE_SOURCE_DESCRIPTOR_KEY = stringPreferencesKey("glucose_source_descriptor")
-val PUMP_DESCRIPTOR_KEY = stringPreferencesKey("pump_descriptor")
 
 /**
  * Repository for managing device-related configurations, active connection descriptors,
@@ -27,12 +26,8 @@ class DeviceManagementRepository(
     /**
      * Flow emitting the currently saved [GlucoseSourceConnectionDescriptor] for the glucose source, or null if none is configured.
      */
-    val glucoseSourceDescriptor: StateFlow<GlucoseSourceConnectionDescriptor?> = appPreferencesRepository.cachedPreferences
-        .map { preferences ->
-            preferences?.get(GLUCOSE_SOURCE_DESCRIPTOR_KEY)?.let { jsonStr ->
-                runCatching { Json.decodeFromString<GlucoseSourceConnectionDescriptor>(jsonStr) }.getOrNull()
-            }
-        }
+    val glucoseSourceDescriptor: StateFlow<GlucoseSourceConnectionDescriptor?> = appPreferencesRepository.preferences
+        .map { it.glucoseSourceDescriptor }
         .stateIn(
             scope = scope,
             started = SharingStarted.Eagerly,
@@ -42,12 +37,8 @@ class DeviceManagementRepository(
     /**
      * Flow emitting the currently saved [PumpConnectionDescriptor] for the insulin pump, or null if none is configured.
      */
-    val pumpDescriptor: StateFlow<PumpConnectionDescriptor?> = appPreferencesRepository.cachedPreferences
-        .map { preferences ->
-            preferences?.get(PUMP_DESCRIPTOR_KEY)?.let { jsonStr ->
-                runCatching { Json.decodeFromString<PumpConnectionDescriptor>(jsonStr) }.getOrNull()
-            }
-        }
+    val pumpDescriptor: StateFlow<PumpConnectionDescriptor?> = appPreferencesRepository.preferences
+        .map { it.pumpDescriptor }
         .stateIn(
             scope = scope,
             started = SharingStarted.Eagerly,
@@ -58,41 +49,27 @@ class DeviceManagementRepository(
      * Retrieves the saved glucose source connection descriptor.
      */
     suspend fun getGlucoseSourceDescriptor(): GlucoseSourceConnectionDescriptor? {
-        val jsonStr = appPreferencesRepository.getPreferences()[GLUCOSE_SOURCE_DESCRIPTOR_KEY] ?: return null
-        return runCatching { Json.decodeFromString<GlucoseSourceConnectionDescriptor>(jsonStr) }.getOrNull()
+        return appPreferencesRepository.getPreferences().glucoseSourceDescriptor
     }
 
     /**
      * Persists or removes the glucose source connection descriptor.
      */
     suspend fun saveGlucoseSourceDescriptor(descriptor: GlucoseSourceConnectionDescriptor?) {
-        appPreferencesRepository.editPreferences { mutablePreferences ->
-            if (descriptor != null) {
-                mutablePreferences[GLUCOSE_SOURCE_DESCRIPTOR_KEY] = Json.encodeToString(descriptor)
-            } else {
-                mutablePreferences.remove(GLUCOSE_SOURCE_DESCRIPTOR_KEY)
-            }
-        }
+        appPreferencesRepository.setGlucoseSourceDescriptor(descriptor)
     }
 
     /**
      * Retrieves the saved pump connection descriptor.
      */
     suspend fun getPumpDescriptor(): PumpConnectionDescriptor? {
-        val jsonStr = appPreferencesRepository.getPreferences()[PUMP_DESCRIPTOR_KEY] ?: return null
-        return runCatching { Json.decodeFromString<PumpConnectionDescriptor>(jsonStr) }.getOrNull()
+        return appPreferencesRepository.getPreferences().pumpDescriptor
     }
 
     /**
      * Persists or removes the pump connection descriptor.
      */
     suspend fun savePumpDescriptor(descriptor: PumpConnectionDescriptor?) {
-        appPreferencesRepository.editPreferences { mutablePreferences ->
-            if (descriptor != null) {
-                mutablePreferences[PUMP_DESCRIPTOR_KEY] = Json.encodeToString(descriptor)
-            } else {
-                mutablePreferences.remove(PUMP_DESCRIPTOR_KEY)
-            }
-        }
+        appPreferencesRepository.setPumpDescriptor(descriptor)
     }
 }
