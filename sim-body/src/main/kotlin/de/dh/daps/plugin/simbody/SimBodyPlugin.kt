@@ -6,7 +6,6 @@ import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.PluginContext
 import de.dh.daps.common.model.data.BgReading
-import de.dh.daps.common.ui.UiText
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.plugin.simbody.repository.db.SimBodyDatabase
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -32,7 +31,7 @@ class SimBodyPlugin(
 
     private var heartbeat: SimBodyHeartbeat? = null
 
-    override val pluginName: UiText = UiText.StringResource(R.string.sim_body_plugin_name)
+    override val pluginId: String = PLUGIN_ID
     override val neededPermissions: Collection<String> = emptyList()
 
     override fun setup(context: PluginContext) {
@@ -53,4 +52,8 @@ class SimBodyPlugin(
 
     fun getGlucoseSource(): GlucoseSource = SimBodyGlucoseSource(_glucoseReadings.asSharedFlow())
     fun getInsulinPump(): InsulinPump = SimBodyInsulinPump(pumpDevice)
+
+    companion object {
+        const val PLUGIN_ID = "de.dh.daps.plugin.simbody"
+    }
 }

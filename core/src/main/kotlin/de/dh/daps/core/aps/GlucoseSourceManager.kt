@@ -55,19 +55,19 @@ class GlucoseSourceManager(
 
     private fun restartGlucosePipeline() {
         glucoseJob?.cancel()
-        val plugin = glucoseSource ?: return
+        val gs = glucoseSource ?: return
 
         glucoseJob = scope.launch {
-            val sourceNameStr = plugin.glucoseSourceName.asString(context)
+            val sourceNameStr = gs.glucoseSourceName.asString(context)
             Log.d(TAG, "Installing glucose pipeline: $sourceNameStr")
 
-            val sensorType = glucoseRepository.getOrCreateSensorTypeByName(plugin.getSensorTypeName())
-            val dataProvider = glucoseRepository.getOrCreateDataProviderByName(sourceNameStr, plugin.dataProviderType)
+            val sensorType = glucoseRepository.getOrCreateSensorTypeByName(gs.getSensorTypeName())
+            val dataProvider = glucoseRepository.getOrCreateDataProviderByName(sourceNameStr, gs.dataProviderType)
 
-            readingsTimeDelay = plugin.readingsTimeDelay
-            readingsInterval = plugin.readingsInterval
+            readingsTimeDelay = gs.readingsTimeDelay
+            readingsInterval = gs.readingsInterval
 
-            plugin.getValues()
+            gs.getValues()
                 .collect { reading ->
                     _lastInputTimestamp.value = Timestamp.now()
                     glucoseRepository.addReading(reading, dataProvider, sensorType)

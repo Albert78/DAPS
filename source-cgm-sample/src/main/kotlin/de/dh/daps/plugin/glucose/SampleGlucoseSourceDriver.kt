@@ -26,7 +26,7 @@ import de.dh.daps.common.ui.UiText
 class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
     override val driverId: String = DRIVER_ID
     override val displayName: UiText = UiText.StringResource(R.string.sample_cgm_driver_display_name)
-    override val pluginName: UiText = UiText.StringResource(R.string.sample_cgm_driver_name)
+    override val pluginId: String = DRIVER_ID
     override val neededPermissions: Collection<String> = emptyList()
 
     override fun initialize(context: PluginContext) {

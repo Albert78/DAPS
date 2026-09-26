@@ -28,16 +28,11 @@ import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 
 class SampleGlucoseSource : GlucoseSource, GlucoseSourcePluginUiProvider {
-
     override val glucoseSourceName: UiText = UiText.StringResource(R.string.sample_cgm_source_name)
-
     override val dataProviderType: String = "CGM"
-
     override val readingsInterval: BgReadingsInterval
         get() = BgReadingsInterval.OneMinute
-
     override val readingsTimeDelay = Minutes(5)
-
     override fun getSensorTypeName() = "Dexcom G6"
 
     override fun start() {

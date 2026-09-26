@@ -1,15 +1,7 @@
 package de.dh.daps.common.model
 
-import de.dh.daps.common.ui.UiText
-
-/**
- * Abstraction of functionality which is maintained independently of the main app.
- *
- * Plugins are static components of an assembled app.
- * The set of active plugins is determined by build flavors.
- */
 interface Plugin {
-    val pluginName: UiText
+    val pluginId: String
     val neededPermissions: Collection<String>
 
     /**
