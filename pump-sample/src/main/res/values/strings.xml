@@ -1,0 +1,4 @@
+<resources>
+    <string name="sample_pump_driver_display_name">Beispiel-Pumpentreiber</string>
+    <string name="sample_pump_driver_name">Pumpentreiber-Beispielplugin</string>
+</resources>

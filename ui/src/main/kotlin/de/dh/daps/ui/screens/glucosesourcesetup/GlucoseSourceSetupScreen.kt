@@ -48,6 +48,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.GlucoseSourceDriver
+import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppTheme
@@ -91,7 +92,7 @@ fun GlucoseSourceSetupContent(
     }
 
     val selectedDriver = uiState.selectedDriver
-    val titleText = selectedDriver?.displayName ?: stringResource(id = R.string.glucose_source_setup_screen_title)
+    val titleText = selectedDriver?.displayName?.asString() ?: stringResource(id = R.string.glucose_source_setup_screen_title)
 
     Scaffold(
         topBar = {
@@ -341,7 +342,7 @@ private fun GlucoseSourceDriverCard(
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = driver.displayName,
+                        text = driver.displayName.asString(),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         maxLines = 2,
@@ -380,7 +381,7 @@ private fun GlucoseSourceDriverCard(
 
 private class PreviewGlucoseSourceDriver(
     override val driverId: String,
-    override val displayName: String
+    override val displayName: UiText
 ) : GlucoseSourceDriver {
     @Composable
     override fun SetupScreen(
@@ -402,8 +403,8 @@ fun GlucoseSourceSetupNoActiveSourcePreview() {
         GlucoseSourceSetupContent(
             uiState = GlucoseSourceSetupUiState(
                 availableDrivers = listOf(
-                    PreviewGlucoseSourceDriver("de.dh.daps.plugin.glucose.receiver", "xDrip+ Broadcast Receiver"),
-                    PreviewGlucoseSourceDriver("de.dh.daps.plugin.simbody", "SimBody Virtual Glucose Source")
+                    PreviewGlucoseSourceDriver("de.dh.daps.plugin.glucose.receiver", UiText.DynamicString("xDrip+ Broadcast Receiver")),
+                    PreviewGlucoseSourceDriver("de.dh.daps.plugin.simbody", UiText.DynamicString("SimBody Virtual Glucose Source"))
                 ),
                 activeSourceDescriptor = null
             ),
@@ -423,9 +424,9 @@ fun GlucoseSourceSetupMultipleDriversPreview() {
         GlucoseSourceSetupContent(
             uiState = GlucoseSourceSetupUiState(
                 availableDrivers = listOf(
-                    PreviewGlucoseSourceDriver("de.dh.daps.plugin.simbody", "SimBody Virtual Glucose Source"),
-                    PreviewGlucoseSourceDriver("de.dh.daps.plugin.glucose.receiver", "xDrip+ Broadcast Receiver"),
-                    PreviewGlucoseSourceDriver("de.dh.daps.plugin.sample", "Sample Glucose Source Driver mit langem Namen für automatischen Zeilenumbruch")
+                    PreviewGlucoseSourceDriver("de.dh.daps.plugin.simbody", UiText.DynamicString("SimBody Virtual Glucose Source")),
+                    PreviewGlucoseSourceDriver("de.dh.daps.plugin.glucose.receiver", UiText.DynamicString("xDrip+ Broadcast Receiver")),
+                    PreviewGlucoseSourceDriver("de.dh.daps.plugin.sample", UiText.DynamicString("Sample Glucose Source Driver mit langem Namen für automatischen Zeilenumbruch"))
                 ),
                 activeSourceDescriptor = GlucoseSourceConnectionDescriptor(
                     driverId = "de.dh.daps.plugin.simbody",

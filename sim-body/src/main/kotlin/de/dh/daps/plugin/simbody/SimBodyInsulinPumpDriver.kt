@@ -15,11 +15,13 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.PumpConnectionDescriptor
+import de.dh.daps.common.ui.UiText
 
 /**
  * Driver implementation for the SimBody virtual insulin pump simulation.
@@ -29,8 +31,8 @@ class SimBodyInsulinPumpDriver(
     private val simBodyPlugin: SimBodyPlugin,
 ) : InsulinPumpDriver, Plugin {
     override val driverId: String = DRIVER_ID
-    override val displayName: String = "SimBody Virtual Pump Driver"
-    override val pluginName: String = "SimBody Pump Driver Plugin"
+    override val displayName: UiText = UiText.StringResource(R.string.sim_body_pump_driver_display_name)
+    override val pluginName: UiText = UiText.StringResource(R.string.sim_body_pump_driver_name)
     override val neededPermissions: Collection<String> = emptyList()
 
     /**
@@ -65,7 +67,7 @@ class SimBodyInsulinPumpDriver(
                         onClick = onCancel,
                         modifier = Modifier.weight(1f),
                     ) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.btn_cancel))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
@@ -81,7 +83,7 @@ class SimBodyInsulinPumpDriver(
                         },
                         modifier = Modifier.weight(1f),
                     ) {
-                        Text("Connect")
+                        Text(stringResource(R.string.btn_connect))
                     }
                 }
             }

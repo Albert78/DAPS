@@ -1,4 +1,4 @@
-package de.dh.daps.ui.common
+package de.dh.daps.common.ui
 
 import android.content.Context
 import androidx.annotation.StringRes

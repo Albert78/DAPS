@@ -32,7 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.UiText
+import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppPreview
@@ -222,7 +222,7 @@ fun SystemControlPumpPreview() {
 private fun previewUiState() = SystemControlUiState(
     overviewUiState = OverviewTabUiState(),
     glucoseSourceTabUiState = GlucoseSourceTabUiState(
-        glucoseSourceName = "Dexcom G6",
+        glucoseSourceName = UiText.DynamicString("Dexcom G6"),
         sensorTypeName = "G6-Sensor",
         readingsIntervalText = "5 Minuten",
         lastBgValueText = "124 mg/dl",

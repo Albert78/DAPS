@@ -13,6 +13,7 @@ import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.ui.UiText
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.aps.CoreInsight
 import de.dh.daps.core.pump.JobErrorCode
@@ -20,7 +21,6 @@ import de.dh.daps.core.pump.PumpCommand
 import de.dh.daps.core.pump.PumpJob
 import de.dh.daps.glucoseUnit
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.UiText
 import de.dh.daps.ui.common.time
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
@@ -60,7 +60,7 @@ data class ApsSystemUiState(
 )
 
 data class OverviewGlucoseSourceUiState(
-    val sensorName: String = "--",
+    val sensorName: UiText = UiText.DynamicString("--"),
     val lastConnection: StatusValueItem = StatusValueItem("Letzte Verbindung", "--", status = ValueStatus.GOOD),
     val lastReading: StatusValueItem = StatusValueItem("Letzter Messwert", "--", status = ValueStatus.GOOD),
     val sensorExpiration: StatusValueItem = StatusValueItem("Ablaufdatum Sensor", "--", status = ValueStatus.GOOD)
@@ -84,7 +84,7 @@ data class OverviewTabUiState(
 )
 
 data class GlucoseSourceTabUiState(
-    val glucoseSourceName: String? = null,
+    val glucoseSourceName: UiText? = null,
     val manufacturer: String? = null,
     val serialNumber: String? = null,
     val sensorTypeName: String? = null,
@@ -134,7 +134,7 @@ data class SystemControlUiState(
     val pumpTabUiState: PumpTabUiState = PumpTabUiState(),
 
     val coreInsights: List<CoreInsight> = emptyList(),
-    val glucoseSourceName: String? = glucoseSourceTabUiState.glucoseSourceName,
+    val glucoseSourceName: UiText? = glucoseSourceTabUiState.glucoseSourceName,
     val sensorTypeName: String? = glucoseSourceTabUiState.sensorTypeName,
     val readingsInterval: BgReadingsInterval? = null,
     val lastBgReading: BgReading? = null,
@@ -165,7 +165,7 @@ class SystemControlViewModel(
         appPreferencesRepository.cachedPreferences,
         glucoseSourceManager.lastInputTimestamp
     ) { source, currentBg, preferences, lastInput ->
-        val sourceName = source?.name
+        val sourceName = source?.glucoseSourceName
         val sensorType = source?.getSensorTypeName()
         val interval = source?.readingsInterval
         val intervalText = when (interval) {
@@ -264,7 +264,7 @@ class SystemControlViewModel(
                 status = StatusValueItem("Status", if (insights.isNotEmpty()) "Aktiv" else "Inaktiv", status = ValueStatus.GOOD)
             ),
             glucoseSource = OverviewGlucoseSourceUiState(
-                sensorName = gInfo.sourceName ?: "Nicht verbunden",
+                sensorName = gInfo.sourceName ?: UiText.DynamicString("Nicht verbunden"),
                 lastConnection = StatusValueItem("Letzte Verbindung", cgmLastConnText, timestamp = gInfo.lastInputTimestamp, status = if (gInfo.source != null) ValueStatus.GOOD else ValueStatus.BAD),
                 lastReading = StatusValueItem("Letzter Messwert", gInfo.lastBgValueText ?: "--", timestamp = gInfo.lastBgReading?.timestamp, status = ValueStatus.GOOD),
                 sensorExpiration = StatusValueItem("Ablaufdatum Sensor", "--", timestamp = gInfo.estimatedExpirationTimestamp, status = ValueStatus.GOOD)
@@ -283,7 +283,7 @@ class SystemControlViewModel(
         // Glucose Source Tab State
         val glucoseSourceTabState = GlucoseSourceTabUiState(
             glucoseSourceName = gInfo.sourceName,
-            manufacturer = gInfo.sourceName?.split(" ")?.firstOrNull(),
+            manufacturer = null,
             sensorTypeName = gInfo.sensorTypeName,
             readingsIntervalText = gInfo.readingsIntervalText,
             lastBgReading = gInfo.lastBgReading,
@@ -391,7 +391,7 @@ class SystemControlViewModel(
 
     private data class GlucoseUiData(
         val source: GlucoseSource?,
-        val sourceName: String?,
+        val sourceName: UiText?,
         val sensorTypeName: String?,
         val readingsInterval: BgReadingsInterval?,
         val readingsIntervalText: String?,

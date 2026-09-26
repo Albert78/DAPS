@@ -21,6 +21,7 @@ import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.common.model.Plugin
+import de.dh.daps.common.ui.UiText
 
 /**
  * Driver implementation for the SimBody virtual glucose source simulation.
@@ -30,8 +31,8 @@ class SimBodyGlucoseSourceDriver(
     private val simBodyPlugin: SimBodyPlugin,
 ) : GlucoseSourceDriver, Plugin {
     override val driverId: String = DRIVER_ID
-    override val displayName: String = "SimBody Virtueller Glukosesensor-Treiber"
-    override val pluginName: String = "SimBody Glukosesensor-Treiber-Plugin"
+    override val displayName: UiText = UiText.StringResource(R.string.sim_body_cgm_driver_display_name)
+    override val pluginName: UiText = UiText.StringResource(R.string.sim_body_cgm_driver_name)
     override val neededPermissions: Collection<String> = emptyList()
 
     /**

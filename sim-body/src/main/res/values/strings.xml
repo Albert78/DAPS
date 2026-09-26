@@ -27,12 +27,16 @@
     <string name="btn_clear_history">Historie löschen</string>
     <string name="btn_connect">Verbinden</string>
 
-    <!-- Glucose Source Driver Setup -->
+    <!-- Glucose & Pump Driver Setup -->
+    <string name="sim_body_plugin_name">Sim Body Plugin</string>
+    <string name="sim_body_glucose_source_name">Sim Body Glukosequelle Plugin</string>
     <string name="sim_body_cgm_driver_display_name">SimBody Virtueller Glukosesensor-Treiber</string>
     <string name="sim_body_cgm_driver_name">SimBody Glukosesensor-Treiber-Plugin</string>
     <string name="sim_body_cgm_setup_title">SimBody Virtueller Glukosesensor Setup</string>
     <string name="sim_body_cgm_setup_description">Verbinden mit dem simulierten Glukosesensor des virtuellen menschlichen Körpermodells.</string>
     <string name="sim_body_cgm_sensor_display_name">SimBody Virtueller Glukosesensor</string>
+    <string name="sim_body_pump_driver_display_name">SimBody Virtueller Pumpen-Treiber</string>
+    <string name="sim_body_pump_driver_name">SimBody Pumpen-Treiber-Plugin</string>
 
     <!-- Dialogs -->
     <string name="dialog_title_eat_meal">Mahlzeit essen</string>

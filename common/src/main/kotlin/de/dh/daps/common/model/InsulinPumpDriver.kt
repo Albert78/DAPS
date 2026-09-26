@@ -1,6 +1,7 @@
 package de.dh.daps.common.model
 
 import androidx.compose.runtime.Composable
+import de.dh.daps.common.ui.UiText
 
 /**
  * Driver interface for insulin pump plugins.
@@ -15,7 +16,7 @@ interface InsulinPumpDriver {
     /**
      * Human-readable display name of the pump type or manufacturer (e.g. "Ypsomed YpsoPump").
      */
-    val displayName: String
+    val displayName: UiText
 
     /**
      * Renders the driver's custom UI workflow for initial setup, device scanning, and pairing.

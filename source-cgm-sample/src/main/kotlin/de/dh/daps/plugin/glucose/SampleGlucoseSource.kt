@@ -18,6 +18,7 @@ import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.RawBg
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.screens.systemcontrol.GlucoseSourcePluginUiProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -28,7 +29,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 class SampleGlucoseSource : GlucoseSource, GlucoseSourcePluginUiProvider {
 
-    override val name: String = "Sample Glucose Source"
+    override val glucoseSourceName: UiText = UiText.StringResource(R.string.sample_cgm_source_name)
 
     override val dataProviderType: String = "CGM"
 

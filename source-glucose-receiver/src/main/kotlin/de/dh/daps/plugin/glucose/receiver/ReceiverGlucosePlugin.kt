@@ -27,6 +27,7 @@ import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.ui.UiText
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -42,8 +43,9 @@ class ReceiverGlucosePlugin(
 ) : GlucoseSourceDriver, GlucoseSource, Plugin {
 
     override val driverId: String = DRIVER_ID
-    override val displayName: String = "External Broadcast Receiver Driver"
-    override val pluginName: String = "Receiver Glucose Plugin"
+    override val glucoseSourceName: UiText = UiText.StringResource(R.string.glucose_broadcast_receiver_display_name)
+    override val displayName: UiText = UiText.StringResource(R.string.glucose_broadcast_receiver_driver_display_name)
+    override val pluginName: UiText = UiText.StringResource(R.string.glucose_broadcast_receiver_driver_name)
     override val neededPermissions: Collection<String> = listOf("com.eveningoutpost.dexdrip.permissions.RECEIVE_BG_ESTIMATE")
 
     override val readingsInterval: BgReadingsInterval

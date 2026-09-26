@@ -48,6 +48,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.PumpConnectionDescriptor
+import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppTheme
@@ -91,7 +92,7 @@ fun PumpSetupContent(
     }
 
     val selectedDriver = uiState.selectedDriver
-    val titleText = selectedDriver?.displayName ?: stringResource(id = R.string.pump_setup_screen_title)
+    val titleText = selectedDriver?.displayName?.asString() ?: stringResource(id = R.string.pump_setup_screen_title)
 
     Scaffold(
         topBar = {
@@ -342,7 +343,7 @@ private fun DriverCard(
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = driver.displayName,
+                        text = driver.displayName.asString(),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         maxLines = 2,
@@ -381,7 +382,7 @@ private fun DriverCard(
 
 private class PreviewPumpDriver(
     override val driverId: String,
-    override val displayName: String
+    override val displayName: UiText
 ) : InsulinPumpDriver {
     @Composable
     override fun SetupScreen(
@@ -403,8 +404,8 @@ fun PumpSetupNoActivePumpPreview() {
         PumpSetupContent(
             uiState = PumpSetupUiState(
                 availableDrivers = listOf(
-                    PreviewPumpDriver("de.dh.daps.plugin.sample", "Sample Pump Driver"),
-                    PreviewPumpDriver("de.dh.daps.plugin.simbody", "SimBody Virtual Pump Driver")
+                    PreviewPumpDriver("de.dh.daps.plugin.sample", UiText.DynamicString("Sample Pump Driver")),
+                    PreviewPumpDriver("de.dh.daps.plugin.simbody", UiText.DynamicString("SimBody Virtual Pump Driver"))
                 ),
                 activePumpDescriptor = null
             ),
@@ -424,9 +425,9 @@ fun PumpSetupMultipleDriversPreview() {
         PumpSetupContent(
             uiState = PumpSetupUiState(
                 availableDrivers = listOf(
-                    PreviewPumpDriver("de.dh.daps.plugin.simbody", "SimBody Virtual Pump Driver"),
-                    PreviewPumpDriver("de.dh.daps.plugin.sample", "Sample Pump Driver"),
-                    PreviewPumpDriver("de.dh.daps.plugin.ypso", "Ypsomed YpsoPump Driver mit langem Namen für automatischen Zeilenumbruch")
+                    PreviewPumpDriver("de.dh.daps.plugin.simbody", UiText.DynamicString("SimBody Virtual Pump Driver")),
+                    PreviewPumpDriver("de.dh.daps.plugin.sample", UiText.DynamicString("Sample Pump Driver")),
+                    PreviewPumpDriver("de.dh.daps.plugin.ypso", UiText.DynamicString("Ypsomed YpsoPump Driver mit langem Namen für automatischen Zeilenumbruch"))
                 ),
                 activePumpDescriptor = PumpConnectionDescriptor(
                     driverId = "de.dh.daps.plugin.simbody",

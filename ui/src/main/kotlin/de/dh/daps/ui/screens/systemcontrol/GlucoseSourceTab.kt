@@ -34,6 +34,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.common.glucoseValue
 import de.dh.daps.ui.common.icons.Icon_Next
 import de.dh.daps.ui.common.icons.Icon_Previous
@@ -106,7 +107,7 @@ fun GlucoseSourceOverviewCard(
                         icon = Icons.Default.Info
                     ) {
                         Text(
-                            text = uiState.glucoseSourceName ?: "Nicht verbunden",
+                            text = uiState.glucoseSourceName?.asString() ?: "Nicht verbunden",
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Medium,
                             maxLines = 2,
@@ -463,7 +464,7 @@ fun GlucoseSourceTabDisconnectedPreview() {
 }
 
 private fun sampleGlucoseSourceTabUiState() = GlucoseSourceTabUiState(
-    glucoseSourceName = "Dexcom G6",
+    glucoseSourceName = UiText.DynamicString("Dexcom G6"),
     manufacturer = "Dexcom",
     serialNumber = "SN-98765432",
     sensorTypeName = "G6-Sensor",

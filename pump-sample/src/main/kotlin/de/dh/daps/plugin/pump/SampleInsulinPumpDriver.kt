@@ -16,6 +16,7 @@ import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.PumpConnectionDescriptor
+import de.dh.daps.common.ui.UiText
 
 /**
  * Lightweight sample implementation of [InsulinPumpDriver].
@@ -23,8 +24,8 @@ import de.dh.daps.common.model.PumpConnectionDescriptor
  */
 class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
     override val driverId: String = DRIVER_ID
-    override val displayName: String = "Sample Pump Driver"
-    override val pluginName: String = "Sample Pump Driver Plugin"
+    override val displayName: UiText = UiText.StringResource(R.string.sample_pump_driver_display_name)
+    override val pluginName: UiText = UiText.StringResource(R.string.sample_pump_driver_name)
     override val neededPermissions: Collection<String> = emptyList()
 
     /**

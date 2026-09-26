@@ -3,6 +3,7 @@ package de.dh.daps.common.model
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.ui.UiText
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -10,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
  * Provides a stream of [BgReading]s and metadata about the sensor and its update frequency.
  */
 interface GlucoseSource {
-    val name: String
+    val glucoseSourceName: UiText
     val dataProviderType: String
     val readingsInterval: BgReadingsInterval
 

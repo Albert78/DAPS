@@ -254,7 +254,7 @@ private fun OverviewGlucoseSourceCard(
                 .fillMaxWidth()
         ) {
             Text(
-                text = state.sensorName,
+                text = state.sensorName.asString(),
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Bold
             )

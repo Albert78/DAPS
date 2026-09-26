@@ -1,0 +1,5 @@
+<resources>
+    <string name="sample_cgm_source_name">Beispiel-Glucosequelle</string>
+    <string name="sample_cgm_driver_display_name">Treiber für Beispiel-Glucosequelle</string>
+    <string name="sample_cgm_driver_name">Plugin für Beispiel-Glucosequelle</string>
+</resources>

@@ -1,0 +1,5 @@
+<resources>
+    <string name="glucose_broadcast_receiver_display_name">Glucose Broadcast Receiver</string>
+    <string name="glucose_broadcast_receiver_driver_display_name">Treiber für Glucose Broadcast Receiver</string>
+    <string name="glucose_broadcast_receiver_driver_name">Glucose Receiver Plugin</string>
+</resources>

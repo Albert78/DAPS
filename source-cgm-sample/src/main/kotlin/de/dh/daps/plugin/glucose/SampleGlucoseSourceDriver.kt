@@ -17,6 +17,7 @@ import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.PluginContext
+import de.dh.daps.common.ui.UiText
 
 /**
  * Lightweight sample implementation of [GlucoseSourceDriver].
@@ -24,8 +25,8 @@ import de.dh.daps.common.model.PluginContext
  */
 class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
     override val driverId: String = DRIVER_ID
-    override val displayName: String = "Sample Glucose Source Driver"
-    override val pluginName: String = "Sample Glucose Source Driver Plugin"
+    override val displayName: UiText = UiText.StringResource(R.string.sample_cgm_driver_display_name)
+    override val pluginName: UiText = UiText.StringResource(R.string.sample_cgm_driver_name)
     override val neededPermissions: Collection<String> = emptyList()
 
     override fun initialize(context: PluginContext) {
