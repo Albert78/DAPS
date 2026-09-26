@@ -74,6 +74,7 @@ val Icon_Bolus = Icons.Outlined.Syringe
 val Icon_Basal = Icons.Outlined.Basal
 val Icon_Temp_Basal = Icons.Outlined.Temp_Basal
 val Icon_Basal_Alternative = Icons.Outlined.Basal_Alternative
+val Icon_Reservoir = Icons.Outlined.PumpReservoir
 val Icon_Insulin_Profile = Icons.Outlined.StackedLineChart
 val Icon_Therapy_Adjustment = Icons.Outlined.Tune
 val Icon_Insulin_Adjustment = Icons.Default.UnfoldMore
@@ -142,6 +143,7 @@ private val iconsForPreview = listOf(
     IconPreview("Basal", Icon_Basal),
     IconPreview("Temp_Basal", Icon_Temp_Basal),
     IconPreview("Basal_Alternative", Icon_Basal_Alternative),
+    IconPreview("Reservoir", Icon_Reservoir),
     IconPreview("Insulin_Profile", Icon_Insulin_Profile),
     IconPreview("Therapy_Adjustment", Icon_Therapy_Adjustment),
     IconPreview("Insulin_Adjustment", Icon_Insulin_Adjustment),

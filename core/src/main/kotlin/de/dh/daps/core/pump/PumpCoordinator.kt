@@ -1,14 +1,14 @@
 package de.dh.daps.core.pump
 
 import android.util.Log
-import de.dh.pump.PumpCommandException
-import de.dh.pump.PumpConnectionException
-import de.dh.pump.PumpStatus
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.pump.PumpCommandException
+import de.dh.pump.PumpConnectionException
+import de.dh.pump.PumpStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
@@ -67,8 +67,7 @@ sealed interface JobErrorCode {
 }
 
 /**
- * The PumpCoordinator is the high-level orchestrator for the insulin pump subsystem.
- * It acts as a mediator between the APS core and the physical pump hardware (abstracted via [InsulinPump]).
+ * The PumpCoordinator is the high-level orchestrator for the insulin pump (abstracted via [InsulinPump]).
  *
  * Key Responsibilities:
  * - **Job Management:** Manages a queue of [PumpJob]s, ensuring commands are executed in order
@@ -80,9 +79,9 @@ sealed interface JobErrorCode {
  * - **Power Management:** Coordinates with the system's power state by acquiring wake-locks
  *   during active communication and scheduling system wakeups for future tasks.
  *
- * The coordinator's lifecycle is bound to the enclosing APS instance. It remains active
- * and continues to dispatch commands even if the pump is disconnected,
- * effectively decoupling the core logic from the pump availability.
+ * The coordinator's lifecycle is bound to the connection (Bluetooth bonding) with the pump;
+ * it remains active as long as a connection with the pump exists. It abstracts from the
+ * physical connection state of the pump and manages pending jobs.
  */
 // TODO: Multithreading/thread allocation
 // TODO: Notifications from pump

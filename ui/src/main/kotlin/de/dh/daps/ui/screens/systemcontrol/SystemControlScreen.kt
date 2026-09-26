@@ -1,11 +1,13 @@
 package de.dh.daps.ui.screens.systemcontrol
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,6 +41,7 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.pump.PumpCommand
 import de.dh.daps.core.pump.PumpJob
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppPreview
 import kotlinx.coroutines.delay
@@ -141,11 +144,14 @@ fun SystemControlContent(
             }
         }
     ) { innerPadding ->
+        val listState = rememberLazyListState()
         LazyColumn(
+            state = listState,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 16.dp)
+                .contentScrollIndicator(listState)
+                .padding(start = 16.dp, end = 16.dp, top = 16.dp)
         ) {
             item {
                 when (selectedTabIndex) {
@@ -168,6 +174,7 @@ fun SystemControlContent(
 }
 
 @Preview(showBackground = true, name = "Overview Tab")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Overview Tab - Dark Mode")
 @Composable
 fun SystemControlOverviewPreview() {
     AppPreview {
@@ -184,6 +191,7 @@ fun SystemControlOverviewPreview() {
 }
 
 @Preview(showBackground = true, name = "CGM Tab")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "CGM Tab - Dark Mode")
 @Composable
 fun SystemControlCgmPreview() {
     AppPreview {
@@ -200,6 +208,7 @@ fun SystemControlCgmPreview() {
 }
 
 @Preview(showBackground = true, name = "Pump Tab")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Pump Tab - Dark Mode")
 @Composable
 fun SystemControlPumpPreview() {
     AppPreview {
