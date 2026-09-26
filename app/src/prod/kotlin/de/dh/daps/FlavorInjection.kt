@@ -8,7 +8,6 @@ import de.dh.daps.common.navigation.FeatureNavGraph
 import de.dh.daps.common.navigation.NavigationViewModel
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.plugin.glucose.receiver.ExternalSourceType
-import de.dh.daps.plugin.glucose.receiver.ReceiverGlucoseDriver
 import de.dh.daps.plugin.glucose.receiver.ReceiverGlucosePlugin
 import de.dh.daps.plugin.pump.SampleInsulinPumpDriver
 import de.dh.daps.plugin.pump.SampleInsulinPumpPlugin
@@ -18,8 +17,7 @@ import kotlinx.coroutines.runBlocking
  * Registers all plugins and drivers available for the productive flavor with the [PluginManager].
  */
 fun registerPlugins(pluginManager: PluginManager, application: Application) {
-    pluginManager.addPlugin(ReceiverGlucosePlugin(application, ExternalSourceType.xDrip5Min))
-    pluginManager.addPlugin(ReceiverGlucoseDriver(application))
+    pluginManager.addPlugin(ReceiverGlucosePlugin(application))
     pluginManager.addPlugin(SampleInsulinPumpPlugin())
     pluginManager.addPlugin(SampleInsulinPumpDriver())
 }
