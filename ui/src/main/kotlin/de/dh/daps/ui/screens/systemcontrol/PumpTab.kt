@@ -40,7 +40,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.ui.common.icons.PumpReservoir
+import de.dh.daps.ui.common.insulinValue
+import de.dh.daps.ui.common.shortRelativeTimeAgo
 import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.time
 
 @Composable
 fun PumpTabContent(
@@ -185,6 +188,19 @@ fun PumpOverviewCard(
                 else -> MaterialTheme.colorScheme.secondary
             }
 
+            val lastConnTimestamp = uiState.lastConnectionTimestamp
+            val lastConnTimeText = if (lastConnTimestamp != null && lastConnTimestamp.isValid()) {
+                time(lastConnTimestamp)
+            } else {
+                uiState.lastConnectionTimeText
+            }
+
+            val lastConnRelativeText = if (lastConnTimestamp != null && lastConnTimestamp.isValid()) {
+                shortRelativeTimeAgo(lastConnTimestamp)
+            } else {
+                uiState.lastConnectionRelativeTimeText
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
@@ -214,14 +230,14 @@ fun PumpOverviewCard(
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Text(
-                                text = uiState.lastConnectionTimeText,
+                                text = lastConnTimeText,
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Medium,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
                             )
-                            if (!uiState.lastConnectionRelativeTimeText.isNullOrEmpty()) {
-                                val relativeText = uiState.lastConnectionRelativeTimeText
+                            if (!lastConnRelativeText.isNullOrEmpty()) {
+                                val relativeText = lastConnRelativeText
                                 val formattedRelative = if (relativeText.startsWith("(") && relativeText.endsWith(")")) {
                                     relativeText
                                 } else {
@@ -241,6 +257,12 @@ fun PumpOverviewCard(
             }
 
             if (uiState.pumpConnected) {
+                val reservoirDisplay = if (uiState.reservoirUnits != null) {
+                    insulinValue(uiState.reservoirUnits)
+                } else {
+                    uiState.reservoirText
+                }
+
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -266,7 +288,7 @@ fun PumpOverviewCard(
                             icon = Icons.Outlined.PumpReservoir
                         ) {
                             Text(
-                                text = uiState.reservoirText,
+                                text = reservoirDisplay,
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 2,

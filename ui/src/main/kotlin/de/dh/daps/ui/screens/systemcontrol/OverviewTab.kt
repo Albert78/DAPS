@@ -34,9 +34,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.common.composables.AppColorBlue
+import de.dh.daps.ui.common.longDateTime
+import de.dh.daps.ui.common.shortRelativeTimeAgo
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.ExtendedTheme
+import de.dh.daps.ui.common.time
+import java.time.Instant
+import java.time.ZoneId
 
 @Composable
 fun OverviewTabContent(
@@ -279,7 +285,10 @@ private fun OverviewCgmCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     ControlDetailRow(label = state.sensorExpiration.label) {
-                        StatusValueText(item = state.sensorExpiration)
+                        StatusValueText(
+                            item = state.sensorExpiration,
+                            isDateTime = true
+                        )
                     }
                 }
             }
@@ -375,7 +384,10 @@ private fun OverviewPumpCard(
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     ControlDetailRow(label = state.nextPodChange.label) {
-                        StatusValueText(item = state.nextPodChange)
+                        StatusValueText(
+                            item = state.nextPodChange,
+                            isDateTime = true
+                        )
                     }
                 }
             }
@@ -386,11 +398,32 @@ private fun OverviewPumpCard(
 @Composable
 private fun StatusValueText(
     item: StatusValueItem,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isDateTime: Boolean = false
 ) {
+    val timestamp = item.timestamp
+    val formattedValue = if (timestamp != null && timestamp.isValid()) {
+        if (isDateTime) {
+            val localDateTime = Instant.ofEpochMilli(timestamp.ms)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime()
+            longDateTime(localDateTime)
+        } else {
+            time(timestamp)
+        }
+    } else {
+        item.value
+    }
+
+    val formattedRelative = if (timestamp != null && timestamp.isValid() && !isDateTime) {
+        shortRelativeTimeAgo(timestamp)
+    } else {
+        item.relativeTime
+    }
+
     StatusValueText(
-        value = item.value,
-        relativeTime = item.relativeTime,
+        value = formattedValue,
+        relativeTime = formattedRelative,
         status = item.status,
         modifier = modifier
     )

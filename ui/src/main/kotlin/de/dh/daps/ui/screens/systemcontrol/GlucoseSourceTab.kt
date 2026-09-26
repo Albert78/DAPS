@@ -33,9 +33,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.ui.common.glucoseValue
 import de.dh.daps.ui.common.icons.Icon_Next
 import de.dh.daps.ui.common.icons.Icon_Previous
+import de.dh.daps.ui.common.longDateTime
+import de.dh.daps.ui.common.shortRelativeTimeAgo
+import de.dh.daps.ui.common.shortRelativeTimeUntil
 import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.time
+import java.time.Instant
+import java.time.ZoneId
 
 @Composable
 fun GlucoseSourceTabContent(
@@ -63,6 +71,7 @@ fun GlucoseSourceTabContent(
                     sensorCode = uiState.sensorCode,
                     transmitterSerialNumber = uiState.transmitterSerialNumber,
                     estimatedExpirationDateText = uiState.estimatedExpirationDateText,
+                    estimatedExpirationTimestamp = uiState.estimatedExpirationTimestamp,
                     onStopSensor = onStopSensor
                 )
             }
@@ -162,19 +171,51 @@ fun CgmOverviewCard(
                     color = MaterialTheme.colorScheme.outlineVariant
                 )
 
+                val lastReading = uiState.lastBgReading
+                val bgValueText = if (lastReading != null) {
+                    glucoseValue(lastReading.value, withUnit = true)
+                } else {
+                    uiState.lastBgValueText ?: "--"
+                }
+
+                val lastTimeText = if (lastReading != null && lastReading.timestamp.isValid()) {
+                    time(lastReading.timestamp)
+                } else {
+                    uiState.lastReadingTimeText ?: "--"
+                }
+
+                val lastRelativeTime = if (lastReading != null && lastReading.timestamp.isValid()) {
+                    shortRelativeTimeAgo(lastReading.timestamp)
+                } else {
+                    uiState.lastReadingRelativeTimeText
+                }
+
                 ControlDetailRow(
                     label = "Letzter Messwert",
                     icon = Icon_Previous
                 ) {
                     GlucoseFragments(
-                        value = uiState.lastBgValueText ?: "--",
-                        time = uiState.lastReadingTimeText ?: "--",
-                        extra = uiState.lastReadingRelativeTimeText,
+                        value = bgValueText,
+                        time = lastTimeText,
+                        extra = lastRelativeTime,
                         stackVertical = true
                     )
                 }
 
-                if (uiState.hasNextPrediction && uiState.nextReadingTimeText != null) {
+                if (uiState.hasNextPrediction) {
+                    val nextPred = uiState.nextPredictedTimestamp
+                    val nextTimeText = if (nextPred != null && nextPred.isValid()) {
+                        time(nextPred)
+                    } else {
+                        uiState.nextReadingTimeText ?: "--"
+                    }
+
+                    val nextRelativeTime = if (nextPred != null && nextPred.isValid()) {
+                        shortRelativeTimeUntil(nextPred)
+                    } else {
+                        uiState.nextReadingRelativeTimeText
+                    }
+
                     Spacer(modifier = Modifier.height(12.dp))
                     ControlDetailRow(
                         label = "Nächste Messung",
@@ -182,8 +223,8 @@ fun CgmOverviewCard(
                     ) {
                         GlucoseFragments(
                             value = "--",
-                            time = uiState.nextReadingTimeText,
-                            extra = uiState.nextReadingRelativeTimeText,
+                            time = nextTimeText,
+                            extra = nextRelativeTime,
                             stackVertical = true
                         )
                     }
@@ -277,7 +318,8 @@ fun CgmPluginControlCard(
     transmitterSerialNumber: String?,
     estimatedExpirationDateText: String?,
     onStopSensor: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    estimatedExpirationTimestamp: Timestamp? = null
 ) {
     Card(
         modifier = modifier
@@ -335,11 +377,20 @@ fun CgmPluginControlCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            val expDateDisplay = if (estimatedExpirationTimestamp != null && estimatedExpirationTimestamp.isValid()) {
+                val ldt = Instant.ofEpochMilli(estimatedExpirationTimestamp.ms)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime()
+                longDateTime(ldt)
+            } else {
+                estimatedExpirationDateText ?: "--"
+            }
+
             ControlDetailRow(
                 label = "Geschätztes Ablaufdatum"
             ) {
                 Text(
-                    text = estimatedExpirationDateText ?: "--",
+                    text = expDateDisplay,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
                     maxLines = 2,

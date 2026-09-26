@@ -19,6 +19,7 @@ import de.dh.daps.core.pump.JobErrorCode
 import de.dh.daps.core.pump.PumpCommand
 import de.dh.daps.core.pump.PumpJob
 import de.dh.daps.glucoseUnit
+import de.dh.daps.ui.common.time
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -26,9 +27,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 enum class ValueStatus {
     GOOD,
@@ -40,6 +38,7 @@ data class StatusValueItem(
     val label: String,
     val value: String,
     val relativeTime: String? = null,
+    val timestamp: Timestamp? = null,
     val status: ValueStatus? = null
 )
 
@@ -88,14 +87,17 @@ data class CgmTabUiState(
     val serialNumber: String? = null,
     val sensorTypeName: String? = null,
     val readingsIntervalText: String? = null,
+    val lastBgReading: BgReading? = null,
     val lastBgValueText: String? = null,
     val lastReadingTimeText: String? = null,
     val lastReadingRelativeTimeText: String? = null,
+    val nextPredictedTimestamp: Timestamp? = null,
     val nextReadingTimeText: String? = null,
     val nextReadingRelativeTimeText: String? = null,
     val hasNextPrediction: Boolean = false,
     val sensorCode: String? = null,
     val transmitterSerialNumber: String? = null,
+    val estimatedExpirationTimestamp: Timestamp? = null,
     val estimatedExpirationDateText: String? = null,
     val showPluginSection: Boolean = false,
     val cgmPluginSection: (@Composable () -> Unit)? = null
@@ -115,7 +117,9 @@ data class PumpTabUiState(
     val pumpConnected: Boolean = false,
     val isSuspended: Boolean = false,
     val batteryPercentText: String = "--",
+    val reservoirUnits: Double? = null,
     val reservoirText: String = "--",
+    val lastConnectionTimestamp: Timestamp? = null,
     val lastConnectionTimeText: String = "--",
     val lastConnectionRelativeTimeText: String? = null,
     val pendingJobs: List<PumpJobItem> = emptyList(),
@@ -153,31 +157,6 @@ class SystemControlViewModel(
     private val appPreferencesRepository = systemRegistry.appPreferencesRepository
     private val pumpManager = systemRegistry.pumpManager
 
-    private val timeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-    private val dateTimeFormat = SimpleDateFormat("dd.MM.yyyy, HH:mm", Locale.getDefault())
-
-    private fun formatTimeAgo(timestamp: Timestamp): String {
-        val diffMs = System.currentTimeMillis() - timestamp.ms
-        if (diffMs <= 0) return "gerade eben"
-        val diffSec = diffMs / 1000
-        val diffMin = diffMs / 60000
-        return when {
-            diffSec < 5 -> "gerade eben"
-            diffSec < 60 -> "vor $diffSec Sek."
-            diffMin < 60 -> "vor $diffMin Min."
-            else -> "vor ${diffMin / 60} Std."
-        }
-    }
-
-    private fun formatTimeUntil(diffMs: Long): String {
-        val diffMin = diffMs / 60000
-        return when {
-            diffMin < 1 -> "in < 1 Min."
-            diffMin < 60 -> "in $diffMin Min."
-            else -> "in ${diffMin / 60} Std."
-        }
-    }
-
     private val glucoseInfo = combine(
         glucoseSourceManager.activeGlucoseSource,
         glucoseRepository.currentBg,
@@ -197,17 +176,15 @@ class SystemControlViewModel(
         val lastBgText = currentBg?.value?.let { bg ->
             "${bg.toString(preferences.glucoseUnit)} ${if (preferences.glucoseUnit == GlucoseUnit.MG_DL) "mg/dl" else "mmol/l"}"
         }
-        val lastReadingTimeText = currentBg?.timestamp?.let { timeFormat.format(Date(it.ms)) }
-        val lastReadingRelativeTimeText = currentBg?.timestamp?.let { formatTimeAgo(it) }
+
+        val lastReadingTimeText = currentBg?.timestamp?.let { time(it) }
 
         val nextPredicted = glucoseSourceManager.predictNextValueTimestamp()
         val hasPrediction = nextPredicted.isValid()
-        val nextReadingTimeText = if (hasPrediction) timeFormat.format(Date(nextPredicted.ms)) else null
-        val diffMs = if (hasPrediction) nextPredicted.ms - System.currentTimeMillis() else 0L
-        val nextReadingRelativeTimeText = if (hasPrediction && diffMs > 0) formatTimeUntil(diffMs) else null
+        val nextReadingTimeText = if (hasPrediction) time(nextPredicted) else null
 
         val replaceable = source as? ReplaceableComponent
-        val expDateText = replaceable?.endDate?.let { dateTimeFormat.format(Date(it.ms)) }
+        val expTimestamp = replaceable?.endDate
 
         val provider = source as? GlucoseSourcePluginUiProvider
 
@@ -220,12 +197,10 @@ class SystemControlViewModel(
             lastBgReading = currentBg,
             lastBgValueText = lastBgText,
             lastReadingTimeText = lastReadingTimeText,
-            lastReadingRelativeTimeText = lastReadingRelativeTimeText,
-            nextPredictedTimestamp = nextPredicted,
+            nextPredictedTimestamp = if (hasPrediction) nextPredicted else null,
             nextReadingTimeText = nextReadingTimeText,
-            nextReadingRelativeTimeText = nextReadingRelativeTimeText,
             hasNextPrediction = hasPrediction,
-            estimatedExpirationDateText = expDateText,
+            estimatedExpirationTimestamp = expTimestamp,
             glucoseUnit = preferences.glucoseUnit,
             pluginUiProvider = provider,
             lastInputTimestamp = lastInput
@@ -269,16 +244,10 @@ class SystemControlViewModel(
     ) { insights, gInfo, pInfo ->
         // Overview Tab State
         val lastCalcInsight = insights.firstOrNull()
-        val lastCalcTimeText = lastCalcInsight?.timestamp?.let { timeFormat.format(Date(it.ms)) } ?: "--"
-        val lastCalcRelativeText = lastCalcInsight?.timestamp?.let { formatTimeAgo(it) }
+        val lastCalcTimeText = lastCalcInsight?.timestamp?.let { time(it) } ?: "--"
 
-        val cgmLastConnText = if (gInfo.lastInputTimestamp.isValid()) timeFormat.format(Date(gInfo.lastInputTimestamp.ms)) else "--"
-        val cgmLastConnRel = if (gInfo.lastInputTimestamp.isValid()) formatTimeAgo(gInfo.lastInputTimestamp) else null
-
-        val cgmLastReadRel = gInfo.lastReadingRelativeTimeText
-
-        val pumpLastConnText = if (pInfo.lastConnection.isValid()) timeFormat.format(Date(pInfo.lastConnection.ms)) else "--"
-        val pumpLastConnRel = if (pInfo.lastConnection.isValid()) formatTimeAgo(pInfo.lastConnection) else null
+        val cgmLastConnText = if (gInfo.lastInputTimestamp.isValid()) time(gInfo.lastInputTimestamp) else "--"
+        val pumpLastConnText = if (pInfo.lastConnection.isValid()) time(pInfo.lastConnection) else "--"
 
         val overviewState = OverviewTabUiState(
             androidSystem = AndroidSystemUiState(
@@ -289,14 +258,14 @@ class SystemControlViewModel(
             ),
             apsSystem = ApsSystemUiState(
                 mode = StatusValueItem("APS-Modus", "Auto-Korrektur", status = ValueStatus.GOOD),
-                lastCalculation = StatusValueItem("Letzte Berechnung", lastCalcTimeText, relativeTime = lastCalcRelativeText, status = ValueStatus.GOOD),
+                lastCalculation = StatusValueItem("Letzte Berechnung", lastCalcTimeText, timestamp = lastCalcInsight?.timestamp, status = ValueStatus.GOOD),
                 status = StatusValueItem("Status", if (insights.isNotEmpty()) "Aktiv" else "Inaktiv", status = ValueStatus.GOOD)
             ),
             cgm = OverviewCgmUiState(
                 sensorName = gInfo.sourceName ?: "Nicht verbunden",
-                lastConnection = StatusValueItem("Letzte Verbindung", cgmLastConnText, relativeTime = cgmLastConnRel, status = if (gInfo.source != null) ValueStatus.GOOD else ValueStatus.BAD),
-                lastReading = StatusValueItem("Letzter Messwert", gInfo.lastBgValueText ?: "--", relativeTime = cgmLastReadRel, status = ValueStatus.GOOD),
-                sensorExpiration = StatusValueItem("Ablaufdatum Sensor", gInfo.estimatedExpirationDateText ?: "--", status = ValueStatus.GOOD)
+                lastConnection = StatusValueItem("Letzte Verbindung", cgmLastConnText, timestamp = gInfo.lastInputTimestamp, status = if (gInfo.source != null) ValueStatus.GOOD else ValueStatus.BAD),
+                lastReading = StatusValueItem("Letzter Messwert", gInfo.lastBgValueText ?: "--", timestamp = gInfo.lastBgReading?.timestamp, status = ValueStatus.GOOD),
+                sensorExpiration = StatusValueItem("Ablaufdatum Sensor", "--", timestamp = gInfo.estimatedExpirationTimestamp, status = ValueStatus.GOOD)
             ),
             pump = OverviewPumpUiState(
                 pumpName = pInfo.model ?: "Nicht verbunden",
@@ -304,7 +273,7 @@ class SystemControlViewModel(
                 lastBolus = StatusValueItem("Letzter Bolus", "--", status = ValueStatus.GOOD),
                 batteryStatus = StatusValueItem("Batteriestatus", pInfo.status?.let { "${it.batteryRemainingPercent}%" } ?: "--", status = ValueStatus.GOOD),
                 reservoirStatus = StatusValueItem("Reservoir-Füllstand", pInfo.status?.let { "${it.reservoirRemainingUnits.iu} I.E." } ?: "--", status = ValueStatus.GOOD),
-                lastConnection = StatusValueItem("Letzte Verbindung", pumpLastConnText, relativeTime = pumpLastConnRel, status = ValueStatus.GOOD),
+                lastConnection = StatusValueItem("Letzte Verbindung", pumpLastConnText, timestamp = pInfo.lastConnection, status = ValueStatus.GOOD),
                 nextPodChange = StatusValueItem("Nächster Pod-Wechsel", "--", status = ValueStatus.GOOD)
             )
         )
@@ -315,13 +284,13 @@ class SystemControlViewModel(
             manufacturer = gInfo.sourceName?.split(" ")?.firstOrNull(),
             sensorTypeName = gInfo.sensorTypeName,
             readingsIntervalText = gInfo.readingsIntervalText,
+            lastBgReading = gInfo.lastBgReading,
             lastBgValueText = gInfo.lastBgValueText ?: "--",
             lastReadingTimeText = gInfo.lastReadingTimeText ?: "--",
-            lastReadingRelativeTimeText = gInfo.lastReadingRelativeTimeText,
+            nextPredictedTimestamp = gInfo.nextPredictedTimestamp,
             nextReadingTimeText = gInfo.nextReadingTimeText,
-            nextReadingRelativeTimeText = gInfo.nextReadingRelativeTimeText,
             hasNextPrediction = gInfo.hasNextPrediction,
-            estimatedExpirationDateText = gInfo.estimatedExpirationDateText,
+            estimatedExpirationTimestamp = gInfo.estimatedExpirationTimestamp,
             showPluginSection = gInfo.source != null,
             cgmPluginSection = gInfo.pluginUiProvider?.let { provider -> { provider.GlucoseSourceControlSection() } }
         )
@@ -359,9 +328,10 @@ class SystemControlViewModel(
             pumpConnected = pInfo.connected,
             isSuspended = pInfo.isSuspended,
             batteryPercentText = pInfo.status?.let { "${it.batteryRemainingPercent}%" } ?: "--",
+            reservoirUnits = pInfo.status?.reservoirRemainingUnits?.iu,
             reservoirText = pInfo.status?.let { "${it.reservoirRemainingUnits.iu} I.E." } ?: "--",
+            lastConnectionTimestamp = pInfo.lastConnection,
             lastConnectionTimeText = pumpLastConnText,
-            lastConnectionRelativeTimeText = pumpLastConnRel,
             pendingJobs = pumpJobsList,
             pumpPluginSection = pInfo.pluginUiProvider?.let { provider -> { provider.PumpControlSection() } }
         )
@@ -375,7 +345,7 @@ class SystemControlViewModel(
             sensorTypeName = gInfo.sensorTypeName,
             readingsInterval = gInfo.readingsInterval,
             lastBgReading = gInfo.lastBgReading,
-            nextPredictedTimestamp = gInfo.nextPredictedTimestamp,
+            nextPredictedTimestamp = gInfo.nextPredictedTimestamp ?: Timestamp.INVALID,
             glucoseUnit = gInfo.glucoseUnit,
             glucoseSourcePluginUiProvider = gInfo.pluginUiProvider,
             pumpPluginUiProvider = pInfo.pluginUiProvider,
@@ -417,12 +387,10 @@ class SystemControlViewModel(
         val lastBgReading: BgReading?,
         val lastBgValueText: String?,
         val lastReadingTimeText: String?,
-        val lastReadingRelativeTimeText: String?,
-        val nextPredictedTimestamp: Timestamp,
+        val nextPredictedTimestamp: Timestamp?,
         val nextReadingTimeText: String?,
-        val nextReadingRelativeTimeText: String?,
         val hasNextPrediction: Boolean,
-        val estimatedExpirationDateText: String?,
+        val estimatedExpirationTimestamp: Timestamp?,
         val glucoseUnit: GlucoseUnit,
         val pluginUiProvider: GlucoseSourcePluginUiProvider?,
         val lastInputTimestamp: Timestamp
