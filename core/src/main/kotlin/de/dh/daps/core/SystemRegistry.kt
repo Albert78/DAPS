@@ -14,6 +14,7 @@ import de.dh.daps.core.aps.GlucoseSourceManager
 import de.dh.daps.core.aps.RecommendationManager
 import de.dh.daps.core.aps.SystemOrchestrator
 import de.dh.daps.core.aps.TherapyManager
+import de.dh.daps.core.device.DeviceConnectionManager
 import de.dh.daps.core.pump.PumpDriverManager
 import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.repository.AlarmRepository
@@ -153,6 +154,11 @@ interface SystemRegistry {
      * Manages registered insulin pump driver plugins.
      */
     val pumpDriverManager: PumpDriverManager
+
+    /**
+     * Central manager responsible for connecting, disconnecting, and restoring device connections.
+     */
+    val deviceConnectionManager: DeviceConnectionManager
 
     /**
      * Core coordinator for therapy logic, combining data from various sources to generate APS recommendations.

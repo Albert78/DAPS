@@ -19,6 +19,7 @@ import de.dh.daps.core.aps.RecommendationManager
 import de.dh.daps.core.aps.SystemOrchestrator
 import de.dh.daps.core.aps.SystemOrchestratorImpl
 import de.dh.daps.core.aps.TherapyManager
+import de.dh.daps.core.device.DeviceConnectionManager
 import de.dh.daps.core.pump.PumpDriverManager
 import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.pump.PumpManagerImpl
@@ -68,6 +69,7 @@ class SystemRegistryImpl(
     override val timeService: TimeService,
     override val pumpManager: PumpManager,
     override val pumpDriverManager: PumpDriverManager,
+    override val deviceConnectionManager: DeviceConnectionManager,
     override val carbsInsulinCalculator: CarbsInsulinCalculator,
     override val permissionsChangedHandler: PermissionsChangedHandler,
     override val apsServiceClass: Class<out Service>,
@@ -98,7 +100,11 @@ class SystemRegistryImpl(
                 appDatabase = appDatabase
             )
             val foodRepository = FoodRepository(appDatabase)
-            val deviceManagementRepository = DeviceManagementRepository(appDatabase)
+            val deviceManagementRepository = DeviceManagementRepository(
+                appDatabase = appDatabase,
+                appPreferencesRepository = appPreferencesRepository,
+                scope = scope
+            )
             val settingsRepository = SettingsRepository(appDatabase)
             val systemMetricsRepository = SystemMetricsRepository(appDatabase)
 
@@ -120,6 +126,14 @@ class SystemRegistryImpl(
                 glucoseRepository = glucoseRepository
             )
             val cgmDriverManager = CgmDriverManager()
+
+            val deviceConnectionManager = DeviceConnectionManager(
+                deviceManagementRepository = deviceManagementRepository,
+                cgmDriverManager = cgmDriverManager,
+                pumpDriverManager = pumpDriverManager,
+                glucoseSourceManager = glucoseSourceManager,
+                pumpManager = pumpManager
+            )
 
             runBlocking {
                 glucoseRepository.initialize()
@@ -153,6 +167,7 @@ class SystemRegistryImpl(
             runBlocking {
                 treatmentRepository.load()
                 DatabaseInitializer.initialize(application, treatmentRepository, therapyRepository, settingsRepository, alarmRepository)
+                deviceConnectionManager.restoreConnections()
             }
 
             therapyManager.startInitialization()
@@ -207,6 +222,7 @@ class SystemRegistryImpl(
                 timeService = timeService,
                 pumpManager = pumpManager,
                 pumpDriverManager = pumpDriverManager,
+                deviceConnectionManager = deviceConnectionManager,
                 carbsInsulinCalculator = carbsInsulinCalculator,
                 permissionsChangedHandler = permissionsHandler,
                 apsServiceClass = apsServiceClass
