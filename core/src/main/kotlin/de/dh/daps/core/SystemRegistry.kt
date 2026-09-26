@@ -9,6 +9,7 @@ import de.dh.daps.common.model.data.TimeService
 import de.dh.daps.core.alarms.AlarmEvaluator
 import de.dh.daps.core.alarms.AlarmPlayerManager
 import de.dh.daps.core.alarms.AlarmSnoozeManager
+import de.dh.daps.core.aps.CgmDriverManager
 import de.dh.daps.core.aps.GlucoseSourceManager
 import de.dh.daps.core.aps.RecommendationManager
 import de.dh.daps.core.aps.SystemOrchestrator
@@ -137,6 +138,11 @@ interface SystemRegistry {
      * Manages the active glucose data source and processes incoming blood glucose readings.
      */
     val glucoseSourceManager: GlucoseSourceManager
+
+    /**
+     * Manages registered CGM / blood glucose driver plugins.
+     */
+    val cgmDriverManager: CgmDriverManager
 
     /**
      * Central interface for monitoring and interacting with the insulin pump hardware.

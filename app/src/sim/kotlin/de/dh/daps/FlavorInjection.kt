@@ -22,6 +22,7 @@ fun setupSystem(registry: SystemRegistry, pluginManager: PluginManager, applicat
     simBodyPlugin = plugin
     pluginManager.addPlugin(plugin)
     pluginManager.addPlugin(plugin.pumpDriver)
+    pluginManager.addPlugin(plugin.cgmDriver)
 
     val glucoseSource = plugin.getGlucoseSource()
     registry.glucoseSourceManager.glucoseSource = glucoseSource

@@ -6,6 +6,7 @@ import de.dh.daps.common.navigation.FeatureNavGraph
 import de.dh.daps.common.navigation.NavigationViewModel
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.plugin.glucose.receiver.ExternalSourceType
+import de.dh.daps.plugin.glucose.receiver.ReceiverGlucoseDriver
 import de.dh.daps.plugin.glucose.receiver.ReceiverGlucosePlugin
 import de.dh.daps.plugin.pump.SampleInsulinPumpDriver
 import de.dh.daps.plugin.pump.SampleInsulinPumpPlugin
@@ -18,6 +19,9 @@ fun setupSystem(registry: SystemRegistry, pluginManager: PluginManager, applicat
     )
     pluginManager.addPlugin(glucosePlugin)
     registry.glucoseSourceManager.glucoseSource = glucosePlugin
+
+    val receiverCgmDriver = ReceiverGlucoseDriver(application)
+    pluginManager.addPlugin(receiverCgmDriver)
 
     val sampleDriver = SampleInsulinPumpDriver()
     pluginManager.addPlugin(sampleDriver)

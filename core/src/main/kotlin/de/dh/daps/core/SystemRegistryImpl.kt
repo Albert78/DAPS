@@ -13,6 +13,7 @@ import de.dh.daps.core.alarms.AlarmEvaluator
 import de.dh.daps.core.alarms.AlarmPlayerManager
 import de.dh.daps.core.alarms.AlarmPlayerManagerImpl
 import de.dh.daps.core.alarms.AlarmSnoozeManager
+import de.dh.daps.core.aps.CgmDriverManager
 import de.dh.daps.core.aps.GlucoseSourceManager
 import de.dh.daps.core.aps.RecommendationManager
 import de.dh.daps.core.aps.SystemOrchestrator
@@ -58,6 +59,7 @@ class SystemRegistryImpl(
     override val systemMetricsRepository: SystemMetricsRepository,
     override val appPreferencesRepository: AppPreferencesRepository,
     override val glucoseSourceManager: GlucoseSourceManager,
+    override val cgmDriverManager: CgmDriverManager,
     override val therapyManager: TherapyManager,
     override val recommendationManager: RecommendationManager,
     override val systemOrchestrator: SystemOrchestrator,
@@ -117,6 +119,7 @@ class SystemRegistryImpl(
             val glucoseSourceManager = GlucoseSourceManager(
                 glucoseRepository = glucoseRepository
             )
+            val cgmDriverManager = CgmDriverManager()
 
             runBlocking {
                 glucoseRepository.initialize()
@@ -197,6 +200,7 @@ class SystemRegistryImpl(
                 therapyManager = therapyManager,
                 recommendationManager = recommendationManager,
                 glucoseSourceManager = glucoseSourceManager,
+                cgmDriverManager = cgmDriverManager,
                 systemOrchestrator = systemOrchestrator,
                 pluginManager = pluginManager,
                 wakeService = wakeService,
