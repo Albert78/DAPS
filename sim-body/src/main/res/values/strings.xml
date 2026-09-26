@@ -28,11 +28,11 @@
     <string name="btn_connect">Verbinden</string>
 
     <!-- Glucose & Pump Driver Setup -->
-    <string name="sim_body_cgm_driver_display_name">Treiber für Virtuellen SimBody Glukosesensor</string>
+    <string name="sim_body_cgm_driver_display_name">SimBody Virtueller Glukosesensor</string>
     <string name="sim_body_cgm_setup_title">SimBody Virtueller Glukosesensor Setup</string>
     <string name="sim_body_cgm_setup_description">Verbinden mit dem simulierten Glukosesensor des virtuellen menschlichen Körpermodells.</string>
     <string name="sim_body_cgm_sensor_display_name">SimBody Virtueller Glukosesensor</string>
-    <string name="sim_body_pump_driver_display_name">SimBody Virtueller Pumpen-Treiber</string>
+    <string name="sim_body_pump_driver_display_name">SimBody Virtuelle Insulinpumpe</string>
 
     <!-- Dialogs -->
     <string name="dialog_title_eat_meal">Mahlzeit essen</string>
@@ -40,9 +40,9 @@
     <string name="label_meal_type">Essenstyp:</string>
     <string name="dialog_title_edit_param">Bearbeiten: %1$s</string>
     <string name="dialog_title_edit_bg">BZ (%1$s)</string>
-    <string name="dialog_title_edit_exercise">Sportintensität (0-1)</string>
+    <string name="dialog_title_edit_exercise">Sportintensität (0–1)</string>
     <string name="dialog_title_edit_illness">Krankheitsfaktor (>= 1.0)</string>
-    <string name="dialog_title_edit_stress">Stresslevel (0-1)</string>
+    <string name="dialog_title_edit_stress">Stresslevel (0–1)</string>
     <string name="dialog_title_edit_noise">Rauschfaktor (>= 0)</string>
     <string name="btn_ok">OK</string>
     <string name="btn_cancel">Abbrechen</string>
