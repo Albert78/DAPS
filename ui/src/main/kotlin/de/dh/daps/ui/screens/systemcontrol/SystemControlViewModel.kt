@@ -19,6 +19,8 @@ import de.dh.daps.core.pump.JobErrorCode
 import de.dh.daps.core.pump.PumpCommand
 import de.dh.daps.core.pump.PumpJob
 import de.dh.daps.glucoseUnit
+import de.dh.daps.ui.R
+import de.dh.daps.ui.common.UiText
 import de.dh.daps.ui.common.time
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
@@ -105,8 +107,8 @@ data class CgmTabUiState(
 
 data class PumpJobItem(
     val id: String,
-    val title: String,
-    val errorMessage: String? = null,
+    val title: UiText,
+    val errorMessage: UiText? = null,
     val hasError: Boolean = errorMessage != null
 )
 
@@ -298,20 +300,29 @@ class SystemControlViewModel(
         // Pump Tab State
         val pumpJobsList = pInfo.jobs.map { job ->
             val titleText = when (val cmd = job.command) {
-                is PumpCommand.RefreshStatus -> "Status aktualisieren"
-                is PumpCommand.SyncHistory -> "History übertragen"
-                is PumpCommand.DeliverBolus -> "Bolus abgeben: ${cmd.amount.iu} I.E."
-                is PumpCommand.SetTempBasal -> "Temporäre Basalrate (${cmd.percent}%)"
-                is PumpCommand.SetProfile -> "Profil setzen"
-                is PumpCommand.CancelTempBasal -> "Temp-Basal abbrechen"
-                is PumpCommand.CancelBolus -> "Bolus abbrechen"
+                is PumpCommand.RefreshStatus -> UiText.StringResource(R.string.system_control_pump_job_type_refresh_status)
+                is PumpCommand.SyncHistory -> UiText.StringResource(R.string.system_control_pump_job_type_history_sync)
+                is PumpCommand.DeliverBolus -> UiText.StringResource(R.string.system_control_pump_job_type_bolus, cmd.amount.iu)
+                is PumpCommand.SetTempBasal -> UiText.StringResource(R.string.system_control_pump_job_type_temp_basal, cmd.percent)
+                is PumpCommand.SetProfile -> UiText.StringResource(R.string.system_control_pump_job_type_profile)
+                is PumpCommand.CancelTempBasal -> UiText.StringResource(R.string.system_control_pump_job_type_cancel_temp_basal)
+                is PumpCommand.CancelBolus -> UiText.StringResource(R.string.system_control_pump_job_type_cancel_bolus)
             }
             val errText = job.lastError?.let { err ->
                 when (err) {
-                    JobErrorCode.Expired -> "Abgelaufen"
-                    is JobErrorCode.ConnectionFailed -> "Verbindung fehlgeschlagen${err.message?.let { ": $it" } ?: ""}"
-                    is JobErrorCode.CommandFailed -> "Fehler (${err.status.name})${err.message?.let { ": $it" } ?: ""}"
-                    is JobErrorCode.TechnicalError -> "Fehler${err.message?.let { ": $it" } ?: ""}"
+                    JobErrorCode.Expired -> UiText.StringResource(R.string.system_control_pump_job_error_expired)
+                    is JobErrorCode.ConnectionFailed -> {
+                        val suffix = err.message?.let { ": $it" } ?: ""
+                        UiText.StringResource(R.string.system_control_pump_job_error_connection_failed, suffix)
+                    }
+                    is JobErrorCode.CommandFailed -> {
+                        val suffix = err.message?.let { ": $it" } ?: ""
+                        UiText.StringResource(R.string.system_control_pump_job_error_command_failed, err.status.name, suffix)
+                    }
+                    is JobErrorCode.TechnicalError -> {
+                        val suffix = err.message?.let { ": $it" } ?: ""
+                        UiText.StringResource(R.string.system_control_pump_job_error_technical, suffix)
+                    }
                 }
             }
             PumpJobItem(

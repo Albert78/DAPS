@@ -32,6 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.UiText
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppPreview
@@ -243,7 +244,7 @@ private fun previewUiState() = SystemControlUiState(
         pendingJobs = listOf(
             PumpJobItem(
                 id = "job_1",
-                title = "Bolus abgeben: 1,50 I.E."
+                title = UiText.StringResource(R.string.system_control_pump_job_type_bolus, "1,50")
             )
         )
     )

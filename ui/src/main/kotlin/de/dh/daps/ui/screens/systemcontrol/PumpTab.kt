@@ -34,11 +34,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.ui.R
 import de.dh.daps.ui.common.icons.PumpReservoir
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.shortRelativeTimeAgo
@@ -178,9 +180,9 @@ fun PumpOverviewCard(
             )
 
             val statusText = when {
-                !uiState.pumpConnected -> "Nicht verbunden"
-                uiState.isSuspended -> "Unterbrochen"
-                else -> "Aktiv"
+                !uiState.pumpConnected -> stringResource(R.string.system_control_pump_state_disconnected)
+                uiState.isSuspended -> stringResource(R.string.system_control_pump_state_suspended)
+                else -> stringResource(R.string.system_control_pump_state_active)
             }
             val statusColor = when {
                 !uiState.pumpConnected -> MaterialTheme.colorScheme.error
@@ -324,13 +326,13 @@ fun PumpActionsCard(
         ) {
             ActionButton(
                 icon = Icons.Default.Build,
-                label = "Zur Wartung trennen",
+                label = stringResource(R.string.system_control_pump_action_maintainance_disconnect),
                 onClick = onDisconnectForMaintenance,
                 enabled = uiState.pumpConnected
             )
             ActionButton(
                 icon = Icons.Default.Refresh,
-                label = "Status aktualisieren",
+                label = stringResource(R.string.system_control_pump_job_type_refresh_status),
                 onClick = onRefreshPumpStatus,
                 enabled = uiState.pumpConnected
             )
@@ -356,14 +358,14 @@ fun PumpJobsCard(
                 .fillMaxWidth()
         ) {
             Text(
-                text = "Ausstehende Befehle",
+                text = stringResource(R.string.system_control_pump_jobs_title),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
             if (pendingJobs.isEmpty()) {
                 Text(
-                    text = "Alle Pumpenjobs sind abgearbeitet",
+                    text = stringResource(R.string.system_control_pump_jobs_empty),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -384,14 +386,14 @@ fun PumpJobsCard(
                         Spacer(modifier = Modifier.width(8.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = job.title,
+                                text = job.title.asString(),
                                 style = MaterialTheme.typography.bodyMedium,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
                             )
                             job.errorMessage?.let { error ->
                                 Text(
-                                    text = error,
+                                    text = error.asString(),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.error,
                                     maxLines = 2,
@@ -405,7 +407,7 @@ fun PumpJobsCard(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Cancel,
-                                contentDescription = "Befehl abbrechen",
+                                contentDescription = stringResource(R.string.system_control_pump_job_cancel),
                                 tint = MaterialTheme.colorScheme.error
                             )
                         }
