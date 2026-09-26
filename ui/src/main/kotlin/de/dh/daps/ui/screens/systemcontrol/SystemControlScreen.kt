@@ -31,8 +31,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import de.dh.daps.ui.R
 import de.dh.daps.common.ui.UiText
+import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppPreview
@@ -230,7 +230,15 @@ private fun previewUiState() = SystemControlUiState(
         lastReadingRelativeTimeText = "vor 2 Min.",
         hasNextPrediction = true,
         nextReadingTimeText = "12:37:40",
-        nextReadingRelativeTimeText = "in 3 Min."
+        nextReadingRelativeTimeText = "in 3 Min.",
+        glucoseSourcePluginSection = {
+            GlucoseSourcePluginExampleCard(
+                sensorCode = "8132",
+                transmitterSerialNumber = "8G1234",
+                estimatedExpirationDateText = "24.10.2024, 18:30",
+                onStopSensor = {}
+            )
+        }
     ),
     pumpTabUiState = PumpTabUiState(
         pumpModel = "DANA-i",

@@ -51,7 +51,7 @@ fun GlucoseSourceTabContent(
     modifier: Modifier = Modifier,
     uiState: GlucoseSourceTabUiState = GlucoseSourceTabUiState(),
     onChangeGlucoseSource: () -> Unit = {},
-    onStopSensor: () -> Unit = {}
+    @Suppress("UNUSED_PARAMETER") onStopSensor: () -> Unit = {}
 ) {
     Column(modifier = modifier) {
         GlucoseSourceOverviewCard(
@@ -59,23 +59,13 @@ fun GlucoseSourceTabContent(
             onChangeGlucoseSource = onChangeGlucoseSource
         )
 
-        if (uiState.showPluginSection) {
+        if (uiState.glucoseSourcePluginSection != null) {
             Spacer(modifier = Modifier.height(8.dp))
             SectionHeader(
                 title = "Datenquelle"
             )
             Spacer(modifier = Modifier.height(8.dp))
-            if (uiState.glucoseSourcePluginSection != null) {
-                uiState.glucoseSourcePluginSection.invoke()
-            } else {
-                GlucoseSourcePluginControlCard(
-                    sensorCode = uiState.sensorCode,
-                    transmitterSerialNumber = uiState.transmitterSerialNumber,
-                    estimatedExpirationDateText = uiState.estimatedExpirationDateText,
-                    estimatedExpirationTimestamp = uiState.estimatedExpirationTimestamp,
-                    onStopSensor = onStopSensor
-                )
-            }
+            uiState.glucoseSourcePluginSection.invoke()
         }
     }
 }
@@ -314,7 +304,7 @@ fun GlucoseFragments(
 }
 
 @Composable
-fun GlucoseSourcePluginControlCard(
+fun GlucoseSourcePluginExampleCard(
     sensorCode: String?,
     transmitterSerialNumber: String?,
     estimatedExpirationDateText: String?,
@@ -424,6 +414,31 @@ fun GlucoseSourcePluginControlCard(
     }
 }
 
+private fun sampleGlucoseSourceTabUiState() = GlucoseSourceTabUiState(
+    glucoseSourceName = UiText.DynamicString("Dexcom G6"),
+    manufacturer = "Dexcom",
+    serialNumber = "SN-98765432",
+    sensorTypeName = "G6-Sensor",
+    readingsIntervalText = "5 Minuten",
+    lastBgValueText = "124 mg/dl",
+    lastReadingTimeText = "12:32:40",
+    lastReadingRelativeTimeText = "vor 2 Min.",
+    hasNextPrediction = true,
+    nextReadingTimeText = "12:37:40",
+    nextReadingRelativeTimeText = "in 3 Min.",
+    sensorCode = "8132",
+    transmitterSerialNumber = "8G1234",
+    estimatedExpirationDateText = "24.10.2024, 18:30",
+    glucoseSourcePluginSection = {
+        GlucoseSourcePluginExampleCard(
+            sensorCode = "8132",
+            transmitterSerialNumber = "8G1234",
+            estimatedExpirationDateText = "24.10.2024, 18:30",
+            onStopSensor = {}
+        )
+    }
+)
+
 @Preview(showBackground = true, name = "Glucose Source Tab - Light Mode")
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Glucose Source Tab - Dark Mode")
 @Composable
@@ -454,29 +469,10 @@ fun GlucoseSourceTabDisconnectedPreview() {
                     hasNextPrediction = false,
                     sensorCode = null,
                     transmitterSerialNumber = null,
-                    estimatedExpirationDateText = null,
-                    showPluginSection = false
+                    estimatedExpirationDateText = null
                 ),
                 modifier = Modifier.padding(16.dp)
             )
         }
     }
 }
-
-private fun sampleGlucoseSourceTabUiState() = GlucoseSourceTabUiState(
-    glucoseSourceName = UiText.DynamicString("Dexcom G6"),
-    manufacturer = "Dexcom",
-    serialNumber = "SN-98765432",
-    sensorTypeName = "G6-Sensor",
-    readingsIntervalText = "5 Minuten",
-    lastBgValueText = "124 mg/dl",
-    lastReadingTimeText = "12:32:40",
-    lastReadingRelativeTimeText = "vor 2 Min.",
-    hasNextPrediction = true,
-    nextReadingTimeText = "12:37:40",
-    nextReadingRelativeTimeText = "in 3 Min.",
-    sensorCode = "8132",
-    transmitterSerialNumber = "8G1234",
-    estimatedExpirationDateText = "24.10.2024, 18:30",
-    showPluginSection = true
-)

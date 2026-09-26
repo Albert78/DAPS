@@ -101,7 +101,6 @@ data class GlucoseSourceTabUiState(
     val transmitterSerialNumber: String? = null,
     val estimatedExpirationTimestamp: Timestamp? = null,
     val estimatedExpirationDateText: String? = null,
-    val showPluginSection: Boolean = false,
     val glucoseSourcePluginSection: (@Composable () -> Unit)? = null
 )
 
@@ -293,7 +292,6 @@ class SystemControlViewModel(
             nextReadingTimeText = gInfo.nextReadingTimeText,
             hasNextPrediction = gInfo.hasNextPrediction,
             estimatedExpirationTimestamp = gInfo.estimatedExpirationTimestamp,
-            showPluginSection = gInfo.source != null,
             glucoseSourcePluginSection = gInfo.pluginUiProvider?.let { provider -> { provider.GlucoseSourceControlSection() } }
         )
 
