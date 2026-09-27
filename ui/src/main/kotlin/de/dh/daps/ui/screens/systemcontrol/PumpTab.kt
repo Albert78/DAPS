@@ -128,54 +128,52 @@ fun PumpOverviewCard(
                 }
             }
 
-            if (uiState.pumpConnected) {
-                Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(24.dp)
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        ControlDetailRow(
-                            label = "Hersteller",
-                            reserveIconSpace = true
-                        ) {
-                            Text(
-                                text = uiState.manufacturer ?: "--",
-                                style = MaterialTheme.typography.bodyMedium,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-                    Column(modifier = Modifier.weight(1f)) {
-                        ControlDetailRow(
-                            label = "Pumpenmodell",
-                            reserveIconSpace = true
-                        ) {
-                            Text(
-                                text = uiState.pumpModel ?: "--",
-                                style = MaterialTheme.typography.bodyMedium,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    ControlDetailRow(
+                        label = "Hersteller",
+                        reserveIconSpace = true
+                    ) {
+                        Text(
+                            text = uiState.manufacturer ?: "--",
+                            style = MaterialTheme.typography.bodyMedium,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
                     }
                 }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                ControlDetailRow(
-                    label = "Seriennummer",
-                    reserveIconSpace = true
-                ) {
-                    Text(
-                        text = uiState.serialNumber ?: "--",
-                        style = MaterialTheme.typography.bodyMedium,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                Column(modifier = Modifier.weight(1f)) {
+                    ControlDetailRow(
+                        label = "Pumpenmodell",
+                        reserveIconSpace = true
+                    ) {
+                        Text(
+                            text = uiState.pumpModel ?: "--",
+                            style = MaterialTheme.typography.bodyMedium,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            ControlDetailRow(
+                label = "Seriennummer",
+                reserveIconSpace = true
+            ) {
+                Text(
+                    text = uiState.serialNumber ?: "--",
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
 
             HorizontalDivider(
@@ -185,12 +183,10 @@ fun PumpOverviewCard(
             )
 
             val statusText = when {
-                !uiState.pumpConnected -> stringResource(R.string.system_control_pump_state_disconnected)
                 uiState.isSuspended -> stringResource(R.string.system_control_pump_state_suspended)
                 else -> stringResource(R.string.system_control_pump_state_active)
             }
             val statusColor = when {
-                !uiState.pumpConnected -> MaterialTheme.colorScheme.error
                 uiState.isSuspended -> MaterialTheme.colorScheme.tertiary
                 else -> MaterialTheme.colorScheme.secondary
             }
@@ -215,7 +211,7 @@ fun PumpOverviewCard(
                 Column(modifier = Modifier.weight(1f)) {
                     ControlDetailRow(
                         label = "Status",
-                        icon = if (uiState.pumpConnected) Icons.Default.Settings else Icons.Default.Cancel
+                        icon = Icons.Default.Settings
                     ) {
                         Text(
                             text = statusText,
@@ -263,42 +259,40 @@ fun PumpOverviewCard(
                 }
             }
 
-            if (uiState.pumpConnected) {
-                val reservoirDisplay = insulinValue(uiState.reservoirRemaining)
+            val reservoirDisplay = insulinValue(uiState.reservoirRemaining)
 
-                Spacer(modifier = Modifier.height(12.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(24.dp)
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        ControlDetailRow(
-                            label = "Batterie",
-                            icon = Icons.Default.Battery5Bar
-                        ) {
-                            val batteryText = uiState.batteryPercent?.let { "$it%" } ?: "--"
-                            Text(
-                                text = batteryText,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Bold,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    ControlDetailRow(
+                        label = "Batterie",
+                        icon = Icons.Default.Battery5Bar
+                    ) {
+                        val batteryText = uiState.batteryPercent?.let { "$it%" } ?: "--"
+                        Text(
+                            text = batteryText,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
                     }
-                    Column(modifier = Modifier.weight(1f)) {
-                        ControlDetailRow(
-                            label = "Reservoir",
-                            icon = Icons.Outlined.PumpReservoir
-                        ) {
-                            Text(
-                                text = reservoirDisplay,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Bold,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    ControlDetailRow(
+                        label = "Reservoir",
+                        icon = Icons.Outlined.PumpReservoir
+                    ) {
+                        Text(
+                            text = reservoirDisplay,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
                     }
                 }
             }
@@ -308,7 +302,7 @@ fun PumpOverviewCard(
 
 @Composable
 fun PumpActionsCard(
-    uiState: PumpTabUiState,
+    @Suppress("UNUSED_PARAMETER") uiState: PumpTabUiState,
     modifier: Modifier = Modifier,
     onDisconnectForMaintenance: () -> Unit = {},
     onRefreshPumpStatus: () -> Unit = {}
@@ -329,14 +323,12 @@ fun PumpActionsCard(
             ActionButton(
                 icon = Icons.Default.Build,
                 label = stringResource(R.string.system_control_pump_action_maintainance_disconnect),
-                onClick = onDisconnectForMaintenance,
-                enabled = uiState.pumpConnected
+                onClick = onDisconnectForMaintenance
             )
             ActionButton(
                 icon = Icons.Default.Refresh,
                 label = stringResource(R.string.system_control_pump_job_type_refresh_status),
-                onClick = onRefreshPumpStatus,
-                enabled = uiState.pumpConnected
+                onClick = onRefreshPumpStatus
             )
         }
     }
