@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,6 +39,7 @@ import de.dh.daps.common.model.data.BgSampleKind
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
+import de.dh.daps.ui.R
 import de.dh.daps.ui.common.glucoseValue
 import de.dh.daps.ui.common.icons.Icon_Next
 import de.dh.daps.ui.common.icons.Icon_Previous
@@ -64,7 +66,7 @@ fun SourceTabContent(
         if (uiState?.glucoseSourcePluginSection != null) {
             Spacer(modifier = Modifier.height(8.dp))
             SectionHeader(
-                title = "Datenquelle"
+                title = stringResource(R.string.system_control_source_section_title)
             )
             Spacer(modifier = Modifier.height(8.dp))
             uiState.glucoseSourcePluginSection.invoke()
@@ -94,7 +96,7 @@ fun SourceOverviewCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = uiState?.glucoseSourceName?.asString() ?: "Keine Glukosequelle aktiv",
+                    text = uiState?.glucoseSourceName?.asString() ?: stringResource(R.string.system_control_source_none_active),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     maxLines = 2,
@@ -107,12 +109,17 @@ fun SourceOverviewCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.SwapHoriz,
-                        contentDescription = if (uiState != null) "Glukose-Quelle wechseln" else "Glukose-Quelle einrichten"
+                        contentDescription = if (uiState != null) {
+                            stringResource(R.string.system_control_source_change)
+                        } else {
+                            stringResource(R.string.system_control_source_setup)
+                        }
                     )
                 }
             }
 
             if (uiState != null) {
+                val notAvailableText = stringResource(R.string.system_control_value_not_available)
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -120,7 +127,7 @@ fun SourceOverviewCard(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         ControlDetailRow(
-                            label = "Sensor-Typ",
+                            label = stringResource(R.string.system_control_source_sensor_type_label),
                             reserveIconSpace = true
                         ) {
                             Text(
@@ -133,7 +140,7 @@ fun SourceOverviewCard(
                     }
                     Column(modifier = Modifier.weight(1f)) {
                         ControlDetailRow(
-                            label = "Messintervall",
+                            label = stringResource(R.string.system_control_source_measurement_interval_label),
                             reserveIconSpace = true
                         ) {
                             val intervalText = readingsInterval(uiState.readingsInterval)
@@ -157,13 +164,13 @@ fun SourceOverviewCard(
                 val bgValueText = if (lastReading != null) {
                     glucoseValue(lastReading.value, withUnit = true)
                 } else {
-                    "--"
+                    notAvailableText
                 }
 
                 val lastTimeText = if (lastReading != null && lastReading.timestamp.isValid()) {
                     time(lastReading.timestamp)
                 } else {
-                    "--"
+                    notAvailableText
                 }
 
                 val lastRelativeTime = if (lastReading != null && lastReading.timestamp.isValid()) {
@@ -173,7 +180,7 @@ fun SourceOverviewCard(
                 }
 
                 ControlDetailRow(
-                    label = "Letzter Messwert",
+                    label = stringResource(R.string.system_control_source_last_reading_label),
                     icon = Icon_Previous
                 ) {
                     GlucoseFragments(
@@ -189,7 +196,7 @@ fun SourceOverviewCard(
                     val nextTimeText = if (nextPred != null && nextPred.isValid()) {
                         time(nextPred)
                     } else {
-                        "--"
+                        notAvailableText
                     }
 
                     val nextRelativeTime = if (nextPred != null && nextPred.isValid()) {
@@ -200,11 +207,11 @@ fun SourceOverviewCard(
 
                     Spacer(modifier = Modifier.height(12.dp))
                     ControlDetailRow(
-                        label = "Nächste Messung",
+                        label = stringResource(R.string.system_control_source_next_reading_label),
                         icon = Icon_Next
                     ) {
                         GlucoseFragments(
-                            value = "--",
+                            value = notAvailableText,
                             time = nextTimeText,
                             extra = nextRelativeTime,
                             stackVertical = true
@@ -314,7 +321,7 @@ fun GlucoseSourcePluginExampleCard(
                 .fillMaxWidth()
         ) {
             Text(
-                text = "Sensor-Steuerung",
+                text = stringResource(R.string.system_control_source_control_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -324,16 +331,18 @@ fun GlucoseSourcePluginExampleCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            val notAvailableText = stringResource(R.string.system_control_value_not_available)
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     ControlDetailRow(
-                        label = "Sensor-Code"
+                        label = stringResource(R.string.system_control_source_sensor_code_label)
                     ) {
                         Text(
-                            text = sensorCode ?: "--",
+                            text = sensorCode ?: notAvailableText,
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Medium,
                             maxLines = 2,
@@ -343,10 +352,10 @@ fun GlucoseSourcePluginExampleCard(
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     ControlDetailRow(
-                        label = "Transmitter-Seriennummer"
+                        label = stringResource(R.string.system_control_source_transmitter_sn_label)
                     ) {
                         Text(
-                            text = transmitterSerialNumber ?: "--",
+                            text = transmitterSerialNumber ?: notAvailableText,
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Medium,
                             maxLines = 2,
@@ -361,7 +370,7 @@ fun GlucoseSourcePluginExampleCard(
             val expDateDisplay = longDateTime(estimatedExpirationTimestamp)
 
             ControlDetailRow(
-                label = "Geschätztes Ablaufdatum"
+                label = stringResource(R.string.system_control_source_estimated_expiration_label)
             ) {
                 Text(
                     text = expDateDisplay,
@@ -389,7 +398,7 @@ fun GlucoseSourcePluginExampleCard(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Sensor stoppen",
+                    text = stringResource(R.string.system_control_source_action_stop_sensor),
                     fontWeight = FontWeight.Bold
                 )
             }

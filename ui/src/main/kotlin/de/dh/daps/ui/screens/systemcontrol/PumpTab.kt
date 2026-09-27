@@ -80,7 +80,7 @@ fun PumpTabContent(
             if (uiState.pumpPluginSection != null) {
                 Spacer(modifier = Modifier.height(24.dp))
                 SectionHeader(
-                    title = "Insulinpumpe"
+                    title = stringResource(R.string.system_control_pump_section_title)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 uiState.pumpPluginSection.invoke()
@@ -112,7 +112,7 @@ fun PumpOverviewCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = uiState?.pumpName?.asString() ?: uiState?.pumpModel ?: "Keine Insulinpumpe aktiv",
+                    text = uiState?.pumpName?.asString() ?: uiState?.pumpModel ?: stringResource(R.string.system_control_pump_none_active),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     maxLines = 2,
@@ -125,12 +125,17 @@ fun PumpOverviewCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.SwapHoriz,
-                        contentDescription = if (uiState != null) "Insulinpumpe wechseln" else "Insulinpumpe einrichten"
+                        contentDescription = if (uiState != null) {
+                            stringResource(R.string.system_control_pump_change)
+                        } else {
+                            stringResource(R.string.system_control_pump_setup)
+                        }
                     )
                 }
             }
 
             if (uiState != null) {
+                val notAvailableText = stringResource(R.string.system_control_value_not_available)
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Row(
@@ -139,11 +144,11 @@ fun PumpOverviewCard(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         ControlDetailRow(
-                            label = "Hersteller",
+                            label = stringResource(R.string.system_control_pump_manufacturer_label),
                             reserveIconSpace = true
                         ) {
                             Text(
-                                text = uiState.manufacturer ?: "--",
+                                text = uiState.manufacturer ?: notAvailableText,
                                 style = MaterialTheme.typography.bodyMedium,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
@@ -152,11 +157,11 @@ fun PumpOverviewCard(
                     }
                     Column(modifier = Modifier.weight(1f)) {
                         ControlDetailRow(
-                            label = "Pumpenmodell",
+                            label = stringResource(R.string.system_control_pump_model_label),
                             reserveIconSpace = true
                         ) {
                             Text(
-                                text = uiState.pumpModel ?: "--",
+                                text = uiState.pumpModel ?: notAvailableText,
                                 style = MaterialTheme.typography.bodyMedium,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
@@ -168,11 +173,11 @@ fun PumpOverviewCard(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 ControlDetailRow(
-                    label = "Seriennummer",
+                    label = stringResource(R.string.system_control_pump_serial_number_label),
                     reserveIconSpace = true
                 ) {
                     Text(
-                        text = uiState.serialNumber ?: "--",
+                        text = uiState.serialNumber ?: notAvailableText,
                         style = MaterialTheme.typography.bodyMedium,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
@@ -198,7 +203,7 @@ fun PumpOverviewCard(
                 val lastConnTimeText = if (lastConnTimestamp.isValid()) {
                     time(lastConnTimestamp)
                 } else {
-                    "--"
+                    notAvailableText
                 }
 
                 val lastConnRelativeText = if (lastConnTimestamp.isValid()) {
@@ -213,7 +218,7 @@ fun PumpOverviewCard(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         ControlDetailRow(
-                            label = "Status",
+                            label = stringResource(R.string.system_control_pump_status_label),
                             icon = Icons.Default.Settings
                         ) {
                             Text(
@@ -229,11 +234,11 @@ fun PumpOverviewCard(
                     Column(modifier = Modifier.weight(1f)) {
                         if (uiState.pumpConnected) {
                             ControlDetailRow(
-                                label = "Verbindungsstatus",
+                                label = stringResource(R.string.system_control_pump_connection_status_label),
                                 icon = Icons.Outlined.Link
                             ) {
                                 Text(
-                                    text = "Verbunden",
+                                    text = stringResource(R.string.system_control_pump_status_connected),
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.secondary,
@@ -243,7 +248,7 @@ fun PumpOverviewCard(
                             }
                         } else {
                             ControlDetailRow(
-                                label = "Letzte Verbindung",
+                                label = stringResource(R.string.system_control_pump_last_conn_label),
                                 icon = Icons.Outlined.Link
                             ) {
                                 FlowRow(
@@ -286,7 +291,7 @@ fun PumpOverviewCard(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         ControlDetailRow(
-                            label = "Batterie",
+                            label = stringResource(R.string.system_control_pump_battery_label),
                             icon = Icons.Default.Battery5Bar
                         ) {
                             Text(
@@ -300,7 +305,7 @@ fun PumpOverviewCard(
                     }
                     Column(modifier = Modifier.weight(1f)) {
                         ControlDetailRow(
-                            label = "Reservoir",
+                            label = stringResource(R.string.system_control_pump_reservoir_label),
                             icon = Icons.Outlined.PumpReservoir
                         ) {
                             Text(
