@@ -36,44 +36,42 @@ enum class ValueStatus {
     BAD
 }
 
-data class StatusValueItem(
-    val label: String,
-    val value: String,
-    val relativeTime: String? = null,
-    val timestamp: Timestamp? = null,
-    val status: ValueStatus? = null
+data class StatusMetric<T>(
+    val value: T? = null,
+    val status: ValueStatus? = null,
+    val timestamp: Timestamp? = null
 )
 
 data class AndroidSystemUiState(
     val title: String = "Android",
-    val bluetoothStatus: StatusValueItem = StatusValueItem("Bluetooth-Status", "Aktiviert", status = ValueStatus.GOOD),
-    val phoneBatteryPercent: Int? = 82,
-    val permissionsStatus: StatusValueItem = StatusValueItem("Berechtigungen", "Alle erteilt", status = ValueStatus.GOOD),
-    val dapsServiceStatus: StatusValueItem = StatusValueItem("DAPS-System-Service", "Aktiv", status = ValueStatus.GOOD)
+    val bluetoothStatus: StatusMetric<String> = StatusMetric("Aktiviert", status = ValueStatus.GOOD),
+    val phoneBattery: StatusMetric<Int> = StatusMetric(82, status = ValueStatus.GOOD),
+    val permissionsStatus: StatusMetric<String> = StatusMetric("Alle erteilt", status = ValueStatus.GOOD),
+    val dapsServiceStatus: StatusMetric<String> = StatusMetric("Aktiv", status = ValueStatus.GOOD)
 )
 
 data class ApsSystemUiState(
     val title: String = "APS-System",
-    val mode: StatusValueItem = StatusValueItem("APS-Modus", "Auto-Korrektur", status = ValueStatus.GOOD),
-    val lastCalculation: StatusValueItem = StatusValueItem("Letzte Berechnung", "--", status = ValueStatus.GOOD),
-    val status: StatusValueItem = StatusValueItem("Status", "Aktiv", status = ValueStatus.GOOD)
+    val mode: StatusMetric<String> = StatusMetric("Auto-Korrektur", status = ValueStatus.GOOD),
+    val lastCalculation: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD),
+    val status: StatusMetric<String> = StatusMetric("Aktiv", status = ValueStatus.GOOD)
 )
 
 data class OverviewGlucoseSourceUiState(
     val sensorName: UiText = UiText.DynamicString("--"),
-    val lastConnection: StatusValueItem = StatusValueItem("Letzte Verbindung", "--", status = ValueStatus.GOOD),
-    val lastReading: StatusValueItem = StatusValueItem("Letzter Messwert", "--", status = ValueStatus.GOOD),
-    val sensorExpiration: StatusValueItem = StatusValueItem("Ablaufdatum Sensor", "--", status = ValueStatus.GOOD)
+    val lastConnection: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD),
+    val lastReading: StatusMetric<BgReading> = StatusMetric(status = ValueStatus.GOOD),
+    val sensorExpiration: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD)
 )
 
 data class OverviewPumpUiState(
     val pumpName: String = "--",
-    val status: StatusValueItem = StatusValueItem("Status", "Inaktiv", status = ValueStatus.GOOD),
-    val lastBolus: StatusValueItem = StatusValueItem("Letzter Bolus", "--", status = ValueStatus.GOOD),
-    val batteryPercent: Int? = null,
-    val reservoirRemaining: InsulinAmount? = null,
-    val lastConnection: StatusValueItem = StatusValueItem("Letzte Verbindung", "--", status = ValueStatus.GOOD),
-    val nextPodChange: StatusValueItem = StatusValueItem("Nächster Pod-Wechsel", "--", status = ValueStatus.GOOD)
+    val status: StatusMetric<String> = StatusMetric("Inaktiv", status = ValueStatus.GOOD),
+    val lastBolus: StatusMetric<InsulinAmount> = StatusMetric(status = ValueStatus.GOOD),
+    val battery: StatusMetric<Int> = StatusMetric(status = ValueStatus.GOOD),
+    val reservoir: StatusMetric<InsulinAmount> = StatusMetric(status = ValueStatus.GOOD),
+    val lastConnection: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD),
+    val nextPodChange: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD)
 )
 
 data class OverviewTabUiState(
@@ -229,37 +227,43 @@ class SystemControlViewModel(
     ) { insights, gInfo, pInfo ->
         // Overview Tab State
         val lastCalcInsight = insights.firstOrNull()
-        val lastCalcTimeText = lastCalcInsight?.timestamp?.let { time(it) } ?: "--"
-
-        val cgmLastConnText = if (gInfo.lastInputTimestamp.isValid()) time(gInfo.lastInputTimestamp) else "--"
         val pumpLastConnText = if (pInfo.lastConnection.isValid()) time(pInfo.lastConnection) else "--"
 
         val overviewState = OverviewTabUiState(
             androidSystem = AndroidSystemUiState(
-                bluetoothStatus = StatusValueItem("Bluetooth-Status", "Aktiviert", status = ValueStatus.GOOD),
-                phoneBatteryPercent = 82,
-                permissionsStatus = StatusValueItem("Berechtigungen", "Alle erteilt", status = ValueStatus.GOOD),
-                dapsServiceStatus = StatusValueItem("DAPS-System-Service", "Aktiv", status = ValueStatus.GOOD)
+                bluetoothStatus = StatusMetric("Aktiviert", status = ValueStatus.GOOD),
+                phoneBattery = StatusMetric(82, status = ValueStatus.GOOD),
+                permissionsStatus = StatusMetric("Alle erteilt", status = ValueStatus.GOOD),
+                dapsServiceStatus = StatusMetric("Aktiv", status = ValueStatus.GOOD)
             ),
             apsSystem = ApsSystemUiState(
-                mode = StatusValueItem("APS-Modus", "Auto-Korrektur", status = ValueStatus.GOOD),
-                lastCalculation = StatusValueItem("Letzte Berechnung", lastCalcTimeText, timestamp = lastCalcInsight?.timestamp, status = ValueStatus.GOOD),
-                status = StatusValueItem("Status", if (insights.isNotEmpty()) "Aktiv" else "Inaktiv", status = ValueStatus.GOOD)
+                mode = StatusMetric("Auto-Korrektur", status = ValueStatus.GOOD),
+                lastCalculation = StatusMetric(value = lastCalcInsight?.timestamp, status = ValueStatus.GOOD),
+                status = StatusMetric(if (insights.isNotEmpty()) "Aktiv" else "Inaktiv", status = ValueStatus.GOOD)
             ),
             glucoseSource = OverviewGlucoseSourceUiState(
                 sensorName = gInfo.sourceName ?: UiText.DynamicString("Nicht verbunden"),
-                lastConnection = StatusValueItem("Letzte Verbindung", cgmLastConnText, timestamp = gInfo.lastInputTimestamp, status = if (gInfo.source != null) ValueStatus.GOOD else ValueStatus.BAD),
-                lastReading = StatusValueItem("Letzter Messwert", gInfo.lastBgValueText ?: "--", timestamp = gInfo.lastBgReading?.timestamp, status = ValueStatus.GOOD),
-                sensorExpiration = StatusValueItem("Ablaufdatum Sensor", "--", timestamp = gInfo.estimatedExpirationTimestamp, status = ValueStatus.GOOD)
+                lastConnection = StatusMetric(value = gInfo.lastInputTimestamp, status = if (gInfo.source != null) ValueStatus.GOOD else ValueStatus.BAD),
+                lastReading = StatusMetric(value = gInfo.lastBgReading, timestamp = gInfo.lastBgReading?.timestamp, status = ValueStatus.GOOD),
+                sensorExpiration = StatusMetric(value = gInfo.estimatedExpirationTimestamp, status = ValueStatus.GOOD)
             ),
             pump = OverviewPumpUiState(
                 pumpName = pInfo.model ?: "Nicht verbunden",
-                status = StatusValueItem("Status", if (!pInfo.connected) "Nicht verbunden" else if (pInfo.isSuspended) "Unterbrochen" else "Aktiv", status = if (pInfo.connected) ValueStatus.GOOD else ValueStatus.BAD),
-                lastBolus = StatusValueItem("Letzter Bolus", "--", status = ValueStatus.GOOD),
-                batteryPercent = pInfo.status?.batteryRemainingPercent,
-                reservoirRemaining = pInfo.status?.reservoirRemainingUnits,
-                lastConnection = StatusValueItem("Letzte Verbindung", pumpLastConnText, timestamp = pInfo.lastConnection, status = ValueStatus.GOOD),
-                nextPodChange = StatusValueItem("Nächster Pod-Wechsel", "--", status = ValueStatus.GOOD)
+                status = StatusMetric(
+                    value = if (!pInfo.connected) "Nicht verbunden" else if (pInfo.isSuspended) "Unterbrochen" else "Aktiv",
+                    status = if (pInfo.connected) ValueStatus.GOOD else ValueStatus.BAD
+                ),
+                lastBolus = StatusMetric(status = ValueStatus.GOOD),
+                battery = StatusMetric(
+                    value = pInfo.status?.batteryRemainingPercent,
+                    status = if ((pInfo.status?.batteryRemainingPercent ?: 100) < 20) ValueStatus.WARNING else ValueStatus.GOOD
+                ),
+                reservoir = StatusMetric(
+                    value = pInfo.status?.reservoirRemainingUnits,
+                    status = ValueStatus.GOOD
+                ),
+                lastConnection = StatusMetric(value = pInfo.lastConnection, status = ValueStatus.GOOD),
+                nextPodChange = StatusMetric(status = ValueStatus.GOOD)
             )
         )
 

@@ -34,8 +34,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.AppColorBlue
+import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.longDateTime
 import de.dh.daps.ui.common.shortRelativeTimeAgo
@@ -124,14 +128,13 @@ private fun AndroidSystemCard(
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = state.bluetoothStatus.label) {
-                        StatusValueText(item = state.bluetoothStatus)
+                    ControlDetailRow(label = "Bluetooth-Status") {
+                        StatusMetricText(metric = state.bluetoothStatus)
                     }
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     ControlDetailRow(label = "Batteriestatus Telefon") {
-                        val phoneBatteryText = state.phoneBatteryPercent?.let { "$it%" } ?: "--"
-                        StatusValueText(item = StatusValueItem("Batteriestatus Telefon", phoneBatteryText, status = ValueStatus.GOOD))
+                        StatusMetricText(metric = state.phoneBattery)
                     }
                 }
             }
@@ -141,13 +144,13 @@ private fun AndroidSystemCard(
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = state.permissionsStatus.label) {
-                        StatusValueText(item = state.permissionsStatus)
+                    ControlDetailRow(label = "Berechtigungen") {
+                        StatusMetricText(metric = state.permissionsStatus)
                     }
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = state.dapsServiceStatus.label) {
-                        StatusValueText(item = state.dapsServiceStatus)
+                    ControlDetailRow(label = "DAPS-System-Service") {
+                        StatusMetricText(metric = state.dapsServiceStatus)
                     }
                 }
             }
@@ -187,19 +190,19 @@ private fun ApsCard(
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = state.mode.label) {
-                        StatusValueText(item = state.mode)
+                    ControlDetailRow(label = "APS-Modus") {
+                        StatusMetricText(metric = state.mode)
                     }
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = state.lastCalculation.label) {
-                        StatusValueText(item = state.lastCalculation)
+                    ControlDetailRow(label = "Letzte Berechnung") {
+                        StatusMetricText(metric = state.lastCalculation)
                     }
                 }
             }
 
-            ControlDetailRow(label = state.status.label) {
-                StatusValueText(item = state.status)
+            ControlDetailRow(label = "Status") {
+                StatusMetricText(metric = state.status)
             }
 
             HorizontalDivider(
@@ -268,13 +271,13 @@ private fun OverviewGlucoseSourceCard(
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = state.lastConnection.label) {
-                        StatusValueText(item = state.lastConnection)
+                    ControlDetailRow(label = "Letzte Verbindung") {
+                        StatusMetricText(metric = state.lastConnection)
                     }
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = state.lastReading.label) {
-                        StatusValueText(item = state.lastReading)
+                    ControlDetailRow(label = "Letzter Messwert") {
+                        StatusMetricText(metric = state.lastReading)
                     }
                 }
             }
@@ -286,9 +289,9 @@ private fun OverviewGlucoseSourceCard(
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = state.sensorExpiration.label) {
-                        StatusValueText(
-                            item = state.sensorExpiration,
+                    ControlDetailRow(label = "Ablaufdatum Sensor") {
+                        StatusMetricText(
+                            metric = state.sensorExpiration,
                             isDateTime = true
                         )
                     }
@@ -344,13 +347,13 @@ private fun OverviewPumpCard(
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = state.status.label) {
-                        StatusValueText(item = state.status)
+                    ControlDetailRow(label = "Status") {
+                        StatusMetricText(metric = state.status)
                     }
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = state.lastBolus.label) {
-                        StatusValueText(item = state.lastBolus)
+                    ControlDetailRow(label = "Letzter Bolus") {
+                        StatusMetricText(metric = state.lastBolus)
                     }
                 }
             }
@@ -363,14 +366,12 @@ private fun OverviewPumpCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     ControlDetailRow(label = "Batteriestatus") {
-                        val batteryText = state.batteryPercent?.let { "$it%" } ?: "--"
-                        StatusValueText(item = StatusValueItem("Batteriestatus", batteryText, status = ValueStatus.GOOD))
+                        StatusMetricText(metric = state.battery)
                     }
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     ControlDetailRow(label = "Reservoir-Füllstand") {
-                        val reservoirText = insulinValue(state.reservoirRemaining)
-                        StatusValueText(item = StatusValueItem("Reservoir-Füllstand", reservoirText, status = ValueStatus.GOOD))
+                        StatusMetricText(metric = state.reservoir)
                     }
                 }
             }
@@ -382,14 +383,14 @@ private fun OverviewPumpCard(
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = state.lastConnection.label) {
-                        StatusValueText(item = state.lastConnection)
+                    ControlDetailRow(label = "Letzte Verbindung") {
+                        StatusMetricText(metric = state.lastConnection)
                     }
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = state.nextPodChange.label) {
-                        StatusValueText(
-                            item = state.nextPodChange,
+                    ControlDetailRow(label = "Nächster Pod-Wechsel") {
+                        StatusMetricText(
+                            metric = state.nextPodChange,
                             isDateTime = true
                         )
                     }
@@ -400,35 +401,40 @@ private fun OverviewPumpCard(
 }
 
 @Composable
-private fun StatusValueText(
-    item: StatusValueItem,
+private fun <T> StatusMetricText(
+    metric: StatusMetric<T>,
     modifier: Modifier = Modifier,
     isDateTime: Boolean = false
 ) {
-    val timestamp = item.timestamp
-    val formattedValue = if (timestamp != null && timestamp.isValid()) {
-        if (isDateTime) {
-            val localDateTime = Instant.ofEpochMilli(timestamp.ms)
-                .atZone(ZoneId.systemDefault())
-                .toLocalDateTime()
-            longDateTime(localDateTime)
-        } else {
-            time(timestamp)
-        }
-    } else {
-        item.value
+    val glucoseUnit = LocalGlucoseUnit.current
+    val formattedValue = when (val v = metric.value) {
+        is Int -> "$v%"
+        is InsulinAmount -> insulinValue(v)
+        is BgReading -> "${v.value.toString(glucoseUnit)} ${glucoseUnitLabel(glucoseUnit)}"
+        is Timestamp -> if (v.isValid()) {
+            if (isDateTime) {
+                val localDateTime = Instant.ofEpochMilli(v.ms)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime()
+                longDateTime(localDateTime)
+            } else {
+                time(v)
+            }
+        } else "--"
+        is String -> v
+        null -> "--"
+        else -> v.toString()
     }
 
-    val formattedRelative = if (timestamp != null && timestamp.isValid() && !isDateTime) {
-        shortRelativeTimeAgo(timestamp)
-    } else {
-        item.relativeTime
-    }
+    val ts = metric.timestamp ?: (metric.value as? Timestamp)
+    val relativeTime = if (ts != null && ts.isValid() && !isDateTime) {
+        shortRelativeTimeAgo(ts)
+    } else null
 
     StatusValueText(
         value = formattedValue,
-        relativeTime = formattedRelative,
-        status = item.status,
+        relativeTime = relativeTime,
+        status = metric.status,
         modifier = modifier
     )
 }
