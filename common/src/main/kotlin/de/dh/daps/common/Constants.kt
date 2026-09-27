@@ -1,4 +1,18 @@
-package de.dh.daps.common.model
+package de.dh.daps.common
+
+import de.dh.daps.common.model.InsulinAmount
+
+// Phone Battery Thresholds (%)
+const val PHONE_BATTERY_LOW_THRESHOLD = 15
+const val PHONE_BATTERY_WARNING_THRESHOLD = 30
+
+// Pump Battery Thresholds (%)
+const val PUMP_BATTERY_LOW_THRESHOLD = 15
+const val PUMP_BATTERY_WARNING_THRESHOLD = 20
+
+// Pump Reservoir Thresholds (IU)
+val PUMP_RESERVOIR_LOW_THRESHOLD = InsulinAmount(10.0)
+val PUMP_RESERVOIR_WARNING_THRESHOLD = InsulinAmount(20.0)
 
 const val ID_UNDEFINED = 0L
 

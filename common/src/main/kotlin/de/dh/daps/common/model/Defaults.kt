@@ -1,6 +1,15 @@
 package de.dh.daps.common.model
 
 import android.content.Context
+import de.dh.daps.common.DEFAULT_BASAL_UNITS_PER_HOUR
+import de.dh.daps.common.DEFAULT_CR_GRAM_PER_UNIT
+import de.dh.daps.common.DEFAULT_ISF_MGDL_PER_UNIT
+import de.dh.daps.common.ID_INSULIN_FIASP
+import de.dh.daps.common.ID_INSULIN_NOVORAPID
+import de.dh.daps.common.ID_MEAL_FAST
+import de.dh.daps.common.ID_MEAL_HIGH_FAT
+import de.dh.daps.common.ID_MEAL_SLOW
+import de.dh.daps.common.ID_MEAL_STANDARD
 import de.dh.daps.common.R
 import de.dh.daps.common.model.data.Block
 import de.dh.daps.common.model.data.InsulinProfile

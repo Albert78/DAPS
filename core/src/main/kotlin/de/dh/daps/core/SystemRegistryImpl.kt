@@ -3,9 +3,9 @@ package de.dh.daps.core
 import android.app.Application
 import android.content.Context
 import de.dh.daps.AppPreferencesRepository
+import de.dh.daps.common.METABOLIC_EVENTS_HISTORY_HOURS
 import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.common.model.InsulinPumpDriver
-import de.dh.daps.common.model.METABOLIC_EVENTS_HISTORY_HOURS
 import de.dh.daps.common.model.PluginManager
 import de.dh.daps.common.model.calculation.CarbsInsulinCalculator
 import de.dh.daps.common.model.data.Minutes

@@ -1,6 +1,6 @@
 package de.dh.daps.common.model.data
 
-import de.dh.daps.common.model.ID_UNDEFINED
+import de.dh.daps.common.ID_UNDEFINED
 
 /**
  * Represents the current active therapy settings of the app.

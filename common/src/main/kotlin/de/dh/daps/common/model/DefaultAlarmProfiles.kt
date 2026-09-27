@@ -1,6 +1,7 @@
 package de.dh.daps.common.model
 
 import android.content.Context
+import de.dh.daps.common.ID_UNDEFINED
 import de.dh.daps.common.R
 import de.dh.daps.common.model.data.AlarmProfile
 import de.dh.daps.common.model.data.AlarmSeverity

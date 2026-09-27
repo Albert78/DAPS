@@ -17,10 +17,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import de.dh.daps.common.model.ID_MEAL_FAST
-import de.dh.daps.common.model.ID_MEAL_HIGH_FAT
-import de.dh.daps.common.model.ID_MEAL_SLOW
-import de.dh.daps.common.model.ID_MEAL_STANDARD
+import de.dh.daps.common.ID_MEAL_FAST
+import de.dh.daps.common.ID_MEAL_HIGH_FAT
+import de.dh.daps.common.ID_MEAL_SLOW
+import de.dh.daps.common.ID_MEAL_STANDARD
 import de.dh.daps.common.model.MealType
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.icons.Icon_Meal_Custom

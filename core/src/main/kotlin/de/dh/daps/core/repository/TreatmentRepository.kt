@@ -1,7 +1,7 @@
 package de.dh.daps.core.repository
 
+import de.dh.daps.common.ID_UNDEFINED
 import de.dh.daps.common.model.DeferredBolus
-import de.dh.daps.common.model.ID_UNDEFINED
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinApplication
 import de.dh.daps.common.model.InsulinCategory

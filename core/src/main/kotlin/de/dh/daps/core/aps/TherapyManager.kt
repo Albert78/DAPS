@@ -2,10 +2,10 @@ package de.dh.daps.core.aps
 
 import android.content.Intent
 import android.util.Log
+import de.dh.daps.common.ID_UNDEFINED
 import de.dh.daps.common.model.BolusDeliveryState
 import de.dh.daps.common.model.BolusStatus
 import de.dh.daps.common.model.DeferredBolus
-import de.dh.daps.common.model.ID_UNDEFINED
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinHistory
 import de.dh.daps.common.model.InsulinType

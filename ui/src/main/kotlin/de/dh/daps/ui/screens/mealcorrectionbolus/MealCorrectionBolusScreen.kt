@@ -56,7 +56,7 @@ import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.model.BOLUS_MAX
+import de.dh.daps.common.BOLUS_MAX
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.MealType
 import de.dh.daps.common.model.data.BgDelta

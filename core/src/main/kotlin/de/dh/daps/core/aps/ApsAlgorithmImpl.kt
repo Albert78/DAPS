@@ -1,11 +1,11 @@
 package de.dh.daps.core.aps
 
 import android.util.Log
+import de.dh.daps.common.METABOLIC_EVENTS_HISTORY_HOURS
 import de.dh.daps.common.model.DeferredBolus
 import de.dh.daps.common.model.FAST_KE_DEFAULT_PEAK
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinDose
-import de.dh.daps.common.model.METABOLIC_EVENTS_HISTORY_HOURS
 import de.dh.daps.common.model.MealType
 import de.dh.daps.common.model.calculation.CarbsInsulinCalculator
 import de.dh.daps.common.model.convertToBgDeltaFromUnits

@@ -2,6 +2,8 @@ package de.dh.daps.core.pump
 
 import android.content.Intent
 import android.util.Log
+import de.dh.daps.common.PUMP_BATTERY_LOW_THRESHOLD
+import de.dh.daps.common.PUMP_RESERVOIR_LOW_THRESHOLD
 import de.dh.daps.common.model.BolusStatus
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinHistory
@@ -84,13 +86,13 @@ class PumpManagerImpl(
                                 removeIssue(PumpIssue.Inoperative)
                             }
 
-                            if (status.batteryRemainingPercent in 1..15) {
+                            if (status.batteryRemainingPercent < PUMP_BATTERY_LOW_THRESHOLD) {
                                 setIssue(PumpIssue.LowBattery)
                             } else if (!pc.pump.alerts.value.batteryLow) {
                                 removeIssue(PumpIssue.LowBattery)
                             }
 
-                            if (status.reservoirRemainingUnits > InsulinAmount.ZERO && status.reservoirRemainingUnits <= InsulinAmount(10.0)) {
+                            if (status.reservoirRemainingUnits > InsulinAmount.ZERO && status.reservoirRemainingUnits <= PUMP_RESERVOIR_LOW_THRESHOLD) {
                                 setIssue(PumpIssue.LowInsulin)
                             } else if (!pc.pump.alerts.value.reservoirLow) {
                                 removeIssue(PumpIssue.LowInsulin)
@@ -101,13 +103,13 @@ class PumpManagerImpl(
                         pc.pump.alerts.collect { alerts ->
                             if (alerts.batteryLow) {
                                 setIssue(PumpIssue.LowBattery)
-                            } else if (pc.pump.pumpStatus.value.batteryRemainingPercent > 15 || pc.pump.pumpStatus.value.batteryRemainingPercent <= 0) {
+                            } else if (pc.pump.pumpStatus.value.batteryRemainingPercent > PUMP_BATTERY_LOW_THRESHOLD || pc.pump.pumpStatus.value.batteryRemainingPercent <= 0) {
                                 removeIssue(PumpIssue.LowBattery)
                             }
 
                             if (alerts.reservoirLow) {
                                 setIssue(PumpIssue.LowInsulin)
-                            } else if (pc.pump.pumpStatus.value.reservoirRemainingUnits > InsulinAmount(10.0) || pc.pump.pumpStatus.value.reservoirRemainingUnits <= InsulinAmount.ZERO) {
+                            } else if (pc.pump.pumpStatus.value.reservoirRemainingUnits > PUMP_RESERVOIR_LOW_THRESHOLD || pc.pump.pumpStatus.value.reservoirRemainingUnits <= InsulinAmount.ZERO) {
                                 removeIssue(PumpIssue.LowInsulin)
                             }
                         }

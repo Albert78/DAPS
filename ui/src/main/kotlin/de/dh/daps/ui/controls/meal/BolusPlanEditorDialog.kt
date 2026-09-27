@@ -43,8 +43,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import de.dh.daps.common.model.BOLUS_MAX
-import de.dh.daps.common.model.BOLUS_MIN
+import de.dh.daps.common.BOLUS_MAX
+import de.dh.daps.common.BOLUS_MIN
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.R

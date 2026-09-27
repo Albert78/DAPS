@@ -11,8 +11,8 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
 import de.dh.daps.R
+import de.dh.daps.common.ID_UNDEFINED
 import de.dh.daps.common.model.DeferredBolus
-import de.dh.daps.common.model.ID_UNDEFINED
 import de.dh.daps.common.model.MealReminder
 import de.dh.daps.common.model.data.AlarmType
 import de.dh.daps.common.model.data.BgDelta

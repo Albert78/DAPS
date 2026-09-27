@@ -1,7 +1,7 @@
 package de.dh.daps.common.model.data
 
-import de.dh.daps.common.model.MINUTES_PER_DAY
-import de.dh.daps.common.model.MINUTES_PER_HOUR
+import de.dh.daps.common.MINUTES_PER_DAY
+import de.dh.daps.common.MINUTES_PER_HOUR
 
 /**
  * A memory-efficient, type-safe representation of a small number of minutes, supported range is

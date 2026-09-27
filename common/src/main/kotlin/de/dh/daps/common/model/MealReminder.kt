@@ -1,5 +1,6 @@
 package de.dh.daps.common.model
 
+import de.dh.daps.common.ID_UNDEFINED
 import de.dh.daps.common.model.data.Timestamp
 
 /**

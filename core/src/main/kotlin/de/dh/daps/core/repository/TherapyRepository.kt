@@ -1,8 +1,8 @@
 package de.dh.daps.core.repository
 
-import de.dh.daps.common.model.DEFAULT_BG_LOW_THRESHOLD_MGDL
-import de.dh.daps.common.model.DEFAULT_BG_TARGET_MGDL
-import de.dh.daps.common.model.ID_UNDEFINED
+import de.dh.daps.common.DEFAULT_BG_LOW_THRESHOLD_MGDL
+import de.dh.daps.common.DEFAULT_BG_TARGET_MGDL
+import de.dh.daps.common.ID_UNDEFINED
 import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.data.BgBlock
 import de.dh.daps.common.model.data.BgValue

@@ -5,6 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import de.dh.daps.common.PHONE_BATTERY_LOW_THRESHOLD
+import de.dh.daps.common.PHONE_BATTERY_WARNING_THRESHOLD
+import de.dh.daps.common.PUMP_BATTERY_LOW_THRESHOLD
+import de.dh.daps.common.PUMP_BATTERY_WARNING_THRESHOLD
+import de.dh.daps.common.PUMP_RESERVOIR_LOW_THRESHOLD
+import de.dh.daps.common.PUMP_RESERVOIR_WARNING_THRESHOLD
 import de.dh.daps.common.model.GlucoseSourceStatus
 import de.dh.daps.common.model.HardwareInformation
 import de.dh.daps.common.model.InsulinAmount
@@ -184,8 +190,8 @@ class SystemControlViewModel(
             phoneBattery = StatusMetric(
                 value = batteryPct,
                 status = when {
-                    batteryPct < BATTERY_LOW_THRESHOLD -> ValueStatus.BAD
-                    batteryPct < BATTERY_WARNING_THRESHOLD -> ValueStatus.WARNING
+                    batteryPct < PHONE_BATTERY_LOW_THRESHOLD -> ValueStatus.BAD
+                    batteryPct < PHONE_BATTERY_WARNING_THRESHOLD -> ValueStatus.WARNING
                     else -> ValueStatus.GOOD
                 }
             ),
@@ -331,11 +337,19 @@ class SystemControlViewModel(
                 lastBolus = StatusMetric(value = lastBolusTs, status = ValueStatus.GOOD),
                 battery = StatusMetric(
                     value = it.status.batteryRemainingPercent,
-                    status = if (it.status.batteryRemainingPercent < PUMP_BATTERY_WARNING_THRESHOLD) ValueStatus.WARNING else ValueStatus.GOOD
+                    status = when {
+                        it.status.batteryRemainingPercent <= PUMP_BATTERY_LOW_THRESHOLD -> ValueStatus.BAD
+                        it.status.batteryRemainingPercent < PUMP_BATTERY_WARNING_THRESHOLD -> ValueStatus.WARNING
+                        else -> ValueStatus.GOOD
+                    }
                 ),
                 reservoir = StatusMetric(
                     value = it.status.reservoirRemainingUnits,
-                    status = ValueStatus.GOOD
+                    status = when {
+                        it.status.reservoirRemainingUnits <= PUMP_RESERVOIR_LOW_THRESHOLD -> ValueStatus.BAD
+                        it.status.reservoirRemainingUnits < PUMP_RESERVOIR_WARNING_THRESHOLD -> ValueStatus.WARNING
+                        else -> ValueStatus.GOOD
+                    }
                 ),
                 lastConnection = StatusMetric(value = it.lastConnection, status = ValueStatus.GOOD),
                 nextPodChange = StatusMetric(status = ValueStatus.GOOD)
@@ -448,10 +462,6 @@ class SystemControlViewModel(
     }
 
     companion object {
-        private const val BATTERY_LOW_THRESHOLD = 15
-        private const val BATTERY_WARNING_THRESHOLD = 30
-        private const val PUMP_BATTERY_WARNING_THRESHOLD = 20
-
         class Factory(private val registry: SystemRegistry) : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {

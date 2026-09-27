@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import de.dh.daps.common.model.BOLUS_MAX
+import de.dh.daps.common.BOLUS_MAX
 import de.dh.daps.ui.common.SteppingStrategy
 import de.dh.daps.ui.common.ValueDisplayStrategy
 import de.dh.daps.ui.common.insulinSteppingStrategy

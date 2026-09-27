@@ -14,7 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
-import de.dh.daps.common.model.ID_UNDEFINED
+import de.dh.daps.common.ID_UNDEFINED
 import de.dh.daps.common.navigation.AlarmProfileEditorRoute
 import de.dh.daps.common.navigation.AlarmProfilesRoute
 import de.dh.daps.common.navigation.BgEditorRoute
@@ -61,6 +61,8 @@ import de.dh.daps.ui.screens.bolushistory.BolusHistoryViewModel
 import de.dh.daps.ui.screens.dashboard.DashboardScreen
 import de.dh.daps.ui.screens.dashboard.DashboardViewModel
 import de.dh.daps.ui.screens.fooddatabase.FoodDatabaseScreen
+import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupScreen
+import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupViewModel
 import de.dh.daps.ui.screens.history.HistoryScreen
 import de.dh.daps.ui.screens.insulinprofile.InsulinProfileEditorScreen
 import de.dh.daps.ui.screens.insulinprofile.InsulinProfileSettingsViewModel
@@ -88,8 +90,6 @@ import de.dh.daps.ui.screens.permissions.openAppUseFullScreenSettings
 import de.dh.daps.ui.screens.permissions.openAutoRevokeSettings
 import de.dh.daps.ui.screens.permissions.openNotificationSettings
 import de.dh.daps.ui.screens.permissions.requestIgnoreBatteryOptimizations
-import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupScreen
-import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupViewModel
 import de.dh.daps.ui.screens.preferences.PreferencesScreen
 import de.dh.daps.ui.screens.preferences.PreferencesViewModel
 import de.dh.daps.ui.screens.pumpsetup.PumpSetupScreen

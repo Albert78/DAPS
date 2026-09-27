@@ -44,8 +44,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.model.TARGET_MAX
-import de.dh.daps.common.model.TARGET_MIN
+import de.dh.daps.common.TARGET_MAX
+import de.dh.daps.common.TARGET_MIN
 import de.dh.daps.common.model.data.BgBlock
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Minutes

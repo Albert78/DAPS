@@ -2,8 +2,8 @@ package de.dh.daps.core.aps
 
 import android.content.Intent
 import android.util.Log
+import de.dh.daps.common.ID_UNDEFINED
 import de.dh.daps.common.model.DeferredBolus
-import de.dh.daps.common.model.ID_UNDEFINED
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.MealEntry
 import de.dh.daps.common.model.MealReminder

@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import de.dh.daps.common.model.ID_UNDEFINED
+import de.dh.daps.common.ID_UNDEFINED
 import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.core.SystemRegistry

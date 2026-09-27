@@ -4,8 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import de.dh.daps.common.model.CARBS_GRAMS_MAX
-import de.dh.daps.common.model.CARBS_GRAMS_MIN
+import de.dh.daps.common.CARBS_GRAMS_MAX
+import de.dh.daps.common.CARBS_GRAMS_MIN
 import de.dh.daps.common.model.data.CarbsUnit
 import de.dh.daps.ui.common.LocalCarbsUnit
 import de.dh.daps.ui.common.ValueDisplayStrategy

@@ -60,8 +60,8 @@ import com.patrykandpatrick.vico.compose.common.Fill
 import com.patrykandpatrick.vico.compose.common.Position
 import com.patrykandpatrick.vico.compose.common.component.rememberShapeComponent
 import com.patrykandpatrick.vico.compose.common.data.ExtraStore
-import de.dh.daps.common.model.MS_PER_HOUR
-import de.dh.daps.common.model.MS_PER_MINUTE
+import de.dh.daps.common.MS_PER_HOUR
+import de.dh.daps.common.MS_PER_MINUTE
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgSampleKind
 import de.dh.daps.common.model.data.GlucoseUnit

@@ -3,7 +3,7 @@ package de.dh.daps.ui.screens.meals
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import de.dh.daps.common.model.MEAL_EDIT_THRESHOLD_HOURS
+import de.dh.daps.common.MEAL_EDIT_THRESHOLD_HOURS
 import de.dh.daps.common.model.MealEntry
 import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.flow.SharingStarted

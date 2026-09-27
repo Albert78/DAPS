@@ -3,12 +3,12 @@ package de.dh.daps.ui.screens.bolushistory
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import de.dh.daps.common.MEAL_EDIT_THRESHOLD_HOURS
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinApplication
 import de.dh.daps.common.model.InsulinOrigin
 import de.dh.daps.common.model.InsulinStatus
 import de.dh.daps.common.model.InsulinType
-import de.dh.daps.common.model.MEAL_EDIT_THRESHOLD_HOURS
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -1,6 +1,6 @@
 package de.dh.daps.ui.controls.meal
 
-import de.dh.daps.common.model.ID_UNDEFINED
+import de.dh.daps.common.ID_UNDEFINED
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
