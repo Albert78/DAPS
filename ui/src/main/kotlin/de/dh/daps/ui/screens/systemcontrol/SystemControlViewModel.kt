@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import de.dh.daps.common.CANNULA_CHANGE_WARNING_THRESHOLD_HOURS
+import de.dh.daps.common.CONNECTION_WARNING_THRESHOLD_MINUTES
 import de.dh.daps.common.PHONE_BATTERY_LOW_THRESHOLD
 import de.dh.daps.common.PHONE_BATTERY_WARNING_THRESHOLD
 import de.dh.daps.common.PUMP_BATTERY_LOW_THRESHOLD
@@ -81,7 +83,7 @@ data class OverviewPumpUiState(
     val battery: StatusMetric<Int> = StatusMetric(status = ValueStatus.GOOD),
     val reservoir: StatusMetric<InsulinAmount> = StatusMetric(status = ValueStatus.GOOD),
     val lastConnection: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD),
-    val nextPodChange: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD)
+    val nextCannulaChange: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD)
 )
 
 data class OverviewTabUiState(
@@ -158,6 +160,7 @@ class SystemControlViewModel(
         val serialNumber: String? = null,
         val status: InsulinPumpStatus,
         val lastConnection: Timestamp = Timestamp.INVALID,
+        val nextCannulaChange: Timestamp? = null,
         val jobs: List<PumpJob> = emptyList(),
         val isSuspended: Boolean = false,
         val hasError: Boolean = false,
@@ -256,6 +259,7 @@ class SystemControlViewModel(
             flowOf(null)
         } else {
             val pumpName = pump.insulinPumpDisplayName
+            val nextCannulaChange = (pump as? ReplaceableComponent)?.endDate
 
             val coordinator = pumpManager.pumpCoordinator
             val jobsFlow = coordinator?.pendingJobs ?: flowOf(emptyList())
@@ -276,6 +280,7 @@ class SystemControlViewModel(
                     serialNumber = hardware?.serialNumber,
                     status = status,
                     lastConnection = lastConn,
+                    nextCannulaChange = nextCannulaChange,
                     jobs = jobs,
                     isSuspended = status.pumpSuspended,
                     hasError = jobs.any { it.lastError != null },
@@ -301,6 +306,11 @@ class SystemControlViewModel(
                 GlucoseSourceStatus.Expired -> it.status to ValueStatus.WARNING
                 GlucoseSourceStatus.Error -> it.status to ValueStatus.BAD
             }
+            val lastConnectionStatus = when {
+                it.lastConnection == null || it.lastConnection.isInvalid() -> ValueStatus.BAD
+                it.lastConnection < Timestamp.now().minusMinutes(CONNECTION_WARNING_THRESHOLD_MINUTES) -> ValueStatus.WARNING
+                else -> ValueStatus.GOOD
+            }
             OverviewGlucoseSourceUiState(
                 sensorName = it.sourceName,
                 status = StatusMetric(
@@ -309,7 +319,7 @@ class SystemControlViewModel(
                 ),
                 lastConnection = StatusMetric(
                     value = it.lastConnection,
-                    status = if (it.lastConnection != null) ValueStatus.GOOD else ValueStatus.BAD
+                    status = lastConnectionStatus
                 ),
                 lastReading = StatusMetric(
                     value = it.lastBgReading?.timestamp,
@@ -328,13 +338,24 @@ class SystemControlViewModel(
                 it.isSuspended -> OverviewPumpState.SUSPENDED to ValueStatus.WARNING
                 else -> OverviewPumpState.ACTIVE to ValueStatus.GOOD
             }
+            val lastConnectionStatus = when {
+                it.lastConnection.isInvalid() -> ValueStatus.BAD
+                it.lastConnection < Timestamp.now().minusMinutes(CONNECTION_WARNING_THRESHOLD_MINUTES) -> ValueStatus.WARNING
+                else -> ValueStatus.GOOD
+            }
+            val nextCannulaChangeStatus = when {
+                it.nextCannulaChange == null || it.nextCannulaChange.isInvalid() -> ValueStatus.GOOD
+                it.nextCannulaChange <= Timestamp.now() -> ValueStatus.BAD
+                it.nextCannulaChange < Timestamp.now().plusHours(CANNULA_CHANGE_WARNING_THRESHOLD_HOURS) -> ValueStatus.WARNING
+                else -> ValueStatus.GOOD
+            }
             OverviewPumpUiState(
                 pumpName = it.pumpName,
                 state = StatusMetric(
                     value = pumpOverviewState,
                     status = pumpValueStatus
                 ),
-                lastBolus = StatusMetric(value = lastBolusTs, status = ValueStatus.GOOD),
+                lastBolus = StatusMetric(value = lastBolusTs, status = if (lastBolusTs == null) ValueStatus.WARNING else ValueStatus.GOOD),
                 battery = StatusMetric(
                     value = it.status.batteryRemainingPercent,
                     status = when {
@@ -351,8 +372,14 @@ class SystemControlViewModel(
                         else -> ValueStatus.GOOD
                     }
                 ),
-                lastConnection = StatusMetric(value = it.lastConnection, status = ValueStatus.GOOD),
-                nextPodChange = StatusMetric(status = ValueStatus.GOOD)
+                lastConnection = StatusMetric(
+                    value = it.lastConnection,
+                    status = lastConnectionStatus
+                ),
+                nextCannulaChange = StatusMetric(
+                    value = it.nextCannulaChange,
+                    status = nextCannulaChangeStatus
+                )
             )
         }
 

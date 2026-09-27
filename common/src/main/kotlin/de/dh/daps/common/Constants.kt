@@ -25,6 +25,12 @@ const val MS_PER_MINUTE = SECONDS_PER_MINUTE * 1000L
 const val MS_PER_HOUR = MINUTES_PER_HOUR * MS_PER_MINUTE
 const val MS_PER_DAY = MS_PER_HOUR * HOURS_PER_DAY
 
+// Connection Thresholds (Minutes)
+const val CONNECTION_WARNING_THRESHOLD_MINUTES = 20
+
+// Pod Change Thresholds (Hours)
+const val CANNULA_CHANGE_WARNING_THRESHOLD_HOURS = 24
+
 const val ID_INSULIN_NOVORAPID = "9d860e7e-8c88-466d-a7f4-3e91851e3c88"
 const val ID_INSULIN_FIASP = "4e0e9803-0c48-433b-8f7d-2b4f2c96791a"
 

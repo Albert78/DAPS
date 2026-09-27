@@ -378,9 +378,9 @@ private fun OverviewPumpCard(
                         }
                     }
                     Column(modifier = Modifier.weight(1f)) {
-                        ControlDetailRow(label = "Nächster Pod-Wechsel") {
+                        ControlDetailRow(label = "Nächster Kanülenwechsel") {
                             StatusMetricText(
-                                metric = state.nextPodChange,
+                                metric = state.nextCannulaChange,
                                 isDateTime = true
                             )
                         }
@@ -552,7 +552,7 @@ internal fun sampleOverviewTabUiState() = OverviewTabUiState(
         battery = StatusMetric(85, status = ValueStatus.GOOD),
         reservoir = StatusMetric(InsulinAmount(140.0), status = ValueStatus.GOOD),
         lastConnection = StatusMetric(Timestamp(System.currentTimeMillis() - 60_000), status = ValueStatus.GOOD),
-        nextPodChange = StatusMetric(Timestamp(System.currentTimeMillis() + 172_800_000), status = ValueStatus.GOOD)
+        nextCannulaChange = StatusMetric(Timestamp(System.currentTimeMillis() + 172_800_000), status = ValueStatus.GOOD)
     )
 )
 
