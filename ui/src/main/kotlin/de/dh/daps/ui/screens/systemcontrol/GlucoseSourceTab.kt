@@ -410,7 +410,7 @@ fun GlucoseSourcePluginExampleCard(
     }
 }
 
-private fun sampleGlucoseSourceTabUiState() = GlucoseSourceTabUiState(
+internal fun sampleGlucoseSourceTabUiState() = GlucoseSourceTabUiState(
     glucoseSourceName = UiText.DynamicString("Dexcom G6"),
     manufacturer = "Dexcom",
     serialNumber = "SN-98765432",

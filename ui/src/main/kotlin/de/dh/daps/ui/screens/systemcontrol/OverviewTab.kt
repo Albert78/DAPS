@@ -36,7 +36,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.data.BgReading
+import de.dh.daps.common.model.data.BgSampleKind
+import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.glucoseUnitLabel
@@ -481,6 +484,42 @@ private fun StatusValueText(
     }
 }
 
+internal fun sampleOverviewTabUiState() = OverviewTabUiState(
+    androidSystem = OverviewAndroidSystemUiState(
+        bluetoothStatus = StatusMetric("Aktiviert", status = ValueStatus.GOOD),
+        phoneBattery = StatusMetric(82, status = ValueStatus.GOOD),
+        permissionsStatus = StatusMetric("Alle erteilt", status = ValueStatus.GOOD),
+        dapsServiceStatus = StatusMetric("Aktiv", status = ValueStatus.GOOD)
+    ),
+    apsSystem = OverviewApsSystemUiState(
+        mode = StatusMetric("Auto-Korrektur", status = ValueStatus.GOOD),
+        lastCalculation = StatusMetric(Timestamp(System.currentTimeMillis() - 120_000), status = ValueStatus.GOOD),
+        status = StatusMetric("Aktiv", status = ValueStatus.GOOD)
+    ),
+    glucoseSource = OverviewGlucoseSourceUiState(
+        sensorName = UiText.DynamicString("Dexcom G6"),
+        lastConnection = StatusMetric(Timestamp(System.currentTimeMillis() - 60_000), status = ValueStatus.GOOD),
+        lastReading = StatusMetric(
+            value = BgReading(
+                value = BgValue.fromMgDl(124),
+                sampleKind = BgSampleKind.Value,
+                timestamp = Timestamp(System.currentTimeMillis() - 120_000)
+            ),
+            status = ValueStatus.GOOD
+        ),
+        sensorExpiration = StatusMetric(Timestamp(System.currentTimeMillis() + 864_000_000), status = ValueStatus.GOOD)
+    ),
+    pump = OverviewPumpUiState(
+        pumpName = "DANA-i",
+        status = StatusMetric("Aktiv", status = ValueStatus.GOOD),
+        lastBolus = StatusMetric(InsulinAmount(1.5), status = ValueStatus.GOOD),
+        battery = StatusMetric(85, status = ValueStatus.GOOD),
+        reservoir = StatusMetric(InsulinAmount(140.0), status = ValueStatus.GOOD),
+        lastConnection = StatusMetric(Timestamp(System.currentTimeMillis() - 60_000), status = ValueStatus.GOOD),
+        nextPodChange = StatusMetric(Timestamp(System.currentTimeMillis() + 172_800_000), status = ValueStatus.GOOD)
+    )
+)
+
 @Preview(showBackground = true, heightDp = 1200, name = "Light Mode")
 @Preview(showBackground = true, heightDp = 1200, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
@@ -488,6 +527,7 @@ fun OverviewTabPreview() {
     AppTheme {
         Surface {
             OverviewTabContent(
+                uiState = sampleOverviewTabUiState(),
                 modifier = Modifier.padding(16.dp)
             )
         }

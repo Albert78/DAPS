@@ -28,16 +28,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import de.dh.daps.common.model.InsulinAmount
-import de.dh.daps.common.model.data.BgReading
-import de.dh.daps.common.model.data.BgReadingsInterval
-import de.dh.daps.common.model.data.BgSampleKind
-import de.dh.daps.common.model.data.BgValue
-import de.dh.daps.common.model.data.Timestamp
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
@@ -226,41 +219,7 @@ fun SystemControlPumpPreview() {
 }
 
 private fun previewUiState() = SystemControlUiState(
-    overviewUiState = OverviewTabUiState(),
-    glucoseSourceTabUiState = GlucoseSourceTabUiState(
-        glucoseSourceName = UiText.DynamicString("Dexcom G6"),
-        sensorTypeName = "G6-Sensor",
-        readingsInterval = BgReadingsInterval.FiveMinutes,
-        lastBgReading = BgReading(
-            value = BgValue.fromMgDl(124),
-            sampleKind = BgSampleKind.Value,
-            timestamp = Timestamp(System.currentTimeMillis() - 120_000)
-        ),
-        hasNextPrediction = true,
-        nextPredictedTimestamp = Timestamp(System.currentTimeMillis() + 180_000),
-        estimatedExpirationTimestamp = Timestamp(System.currentTimeMillis() + 864000000),
-        glucoseSourcePluginSection = {
-            GlucoseSourcePluginExampleCard(
-                sensorCode = "8132",
-                transmitterSerialNumber = "8G1234",
-                estimatedExpirationTimestamp = Timestamp(System.currentTimeMillis() + 864000000),
-                onStopSensor = {}
-            )
-        }
-    ),
-    pumpTabUiState = PumpTabUiState(
-        pumpModel = "DANA-i",
-        manufacturer = "SOOIL",
-        serialNumber = "12345678",
-        pumpConnected = true,
-        batteryPercent = 85,
-        reservoirRemaining = InsulinAmount(140.0),
-        lastConnectionTimestamp = Timestamp(System.currentTimeMillis() - 60_000),
-        pendingJobs = listOf(
-            PumpJobItem(
-                id = "job_1",
-                title = UiText.StringResource(R.string.system_control_pump_job_type_bolus, "1,50")
-            )
-        )
-    )
+    overviewUiState = sampleOverviewTabUiState(),
+    glucoseSourceTabUiState = sampleGlucoseSourceTabUiState(),
+    pumpTabUiState = samplePumpTabUiState()
 )

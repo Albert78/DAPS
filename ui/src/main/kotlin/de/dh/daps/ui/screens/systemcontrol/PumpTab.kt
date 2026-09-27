@@ -40,6 +40,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.icons.PumpReservoir
 import de.dh.daps.ui.common.insulinValue
@@ -447,6 +450,22 @@ private fun ActionButton(
     }
 }
 
+internal fun samplePumpTabUiState() = PumpTabUiState(
+    pumpModel = "DANA-i",
+    manufacturer = "SOOIL",
+    serialNumber = "12345678",
+    pumpConnected = true,
+    batteryPercent = 85,
+    reservoirRemaining = InsulinAmount(140.0),
+    lastConnectionTimestamp = Timestamp(System.currentTimeMillis() - 60_000),
+    pendingJobs = listOf(
+        PumpJobItem(
+            id = "job_1",
+            title = UiText.StringResource(R.string.system_control_pump_job_type_bolus, "1,50")
+        )
+    )
+)
+
 @Preview(showBackground = true, name = "Pump Tab - Light Mode")
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Pump Tab - Dark Mode")
 @Composable
@@ -454,6 +473,7 @@ fun PumpTabPreview() {
     AppTheme {
         Surface {
             PumpTabContent(
+                uiState = samplePumpTabUiState(),
                 modifier = Modifier.padding(16.dp)
             )
         }
