@@ -92,7 +92,7 @@ fun PumpSetupContent(
     }
 
     val selectedDriver = uiState.selectedDriver
-    val titleText = selectedDriver?.displayName?.asString() ?: stringResource(id = R.string.pump_setup_screen_title)
+    val titleText = selectedDriver?.driverDisplayName?.asString() ?: stringResource(id = R.string.pump_setup_screen_title)
 
     Scaffold(
         topBar = {
@@ -343,7 +343,7 @@ private fun DriverCard(
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = driver.displayName.asString(),
+                        text = driver.driverDisplayName.asString(),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         maxLines = 2,
@@ -382,7 +382,7 @@ private fun DriverCard(
 
 private class PreviewPumpDriver(
     override val driverId: String,
-    override val displayName: UiText
+    override val driverDisplayName: UiText
 ) : InsulinPumpDriver {
     @Composable
     override fun SetupScreen(

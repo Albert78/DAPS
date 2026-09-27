@@ -24,7 +24,7 @@ import de.dh.daps.common.ui.UiText
  */
 class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
     override val driverId: String = DRIVER_ID
-    override val displayName: UiText = UiText.StringResource(R.string.sample_pump_driver_display_name)
+    override val driverDisplayName: UiText = UiText.StringResource(R.string.sample_pump_driver_display_name)
     override val pluginId: String = DRIVER_ID
     override val neededPermissions: Collection<String> = emptyList()
 

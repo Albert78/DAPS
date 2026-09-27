@@ -16,7 +16,7 @@ interface InsulinPumpDriver {
     /**
      * Human-readable display name of the pump type or manufacturer (e.g. "Ypsomed YpsoPump").
      */
-    val displayName: UiText
+    val driverDisplayName: UiText
 
     /**
      * Renders the driver's custom UI workflow for initial setup, device scanning, and pairing.

@@ -178,7 +178,7 @@ class SystemControlViewModel(
         glucoseRepository.currentBg,
         glucoseSourceManager.lastInputTimestamp
     ) { source, currentBg, lastInput ->
-        val sourceName = source?.let { UiText.DynamicString(it.glucoseSourceId) }
+        val sourceName = source?.sourceDisplayName
         val sensorType = source?.getSensorTypeName()
         val interval = source?.readingsInterval
 

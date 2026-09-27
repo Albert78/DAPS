@@ -92,7 +92,7 @@ fun GlucoseSourceSetupContent(
     }
 
     val selectedDriver = uiState.selectedDriver
-    val titleText = selectedDriver?.displayName?.asString() ?: stringResource(id = R.string.glucose_source_setup_screen_title)
+    val titleText = selectedDriver?.driverDisplayName?.asString() ?: stringResource(id = R.string.glucose_source_setup_screen_title)
 
     Scaffold(
         topBar = {
@@ -342,7 +342,7 @@ private fun GlucoseSourceDriverCard(
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = driver.displayName.asString(),
+                        text = driver.driverDisplayName.asString(),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         maxLines = 2,
@@ -381,7 +381,7 @@ private fun GlucoseSourceDriverCard(
 
 private class PreviewGlucoseSourceDriver(
     override val driverId: String,
-    override val displayName: UiText
+    override val driverDisplayName: UiText
 ) : GlucoseSourceDriver {
     @Composable
     override fun SetupScreen(

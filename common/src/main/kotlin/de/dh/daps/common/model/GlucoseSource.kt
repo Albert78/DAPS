@@ -3,6 +3,7 @@ package de.dh.daps.common.model
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.ui.UiText
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -15,6 +16,11 @@ interface GlucoseSource {
      * This is used to identify the data provider in the database.
      */
     val glucoseSourceId: String
+
+    /**
+     * Human-readable display name of the glucose source.
+     */
+    val sourceDisplayName: UiText
 
     val readingsInterval: BgReadingsInterval
 

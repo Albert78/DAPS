@@ -18,6 +18,7 @@ import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.RawBg
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.screens.systemcontrol.GlucoseSourcePluginUiProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -28,10 +29,11 @@ import kotlin.time.Duration.Companion.milliseconds
 
 class SampleGlucoseSource : GlucoseSource, GlucoseSourcePluginUiProvider {
     override val glucoseSourceId: String = SOURCE_ID
+    override val sourceDisplayName: UiText = UiText.StringResource(R.string.sample_cgm_driver_display_name)
     override val readingsInterval: BgReadingsInterval
         get() = BgReadingsInterval.OneMinute
     override val readingsTimeDelay = Minutes(5)
-    override fun getSensorTypeName() = "Dexcom G6"
+    override fun getSensorTypeName() = "Dexcom-G6"
 
     override fun start() {
         // Nothing to do
