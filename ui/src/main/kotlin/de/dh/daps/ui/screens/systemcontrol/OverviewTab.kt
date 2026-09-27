@@ -42,13 +42,12 @@ import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.insulinValue
-import de.dh.daps.ui.common.longDateTime
+import de.dh.daps.ui.common.shortDateTime
 import de.dh.daps.ui.common.shortRelativeTimeAgo
+import de.dh.daps.ui.common.shortRelativeTimeUntil
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.daps.ui.common.time
-import java.time.Instant
-import java.time.ZoneId
 
 @Composable
 fun OverviewTabContent(
@@ -429,10 +428,7 @@ private fun <T> StatusMetricText(
             is BgReading -> "${v.value.toString(glucoseUnit)} ${glucoseUnitLabel(glucoseUnit)}"
             is Timestamp -> if (v.isValid()) {
                 if (isDateTime) {
-                    val localDateTime = Instant.ofEpochMilli(v.ms)
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDateTime()
-                    longDateTime(localDateTime)
+                    shortDateTime(v)
                 } else {
                     time(v)
                 }
@@ -442,8 +438,13 @@ private fun <T> StatusMetricText(
             else -> v.toString()
         }
     }
-    val relativeTime = if (timestamp != null && timestamp.isValid() && !isDateTime) {
-        shortRelativeTimeAgo(timestamp)
+    val relativeTime = if (timestamp != null && timestamp.isValid()) {
+        if (isDateTime) {
+            val rel = shortRelativeTimeUntil(timestamp)
+            if (rel.isNotEmpty()) "($rel)" else null
+        } else {
+            shortRelativeTimeAgo(timestamp)
+        }
     } else null
 
     StatusValueText(

@@ -153,7 +153,7 @@ fun time(time: LocalTime, withUnit: Boolean): String {
  * Composable UI function.
  * Formats a [LocalDateTime] using the localized long date-time pattern.
  *
- * @example longDateTime(now) -> "14.11.2024, 14:30" / "11/14/2024, 2:30 PM"
+ * @example longDateTime(now) -> "14.11.2026, 14:30" / "11/14/2026, 2:30 PM"
  */
 @Composable
 fun longDateTime(dateTime: LocalDateTime): String {
@@ -164,7 +164,7 @@ fun longDateTime(dateTime: LocalDateTime): String {
  * Composable UI function.
  * Formats a nullable [LocalDateTime] using the localized long date-time pattern or returns a default string.
  *
- * @example longDateTime(now) -> "14.11.2024, 14:30" / "11/14/2024, 2:30 PM"
+ * @example longDateTime(now) -> "14.11.2026, 14:30" / "11/14/2026, 2:30 PM"
  * @example longDateTime(null) -> "-"
  */
 @Composable
@@ -178,7 +178,7 @@ fun longDateTime(dateTime: LocalDateTime?, default: String = "-"): String {
  * Composable UI function.
  * Formats a nullable [Timestamp] using the localized long date-time pattern or returns a default string.
  *
- * @example longDateTime(timestamp) -> "14.11.2024, 14:30" / "11/14/2024, 2:30 PM"
+ * @example longDateTime(timestamp) -> "14.11.2026, 14:30" / "11/14/2026, 2:30 PM"
  * @example longDateTime(null) -> "-"
  */
 @Composable
@@ -208,7 +208,7 @@ fun shortDateTime(dateTime: LocalDateTime): String {
  * Composable UI function.
  * Formats a nullable [LocalDateTime] using the localized short date-time pattern or returns a default string.
  *
- * @example shortDateTime(now) -> "14.11. 14:30" / "Nov 14, 2:30 PM"
+ * @example shortDateTime(now) -> "14.11.26, 14:30" / "Nov 14, 2:30 PM"
  * @example shortDateTime(null) -> "-"
  */
 @Composable
@@ -218,13 +218,30 @@ fun shortDateTime(dateTime: LocalDateTime?, default: String = "-"): String {
     } ?: default
 }
 
+/**
+ * Composable UI function.
+ * Formats a nullable [Timestamp] using the localized short date-time pattern or returns a default string.
+ *
+ * @example shortDateTime(timestamp) -> "14.11.26, 14:30" / "Nov 14, 2:30 PM"
+ * @example shortDateTime(null) -> "-"
+ */
+@Composable
+fun shortDateTime(timestamp: Timestamp?, default: String = "-"): String {
+    return if (timestamp != null && timestamp.isValid()) {
+        val ldt = Instant.ofEpochMilli(timestamp.ms)
+            .atZone(ZoneId.systemDefault())
+            .toLocalDateTime()
+        shortDateTime(ldt, default)
+    } else default
+}
+
 /////////////////////////////////////////////// Long date //////////////////////////////////////
 
 /**
  * Composable UI function.
  * Formats a [LocalDate] using the localized long date pattern.
  *
- * @example longDate(date) -> "14. November 2024" / "November 14, 2024"
+ * @example longDate(date) -> "14. November 2026" / "November 14, 2026"
  */
 @Composable
 fun longDate(date: LocalDate): String {
@@ -235,7 +252,7 @@ fun longDate(date: LocalDate): String {
  * Composable UI function.
  * Formats a nullable [LocalDate] using the localized long date pattern or returns a default string.
  *
- * @example longDate(date) -> "14. November 2024" / "November 14, 2024"
+ * @example longDate(date) -> "14. November 2026" / "November 14, 2026"
  * @example longDate(null) -> "-"
  */
 @Composable
@@ -249,7 +266,7 @@ fun longDate(date: LocalDate?, default: String = "-"): String {
  * Composable UI function.
  * Formats a nullable [LocalDateTime] using the localized long date pattern or returns a default string.
  *
- * @example longDate(dateTime) -> "14. November 2024" / "November 14, 2024"
+ * @example longDate(dateTime) -> "14. November 2026" / "November 14, 2026"
  * @example longDate(null) -> "-"
  */
 @Composable
@@ -263,7 +280,7 @@ fun longDate(dateTime: LocalDateTime?, default: String = "-"): String {
  * Composable UI function.
  * Formats a [LocalDate] using the localized short date pattern.
  *
- * @example shortDate(date) -> "14.11.2024" / "11/14/2024"
+ * @example shortDate(date) -> "14.11.2026" / "11/14/2026"
  */
 @Composable
 fun shortDate(date: LocalDate): String {
@@ -274,7 +291,7 @@ fun shortDate(date: LocalDate): String {
  * Composable UI function.
  * Formats a nullable [LocalDate] using the localized short date pattern or returns a default string.
  *
- * @example shortDate(date) -> "14.11.2024" / "11/14/2024"
+ * @example shortDate(date) -> "14.11.2026" / "11/14/2026"
  * @example shortDate(null) -> "-"
  */
 @Composable
@@ -327,19 +344,23 @@ fun shortRelativeTimeAgo(timestamp: Timestamp): String {
  *
  * @example shortRelativeTimeUntil(300000) -> "in 5 Min." / "in 5 min"
  * @example shortRelativeTimeUntil(7200000) -> "in 2 Std." / "in 2 h"
+ * @example shortRelativeTimeUntil(86400000) -> "morgen" / "tomorrow"
+ * @example shortRelativeTimeUntil(259200000) -> "in 3 Tagen" / "in 3 days"
  */
 @Composable
 fun shortRelativeTimeUntil(diffMs: Long): String {
     val diffSec = diffMs / 1000
     val diffMin = diffMs / 60000
+    val diffHours = diffMin / 60
+    val diffDays = diffHours / 24
     return when {
         diffSec < 5 -> stringResource(CommonR.string.time_until_just_now)
         diffSec < 61 -> stringResource(CommonR.string.time_until_seconds, diffSec)
         diffMin < 1 -> stringResource(CommonR.string.time_until_just_now)
         diffMin < 91 -> stringResource(CommonR.string.time_until_minutes, diffMin)
-        else -> {
-            stringResource(CommonR.string.time_until_hours, diffMin / 60)
-        }
+        diffHours < 24 -> stringResource(CommonR.string.time_until_hours, diffHours)
+        diffDays == 1L -> stringResource(CommonR.string.time_until_tomorrow)
+        else -> stringResource(CommonR.string.time_until_days, diffDays)
     }
 }
 
