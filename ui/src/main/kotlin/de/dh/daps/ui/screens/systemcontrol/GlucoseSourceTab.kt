@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.Button
@@ -23,7 +22,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -94,33 +93,21 @@ fun GlucoseSourceOverviewCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(
-                        label = "Glukose-Quelle",
-                        icon = Icons.Default.Info
-                    ) {
-                        Text(
-                            text = uiState.glucoseSourceName?.asString() ?: "Nicht verbunden",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
+                Text(
+                    text = uiState.glucoseSourceName?.asString() ?: "Nicht verbunden",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
                 Spacer(modifier = Modifier.width(16.dp))
-                OutlinedButton(
+                OutlinedIconButton(
                     onClick = onChangeGlucoseSource
                 ) {
                     Icon(
                         imageVector = Icons.Default.SwapHoriz,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = if (uiState.glucoseSourceName != null) "Wechseln..." else "Einrichten...",
-                        style = MaterialTheme.typography.labelMedium
+                        contentDescription = if (uiState.glucoseSourceName != null) "Glukose-Quelle wechseln" else "Glukose-Quelle einrichten"
                     )
                 }
             }
@@ -411,10 +398,10 @@ fun GlucoseSourcePluginExampleCard(
 }
 
 internal fun sampleGlucoseSourceTabUiState() = GlucoseSourceTabUiState(
-    glucoseSourceName = UiText.DynamicString("Dexcom G6"),
-    manufacturer = "Dexcom",
-    serialNumber = "SN-98765432",
-    sensorTypeName = "G6-Sensor",
+    glucoseSourceName = UiText.DynamicString("SimBody Virtueller Glukosesensor"),
+    manufacturer = "DAPS",
+    serialNumber = "SIM-98765432",
+    sensorTypeName = "SimBody Glukosesensor",
     readingsInterval = BgReadingsInterval.FiveMinutes,
     lastBgReading = BgReading(
         value = BgValue.fromMgDl(124),

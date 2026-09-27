@@ -27,7 +27,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -109,33 +109,21 @@ fun PumpOverviewCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(
-                        label = "Pumpenmodell",
-                        icon = Icons.Default.Info
-                    ) {
-                        Text(
-                            text = uiState.pumpName?.asString() ?: uiState.pumpModel ?: "Nicht verbunden",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
+                Text(
+                    text = uiState.pumpName?.asString() ?: uiState.pumpModel ?: "Nicht verbunden",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
                 Spacer(modifier = Modifier.width(16.dp))
-                OutlinedButton(
+                OutlinedIconButton(
                     onClick = onChangePumpDriver
                 ) {
                     Icon(
                         imageVector = Icons.Default.SwapHoriz,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = if (uiState.pumpModel != null) "Wechseln..." else "Einrichten...",
-                        style = MaterialTheme.typography.labelMedium
+                        contentDescription = if (uiState.pumpName != null || uiState.pumpModel != null) "Insulinpumpe wechseln" else "Insulinpumpe einrichten"
                     )
                 }
             }
@@ -162,17 +150,31 @@ fun PumpOverviewCard(
                     }
                     Column(modifier = Modifier.weight(1f)) {
                         ControlDetailRow(
-                            label = "Seriennummer",
+                            label = "Pumpenmodell",
                             reserveIconSpace = true
                         ) {
                             Text(
-                                text = uiState.serialNumber ?: "--",
+                                text = uiState.pumpModel ?: "--",
                                 style = MaterialTheme.typography.bodyMedium,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
                     }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                ControlDetailRow(
+                    label = "Seriennummer",
+                    reserveIconSpace = true
+                ) {
+                    Text(
+                        text = uiState.serialNumber ?: "--",
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
             }
 
@@ -451,9 +453,10 @@ private fun ActionButton(
 }
 
 internal fun samplePumpTabUiState() = PumpTabUiState(
-    pumpModel = "DANA-i",
-    manufacturer = "SOOIL",
-    serialNumber = "12345678",
+    pumpName = UiText.DynamicString("SimBody Virtuelle Insulinpumpe"),
+    pumpModel = "Simulator",
+    manufacturer = "DAPS",
+    serialNumber = "SIM-001",
     pumpConnected = true,
     batteryPercent = 85,
     reservoirRemaining = InsulinAmount(140.0),

@@ -510,14 +510,14 @@ internal fun sampleOverviewTabUiState() = OverviewTabUiState(
         status = StatusMetric("Aktiv", status = ValueStatus.GOOD)
     ),
     glucoseSource = OverviewGlucoseSourceUiState(
-        sensorName = UiText.DynamicString("Dexcom-G6"),
+        sensorName = UiText.DynamicString("SimBody Virtueller Glukosesensor"),
         status = StatusMetric(true, status = ValueStatus.GOOD),
         lastConnection = StatusMetric(Timestamp(System.currentTimeMillis() - 60_000), status = ValueStatus.GOOD),
         lastReading = StatusMetric(Timestamp(System.currentTimeMillis() - 120_000), status = ValueStatus.GOOD),
         sensorExpiration = StatusMetric(Timestamp(System.currentTimeMillis() + 864_000_000), status = ValueStatus.GOOD)
     ),
     pump = OverviewPumpUiState(
-        pumpName = UiText.DynamicString("SOOIL DANA-i"),
+        pumpName = UiText.DynamicString("SimBody Virtuelle Insulinpumpe"),
         status = StatusMetric("Aktiv", status = ValueStatus.GOOD),
         lastBolus = StatusMetric(Timestamp(System.currentTimeMillis() - 600_000), status = ValueStatus.GOOD),
         battery = StatusMetric(85, status = ValueStatus.GOOD),
