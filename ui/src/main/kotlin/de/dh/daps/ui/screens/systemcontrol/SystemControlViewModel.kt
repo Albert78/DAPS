@@ -201,8 +201,8 @@ class SystemControlViewModel(
             combine(
                 source.status,
                 glucoseRepository.currentBg,
-                glucoseSourceManager.lastInputTimestamp
-            ) { status, currentBg, lastInput ->
+                source.lastConnection
+            ) { status, currentBg, lastConn ->
                 GlucoseUiData(
                     source = source,
                     sourceName = sourceName,
@@ -213,7 +213,7 @@ class SystemControlViewModel(
                     hasNextPrediction = hasPrediction,
                     estimatedExpirationTimestamp = expTimestamp,
                     pluginUiProvider = provider,
-                    lastInputTimestamp = lastInput,
+                    lastConnection = lastConn,
                     status = status
                 )
             }
@@ -291,7 +291,7 @@ class SystemControlViewModel(
                     value = glucoseSourceStatus,
                     status = glucoseValueStatus
                 ),
-                lastConnection = StatusMetric(value = gInfo.lastInputTimestamp, status = if (isGlucoseConnected) ValueStatus.GOOD else ValueStatus.BAD),
+                lastConnection = StatusMetric(value = gInfo.lastConnection, status = if (isGlucoseConnected) ValueStatus.GOOD else ValueStatus.BAD),
                 lastReading = StatusMetric(value = gInfo.lastBgReading?.timestamp, status = ValueStatus.GOOD),
                 sensorExpiration = StatusMetric(value = gInfo.estimatedExpirationTimestamp, status = ValueStatus.GOOD)
             ),
@@ -415,7 +415,7 @@ class SystemControlViewModel(
         val hasNextPrediction: Boolean = false,
         val estimatedExpirationTimestamp: Timestamp? = null,
         val pluginUiProvider: GlucoseSourcePluginUiProvider? = null,
-        val lastInputTimestamp: Timestamp = Timestamp.INVALID,
+        val lastConnection: Timestamp? = null,
         val status: GlucoseSourceStatus? = null
     )
 
