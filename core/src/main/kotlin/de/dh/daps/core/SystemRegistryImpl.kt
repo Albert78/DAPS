@@ -31,6 +31,7 @@ import de.dh.daps.core.repository.DeviceManagementRepository
 import de.dh.daps.core.repository.DeviceStatusRepository
 import de.dh.daps.core.repository.FoodRepository
 import de.dh.daps.core.repository.GlucoseRepository
+import de.dh.daps.core.repository.PermissionRepository
 import de.dh.daps.core.repository.SettingsRepository
 import de.dh.daps.core.repository.SystemMetricsRepository
 import de.dh.daps.core.repository.TherapyRepository
@@ -61,6 +62,7 @@ class SystemRegistryImpl(
     override val settingsRepository: SettingsRepository,
     override val systemMetricsRepository: SystemMetricsRepository,
     override val deviceStatusRepository: DeviceStatusRepository,
+    override val permissionRepository: PermissionRepository,
     override val appPreferencesRepository: AppPreferencesRepository,
     override val glucoseSourceManager: GlucoseSourceManager,
     override val glucoseSourceDriverManager: GlucoseSourceDriverManager,
@@ -109,6 +111,7 @@ class SystemRegistryImpl(
             val settingsRepository = SettingsRepository(appDatabase)
             val systemMetricsRepository = SystemMetricsRepository(appDatabase)
             val deviceStatusRepository = DeviceStatusRepository(application)
+            val permissionRepository = PermissionRepository(application)
 
             // Initialize Managers
             val wakeService = SystemWakeServiceImpl(
@@ -177,6 +180,7 @@ class SystemRegistryImpl(
             )
 
             val permissionsHandler = PermissionsChangedHandler {
+                permissionRepository.refreshPermissions()
                 pluginManager.triggerUpdatesAfterPermissionsChange()
                 onPermissionsChanged()
             }
@@ -195,6 +199,7 @@ class SystemRegistryImpl(
                 settingsRepository = settingsRepository,
                 systemMetricsRepository = systemMetricsRepository,
                 deviceStatusRepository = deviceStatusRepository,
+                permissionRepository = permissionRepository,
                 appPreferencesRepository = appPreferencesRepository,
                 therapyManager = therapyManager,
                 recommendationManager = recommendationManager,

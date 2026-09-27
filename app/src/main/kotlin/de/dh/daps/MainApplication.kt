@@ -39,6 +39,9 @@ class MainApplication : Application(), RegistryProvider {
         registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
             override fun onActivityResumed(activity: Activity) {
                 startApsService()
+                if (::registry.isInitialized) {
+                    registry.permissionRepository.refreshPermissions()
+                }
             }
             override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
             override fun onActivityStarted(activity: Activity) {}

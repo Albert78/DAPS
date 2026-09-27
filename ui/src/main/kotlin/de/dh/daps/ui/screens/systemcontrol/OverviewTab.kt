@@ -146,7 +146,10 @@ private fun AndroidSystemCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     ControlDetailRow(label = "Berechtigungen") {
-                        StatusMetricText(metric = state.permissionsStatus)
+                        StatusMetricText(
+                            metric = state.permissionsStatus,
+                            formatValue = { count -> if (count == 0) "Alle erteilt" else "$count fehlend" }
+                        )
                     }
                 }
                 Column(modifier = Modifier.weight(1f)) {
@@ -405,29 +408,34 @@ private fun OverviewPumpCard(
 private fun <T> StatusMetricText(
     metric: StatusMetric<T>,
     modifier: Modifier = Modifier,
-    isDateTime: Boolean = false
+    isDateTime: Boolean = false,
+    formatValue: ((T) -> String)? = null
 ) {
     val glucoseUnit = LocalGlucoseUnit.current
     val timestamp = metric.value as? Timestamp
 
-    val formattedValue = when (val v = metric.value) {
-        is Boolean -> if (v) "Aktiv" else "Inaktiv"
-        is Int -> "$v%"
-        is InsulinAmount -> insulinValue(v)
-        is BgReading -> "${v.value.toString(glucoseUnit)} ${glucoseUnitLabel(glucoseUnit)}"
-        is Timestamp -> if (v.isValid()) {
-            if (isDateTime) {
-                val localDateTime = Instant.ofEpochMilli(v.ms)
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime()
-                longDateTime(localDateTime)
-            } else {
-                time(v)
-            }
-        } else "--"
-        is String -> v
-        null -> "--"
-        else -> v.toString()
+    val formattedValue = if (metric.value != null && formatValue != null) {
+        formatValue(metric.value)
+    } else {
+        when (val v = metric.value) {
+            is Boolean -> if (v) "Aktiv" else "Inaktiv"
+            is Int -> "$v%"
+            is InsulinAmount -> insulinValue(v)
+            is BgReading -> "${v.value.toString(glucoseUnit)} ${glucoseUnitLabel(glucoseUnit)}"
+            is Timestamp -> if (v.isValid()) {
+                if (isDateTime) {
+                    val localDateTime = Instant.ofEpochMilli(v.ms)
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDateTime()
+                    longDateTime(localDateTime)
+                } else {
+                    time(v)
+                }
+            } else "--"
+            is String -> v
+            null -> "--"
+            else -> v.toString()
+        }
     }
     val relativeTime = if (timestamp != null && timestamp.isValid() && !isDateTime) {
         shortRelativeTimeAgo(timestamp)
@@ -487,7 +495,7 @@ internal fun sampleOverviewTabUiState() = OverviewTabUiState(
     androidSystem = OverviewAndroidSystemUiState(
         bluetoothStatus = StatusMetric(true, status = ValueStatus.GOOD),
         phoneBattery = StatusMetric(82, status = ValueStatus.GOOD),
-        permissionsStatus = StatusMetric("Alle erteilt", status = ValueStatus.GOOD),
+        permissionsStatus = StatusMetric(0, status = ValueStatus.GOOD),
         dapsServiceStatus = StatusMetric(true, status = ValueStatus.GOOD)
     ),
     apsSystem = OverviewApsSystemUiState(

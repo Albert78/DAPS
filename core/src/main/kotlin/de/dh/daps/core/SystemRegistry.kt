@@ -22,6 +22,7 @@ import de.dh.daps.core.repository.DeviceManagementRepository
 import de.dh.daps.core.repository.DeviceStatusRepository
 import de.dh.daps.core.repository.FoodRepository
 import de.dh.daps.core.repository.GlucoseRepository
+import de.dh.daps.core.repository.PermissionRepository
 import de.dh.daps.core.repository.SettingsRepository
 import de.dh.daps.core.repository.SystemMetricsRepository
 import de.dh.daps.core.repository.TherapyRepository
@@ -111,6 +112,11 @@ interface SystemRegistry : PluginContext {
      * Repository for Android device system status metrics (e.g. battery level, Bluetooth status).
      */
     val deviceStatusRepository: DeviceStatusRepository
+
+    /**
+     * Repository for checking and observing system permissions.
+     */
+    val permissionRepository: PermissionRepository
 
     /**
      * Repository for lightweight application preferences and key-value pairs.

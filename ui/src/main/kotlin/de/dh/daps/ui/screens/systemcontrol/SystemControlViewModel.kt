@@ -44,7 +44,7 @@ data class StatusMetric<T>(
 data class OverviewAndroidSystemUiState(
     val bluetoothStatus: StatusMetric<Boolean> = StatusMetric(true, status = ValueStatus.GOOD),
     val phoneBattery: StatusMetric<Int> = StatusMetric(0, status = ValueStatus.GOOD),
-    val permissionsStatus: StatusMetric<String> = StatusMetric("Alle erteilt", status = ValueStatus.GOOD),
+    val permissionsStatus: StatusMetric<Int> = StatusMetric(0, status = ValueStatus.GOOD),
     val dapsServiceStatus: StatusMetric<Boolean> = StatusMetric(true, status = ValueStatus.GOOD)
 )
 
@@ -129,12 +129,14 @@ class SystemControlViewModel(
     private val glucoseSourceManager = systemRegistry.glucoseSourceManager
     private val pumpManager = systemRegistry.pumpManager
     private val deviceStatusRepository = systemRegistry.deviceStatusRepository
+    private val permissionRepository = systemRegistry.permissionRepository
 
     private val androidSystemInfo = combine(
         deviceStatusRepository.observeBluetoothStatus(),
         deviceStatusRepository.observeBatteryPercentage(),
-        deviceStatusRepository.isServiceRunning
-    ) { btStatus, batteryPct, isRunning ->
+        deviceStatusRepository.isServiceRunning,
+        permissionRepository.permissionSummary
+    ) { btStatus, batteryPct, isRunning, permSummary ->
         OverviewAndroidSystemUiState(
             bluetoothStatus = StatusMetric(
                 value = btStatus == BluetoothStatus.ENABLED,
@@ -152,7 +154,10 @@ class SystemControlViewModel(
                     else -> ValueStatus.GOOD
                 }
             ),
-            permissionsStatus = StatusMetric("Alle erteilt", status = ValueStatus.GOOD),
+            permissionsStatus = StatusMetric(
+                value = permSummary.numMissing,
+                status = if (permSummary.isAllGranted) ValueStatus.GOOD else ValueStatus.WARNING
+            ),
             dapsServiceStatus = StatusMetric(
                 value = isRunning,
                 status = if (isRunning) ValueStatus.GOOD else ValueStatus.BAD

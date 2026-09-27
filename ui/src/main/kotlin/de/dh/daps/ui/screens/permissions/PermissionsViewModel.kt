@@ -2,21 +2,19 @@ package de.dh.daps.ui.screens.permissions
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 /**
  * This view model is used to show the state of needed and granted permissions to the user.
  * It can be used from multiple activities, since the information about granted permissions is needed
  * on several places in the app (permissions screen, notification messages about missing permissions
  * in other screens).
- * This view model isn't implemented in the typical layer architecture (Repository - ViewModel - View),
- * since permission management (querying and requesting permissions, observing app permissions) is a
- * subject of the UI in Android. We request the current app permissions status in method
- * [updateAppPermissions] but we need the UI to call this method when permissions have changed.
  */
 class PermissionsViewModel(
     private val systemRegistry: SystemRegistry
@@ -25,23 +23,24 @@ class PermissionsViewModel(
     val uiState = _uiState.asStateFlow()
 
     init {
-        updateAppPermissions()
+        viewModelScope.launch {
+            systemRegistry.permissionRepository.permissionSummary.collect {
+                refreshUiState()
+            }
+        }
     }
 
     /**
-     * Updates the internal state of the system permissions with the current system settings for this app.
+     * Triggers a refresh of the system permissions in [de.dh.daps.core.repository.PermissionRepository].
      */
     fun updateAppPermissions() {
-        val appContext = systemRegistry.appContext
+        systemRegistry.permissionRepository.refreshPermissions()
+    }
 
-        val canSchedule = canScheduleExactAlarms(appContext)
-        val canShowFullscreen = canShowFullscreenActivity(appContext)
-        val canPost = canPostNotifications(appContext)
-        val isIgnoring = isIgnoringBatteryOptimizations(appContext)
-        val isAutoRevoke = isAutoRevokePermissions(appContext)
+    private fun refreshUiState() {
+        val permSummary = systemRegistry.permissionRepository.permissionSummary.value
 
         val activeFunctions = RestrictedAppFunctions.getActiveAppFunctions()
-
         val allNeededPermissions = activeFunctions.flatMap { it.neededPermissions }.toSet()
 
         fun getStatus(permission: NeededPermission, isGranted: Boolean): PermissionStatus {
@@ -52,12 +51,11 @@ class PermissionsViewModel(
             }
         }
 
-        val alarmPermissionStatus = getStatus(NeededPermission.SCHEDULE_EXACT_ALARMS, canSchedule)
-        val notificationPermissionStatus = getStatus(NeededPermission.POST_NOTIFICATIONS, canPost)
-        val fullscreenPermissionStatus = getStatus(NeededPermission.SHOW_FULLSCREEN_ACTIVITY, canShowFullscreen)
-        val ignoreBatteryOptimizationPermissionStatus = getStatus(NeededPermission.IGNORE_BATTERY_OPTIMIZATIONS, isIgnoring)
-        // For auto-revoke, the permission status is "granted" if the app is exempted, which means isAutoRevokePermissions() is false.
-        val autoRevokePermissionsPermissionStatus = getStatus(NeededPermission.MANAGE_AUTO_REVOKE, !isAutoRevoke)
+        val alarmPermissionStatus = getStatus(NeededPermission.SCHEDULE_EXACT_ALARMS, permSummary.canScheduleExactAlarms)
+        val notificationPermissionStatus = getStatus(NeededPermission.POST_NOTIFICATIONS, permSummary.canPostNotifications)
+        val fullscreenPermissionStatus = getStatus(NeededPermission.SHOW_FULLSCREEN_ACTIVITY, permSummary.canShowFullscreenActivity)
+        val ignoreBatteryOptimizationPermissionStatus = getStatus(NeededPermission.IGNORE_BATTERY_OPTIMIZATIONS, permSummary.isIgnoringBatteryOptimizations)
+        val autoRevokePermissionsPermissionStatus = getStatus(NeededPermission.MANAGE_AUTO_REVOKE, permSummary.isAutoRevokeExempted)
 
         updateUiModel(
             alarmPermissionStatus = alarmPermissionStatus,

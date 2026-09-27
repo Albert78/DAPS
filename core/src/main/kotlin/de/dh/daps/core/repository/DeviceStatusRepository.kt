@@ -22,6 +22,9 @@ enum class BluetoothStatus {
     UNAVAILABLE
 }
 
+/**
+ * Repository for providing access to the Android system and phone device status.
+ */
 class DeviceStatusRepository(private val context: Context) {
     private val _isServiceRunning = MutableStateFlow(false)
     val isServiceRunning: StateFlow<Boolean> = _isServiceRunning.asStateFlow()
@@ -29,6 +32,7 @@ class DeviceStatusRepository(private val context: Context) {
     fun setServiceRunning(running: Boolean) {
         _isServiceRunning.value = running
     }
+
     fun observeBatteryPercentage(): Flow<Int> = callbackFlow {
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(ctx: Context?, intent: Intent?) {
