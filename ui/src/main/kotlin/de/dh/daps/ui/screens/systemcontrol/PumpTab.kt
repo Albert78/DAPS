@@ -20,7 +20,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SwapHoriz
-import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -227,35 +227,50 @@ fun PumpOverviewCard(
                         }
                     }
                     Column(modifier = Modifier.weight(1f)) {
-                        ControlDetailRow(
-                            label = "Letzte Verbindung",
-                            icon = Icons.Default.Sync
-                        ) {
-                            FlowRow(
-                                verticalArrangement = Arrangement.Center,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        if (uiState.pumpConnected) {
+                            ControlDetailRow(
+                                label = "Verbindungsstatus",
+                                icon = Icons.Outlined.Link
                             ) {
                                 Text(
-                                    text = lastConnTimeText,
+                                    text = "Verbunden",
                                     style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.Medium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.secondary,
                                     maxLines = 2,
                                     overflow = TextOverflow.Ellipsis
                                 )
-                                if (!lastConnRelativeText.isNullOrEmpty()) {
-                                    val relativeText = lastConnRelativeText
-                                    val formattedRelative = if (relativeText.startsWith("(") && relativeText.endsWith(")")) {
-                                        relativeText
-                                    } else {
-                                        "($relativeText)"
-                                    }
+                            }
+                        } else {
+                            ControlDetailRow(
+                                label = "Letzte Verbindung",
+                                icon = Icons.Outlined.Link
+                            ) {
+                                FlowRow(
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
                                     Text(
-                                        text = formattedRelative,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.secondary,
+                                        text = lastConnTimeText,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Medium,
                                         maxLines = 2,
                                         overflow = TextOverflow.Ellipsis
                                     )
+                                    if (!lastConnRelativeText.isNullOrEmpty()) {
+                                        val formattedRelative = if (lastConnRelativeText.startsWith("(") && lastConnRelativeText.endsWith(")")) {
+                                            lastConnRelativeText
+                                        } else {
+                                            "($lastConnRelativeText)"
+                                        }
+                                        Text(
+                                            text = formattedRelative,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.secondary,
+                                            maxLines = 2,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
                                 }
                             }
                         }

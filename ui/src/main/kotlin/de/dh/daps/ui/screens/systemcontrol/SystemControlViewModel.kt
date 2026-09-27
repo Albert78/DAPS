@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.GlucoseSourceStatus
 import de.dh.daps.common.model.HardwareInformation
 import de.dh.daps.common.model.InsulinAmount
@@ -132,6 +131,33 @@ data class SystemControlUiState(
 class SystemControlViewModel(
     systemRegistry: SystemRegistry
 ) : ViewModel() {
+    private data class GlucoseUiData(
+        val sourceName: UiText,
+        val sensorTypeName: String,
+        val readingsInterval: BgReadingsInterval,
+        val status: GlucoseSourceStatus,
+        val lastConnection: Timestamp? = null,
+        val lastBgReading: BgReading? = null,
+        val nextPredictedTimestamp: Timestamp? = null,
+        val hasNextPrediction: Boolean = false,
+        val estimatedExpirationTimestamp: Timestamp? = null,
+        val pluginUiProvider: GlucoseSourcePluginUiProvider? = null
+    )
+
+    private data class PumpUiData(
+        val pumpName: UiText,
+        val connected: Boolean = false,
+        val model: String? = null,
+        val manufacturer: String? = null,
+        val serialNumber: String? = null,
+        val status: InsulinPumpStatus,
+        val lastConnection: Timestamp = Timestamp.INVALID,
+        val jobs: List<PumpJob> = emptyList(),
+        val isSuspended: Boolean = false,
+        val hasError: Boolean = false,
+        val pluginUiProvider: PumpPluginUiProvider? = null
+    )
+
     private val systemMetricsRepository = systemRegistry.systemMetricsRepository
     private val glucoseRepository = systemRegistry.glucoseRepository
     private val treatmentRepository = systemRegistry.treatmentRepository
@@ -204,17 +230,16 @@ class SystemControlViewModel(
                 source.lastConnection
             ) { status, currentBg, lastConn ->
                 GlucoseUiData(
-                    source = source,
                     sourceName = sourceName,
                     sensorTypeName = sensorType,
                     readingsInterval = interval,
+                    status = status,
+                    lastConnection = lastConn,
                     lastBgReading = currentBg,
                     nextPredictedTimestamp = if (hasPrediction) nextPredicted else null,
                     hasNextPrediction = hasPrediction,
                     estimatedExpirationTimestamp = expTimestamp,
-                    pluginUiProvider = provider,
-                    lastConnection = lastConn,
-                    status = status
+                    pluginUiProvider = provider
                 )
             }
         }
@@ -421,34 +446,6 @@ class SystemControlViewModel(
     fun refreshPumpStatus() {
         pumpManager.issueCommand(PumpCommand.RefreshStatus)
     }
-
-    private data class GlucoseUiData(
-        val source: GlucoseSource,
-        val sourceName: UiText,
-        val sensorTypeName: String,
-        val readingsInterval: BgReadingsInterval,
-        val status: GlucoseSourceStatus,
-        val lastConnection: Timestamp? = null,
-        val lastBgReading: BgReading? = null,
-        val nextPredictedTimestamp: Timestamp? = null,
-        val hasNextPrediction: Boolean = false,
-        val estimatedExpirationTimestamp: Timestamp? = null,
-        val pluginUiProvider: GlucoseSourcePluginUiProvider? = null
-    )
-
-    private data class PumpUiData(
-        val pumpName: UiText,
-        val connected: Boolean = false,
-        val model: String? = null,
-        val manufacturer: String? = null,
-        val serialNumber: String? = null,
-        val status: InsulinPumpStatus,
-        val lastConnection: Timestamp = Timestamp.INVALID,
-        val jobs: List<PumpJob> = emptyList(),
-        val isSuspended: Boolean = false,
-        val hasError: Boolean = false,
-        val pluginUiProvider: PumpPluginUiProvider? = null
-    )
 
     companion object {
         private const val BATTERY_LOW_THRESHOLD = 15
