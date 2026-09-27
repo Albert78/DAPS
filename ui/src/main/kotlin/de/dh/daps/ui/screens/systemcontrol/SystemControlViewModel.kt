@@ -79,7 +79,7 @@ data class OverviewTabUiState(
     val pump: OverviewPumpUiState = OverviewPumpUiState()
 )
 
-data class GlucoseSourceTabUiState(
+data class SourceTabUiState(
     val glucoseSourceName: UiText? = null,
     val manufacturer: String? = null,
     val serialNumber: String? = null,
@@ -117,7 +117,7 @@ data class PumpTabUiState(
 
 data class SystemControlUiState(
     val overviewUiState: OverviewTabUiState = OverviewTabUiState(),
-    val glucoseSourceTabUiState: GlucoseSourceTabUiState = GlucoseSourceTabUiState(),
+    val sourceTabUiState: SourceTabUiState = SourceTabUiState(),
     val pumpTabUiState: PumpTabUiState = PumpTabUiState()
 )
 
@@ -287,8 +287,8 @@ class SystemControlViewModel(
             )
         )
 
-        // Glucose Source Tab State
-        val glucoseSourceTabState = GlucoseSourceTabUiState(
+        // Source Tab State
+        val sourceTabState = SourceTabUiState(
             glucoseSourceName = gInfo.sourceName,
             manufacturer = null,
             sensorTypeName = gInfo.sensorTypeName,
@@ -351,7 +351,7 @@ class SystemControlViewModel(
 
         SystemControlUiState(
             overviewUiState = overviewState,
-            glucoseSourceTabUiState = glucoseSourceTabState,
+            sourceTabUiState = sourceTabState,
             pumpTabUiState = pumpTabState
         )
     }.stateIn(

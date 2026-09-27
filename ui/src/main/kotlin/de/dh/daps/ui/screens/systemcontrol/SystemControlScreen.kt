@@ -143,8 +143,8 @@ fun SystemControlContent(
                         onRefreshPumpStatus = onRefreshPumpStatus,
                         onNavigateToCoreDecisions = onNavigateToCoreDecisions
                     )
-                    SYSTEM_CONTROL_TAB_GLUCOSE_SOURCE -> GlucoseSourceTabContent(
-                        uiState = uiState.glucoseSourceTabUiState,
+                    SYSTEM_CONTROL_TAB_GLUCOSE_SOURCE -> SourceTabContent(
+                        uiState = uiState.sourceTabUiState,
                         onChangeGlucoseSource = onNavigateToGlucoseSourceSetup,
                         onStopSensor = onStopGlucoseSource
                     )
@@ -220,6 +220,6 @@ fun SystemControlPumpPreview() {
 
 private fun previewUiState() = SystemControlUiState(
     overviewUiState = sampleOverviewTabUiState(),
-    glucoseSourceTabUiState = sampleGlucoseSourceTabUiState(),
+    sourceTabUiState = sampleSourceTabUiState(),
     pumpTabUiState = samplePumpTabUiState()
 )

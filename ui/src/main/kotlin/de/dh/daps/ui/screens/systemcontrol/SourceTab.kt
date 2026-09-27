@@ -49,14 +49,14 @@ import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.time
 
 @Composable
-fun GlucoseSourceTabContent(
+fun SourceTabContent(
     modifier: Modifier = Modifier,
-    uiState: GlucoseSourceTabUiState = GlucoseSourceTabUiState(),
+    uiState: SourceTabUiState = SourceTabUiState(),
     onChangeGlucoseSource: () -> Unit = {},
     @Suppress("UNUSED_PARAMETER") onStopSensor: () -> Unit = {}
 ) {
     Column(modifier = modifier) {
-        GlucoseSourceOverviewCard(
+        SourceOverviewCard(
             uiState = uiState,
             onChangeGlucoseSource = onChangeGlucoseSource
         )
@@ -73,8 +73,8 @@ fun GlucoseSourceTabContent(
 }
 
 @Composable
-fun GlucoseSourceOverviewCard(
-    uiState: GlucoseSourceTabUiState,
+fun SourceOverviewCard(
+    uiState: SourceTabUiState,
     modifier: Modifier = Modifier,
     onChangeGlucoseSource: () -> Unit = {}
 ) {
@@ -397,7 +397,7 @@ fun GlucoseSourcePluginExampleCard(
     }
 }
 
-internal fun sampleGlucoseSourceTabUiState() = GlucoseSourceTabUiState(
+internal fun sampleSourceTabUiState() = SourceTabUiState(
     glucoseSourceName = UiText.DynamicString("SimBody Virtueller Glukosesensor"),
     manufacturer = "DAPS",
     serialNumber = "SIM-98765432",
@@ -423,27 +423,27 @@ internal fun sampleGlucoseSourceTabUiState() = GlucoseSourceTabUiState(
     }
 )
 
-@Preview(showBackground = true, name = "Glucose Source Tab - Light Mode")
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Glucose Source Tab - Dark Mode")
+@Preview(showBackground = true, name = "Source Tab - Light Mode")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Source Tab - Dark Mode")
 @Composable
-fun GlucoseSourceTabPreview() {
+fun SourceTabPreview() {
     AppTheme {
         Surface {
-            GlucoseSourceTabContent(
-                uiState = sampleGlucoseSourceTabUiState(),
+            SourceTabContent(
+                uiState = sampleSourceTabUiState(),
                 modifier = Modifier.padding(16.dp)
             )
         }
     }
 }
 
-@Preview(showBackground = true, name = "Glucose Source Tab - Disconnected")
+@Preview(showBackground = true, name = "Source Tab - Disconnected")
 @Composable
-fun GlucoseSourceTabDisconnectedPreview() {
+fun SourceTabDisconnectedPreview() {
     AppTheme {
         Surface {
-            GlucoseSourceTabContent(
-                uiState = GlucoseSourceTabUiState(
+            SourceTabContent(
+                uiState = SourceTabUiState(
                     glucoseSourceName = null,
                     sensorTypeName = null,
                     readingsInterval = null,
