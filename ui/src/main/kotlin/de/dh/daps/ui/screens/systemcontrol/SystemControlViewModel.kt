@@ -16,10 +16,10 @@ import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.core.SystemRegistry
-import de.dh.daps.core.repository.BluetoothStatus
 import de.dh.daps.core.pump.JobErrorCode
 import de.dh.daps.core.pump.PumpCommand
 import de.dh.daps.core.pump.PumpJob
+import de.dh.daps.core.repository.BluetoothStatus
 import de.dh.daps.ui.R
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
@@ -42,10 +42,10 @@ data class StatusMetric<T>(
 )
 
 data class OverviewAndroidSystemUiState(
-    val bluetoothStatus: StatusMetric<String> = StatusMetric("Aktiviert", status = ValueStatus.GOOD),
-    val phoneBattery: StatusMetric<Int> = StatusMetric(82, status = ValueStatus.GOOD),
+    val bluetoothStatus: StatusMetric<Boolean> = StatusMetric(true, status = ValueStatus.GOOD),
+    val phoneBattery: StatusMetric<Int> = StatusMetric(0, status = ValueStatus.GOOD),
     val permissionsStatus: StatusMetric<String> = StatusMetric("Alle erteilt", status = ValueStatus.GOOD),
-    val dapsServiceStatus: StatusMetric<String> = StatusMetric("Aktiv", status = ValueStatus.GOOD)
+    val dapsServiceStatus: StatusMetric<Boolean> = StatusMetric(true, status = ValueStatus.GOOD)
 )
 
 data class OverviewApsSystemUiState(
@@ -136,24 +136,25 @@ class SystemControlViewModel(
         deviceStatusRepository.isServiceRunning
     ) { btStatus, batteryPct, isRunning ->
         OverviewAndroidSystemUiState(
-            bluetoothStatus = when (btStatus) {
-                BluetoothStatus.ENABLED -> StatusMetric("Aktiviert", status = ValueStatus.GOOD)
-                BluetoothStatus.DISABLED -> StatusMetric("Deaktiviert", status = ValueStatus.BAD)
-                BluetoothStatus.TURNING_ON -> StatusMetric("Wird aktiviert", status = ValueStatus.WARNING)
-                BluetoothStatus.TURNING_OFF -> StatusMetric("Wird deaktiviert", status = ValueStatus.WARNING)
-                BluetoothStatus.UNAVAILABLE -> StatusMetric("Nicht verfügbar", status = ValueStatus.BAD)
-            },
+            bluetoothStatus = StatusMetric(
+                value = btStatus == BluetoothStatus.ENABLED,
+                status = when (btStatus) {
+                    BluetoothStatus.ENABLED -> ValueStatus.GOOD
+                    BluetoothStatus.TURNING_ON, BluetoothStatus.TURNING_OFF -> ValueStatus.WARNING
+                    BluetoothStatus.DISABLED, BluetoothStatus.UNAVAILABLE -> ValueStatus.BAD
+                }
+            ),
             phoneBattery = StatusMetric(
                 value = batteryPct,
                 status = when {
-                    batteryPct < 15 -> ValueStatus.BAD
-                    batteryPct < 30 -> ValueStatus.WARNING
+                    batteryPct < BATTERY_LOW_THRESHOLD -> ValueStatus.BAD
+                    batteryPct < BATTERY_WARNING_THRESHOLD -> ValueStatus.WARNING
                     else -> ValueStatus.GOOD
                 }
             ),
             permissionsStatus = StatusMetric("Alle erteilt", status = ValueStatus.GOOD),
             dapsServiceStatus = StatusMetric(
-                value = if (isRunning) "Aktiv" else "Inaktiv",
+                value = isRunning,
                 status = if (isRunning) ValueStatus.GOOD else ValueStatus.BAD
             )
         )
@@ -260,7 +261,7 @@ class SystemControlViewModel(
                 lastBolus = StatusMetric(value = lastBolusTs, status = ValueStatus.GOOD),
                 battery = StatusMetric(
                     value = pInfo.status?.batteryRemainingPercent,
-                    status = if ((pInfo.status?.batteryRemainingPercent ?: 100) < 20) ValueStatus.WARNING else ValueStatus.GOOD
+                    status = if ((pInfo.status?.batteryRemainingPercent ?: 100) < PUMP_BATTERY_WARNING_THRESHOLD) ValueStatus.WARNING else ValueStatus.GOOD
                 ),
                 reservoir = StatusMetric(
                     value = pInfo.status?.reservoirRemainingUnits,
@@ -386,6 +387,10 @@ class SystemControlViewModel(
     )
 
     companion object {
+        private const val BATTERY_LOW_THRESHOLD = 15
+        private const val BATTERY_WARNING_THRESHOLD = 30
+        private const val PUMP_BATTERY_WARNING_THRESHOLD = 20
+
         class Factory(private val registry: SystemRegistry) : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {

@@ -411,6 +411,7 @@ private fun <T> StatusMetricText(
     val timestamp = metric.value as? Timestamp
 
     val formattedValue = when (val v = metric.value) {
+        is Boolean -> if (v) "Aktiv" else "Inaktiv"
         is Int -> "$v%"
         is InsulinAmount -> insulinValue(v)
         is BgReading -> "${v.value.toString(glucoseUnit)} ${glucoseUnitLabel(glucoseUnit)}"
@@ -484,10 +485,10 @@ private fun StatusValueText(
 
 internal fun sampleOverviewTabUiState() = OverviewTabUiState(
     androidSystem = OverviewAndroidSystemUiState(
-        bluetoothStatus = StatusMetric("Aktiviert", status = ValueStatus.GOOD),
+        bluetoothStatus = StatusMetric(true, status = ValueStatus.GOOD),
         phoneBattery = StatusMetric(82, status = ValueStatus.GOOD),
         permissionsStatus = StatusMetric("Alle erteilt", status = ValueStatus.GOOD),
-        dapsServiceStatus = StatusMetric("Aktiv", status = ValueStatus.GOOD)
+        dapsServiceStatus = StatusMetric(true, status = ValueStatus.GOOD)
     ),
     apsSystem = OverviewApsSystemUiState(
         mode = StatusMetric("Auto-Korrektur", status = ValueStatus.GOOD),
