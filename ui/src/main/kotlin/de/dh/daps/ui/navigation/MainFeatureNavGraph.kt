@@ -95,6 +95,7 @@ import de.dh.daps.ui.screens.preferences.PreferencesViewModel
 import de.dh.daps.ui.screens.pumpsetup.PumpSetupScreen
 import de.dh.daps.ui.screens.pumpsetup.PumpSetupViewModel
 import de.dh.daps.ui.screens.systemcontrol.CoreDecisionsScreen
+import de.dh.daps.ui.screens.systemcontrol.CoreDecisionsViewModel
 import de.dh.daps.ui.screens.systemcontrol.SystemControlScreen
 import de.dh.daps.ui.screens.systemcontrol.SystemControlViewModel
 import de.dh.daps.ui.screens.therapy.BgEditorScreen
@@ -431,8 +432,8 @@ class MainFeatureNavGraph(
             }
 
             is CoreDecisionsRoute -> NavEntry(key) {
-                val vm: SystemControlViewModel = viewModel(
-                    factory = SystemControlViewModel.Companion.Factory(registry)
+                val vm: CoreDecisionsViewModel = viewModel(
+                    factory = CoreDecisionsViewModel.Companion.Factory(registry)
                 )
                 CoreDecisionsScreen(
                     viewModel = vm,

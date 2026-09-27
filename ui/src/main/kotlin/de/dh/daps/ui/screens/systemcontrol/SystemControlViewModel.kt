@@ -15,7 +15,6 @@ import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.core.SystemRegistry
-import de.dh.daps.core.aps.CoreInsight
 import de.dh.daps.core.pump.JobErrorCode
 import de.dh.daps.core.pump.PumpCommand
 import de.dh.daps.core.pump.PumpJob
@@ -130,22 +129,7 @@ data class PumpTabUiState(
 data class SystemControlUiState(
     val overviewUiState: OverviewTabUiState = OverviewTabUiState(),
     val glucoseSourceTabUiState: GlucoseSourceTabUiState = GlucoseSourceTabUiState(),
-    val pumpTabUiState: PumpTabUiState = PumpTabUiState(),
-
-    val coreInsights: List<CoreInsight> = emptyList(),
-    val glucoseSourceName: UiText? = glucoseSourceTabUiState.glucoseSourceName,
-    val sensorTypeName: String? = glucoseSourceTabUiState.sensorTypeName,
-    val readingsInterval: BgReadingsInterval? = null,
-    val lastBgReading: BgReading? = null,
-    val nextPredictedTimestamp: Timestamp = Timestamp.INVALID,
-    val glucoseUnit: GlucoseUnit = GlucoseUnit.MG_DL,
-    val glucoseSourcePluginUiProvider: GlucoseSourcePluginUiProvider? = null,
-    val pumpPluginUiProvider: PumpPluginUiProvider? = null,
-    val pumpConnected: Boolean = pumpTabUiState.pumpConnected,
-    val pumpModel: String? = pumpTabUiState.pumpModel,
-    val pumpStatus: InsulinPumpStatus? = null,
-    val lastPumpConnection: Timestamp = Timestamp.INVALID,
-    val pendingPumpJobs: List<PumpJob> = emptyList()
+    val pumpTabUiState: PumpTabUiState = PumpTabUiState()
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -348,21 +332,7 @@ class SystemControlViewModel(
         SystemControlUiState(
             overviewUiState = overviewState,
             glucoseSourceTabUiState = glucoseSourceTabState,
-            pumpTabUiState = pumpTabState,
-            coreInsights = insights,
-            glucoseSourceName = gInfo.sourceName,
-            sensorTypeName = gInfo.sensorTypeName,
-            readingsInterval = gInfo.readingsInterval,
-            lastBgReading = gInfo.lastBgReading,
-            nextPredictedTimestamp = gInfo.nextPredictedTimestamp ?: Timestamp.INVALID,
-            glucoseUnit = gInfo.glucoseUnit,
-            glucoseSourcePluginUiProvider = gInfo.pluginUiProvider,
-            pumpPluginUiProvider = pInfo.pluginUiProvider,
-            pumpConnected = pInfo.connected,
-            pumpModel = pInfo.model,
-            pumpStatus = pInfo.status,
-            lastPumpConnection = pInfo.lastConnection,
-            pendingPumpJobs = pInfo.jobs
+            pumpTabUiState = pumpTabState
         )
     }.stateIn(
         scope = viewModelScope,

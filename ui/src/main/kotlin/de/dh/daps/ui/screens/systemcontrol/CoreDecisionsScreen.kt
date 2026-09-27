@@ -50,7 +50,7 @@ import de.dh.daps.common.R as CommonR
 
 @Composable
 fun CoreDecisionsScreen(
-    viewModel: SystemControlViewModel,
+    viewModel: CoreDecisionsViewModel,
     onNavigateUp: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -63,7 +63,7 @@ fun CoreDecisionsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CoreDecisionsContent(
-    uiState: SystemControlUiState,
+    uiState: CoreDecisionsUiState,
     onNavigateUp: () -> Unit
 ) {
     Scaffold(
