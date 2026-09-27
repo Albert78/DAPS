@@ -182,6 +182,24 @@ fun SystemControlOverviewPreview() {
     }
 }
 
+@Preview(showBackground = true, name = "Overview Tab - Unconfigured")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Overview Tab - Unconfigured - Dark Mode")
+@Composable
+fun SystemControlOverviewUnconfiguredPreview() {
+    AppPreview {
+        SystemControlContent(
+            uiState = previewUnconfiguredUiState(),
+            initialTab = SYSTEM_CONTROL_TAB_OVERVIEW,
+            onNavigateUp = {},
+            onNavigateToCoreDecisions = {},
+            onStopGlucoseSource = {},
+            onDisconnectForMaintenance = {},
+            onCancelPumpJob = {},
+            onRefreshPumpStatus = {}
+        )
+    }
+}
+
 @Preview(showBackground = true, name = "Glucose Source Tab")
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Glucose Source Tab - Dark Mode")
 @Composable
@@ -222,4 +240,13 @@ private fun previewUiState() = SystemControlUiState(
     overviewUiState = sampleOverviewTabUiState(),
     sourceTabUiState = sampleSourceTabUiState(),
     pumpTabUiState = samplePumpTabUiState()
+)
+
+private fun previewUnconfiguredUiState() = SystemControlUiState(
+    overviewUiState = sampleOverviewTabUiState().copy(
+        glucoseSource = null,
+        insulinPump = null
+    ),
+    sourceTabUiState = null,
+    pumpTabUiState = null
 )

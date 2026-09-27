@@ -62,7 +62,7 @@ data class OverviewApsSystemUiState(
 )
 
 data class OverviewGlucoseSourceUiState(
-    val sensorName: UiText = UiText.DynamicString("--"),
+    val sensorName: UiText,
     val status: StatusMetric<GlucoseSourceStatus> = StatusMetric(status = ValueStatus.GOOD),
     val lastConnection: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD),
     val lastReading: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD),
@@ -70,7 +70,7 @@ data class OverviewGlucoseSourceUiState(
 )
 
 data class OverviewPumpUiState(
-    val pumpName: UiText = UiText.DynamicString("--"),
+    val pumpName: UiText,
     val state: StatusMetric<OverviewPumpState> = StatusMetric(OverviewPumpState.ACTIVE, status = ValueStatus.GOOD),
     val lastBolus: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD),
     val battery: StatusMetric<Int> = StatusMetric(status = ValueStatus.GOOD),
@@ -82,16 +82,16 @@ data class OverviewPumpUiState(
 data class OverviewTabUiState(
     val androidSystem: OverviewAndroidSystemUiState = OverviewAndroidSystemUiState(),
     val apsSystem: OverviewApsSystemUiState = OverviewApsSystemUiState(),
-    val glucoseSource: OverviewGlucoseSourceUiState = OverviewGlucoseSourceUiState(),
-    val insulinPump: OverviewPumpUiState = OverviewPumpUiState()
+    val glucoseSource: OverviewGlucoseSourceUiState? = null,
+    val insulinPump: OverviewPumpUiState? = null
 )
 
 data class SourceTabUiState(
-    val glucoseSourceName: UiText? = null,
+    val glucoseSourceName: UiText,
+    val sensorTypeName: String,
+    val readingsInterval: BgReadingsInterval,
     val manufacturer: String? = null,
     val serialNumber: String? = null,
-    val sensorTypeName: String? = null,
-    val readingsInterval: BgReadingsInterval? = null,
     val lastBgReading: BgReading? = null,
     val nextPredictedTimestamp: Timestamp? = null,
     val hasNextPrediction: Boolean = false,
@@ -109,23 +109,23 @@ data class PumpJobItem(
 )
 
 data class PumpTabUiState(
-    val pumpName: UiText? = null,
+    val pumpName: UiText,
+    val batteryPercent: Int,
+    val reservoirRemaining: InsulinAmount,
+    val lastConnectionTimestamp: Timestamp,
     val pumpModel: String? = null,
     val manufacturer: String? = null,
     val serialNumber: String? = null,
     val pumpConnected: Boolean = false,
     val isSuspended: Boolean = false,
-    val batteryPercent: Int? = null,
-    val reservoirRemaining: InsulinAmount? = null,
-    val lastConnectionTimestamp: Timestamp? = null,
     val pendingJobs: List<PumpJobItem> = emptyList(),
     val pumpPluginSection: (@Composable () -> Unit)? = null
 )
 
 data class SystemControlUiState(
     val overviewUiState: OverviewTabUiState = OverviewTabUiState(),
-    val sourceTabUiState: SourceTabUiState = SourceTabUiState(),
-    val pumpTabUiState: PumpTabUiState = PumpTabUiState()
+    val sourceTabUiState: SourceTabUiState? = null,
+    val pumpTabUiState: PumpTabUiState? = null
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -184,7 +184,7 @@ class SystemControlViewModel(
 
     private val sourceInfo = glucoseSourceManager.activeGlucoseSource.flatMapLatest { source ->
         if (source == null) {
-            flowOf(GlucoseUiData())
+            flowOf(null)
         } else {
             val sourceName = source.sourceDisplayName
             val sensorType = source.getSensorTypeName()
@@ -222,7 +222,7 @@ class SystemControlViewModel(
 
     private val pumpInfo = pumpManager.activeInsulinPump.flatMapLatest { pump ->
         if (pump == null) {
-            flowOf(PumpUiData())
+            flowOf(null)
         } else {
             val pumpName = pump.insulinPumpDisplayName
 
@@ -236,7 +236,7 @@ class SystemControlViewModel(
                 pump.pumpStatus,
                 jobsFlow,
                 lastConnFlow
-            ) { connected: Boolean, hardware: HardwareInformation?, status: InsulinPumpStatus?, jobs: List<PumpJob>, lastConn: Timestamp ->
+            ) { connected: Boolean, hardware: HardwareInformation?, status: InsulinPumpStatus, jobs: List<PumpJob>, lastConn: Timestamp ->
                 PumpUiData(
                     connected = connected,
                     pumpName = pumpName,
@@ -246,7 +246,7 @@ class SystemControlViewModel(
                     status = status,
                     lastConnection = lastConn,
                     jobs = jobs,
-                    isSuspended = status?.pumpSuspended == true,
+                    isSuspended = status.pumpSuspended,
                     hasError = jobs.any { it.lastError != null },
                     pluginUiProvider = pump as? PumpPluginUiProvider
                 )
@@ -264,18 +264,57 @@ class SystemControlViewModel(
         // Overview Tab State
         val lastCalcInsight = insights.firstOrNull()
 
-        val isGlucoseConnected = gInfo.source != null
-        val (glucoseSourceStatus, glucoseValueStatus) = when (gInfo.status) {
-            GlucoseSourceStatus.Ok -> gInfo.status to ValueStatus.GOOD
-            GlucoseSourceStatus.Expired -> gInfo.status to ValueStatus.WARNING
-            GlucoseSourceStatus.Error -> gInfo.status to ValueStatus.BAD
-            null -> null to ValueStatus.BAD
+        val overviewGlucoseSource = gInfo?.let {
+            val (glucoseSourceStatus, glucoseValueStatus) = when (it.status) {
+                GlucoseSourceStatus.Ok -> it.status to ValueStatus.GOOD
+                GlucoseSourceStatus.Expired -> it.status to ValueStatus.WARNING
+                GlucoseSourceStatus.Error -> it.status to ValueStatus.BAD
+            }
+            OverviewGlucoseSourceUiState(
+                sensorName = it.sourceName,
+                status = StatusMetric(
+                    value = glucoseSourceStatus,
+                    status = glucoseValueStatus
+                ),
+                lastConnection = StatusMetric(
+                    value = it.lastConnection,
+                    status = if (it.lastConnection != null) ValueStatus.GOOD else ValueStatus.BAD
+                ),
+                lastReading = StatusMetric(
+                    value = it.lastBgReading?.timestamp,
+                    status = ValueStatus.GOOD
+                ),
+                sensorExpiration = StatusMetric(
+                    value = it.estimatedExpirationTimestamp,
+                    status = ValueStatus.GOOD
+                )
+            )
         }
 
-        val (pumpOverviewState, pumpValueStatus) = when {
-            pInfo.hasError -> OverviewPumpState.ERROR to ValueStatus.BAD
-            pInfo.isSuspended -> OverviewPumpState.SUSPENDED to ValueStatus.WARNING
-            else -> OverviewPumpState.ACTIVE to ValueStatus.GOOD
+        val overviewInsulinPump = pInfo?.let {
+            val (pumpOverviewState, pumpValueStatus) = when {
+                it.hasError -> OverviewPumpState.ERROR to ValueStatus.BAD
+                it.isSuspended -> OverviewPumpState.SUSPENDED to ValueStatus.WARNING
+                else -> OverviewPumpState.ACTIVE to ValueStatus.GOOD
+            }
+            OverviewPumpUiState(
+                pumpName = it.pumpName,
+                state = StatusMetric(
+                    value = pumpOverviewState,
+                    status = pumpValueStatus
+                ),
+                lastBolus = StatusMetric(value = lastBolusTs, status = ValueStatus.GOOD),
+                battery = StatusMetric(
+                    value = it.status.batteryRemainingPercent,
+                    status = if (it.status.batteryRemainingPercent < PUMP_BATTERY_WARNING_THRESHOLD) ValueStatus.WARNING else ValueStatus.GOOD
+                ),
+                reservoir = StatusMetric(
+                    value = it.status.reservoirRemainingUnits,
+                    status = ValueStatus.GOOD
+                ),
+                lastConnection = StatusMetric(value = it.lastConnection, status = ValueStatus.GOOD),
+                nextPodChange = StatusMetric(status = ValueStatus.GOOD)
+            )
         }
 
         val overviewState = OverviewTabUiState(
@@ -285,97 +324,75 @@ class SystemControlViewModel(
                 lastCalculation = StatusMetric(value = lastCalcInsight?.timestamp, status = ValueStatus.GOOD),
                 status = StatusMetric(if (insights.isNotEmpty()) "Aktiv" else "Inaktiv", status = ValueStatus.GOOD)
             ),
-            glucoseSource = OverviewGlucoseSourceUiState(
-                sensorName = gInfo.sourceName ?: UiText.DynamicString("Nicht verbunden"),
-                status = StatusMetric(
-                    value = glucoseSourceStatus,
-                    status = glucoseValueStatus
-                ),
-                lastConnection = StatusMetric(value = gInfo.lastConnection, status = if (isGlucoseConnected) ValueStatus.GOOD else ValueStatus.BAD),
-                lastReading = StatusMetric(value = gInfo.lastBgReading?.timestamp, status = ValueStatus.GOOD),
-                sensorExpiration = StatusMetric(value = gInfo.estimatedExpirationTimestamp, status = ValueStatus.GOOD)
-            ),
-            insulinPump = OverviewPumpUiState(
-                pumpName = pInfo.pumpName ?: UiText.DynamicString("Nicht verbunden"),
-                state = StatusMetric(
-                    value = pumpOverviewState,
-                    status = pumpValueStatus
-                ),
-                lastBolus = StatusMetric(value = lastBolusTs, status = ValueStatus.GOOD),
-                battery = StatusMetric(
-                    value = pInfo.status?.batteryRemainingPercent,
-                    status = if ((pInfo.status?.batteryRemainingPercent ?: 100) < PUMP_BATTERY_WARNING_THRESHOLD) ValueStatus.WARNING else ValueStatus.GOOD
-                ),
-                reservoir = StatusMetric(
-                    value = pInfo.status?.reservoirRemainingUnits,
-                    status = ValueStatus.GOOD
-                ),
-                lastConnection = StatusMetric(value = pInfo.lastConnection, status = ValueStatus.GOOD),
-                nextPodChange = StatusMetric(status = ValueStatus.GOOD)
-            )
+            glucoseSource = overviewGlucoseSource,
+            insulinPump = overviewInsulinPump
         )
 
         // Source Tab State
-        val sourceTabState = SourceTabUiState(
-            glucoseSourceName = gInfo.sourceName,
-            manufacturer = null,
-            sensorTypeName = gInfo.sensorTypeName,
-            readingsInterval = gInfo.readingsInterval,
-            lastBgReading = gInfo.lastBgReading,
-            nextPredictedTimestamp = gInfo.nextPredictedTimestamp,
-            hasNextPrediction = gInfo.hasNextPrediction,
-            estimatedExpirationTimestamp = gInfo.estimatedExpirationTimestamp,
-            glucoseSourcePluginSection = gInfo.pluginUiProvider?.let { provider -> { provider.GlucoseSourceControlSection() } }
-        )
-
-        // Pump Tab State
-        val pumpJobsList = pInfo.jobs.map { job ->
-            val titleText = when (val cmd = job.command) {
-                is PumpCommand.RefreshStatus -> UiText.StringResource(R.string.system_control_pump_job_type_refresh_status)
-                is PumpCommand.SyncHistory -> UiText.StringResource(R.string.system_control_pump_job_type_history_sync)
-                is PumpCommand.DeliverBolus -> UiText.StringResource(R.string.system_control_pump_job_type_bolus, cmd.amount.iu)
-                is PumpCommand.SetTempBasal -> UiText.StringResource(R.string.system_control_pump_job_type_temp_basal, cmd.percent)
-                is PumpCommand.SetProfile -> UiText.StringResource(R.string.system_control_pump_job_type_profile)
-                is PumpCommand.CancelTempBasal -> UiText.StringResource(R.string.system_control_pump_job_type_cancel_temp_basal)
-                is PumpCommand.CancelBolus -> UiText.StringResource(R.string.system_control_pump_job_type_cancel_bolus)
-            }
-            val errText = job.lastError?.let { err ->
-                when (err) {
-                    JobErrorCode.Expired -> UiText.StringResource(R.string.system_control_pump_job_error_expired)
-                    is JobErrorCode.ConnectionFailed -> {
-                        val suffix = err.message?.let { ": $it" } ?: ""
-                        UiText.StringResource(R.string.system_control_pump_job_error_connection_failed, suffix)
-                    }
-                    is JobErrorCode.CommandFailed -> {
-                        val suffix = err.message?.let { ": $it" } ?: ""
-                        UiText.StringResource(R.string.system_control_pump_job_error_command_failed, err.status.name, suffix)
-                    }
-                    is JobErrorCode.TechnicalError -> {
-                        val suffix = err.message?.let { ": $it" } ?: ""
-                        UiText.StringResource(R.string.system_control_pump_job_error_technical, suffix)
-                    }
-                }
-            }
-            PumpJobItem(
-                id = job.id,
-                title = titleText,
-                errorMessage = errText
+        val sourceTabState = gInfo?.let {
+            SourceTabUiState(
+                glucoseSourceName = it.sourceName,
+                manufacturer = null,
+                sensorTypeName = it.sensorTypeName,
+                readingsInterval = it.readingsInterval,
+                lastBgReading = it.lastBgReading,
+                nextPredictedTimestamp = it.nextPredictedTimestamp,
+                hasNextPrediction = it.hasNextPrediction,
+                estimatedExpirationTimestamp = it.estimatedExpirationTimestamp,
+                glucoseSourcePluginSection = it.pluginUiProvider?.let { provider -> { provider.GlucoseSourceControlSection() } }
             )
         }
 
-        val pumpTabState = PumpTabUiState(
-            pumpName = pInfo.pumpName,
-            pumpModel = pInfo.model,
-            manufacturer = pInfo.manufacturer,
-            serialNumber = pInfo.serialNumber,
-            pumpConnected = pInfo.connected,
-            isSuspended = pInfo.isSuspended,
-            batteryPercent = pInfo.status?.batteryRemainingPercent,
-            reservoirRemaining = pInfo.status?.reservoirRemainingUnits,
-            lastConnectionTimestamp = pInfo.lastConnection,
-            pendingJobs = pumpJobsList,
-            pumpPluginSection = pInfo.pluginUiProvider?.let { provider -> { provider.PumpControlSection() } }
-        )
+        // Pump Tab State
+        val pumpTabState = pInfo?.let {
+            val pumpJobsList = it.jobs.map { job ->
+                val titleText = when (val cmd = job.command) {
+                    is PumpCommand.RefreshStatus -> UiText.StringResource(R.string.system_control_pump_job_type_refresh_status)
+                    is PumpCommand.SyncHistory -> UiText.StringResource(R.string.system_control_pump_job_type_history_sync)
+                    is PumpCommand.DeliverBolus -> UiText.StringResource(R.string.system_control_pump_job_type_bolus, cmd.amount.iu)
+                    is PumpCommand.SetTempBasal -> UiText.StringResource(R.string.system_control_pump_job_type_temp_basal, cmd.percent)
+                    is PumpCommand.SetProfile -> UiText.StringResource(R.string.system_control_pump_job_type_profile)
+                    is PumpCommand.CancelTempBasal -> UiText.StringResource(R.string.system_control_pump_job_type_cancel_temp_basal)
+                    is PumpCommand.CancelBolus -> UiText.StringResource(R.string.system_control_pump_job_type_cancel_bolus)
+                }
+                val errText = job.lastError?.let { err ->
+                    when (err) {
+                        JobErrorCode.Expired -> UiText.StringResource(R.string.system_control_pump_job_error_expired)
+                        is JobErrorCode.ConnectionFailed -> {
+                            val suffix = err.message?.let { ": $it" } ?: ""
+                            UiText.StringResource(R.string.system_control_pump_job_error_connection_failed, suffix)
+                        }
+                        is JobErrorCode.CommandFailed -> {
+                            val suffix = err.message?.let { ": $it" } ?: ""
+                            UiText.StringResource(R.string.system_control_pump_job_error_command_failed, err.status.name, suffix)
+                        }
+                        is JobErrorCode.TechnicalError -> {
+                            val suffix = err.message?.let { ": $it" } ?: ""
+                            UiText.StringResource(R.string.system_control_pump_job_error_technical, suffix)
+                        }
+                    }
+                }
+                PumpJobItem(
+                    id = job.id,
+                    title = titleText,
+                    errorMessage = errText
+                )
+            }
+
+            PumpTabUiState(
+                pumpName = it.pumpName,
+                pumpModel = it.model,
+                manufacturer = it.manufacturer,
+                serialNumber = it.serialNumber,
+                pumpConnected = it.connected,
+                isSuspended = it.isSuspended,
+                batteryPercent = it.status.batteryRemainingPercent,
+                reservoirRemaining = it.status.reservoirRemainingUnits,
+                lastConnectionTimestamp = it.lastConnection,
+                pendingJobs = pumpJobsList,
+                pumpPluginSection = it.pluginUiProvider?.let { provider -> { provider.PumpControlSection() } }
+            )
+        }
 
         SystemControlUiState(
             overviewUiState = overviewState,
@@ -406,26 +423,26 @@ class SystemControlViewModel(
     }
 
     private data class GlucoseUiData(
-        val source: GlucoseSource? = null,
-        val sourceName: UiText? = null,
-        val sensorTypeName: String? = null,
-        val readingsInterval: BgReadingsInterval? = null,
+        val source: GlucoseSource,
+        val sourceName: UiText,
+        val sensorTypeName: String,
+        val readingsInterval: BgReadingsInterval,
+        val status: GlucoseSourceStatus,
+        val lastConnection: Timestamp? = null,
         val lastBgReading: BgReading? = null,
         val nextPredictedTimestamp: Timestamp? = null,
         val hasNextPrediction: Boolean = false,
         val estimatedExpirationTimestamp: Timestamp? = null,
-        val pluginUiProvider: GlucoseSourcePluginUiProvider? = null,
-        val lastConnection: Timestamp? = null,
-        val status: GlucoseSourceStatus? = null
+        val pluginUiProvider: GlucoseSourcePluginUiProvider? = null
     )
 
     private data class PumpUiData(
+        val pumpName: UiText,
         val connected: Boolean = false,
-        val pumpName: UiText? = null,
         val model: String? = null,
         val manufacturer: String? = null,
         val serialNumber: String? = null,
-        val status: InsulinPumpStatus? = null,
+        val status: InsulinPumpStatus,
         val lastConnection: Timestamp = Timestamp.INVALID,
         val jobs: List<PumpJob> = emptyList(),
         val isSuspended: Boolean = false,

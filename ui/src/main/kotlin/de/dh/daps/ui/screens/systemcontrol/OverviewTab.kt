@@ -245,7 +245,7 @@ private fun ApsCard(
 
 @Composable
 private fun OverviewGlucoseSourceCard(
-    state: OverviewGlucoseSourceUiState
+    state: OverviewGlucoseSourceUiState?
 ) {
     OutlinedCard(
         modifier = Modifier
@@ -262,47 +262,56 @@ private fun OverviewGlucoseSourceCard(
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
-            Text(
-                text = state.sensorName.asString(),
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold
-            )
+            if (state == null) {
+                Text(
+                    text = "Keine Blutzucker-Quelle konfiguriert",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                Text(
+                    text = state.sensorName.asString(),
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold
+                )
 
-            Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(24.dp)
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = "Status") {
-                        StatusMetricText(metric = state.status)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        ControlDetailRow(label = "Status") {
+                            StatusMetricText(metric = state.status)
+                        }
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        ControlDetailRow(label = "Ablaufdatum Sensor") {
+                            StatusMetricText(
+                                metric = state.sensorExpiration,
+                                isDateTime = true
+                            )
+                        }
                     }
                 }
-                Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = "Ablaufdatum Sensor") {
-                        StatusMetricText(
-                            metric = state.sensorExpiration,
-                            isDateTime = true
-                        )
-                    }
-                }
-            }
 
-            Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(24.dp)
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = "Letzte Verbindung") {
-                        StatusMetricText(metric = state.lastConnection)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        ControlDetailRow(label = "Letzte Verbindung") {
+                            StatusMetricText(metric = state.lastConnection)
+                        }
                     }
-                }
-                Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = "Letzter Messwert") {
-                        StatusMetricText(metric = state.lastReading)
+                    Column(modifier = Modifier.weight(1f)) {
+                        ControlDetailRow(label = "Letzter Messwert") {
+                            StatusMetricText(metric = state.lastReading)
+                        }
                     }
                 }
             }
@@ -312,7 +321,7 @@ private fun OverviewGlucoseSourceCard(
 
 @Composable
 private fun OverviewPumpCard(
-    state: OverviewPumpUiState,
+    state: OverviewPumpUiState?,
     onRefresh: () -> Unit = {}
 ) {
     OutlinedCard(
@@ -330,78 +339,87 @@ private fun OverviewPumpCard(
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            if (state == null) {
                 Text(
-                    text = state.pumpName.asString(),
+                    text = "Keine Insulinpumpe konfiguriert",
                     style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                IconButton(onClick = onRefresh) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = "Pumpenstatus aktualisieren",
-                        tint = MaterialTheme.colorScheme.primary
+            } else {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = state.pumpName.asString(),
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold
                     )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(24.dp)
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = "Status") {
-                        StatusMetricText(metric = state.state)
-                    }
-                }
-                Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = "Nächster Pod-Wechsel") {
-                        StatusMetricText(
-                            metric = state.nextPodChange,
-                            isDateTime = true
+                    IconButton(onClick = onRefresh) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Pumpenstatus aktualisieren",
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(24.dp)
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = "Batteriestatus") {
-                        StatusMetricText(metric = state.battery)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        ControlDetailRow(label = "Status") {
+                            StatusMetricText(metric = state.state)
+                        }
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        ControlDetailRow(label = "Nächster Pod-Wechsel") {
+                            StatusMetricText(
+                                metric = state.nextPodChange,
+                                isDateTime = true
+                            )
+                        }
                     }
                 }
-                Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = "Reservoir-Füllstand") {
-                        StatusMetricText(metric = state.reservoir)
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        ControlDetailRow(label = "Batteriestatus") {
+                            StatusMetricText(metric = state.battery)
+                        }
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        ControlDetailRow(label = "Reservoir-Füllstand") {
+                            StatusMetricText(metric = state.reservoir)
+                        }
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(24.dp)
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = "Letzte Verbindung") {
-                        StatusMetricText(metric = state.lastConnection)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        ControlDetailRow(label = "Letzte Verbindung") {
+                            StatusMetricText(metric = state.lastConnection)
+                        }
                     }
-                }
-                Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = "Letzter Bolus") {
-                        StatusMetricText(metric = state.lastBolus)
+                    Column(modifier = Modifier.weight(1f)) {
+                        ControlDetailRow(label = "Letzter Bolus") {
+                            StatusMetricText(metric = state.lastBolus)
+                        }
                     }
                 }
             }

@@ -28,7 +28,7 @@ class GlucoseSourceManager(
     private val _glucoseSource = MutableStateFlow<GlucoseSource?>(null)
     val activeGlucoseSource: StateFlow<GlucoseSource?> = _glucoseSource.asStateFlow()
 
-    private val _lastInputTimestamp = MutableStateFlow<Timestamp>(Timestamp.INVALID)
+    private val _lastInputTimestamp = MutableStateFlow(Timestamp.INVALID)
     val lastInputTimestamp: StateFlow<Timestamp> = _lastInputTimestamp.asStateFlow()
 
     var glucoseSource: GlucoseSource?

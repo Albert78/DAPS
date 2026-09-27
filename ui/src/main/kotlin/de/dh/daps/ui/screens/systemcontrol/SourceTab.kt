@@ -51,7 +51,7 @@ import de.dh.daps.ui.common.time
 @Composable
 fun SourceTabContent(
     modifier: Modifier = Modifier,
-    uiState: SourceTabUiState = SourceTabUiState(),
+    uiState: SourceTabUiState? = null,
     onChangeGlucoseSource: () -> Unit = {},
     @Suppress("UNUSED_PARAMETER") onStopSensor: () -> Unit = {}
 ) {
@@ -61,7 +61,7 @@ fun SourceTabContent(
             onChangeGlucoseSource = onChangeGlucoseSource
         )
 
-        if (uiState.glucoseSourcePluginSection != null) {
+        if (uiState?.glucoseSourcePluginSection != null) {
             Spacer(modifier = Modifier.height(8.dp))
             SectionHeader(
                 title = "Datenquelle"
@@ -74,7 +74,7 @@ fun SourceTabContent(
 
 @Composable
 fun SourceOverviewCard(
-    uiState: SourceTabUiState,
+    uiState: SourceTabUiState?,
     modifier: Modifier = Modifier,
     onChangeGlucoseSource: () -> Unit = {}
 ) {
@@ -94,7 +94,7 @@ fun SourceOverviewCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = uiState.glucoseSourceName?.asString() ?: "Nicht verbunden",
+                    text = uiState?.glucoseSourceName?.asString() ?: "Keine Glukosequelle aktiv",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     maxLines = 2,
@@ -107,12 +107,12 @@ fun SourceOverviewCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.SwapHoriz,
-                        contentDescription = if (uiState.glucoseSourceName != null) "Glukose-Quelle wechseln" else "Glukose-Quelle einrichten"
+                        contentDescription = if (uiState != null) "Glukose-Quelle wechseln" else "Glukose-Quelle einrichten"
                     )
                 }
             }
 
-            if (uiState.glucoseSourceName != null) {
+            if (uiState != null) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -124,7 +124,7 @@ fun SourceOverviewCard(
                             reserveIconSpace = true
                         ) {
                             Text(
-                                text = uiState.sensorTypeName ?: "--",
+                                text = uiState.sensorTypeName,
                                 style = MaterialTheme.typography.bodyMedium,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
@@ -443,16 +443,7 @@ fun SourceTabDisconnectedPreview() {
     AppTheme {
         Surface {
             SourceTabContent(
-                uiState = SourceTabUiState(
-                    glucoseSourceName = null,
-                    sensorTypeName = null,
-                    readingsInterval = null,
-                    lastBgReading = null,
-                    hasNextPrediction = false,
-                    sensorCode = null,
-                    transmitterSerialNumber = null,
-                    estimatedExpirationTimestamp = null
-                ),
+                uiState = null,
                 modifier = Modifier.padding(16.dp)
             )
         }
