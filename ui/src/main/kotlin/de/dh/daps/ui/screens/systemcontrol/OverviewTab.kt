@@ -91,7 +91,7 @@ fun OverviewTabContent(
         Spacer(modifier = Modifier.height(8.dp))
 
         OverviewPumpCard(
-            state = uiState.pump,
+            state = uiState.insulinPump,
             onRefresh = onRefreshPumpStatus
         )
     }
@@ -516,7 +516,7 @@ internal fun sampleOverviewTabUiState() = OverviewTabUiState(
         lastReading = StatusMetric(Timestamp(System.currentTimeMillis() - 120_000), status = ValueStatus.GOOD),
         sensorExpiration = StatusMetric(Timestamp(System.currentTimeMillis() + 864_000_000), status = ValueStatus.GOOD)
     ),
-    pump = OverviewPumpUiState(
+    insulinPump = OverviewPumpUiState(
         pumpName = UiText.DynamicString("SimBody Virtuelle Insulinpumpe"),
         status = StatusMetric("Aktiv", status = ValueStatus.GOOD),
         lastBolus = StatusMetric(Timestamp(System.currentTimeMillis() - 600_000), status = ValueStatus.GOOD),

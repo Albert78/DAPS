@@ -76,7 +76,7 @@ data class OverviewTabUiState(
     val androidSystem: OverviewAndroidSystemUiState = OverviewAndroidSystemUiState(),
     val apsSystem: OverviewApsSystemUiState = OverviewApsSystemUiState(),
     val glucoseSource: OverviewGlucoseSourceUiState = OverviewGlucoseSourceUiState(),
-    val pump: OverviewPumpUiState = OverviewPumpUiState()
+    val insulinPump: OverviewPumpUiState = OverviewPumpUiState()
 )
 
 data class SourceTabUiState(
@@ -175,7 +175,7 @@ class SystemControlViewModel(
                 ?.timestamp
         }
 
-    private val glucoseInfo = combine(
+    private val sourceInfo = combine(
         glucoseSourceManager.activeGlucoseSource,
         glucoseRepository.currentBg,
         glucoseSourceManager.lastInputTimestamp
@@ -241,7 +241,7 @@ class SystemControlViewModel(
 
     val uiState: StateFlow<SystemControlUiState> = combine(
         systemMetricsRepository.observeInsights(),
-        glucoseInfo,
+        sourceInfo,
         pumpInfo,
         lastBolusTimestamp,
         androidSystemInfo
@@ -267,7 +267,7 @@ class SystemControlViewModel(
                 lastReading = StatusMetric(value = gInfo.lastBgReading?.timestamp, status = ValueStatus.GOOD),
                 sensorExpiration = StatusMetric(value = gInfo.estimatedExpirationTimestamp, status = ValueStatus.GOOD)
             ),
-            pump = OverviewPumpUiState(
+            insulinPump = OverviewPumpUiState(
                 pumpName = pInfo.pumpName ?: UiText.DynamicString("Nicht verbunden"),
                 status = StatusMetric(
                     value = if (!pInfo.connected) "Nicht verbunden" else if (pInfo.isSuspended) "Unterbrochen" else "Aktiv",
