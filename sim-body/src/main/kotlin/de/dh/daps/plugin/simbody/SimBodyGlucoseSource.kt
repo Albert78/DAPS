@@ -1,11 +1,13 @@
 package de.dh.daps.plugin.simbody
 
 import de.dh.daps.common.model.GlucoseSource
+import de.dh.daps.common.model.GlucoseSourceStatus
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.ui.UiText
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
 class SimBodyGlucoseSource(
     private val glucoseReadings: Flow<BgReading>
@@ -15,6 +17,7 @@ class SimBodyGlucoseSource(
     override val readingsInterval: BgReadingsInterval
         get() = BgReadingsInterval.FiveMinutes
     override val readingsTimeDelay = DEFAULT_READINGS_DELAY
+    override val status: Flow<GlucoseSourceStatus> = flowOf(GlucoseSourceStatus.Ok)
     override fun getSensorTypeName() = "Sim Body Dexcom G6"
 
     override fun start() {

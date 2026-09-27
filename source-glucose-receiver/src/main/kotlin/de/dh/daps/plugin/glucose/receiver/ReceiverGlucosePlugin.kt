@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.GlucoseSourceDriver
+import de.dh.daps.common.model.GlucoseSourceStatus
 import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
@@ -32,6 +33,7 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.flowOf
 
 /**
  * Glucose plugin which receives glucose values from other Android apps via a BroadcastReceiver.
@@ -54,6 +56,8 @@ class ReceiverGlucosePlugin(
 
     override val readingsTimeDelay: Minutes
         get() = externalSourceType.readingsTimeDelay
+
+    override val status: Flow<GlucoseSourceStatus> = flowOf(GlucoseSourceStatus.Ok)
 
     override fun getSensorTypeName(): String = "External Receiver"
 

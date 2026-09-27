@@ -23,6 +23,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import de.dh.daps.common.model.GlucoseSourceStatus
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
@@ -356,7 +357,7 @@ private fun OverviewPumpCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     ControlDetailRow(label = "Status") {
-                        StatusMetricText(metric = state.status)
+                        StatusMetricText(metric = state.state)
                     }
                 }
                 Column(modifier = Modifier.weight(1f)) {
@@ -423,6 +424,16 @@ private fun <T> StatusMetricText(
     } else {
         when (val v = metric.value) {
             is Boolean -> if (v) "Aktiv" else "Inaktiv"
+            is OverviewPumpState -> when (v) {
+                OverviewPumpState.ACTIVE -> "Aktiv"
+                OverviewPumpState.SUSPENDED -> "Suspended"
+                OverviewPumpState.ERROR -> "Fehler"
+            }
+            is GlucoseSourceStatus -> when (v) {
+                GlucoseSourceStatus.Ok -> "OK"
+                GlucoseSourceStatus.Expired -> "Abgelaufen"
+                GlucoseSourceStatus.Error -> "Fehler"
+            }
             is Int -> "$v%"
             is InsulinAmount -> insulinValue(v)
             is BgReading -> "${v.value.toString(glucoseUnit)} ${glucoseUnitLabel(glucoseUnit)}"
@@ -511,14 +522,14 @@ internal fun sampleOverviewTabUiState() = OverviewTabUiState(
     ),
     glucoseSource = OverviewGlucoseSourceUiState(
         sensorName = UiText.DynamicString("SimBody Virtueller Glukosesensor"),
-        status = StatusMetric(true, status = ValueStatus.GOOD),
+        status = StatusMetric(GlucoseSourceStatus.Ok, status = ValueStatus.GOOD),
         lastConnection = StatusMetric(Timestamp(System.currentTimeMillis() - 60_000), status = ValueStatus.GOOD),
         lastReading = StatusMetric(Timestamp(System.currentTimeMillis() - 120_000), status = ValueStatus.GOOD),
         sensorExpiration = StatusMetric(Timestamp(System.currentTimeMillis() + 864_000_000), status = ValueStatus.GOOD)
     ),
     insulinPump = OverviewPumpUiState(
         pumpName = UiText.DynamicString("SimBody Virtuelle Insulinpumpe"),
-        status = StatusMetric("Aktiv", status = ValueStatus.GOOD),
+        state = StatusMetric(OverviewPumpState.ACTIVE, status = ValueStatus.GOOD),
         lastBolus = StatusMetric(Timestamp(System.currentTimeMillis() - 600_000), status = ValueStatus.GOOD),
         battery = StatusMetric(85, status = ValueStatus.GOOD),
         reservoir = StatusMetric(InsulinAmount(140.0), status = ValueStatus.GOOD),

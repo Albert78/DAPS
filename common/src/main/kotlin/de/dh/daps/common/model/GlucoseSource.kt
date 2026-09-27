@@ -6,6 +6,12 @@ import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.ui.UiText
 import kotlinx.coroutines.flow.Flow
 
+enum class GlucoseSourceStatus {
+    Ok,
+    Expired,
+    Error
+}
+
 /**
  * Represents a source for blood glucose data.
  * Provides a stream of [BgReading]s and metadata about the sensor and its update frequency.
@@ -29,6 +35,8 @@ interface GlucoseSource {
      * are behind blood glucose.
      */
     val readingsTimeDelay: Minutes
+
+    val status: Flow<GlucoseSourceStatus>
 
     /**
      * Gets a stable, technical name for the sensor, e.g. "Dexcom_G7".

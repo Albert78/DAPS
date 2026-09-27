@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.GlucoseSource
+import de.dh.daps.common.model.GlucoseSourceStatus
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.BgSampleKind
@@ -23,6 +24,7 @@ import de.dh.daps.ui.screens.systemcontrol.GlucoseSourcePluginUiProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
@@ -33,6 +35,7 @@ class SampleGlucoseSource : GlucoseSource, GlucoseSourcePluginUiProvider {
     override val readingsInterval: BgReadingsInterval
         get() = BgReadingsInterval.OneMinute
     override val readingsTimeDelay = Minutes(5)
+    override val status: Flow<GlucoseSourceStatus> = flowOf(GlucoseSourceStatus.Ok)
     override fun getSensorTypeName() = "Dexcom-G6"
 
     override fun start() {

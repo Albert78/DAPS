@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import de.dh.daps.common.model.GlucoseSource
+import de.dh.daps.common.model.GlucoseSourceStatus
 import de.dh.daps.common.model.HardwareInformation
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinPumpStatus
@@ -36,6 +37,12 @@ enum class ValueStatus {
     BAD
 }
 
+enum class OverviewPumpState {
+    ACTIVE,
+    SUSPENDED,
+    ERROR
+}
+
 data class StatusMetric<T>(
     val value: T? = null,
     val status: ValueStatus? = null
@@ -56,7 +63,7 @@ data class OverviewApsSystemUiState(
 
 data class OverviewGlucoseSourceUiState(
     val sensorName: UiText = UiText.DynamicString("--"),
-    val status: StatusMetric<Boolean> = StatusMetric(status = ValueStatus.GOOD),
+    val status: StatusMetric<GlucoseSourceStatus> = StatusMetric(status = ValueStatus.GOOD),
     val lastConnection: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD),
     val lastReading: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD),
     val sensorExpiration: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD)
@@ -64,7 +71,7 @@ data class OverviewGlucoseSourceUiState(
 
 data class OverviewPumpUiState(
     val pumpName: UiText = UiText.DynamicString("--"),
-    val status: StatusMetric<String> = StatusMetric("Inaktiv", status = ValueStatus.GOOD),
+    val state: StatusMetric<OverviewPumpState> = StatusMetric(OverviewPumpState.ACTIVE, status = ValueStatus.GOOD),
     val lastBolus: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD),
     val battery: StatusMetric<Int> = StatusMetric(status = ValueStatus.GOOD),
     val reservoir: StatusMetric<InsulinAmount> = StatusMetric(status = ValueStatus.GOOD),
@@ -175,35 +182,42 @@ class SystemControlViewModel(
                 ?.timestamp
         }
 
-    private val sourceInfo = combine(
-        glucoseSourceManager.activeGlucoseSource,
-        glucoseRepository.currentBg,
-        glucoseSourceManager.lastInputTimestamp
-    ) { source, currentBg, lastInput ->
-        val sourceName = source?.sourceDisplayName
-        val sensorType = source?.getSensorTypeName()
-        val interval = source?.readingsInterval
+    private val sourceInfo = glucoseSourceManager.activeGlucoseSource.flatMapLatest { source ->
+        if (source == null) {
+            flowOf(GlucoseUiData())
+        } else {
+            val sourceName = source.sourceDisplayName
+            val sensorType = source.getSensorTypeName()
+            val interval = source.readingsInterval
 
-        val nextPredicted = glucoseSourceManager.predictNextValueTimestamp()
-        val hasPrediction = nextPredicted.isValid()
+            val nextPredicted = glucoseSourceManager.predictNextValueTimestamp()
+            val hasPrediction = nextPredicted.isValid()
 
-        val replaceable = source as? ReplaceableComponent
-        val expTimestamp = replaceable?.endDate
+            val replaceable = source as? ReplaceableComponent
+            val expTimestamp = replaceable?.endDate
 
-        val provider = source as? GlucoseSourcePluginUiProvider
+            val provider = source as? GlucoseSourcePluginUiProvider
 
-        GlucoseUiData(
-            source = source,
-            sourceName = sourceName,
-            sensorTypeName = sensorType,
-            readingsInterval = interval,
-            lastBgReading = currentBg,
-            nextPredictedTimestamp = if (hasPrediction) nextPredicted else null,
-            hasNextPrediction = hasPrediction,
-            estimatedExpirationTimestamp = expTimestamp,
-            pluginUiProvider = provider,
-            lastInputTimestamp = lastInput
-        )
+            combine(
+                source.status,
+                glucoseRepository.currentBg,
+                glucoseSourceManager.lastInputTimestamp
+            ) { status, currentBg, lastInput ->
+                GlucoseUiData(
+                    source = source,
+                    sourceName = sourceName,
+                    sensorTypeName = sensorType,
+                    readingsInterval = interval,
+                    lastBgReading = currentBg,
+                    nextPredictedTimestamp = if (hasPrediction) nextPredicted else null,
+                    hasNextPrediction = hasPrediction,
+                    estimatedExpirationTimestamp = expTimestamp,
+                    pluginUiProvider = provider,
+                    lastInputTimestamp = lastInput,
+                    status = status
+                )
+            }
+        }
     }
 
     private val pumpInfo = pumpManager.activeInsulinPump.flatMapLatest { pump ->
@@ -233,6 +247,7 @@ class SystemControlViewModel(
                     lastConnection = lastConn,
                     jobs = jobs,
                     isSuspended = status?.pumpSuspended == true,
+                    hasError = jobs.any { it.lastError != null },
                     pluginUiProvider = pump as? PumpPluginUiProvider
                 )
             }
@@ -250,6 +265,19 @@ class SystemControlViewModel(
         val lastCalcInsight = insights.firstOrNull()
 
         val isGlucoseConnected = gInfo.source != null
+        val (glucoseSourceStatus, glucoseValueStatus) = when (gInfo.status) {
+            GlucoseSourceStatus.Ok -> gInfo.status to ValueStatus.GOOD
+            GlucoseSourceStatus.Expired -> gInfo.status to ValueStatus.WARNING
+            GlucoseSourceStatus.Error -> gInfo.status to ValueStatus.BAD
+            null -> null to ValueStatus.BAD
+        }
+
+        val (pumpOverviewState, pumpValueStatus) = when {
+            pInfo.hasError -> OverviewPumpState.ERROR to ValueStatus.BAD
+            pInfo.isSuspended -> OverviewPumpState.SUSPENDED to ValueStatus.WARNING
+            else -> OverviewPumpState.ACTIVE to ValueStatus.GOOD
+        }
+
         val overviewState = OverviewTabUiState(
             androidSystem = androidSystem,
             apsSystem = OverviewApsSystemUiState(
@@ -260,8 +288,8 @@ class SystemControlViewModel(
             glucoseSource = OverviewGlucoseSourceUiState(
                 sensorName = gInfo.sourceName ?: UiText.DynamicString("Nicht verbunden"),
                 status = StatusMetric(
-                    value = isGlucoseConnected,
-                    status = if (isGlucoseConnected) ValueStatus.GOOD else ValueStatus.BAD
+                    value = glucoseSourceStatus,
+                    status = glucoseValueStatus
                 ),
                 lastConnection = StatusMetric(value = gInfo.lastInputTimestamp, status = if (isGlucoseConnected) ValueStatus.GOOD else ValueStatus.BAD),
                 lastReading = StatusMetric(value = gInfo.lastBgReading?.timestamp, status = ValueStatus.GOOD),
@@ -269,9 +297,9 @@ class SystemControlViewModel(
             ),
             insulinPump = OverviewPumpUiState(
                 pumpName = pInfo.pumpName ?: UiText.DynamicString("Nicht verbunden"),
-                status = StatusMetric(
-                    value = if (!pInfo.connected) "Nicht verbunden" else if (pInfo.isSuspended) "Unterbrochen" else "Aktiv",
-                    status = if (pInfo.connected) ValueStatus.GOOD else ValueStatus.BAD
+                state = StatusMetric(
+                    value = pumpOverviewState,
+                    status = pumpValueStatus
                 ),
                 lastBolus = StatusMetric(value = lastBolusTs, status = ValueStatus.GOOD),
                 battery = StatusMetric(
@@ -366,7 +394,7 @@ class SystemControlViewModel(
     }
 
     fun disconnectPumpForMaintenance() {
-        pumpManager.issueCommand(PumpCommand.RefreshStatus)
+        // TODO
     }
 
     fun cancelPumpJob(jobId: String) {
@@ -378,16 +406,17 @@ class SystemControlViewModel(
     }
 
     private data class GlucoseUiData(
-        val source: GlucoseSource?,
-        val sourceName: UiText?,
-        val sensorTypeName: String?,
-        val readingsInterval: BgReadingsInterval?,
-        val lastBgReading: BgReading?,
-        val nextPredictedTimestamp: Timestamp?,
-        val hasNextPrediction: Boolean,
-        val estimatedExpirationTimestamp: Timestamp?,
-        val pluginUiProvider: GlucoseSourcePluginUiProvider?,
-        val lastInputTimestamp: Timestamp
+        val source: GlucoseSource? = null,
+        val sourceName: UiText? = null,
+        val sensorTypeName: String? = null,
+        val readingsInterval: BgReadingsInterval? = null,
+        val lastBgReading: BgReading? = null,
+        val nextPredictedTimestamp: Timestamp? = null,
+        val hasNextPrediction: Boolean = false,
+        val estimatedExpirationTimestamp: Timestamp? = null,
+        val pluginUiProvider: GlucoseSourcePluginUiProvider? = null,
+        val lastInputTimestamp: Timestamp = Timestamp.INVALID,
+        val status: GlucoseSourceStatus? = null
     )
 
     private data class PumpUiData(
@@ -400,6 +429,7 @@ class SystemControlViewModel(
         val lastConnection: Timestamp = Timestamp.INVALID,
         val jobs: List<PumpJob> = emptyList(),
         val isSuspended: Boolean = false,
+        val hasError: Boolean = false,
         val pluginUiProvider: PumpPluginUiProvider? = null
     )
 
