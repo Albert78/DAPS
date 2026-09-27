@@ -259,11 +259,7 @@ fun PumpOverviewCard(
             }
 
             if (uiState.pumpConnected) {
-                val reservoirDisplay = if (uiState.reservoirUnits != null) {
-                    insulinValue(uiState.reservoirUnits)
-                } else {
-                    uiState.reservoirText
-                }
+                val reservoirDisplay = insulinValue(uiState.reservoirRemaining)
 
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(
@@ -275,8 +271,9 @@ fun PumpOverviewCard(
                             label = "Batterie",
                             icon = Icons.Default.Battery5Bar
                         ) {
+                            val batteryText = uiState.batteryPercent?.let { "$it%" } ?: "--"
                             Text(
-                                text = uiState.batteryPercentText,
+                                text = batteryText,
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 2,

@@ -36,6 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.common.composables.AppColorBlue
+import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.longDateTime
 import de.dh.daps.ui.common.shortRelativeTimeAgo
 import de.dh.daps.ui.common.theme.AppTheme
@@ -128,8 +129,9 @@ private fun AndroidSystemCard(
                     }
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = state.phoneBatteryStatus.label) {
-                        StatusValueText(item = state.phoneBatteryStatus)
+                    ControlDetailRow(label = "Batteriestatus Telefon") {
+                        val phoneBatteryText = state.phoneBatteryPercent?.let { "$it%" } ?: "--"
+                        StatusValueText(item = StatusValueItem("Batteriestatus Telefon", phoneBatteryText, status = ValueStatus.GOOD))
                     }
                 }
             }
@@ -360,13 +362,15 @@ private fun OverviewPumpCard(
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = state.batteryStatus.label) {
-                        StatusValueText(item = state.batteryStatus)
+                    ControlDetailRow(label = "Batteriestatus") {
+                        val batteryText = state.batteryPercent?.let { "$it%" } ?: "--"
+                        StatusValueText(item = StatusValueItem("Batteriestatus", batteryText, status = ValueStatus.GOOD))
                     }
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = state.reservoirStatus.label) {
-                        StatusValueText(item = state.reservoirStatus)
+                    ControlDetailRow(label = "Reservoir-Füllstand") {
+                        val reservoirText = insulinValue(state.reservoirRemaining)
+                        StatusValueText(item = StatusValueItem("Reservoir-Füllstand", reservoirText, status = ValueStatus.GOOD))
                     }
                 }
             }

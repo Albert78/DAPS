@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.HardwareInformation
+import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinPumpStatus
 import de.dh.daps.common.model.ReplaceableComponent
 import de.dh.daps.common.model.data.BgReading
@@ -46,7 +47,7 @@ data class StatusValueItem(
 data class AndroidSystemUiState(
     val title: String = "Android",
     val bluetoothStatus: StatusValueItem = StatusValueItem("Bluetooth-Status", "Aktiviert", status = ValueStatus.GOOD),
-    val phoneBatteryStatus: StatusValueItem = StatusValueItem("Batteriestatus Telefon", "82%", status = ValueStatus.GOOD),
+    val phoneBatteryPercent: Int? = 82,
     val permissionsStatus: StatusValueItem = StatusValueItem("Berechtigungen", "Alle erteilt", status = ValueStatus.GOOD),
     val dapsServiceStatus: StatusValueItem = StatusValueItem("DAPS-System-Service", "Aktiv", status = ValueStatus.GOOD)
 )
@@ -69,8 +70,8 @@ data class OverviewPumpUiState(
     val pumpName: String = "--",
     val status: StatusValueItem = StatusValueItem("Status", "Inaktiv", status = ValueStatus.GOOD),
     val lastBolus: StatusValueItem = StatusValueItem("Letzter Bolus", "--", status = ValueStatus.GOOD),
-    val batteryStatus: StatusValueItem = StatusValueItem("Batteriestatus", "--", status = ValueStatus.GOOD),
-    val reservoirStatus: StatusValueItem = StatusValueItem("Reservoir-Füllstand", "--", status = ValueStatus.GOOD),
+    val batteryPercent: Int? = null,
+    val reservoirRemaining: InsulinAmount? = null,
     val lastConnection: StatusValueItem = StatusValueItem("Letzte Verbindung", "--", status = ValueStatus.GOOD),
     val nextPodChange: StatusValueItem = StatusValueItem("Nächster Pod-Wechsel", "--", status = ValueStatus.GOOD)
 )
@@ -116,9 +117,8 @@ data class PumpTabUiState(
     val serialNumber: String? = null,
     val pumpConnected: Boolean = false,
     val isSuspended: Boolean = false,
-    val batteryPercentText: String = "--",
-    val reservoirUnits: Double? = null,
-    val reservoirText: String = "--",
+    val batteryPercent: Int? = null,
+    val reservoirRemaining: InsulinAmount? = null,
     val lastConnectionTimestamp: Timestamp? = null,
     val lastConnectionTimeText: String = "--",
     val lastConnectionRelativeTimeText: String? = null,
@@ -237,7 +237,7 @@ class SystemControlViewModel(
         val overviewState = OverviewTabUiState(
             androidSystem = AndroidSystemUiState(
                 bluetoothStatus = StatusValueItem("Bluetooth-Status", "Aktiviert", status = ValueStatus.GOOD),
-                phoneBatteryStatus = StatusValueItem("Batteriestatus Telefon", "82%", status = ValueStatus.GOOD),
+                phoneBatteryPercent = 82,
                 permissionsStatus = StatusValueItem("Berechtigungen", "Alle erteilt", status = ValueStatus.GOOD),
                 dapsServiceStatus = StatusValueItem("DAPS-System-Service", "Aktiv", status = ValueStatus.GOOD)
             ),
@@ -256,8 +256,8 @@ class SystemControlViewModel(
                 pumpName = pInfo.model ?: "Nicht verbunden",
                 status = StatusValueItem("Status", if (!pInfo.connected) "Nicht verbunden" else if (pInfo.isSuspended) "Unterbrochen" else "Aktiv", status = if (pInfo.connected) ValueStatus.GOOD else ValueStatus.BAD),
                 lastBolus = StatusValueItem("Letzter Bolus", "--", status = ValueStatus.GOOD),
-                batteryStatus = StatusValueItem("Batteriestatus", pInfo.status?.let { "${it.batteryRemainingPercent}%" } ?: "--", status = ValueStatus.GOOD),
-                reservoirStatus = StatusValueItem("Reservoir-Füllstand", pInfo.status?.let { "${it.reservoirRemainingUnits.iu} I.E." } ?: "--", status = ValueStatus.GOOD),
+                batteryPercent = pInfo.status?.batteryRemainingPercent,
+                reservoirRemaining = pInfo.status?.reservoirRemainingUnits,
                 lastConnection = StatusValueItem("Letzte Verbindung", pumpLastConnText, timestamp = pInfo.lastConnection, status = ValueStatus.GOOD),
                 nextPodChange = StatusValueItem("Nächster Pod-Wechsel", "--", status = ValueStatus.GOOD)
             )
@@ -320,9 +320,8 @@ class SystemControlViewModel(
             serialNumber = pInfo.serialNumber,
             pumpConnected = pInfo.connected,
             isSuspended = pInfo.isSuspended,
-            batteryPercentText = pInfo.status?.let { "${it.batteryRemainingPercent}%" } ?: "--",
-            reservoirUnits = pInfo.status?.reservoirRemainingUnits?.iu,
-            reservoirText = pInfo.status?.let { "${it.reservoirRemainingUnits.iu} I.E." } ?: "--",
+            batteryPercent = pInfo.status?.batteryRemainingPercent,
+            reservoirRemaining = pInfo.status?.reservoirRemainingUnits,
             lastConnectionTimestamp = pInfo.lastConnection,
             lastConnectionTimeText = pumpLastConnText,
             pendingJobs = pumpJobsList,

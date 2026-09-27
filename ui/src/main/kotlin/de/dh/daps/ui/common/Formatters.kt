@@ -8,6 +8,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.stringResource
+import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.data.BgDelta
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.CarbsUnit
@@ -553,6 +554,34 @@ fun formatInsulinValue(
 ): String = formatInsulinValue(value, context.resources, default = default, withUnit = withUnit, signed = signed)
 
 /**
+ * Non-Composable / Backend function.
+ * Formats an [InsulinAmount] in units (IU / I.E.) for background services, notifications, etc.
+ *
+ * @example formatInsulinValue(amount, resources) -> "1.50 IU" / "1.50 I.E."
+ */
+fun formatInsulinValue(
+    amount: InsulinAmount?,
+    resources: Resources,
+    default: String = "-",
+    withUnit: Boolean = true,
+    signed: Boolean = false
+): String = formatInsulinValue(amount?.iu, resources, default = default, withUnit = withUnit, signed = signed)
+
+/**
+ * Non-Composable / Backend function.
+ * Formats an [InsulinAmount] in units (IU / I.E.) using a [Context].
+ *
+ * @example formatInsulinValue(amount, context) -> "1.50 IU" / "1.50 I.E."
+ */
+fun formatInsulinValue(
+    amount: InsulinAmount?,
+    context: Context,
+    default: String = "-",
+    withUnit: Boolean = true,
+    signed: Boolean = false
+): String = formatInsulinValue(amount?.iu, context, default = default, withUnit = withUnit, signed = signed)
+
+/**
  * Composable UI function.
  * Returns the unit label for insulin ("IU" / "I.E.") in Compose UI components.
  *
@@ -575,6 +604,17 @@ fun insulinUnitLabel(): String {
 @Composable
 fun insulinValue(value: Double?, default: String = "-", withUnit: Boolean = true, signed: Boolean = false): String {
     return formatInsulinValue(value, context = LocalContext.current, default = default, withUnit = withUnit, signed = signed)
+}
+
+/**
+ * Composable UI function.
+ * Formats an [InsulinAmount] in units (IU / I.E.) for display in Compose UI components.
+ *
+ * @example insulinValue(amount) -> "1.50 IU" / "1.50 I.E."
+ */
+@Composable
+fun insulinValue(amount: InsulinAmount?, default: String = "-", withUnit: Boolean = true, signed: Boolean = false): String {
+    return insulinValue(amount?.iu, default = default, withUnit = withUnit, signed = signed)
 }
 
 /**

@@ -146,7 +146,7 @@ fun InsightCard(insight: CoreInsight) {
                 MetricItem(stringResource(id = R.string.core_insight_label_bg), "${glucoseValue(insight.bgFiltered, glucoseUnit)} ${stringResource(
                     CommonR.string.bg_raw_format, glucoseValue(insight.bgOriginal, glucoseUnit))}")
                 Spacer(modifier = Modifier.width(16.dp))
-                MetricItem(stringResource(id = R.string.core_insight_label_iob), insulinValue(insight.futureActiveInsulin.iu))
+                MetricItem(stringResource(id = R.string.core_insight_label_iob), insulinValue(insight.futureActiveInsulin))
                 Spacer(modifier = Modifier.width(16.dp))
                 MetricItem(stringResource(id = R.string.core_insight_label_cob), carbsValue(insight.futureActiveCarbs))
             }
@@ -167,7 +167,7 @@ fun InsightCard(insight: CoreInsight) {
 
             val actionText = when {
                 insight.actionBolus != null && insight.actionBolus!! > InsulinAmount.ZERO -> {
-                    stringResource(id = R.string.core_insight_action_bolus, insulinValue(insight.actionBolus!!.iu))
+                    stringResource(id = R.string.core_insight_action_bolus, insulinValue(insight.actionBolus))
                 }
                 insight.actionTempBasalPercent != null -> {
                     stringResource(
