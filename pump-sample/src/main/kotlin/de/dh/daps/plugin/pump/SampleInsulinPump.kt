@@ -23,6 +23,7 @@ import de.dh.daps.common.model.PumpAlerts
 import de.dh.daps.common.model.PumpCapabilities
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.screens.systemcontrol.PumpPluginUiProvider
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,6 +33,9 @@ import kotlinx.coroutines.flow.StateFlow
 class SampleInsulinPump : InsulinPump, PumpPluginUiProvider {
 
     // *************************** Insulin pump members ********************************
+
+    override val insulinPumpId: String = SampleInsulinPumpDriver.DRIVER_ID
+    override val insulinPumpDisplayName: UiText = UiText.StringResource(R.string.sample_pump_device_display_name)
 
     override var insulinConcentration: InsulinConcentration = InsulinConcentration.U100
 

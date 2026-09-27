@@ -17,6 +17,7 @@ import de.dh.daps.common.model.PumpCapabilities
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.data.getAmountForMinute
+import de.dh.daps.common.ui.UiText
 import de.dh.pump.PumpConnectionException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -48,6 +49,9 @@ class SimBodyInsulinPump(
     private val device: SimBodyPumpDevice,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ): InsulinPump {
+    override val insulinPumpId: String = SimBodyInsulinPumpDriver.DRIVER_ID
+    override val insulinPumpDisplayName: UiText = UiText.StringResource(R.string.sim_body_pump_device_display_name)
+
     override var insulinConcentration: InsulinConcentration = InsulinConcentration.U100
 
     companion object {

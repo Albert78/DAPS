@@ -335,7 +335,7 @@ private fun OverviewPumpCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = state.driverName.asString(),
+                    text = state.pumpName.asString(),
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -517,7 +517,7 @@ internal fun sampleOverviewTabUiState() = OverviewTabUiState(
         sensorExpiration = StatusMetric(Timestamp(System.currentTimeMillis() + 864_000_000), status = ValueStatus.GOOD)
     ),
     pump = OverviewPumpUiState(
-        driverName = UiText.DynamicString("SOOIL DANA-i Treiber"),
+        pumpName = UiText.DynamicString("SOOIL DANA-i"),
         status = StatusMetric("Aktiv", status = ValueStatus.GOOD),
         lastBolus = StatusMetric(Timestamp(System.currentTimeMillis() - 600_000), status = ValueStatus.GOOD),
         battery = StatusMetric(85, status = ValueStatus.GOOD),

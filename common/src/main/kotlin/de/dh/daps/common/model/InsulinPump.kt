@@ -2,6 +2,7 @@ package de.dh.daps.common.model
 
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.ui.UiText
 import de.dh.pump.PumpCommandException
 import de.dh.pump.PumpConnectionException
 import kotlinx.coroutines.flow.SharedFlow
@@ -153,6 +154,17 @@ sealed interface BolusEvent {
  * Generic interface for an insulin pump.
  */
 interface InsulinPump {
+    /**
+     * Gets a stable, technical name for the insulin pump provider (e.g. "de.dh.daps.plugin.ypso").
+     * This is used to identify the insulin pump provider in the system/database.
+     */
+    val insulinPumpId: String
+
+    /**
+     * Human-readable display name of the insulin pump.
+     */
+    val insulinPumpDisplayName: UiText
+
     /**
      * Pump hardware information. Null if not yet retrieved.
      */
