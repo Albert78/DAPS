@@ -4,11 +4,12 @@
     <string name="long_date_format">EE, dd. MMMM yyyy</string>
     <string name="long_date_time_format">EE, dd. MMMM yyyy, HH:mm</string>
 
-    <string name="time_ago_just_now">jetzt</string>
+    <string name="time_ago_just_now">gerade eben</string>
     <string name="time_ago_seconds_ago">vor %1$d Sek</string>
     <string name="time_ago_minutes_ago">vor %1$d Min</string>
     <string name="time_ago_hours_ago">vor %1$d Std</string>
 
+    <string name="time_until_just_now">jetzt</string>
     <string name="time_until_seconds">in %1$d Sek</string>
     <string name="time_until_minutes">in %1$d Min</string>
     <string name="time_until_hours">in %1$d Std</string>

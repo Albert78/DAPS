@@ -333,9 +333,9 @@ fun shortRelativeTimeUntil(diffMs: Long): String {
     val diffSec = diffMs / 1000
     val diffMin = diffMs / 60000
     return when {
-        diffSec < 5 -> stringResource(CommonR.string.time_ago_just_now)
+        diffSec < 5 -> stringResource(CommonR.string.time_until_just_now)
         diffSec < 61 -> stringResource(CommonR.string.time_until_seconds, diffSec)
-        diffMin < 1 -> stringResource(CommonR.string.time_ago_just_now)
+        diffMin < 1 -> stringResource(CommonR.string.time_until_just_now)
         diffMin < 91 -> stringResource(CommonR.string.time_until_minutes, diffMin)
         else -> {
             stringResource(CommonR.string.time_until_hours, diffMin / 60)
