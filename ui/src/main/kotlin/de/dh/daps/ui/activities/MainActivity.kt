@@ -103,9 +103,6 @@ class MainActivity : ComponentActivity() {
 
         val registry = (application as RegistryProvider).registry
 
-        // Start the background service
-        startForegroundService(Intent(this, registry.apsServiceClass))
-
         navViewModel = ViewModelProvider(
             this,
             NavigationViewModel.Companion.NavigationViewModelFactory(listOf(DashboardRoute))

@@ -1,6 +1,5 @@
 package de.dh.daps.core
 
-import android.app.Service
 import android.content.Context
 import de.dh.daps.AppPreferencesRepository
 import de.dh.daps.common.model.PluginContext
@@ -188,9 +187,4 @@ interface SystemRegistry : PluginContext {
      * Handler for permission change events.
      */
     val permissionsChangedHandler: PermissionsChangedHandler
-
-    /**
-     * The class reference for the background service that hosts the APS core logic.
-     */
-    val apsServiceClass: Class<out Service>
 }

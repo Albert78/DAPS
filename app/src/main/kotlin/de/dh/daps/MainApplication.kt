@@ -1,8 +1,10 @@
 package de.dh.daps
 
+import android.app.Activity
 import android.app.Application
 import android.app.ForegroundServiceStartNotAllowedException
 import android.content.Intent
+import android.os.Bundle
 import androidx.core.content.ContextCompat
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.SystemRegistryImpl
@@ -39,6 +41,18 @@ class MainApplication : Application(), RegistryProvider {
         super.onCreate()
         instance = this
 
+        registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
+            override fun onActivityResumed(activity: Activity) {
+                startApsService()
+            }
+            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
+            override fun onActivityStarted(activity: Activity) {}
+            override fun onActivityPaused(activity: Activity) {}
+            override fun onActivityStopped(activity: Activity) {}
+            override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+            override fun onActivityDestroyed(activity: Activity) {}
+        })
+
         androidNotifications = AndroidNotificationsImpl(this)
 
         val pluginManager = PluginManagerImpl(this)
@@ -51,10 +65,7 @@ class MainApplication : Application(), RegistryProvider {
             scope = applicationScope,
             pluginManager = pluginManager,
             androidNotifications = androidNotifications,
-            onPermissionsChanged = { startApsService() },
-
-            // Hack to make things visible in modules without sharing interna of app module
-            apsServiceClass = ApsService::class.java
+            onPermissionsChanged = { startApsService() }
         )
 
         startApsService()

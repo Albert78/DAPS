@@ -1,7 +1,6 @@
 package de.dh.daps.core
 
 import android.app.Application
-import android.app.Service
 import android.content.Context
 import de.dh.daps.AppPreferencesRepository
 import de.dh.daps.common.model.GlucoseSourceDriver
@@ -76,7 +75,6 @@ class SystemRegistryImpl(
     override val deviceConnectionManager: DeviceConnectionManager,
     override val carbsInsulinCalculator: CarbsInsulinCalculator,
     override val permissionsChangedHandler: PermissionsChangedHandler,
-    override val apsServiceClass: Class<out Service>,
 ) : SystemRegistry {
     companion object {
         /**
@@ -89,7 +87,6 @@ class SystemRegistryImpl(
             pluginManager: PluginManager,
             androidNotifications: AndroidNotifications,
             onPermissionsChanged: () -> Unit,
-            apsServiceClass: Class<out Service>
         ): SystemRegistry {
             val appPreferencesRepository = AppPreferencesRepository(context = application, scope = scope)
             val appDatabase = AppDatabase.getInstance(application)
@@ -211,8 +208,7 @@ class SystemRegistryImpl(
                 pumpDriverManager = pumpDriverManager,
                 deviceConnectionManager = deviceConnectionManager,
                 carbsInsulinCalculator = carbsInsulinCalculator,
-                permissionsChangedHandler = permissionsHandler,
-                apsServiceClass = apsServiceClass
+                permissionsChangedHandler = permissionsHandler
             )
 
             // Phase 1: Provide PluginContext to all registered plugins early (setup)
