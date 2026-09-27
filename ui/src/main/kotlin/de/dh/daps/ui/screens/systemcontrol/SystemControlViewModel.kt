@@ -42,10 +42,10 @@ data class StatusMetric<T>(
 )
 
 data class OverviewAndroidSystemUiState(
-    val bluetoothStatus: StatusMetric<Boolean> = StatusMetric(true, status = ValueStatus.GOOD),
-    val phoneBattery: StatusMetric<Int> = StatusMetric(0, status = ValueStatus.GOOD),
-    val permissionsStatus: StatusMetric<Int> = StatusMetric(0, status = ValueStatus.GOOD),
-    val dapsServiceStatus: StatusMetric<Boolean> = StatusMetric(true, status = ValueStatus.GOOD)
+    val bluetoothStatus: StatusMetric<Boolean> = StatusMetric(false, status = ValueStatus.BAD),
+    val phoneBattery: StatusMetric<Int> = StatusMetric(0, status = ValueStatus.BAD),
+    val permissionsStatus: StatusMetric<Int> = StatusMetric(0, status = ValueStatus.BAD),
+    val dapsServiceStatus: StatusMetric<Boolean> = StatusMetric(false, status = ValueStatus.BAD)
 )
 
 data class OverviewApsSystemUiState(
