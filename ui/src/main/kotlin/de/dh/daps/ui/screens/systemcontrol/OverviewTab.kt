@@ -275,13 +275,16 @@ private fun OverviewGlucoseSourceCard(
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = "Letzte Verbindung") {
-                        StatusMetricText(metric = state.lastConnection)
+                    ControlDetailRow(label = "Status") {
+                        StatusMetricText(metric = state.status)
                     }
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = "Letzter Messwert") {
-                        StatusMetricText(metric = state.lastReading)
+                    ControlDetailRow(label = "Ablaufdatum Sensor") {
+                        StatusMetricText(
+                            metric = state.sensorExpiration,
+                            isDateTime = true
+                        )
                     }
                 }
             }
@@ -293,11 +296,13 @@ private fun OverviewGlucoseSourceCard(
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = "Ablaufdatum Sensor") {
-                        StatusMetricText(
-                            metric = state.sensorExpiration,
-                            isDateTime = true
-                        )
+                    ControlDetailRow(label = "Letzte Verbindung") {
+                        StatusMetricText(metric = state.lastConnection)
+                    }
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    ControlDetailRow(label = "Letzter Messwert") {
+                        StatusMetricText(metric = state.lastReading)
                     }
                 }
             }
@@ -331,7 +336,7 @@ private fun OverviewPumpCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = state.pumpName,
+                    text = state.driverName.asString(),
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -356,8 +361,11 @@ private fun OverviewPumpCard(
                     }
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = "Letzter Bolus") {
-                        StatusMetricText(metric = state.lastBolus)
+                    ControlDetailRow(label = "Nächster Pod-Wechsel") {
+                        StatusMetricText(
+                            metric = state.nextPodChange,
+                            isDateTime = true
+                        )
                     }
                 }
             }
@@ -392,11 +400,8 @@ private fun OverviewPumpCard(
                     }
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = "Nächster Pod-Wechsel") {
-                        StatusMetricText(
-                            metric = state.nextPodChange,
-                            isDateTime = true
-                        )
+                    ControlDetailRow(label = "Letzter Bolus") {
+                        StatusMetricText(metric = state.lastBolus)
                     }
                 }
             }
@@ -504,13 +509,14 @@ internal fun sampleOverviewTabUiState() = OverviewTabUiState(
         status = StatusMetric("Aktiv", status = ValueStatus.GOOD)
     ),
     glucoseSource = OverviewGlucoseSourceUiState(
-        sensorName = UiText.DynamicString("Dexcom G6"),
+        sensorName = UiText.DynamicString("Dexcom-G6"),
+        status = StatusMetric(true, status = ValueStatus.GOOD),
         lastConnection = StatusMetric(Timestamp(System.currentTimeMillis() - 60_000), status = ValueStatus.GOOD),
         lastReading = StatusMetric(Timestamp(System.currentTimeMillis() - 120_000), status = ValueStatus.GOOD),
         sensorExpiration = StatusMetric(Timestamp(System.currentTimeMillis() + 864_000_000), status = ValueStatus.GOOD)
     ),
     pump = OverviewPumpUiState(
-        pumpName = "DANA-i",
+        driverName = UiText.DynamicString("SOOIL DANA-i Treiber"),
         status = StatusMetric("Aktiv", status = ValueStatus.GOOD),
         lastBolus = StatusMetric(Timestamp(System.currentTimeMillis() - 600_000), status = ValueStatus.GOOD),
         battery = StatusMetric(85, status = ValueStatus.GOOD),

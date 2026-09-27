@@ -56,13 +56,14 @@ data class OverviewApsSystemUiState(
 
 data class OverviewGlucoseSourceUiState(
     val sensorName: UiText = UiText.DynamicString("--"),
+    val status: StatusMetric<Boolean> = StatusMetric(status = ValueStatus.GOOD),
     val lastConnection: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD),
     val lastReading: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD),
     val sensorExpiration: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD)
 )
 
 data class OverviewPumpUiState(
-    val pumpName: String = "--",
+    val driverName: UiText = UiText.DynamicString("--"),
     val status: StatusMetric<String> = StatusMetric("Inaktiv", status = ValueStatus.GOOD),
     val lastBolus: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD),
     val battery: StatusMetric<Int> = StatusMetric(status = ValueStatus.GOOD),
@@ -101,6 +102,7 @@ data class PumpJobItem(
 )
 
 data class PumpTabUiState(
+    val driverName: UiText? = null,
     val pumpModel: String? = null,
     val manufacturer: String? = null,
     val serialNumber: String? = null,
@@ -130,6 +132,8 @@ class SystemControlViewModel(
     private val pumpManager = systemRegistry.pumpManager
     private val deviceStatusRepository = systemRegistry.deviceStatusRepository
     private val permissionRepository = systemRegistry.permissionRepository
+    private val deviceManagementRepository = systemRegistry.deviceManagementRepository
+    private val pumpDriverManager = systemRegistry.pumpDriverManager
 
     private val androidSystemInfo = combine(
         deviceStatusRepository.observeBluetoothStatus(),
@@ -204,10 +208,18 @@ class SystemControlViewModel(
         )
     }
 
-    private val pumpInfo = pumpManager.activeInsulinPump.flatMapLatest { pump ->
+    private val pumpInfo = combine(
+        pumpManager.activeInsulinPump,
+        deviceManagementRepository.pumpDescriptor
+    ) { pump, descriptor ->
+        Pair(pump, descriptor)
+    }.flatMapLatest { (pump, descriptor) ->
         if (pump == null) {
             flowOf(PumpUiData())
         } else {
+            val driver = descriptor?.let { pumpDriverManager.getDriver(it.driverId) }
+            val driverName = driver?.driverDisplayName ?: descriptor?.displayName?.let { UiText.DynamicString(it) }
+
             val coordinator = pumpManager.pumpCoordinator
             val jobsFlow = coordinator?.pendingJobs ?: flowOf(emptyList())
             val lastConnFlow = coordinator?.lastConnectionTime ?: flowOf(Timestamp.INVALID)
@@ -221,6 +233,7 @@ class SystemControlViewModel(
             ) { connected: Boolean, hardware: HardwareInformation?, status: InsulinPumpStatus?, jobs: List<PumpJob>, lastConn: Timestamp ->
                 PumpUiData(
                     connected = connected,
+                    driverName = driverName,
                     model = hardware?.model,
                     manufacturer = hardware?.manufacturer,
                     serialNumber = hardware?.serialNumber,
@@ -244,6 +257,7 @@ class SystemControlViewModel(
         // Overview Tab State
         val lastCalcInsight = insights.firstOrNull()
 
+        val isGlucoseConnected = gInfo.source != null
         val overviewState = OverviewTabUiState(
             androidSystem = androidSystem,
             apsSystem = OverviewApsSystemUiState(
@@ -253,12 +267,16 @@ class SystemControlViewModel(
             ),
             glucoseSource = OverviewGlucoseSourceUiState(
                 sensorName = gInfo.sourceName ?: UiText.DynamicString("Nicht verbunden"),
-                lastConnection = StatusMetric(value = gInfo.lastInputTimestamp, status = if (gInfo.source != null) ValueStatus.GOOD else ValueStatus.BAD),
+                status = StatusMetric(
+                    value = isGlucoseConnected,
+                    status = if (isGlucoseConnected) ValueStatus.GOOD else ValueStatus.BAD
+                ),
+                lastConnection = StatusMetric(value = gInfo.lastInputTimestamp, status = if (isGlucoseConnected) ValueStatus.GOOD else ValueStatus.BAD),
                 lastReading = StatusMetric(value = gInfo.lastBgReading?.timestamp, status = ValueStatus.GOOD),
                 sensorExpiration = StatusMetric(value = gInfo.estimatedExpirationTimestamp, status = ValueStatus.GOOD)
             ),
             pump = OverviewPumpUiState(
-                pumpName = pInfo.model ?: "Nicht verbunden",
+                driverName = pInfo.driverName ?: UiText.DynamicString("Nicht verbunden"),
                 status = StatusMetric(
                     value = if (!pInfo.connected) "Nicht verbunden" else if (pInfo.isSuspended) "Unterbrochen" else "Aktiv",
                     status = if (pInfo.connected) ValueStatus.GOOD else ValueStatus.BAD
@@ -326,6 +344,7 @@ class SystemControlViewModel(
         }
 
         val pumpTabState = PumpTabUiState(
+            driverName = pInfo.driverName,
             pumpModel = pInfo.model,
             manufacturer = pInfo.manufacturer,
             serialNumber = pInfo.serialNumber,
@@ -381,6 +400,7 @@ class SystemControlViewModel(
 
     private data class PumpUiData(
         val connected: Boolean = false,
+        val driverName: UiText? = null,
         val model: String? = null,
         val manufacturer: String? = null,
         val serialNumber: String? = null,

@@ -115,7 +115,7 @@ fun PumpOverviewCard(
                         icon = Icons.Default.Info
                     ) {
                         Text(
-                            text = uiState.pumpModel ?: "Nicht verbunden",
+                            text = uiState.driverName?.asString() ?: uiState.pumpModel ?: "Nicht verbunden",
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Medium,
                             maxLines = 2,
