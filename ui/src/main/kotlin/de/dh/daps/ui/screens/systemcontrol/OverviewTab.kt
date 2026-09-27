@@ -36,8 +36,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.data.BgReading
-import de.dh.daps.common.model.data.BgSampleKind
-import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.common.LocalGlucoseUnit
@@ -188,6 +186,10 @@ private fun ApsCard(
                 fontWeight = FontWeight.Bold
             )
 
+            ControlDetailRow(label = "Status") {
+                StatusMetricText(metric = state.status)
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
@@ -202,10 +204,6 @@ private fun ApsCard(
                         StatusMetricText(metric = state.lastCalculation)
                     }
                 }
-            }
-
-            ControlDetailRow(label = "Status") {
-                StatusMetricText(metric = state.status)
             }
 
             HorizontalDivider(
@@ -410,6 +408,8 @@ private fun <T> StatusMetricText(
     isDateTime: Boolean = false
 ) {
     val glucoseUnit = LocalGlucoseUnit.current
+    val timestamp = metric.value as? Timestamp
+
     val formattedValue = when (val v = metric.value) {
         is Int -> "$v%"
         is InsulinAmount -> insulinValue(v)
@@ -428,10 +428,8 @@ private fun <T> StatusMetricText(
         null -> "--"
         else -> v.toString()
     }
-
-    val ts = metric.timestamp ?: (metric.value as? Timestamp)
-    val relativeTime = if (ts != null && ts.isValid() && !isDateTime) {
-        shortRelativeTimeAgo(ts)
+    val relativeTime = if (timestamp != null && timestamp.isValid() && !isDateTime) {
+        shortRelativeTimeAgo(timestamp)
     } else null
 
     StatusValueText(
@@ -499,20 +497,13 @@ internal fun sampleOverviewTabUiState() = OverviewTabUiState(
     glucoseSource = OverviewGlucoseSourceUiState(
         sensorName = UiText.DynamicString("Dexcom G6"),
         lastConnection = StatusMetric(Timestamp(System.currentTimeMillis() - 60_000), status = ValueStatus.GOOD),
-        lastReading = StatusMetric(
-            value = BgReading(
-                value = BgValue.fromMgDl(124),
-                sampleKind = BgSampleKind.Value,
-                timestamp = Timestamp(System.currentTimeMillis() - 120_000)
-            ),
-            status = ValueStatus.GOOD
-        ),
+        lastReading = StatusMetric(Timestamp(System.currentTimeMillis() - 120_000), status = ValueStatus.GOOD),
         sensorExpiration = StatusMetric(Timestamp(System.currentTimeMillis() + 864_000_000), status = ValueStatus.GOOD)
     ),
     pump = OverviewPumpUiState(
         pumpName = "DANA-i",
         status = StatusMetric("Aktiv", status = ValueStatus.GOOD),
-        lastBolus = StatusMetric(InsulinAmount(1.5), status = ValueStatus.GOOD),
+        lastBolus = StatusMetric(Timestamp(System.currentTimeMillis() - 600_000), status = ValueStatus.GOOD),
         battery = StatusMetric(85, status = ValueStatus.GOOD),
         reservoir = StatusMetric(InsulinAmount(140.0), status = ValueStatus.GOOD),
         lastConnection = StatusMetric(Timestamp(System.currentTimeMillis() - 60_000), status = ValueStatus.GOOD),

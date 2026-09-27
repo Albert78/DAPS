@@ -9,6 +9,7 @@ import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.HardwareInformation
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinPumpStatus
+import de.dh.daps.common.model.InsulinStatus
 import de.dh.daps.common.model.ReplaceableComponent
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
@@ -25,6 +26,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 enum class ValueStatus {
@@ -35,8 +37,7 @@ enum class ValueStatus {
 
 data class StatusMetric<T>(
     val value: T? = null,
-    val status: ValueStatus? = null,
-    val timestamp: Timestamp? = null
+    val status: ValueStatus? = null
 )
 
 data class OverviewAndroidSystemUiState(
@@ -55,14 +56,14 @@ data class OverviewApsSystemUiState(
 data class OverviewGlucoseSourceUiState(
     val sensorName: UiText = UiText.DynamicString("--"),
     val lastConnection: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD),
-    val lastReading: StatusMetric<BgReading> = StatusMetric(status = ValueStatus.GOOD),
+    val lastReading: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD),
     val sensorExpiration: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD)
 )
 
 data class OverviewPumpUiState(
     val pumpName: String = "--",
     val status: StatusMetric<String> = StatusMetric("Inaktiv", status = ValueStatus.GOOD),
-    val lastBolus: StatusMetric<InsulinAmount> = StatusMetric(status = ValueStatus.GOOD),
+    val lastBolus: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD),
     val battery: StatusMetric<Int> = StatusMetric(status = ValueStatus.GOOD),
     val reservoir: StatusMetric<InsulinAmount> = StatusMetric(status = ValueStatus.GOOD),
     val lastConnection: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD),
@@ -123,8 +124,17 @@ class SystemControlViewModel(
 ) : ViewModel() {
     private val systemMetricsRepository = systemRegistry.systemMetricsRepository
     private val glucoseRepository = systemRegistry.glucoseRepository
+    private val treatmentRepository = systemRegistry.treatmentRepository
     private val glucoseSourceManager = systemRegistry.glucoseSourceManager
     private val pumpManager = systemRegistry.pumpManager
+
+    private val lastBolusTimestamp = treatmentRepository.observeInsulinApplications()
+        .map { applications ->
+            applications
+                .filter { !it.basal && it.status == InsulinStatus.Confirmed }
+                .maxByOrNull { it.timestamp }
+                ?.timestamp
+        }
 
     private val glucoseInfo = combine(
         glucoseSourceManager.activeGlucoseSource,
@@ -190,8 +200,9 @@ class SystemControlViewModel(
     val uiState: StateFlow<SystemControlUiState> = combine(
         systemMetricsRepository.observeInsights(),
         glucoseInfo,
-        pumpInfo
-    ) { insights, gInfo, pInfo ->
+        pumpInfo,
+        lastBolusTimestamp
+    ) { insights, gInfo, pInfo, lastBolusTs ->
         // Overview Tab State
         val lastCalcInsight = insights.firstOrNull()
 
@@ -210,7 +221,7 @@ class SystemControlViewModel(
             glucoseSource = OverviewGlucoseSourceUiState(
                 sensorName = gInfo.sourceName ?: UiText.DynamicString("Nicht verbunden"),
                 lastConnection = StatusMetric(value = gInfo.lastInputTimestamp, status = if (gInfo.source != null) ValueStatus.GOOD else ValueStatus.BAD),
-                lastReading = StatusMetric(value = gInfo.lastBgReading, timestamp = gInfo.lastBgReading?.timestamp, status = ValueStatus.GOOD),
+                lastReading = StatusMetric(value = gInfo.lastBgReading?.timestamp, status = ValueStatus.GOOD),
                 sensorExpiration = StatusMetric(value = gInfo.estimatedExpirationTimestamp, status = ValueStatus.GOOD)
             ),
             pump = OverviewPumpUiState(
@@ -219,7 +230,7 @@ class SystemControlViewModel(
                     value = if (!pInfo.connected) "Nicht verbunden" else if (pInfo.isSuspended) "Unterbrochen" else "Aktiv",
                     status = if (pInfo.connected) ValueStatus.GOOD else ValueStatus.BAD
                 ),
-                lastBolus = StatusMetric(status = ValueStatus.GOOD),
+                lastBolus = StatusMetric(value = lastBolusTs, status = ValueStatus.GOOD),
                 battery = StatusMetric(
                     value = pInfo.status?.batteryRemainingPercent,
                     status = if ((pInfo.status?.batteryRemainingPercent ?: 100) < 20) ValueStatus.WARNING else ValueStatus.GOOD
