@@ -33,18 +33,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.model.data.BgReading
+import de.dh.daps.common.model.data.BgReadingsInterval
+import de.dh.daps.common.model.data.BgSampleKind
+import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.common.glucoseValue
 import de.dh.daps.ui.common.icons.Icon_Next
 import de.dh.daps.ui.common.icons.Icon_Previous
 import de.dh.daps.ui.common.longDateTime
+import de.dh.daps.ui.common.readingsInterval
 import de.dh.daps.ui.common.shortRelativeTimeAgo
 import de.dh.daps.ui.common.shortRelativeTimeUntil
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.time
-import java.time.Instant
-import java.time.ZoneId
 
 @Composable
 fun GlucoseSourceTabContent(
@@ -146,8 +149,9 @@ fun GlucoseSourceOverviewCard(
                             label = "Messintervall",
                             reserveIconSpace = true
                         ) {
+                            val intervalText = readingsInterval(uiState.readingsInterval)
                             Text(
-                                text = uiState.readingsIntervalText ?: "--",
+                                text = intervalText,
                                 style = MaterialTheme.typography.bodyMedium,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
@@ -166,19 +170,19 @@ fun GlucoseSourceOverviewCard(
                 val bgValueText = if (lastReading != null) {
                     glucoseValue(lastReading.value, withUnit = true)
                 } else {
-                    uiState.lastBgValueText ?: "--"
+                    "--"
                 }
 
                 val lastTimeText = if (lastReading != null && lastReading.timestamp.isValid()) {
                     time(lastReading.timestamp)
                 } else {
-                    uiState.lastReadingTimeText ?: "--"
+                    "--"
                 }
 
                 val lastRelativeTime = if (lastReading != null && lastReading.timestamp.isValid()) {
                     shortRelativeTimeAgo(lastReading.timestamp)
                 } else {
-                    uiState.lastReadingRelativeTimeText
+                    null
                 }
 
                 ControlDetailRow(
@@ -198,13 +202,13 @@ fun GlucoseSourceOverviewCard(
                     val nextTimeText = if (nextPred != null && nextPred.isValid()) {
                         time(nextPred)
                     } else {
-                        uiState.nextReadingTimeText ?: "--"
+                        "--"
                     }
 
                     val nextRelativeTime = if (nextPred != null && nextPred.isValid()) {
                         shortRelativeTimeUntil(nextPred)
                     } else {
-                        uiState.nextReadingRelativeTimeText
+                        null
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -307,7 +311,6 @@ fun GlucoseFragments(
 fun GlucoseSourcePluginExampleCard(
     sensorCode: String?,
     transmitterSerialNumber: String?,
-    estimatedExpirationDateText: String?,
     onStopSensor: () -> Unit,
     modifier: Modifier = Modifier,
     estimatedExpirationTimestamp: Timestamp? = null
@@ -368,14 +371,7 @@ fun GlucoseSourcePluginExampleCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            val expDateDisplay = if (estimatedExpirationTimestamp != null && estimatedExpirationTimestamp.isValid()) {
-                val ldt = Instant.ofEpochMilli(estimatedExpirationTimestamp.ms)
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime()
-                longDateTime(ldt)
-            } else {
-                estimatedExpirationDateText ?: "--"
-            }
+            val expDateDisplay = longDateTime(estimatedExpirationTimestamp)
 
             ControlDetailRow(
                 label = "Geschätztes Ablaufdatum"
@@ -419,21 +415,22 @@ private fun sampleGlucoseSourceTabUiState() = GlucoseSourceTabUiState(
     manufacturer = "Dexcom",
     serialNumber = "SN-98765432",
     sensorTypeName = "G6-Sensor",
-    readingsIntervalText = "5 Minuten",
-    lastBgValueText = "124 mg/dl",
-    lastReadingTimeText = "12:32:40",
-    lastReadingRelativeTimeText = "vor 2 Min.",
+    readingsInterval = BgReadingsInterval.FiveMinutes,
+    lastBgReading = BgReading(
+        value = BgValue.fromMgDl(124),
+        sampleKind = BgSampleKind.Value,
+        timestamp = Timestamp(System.currentTimeMillis() - 120_000)
+    ),
     hasNextPrediction = true,
-    nextReadingTimeText = "12:37:40",
-    nextReadingRelativeTimeText = "in 3 Min.",
+    nextPredictedTimestamp = Timestamp(System.currentTimeMillis() + 180_000),
     sensorCode = "8132",
     transmitterSerialNumber = "8G1234",
-    estimatedExpirationDateText = "24.10.2024, 18:30",
+    estimatedExpirationTimestamp = Timestamp(System.currentTimeMillis() + 864000000),
     glucoseSourcePluginSection = {
         GlucoseSourcePluginExampleCard(
             sensorCode = "8132",
             transmitterSerialNumber = "8G1234",
-            estimatedExpirationDateText = "24.10.2024, 18:30",
+            estimatedExpirationTimestamp = Timestamp(System.currentTimeMillis() + 864000000),
             onStopSensor = {}
         )
     }
@@ -462,14 +459,12 @@ fun GlucoseSourceTabDisconnectedPreview() {
                 uiState = GlucoseSourceTabUiState(
                     glucoseSourceName = null,
                     sensorTypeName = null,
-                    readingsIntervalText = null,
-                    lastBgValueText = null,
-                    lastReadingTimeText = null,
-                    lastReadingRelativeTimeText = null,
+                    readingsInterval = null,
+                    lastBgReading = null,
                     hasNextPrediction = false,
                     sensorCode = null,
                     transmitterSerialNumber = null,
-                    estimatedExpirationDateText = null
+                    estimatedExpirationTimestamp = null
                 ),
                 modifier = Modifier.padding(16.dp)
             )

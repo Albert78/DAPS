@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.stringResource
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.data.BgDelta
+import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.CarbsUnit
 import de.dh.daps.common.model.data.GlucoseUnit
@@ -171,6 +172,23 @@ fun longDateTime(dateTime: LocalDateTime?, default: String = "-"): String {
     return dateTime?.let {
         longDateTime(dateTime)
     } ?: default
+}
+
+/**
+ * Composable UI function.
+ * Formats a nullable [Timestamp] using the localized long date-time pattern or returns a default string.
+ *
+ * @example longDateTime(timestamp) -> "14.11.2024, 14:30" / "11/14/2024, 2:30 PM"
+ * @example longDateTime(null) -> "-"
+ */
+@Composable
+fun longDateTime(timestamp: Timestamp?, default: String = "-"): String {
+    return if (timestamp != null && timestamp.isValid()) {
+        val ldt = Instant.ofEpochMilli(timestamp.ms)
+            .atZone(ZoneId.systemDefault())
+            .toLocalDateTime()
+        longDateTime(ldt, default)
+    } else default
 }
 
 /////////////////////////////////////////////// Short date time //////////////////////////////////////
@@ -404,6 +422,55 @@ fun isfUnitLabel(unit: GlucoseUnit = LocalGlucoseUnit.current): String {
     return when (unit) {
         GlucoseUnit.MG_DL -> stringResource(CommonR.string.unit_mgdl_per_u)
         GlucoseUnit.MMOL -> stringResource(CommonR.string.unit_mmol_per_u)
+    }
+}
+
+/**
+ * Non-Composable / Backend function.
+ * Formats a [BgReadingsInterval] for background services, notifications, etc.
+ *
+ * @example formatReadingsInterval(BgReadingsInterval.FiveMinutes, resources) -> "5 Minuten"
+ * @example formatReadingsInterval(null, resources) -> "--"
+ */
+fun formatReadingsInterval(
+    interval: BgReadingsInterval?,
+    resources: Resources,
+    default: String = "--"
+): String {
+    return when (interval) {
+        BgReadingsInterval.OneMinute -> resources.getString(CommonR.string.bg_readings_interval_one_minute)
+        BgReadingsInterval.FiveMinutes -> resources.getString(CommonR.string.bg_readings_interval_five_minutes)
+        BgReadingsInterval.AdHoc -> resources.getString(CommonR.string.bg_readings_interval_adhoc)
+        null -> default
+    }
+}
+
+/**
+ * Non-Composable / Backend function.
+ * Formats a [BgReadingsInterval] using a [Context].
+ *
+ * @example formatReadingsInterval(BgReadingsInterval.FiveMinutes, context) -> "5 Minuten"
+ */
+fun formatReadingsInterval(
+    interval: BgReadingsInterval?,
+    context: Context,
+    default: String = "--"
+): String = formatReadingsInterval(interval, context.resources, default)
+
+/**
+ * Composable UI function.
+ * Formats a [BgReadingsInterval] for display in Compose UI components.
+ *
+ * @example readingsInterval(BgReadingsInterval.FiveMinutes) -> "5 Minuten"
+ * @example readingsInterval(null) -> "--"
+ */
+@Composable
+fun readingsInterval(interval: BgReadingsInterval?, default: String = "--"): String {
+    return when (interval) {
+        BgReadingsInterval.OneMinute -> stringResource(CommonR.string.bg_readings_interval_one_minute)
+        BgReadingsInterval.FiveMinutes -> stringResource(CommonR.string.bg_readings_interval_five_minutes)
+        BgReadingsInterval.AdHoc -> stringResource(CommonR.string.bg_readings_interval_adhoc)
+        null -> default
     }
 }
 

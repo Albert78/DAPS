@@ -12,16 +12,13 @@ import de.dh.daps.common.model.InsulinPumpStatus
 import de.dh.daps.common.model.ReplaceableComponent
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
-import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.pump.JobErrorCode
 import de.dh.daps.core.pump.PumpCommand
 import de.dh.daps.core.pump.PumpJob
-import de.dh.daps.glucoseUnit
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.time
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -42,16 +39,14 @@ data class StatusMetric<T>(
     val timestamp: Timestamp? = null
 )
 
-data class AndroidSystemUiState(
-    val title: String = "Android",
+data class OverviewAndroidSystemUiState(
     val bluetoothStatus: StatusMetric<String> = StatusMetric("Aktiviert", status = ValueStatus.GOOD),
     val phoneBattery: StatusMetric<Int> = StatusMetric(82, status = ValueStatus.GOOD),
     val permissionsStatus: StatusMetric<String> = StatusMetric("Alle erteilt", status = ValueStatus.GOOD),
     val dapsServiceStatus: StatusMetric<String> = StatusMetric("Aktiv", status = ValueStatus.GOOD)
 )
 
-data class ApsSystemUiState(
-    val title: String = "APS-System",
+data class OverviewApsSystemUiState(
     val mode: StatusMetric<String> = StatusMetric("Auto-Korrektur", status = ValueStatus.GOOD),
     val lastCalculation: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD),
     val status: StatusMetric<String> = StatusMetric("Aktiv", status = ValueStatus.GOOD)
@@ -75,8 +70,8 @@ data class OverviewPumpUiState(
 )
 
 data class OverviewTabUiState(
-    val androidSystem: AndroidSystemUiState = AndroidSystemUiState(),
-    val apsSystem: ApsSystemUiState = ApsSystemUiState(),
+    val androidSystem: OverviewAndroidSystemUiState = OverviewAndroidSystemUiState(),
+    val apsSystem: OverviewApsSystemUiState = OverviewApsSystemUiState(),
     val glucoseSource: OverviewGlucoseSourceUiState = OverviewGlucoseSourceUiState(),
     val pump: OverviewPumpUiState = OverviewPumpUiState()
 )
@@ -86,19 +81,13 @@ data class GlucoseSourceTabUiState(
     val manufacturer: String? = null,
     val serialNumber: String? = null,
     val sensorTypeName: String? = null,
-    val readingsIntervalText: String? = null,
+    val readingsInterval: BgReadingsInterval? = null,
     val lastBgReading: BgReading? = null,
-    val lastBgValueText: String? = null,
-    val lastReadingTimeText: String? = null,
-    val lastReadingRelativeTimeText: String? = null,
     val nextPredictedTimestamp: Timestamp? = null,
-    val nextReadingTimeText: String? = null,
-    val nextReadingRelativeTimeText: String? = null,
     val hasNextPrediction: Boolean = false,
     val sensorCode: String? = null,
     val transmitterSerialNumber: String? = null,
     val estimatedExpirationTimestamp: Timestamp? = null,
-    val estimatedExpirationDateText: String? = null,
     val glucoseSourcePluginSection: (@Composable () -> Unit)? = null
 )
 
@@ -118,8 +107,6 @@ data class PumpTabUiState(
     val batteryPercent: Int? = null,
     val reservoirRemaining: InsulinAmount? = null,
     val lastConnectionTimestamp: Timestamp? = null,
-    val lastConnectionTimeText: String = "--",
-    val lastConnectionRelativeTimeText: String? = null,
     val pendingJobs: List<PumpJobItem> = emptyList(),
     val pumpPluginSection: (@Composable () -> Unit)? = null
 )
@@ -137,34 +124,19 @@ class SystemControlViewModel(
     private val systemMetricsRepository = systemRegistry.systemMetricsRepository
     private val glucoseRepository = systemRegistry.glucoseRepository
     private val glucoseSourceManager = systemRegistry.glucoseSourceManager
-    private val appPreferencesRepository = systemRegistry.appPreferencesRepository
     private val pumpManager = systemRegistry.pumpManager
 
     private val glucoseInfo = combine(
         glucoseSourceManager.activeGlucoseSource,
         glucoseRepository.currentBg,
-        appPreferencesRepository.cachedPreferences,
         glucoseSourceManager.lastInputTimestamp
-    ) { source, currentBg, preferences, lastInput ->
+    ) { source, currentBg, lastInput ->
         val sourceName = source?.let { UiText.DynamicString(it.glucoseSourceId) }
         val sensorType = source?.getSensorTypeName()
         val interval = source?.readingsInterval
-        val intervalText = when (interval) {
-            BgReadingsInterval.OneMinute -> "1 Minute"
-            BgReadingsInterval.FiveMinutes -> "5 Minuten"
-            BgReadingsInterval.AdHoc -> "Ad-hoc"
-            null -> null
-        }
-
-        val lastBgText = currentBg?.value?.let { bg ->
-            "${bg.toString(preferences.glucoseUnit)} ${if (preferences.glucoseUnit == GlucoseUnit.MG_DL) "mg/dl" else "mmol/l"}"
-        }
-
-        val lastReadingTimeText = currentBg?.timestamp?.let { time(it) }
 
         val nextPredicted = glucoseSourceManager.predictNextValueTimestamp()
         val hasPrediction = nextPredicted.isValid()
-        val nextReadingTimeText = if (hasPrediction) time(nextPredicted) else null
 
         val replaceable = source as? ReplaceableComponent
         val expTimestamp = replaceable?.endDate
@@ -176,15 +148,10 @@ class SystemControlViewModel(
             sourceName = sourceName,
             sensorTypeName = sensorType,
             readingsInterval = interval,
-            readingsIntervalText = intervalText,
             lastBgReading = currentBg,
-            lastBgValueText = lastBgText,
-            lastReadingTimeText = lastReadingTimeText,
             nextPredictedTimestamp = if (hasPrediction) nextPredicted else null,
-            nextReadingTimeText = nextReadingTimeText,
             hasNextPrediction = hasPrediction,
             estimatedExpirationTimestamp = expTimestamp,
-            glucoseUnit = preferences.glucoseUnit,
             pluginUiProvider = provider,
             lastInputTimestamp = lastInput
         )
@@ -227,16 +194,15 @@ class SystemControlViewModel(
     ) { insights, gInfo, pInfo ->
         // Overview Tab State
         val lastCalcInsight = insights.firstOrNull()
-        val pumpLastConnText = if (pInfo.lastConnection.isValid()) time(pInfo.lastConnection) else "--"
 
         val overviewState = OverviewTabUiState(
-            androidSystem = AndroidSystemUiState(
+            androidSystem = OverviewAndroidSystemUiState(
                 bluetoothStatus = StatusMetric("Aktiviert", status = ValueStatus.GOOD),
                 phoneBattery = StatusMetric(82, status = ValueStatus.GOOD),
                 permissionsStatus = StatusMetric("Alle erteilt", status = ValueStatus.GOOD),
                 dapsServiceStatus = StatusMetric("Aktiv", status = ValueStatus.GOOD)
             ),
-            apsSystem = ApsSystemUiState(
+            apsSystem = OverviewApsSystemUiState(
                 mode = StatusMetric("Auto-Korrektur", status = ValueStatus.GOOD),
                 lastCalculation = StatusMetric(value = lastCalcInsight?.timestamp, status = ValueStatus.GOOD),
                 status = StatusMetric(if (insights.isNotEmpty()) "Aktiv" else "Inaktiv", status = ValueStatus.GOOD)
@@ -272,12 +238,9 @@ class SystemControlViewModel(
             glucoseSourceName = gInfo.sourceName,
             manufacturer = null,
             sensorTypeName = gInfo.sensorTypeName,
-            readingsIntervalText = gInfo.readingsIntervalText,
+            readingsInterval = gInfo.readingsInterval,
             lastBgReading = gInfo.lastBgReading,
-            lastBgValueText = gInfo.lastBgValueText ?: "--",
-            lastReadingTimeText = gInfo.lastReadingTimeText ?: "--",
             nextPredictedTimestamp = gInfo.nextPredictedTimestamp,
-            nextReadingTimeText = gInfo.nextReadingTimeText,
             hasNextPrediction = gInfo.hasNextPrediction,
             estimatedExpirationTimestamp = gInfo.estimatedExpirationTimestamp,
             glucoseSourcePluginSection = gInfo.pluginUiProvider?.let { provider -> { provider.GlucoseSourceControlSection() } }
@@ -327,7 +290,6 @@ class SystemControlViewModel(
             batteryPercent = pInfo.status?.batteryRemainingPercent,
             reservoirRemaining = pInfo.status?.reservoirRemainingUnits,
             lastConnectionTimestamp = pInfo.lastConnection,
-            lastConnectionTimeText = pumpLastConnText,
             pendingJobs = pumpJobsList,
             pumpPluginSection = pInfo.pluginUiProvider?.let { provider -> { provider.PumpControlSection() } }
         )
@@ -365,15 +327,10 @@ class SystemControlViewModel(
         val sourceName: UiText?,
         val sensorTypeName: String?,
         val readingsInterval: BgReadingsInterval?,
-        val readingsIntervalText: String?,
         val lastBgReading: BgReading?,
-        val lastBgValueText: String?,
-        val lastReadingTimeText: String?,
         val nextPredictedTimestamp: Timestamp?,
-        val nextReadingTimeText: String?,
         val hasNextPrediction: Boolean,
         val estimatedExpirationTimestamp: Timestamp?,
-        val glucoseUnit: GlucoseUnit,
         val pluginUiProvider: GlucoseSourcePluginUiProvider?,
         val lastInputTimestamp: Timestamp
     )

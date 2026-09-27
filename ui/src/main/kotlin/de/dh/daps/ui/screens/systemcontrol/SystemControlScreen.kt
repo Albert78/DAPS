@@ -29,6 +29,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.data.BgReading
+import de.dh.daps.common.model.data.BgReadingsInterval
+import de.dh.daps.common.model.data.BgSampleKind
+import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.Timestamp
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -225,18 +230,20 @@ private fun previewUiState() = SystemControlUiState(
     glucoseSourceTabUiState = GlucoseSourceTabUiState(
         glucoseSourceName = UiText.DynamicString("Dexcom G6"),
         sensorTypeName = "G6-Sensor",
-        readingsIntervalText = "5 Minuten",
-        lastBgValueText = "124 mg/dl",
-        lastReadingTimeText = "12:32:40",
-        lastReadingRelativeTimeText = "vor 2 Min.",
+        readingsInterval = BgReadingsInterval.FiveMinutes,
+        lastBgReading = BgReading(
+            value = BgValue.fromMgDl(124),
+            sampleKind = BgSampleKind.Value,
+            timestamp = Timestamp(System.currentTimeMillis() - 120_000)
+        ),
         hasNextPrediction = true,
-        nextReadingTimeText = "12:37:40",
-        nextReadingRelativeTimeText = "in 3 Min.",
+        nextPredictedTimestamp = Timestamp(System.currentTimeMillis() + 180_000),
+        estimatedExpirationTimestamp = Timestamp(System.currentTimeMillis() + 864000000),
         glucoseSourcePluginSection = {
             GlucoseSourcePluginExampleCard(
                 sensorCode = "8132",
                 transmitterSerialNumber = "8G1234",
-                estimatedExpirationDateText = "24.10.2024, 18:30",
+                estimatedExpirationTimestamp = Timestamp(System.currentTimeMillis() + 864000000),
                 onStopSensor = {}
             )
         }
@@ -248,8 +255,7 @@ private fun previewUiState() = SystemControlUiState(
         pumpConnected = true,
         batteryPercent = 85,
         reservoirRemaining = InsulinAmount(140.0),
-        lastConnectionTimeText = "12:34:56",
-        lastConnectionRelativeTimeText = "vor 1 Min.",
+        lastConnectionTimestamp = Timestamp(System.currentTimeMillis() - 60_000),
         pendingJobs = listOf(
             PumpJobItem(
                 id = "job_1",

@@ -194,13 +194,13 @@ fun PumpOverviewCard(
             val lastConnTimeText = if (lastConnTimestamp != null && lastConnTimestamp.isValid()) {
                 time(lastConnTimestamp)
             } else {
-                uiState.lastConnectionTimeText
+                "--"
             }
 
             val lastConnRelativeText = if (lastConnTimestamp != null && lastConnTimestamp.isValid()) {
                 shortRelativeTimeAgo(lastConnTimestamp)
             } else {
-                uiState.lastConnectionRelativeTimeText
+                null
             }
 
             Row(
@@ -469,8 +469,7 @@ fun PumpTabDisconnectedPreview() {
                 uiState = PumpTabUiState(
                     pumpModel = null,
                     pumpConnected = false,
-                    lastConnectionTimeText = "--",
-                    lastConnectionRelativeTimeText = null,
+                    lastConnectionTimestamp = null,
                     pendingJobs = emptyList(),
                     pumpPluginSection = null
                 ),

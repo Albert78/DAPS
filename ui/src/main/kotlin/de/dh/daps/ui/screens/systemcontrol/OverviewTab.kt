@@ -99,7 +99,7 @@ fun OverviewTabContent(
 
 @Composable
 private fun AndroidSystemCard(
-    state: AndroidSystemUiState
+    state: OverviewAndroidSystemUiState
 ) {
     OutlinedCard(
         modifier = Modifier
@@ -118,7 +118,7 @@ private fun AndroidSystemCard(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = state.title,
+                text = "Android",
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -160,7 +160,7 @@ private fun AndroidSystemCard(
 
 @Composable
 private fun ApsCard(
-    state: ApsSystemUiState,
+    state: OverviewApsSystemUiState,
     onNavigateToCoreDecisions: () -> Unit = {}
 ) {
     OutlinedCard(
@@ -180,7 +180,7 @@ private fun ApsCard(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = state.title,
+                text = "APS-System",
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Bold
             )

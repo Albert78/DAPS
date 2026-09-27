@@ -24,6 +24,9 @@
     <string name="unknown_label">Unbekannt</string>
     <string name="bg_delta_format">Delta: %1$s %2$s</string>
     <string name="bg_raw_format">(raw: %1$s)</string>
+    <string name="bg_readings_interval_one_minute">1 Minute</string>
+    <string name="bg_readings_interval_five_minutes">5 Minuten</string>
+    <string name="bg_readings_interval_adhoc">Ad-hoc</string>
     <string name="at_time_format">um %1$s</string>
     <string name="approx_time_format">ca. %1$s</string>
     <string name="relative_time_now">Jetzt</string>
