@@ -18,8 +18,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * Main application class for DAPS.
@@ -33,9 +31,6 @@ class MainApplication : Application(), RegistryProvider {
         private set
 
     val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-
-    private val _isServiceRunning = MutableStateFlow(false)
-    val isServiceRunning = _isServiceRunning.asStateFlow()
 
     override fun onCreate() {
         super.onCreate()
@@ -98,10 +93,6 @@ class MainApplication : Application(), RegistryProvider {
         } catch (e: IllegalStateException) {
             // TODO: Handle
         }
-    }
-
-    fun setServiceRunning(running: Boolean) {
-        _isServiceRunning.value = running
     }
 
     companion object {

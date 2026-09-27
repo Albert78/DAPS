@@ -9,6 +9,9 @@ import android.content.IntentFilter
 import android.os.BatteryManager
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 
 enum class BluetoothStatus {
@@ -20,6 +23,12 @@ enum class BluetoothStatus {
 }
 
 class DeviceStatusRepository(private val context: Context) {
+    private val _isServiceRunning = MutableStateFlow(false)
+    val isServiceRunning: StateFlow<Boolean> = _isServiceRunning.asStateFlow()
+
+    fun setServiceRunning(running: Boolean) {
+        _isServiceRunning.value = running
+    }
     fun observeBatteryPercentage(): Flow<Int> = callbackFlow {
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(ctx: Context?, intent: Intent?) {

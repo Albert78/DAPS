@@ -24,7 +24,7 @@ class ApsService : Service() {
 
         startServiceInForeground()
 
-        MainApplication.instance.setServiceRunning(true)
+        MainApplication.instance.registry.deviceStatusRepository.setServiceRunning(true)
     }
 
     private fun startServiceInForeground() {
@@ -40,7 +40,7 @@ class ApsService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onDestroy() {
-        MainApplication.instance.setServiceRunning(false)
+        MainApplication.instance.registry.deviceStatusRepository.setServiceRunning(false)
         serviceScope.cancel()
         super.onDestroy()
     }

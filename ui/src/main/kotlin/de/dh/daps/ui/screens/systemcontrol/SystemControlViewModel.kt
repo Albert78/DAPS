@@ -132,8 +132,9 @@ class SystemControlViewModel(
 
     private val androidSystemInfo = combine(
         deviceStatusRepository.observeBluetoothStatus(),
-        deviceStatusRepository.observeBatteryPercentage()
-    ) { btStatus, batteryPct ->
+        deviceStatusRepository.observeBatteryPercentage(),
+        deviceStatusRepository.isServiceRunning
+    ) { btStatus, batteryPct, isRunning ->
         OverviewAndroidSystemUiState(
             bluetoothStatus = when (btStatus) {
                 BluetoothStatus.ENABLED -> StatusMetric("Aktiviert", status = ValueStatus.GOOD)
@@ -151,7 +152,10 @@ class SystemControlViewModel(
                 }
             ),
             permissionsStatus = StatusMetric("Alle erteilt", status = ValueStatus.GOOD),
-            dapsServiceStatus = StatusMetric("Aktiv", status = ValueStatus.GOOD)
+            dapsServiceStatus = StatusMetric(
+                value = if (isRunning) "Aktiv" else "Inaktiv",
+                status = if (isRunning) ValueStatus.GOOD else ValueStatus.BAD
+            )
         )
     }
 
