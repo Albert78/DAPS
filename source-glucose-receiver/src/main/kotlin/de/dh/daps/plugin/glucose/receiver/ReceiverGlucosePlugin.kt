@@ -28,12 +28,16 @@ import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.onEach
 
 /**
  * Glucose plugin which receives glucose values from other Android apps via a BroadcastReceiver.
@@ -57,7 +61,11 @@ class ReceiverGlucosePlugin(
     override val readingsTimeDelay: Minutes
         get() = externalSourceType.readingsTimeDelay
 
-    override val status: Flow<GlucoseSourceStatus> = flowOf(GlucoseSourceStatus.Ok)
+    override val status: StateFlow<GlucoseSourceStatus> = MutableStateFlow(GlucoseSourceStatus.Ok)
+    override val expirationDate: StateFlow<Timestamp?> = MutableStateFlow(null)
+
+    private val _lastConnection = MutableStateFlow<Timestamp?>(null)
+    override val lastConnection: StateFlow<Timestamp?> = _lastConnection.asStateFlow()
 
     override fun getSensorTypeName(): String = "External Receiver"
 
@@ -100,11 +108,14 @@ class ReceiverGlucosePlugin(
      */
     fun injectReading(value: BgReading): Boolean {
         Log.d(TAG, "New glucose reading: $value")
+        _lastConnection.value = Timestamp.now()
         return _readings.tryEmit(value)
     }
 
     override fun getValues(): Flow<BgReading> {
-        return _readings.asSharedFlow()
+        return _readings.asSharedFlow().onEach {
+            _lastConnection.value = Timestamp.now()
+        }
     }
 
     /**

@@ -5,9 +5,13 @@ import de.dh.daps.common.model.GlucoseSourceStatus
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.onEach
 
 class SimBodyGlucoseSource(
     private val glucoseReadings: Flow<BgReading>
@@ -17,7 +21,12 @@ class SimBodyGlucoseSource(
     override val readingsInterval: BgReadingsInterval
         get() = BgReadingsInterval.FiveMinutes
     override val readingsTimeDelay = DEFAULT_READINGS_DELAY
-    override val status: Flow<GlucoseSourceStatus> = flowOf(GlucoseSourceStatus.Ok)
+    override val status: StateFlow<GlucoseSourceStatus> = MutableStateFlow(GlucoseSourceStatus.Ok)
+    override val expirationDate: StateFlow<Timestamp?> = MutableStateFlow(null)
+
+    private val _lastConnection = MutableStateFlow<Timestamp?>(null)
+    override val lastConnection: StateFlow<Timestamp?> = _lastConnection.asStateFlow()
+
     override fun getSensorTypeName() = "Sim Body Dexcom G6"
 
     override fun start() {
@@ -27,7 +36,9 @@ class SimBodyGlucoseSource(
     }
 
     override fun getValues(): Flow<BgReading> {
-        return glucoseReadings
+        return glucoseReadings.onEach {
+            _lastConnection.value = Timestamp.now()
+        }
     }
 
     companion object {

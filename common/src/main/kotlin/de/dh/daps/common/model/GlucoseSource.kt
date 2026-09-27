@@ -3,8 +3,10 @@ package de.dh.daps.common.model
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 enum class GlucoseSourceStatus {
     Ok,
@@ -36,7 +38,9 @@ interface GlucoseSource {
      */
     val readingsTimeDelay: Minutes
 
-    val status: Flow<GlucoseSourceStatus>
+    val status: StateFlow<GlucoseSourceStatus>
+    val expirationDate: StateFlow<Timestamp?>
+    val lastConnection: StateFlow<Timestamp?>
 
     /**
      * Gets a stable, technical name for the sensor, e.g. "Dexcom_G7".
