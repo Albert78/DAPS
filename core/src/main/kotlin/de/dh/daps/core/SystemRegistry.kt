@@ -20,6 +20,7 @@ import de.dh.daps.core.pump.PumpDriverManager
 import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.repository.AlarmRepository
 import de.dh.daps.core.repository.DeviceManagementRepository
+import de.dh.daps.core.repository.DeviceStatusRepository
 import de.dh.daps.core.repository.FoodRepository
 import de.dh.daps.core.repository.GlucoseRepository
 import de.dh.daps.core.repository.SettingsRepository
@@ -106,6 +107,11 @@ interface SystemRegistry : PluginContext {
      * Repository for algorithm internal metrics and decision reasoning history.
      */
     val systemMetricsRepository: SystemMetricsRepository
+
+    /**
+     * Repository for Android device system status metrics (e.g. battery level, Bluetooth status).
+     */
+    val deviceStatusRepository: DeviceStatusRepository
 
     /**
      * Repository for lightweight application preferences and key-value pairs.

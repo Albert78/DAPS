@@ -29,6 +29,7 @@ import de.dh.daps.core.repository.AlarmRepository
 import de.dh.daps.core.repository.AlarmRepositoryImpl
 import de.dh.daps.core.repository.DatabaseInitializer
 import de.dh.daps.core.repository.DeviceManagementRepository
+import de.dh.daps.core.repository.DeviceStatusRepository
 import de.dh.daps.core.repository.FoodRepository
 import de.dh.daps.core.repository.GlucoseRepository
 import de.dh.daps.core.repository.SettingsRepository
@@ -60,6 +61,7 @@ class SystemRegistryImpl(
     override val deviceManagementRepository: DeviceManagementRepository,
     override val settingsRepository: SettingsRepository,
     override val systemMetricsRepository: SystemMetricsRepository,
+    override val deviceStatusRepository: DeviceStatusRepository,
     override val appPreferencesRepository: AppPreferencesRepository,
     override val glucoseSourceManager: GlucoseSourceManager,
     override val glucoseSourceDriverManager: GlucoseSourceDriverManager,
@@ -109,6 +111,7 @@ class SystemRegistryImpl(
             )
             val settingsRepository = SettingsRepository(appDatabase)
             val systemMetricsRepository = SystemMetricsRepository(appDatabase)
+            val deviceStatusRepository = DeviceStatusRepository(application)
 
             // Initialize Managers
             val wakeService = SystemWakeServiceImpl(
@@ -194,6 +197,7 @@ class SystemRegistryImpl(
                 deviceManagementRepository = deviceManagementRepository,
                 settingsRepository = settingsRepository,
                 systemMetricsRepository = systemMetricsRepository,
+                deviceStatusRepository = deviceStatusRepository,
                 appPreferencesRepository = appPreferencesRepository,
                 therapyManager = therapyManager,
                 recommendationManager = recommendationManager,

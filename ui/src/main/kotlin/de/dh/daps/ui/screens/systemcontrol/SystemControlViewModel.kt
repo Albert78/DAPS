@@ -16,6 +16,7 @@ import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.core.SystemRegistry
+import de.dh.daps.core.repository.BluetoothStatus
 import de.dh.daps.core.pump.JobErrorCode
 import de.dh.daps.core.pump.PumpCommand
 import de.dh.daps.core.pump.PumpJob
@@ -127,6 +128,32 @@ class SystemControlViewModel(
     private val treatmentRepository = systemRegistry.treatmentRepository
     private val glucoseSourceManager = systemRegistry.glucoseSourceManager
     private val pumpManager = systemRegistry.pumpManager
+    private val deviceStatusRepository = systemRegistry.deviceStatusRepository
+
+    private val androidSystemInfo = combine(
+        deviceStatusRepository.observeBluetoothStatus(),
+        deviceStatusRepository.observeBatteryPercentage()
+    ) { btStatus, batteryPct ->
+        OverviewAndroidSystemUiState(
+            bluetoothStatus = when (btStatus) {
+                BluetoothStatus.ENABLED -> StatusMetric("Aktiviert", status = ValueStatus.GOOD)
+                BluetoothStatus.DISABLED -> StatusMetric("Deaktiviert", status = ValueStatus.BAD)
+                BluetoothStatus.TURNING_ON -> StatusMetric("Wird aktiviert", status = ValueStatus.WARNING)
+                BluetoothStatus.TURNING_OFF -> StatusMetric("Wird deaktiviert", status = ValueStatus.WARNING)
+                BluetoothStatus.UNAVAILABLE -> StatusMetric("Nicht verfügbar", status = ValueStatus.BAD)
+            },
+            phoneBattery = StatusMetric(
+                value = batteryPct,
+                status = when {
+                    batteryPct < 15 -> ValueStatus.BAD
+                    batteryPct < 30 -> ValueStatus.WARNING
+                    else -> ValueStatus.GOOD
+                }
+            ),
+            permissionsStatus = StatusMetric("Alle erteilt", status = ValueStatus.GOOD),
+            dapsServiceStatus = StatusMetric("Aktiv", status = ValueStatus.GOOD)
+        )
+    }
 
     private val lastBolusTimestamp = treatmentRepository.observeInsulinApplications()
         .map { applications ->
@@ -201,18 +228,14 @@ class SystemControlViewModel(
         systemMetricsRepository.observeInsights(),
         glucoseInfo,
         pumpInfo,
-        lastBolusTimestamp
-    ) { insights, gInfo, pInfo, lastBolusTs ->
+        lastBolusTimestamp,
+        androidSystemInfo
+    ) { insights, gInfo, pInfo, lastBolusTs, androidSystem ->
         // Overview Tab State
         val lastCalcInsight = insights.firstOrNull()
 
         val overviewState = OverviewTabUiState(
-            androidSystem = OverviewAndroidSystemUiState(
-                bluetoothStatus = StatusMetric("Aktiviert", status = ValueStatus.GOOD),
-                phoneBattery = StatusMetric(82, status = ValueStatus.GOOD),
-                permissionsStatus = StatusMetric("Alle erteilt", status = ValueStatus.GOOD),
-                dapsServiceStatus = StatusMetric("Aktiv", status = ValueStatus.GOOD)
-            ),
+            androidSystem = androidSystem,
             apsSystem = OverviewApsSystemUiState(
                 mode = StatusMetric("Auto-Korrektur", status = ValueStatus.GOOD),
                 lastCalculation = StatusMetric(value = lastCalcInsight?.timestamp, status = ValueStatus.GOOD),
