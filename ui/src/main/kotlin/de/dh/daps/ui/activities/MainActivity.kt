@@ -59,6 +59,7 @@ import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDe
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import de.dh.daps.common.navigation.AppDataRoute
 import de.dh.daps.common.navigation.BolusHistoryRoute
 import de.dh.daps.common.navigation.DashboardRoute
 import de.dh.daps.common.navigation.FeatureNavGraph
@@ -78,6 +79,7 @@ import de.dh.daps.core.system.RegistryProvider
 import de.dh.daps.ui.GlobalViewModel
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.EdgeToEdgeHandler
+import de.dh.daps.ui.common.icons.Backup
 import de.dh.daps.ui.common.icons.Icon_Bolus
 import de.dh.daps.ui.common.icons.Icon_Food_Database
 import de.dh.daps.ui.common.icons.Icon_ManualControlMode
@@ -437,6 +439,12 @@ fun DrawerContent(
                     icon = Icon_Settings,
                     selected = currentRoute == PreferencesMainRoute,
                     onClick = { onRouteSelected(PreferencesMainRoute) }
+                )
+                DrawerItem(
+                    label = stringResource(id = R.string.menu_app_data_label),
+                    icon = Icons.Outlined.Backup,
+                    selected = currentRoute == AppDataRoute,
+                    onClick = { onRouteSelected(AppDataRoute) }
                 )
             }
         }

@@ -17,6 +17,7 @@ import androidx.navigation3.runtime.NavKey
 import de.dh.daps.common.ID_UNDEFINED
 import de.dh.daps.common.navigation.AlarmProfileEditorRoute
 import de.dh.daps.common.navigation.AlarmProfilesRoute
+import de.dh.daps.common.navigation.AppDataRoute
 import de.dh.daps.common.navigation.BgEditorRoute
 import de.dh.daps.common.navigation.BolusHistoryRoute
 import de.dh.daps.common.navigation.CoreDecisionsRoute
@@ -56,6 +57,8 @@ import de.dh.daps.ui.screens.alarmprofiles.AlarmProfileEditorScreen
 import de.dh.daps.ui.screens.alarmprofiles.AlarmProfileEditorViewModel
 import de.dh.daps.ui.screens.alarmprofiles.AlarmProfilesScreen
 import de.dh.daps.ui.screens.alarmprofiles.AlarmProfilesViewModel
+import de.dh.daps.ui.screens.appdata.AppDataScreen
+import de.dh.daps.ui.screens.appdata.AppDataViewModel
 import de.dh.daps.ui.screens.bolushistory.BolusHistoryScreen
 import de.dh.daps.ui.screens.bolushistory.BolusHistoryViewModel
 import de.dh.daps.ui.screens.dashboard.DashboardScreen
@@ -344,6 +347,17 @@ class MainFeatureNavGraph(
                 }
 
                 PreferencesScreen(
+                    viewModel = vm,
+                    onNavigateUp = { navViewModel.pop() }
+                )
+            }
+
+            is AppDataRoute -> NavEntry(key) {
+                val vm: AppDataViewModel = viewModel(
+                    factory = AppDataViewModel.Companion.Factory(registry)
+                )
+
+                AppDataScreen(
                     viewModel = vm,
                     onNavigateUp = { navViewModel.pop() }
                 )

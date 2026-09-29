@@ -1,5 +1,6 @@
 package de.dh.daps.core.backup
 
+import android.content.Context
 import androidx.room.withTransaction
 import de.dh.daps.AppPreferencesRepository
 import de.dh.daps.carbsUnit
@@ -7,6 +8,11 @@ import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.model.data.CarbsUnit
 import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.core.repository.AlarmRepository
+import de.dh.daps.core.repository.DatabaseInitializer
+import de.dh.daps.core.repository.SettingsRepository
+import de.dh.daps.core.repository.TherapyRepository
+import de.dh.daps.core.repository.TreatmentRepository
 import de.dh.daps.core.repository.db.AppDatabase
 import de.dh.daps.glucoseSourceDescriptor
 import de.dh.daps.glucoseUnit
@@ -29,13 +35,18 @@ import java.util.zip.ZipOutputStream
 interface BackupRepository {
     suspend fun exportBackup(outputStream: OutputStream, options: BackupOptions): BackupResult
     suspend fun importBackup(inputStream: InputStream): BackupResult
+    suspend fun resetToDefaultData()
 }
 
 class BackupRepositoryImpl(
+    private val context: Context,
     private val appDatabase: AppDatabase,
     private val preferencesRepository: AppPreferencesRepository,
+    private val treatmentRepository: TreatmentRepository,
+    private val therapyRepository: TherapyRepository,
+    private val settingsRepository: SettingsRepository,
+    private val alarmRepository: AlarmRepository,
 ) : BackupRepository {
-
     private val json = Json {
         prettyPrint = true
         ignoreUnknownKeys = true
@@ -315,5 +326,41 @@ class BackupRepositoryImpl(
         }.getOrElse {
             BackupResult.Error(it)
         }
+    }
+
+    override suspend fun resetToDefaultData() = withContext(Dispatchers.IO) {
+        appDatabase.withTransaction {
+            val therapyDao = appDatabase.therapyDao()
+            val providerDao = appDatabase.providerDao()
+            val settingsDao = appDatabase.settingsDao()
+            val alarmDao = appDatabase.alarmProfileDao()
+            val metabolicDao = appDatabase.metabolicEventsDao()
+            val mealReminderDao = appDatabase.mealReminderDao()
+            val metricsDao = appDatabase.systemMetricsDao()
+
+            metabolicDao.deleteAllDeferredBoluses()
+            mealReminderDao.deleteAllMealReminders()
+            metabolicDao.deleteAllMeals()
+            metabolicDao.deleteAllInsulinApplications()
+            providerDao.deleteAllGlucoseReadings()
+            therapyDao.deleteAllCurrentTherapySettings()
+            therapyDao.deleteAllScheduledTherapyAdjustments()
+            therapyDao.deleteAllTherapyAdjustments()
+            settingsDao.deleteAllCurrentSettings()
+            alarmDao.deleteAllAlarmProfiles()
+            therapyDao.deleteAllInsulinProfiles()
+            providerDao.deleteAllSensorTypes()
+            providerDao.deleteAllDataProviders()
+            metabolicDao.deleteAllMealTypes()
+            metabolicDao.deleteAllInsulinTypes()
+            metricsDao.deleteAllCoreInsights()
+        }
+        DatabaseInitializer.initialize(
+            context = context,
+            treatmentRepository = treatmentRepository,
+            therapyRepository = therapyRepository,
+            settingsRepository = settingsRepository,
+            alarmRepository = alarmRepository
+        )
     }
 }

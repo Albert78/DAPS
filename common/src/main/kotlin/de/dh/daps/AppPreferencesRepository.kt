@@ -79,11 +79,25 @@ suspend fun AppPreferencesRepository.setPumpDescriptor(descriptor: PumpConnectio
     }
 }
 
+val Preferences?.backupDirectoryUri: String?
+    get() = this?.get(BACKUP_DIRECTORY_URI_KEY)
+
+suspend fun AppPreferencesRepository.setBackupDirectoryUri(uriString: String?) {
+    editPreferences { mutablePreferences ->
+        if (uriString != null) {
+            mutablePreferences[BACKUP_DIRECTORY_URI_KEY] = uriString
+        } else {
+            mutablePreferences.remove(BACKUP_DIRECTORY_URI_KEY)
+        }
+    }
+}
+
 val USER_DECLINED_PERMISSIONS_KEY = booleanPreferencesKey("user_declined_permissions")
 val GLUCOSE_UNIT_KEY = stringPreferencesKey("glucose_unit")
 val CARBS_UNIT_KEY = stringPreferencesKey("carbs_unit")
 val GLUCOSE_SOURCE_DESCRIPTOR_KEY = stringPreferencesKey("glucose_source_descriptor")
 val PUMP_DESCRIPTOR_KEY = stringPreferencesKey("pump_descriptor")
+val BACKUP_DIRECTORY_URI_KEY = stringPreferencesKey("backup_directory_uri")
 
 class AppPreferencesRepository(private val context: Context, private val scope: CoroutineScope) {
     /**
@@ -114,6 +128,14 @@ class AppPreferencesRepository(private val context: Context, private val scope: 
             scope = scope,
             started = SharingStarted.Eagerly,
             initialValue = CarbsUnit.GRAMS
+        )
+
+    val backupDirectoryUri: StateFlow<String?> = cachedPreferences
+        .map { it.backupDirectoryUri }
+        .stateIn(
+            scope = scope,
+            started = SharingStarted.Eagerly,
+            initialValue = null
         )
 
     /**

@@ -14,6 +14,7 @@ import de.dh.daps.core.aps.GlucoseSourceManager
 import de.dh.daps.core.aps.RecommendationManager
 import de.dh.daps.core.aps.SystemOrchestrator
 import de.dh.daps.core.aps.TherapyManager
+import de.dh.daps.core.backup.BackupRepository
 import de.dh.daps.core.device.DeviceConnectionManager
 import de.dh.daps.core.pump.PumpDriverManager
 import de.dh.daps.core.pump.PumpManager
@@ -122,6 +123,11 @@ interface SystemRegistry : PluginContext {
      * Repository for lightweight application preferences and key-value pairs.
      */
     override val appPreferencesRepository: AppPreferencesRepository
+
+    /**
+     * Repository for backup, restore and data reset operations.
+     */
+    val backupRepository: BackupRepository
 
     // System Managers and Services
 

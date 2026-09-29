@@ -20,6 +20,8 @@ import de.dh.daps.core.aps.RecommendationManager
 import de.dh.daps.core.aps.SystemOrchestrator
 import de.dh.daps.core.aps.SystemOrchestratorImpl
 import de.dh.daps.core.aps.TherapyManager
+import de.dh.daps.core.backup.BackupRepository
+import de.dh.daps.core.backup.BackupRepositoryImpl
 import de.dh.daps.core.device.DeviceConnectionManager
 import de.dh.daps.core.pump.PumpDriverManager
 import de.dh.daps.core.pump.PumpManager
@@ -64,6 +66,7 @@ class SystemRegistryImpl(
     override val deviceStatusRepository: DeviceStatusRepository,
     override val permissionRepository: PermissionRepository,
     override val appPreferencesRepository: AppPreferencesRepository,
+    override val backupRepository: BackupRepository,
     override val glucoseSourceManager: GlucoseSourceManager,
     override val glucoseSourceDriverManager: GlucoseSourceDriverManager,
     override val therapyManager: TherapyManager,
@@ -185,6 +188,16 @@ class SystemRegistryImpl(
                 onPermissionsChanged()
             }
 
+            val backupRepository = BackupRepositoryImpl(
+                context = application,
+                appDatabase = appDatabase,
+                preferencesRepository = appPreferencesRepository,
+                treatmentRepository = treatmentRepository,
+                therapyRepository = therapyRepository,
+                settingsRepository = settingsRepository,
+                alarmRepository = alarmRepository
+            )
+
             val registryInstance = SystemRegistryImpl(
                 appContext = application,
                 glucoseRepository = glucoseRepository,
@@ -201,6 +214,7 @@ class SystemRegistryImpl(
                 deviceStatusRepository = deviceStatusRepository,
                 permissionRepository = permissionRepository,
                 appPreferencesRepository = appPreferencesRepository,
+                backupRepository = backupRepository,
                 therapyManager = therapyManager,
                 recommendationManager = recommendationManager,
                 glucoseSourceManager = glucoseSourceManager,
