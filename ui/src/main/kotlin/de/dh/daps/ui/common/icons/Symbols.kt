@@ -86,6 +86,7 @@ val Icon_Alarms = Icons.Outlined.NotificationsActive
 val Icon_Permissions = Icons.Outlined.Security
 val Icon_Meal_Types = Icons.Outlined.Meal_Types
 val Icon_Master_Data = Icons.Outlined.Badge
+val Icon_App_Data = Icons.Outlined.Database
 
 val Icon_Add = Icons.Outlined.Add
 val Icon_Edit = Icons.Outlined.Edit
@@ -155,6 +156,7 @@ private val iconsForPreview = listOf(
     IconPreview("Permissions", Icon_Permissions),
     IconPreview("Meal_Types", Icon_Meal_Types),
     IconPreview("Master_Data", Icon_Master_Data),
+    IconPreview("App_Data", Icon_App_Data),
     IconPreview("More", Icon_More),
     IconPreview("Delete_Filled", Icon_Delete_Filled),
     IconPreview("Icon_Screen_Back", Icon_Screen_Back),

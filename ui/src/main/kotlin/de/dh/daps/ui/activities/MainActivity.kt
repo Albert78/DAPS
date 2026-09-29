@@ -79,7 +79,7 @@ import de.dh.daps.core.system.RegistryProvider
 import de.dh.daps.ui.GlobalViewModel
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.EdgeToEdgeHandler
-import de.dh.daps.ui.common.icons.Backup
+import de.dh.daps.ui.common.icons.Icon_App_Data
 import de.dh.daps.ui.common.icons.Icon_Bolus
 import de.dh.daps.ui.common.icons.Icon_Food_Database
 import de.dh.daps.ui.common.icons.Icon_ManualControlMode
@@ -442,7 +442,7 @@ fun DrawerContent(
                 )
                 DrawerItem(
                     label = stringResource(id = R.string.menu_app_data_label),
-                    icon = Icons.Outlined.Backup,
+                    icon = Icon_App_Data,
                     selected = currentRoute == AppDataRoute,
                     onClick = { onRouteSelected(AppDataRoute) }
                 )
