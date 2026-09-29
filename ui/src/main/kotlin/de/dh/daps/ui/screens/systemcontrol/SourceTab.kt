@@ -241,6 +241,7 @@ fun GlucoseFragments(
                     text = time,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
+                    modifier = Modifier.align(Alignment.CenterVertically),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -249,6 +250,7 @@ fun GlucoseFragments(
                         text = "($extra)",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.align(Alignment.CenterVertically),
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )

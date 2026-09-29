@@ -259,6 +259,7 @@ fun PumpOverviewCard(
                                         text = lastConnTimeText,
                                         style = MaterialTheme.typography.bodyMedium,
                                         fontWeight = FontWeight.Medium,
+                                        modifier = Modifier.align(Alignment.CenterVertically),
                                         maxLines = 2,
                                         overflow = TextOverflow.Ellipsis
                                     )
@@ -272,6 +273,7 @@ fun PumpOverviewCard(
                                             text = formattedRelative,
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.secondary,
+                                            modifier = Modifier.align(Alignment.CenterVertically),
                                             maxLines = 2,
                                             overflow = TextOverflow.Ellipsis
                                         )
@@ -472,7 +474,7 @@ internal fun samplePumpTabUiState() = PumpTabUiState(
     pumpModel = "Simulator",
     manufacturer = "DAPS",
     serialNumber = "SIM-001",
-    pumpConnected = true,
+    pumpConnected = false,
     batteryPercent = 85,
     reservoirRemaining = InsulinAmount(140.0),
     lastConnectionTimestamp = Timestamp(System.currentTimeMillis() - 60_000),
