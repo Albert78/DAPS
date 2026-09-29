@@ -177,6 +177,8 @@ class SystemControlViewModel(
     private val permissionRepository = systemRegistry.permissionRepository
     private val systemOrchestrator = systemRegistry.systemOrchestrator
 
+    // Collect base infos in flows
+
     private val androidSystemInfo = combine(
         deviceStatusRepository.observeBluetoothStatus(),
         deviceStatusRepository.observeBatteryPercentage(),
@@ -314,6 +316,8 @@ class SystemControlViewModel(
             status = StatusMetric(statusValue, status = statusValueStatus)
         )
     }
+
+    // UI state is a combination of base flows
 
     val uiState: StateFlow<SystemControlUiState> = combine(
         apsInfo,

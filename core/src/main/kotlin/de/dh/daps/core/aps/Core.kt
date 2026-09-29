@@ -16,6 +16,9 @@ import de.dh.daps.core.repository.GlucoseRepository
 import de.dh.daps.core.repository.SystemMetricsRepository
 import de.dh.daps.core.repository.TreatmentRepository
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -70,7 +73,6 @@ class Core(
     private val carbsInsulinCalculator: CarbsInsulinCalculator,
     private val glucoseRepository: GlucoseRepository,
 
-    private val onCoreStateChanged: () -> Unit,
     private val onAcquireBusyState: () -> Unit,
     private val onReleaseBusyState: () -> Unit,
 
@@ -93,10 +95,11 @@ class Core(
     private val mutex = Mutex()
     private var calculationAlgorithm: ApsAlgorithm = NoopAlgorithm()
 
-    var coreState: CoreState = CoreState.Uninitialized
-        private set
+    private val _coreState = MutableStateFlow<CoreState>(CoreState.Uninitialized)
+    internal val coreState: StateFlow<CoreState> = _coreState.asStateFlow()
 
-    private var lastCompletion: Timestamp = Timestamp.now()
+    private val _lastSuccessfulCoreCalculation = MutableStateFlow(Timestamp.now())
+    internal val lastSuccessfulCoreCalculation: StateFlow<Timestamp> = _lastSuccessfulCoreCalculation.asStateFlow()
 
     /**
      * Block marker for code blocks which need a wake lock in the system during their executions.
@@ -120,8 +123,7 @@ class Core(
     }
 
     private fun setCoreState(state: CoreState) {
-        coreState = state
-        onCoreStateChanged()
+        _coreState.value = state
     }
 
     suspend fun initialize() {
@@ -143,7 +145,7 @@ class Core(
     }
 
     internal suspend fun processCalculation() {
-        val currentCoreState = coreState
+        val currentCoreState = coreState.value
         if (currentCoreState !is CoreState.Active) return
 
         // This is the outer part of the process tick.
@@ -178,7 +180,7 @@ class Core(
                                 )
                             )
                         }
-                        setCoreState(CoreState.Active(issuesWithoutLock + CoreIssue.NoPumpConnection(lastCompletion)))
+                        setCoreState(CoreState.Active(issuesWithoutLock + CoreIssue.NoPumpConnection(lastSuccessfulCoreCalculation.value)))
                         return@tryAcquire
                     }
                     onClearRecommendations()
@@ -236,10 +238,10 @@ class Core(
 
                     val pendingCount2 = onWaitForPumpSync(treatmentLock)
                     if (pendingCount2 > 0) {
-                        setCoreState(CoreState.Active(issuesWithoutLock + CoreIssue.NoPumpConnection(lastCompletion)))
+                        setCoreState(CoreState.Active(issuesWithoutLock + CoreIssue.NoPumpConnection(lastSuccessfulCoreCalculation.value)))
                         return@tryAcquire
                     }
-                    lastCompletion = Timestamp.now()
+                    _lastSuccessfulCoreCalculation.value = Timestamp.now()
 
                     // Core can be active and yet have issues. In this case, the user is notified
                     // about the issues (e.g. no BG values) but the algorithm will still be called.
@@ -396,7 +398,6 @@ class Core(
             carbsInsulinCalculator: CarbsInsulinCalculator,
             glucoseRepository: GlucoseRepository,
 
-            onCoreStateChanged: () -> Unit,
             onAcquireBusyState: () -> Unit,
             onReleaseBusyState: () -> Unit,
 
@@ -422,7 +423,6 @@ class Core(
                 carbsInsulinCalculator = carbsInsulinCalculator,
                 glucoseRepository = glucoseRepository,
 
-                onCoreStateChanged = onCoreStateChanged,
                 onAcquireBusyState = onAcquireBusyState,
                 onReleaseBusyState = onReleaseBusyState,
 

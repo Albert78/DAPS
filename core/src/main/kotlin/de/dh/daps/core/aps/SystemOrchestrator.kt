@@ -23,7 +23,6 @@ import de.dh.daps.core.system.AndroidNotifications
 import de.dh.daps.core.system.SystemWakeService
 import de.dh.daps.core.system.WakeupHandler
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -83,6 +82,11 @@ interface SystemOrchestrator {
      * State of the core loop.
      */
     val coreState: StateFlow<CoreState>
+
+    /**
+     * Timestamp of the last successful core calculation completion.
+     */
+    val lastSuccessfulCoreCalculation: StateFlow<Timestamp>
 
     /**
      * Updates the APS mode and persists the change.
@@ -157,8 +161,11 @@ class SystemOrchestratorImpl(
     private val _isBgStale = MutableStateFlow(false)
     override val isBgStale: StateFlow<Boolean> = _isBgStale.asStateFlow()
 
-    private val _coreState = MutableStateFlow<CoreState>(CoreState.Initializing)
+    private val _coreState = MutableStateFlow<CoreState>(CoreState.Uninitialized)
     override val coreState: StateFlow<CoreState> = _coreState.asStateFlow()
+
+    private val _lastSuccessfulCoreCalculation = MutableStateFlow(Timestamp.now())
+    override val lastSuccessfulCoreCalculation: StateFlow<Timestamp> = _lastSuccessfulCoreCalculation.asStateFlow()
 
     // Computation Core: Pure logic and state, completely thread-agnostic
     private lateinit var core: Core
@@ -195,24 +202,6 @@ class SystemOrchestratorImpl(
      */
     private suspend fun <T> inCoreThreadSync(block: suspend CoroutineScope.() -> T): T {
         return withContext(coreDispatcher) {
-            block()
-        }
-    }
-
-    /**
-     * Executes the given block in the external dispatcher asynchronously.
-     */
-    private fun inExternalDispatcherAsync(block: suspend CoroutineScope.() -> Unit): Job {
-        return coreScope.launch(Dispatchers.Default) {
-            block()
-        }
-    }
-
-    /**
-     * Executes the given block in the external dispatcher and waits for its completion.
-     */
-    private suspend fun <T> inExternalDispatcherSync(block: suspend CoroutineScope.() -> T): T {
-        return withContext(Dispatchers.Default) {
             block()
         }
     }
@@ -348,7 +337,6 @@ class SystemOrchestratorImpl(
             carbsInsulinCalculator = carbsInsulinCalculator,
             glucoseRepository = glucoseRepository,
 
-            onCoreStateChanged = { handleCoreStateChanged() },
             onAcquireBusyState = { acquireBusyState() },
             onReleaseBusyState = { releaseBusyState() },
 
@@ -408,6 +396,17 @@ class SystemOrchestratorImpl(
             scope = scope
         )
 
+        scope.launch {
+            core.coreState.collect { state ->
+                _coreState.value = state
+            }
+        }
+        scope.launch {
+            core.lastSuccessfulCoreCalculation.collect { timestamp ->
+                _lastSuccessfulCoreCalculation.value = timestamp
+            }
+        }
+
         inCoreThreadAsync {
             core.initialize()
 
@@ -453,12 +452,6 @@ class SystemOrchestratorImpl(
 
     private fun releaseBusyState() {
         wakeService.releaseBusyState(WAKE_TAG)
-    }
-
-    private fun handleCoreStateChanged() {
-        inExternalDispatcherAsync {
-            _coreState.emit(core.coreState)
-        }
     }
 
     override fun createForegroundServiceNotification(): Notification {
