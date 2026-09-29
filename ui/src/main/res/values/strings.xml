@@ -414,7 +414,7 @@
 
     <string name="system_control_screen_title">Systemsteuerung</string>
     <string name="system_control_tab_glucose_source">CGM</string>
-    <string name="system_control_source_section_title">Datenquelle</string>
+    <string name="system_control_source_plugin_section_title">Datenquelle</string>
     <string name="system_control_source_none_active">Keine Glukosequelle aktiv</string>
     <string name="system_control_source_change">Glukose-Quelle wechseln</string>
     <string name="system_control_source_setup">Glukose-Quelle einrichten</string>
@@ -439,7 +439,7 @@
     <string name="system_control_cgm_time_just_now">(gerade eben)</string>
     <string name="system_control_cgm_not_connected">Nicht verbunden</string>
     <string name="system_control_tab_pump">Pumpe</string>
-    <string name="system_control_pump_section_title">Insulinpumpe</string>
+    <string name="system_control_pump_plugin_section_title">Insulinpumpe</string>
     <string name="system_control_pump_none_active">Keine Insulinpumpe aktiv</string>
     <string name="system_control_pump_change">Insulinpumpe wechseln</string>
     <string name="system_control_pump_setup">Insulinpumpe einrichten</string>
@@ -465,7 +465,6 @@
     <string name="system_control_pump_jobs_title">Ausstehende Pumpenjobs</string>
     <string name="system_control_pump_jobs_empty">Keine ausstehenden Jobs</string>
     <string name="system_control_pump_job_cancel">Job abbrechen</string>
-    <string name="system_control_plugin_title">Plugin</string>
     <string name="system_control_pump_job_type_refresh_status">Status aktualisieren</string>
     <string name="system_control_pump_job_type_history_sync">History übertragen</string>
     <string name="system_control_pump_job_type_bolus">Bolus: %1$s I.E.</string>

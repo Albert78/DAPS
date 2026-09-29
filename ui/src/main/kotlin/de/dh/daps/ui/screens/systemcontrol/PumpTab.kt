@@ -68,7 +68,7 @@ fun PumpTabContent(
 ) {
     Column(modifier = modifier) {
         val mainHeadlineText = when (uiState) {
-            is PumpTabUiState.Loading -> stringResource(R.string.system_control_pump_section_title)
+            is PumpTabUiState.Loading -> stringResource(R.string.system_control_pump_plugin_section_title)
             is PumpTabUiState.NoneConfigured -> stringResource(R.string.system_control_pump_none_active)
             is PumpTabUiState.Content -> uiState.pumpName.asString()
         }
@@ -139,7 +139,7 @@ fun PumpTabContent(
             if (uiState.pumpPluginSection != null) {
                 Spacer(modifier = Modifier.height(16.dp))
                 SectionHeader(
-                    title = stringResource(R.string.system_control_pump_section_title)
+                    title = stringResource(R.string.system_control_pump_plugin_section_title)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 uiState.pumpPluginSection.invoke()
@@ -573,17 +573,6 @@ fun PumpPluginExampleCard(
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
-            Text(
-                text = stringResource(R.string.system_control_plugin_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(24.dp)

@@ -111,7 +111,7 @@ fun SourceTabContent(
         if (uiState is SourceTabUiState.Content && uiState.glucoseSourcePluginSection != null) {
             Spacer(modifier = Modifier.height(8.dp))
             SectionHeader(
-                title = stringResource(R.string.system_control_source_section_title)
+                title = stringResource(R.string.system_control_source_plugin_section_title)
             )
             Spacer(modifier = Modifier.height(8.dp))
             uiState.glucoseSourcePluginSection.invoke()
