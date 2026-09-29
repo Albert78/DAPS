@@ -168,7 +168,6 @@ class SystemControlViewModel(
         val pluginUiProvider: PumpPluginUiProvider? = null
     )
 
-    private val systemMetricsRepository = systemRegistry.systemMetricsRepository
     private val glucoseRepository = systemRegistry.glucoseRepository
     private val treatmentRepository = systemRegistry.treatmentRepository
     private val glucoseSourceManager = systemRegistry.glucoseSourceManager
@@ -297,9 +296,8 @@ class SystemControlViewModel(
     private val apsInfo = combine(
         systemOrchestrator.apsMode,
         systemOrchestrator.apsIssues,
-        systemMetricsRepository.observeInsights()
-    ) { mode, issues, insights ->
-        val lastCalcInsight = insights.firstOrNull()
+        systemOrchestrator.lastSuccessfulCoreCalculation
+    ) { mode, issues, lastCalcTs ->
         val statusValue = issues.size
         val statusValueStatus = if (issues.isEmpty()) ValueStatus.GOOD else ValueStatus.BAD
         val modeValueStatus = when (mode) {
@@ -310,8 +308,8 @@ class SystemControlViewModel(
         OverviewApsSystemUiState(
             mode = StatusMetric(mode, status = modeValueStatus),
             lastCalculation = StatusMetric(
-                value = lastCalcInsight?.timestamp,
-                status = if (lastCalcInsight != null && lastCalcInsight.timestamp.isValid()) ValueStatus.GOOD else ValueStatus.WARNING
+                value = lastCalcTs,
+                status = if (lastCalcTs.isValid()) ValueStatus.GOOD else ValueStatus.WARNING
             ),
             status = StatusMetric(statusValue, status = statusValueStatus)
         )
