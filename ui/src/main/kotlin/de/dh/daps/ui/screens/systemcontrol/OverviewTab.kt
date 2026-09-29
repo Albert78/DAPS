@@ -119,91 +119,6 @@ fun OverviewTabContent(
 }
 
 @Composable
-private fun AndroidSystemCard(
-    state: OverviewAndroidSystemUiState
-) {
-    OutlinedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        ),
-        border = BorderStroke(2.dp, AppColorBlue.copy(alpha = 0.3f))
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Text(
-                text = stringResource(id = R.string.overview_android_title),
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold
-            )
-
-            when (state) {
-                is OverviewAndroidSystemUiState.Loading -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(12.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                    }
-                }
-                is OverviewAndroidSystemUiState.Content -> {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(24.dp)
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            ControlDetailRow(label = stringResource(id = R.string.overview_android_bluetooth_status)) {
-                                StatusMetricText(metric = state.bluetoothStatus)
-                            }
-                        }
-                        Column(modifier = Modifier.weight(1f)) {
-                            ControlDetailRow(label = stringResource(id = R.string.overview_android_phone_battery)) {
-                                StatusMetricText(metric = state.phoneBattery)
-                            }
-                        }
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(24.dp)
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            ControlDetailRow(label = stringResource(id = R.string.overview_android_permissions)) {
-                                StatusMetricText(
-                                    metric = state.permissionsStatus,
-                                    formatValue = { count ->
-                                        pluralStringResourceZero(
-                                            pluralsResId = R.plurals.overview_android_permissions_missing,
-                                            zeroResId = R.string.overview_android_permissions_all_granted,
-                                            quantity = count,
-                                            count
-                                        )
-                                    }
-                                )
-                            }
-                        }
-                        Column(modifier = Modifier.weight(1f)) {
-                            ControlDetailRow(label = stringResource(id = R.string.overview_android_daps_service)) {
-                                StatusMetricText(metric = state.dapsServiceStatus)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
 private fun ApsCard(
     state: OverviewApsSystemUiState,
     onNavigateToCoreDecisions: () -> Unit = {}
@@ -300,6 +215,91 @@ private fun ApsCard(
                                 modifier = Modifier.size(16.dp),
                                 tint = MaterialTheme.colorScheme.primary
                             )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AndroidSystemCard(
+    state: OverviewAndroidSystemUiState
+) {
+    OutlinedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ),
+        border = BorderStroke(2.dp, AppColorBlue.copy(alpha = 0.3f))
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = stringResource(id = R.string.overview_android_title),
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold
+            )
+
+            when (state) {
+                is OverviewAndroidSystemUiState.Loading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                    }
+                }
+                is OverviewAndroidSystemUiState.Content -> {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(24.dp)
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            ControlDetailRow(label = stringResource(id = R.string.overview_android_bluetooth_status)) {
+                                StatusMetricText(metric = state.bluetoothStatus)
+                            }
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            ControlDetailRow(label = stringResource(id = R.string.overview_android_phone_battery)) {
+                                StatusMetricText(metric = state.phoneBattery)
+                            }
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(24.dp)
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            ControlDetailRow(label = stringResource(id = R.string.overview_android_permissions)) {
+                                StatusMetricText(
+                                    metric = state.permissionsStatus,
+                                    formatValue = { count ->
+                                        pluralStringResourceZero(
+                                            pluralsResId = R.plurals.overview_android_permissions_missing,
+                                            zeroResId = R.string.overview_android_permissions_all_granted,
+                                            quantity = count,
+                                            count
+                                        )
+                                    }
+                                )
+                            }
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            ControlDetailRow(label = stringResource(id = R.string.overview_android_daps_service)) {
+                                StatusMetricText(metric = state.dapsServiceStatus)
+                            }
                         }
                     }
                 }
