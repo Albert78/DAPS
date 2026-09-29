@@ -8,6 +8,15 @@ import de.dh.daps.common.ui.UiText
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
+/**
+ * Manufacturer and hardware information about a glucose source.
+ */
+data class SourceHardwareInformation(
+    val manufacturer: String,
+    val model: String,
+    val serialNumber: String,
+)
+
 enum class GlucoseSourceStatus {
     Ok,
     Expired,

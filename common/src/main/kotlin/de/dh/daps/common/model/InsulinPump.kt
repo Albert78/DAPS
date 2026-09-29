@@ -11,11 +11,10 @@ import kotlinx.coroutines.flow.StateFlow
 /**
  * Manufacturer and hardware information about a pump.
  */
-data class HardwareInformation(
+data class PumpHardwareInformation(
     val manufacturer: String,
     val model: String,
-    val serialNumber: String,
-    val pumpDescription: String
+    val serialNumber: String
 )
 
 /**
@@ -168,7 +167,7 @@ interface InsulinPump {
     /**
      * Pump hardware information. Null if not yet retrieved.
      */
-    val hardwareInformation: StateFlow<HardwareInformation?>
+    val hardwareInformation: StateFlow<PumpHardwareInformation?>
 
     /**
      * Pump capabilities information.

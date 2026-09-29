@@ -505,13 +505,12 @@ private fun ActionButton(
 
 internal fun samplePumpTabUiState(): PumpTabUiState = PumpTabUiState.Content(
     pumpName = UiText.DynamicString("SimBody Virtuelle Insulinpumpe"),
-    pumpModel = "Simulator",
-    manufacturer = "DAPS",
-    serialNumber = "SIM-001",
-    pumpConnected = false,
     batteryPercent = 85,
     reservoirRemaining = InsulinAmount(140.0),
     lastConnectionTimestamp = Timestamp(System.currentTimeMillis() - 60_000),
+    manufacturer = "DAPS",
+    pumpModel = "Simulator",
+    serialNumber = "SIM-001",
     pendingJobs = listOf(
         PumpJobItem(
             id = "job_1",

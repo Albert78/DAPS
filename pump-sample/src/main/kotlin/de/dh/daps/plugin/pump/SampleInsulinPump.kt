@@ -13,7 +13,6 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.BasalStatus
 import de.dh.daps.common.model.BolusEvent
 import de.dh.daps.common.model.BolusStatus
-import de.dh.daps.common.model.HardwareInformation
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinHistory
@@ -21,6 +20,7 @@ import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpStatus
 import de.dh.daps.common.model.PumpAlerts
 import de.dh.daps.common.model.PumpCapabilities
+import de.dh.daps.common.model.PumpHardwareInformation
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
@@ -39,12 +39,11 @@ class SampleInsulinPump : InsulinPump, PumpPluginUiProvider {
 
     override var insulinConcentration: InsulinConcentration = InsulinConcentration.U100
 
-    override val hardwareInformation: StateFlow<HardwareInformation?> = MutableStateFlow(
-        HardwareInformation(
+    override val hardwareInformation: StateFlow<PumpHardwareInformation?> = MutableStateFlow(
+        PumpHardwareInformation(
             manufacturer = "Sample Manufacturer",
             model = "Sample Model",
-            serialNumber = "12345678",
-            pumpDescription = "A sample insulin pump for testing purposes"
+            serialNumber = "12345678"
         )
     )
     override val pumpCapabilities: StateFlow<PumpCapabilities> = MutableStateFlow(

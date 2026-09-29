@@ -444,8 +444,6 @@ fun GlucoseSourcePluginExampleCard(
 
 internal fun sampleSourceTabUiState(): SourceTabUiState = SourceTabUiState.Content(
     glucoseSourceName = UiText.DynamicString("SimBody Virtueller Glukosesensor"),
-    manufacturer = "DAPS",
-    serialNumber = "SIM-98765432",
     sensorTypeName = "SimBody Glukosesensor",
     readingsInterval = BgReadingsInterval.FiveMinutes,
     lastBgReading = BgReading(
@@ -455,8 +453,6 @@ internal fun sampleSourceTabUiState(): SourceTabUiState = SourceTabUiState.Conte
     ),
     hasNextPrediction = true,
     nextPredictedTimestamp = Timestamp(System.currentTimeMillis() + 180_000),
-    sensorCode = "8132",
-    transmitterSerialNumber = "8G1234",
     estimatedExpirationTimestamp = Timestamp(System.currentTimeMillis() + 864000000),
     glucoseSourcePluginSection = {
         GlucoseSourcePluginExampleCard(

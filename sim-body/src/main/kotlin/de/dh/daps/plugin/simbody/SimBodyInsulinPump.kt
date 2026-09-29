@@ -4,7 +4,6 @@ import de.dh.daps.common.model.BasalStatus
 import de.dh.daps.common.model.BolusDeliveryState
 import de.dh.daps.common.model.BolusEvent
 import de.dh.daps.common.model.BolusStatus
-import de.dh.daps.common.model.HardwareInformation
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinCategory
 import de.dh.daps.common.model.InsulinConcentration
@@ -14,6 +13,7 @@ import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpStatus
 import de.dh.daps.common.model.PumpAlerts
 import de.dh.daps.common.model.PumpCapabilities
+import de.dh.daps.common.model.PumpHardwareInformation
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.data.getAmountForMinute
@@ -61,12 +61,11 @@ class SimBodyInsulinPump(
         val SIM_PUMP_MAX_BOLUS_SIZE = InsulinAmount(40.0)
     }
 
-    override val hardwareInformation: StateFlow<HardwareInformation?> = MutableStateFlow(
-        HardwareInformation(
+    override val hardwareInformation: StateFlow<PumpHardwareInformation?> = MutableStateFlow(
+        PumpHardwareInformation(
             manufacturer = "DAPS",
             model = "Simulator",
-            serialNumber = "SIM-001",
-            pumpDescription = "DAPS Body Simulator Pump"
+            serialNumber = "SIM-001"
         )
     )
 

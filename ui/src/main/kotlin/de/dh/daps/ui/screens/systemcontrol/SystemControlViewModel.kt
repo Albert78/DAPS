@@ -15,10 +15,10 @@ import de.dh.daps.common.PUMP_RESERVOIR_LOW_THRESHOLD
 import de.dh.daps.common.PUMP_RESERVOIR_WARNING_THRESHOLD
 import de.dh.daps.common.model.ApsMode
 import de.dh.daps.common.model.GlucoseSourceStatus
-import de.dh.daps.common.model.HardwareInformation
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinPumpStatus
 import de.dh.daps.common.model.InsulinStatus
+import de.dh.daps.common.model.PumpHardwareInformation
 import de.dh.daps.common.model.ReplaceableComponent
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
@@ -123,8 +123,6 @@ sealed interface SourceTabUiState {
         val lastBgReading: BgReading? = null,
         val nextPredictedTimestamp: Timestamp? = null,
         val hasNextPrediction: Boolean = false,
-        val sensorCode: String? = null,
-        val transmitterSerialNumber: String? = null,
         val estimatedExpirationTimestamp: Timestamp? = null,
         val glucoseSourcePluginSection: (@Composable () -> Unit)? = null
     ) : SourceTabUiState
@@ -145,8 +143,8 @@ sealed interface PumpTabUiState {
         val batteryPercent: Int,
         val reservoirRemaining: InsulinAmount,
         val lastConnectionTimestamp: Timestamp,
-        val pumpModel: String? = null,
         val manufacturer: String? = null,
+        val pumpModel: String? = null,
         val serialNumber: String? = null,
         val pumpConnected: Boolean = false,
         val isSuspended: Boolean = false,
@@ -302,7 +300,7 @@ class SystemControlViewModel(
                 pump.pumpStatus,
                 jobsFlow,
                 lastConnFlow
-            ) { connected: Boolean, hardware: HardwareInformation?, status: InsulinPumpStatus, jobs: List<PumpJob>, lastConn: Timestamp ->
+            ) { connected: Boolean, hardware: PumpHardwareInformation?, status: InsulinPumpStatus, jobs: List<PumpJob>, lastConn: Timestamp ->
                 PumpUiData(
                     connected = connected,
                     pumpName = pumpName,
@@ -504,14 +502,14 @@ class SystemControlViewModel(
 
             PumpTabUiState.Content(
                 pumpName = pInfo.pumpName,
-                pumpModel = pInfo.model,
-                manufacturer = pInfo.manufacturer,
-                serialNumber = pInfo.serialNumber,
-                pumpConnected = pInfo.connected,
-                isSuspended = pInfo.isSuspended,
                 batteryPercent = pInfo.status.batteryRemainingPercent,
                 reservoirRemaining = pInfo.status.reservoirRemainingUnits,
                 lastConnectionTimestamp = pInfo.lastConnection,
+                manufacturer = pInfo.manufacturer,
+                pumpModel = pInfo.model,
+                serialNumber = pInfo.serialNumber,
+                pumpConnected = pInfo.connected,
+                isSuspended = pInfo.isSuspended,
                 pendingJobs = pumpJobsList,
                 pumpPluginSection = pInfo.pluginUiProvider?.let { provider -> { provider.PumpControlSection() } }
             )
