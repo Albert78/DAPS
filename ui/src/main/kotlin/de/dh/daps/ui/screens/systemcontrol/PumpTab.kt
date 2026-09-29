@@ -113,10 +113,22 @@ fun PumpTabContent(
         )
 
         if (uiState is PumpTabUiState.Content) {
+            Spacer(modifier = Modifier.height(16.dp))
+            SectionHeader(
+                title = stringResource(R.string.system_control_pump_technical_status)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
             PumpJobsCard(
                 pendingJobs = uiState.pendingJobs,
                 onCancelJob = onCancelPumpJob
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+            SectionHeader(
+                title = stringResource(R.string.system_control_pump_actions)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
 
             PumpActionsCard(
                 uiState = uiState,
@@ -125,7 +137,7 @@ fun PumpTabContent(
             )
 
             if (uiState.pumpPluginSection != null) {
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 SectionHeader(
                     title = stringResource(R.string.system_control_pump_section_title)
                 )

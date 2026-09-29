@@ -460,6 +460,8 @@
     <string name="system_control_pump_action_resume">Fortsetzen</string>
     <string name="system_control_pump_action_sync">Synchronisieren</string>
     <string name="system_control_pump_action_maintainance_disconnect">Zur Wartung trennen</string>
+    <string name="system_control_pump_technical_status">Technischer Status</string>
+    <string name="system_control_pump_actions">Aktionen</string>
     <string name="system_control_pump_jobs_title">Ausstehende Pumpenjobs</string>
     <string name="system_control_pump_jobs_empty">Keine ausstehenden Jobs</string>
     <string name="system_control_pump_job_cancel">Job abbrechen</string>
