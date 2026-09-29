@@ -13,6 +13,7 @@ import de.dh.daps.common.PUMP_BATTERY_LOW_THRESHOLD
 import de.dh.daps.common.PUMP_BATTERY_WARNING_THRESHOLD
 import de.dh.daps.common.PUMP_RESERVOIR_LOW_THRESHOLD
 import de.dh.daps.common.PUMP_RESERVOIR_WARNING_THRESHOLD
+import de.dh.daps.common.model.ApsMode
 import de.dh.daps.common.model.GlucoseSourceStatus
 import de.dh.daps.common.model.HardwareInformation
 import de.dh.daps.common.model.InsulinAmount
@@ -63,9 +64,9 @@ data class OverviewAndroidSystemUiState(
 )
 
 data class OverviewApsSystemUiState(
-    val mode: StatusMetric<String> = StatusMetric("Auto-Korrektur", status = ValueStatus.GOOD),
+    val mode: StatusMetric<ApsMode> = StatusMetric(ApsMode.AutoCorrection, status = ValueStatus.GOOD),
     val lastCalculation: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD),
-    val status: StatusMetric<String> = StatusMetric("Aktiv", status = ValueStatus.GOOD)
+    val status: StatusMetric<Int> = StatusMetric(0, status = ValueStatus.GOOD)
 )
 
 data class OverviewGlucoseSourceUiState(
@@ -174,6 +175,7 @@ class SystemControlViewModel(
     private val pumpManager = systemRegistry.pumpManager
     private val deviceStatusRepository = systemRegistry.deviceStatusRepository
     private val permissionRepository = systemRegistry.permissionRepository
+    private val systemOrchestrator = systemRegistry.systemOrchestrator
 
     private val androidSystemInfo = combine(
         deviceStatusRepository.observeBluetoothStatus(),
@@ -290,16 +292,37 @@ class SystemControlViewModel(
         }
     }
 
+    private val apsInfo = combine(
+        systemOrchestrator.apsMode,
+        systemOrchestrator.apsIssues,
+        systemMetricsRepository.observeInsights()
+    ) { mode, issues, insights ->
+        val lastCalcInsight = insights.firstOrNull()
+        val statusValue = issues.size
+        val statusValueStatus = if (issues.isEmpty()) ValueStatus.GOOD else ValueStatus.BAD
+        val modeValueStatus = when (mode) {
+            ApsMode.AutoCorrection -> ValueStatus.GOOD
+            ApsMode.BasalOnly -> ValueStatus.WARNING
+            ApsMode.Suspend -> ValueStatus.BAD
+        }
+        OverviewApsSystemUiState(
+            mode = StatusMetric(mode, status = modeValueStatus),
+            lastCalculation = StatusMetric(
+                value = lastCalcInsight?.timestamp,
+                status = if (lastCalcInsight != null && lastCalcInsight.timestamp.isValid()) ValueStatus.GOOD else ValueStatus.WARNING
+            ),
+            status = StatusMetric(statusValue, status = statusValueStatus)
+        )
+    }
+
     val uiState: StateFlow<SystemControlUiState> = combine(
-        systemMetricsRepository.observeInsights(),
+        apsInfo,
         sourceInfo,
         pumpInfo,
         lastBolusTimestamp,
         androidSystemInfo
-    ) { insights, gInfo, pInfo, lastBolusTs, androidSystem ->
+    ) { apsSystem, gInfo, pInfo, lastBolusTs, androidSystem ->
         // Overview Tab State
-        val lastCalcInsight = insights.firstOrNull()
-
         val overviewGlucoseSource = gInfo?.let {
             val (glucoseSourceStatus, glucoseValueStatus) = when (it.status) {
                 GlucoseSourceStatus.Ok -> it.status to ValueStatus.GOOD
@@ -385,11 +408,7 @@ class SystemControlViewModel(
 
         val overviewState = OverviewTabUiState(
             androidSystem = androidSystem,
-            apsSystem = OverviewApsSystemUiState(
-                mode = StatusMetric("Auto-Korrektur", status = ValueStatus.GOOD),
-                lastCalculation = StatusMetric(value = lastCalcInsight?.timestamp, status = ValueStatus.GOOD),
-                status = StatusMetric(if (insights.isNotEmpty()) "Aktiv" else "Inaktiv", status = ValueStatus.GOOD)
-            ),
+            apsSystem = apsSystem,
             glucoseSource = overviewGlucoseSource,
             insulinPump = overviewInsulinPump
         )

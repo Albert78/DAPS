@@ -23,7 +23,10 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.ui.res.stringResource
+import de.dh.daps.common.model.ApsMode
 import de.dh.daps.common.model.GlucoseSourceStatus
+import de.dh.daps.ui.R
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
@@ -190,7 +193,14 @@ private fun ApsCard(
             )
 
             ControlDetailRow(label = "Status") {
-                StatusMetricText(metric = state.status)
+                StatusMetricText(
+                    metric = state.status,
+                    formatValue = { count ->
+                        if (count == 0) "Aktiv"
+                        else if (count == 1) "1 Problem"
+                        else "$count Probleme"
+                    }
+                )
             }
 
             Row(
@@ -442,6 +452,11 @@ private fun <T> StatusMetricText(
     } else {
         when (val v = metric.value) {
             is Boolean -> if (v) "Aktiv" else "Inaktiv"
+            is ApsMode -> when (v) {
+                ApsMode.AutoCorrection -> stringResource(R.string.aps_mode_auto_correction)
+                ApsMode.BasalOnly -> stringResource(R.string.aps_mode_basal_only)
+                ApsMode.Suspend -> stringResource(R.string.aps_mode_suspend_short)
+            }
             is OverviewPumpState -> when (v) {
                 OverviewPumpState.ACTIVE -> "Aktiv"
                 OverviewPumpState.SUSPENDED -> "Suspended"
@@ -534,9 +549,9 @@ internal fun sampleOverviewTabUiState() = OverviewTabUiState(
         dapsServiceStatus = StatusMetric(true, status = ValueStatus.GOOD)
     ),
     apsSystem = OverviewApsSystemUiState(
-        mode = StatusMetric("Auto-Korrektur", status = ValueStatus.GOOD),
+        mode = StatusMetric(ApsMode.AutoCorrection, status = ValueStatus.GOOD),
         lastCalculation = StatusMetric(Timestamp(System.currentTimeMillis() - 120_000), status = ValueStatus.GOOD),
-        status = StatusMetric("Aktiv", status = ValueStatus.GOOD)
+        status = StatusMetric(0, status = ValueStatus.GOOD)
     ),
     glucoseSource = OverviewGlucoseSourceUiState(
         sensorName = UiText.DynamicString("SimBody Virtueller Glukosesensor"),
