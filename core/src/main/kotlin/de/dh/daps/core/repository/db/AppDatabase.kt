@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -60,10 +61,31 @@ interface ProviderDao {
     suspend fun getReadingsFromTime(timestamp: Timestamp): List<GlucoseReadingEntity>
 
     @Query("SELECT * FROM glucose_reading ORDER BY timestamp ASC")
+    suspend fun getAllGlucoseReadings(): List<GlucoseReadingEntity>
+
+    @Query("SELECT * FROM glucose_reading ORDER BY timestamp ASC")
     fun observeAllReadings(): Flow<List<GlucoseReadingEntity>>
 
     @Insert
     suspend fun insertGlucoseReading(reading: GlucoseReadingEntity): Long
+
+    @Query("DELETE FROM glucose_reading")
+    suspend fun deleteAllGlucoseReadings()
+
+    @Query("DELETE FROM sensor_type")
+    suspend fun deleteAllSensorTypes()
+
+    @Query("DELETE FROM data_provider")
+    suspend fun deleteAllDataProviders()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSensorTypes(items: List<SensorTypeEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertDataProviders(items: List<DataProviderEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertGlucoseReadings(items: List<GlucoseReadingEntity>)
 }
 
 @Dao
@@ -87,6 +109,12 @@ interface TherapyDao {
     @Query("DELETE FROM insulin_profiles WHERE id = :id")
     suspend fun deleteInsulinProfile(id: Long)
 
+    @Query("DELETE FROM insulin_profiles")
+    suspend fun deleteAllInsulinProfiles()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertInsulinProfiles(items: List<InsulinProfileEntity>)
+
     // Current Therapy Settings
     @Query("SELECT * FROM current_therapy_settings LIMIT 1")
     suspend fun getCurrentTherapySettings(): CurrentTherapySettingsEntity?
@@ -99,6 +127,12 @@ interface TherapyDao {
 
     @Update
     suspend fun updateCurrentTherapySettings(data: CurrentTherapySettingsEntity)
+
+    @Query("DELETE FROM current_therapy_settings")
+    suspend fun deleteAllCurrentTherapySettings()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCurrentTherapySettingsList(items: List<CurrentTherapySettingsEntity>)
 
     // Scheduled Therapy Adjustments
     @Query("SELECT * FROM scheduled_therapy_adjustments ORDER BY start_time ASC")
@@ -122,6 +156,9 @@ interface TherapyDao {
     @Query("DELETE FROM scheduled_therapy_adjustments")
     suspend fun deleteAllScheduledTherapyAdjustments()
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertScheduledTherapyAdjustments(items: List<ScheduledTherapyAdjustmentEntity>)
+
     // Therapy Adjustments (Presets)
     @Query("SELECT * FROM therapy_adjustments ORDER BY id ASC")
     suspend fun getAllTherapyAdjustments(): List<TherapyAdjustmentEntity>
@@ -140,6 +177,12 @@ interface TherapyDao {
 
     @Query("DELETE FROM therapy_adjustments WHERE id = :id")
     suspend fun deleteTherapyAdjustment(id: Long)
+
+    @Query("DELETE FROM therapy_adjustments")
+    suspend fun deleteAllTherapyAdjustments()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertTherapyAdjustments(items: List<TherapyAdjustmentEntity>)
 }
 
 @Dao
@@ -155,6 +198,12 @@ interface SettingsDao {
 
     @Update
     suspend fun updateCurrentSettings(data: CurrentSettingsEntity)
+
+    @Query("DELETE FROM current_settings")
+    suspend fun deleteAllCurrentSettings()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCurrentSettingsList(items: List<CurrentSettingsEntity>)
 }
 
 @Dao
@@ -177,6 +226,12 @@ interface MetabolicEventsDao {
 
     @Query("DELETE FROM meal_type where id = :mealTypeId")
     suspend fun deleteMealType(mealTypeId: String)
+
+    @Query("DELETE FROM meal_type")
+    suspend fun deleteAllMealTypes()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertMealTypes(items: List<MealTypeEntity>)
 
     // Meals
     @Query("SELECT * FROM meal ORDER BY timestamp ASC")
@@ -206,6 +261,12 @@ interface MetabolicEventsDao {
     @Query("DELETE FROM meal where id = :mealId")
     suspend fun deleteMeal(mealId: Long)
 
+    @Query("DELETE FROM meal")
+    suspend fun deleteAllMeals()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertMeals(items: List<MealEntity>)
+
     // Insulin Types
     @Query("SELECT * FROM insulin_type ORDER BY name ASC")
     suspend fun getAllInsulinTypes(): List<InsulinTypeEntity>
@@ -227,6 +288,12 @@ interface MetabolicEventsDao {
 
     @Query("DELETE FROM INSULIN_TYPE where id = :insulinTypeId")
     suspend fun deleteInsulinType(insulinTypeId: String)
+
+    @Query("DELETE FROM insulin_type")
+    suspend fun deleteAllInsulinTypes()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertInsulinTypes(items: List<InsulinTypeEntity>)
 
     // Insulin
     @Query("SELECT * FROM insulin ORDER BY timestamp ASC")
@@ -252,6 +319,9 @@ interface MetabolicEventsDao {
 
     @Query("DELETE FROM insulin where id = :id")
     suspend fun deleteInsulinApplication(id: Long)
+
+    @Query("DELETE FROM insulin")
+    suspend fun deleteAllInsulinApplications()
 
     @Query("DELETE FROM insulin WHERE origin = :origin AND timestamp >= :from AND timestamp <= :to")
     suspend fun deleteInsulinApplicationsInRange(from: Long, to: Long, origin: InsulinOrigin)
@@ -280,6 +350,12 @@ interface MetabolicEventsDao {
 
     @Query("DELETE FROM deferred_bolus WHERE id IN (:ids)")
     suspend fun deleteDeferredBoluses(ids: List<Long>)
+
+    @Query("DELETE FROM deferred_bolus")
+    suspend fun deleteAllDeferredBoluses()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertDeferredBoluses(items: List<DeferredBolusEntity>)
 }
 
 @Dao
@@ -290,11 +366,20 @@ interface SystemMetricsDao {
     @Query("SELECT * FROM core_insights ORDER BY timestamp DESC")
     fun observeAll(): Flow<List<CoreInsightEntity>>
 
+    @Query("SELECT * FROM core_insights ORDER BY timestamp ASC")
+    suspend fun getAllCoreInsights(): List<CoreInsightEntity>
+
     @Query("SELECT * FROM core_insights ORDER BY timestamp DESC LIMIT :limit")
     suspend fun getLatest(limit: Int): List<CoreInsightEntity>
 
     @Query("DELETE FROM core_insights WHERE timestamp < :timestamp")
     suspend fun pruneOlderThan(timestamp: Long)
+
+    @Query("DELETE FROM core_insights")
+    suspend fun deleteAllCoreInsights()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCoreInsights(items: List<CoreInsightEntity>)
 
     @Insert
     suspend fun insertWakeupMetric(metric: WakeupMetricEntity): Long

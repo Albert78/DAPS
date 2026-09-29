@@ -20,6 +20,7 @@ class RecommendationManagerTest {
         override suspend fun getAllMealReminders(): List<MealReminderEntity> = emptyList()
         override fun observeAllMealReminders(): Flow<List<MealReminderEntity>> = flowOf(emptyList())
         override suspend fun insertMealReminder(reminder: MealReminderEntity): Long = 1L
+        override suspend fun insertMealReminders(reminders: List<MealReminderEntity>) {}
         override suspend fun updateMealReminder(reminder: MealReminderEntity) {}
         override suspend fun deleteMealReminder(id: Long) {}
         override suspend fun deleteAllMealReminders() {}

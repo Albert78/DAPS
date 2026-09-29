@@ -19,6 +19,9 @@ interface MealReminderDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMealReminder(reminder: MealReminderEntity): Long
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertMealReminders(reminders: List<MealReminderEntity>)
+
     @Update
     suspend fun updateMealReminder(reminder: MealReminderEntity)
 

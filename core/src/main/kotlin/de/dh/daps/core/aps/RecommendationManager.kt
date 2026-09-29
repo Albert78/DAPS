@@ -93,8 +93,8 @@ class RecommendationManager(
             amount = roundedAmount,
             includedDeferredBoluses = includedDeferredBoluses,
             associatedMeal = associatedMeal,
-            correctionPart = correctionPart,
-            basalPart = basalPart
+            correctionPart = correctionPart.roundToTwoDecimals(),
+            basalPart = basalPart.roundToTwoDecimals()
         )
     }
 

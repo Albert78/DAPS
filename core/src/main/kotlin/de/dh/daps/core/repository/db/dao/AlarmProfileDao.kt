@@ -2,6 +2,7 @@ package de.dh.daps.core.repository.db.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
@@ -31,6 +32,9 @@ interface AlarmProfileDao {
     @Query("SELECT * FROM alarm_profiles WHERE is_active = 1 LIMIT 1")
     fun observeActiveAlarmProfile(): Flow<AlarmProfileEntity?>
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAlarmProfiles(profiles: List<AlarmProfileEntity>)
+
     @Insert
     suspend fun insertAlarmProfile(profile: AlarmProfileEntity): Long
 
@@ -39,6 +43,9 @@ interface AlarmProfileDao {
 
     @Query("DELETE FROM alarm_profiles WHERE id = :id")
     suspend fun deleteAlarmProfile(id: Long)
+
+    @Query("DELETE FROM alarm_profiles")
+    suspend fun deleteAllAlarmProfiles()
 
     @Query("UPDATE alarm_profiles SET is_default = 0")
     suspend fun clearDefaultFlag()
