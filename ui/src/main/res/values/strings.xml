@@ -495,6 +495,51 @@
     <string name="system_control_tab_overview">Übersicht</string>
     <string name="system_control_core_history_button">Verlauf</string>
 
+    <!-- System Control Overview Tab -->
+    <string name="overview_section_aps_system">APS-System</string>
+    <string name="overview_section_system">System</string>
+    <string name="overview_section_glucose_source">Blutzucker-Quelle</string>
+    <string name="overview_section_pump">Insulinpumpe</string>
+
+    <string name="overview_android_title">Android</string>
+    <string name="overview_android_bluetooth_status">Bluetooth-Status</string>
+    <string name="overview_android_phone_battery">Batteriestatus Telefon</string>
+    <string name="overview_android_permissions">Berechtigungen</string>
+    <string name="overview_android_permissions_all_granted">Alle erteilt</string>
+    <plurals name="overview_android_permissions_missing">
+        <item quantity="zero">@string/overview_android_permissions_all_granted</item> <!-- Attention: Use DisplayUtils#getQuantityStringZero, see docs there -->
+        <item quantity="one">%1$d fehlend</item>
+        <item quantity="other">%1$d fehlend</item>
+    </plurals>
+    <string name="overview_android_daps_service">DAPS-System-Service</string>
+
+    <string name="overview_status_label">Status</string>
+    <plurals name="overview_aps_issues_count">
+        <item quantity="zero">@string/label_active</item> <!-- Attention: Use DisplayUtils#getQuantityStringZero, see docs there -->
+        <item quantity="one">%1$d Problem</item>
+        <item quantity="other">%1$d Probleme</item>
+    </plurals>
+    <string name="overview_aps_mode_label">APS-Modus</string>
+    <string name="overview_aps_last_calculation_label">Letzte Berechnung</string>
+    <string name="overview_aps_show_history_log">Verlaufsprotokoll anzeigen</string>
+
+    <string name="overview_glucose_source_none_configured">Keine Blutzucker-Quelle konfiguriert</string>
+    <string name="overview_glucose_source_expiration_label">Ablaufdatum Sensor</string>
+    <string name="overview_last_connection_label">Letzte Verbindung</string>
+    <string name="overview_glucose_source_last_reading_label">Letzter Messwert</string>
+    <string name="overview_glucose_source_status_ok">OK</string>
+    <string name="overview_glucose_source_status_expired">Abgelaufen</string>
+    <string name="overview_glucose_source_status_error">Fehler</string>
+
+    <string name="overview_pump_none_configured">Keine Insulinpumpe konfiguriert</string>
+    <string name="overview_pump_cd_refresh_status">Pumpenstatus aktualisieren</string>
+    <string name="overview_pump_next_cannula_change_label">Nächster Kanülenwechsel</string>
+    <string name="overview_pump_battery_label">Batteriestatus</string>
+    <string name="overview_pump_reservoir_label">Reservoir-Füllstand</string>
+    <string name="overview_pump_last_bolus_label">Letzter Bolus</string>
+    <string name="overview_pump_state_suspended">Suspended</string>
+    <string name="overview_pump_state_error">Fehler</string>
+
     <string name="core_decisions_screen_title">System-Ereignisse</string>
     <string name="core_decisions_no_insights">Keine Daten verfügbar</string>
     <string name="core_insight_label_bg">BZ</string>

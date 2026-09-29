@@ -1,6 +1,11 @@
 package de.dh.daps.ui.common
 
 import android.content.res.Resources
+import androidx.annotation.PluralsRes
+import androidx.annotation.StringRes
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 
 object DisplayTextUtils {
     /**
@@ -62,4 +67,28 @@ object DisplayTextUtils {
             }
         }
     }
+
+    @Composable
+    fun getQuantityStringZero(
+        @PluralsRes pluralsStringResId: Int,
+        @StringRes zeroStringResId: Int,
+        quantity: Int,
+        vararg formatArgs: Any
+    ): String {
+        LocalConfiguration.current
+        val resources = LocalContext.current.resources
+        return getQuantityStringZero(resources, pluralsStringResId, zeroStringResId, quantity, *formatArgs)
+    }
+}
+
+@Composable
+fun pluralStringResourceZero(
+    @PluralsRes pluralsResId: Int,
+    @StringRes zeroResId: Int,
+    quantity: Int,
+    vararg formatArgs: Any
+): String {
+    LocalConfiguration.current
+    val resources = LocalContext.current.resources
+    return DisplayTextUtils.getQuantityStringZero(resources, pluralsResId, zeroResId, quantity, *formatArgs)
 }

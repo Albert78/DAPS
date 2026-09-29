@@ -46,6 +46,7 @@ import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.insulinValue
+import de.dh.daps.ui.common.pluralStringResourceZero
 import de.dh.daps.ui.common.shortDateTime
 import de.dh.daps.ui.common.shortRelativeTimeAgo
 import de.dh.daps.ui.common.shortRelativeTimeUntil
@@ -64,7 +65,7 @@ fun OverviewTabContent(
         modifier = modifier
     ) {
         // Section Algorithm
-        SectionHeader(title = "APS-System")
+        SectionHeader(title = stringResource(id = R.string.overview_section_aps_system))
         Spacer(modifier = Modifier.height(8.dp))
 
         ApsCard(
@@ -75,7 +76,7 @@ fun OverviewTabContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Section System
-        SectionHeader(title = "System")
+        SectionHeader(title = stringResource(id = R.string.overview_section_system))
         Spacer(modifier = Modifier.height(8.dp))
 
         AndroidSystemCard(state = uiState.androidSystem)
@@ -83,7 +84,7 @@ fun OverviewTabContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Section Glucose Source
-        SectionHeader(title = "Blutzucker-Quelle")
+        SectionHeader(title = stringResource(id = R.string.overview_section_glucose_source))
         Spacer(modifier = Modifier.height(8.dp))
 
         OverviewGlucoseSourceCard(state = uiState.glucoseSource)
@@ -91,7 +92,7 @@ fun OverviewTabContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Section Pump
-        SectionHeader(title = "Insulinpumpe")
+        SectionHeader(title = stringResource(id = R.string.overview_section_pump))
         Spacer(modifier = Modifier.height(8.dp))
 
         OverviewPumpCard(
@@ -122,7 +123,7 @@ private fun AndroidSystemCard(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "Android",
+                text = stringResource(id = R.string.overview_android_title),
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -132,12 +133,12 @@ private fun AndroidSystemCard(
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = "Bluetooth-Status") {
+                    ControlDetailRow(label = stringResource(id = R.string.overview_android_bluetooth_status)) {
                         StatusMetricText(metric = state.bluetoothStatus)
                     }
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = "Batteriestatus Telefon") {
+                    ControlDetailRow(label = stringResource(id = R.string.overview_android_phone_battery)) {
                         StatusMetricText(metric = state.phoneBattery)
                     }
                 }
@@ -148,15 +149,22 @@ private fun AndroidSystemCard(
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = "Berechtigungen") {
+                    ControlDetailRow(label = stringResource(id = R.string.overview_android_permissions)) {
                         StatusMetricText(
                             metric = state.permissionsStatus,
-                            formatValue = { count -> if (count == 0) "Alle erteilt" else "$count fehlend" }
+                            formatValue = { count ->
+                                pluralStringResourceZero(
+                                    pluralsResId = R.plurals.overview_android_permissions_missing,
+                                    zeroResId = R.string.overview_android_permissions_all_granted,
+                                    quantity = count,
+                                    count
+                                )
+                            }
                         )
                     }
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = "DAPS-System-Service") {
+                    ControlDetailRow(label = stringResource(id = R.string.overview_android_daps_service)) {
                         StatusMetricText(metric = state.dapsServiceStatus)
                     }
                 }
@@ -187,18 +195,21 @@ private fun ApsCard(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "APS-System",
+                text = stringResource(id = R.string.overview_section_aps_system),
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Bold
             )
 
-            ControlDetailRow(label = "Status") {
+            ControlDetailRow(label = stringResource(id = R.string.overview_status_label)) {
                 StatusMetricText(
                     metric = state.status,
                     formatValue = { count ->
-                        if (count == 0) "Aktiv"
-                        else if (count == 1) "1 Problem"
-                        else "$count Probleme"
+                        pluralStringResourceZero(
+                            pluralsResId = R.plurals.overview_aps_issues_count,
+                            zeroResId = R.string.label_active,
+                            quantity = count,
+                            count
+                        )
                     }
                 )
             }
@@ -208,12 +219,12 @@ private fun ApsCard(
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = "APS-Modus") {
+                    ControlDetailRow(label = stringResource(id = R.string.overview_aps_mode_label)) {
                         StatusMetricText(metric = state.mode)
                     }
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    ControlDetailRow(label = "Letzte Berechnung") {
+                    ControlDetailRow(label = stringResource(id = R.string.overview_aps_last_calculation_label)) {
                         StatusMetricText(metric = state.lastCalculation)
                     }
                 }
@@ -235,7 +246,7 @@ private fun ApsCard(
                     contentPadding = PaddingValues(0.dp)
                 ) {
                     Text(
-                        text = "Verlaufsprotokoll anzeigen",
+                        text = stringResource(id = R.string.overview_aps_show_history_log),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
@@ -274,7 +285,7 @@ private fun OverviewGlucoseSourceCard(
         ) {
             if (state == null) {
                 Text(
-                    text = "Keine Blutzucker-Quelle konfiguriert",
+                    text = stringResource(id = R.string.overview_glucose_source_none_configured),
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -293,12 +304,12 @@ private fun OverviewGlucoseSourceCard(
                     horizontalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        ControlDetailRow(label = "Status") {
+                        ControlDetailRow(label = stringResource(id = R.string.overview_status_label)) {
                             StatusMetricText(metric = state.status)
                         }
                     }
                     Column(modifier = Modifier.weight(1f)) {
-                        ControlDetailRow(label = "Ablaufdatum Sensor") {
+                        ControlDetailRow(label = stringResource(id = R.string.overview_glucose_source_expiration_label)) {
                             StatusMetricText(
                                 metric = state.sensorExpiration,
                                 isDateTime = true
@@ -314,12 +325,12 @@ private fun OverviewGlucoseSourceCard(
                     horizontalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        ControlDetailRow(label = "Letzte Verbindung") {
+                        ControlDetailRow(label = stringResource(id = R.string.overview_last_connection_label)) {
                             StatusMetricText(metric = state.lastConnection)
                         }
                     }
                     Column(modifier = Modifier.weight(1f)) {
-                        ControlDetailRow(label = "Letzter Messwert") {
+                        ControlDetailRow(label = stringResource(id = R.string.overview_glucose_source_last_reading_label)) {
                             StatusMetricText(metric = state.lastReading)
                         }
                     }
@@ -351,7 +362,7 @@ private fun OverviewPumpCard(
         ) {
             if (state == null) {
                 Text(
-                    text = "Keine Insulinpumpe konfiguriert",
+                    text = stringResource(id = R.string.overview_pump_none_configured),
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -370,7 +381,7 @@ private fun OverviewPumpCard(
                     IconButton(onClick = onRefresh) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
-                            contentDescription = "Pumpenstatus aktualisieren",
+                            contentDescription = stringResource(id = R.string.overview_pump_cd_refresh_status),
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
@@ -383,12 +394,12 @@ private fun OverviewPumpCard(
                     horizontalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        ControlDetailRow(label = "Status") {
+                        ControlDetailRow(label = stringResource(id = R.string.overview_status_label)) {
                             StatusMetricText(metric = state.state)
                         }
                     }
                     Column(modifier = Modifier.weight(1f)) {
-                        ControlDetailRow(label = "Nächster Kanülenwechsel") {
+                        ControlDetailRow(label = stringResource(id = R.string.overview_pump_next_cannula_change_label)) {
                             StatusMetricText(
                                 metric = state.nextCannulaChange,
                                 isDateTime = true
@@ -404,12 +415,12 @@ private fun OverviewPumpCard(
                     horizontalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        ControlDetailRow(label = "Batteriestatus") {
+                        ControlDetailRow(label = stringResource(id = R.string.overview_pump_battery_label)) {
                             StatusMetricText(metric = state.battery)
                         }
                     }
                     Column(modifier = Modifier.weight(1f)) {
-                        ControlDetailRow(label = "Reservoir-Füllstand") {
+                        ControlDetailRow(label = stringResource(id = R.string.overview_pump_reservoir_label)) {
                             StatusMetricText(metric = state.reservoir)
                         }
                     }
@@ -422,12 +433,12 @@ private fun OverviewPumpCard(
                     horizontalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        ControlDetailRow(label = "Letzte Verbindung") {
+                        ControlDetailRow(label = stringResource(id = R.string.overview_last_connection_label)) {
                             StatusMetricText(metric = state.lastConnection)
                         }
                     }
                     Column(modifier = Modifier.weight(1f)) {
-                        ControlDetailRow(label = "Letzter Bolus") {
+                        ControlDetailRow(label = stringResource(id = R.string.overview_pump_last_bolus_label)) {
                             StatusMetricText(metric = state.lastBolus)
                         }
                     }
@@ -442,7 +453,7 @@ private fun <T> StatusMetricText(
     metric: StatusMetric<T>,
     modifier: Modifier = Modifier,
     isDateTime: Boolean = false,
-    formatValue: ((T) -> String)? = null
+    formatValue: @Composable ((T) -> String)? = null
 ) {
     val glucoseUnit = LocalGlucoseUnit.current
     val timestamp = metric.value as? Timestamp
@@ -451,21 +462,21 @@ private fun <T> StatusMetricText(
         formatValue(metric.value)
     } else {
         when (val v = metric.value) {
-            is Boolean -> if (v) "Aktiv" else "Inaktiv"
+            is Boolean -> if (v) stringResource(id = R.string.label_active) else stringResource(id = R.string.label_inactive)
             is ApsMode -> when (v) {
                 ApsMode.AutoCorrection -> stringResource(R.string.aps_mode_auto_correction)
                 ApsMode.BasalOnly -> stringResource(R.string.aps_mode_basal_only)
                 ApsMode.Suspend -> stringResource(R.string.aps_mode_suspend_short)
             }
             is OverviewPumpState -> when (v) {
-                OverviewPumpState.ACTIVE -> "Aktiv"
-                OverviewPumpState.SUSPENDED -> "Suspended"
-                OverviewPumpState.ERROR -> "Fehler"
+                OverviewPumpState.ACTIVE -> stringResource(id = R.string.label_active)
+                OverviewPumpState.SUSPENDED -> stringResource(id = R.string.overview_pump_state_suspended)
+                OverviewPumpState.ERROR -> stringResource(id = R.string.overview_pump_state_error)
             }
             is GlucoseSourceStatus -> when (v) {
-                GlucoseSourceStatus.Ok -> "OK"
-                GlucoseSourceStatus.Expired -> "Abgelaufen"
-                GlucoseSourceStatus.Error -> "Fehler"
+                GlucoseSourceStatus.Ok -> stringResource(id = R.string.overview_glucose_source_status_ok)
+                GlucoseSourceStatus.Expired -> stringResource(id = R.string.overview_glucose_source_status_expired)
+                GlucoseSourceStatus.Error -> stringResource(id = R.string.overview_glucose_source_status_error)
             }
             is Int -> "$v%"
             is InsulinAmount -> insulinValue(v)
@@ -476,9 +487,9 @@ private fun <T> StatusMetricText(
                 } else {
                     time(v)
                 }
-            } else "--"
+            } else stringResource(id = R.string.system_control_value_not_available)
             is String -> v
-            null -> "--"
+            null -> stringResource(id = R.string.system_control_value_not_available)
             else -> v.toString()
         }
     }
