@@ -22,7 +22,7 @@ class DbTypeConverters {
         try {
             return ApsMode.valueOf(value)
         } catch (_: Exception) {
-            return ApsMode.BasalOnly
+            return ApsMode.OnlySuggestions
         }
     }
 

@@ -76,7 +76,6 @@ fun ApsControlCard(
 ) {
     val insulinAdjustmentPercentage = activeTherapyStatus.adjustment.percentage
     val adjustmentHint = activeTherapyStatus.adjustment.adjustmentHint
-    val isSuspended = selectedMode == ApsMode.Suspend
     val displayStrategy = ConfigurableDisplayStrategy(
         positiveColor = SoftRed,
         negativeColor = SoftBlue,
@@ -131,33 +130,29 @@ fun ApsControlCard(
                     )
                 }
 
-                // 2. (Temp-)Basalrate aus dem PumpManager-Basalstatus
-                CompositionLocalProvider(
-                    LocalContentColor provides if (isSuspended) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) else LocalContentColor.current
-                ) {
-                    val basalStatus = activeTherapyStatus.basalStatus
-                    val isTempBasal = basalStatus?.isTempBasal == true
-                    val rateValue = if (isSuspended || basalStatus?.isSuspended == true) {
-                        0.0
-                    } else {
-                        basalStatus?.activeRate?.iu ?: activeTherapyStatus.currentBasal.iu
-                    }
-                    val basalValue = String.format(LocalLocale.current.platformLocale, "%.1f", rateValue)
-                    val basalLabelRes = if (isTempBasal) R.string.aps_control_temp_basal_label else R.string.aps_control_basal_label
+                // 2. (Temp) basal rate from PumpManager basal state
+                val basalStatus = activeTherapyStatus.basalStatus
+                val isTempBasal = basalStatus?.isTempBasal == true
+                val rateValue = if (basalStatus?.isSuspended == true) {
+                    0.0
+                } else {
+                    basalStatus?.activeRate?.iu ?: activeTherapyStatus.currentBasal.iu
+                }
+                val basalValue = String.format(LocalLocale.current.platformLocale, "%.1f", rateValue)
+                val basalLabelRes = if (isTempBasal) R.string.aps_control_temp_basal_label else R.string.aps_control_basal_label
 
-                    Surface(
-                        color = if (isSuspended) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) else MaterialTheme.colorScheme.secondaryContainer,
-                        shape = MaterialTheme.shapes.extraSmall,
-                    ) {
-                        Text(
-                            text = " ${stringResource(basalLabelRes, basalValue)} ",
-                            style = MaterialTheme.typography.labelSmall,
-                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-                        )
-                    }
+                Surface(
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    shape = MaterialTheme.shapes.extraSmall,
+                ) {
+                    Text(
+                        text = " ${stringResource(basalLabelRes, basalValue)} ",
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                    )
                 }
 
-                // 3. BZ-Ziel- und Low-Schwelle
+                // 3. BG target and low threshold
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -195,7 +190,7 @@ fun ApsControlCard(
                     }
                 }
 
-                // 4. Aktives Alarm-Profil
+                // 4. Active alarm profile
                 val alarmProfileName = activeTherapyStatus.activeAlarmProfileName
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -240,12 +235,16 @@ fun ApsControlCard(
                         colors = ButtonDefaults.buttonColors(
                             containerColor = when (selectedMode) {
                                 ApsMode.AutoCorrection -> SoftGreen
-                                ApsMode.BasalOnly -> SoftBlue
-                                ApsMode.Suspend -> SoftRed
+                                ApsMode.OnlySuggestions -> SoftBlue
+                                ApsMode.ApsSuspended -> SoftRed
                             }
                         )
                     ) {
-                        Text(selectedMode.toDisplayStringShort(), style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            text = selectedMode.toDisplayStringShort(),
+                            style = MaterialTheme.typography.titleMedium,
+                            textAlign = TextAlign.Center
+                        )
                     }
 
                     if (showModeDialog) {
@@ -263,7 +262,11 @@ fun ApsControlCard(
                         onClick = onManualControlClick,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(stringResource(R.string.aps_control_button_manual_control), style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            text = stringResource(R.string.aps_control_button_manual_control),
+                            style = MaterialTheme.typography.titleMedium,
+                            textAlign = TextAlign.Center
+                        )
                     }
                 } else {
                     // Adjustment Button
@@ -282,17 +285,19 @@ fun ApsControlCard(
                     if (isNeutral && adjustmentHint == null) {
                         NormalButton(
                             onClick = onAdjustmentClick,
-                            enabled = !isSuspended,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(Icon_Insulin_Adjustment, null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text(adjustmentText, style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                text = adjustmentText,
+                                style = MaterialTheme.typography.titleMedium,
+                                textAlign = TextAlign.Center
+                            )
                         }
                     } else {
                         PrimaryButton(
                             onClick = onAdjustmentClick,
-                            enabled = !isSuspended,
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = displayStrategy.color(insulinAdjustmentPercentage.toDouble())
@@ -301,8 +306,9 @@ fun ApsControlCard(
                             Icon(Icon_Insulin_Adjustment, null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
                             Text(
-                                adjustmentText,
-                                style = MaterialTheme.typography.titleMedium
+                                text = adjustmentText,
+                                style = MaterialTheme.typography.titleMedium,
+                                textAlign = TextAlign.Center
                             )
                         }
                     }
@@ -314,8 +320,8 @@ fun ApsControlCard(
 
 @Composable
 private fun ApsMode.toDisplayStringShort(): String = stringResource(id = when (this) {
-    ApsMode.Suspend -> R.string.aps_mode_suspend_short
-    ApsMode.BasalOnly -> R.string.aps_mode_basal_only_short
+    ApsMode.ApsSuspended -> R.string.aps_mode_aps_suspended_short
+    ApsMode.OnlySuggestions -> R.string.aps_mode_only_suggestions_short
     ApsMode.AutoCorrection -> R.string.aps_mode_auto_correction_short
 })
 
@@ -362,15 +368,15 @@ private fun PreviewApsControlCardAutoCorrection() {
     }
 }
 
-@Preview(name = "BasalOnly - Light", showBackground = true)
-@Preview(name = "BasalOnly - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "OnlySuggestions - Light", showBackground = true)
+@Preview(name = "OnlySuggestions - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun PreviewApsControlCardBasalOnly() {
+private fun PreviewApsControlCardOnlySuggestions() {
     AppPreview {
         ApsControlCard(
             modifier = Modifier.padding(16.dp),
             activeTherapyStatus = createSampleTherapyStatus(),
-            selectedMode = ApsMode.BasalOnly,
+            selectedMode = ApsMode.OnlySuggestions,
             availableModes = ApsMode.entries,
             onModeChange = {},
             onAdjustmentClick = {},
@@ -379,15 +385,15 @@ private fun PreviewApsControlCardBasalOnly() {
     }
 }
 
-@Preview(name = "Suspend - Light", showBackground = true)
-@Preview(name = "Suspend - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "APS Suspended - Light", showBackground = true)
+@Preview(name = "APS Suspended - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun PreviewApsControlCardSuspend() {
+private fun PreviewApsControlCardApsSuspended() {
     AppPreview {
         ApsControlCard(
             modifier = Modifier.padding(16.dp),
             activeTherapyStatus = createSampleTherapyStatus(),
-            selectedMode = ApsMode.Suspend,
+            selectedMode = ApsMode.ApsSuspended,
             availableModes = ApsMode.entries,
             onModeChange = {},
             onAdjustmentClick = {},

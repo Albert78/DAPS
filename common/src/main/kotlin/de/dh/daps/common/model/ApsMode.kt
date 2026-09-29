@@ -7,12 +7,14 @@ enum class ApsMode {
     AutoCorrection,
 
     /**
-     * The APS only delivers default basal, no other treatments are issued.
+     * The APS runs but doesn't execute automatic treatments. Basal runs as configured in profile.
+     * Suggestions are shown but the user has to accept them.
      */
-    BasalOnly,
+    OnlySuggestions,
 
     /**
-     * The system is suspended, only manual interaction with the pump is possible.
+     * The pump delivers basal as configured, manual interaction is possible, but APS doesn't calculate
+     * nor produces suggestions.
      */
-    Suspend
+    ApsSuspended
 }
