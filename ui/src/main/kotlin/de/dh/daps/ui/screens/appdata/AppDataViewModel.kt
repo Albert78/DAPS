@@ -23,6 +23,9 @@ data class AppDataUiState(
     val backupDirectoryUri: String? = null,
     val includeHistory: Boolean = true,
     val includeDiagnostics: Boolean = false,
+    val importIncludeHistory: Boolean = false,
+    val importIncludeDiagnostics: Boolean = false,
+    val importIncludeDescriptors: Boolean = true,
     val isProcessing: Boolean = false,
     val userMessage: String? = null,
     val isError: Boolean = false,
@@ -60,6 +63,18 @@ class AppDataViewModel(
 
     fun setIncludeDiagnostics(value: Boolean) {
         _uiState.update { it.copy(includeDiagnostics = value) }
+    }
+
+    fun setImportIncludeHistory(value: Boolean) {
+        _uiState.update { it.copy(importIncludeHistory = value) }
+    }
+
+    fun setImportIncludeDiagnostics(value: Boolean) {
+        _uiState.update { it.copy(importIncludeDiagnostics = value) }
+    }
+
+    fun setImportIncludeDescriptors(value: Boolean) {
+        _uiState.update { it.copy(importIncludeDescriptors = value) }
     }
 
     fun showResetConfirmation(show: Boolean) {
@@ -170,7 +185,12 @@ class AppDataViewModel(
                     }
                     return@launch
                 }
-                val result = backupRepository.importBackup(inputStream)
+                val options = BackupOptions(
+                    includeHistory = _uiState.value.importIncludeHistory,
+                    includeDiagnostics = _uiState.value.importIncludeDiagnostics,
+                    includeDescriptors = _uiState.value.importIncludeDescriptors
+                )
+                val result = backupRepository.importBackup(inputStream, options)
                 when (result) {
                     is BackupResult.Success -> {
                         _uiState.update {

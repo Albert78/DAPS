@@ -120,6 +120,9 @@ fun AppDataScreen(
         onSelectFolderClick = { openDocumentTreeLauncher.launch(null) },
         onIncludeHistoryChange = { viewModel.setIncludeHistory(it) },
         onIncludeDiagnosticsChange = { viewModel.setIncludeDiagnostics(it) },
+        onImportIncludeHistoryChange = { viewModel.setImportIncludeHistory(it) },
+        onImportIncludeDiagnosticsChange = { viewModel.setImportIncludeDiagnostics(it) },
+        onImportIncludeDescriptorsChange = { viewModel.setImportIncludeDescriptors(it) },
         onExportClick = {
             val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
             val filename = "daps_backup_${dateFormat.format(Date())}.dapsbackup"
@@ -142,6 +145,9 @@ fun AppDataContent(
     onSelectFolderClick: () -> Unit,
     onIncludeHistoryChange: (Boolean) -> Unit,
     onIncludeDiagnosticsChange: (Boolean) -> Unit,
+    onImportIncludeHistoryChange: (Boolean) -> Unit,
+    onImportIncludeDiagnosticsChange: (Boolean) -> Unit,
+    onImportIncludeDescriptorsChange: (Boolean) -> Unit,
     onExportClick: () -> Unit,
     onImportClick: () -> Unit,
     onResetConfirm: () -> Unit,
@@ -353,6 +359,40 @@ fun AppDataContent(
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = uiState.importIncludeHistory,
+                                onCheckedChange = onImportIncludeHistoryChange
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(R.string.app_data_option_import_history),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = uiState.importIncludeDiagnostics,
+                                onCheckedChange = onImportIncludeDiagnosticsChange
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(R.string.app_data_option_import_diagnostics),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = uiState.importIncludeDescriptors,
+                                onCheckedChange = onImportIncludeDescriptorsChange
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(R.string.app_data_option_import_descriptors),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(
                             onClick = onImportClick,
@@ -450,6 +490,9 @@ fun AppDataContentPreview() {
             onSelectFolderClick = {},
             onIncludeHistoryChange = {},
             onIncludeDiagnosticsChange = {},
+            onImportIncludeHistoryChange = {},
+            onImportIncludeDiagnosticsChange = {},
+            onImportIncludeDescriptorsChange = {},
             onExportClick = {},
             onImportClick = {},
             onResetConfirm = {},

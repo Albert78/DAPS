@@ -695,6 +695,9 @@
     <string name="app_data_section_import_title">Wiederherstellen</string>
     <string name="app_data_card_import_title">Sicherung wiederherstellen</string>
     <string name="app_data_card_import_desc">Lade eine zuvor erstellte .dapsbackup-Sicherungsdatei, um deine Daten und Einstellungen wiederherzustellen.</string>
+    <string name="app_data_option_import_history">Behandlungsverlauf (Messwerte, Boli, Mahlzeiten) wiederherstellen</string>
+    <string name="app_data_option_import_diagnostics">Diagnose-Logs &amp; Insights wiederherstellen</string>
+    <string name="app_data_option_import_descriptors">Geräte-Verbindungen (Pumpe &amp; CGM) wiederherstellen</string>
     <string name="app_data_btn_import">Sicherung importieren</string>
     <string name="app_data_dialog_import_title">Sicherung wiederherstellen?</string>
     <string name="app_data_dialog_import_message">Achtung: Vorhandene Daten und Einstellungen werden durch die Inhalte der Sicherungsdatei ersetzt. Möchtest du fortfahren?</string>

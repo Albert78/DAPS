@@ -34,7 +34,14 @@ import java.util.zip.ZipOutputStream
 
 interface BackupRepository {
     suspend fun exportBackup(outputStream: OutputStream, options: BackupOptions): BackupResult
-    suspend fun importBackup(inputStream: InputStream): BackupResult
+    suspend fun importBackup(
+        inputStream: InputStream,
+        options: BackupOptions = BackupOptions(
+            includeHistory = false,
+            includeDiagnostics = false,
+            includeDescriptors = true,
+        )
+    ): BackupResult
     suspend fun resetToDefaultData()
 }
 
@@ -182,7 +189,8 @@ class BackupRepositoryImpl(
     }
 
     override suspend fun importBackup(
-        inputStream: InputStream
+        inputStream: InputStream,
+        options: BackupOptions
     ): BackupResult = withContext(Dispatchers.IO) {
         runCatching {
             var manifestDto: BackupManifestDto? = null
@@ -219,17 +227,19 @@ class BackupRepositoryImpl(
                 runCatching {
                     preferencesRepository.setCarbsUnit(CarbsUnit.valueOf(prefs.carbsUnit))
                 }
-                prefs.glucoseSourceDescriptorJson?.let { descriptorJson ->
-                    val descriptor = runCatching {
-                        json.decodeFromString<GlucoseSourceConnectionDescriptor>(descriptorJson)
-                    }.getOrNull()
-                    preferencesRepository.setGlucoseSourceDescriptor(descriptor)
-                }
-                prefs.pumpDescriptorJson?.let { descriptorJson ->
-                    val descriptor = runCatching {
-                        json.decodeFromString<PumpConnectionDescriptor>(descriptorJson)
-                    }.getOrNull()
-                    preferencesRepository.setPumpDescriptor(descriptor)
+                if (options.includeDescriptors) {
+                    prefs.glucoseSourceDescriptorJson?.let { descriptorJson ->
+                        val descriptor = runCatching {
+                            json.decodeFromString<GlucoseSourceConnectionDescriptor>(descriptorJson)
+                        }.getOrNull()
+                        preferencesRepository.setGlucoseSourceDescriptor(descriptor)
+                    }
+                    prefs.pumpDescriptorJson?.let { descriptorJson ->
+                        val descriptor = runCatching {
+                            json.decodeFromString<PumpConnectionDescriptor>(descriptorJson)
+                        }.getOrNull()
+                        preferencesRepository.setPumpDescriptor(descriptor)
+                    }
                 }
             }
 
@@ -243,23 +253,31 @@ class BackupRepositoryImpl(
                 val mealReminderDao = appDatabase.mealReminderDao()
                 val metricsDao = appDatabase.systemMetricsDao()
 
-                // Delete all existing data in reverse order of dependencies
-                metabolicDao.deleteAllDeferredBoluses()
-                mealReminderDao.deleteAllMealReminders()
-                metabolicDao.deleteAllMeals()
-                metabolicDao.deleteAllInsulinApplications()
-                providerDao.deleteAllGlucoseReadings()
+                // Delete optional history data if history is being imported
+                if (options.includeHistory) {
+                    metabolicDao.deleteAllDeferredBoluses()
+                    mealReminderDao.deleteAllMealReminders()
+                    metabolicDao.deleteAllMeals()
+                    metabolicDao.deleteAllInsulinApplications()
+                    providerDao.deleteAllGlucoseReadings()
+                    therapyDao.deleteAllScheduledTherapyAdjustments()
+                }
+
+                // Delete core therapy & settings
                 therapyDao.deleteAllCurrentTherapySettings()
-                therapyDao.deleteAllScheduledTherapyAdjustments()
                 therapyDao.deleteAllTherapyAdjustments()
                 settingsDao.deleteAllCurrentSettings()
                 alarmDao.deleteAllAlarmProfiles()
                 therapyDao.deleteAllInsulinProfiles()
-                providerDao.deleteAllSensorTypes()
-                providerDao.deleteAllDataProviders()
-                metabolicDao.deleteAllMealTypes()
-                metabolicDao.deleteAllInsulinTypes()
-                if (diagnosticsDto != null) {
+
+                if (options.includeHistory) {
+                    providerDao.deleteAllSensorTypes()
+                    providerDao.deleteAllDataProviders()
+                    metabolicDao.deleteAllMealTypes()
+                    metabolicDao.deleteAllInsulinTypes()
+                }
+
+                if (options.includeDiagnostics) {
                     metricsDao.deleteAllCoreInsights()
                 }
 
@@ -292,32 +310,36 @@ class BackupRepositoryImpl(
                     therapyDao.insertCurrentTherapySettingsList(listOf(it.toEntity()))
                 }
 
-                // Insert Medical History
-                medicalHistoryDto?.let { history ->
-                    if (history.glucoseReadings.isNotEmpty()) {
-                        providerDao.insertGlucoseReadings(history.glucoseReadings.map { it.toEntity() })
-                    }
-                    if (history.insulinApplications.isNotEmpty()) {
-                        metabolicDao.insertInsulinApplications(history.insulinApplications.map { it.toEntity() })
-                    }
-                    if (history.meals.isNotEmpty()) {
-                        metabolicDao.insertMeals(history.meals.map { it.toEntity() })
-                    }
-                    if (history.mealReminders.isNotEmpty()) {
-                        mealReminderDao.insertMealReminders(history.mealReminders.map { it.toEntity() })
-                    }
-                    if (history.deferredBoluses.isNotEmpty()) {
-                        metabolicDao.insertDeferredBoluses(history.deferredBoluses.map { it.toEntity() })
-                    }
-                    if (history.scheduledTherapyAdjustments.isNotEmpty()) {
-                        therapyDao.insertScheduledTherapyAdjustments(history.scheduledTherapyAdjustments.map { it.toEntity() })
+                // Insert Medical History (if requested)
+                if (options.includeHistory) {
+                    medicalHistoryDto?.let { history ->
+                        if (history.glucoseReadings.isNotEmpty()) {
+                            providerDao.insertGlucoseReadings(history.glucoseReadings.map { it.toEntity() })
+                        }
+                        if (history.insulinApplications.isNotEmpty()) {
+                            metabolicDao.insertInsulinApplications(history.insulinApplications.map { it.toEntity() })
+                        }
+                        if (history.meals.isNotEmpty()) {
+                            metabolicDao.insertMeals(history.meals.map { it.toEntity() })
+                        }
+                        if (history.mealReminders.isNotEmpty()) {
+                            mealReminderDao.insertMealReminders(history.mealReminders.map { it.toEntity() })
+                        }
+                        if (history.deferredBoluses.isNotEmpty()) {
+                            metabolicDao.insertDeferredBoluses(history.deferredBoluses.map { it.toEntity() })
+                        }
+                        if (history.scheduledTherapyAdjustments.isNotEmpty()) {
+                            therapyDao.insertScheduledTherapyAdjustments(history.scheduledTherapyAdjustments.map { it.toEntity() })
+                        }
                     }
                 }
 
-                // Insert Diagnostics (if present in backup)
-                diagnosticsDto?.let { diagnostics ->
-                    if (diagnostics.insights.isNotEmpty()) {
-                        metricsDao.insertCoreInsights(diagnostics.insights.map { it.toEntity() })
+                // Insert Diagnostics (if requested)
+                if (options.includeDiagnostics) {
+                    diagnosticsDto?.let { diagnostics ->
+                        if (diagnostics.insights.isNotEmpty()) {
+                            metricsDao.insertCoreInsights(diagnostics.insights.map { it.toEntity() })
+                        }
                     }
                 }
             }

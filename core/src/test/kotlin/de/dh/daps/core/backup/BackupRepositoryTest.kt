@@ -98,4 +98,16 @@ class BackupRepositoryTest {
         assertEquals(1, readConfig?.insulinProfiles?.size)
         assertEquals("Normal Profile", readConfig?.insulinProfiles?.first()?.name)
     }
+
+    @Test
+    fun `default import backup options exclude optional components except descriptors`() {
+        val importOptions = BackupOptions(
+            includeHistory = false,
+            includeDiagnostics = false,
+            includeDescriptors = true,
+        )
+        assertEquals(false, importOptions.includeHistory)
+        assertEquals(false, importOptions.includeDiagnostics)
+        assertEquals(true, importOptions.includeDescriptors)
+    }
 }
