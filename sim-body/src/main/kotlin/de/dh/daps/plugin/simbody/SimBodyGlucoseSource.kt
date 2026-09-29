@@ -2,6 +2,7 @@ package de.dh.daps.plugin.simbody
 
 import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.GlucoseSourceStatus
+import de.dh.daps.common.model.SourceHardwareInformation
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.Minutes
@@ -27,7 +28,14 @@ class SimBodyGlucoseSource(
     private val _lastConnection = MutableStateFlow<Timestamp?>(null)
     override val lastConnection: StateFlow<Timestamp?> = _lastConnection.asStateFlow()
 
-    override fun getSensorTypeName() = "Sim Body Dexcom G6"
+    override val sensorType: StateFlow<String> = MutableStateFlow("Sim-Body-Sensor")
+    override val hardwareInformation: StateFlow<SourceHardwareInformation?> = MutableStateFlow(
+        SourceHardwareInformation(
+            manufacturer = "DAPS",
+            model = "Sim Body Sensor",
+            serialNumber = "SIM-123456"
+        )
+    )
 
     override fun start() {
     }

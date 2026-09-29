@@ -25,6 +25,7 @@ import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.common.model.GlucoseSourceStatus
 import de.dh.daps.common.model.Plugin
+import de.dh.daps.common.model.SourceHardwareInformation
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.Minutes
@@ -67,7 +68,11 @@ class ReceiverGlucosePlugin(
     private val _lastConnection = MutableStateFlow<Timestamp?>(null)
     override val lastConnection: StateFlow<Timestamp?> = _lastConnection.asStateFlow()
 
-    override fun getSensorTypeName(): String = "External Receiver"
+    private val _sensorType = MutableStateFlow("External Receiver")
+    override val sensorType: StateFlow<String> = _sensorType.asStateFlow()
+
+    private val _hardwareInformation = MutableStateFlow<SourceHardwareInformation?>(null)
+    override val hardwareInformation: StateFlow<SourceHardwareInformation?> = _hardwareInformation.asStateFlow()
 
     private val dataReceiver = DataReceiver()
 
@@ -106,8 +111,9 @@ class ReceiverGlucosePlugin(
     /**
      * Values received by our BroadcastReceiver will go here.
      */
-    fun injectReading(value: BgReading): Boolean {
+    fun injectReading(value: BgReading, sensorType: String): Boolean {
         Log.d(TAG, "New glucose reading: $value")
+        _sensorType.value = sensorType
         _lastConnection.value = Timestamp.now()
         return _readings.tryEmit(value)
     }

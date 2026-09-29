@@ -418,7 +418,9 @@
     <string name="system_control_source_none_active">Keine Glukosequelle aktiv</string>
     <string name="system_control_source_change">Glukose-Quelle wechseln</string>
     <string name="system_control_source_setup">Glukose-Quelle einrichten</string>
-    <string name="system_control_source_sensor_type_label">Sensor-Typ</string>
+    <string name="system_control_source_manufacturer_label">Hersteller</string>
+    <string name="system_control_source_model_label">Modell</string>
+    <string name="system_control_source_serial_number_label">Seriennummer</string>
     <string name="system_control_source_measurement_interval_label">Messintervall</string>
     <string name="system_control_source_last_reading_label">Letzter Messwert</string>
     <string name="system_control_source_next_reading_label">Nächste Messung</string>

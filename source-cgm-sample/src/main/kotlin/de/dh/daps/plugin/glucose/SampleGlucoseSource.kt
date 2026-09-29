@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.GlucoseSourceStatus
+import de.dh.daps.common.model.SourceHardwareInformation
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.BgSampleKind
@@ -39,7 +40,14 @@ class SampleGlucoseSource : GlucoseSource, GlucoseSourcePluginUiProvider {
     override val status: StateFlow<GlucoseSourceStatus> = MutableStateFlow(GlucoseSourceStatus.Ok)
     override val expirationDate: StateFlow<Timestamp?> = MutableStateFlow(null)
     override val lastConnection: StateFlow<Timestamp?> = MutableStateFlow(null)
-    override fun getSensorTypeName() = "Dexcom-G6"
+    override val sensorType: StateFlow<String> = MutableStateFlow("Dexcom-G6")
+    override val hardwareInformation: StateFlow<SourceHardwareInformation?> = MutableStateFlow(
+        SourceHardwareInformation(
+            manufacturer = "Sample Manufacturer",
+            model = "Dexcom G6",
+            serialNumber = "12345678"
+        )
+    )
 
     override fun start() {
         // Nothing to do

@@ -55,7 +55,10 @@ interface GlucoseSource {
      * Gets a stable, technical name for the sensor, e.g. "Dexcom_G7".
      * This is used to identify the sensor in the database.
      */
-    fun getSensorTypeName(): String
+    val sensorType: StateFlow<String>
+
+    val hardwareInformation: StateFlow<SourceHardwareInformation?>
+
     fun getValues(): Flow<BgReading>
 
     fun start()

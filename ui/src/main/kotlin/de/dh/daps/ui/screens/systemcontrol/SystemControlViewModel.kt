@@ -116,9 +116,9 @@ sealed interface SourceTabUiState {
     data object NoneConfigured : SourceTabUiState
     data class Content(
         val glucoseSourceName: UiText,
-        val sensorTypeName: String,
         val readingsInterval: BgReadingsInterval,
         val manufacturer: String? = null,
+        val model: String? = null,
         val serialNumber: String? = null,
         val lastBgReading: BgReading? = null,
         val nextPredictedTimestamp: Timestamp? = null,
@@ -168,9 +168,11 @@ class SystemControlViewModel(
 ) : ViewModel() {
     private data class GlucoseUiData(
         val sourceName: UiText,
-        val sensorTypeName: String,
         val readingsInterval: BgReadingsInterval,
         val status: GlucoseSourceStatus,
+        val manufacturer: String? = null,
+        val model: String? = null,
+        val serialNumber: String? = null,
         val lastConnection: Timestamp? = null,
         val lastBgReading: BgReading? = null,
         val nextPredictedTimestamp: Timestamp? = null,
@@ -251,7 +253,6 @@ class SystemControlViewModel(
             flowOf(null)
         } else {
             val sourceName = source.sourceDisplayName
-            val sensorType = source.getSensorTypeName()
             val interval = source.readingsInterval
 
             val nextPredicted = glucoseSourceManager.predictNextValueTimestamp()
@@ -264,14 +265,18 @@ class SystemControlViewModel(
 
             combine(
                 source.status,
+                source.sensorType,
+                source.hardwareInformation,
                 glucoseRepository.currentBg,
                 source.lastConnection
-            ) { status, currentBg, lastConn ->
+            ) { status, sensorType, hardware, currentBg, lastConn ->
                 GlucoseUiData(
                     sourceName = sourceName,
-                    sensorTypeName = sensorType,
                     readingsInterval = interval,
                     status = status,
+                    manufacturer = hardware?.manufacturer,
+                    model = hardware?.model,
+                    serialNumber = hardware?.serialNumber,
                     lastConnection = lastConn,
                     lastBgReading = currentBg,
                     nextPredictedTimestamp = if (hasPrediction) nextPredicted else null,
@@ -451,8 +456,9 @@ class SystemControlViewModel(
         } else {
             SourceTabUiState.Content(
                 glucoseSourceName = gInfo.sourceName,
-                manufacturer = null,
-                sensorTypeName = gInfo.sensorTypeName,
+                manufacturer = gInfo.manufacturer,
+                model = gInfo.model,
+                serialNumber = gInfo.serialNumber,
                 readingsInterval = gInfo.readingsInterval,
                 lastBgReading = gInfo.lastBgReading,
                 nextPredictedTimestamp = gInfo.nextPredictedTimestamp,

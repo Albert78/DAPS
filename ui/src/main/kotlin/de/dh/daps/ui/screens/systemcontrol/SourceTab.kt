@@ -160,11 +160,45 @@ fun SourceOverviewCard(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             ControlDetailRow(
-                                label = stringResource(R.string.system_control_source_sensor_type_label),
+                                label = stringResource(R.string.system_control_source_manufacturer_label),
                                 reserveIconSpace = true
                             ) {
                                 Text(
-                                    text = uiState.sensorTypeName,
+                                    text = uiState.manufacturer ?: notAvailableText,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            ControlDetailRow(
+                                label = stringResource(R.string.system_control_source_model_label),
+                                reserveIconSpace = true
+                            ) {
+                                Text(
+                                    text = uiState.model ?: notAvailableText,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(24.dp)
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            ControlDetailRow(
+                                label = stringResource(R.string.system_control_source_serial_number_label),
+                                reserveIconSpace = true
+                            ) {
+                                Text(
+                                    text = uiState.serialNumber ?: notAvailableText,
                                     style = MaterialTheme.typography.bodyMedium,
                                     maxLines = 2,
                                     overflow = TextOverflow.Ellipsis
@@ -444,7 +478,9 @@ fun GlucoseSourcePluginExampleCard(
 
 internal fun sampleSourceTabUiState(): SourceTabUiState = SourceTabUiState.Content(
     glucoseSourceName = UiText.DynamicString("SimBody Virtueller Glukosesensor"),
-    sensorTypeName = "SimBody Glukosesensor",
+    manufacturer = "DAPS",
+    model = "SimBody Glukosesensor",
+    serialNumber = "12345",
     readingsInterval = BgReadingsInterval.FiveMinutes,
     lastBgReading = BgReading(
         value = BgValue.fromMgDl(124),

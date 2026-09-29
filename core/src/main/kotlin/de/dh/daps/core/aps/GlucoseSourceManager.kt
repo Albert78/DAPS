@@ -58,7 +58,7 @@ class GlucoseSourceManager(
         glucoseJob = scope.launch {
             Log.d(TAG, "Installing glucose pipeline: ${gs.glucoseSourceId}")
 
-            val sensorType = glucoseRepository.getOrCreateSensorTypeByName(gs.getSensorTypeName())
+            val sensorType = glucoseRepository.getOrCreateSensorTypeByName(gs.sensorType.value)
             val dataProvider = glucoseRepository.getOrCreateDataProvider(gs.glucoseSourceId)
 
             readingsTimeDelay = gs.readingsTimeDelay

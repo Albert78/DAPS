@@ -59,9 +59,13 @@ class DataReceiver : BroadcastReceiver() {
                     )
                 }
                 if (timestampMs > 0) {
-                    pluginInstance.injectReading(mapRawXDripValues(rawValue))
+                    pluginInstance.injectReading(mapRawXDripValues(rawValue), sourceSensorName ?: DEFAULT_SENSOR_TYPE)
                 }
             }
         }
+    }
+
+    companion object {
+        private const val DEFAULT_SENSOR_TYPE = "Receiver"
     }
 }
