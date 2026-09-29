@@ -1,6 +1,7 @@
 package de.dh.daps.ui.screens.systemcontrol
 
 import android.content.res.Configuration
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Battery5Bar
 import androidx.compose.material.icons.filled.Build
@@ -22,13 +24,13 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.outlined.Link
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -46,6 +48,7 @@ import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.icons.PumpReservoir
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.shortRelativeTimeAgo
@@ -63,9 +66,49 @@ fun PumpTabContent(
     onCancelPumpJob: (String) -> Unit = {}
 ) {
     Column(modifier = modifier) {
+        val mainHeadlineText = when (uiState) {
+            is PumpTabUiState.Loading -> stringResource(R.string.system_control_pump_section_title)
+            is PumpTabUiState.NoneConfigured -> stringResource(R.string.system_control_pump_none_active)
+            is PumpTabUiState.Content -> uiState.pumpName.asString()
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = mainHeadlineText,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f)
+            )
+            if (uiState !is PumpTabUiState.Loading) {
+                Spacer(modifier = Modifier.width(16.dp))
+                OutlinedIconButton(onClick = onChangePumpDriver) {
+                    Icon(
+                        imageVector = Icons.Default.SwapHoriz,
+                        contentDescription = stringResource(
+                            if (uiState is PumpTabUiState.NoneConfigured) R.string.system_control_pump_setup
+                            else R.string.system_control_pump_change
+                        )
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        SectionHeader(
+            title = stringResource(R.string.system_control_tab_overview)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
         PumpOverviewCard(
-            uiState = uiState,
-            onChangePumpDriver = onChangePumpDriver
+            uiState = uiState
         )
 
         if (uiState is PumpTabUiState.Content) {
@@ -96,14 +139,17 @@ fun PumpTabContent(
 @Composable
 fun PumpOverviewCard(
     uiState: PumpTabUiState,
-    modifier: Modifier = Modifier,
-    onChangePumpDriver: () -> Unit = {}
+    modifier: Modifier = Modifier
 ) {
-    Card(
+    OutlinedCard(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ),
+        border = BorderStroke(2.dp, AppColorBlue.copy(alpha = 0.3f))
     ) {
         Column(
             modifier = Modifier
@@ -122,55 +168,14 @@ fun PumpOverviewCard(
                     }
                 }
                 is PumpTabUiState.NoneConfigured -> {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = stringResource(R.string.system_control_pump_none_active),
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        OutlinedIconButton(
-                            onClick = onChangePumpDriver
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.SwapHoriz,
-                                contentDescription = stringResource(R.string.system_control_pump_setup)
-                            )
-                        }
-                    }
+                    Text(
+                        text = stringResource(R.string.system_control_pump_none_active),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
                 is PumpTabUiState.Content -> {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = uiState.pumpName.asString(),
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        OutlinedIconButton(
-                            onClick = onChangePumpDriver
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.SwapHoriz,
-                                contentDescription = stringResource(R.string.system_control_pump_change)
-                            )
-                        }
-                    }
-
                     val notAvailableText = stringResource(R.string.system_control_value_not_available)
-                    Spacer(modifier = Modifier.height(12.dp))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -367,11 +372,15 @@ fun PumpActionsCard(
     onDisconnectForMaintenance: () -> Unit = {},
     onRefreshPumpStatus: () -> Unit = {}
 ) {
-    Card(
+    OutlinedCard(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ),
+        border = BorderStroke(2.dp, AppColorBlue.copy(alpha = 0.3f))
     ) {
         Row(
             modifier = Modifier
@@ -400,11 +409,15 @@ fun PumpJobsCard(
     onCancelJob: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
+    OutlinedCard(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ),
+        border = BorderStroke(2.dp, AppColorBlue.copy(alpha = 0.3f))
     ) {
         Column(
             modifier = Modifier

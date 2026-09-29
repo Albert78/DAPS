@@ -16,14 +16,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.SwapHoriz
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -42,6 +44,7 @@ import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.glucoseValue
 import de.dh.daps.ui.common.icons.Icon_Next
 import de.dh.daps.ui.common.icons.Icon_Previous
@@ -60,9 +63,49 @@ fun SourceTabContent(
     @Suppress("UNUSED_PARAMETER") onStopSensor: () -> Unit = {}
 ) {
     Column(modifier = modifier) {
+        val mainHeadlineText = when (uiState) {
+            is SourceTabUiState.Loading -> stringResource(R.string.overview_section_glucose_source)
+            is SourceTabUiState.NoneConfigured -> stringResource(R.string.system_control_source_none_active)
+            is SourceTabUiState.Content -> uiState.glucoseSourceName.asString()
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = mainHeadlineText,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f)
+            )
+            if (uiState !is SourceTabUiState.Loading) {
+                Spacer(modifier = Modifier.width(16.dp))
+                OutlinedIconButton(onClick = onChangeGlucoseSource) {
+                    Icon(
+                        imageVector = Icons.Default.SwapHoriz,
+                        contentDescription = stringResource(
+                            if (uiState is SourceTabUiState.NoneConfigured) R.string.system_control_source_setup
+                            else R.string.system_control_source_change
+                        )
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        SectionHeader(
+            title = stringResource(R.string.system_control_tab_overview)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
         SourceOverviewCard(
-            uiState = uiState,
-            onChangeGlucoseSource = onChangeGlucoseSource
+            uiState = uiState
         )
 
         if (uiState is SourceTabUiState.Content && uiState.glucoseSourcePluginSection != null) {
@@ -79,14 +122,17 @@ fun SourceTabContent(
 @Composable
 fun SourceOverviewCard(
     uiState: SourceTabUiState,
-    modifier: Modifier = Modifier,
-    onChangeGlucoseSource: () -> Unit = {}
+    modifier: Modifier = Modifier
 ) {
-    Card(
+    OutlinedCard(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ),
+        border = BorderStroke(2.dp, AppColorBlue.copy(alpha = 0.3f))
     ) {
         Column(
             modifier = Modifier
@@ -105,55 +151,15 @@ fun SourceOverviewCard(
                     }
                 }
                 is SourceTabUiState.NoneConfigured -> {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = stringResource(R.string.system_control_source_none_active),
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        OutlinedIconButton(
-                            onClick = onChangeGlucoseSource
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.SwapHoriz,
-                                contentDescription = stringResource(R.string.system_control_source_setup)
-                            )
-                        }
-                    }
+                    Text(
+                        text = stringResource(R.string.system_control_source_none_active),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
                 is SourceTabUiState.Content -> {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = uiState.glucoseSourceName.asString(),
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        OutlinedIconButton(
-                            onClick = onChangeGlucoseSource
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.SwapHoriz,
-                                contentDescription = stringResource(R.string.system_control_source_change)
-                            )
-                        }
-                    }
-
                     val notAvailableText = stringResource(R.string.system_control_value_not_available)
-                    Spacer(modifier = Modifier.height(16.dp))
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(24.dp)
@@ -379,11 +385,15 @@ fun GlucoseSourcePluginExampleCard(
     modifier: Modifier = Modifier,
     estimatedExpirationTimestamp: Timestamp? = null
 ) {
-    Card(
+    OutlinedCard(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ),
+        border = BorderStroke(2.dp, AppColorBlue.copy(alpha = 0.3f))
     ) {
         Column(
             modifier = Modifier
