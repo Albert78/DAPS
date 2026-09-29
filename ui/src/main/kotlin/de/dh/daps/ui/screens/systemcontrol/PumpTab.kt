@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.outlined.Link
+import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
@@ -530,8 +531,121 @@ internal fun samplePumpTabUiState(): PumpTabUiState = PumpTabUiState.Content(
             id = "job_1",
             title = UiText.StringResource(R.string.system_control_pump_job_type_bolus, "1,50")
         )
-    )
+    ),
+    pumpPluginSection = {
+        PumpPluginExampleCard()
+    }
 )
+
+@Composable
+fun PumpPluginExampleCard(
+    modifier: Modifier = Modifier,
+    maintenanceStatus: String = "Optimal",
+    activeProfileName: String = "Standard",
+    errorMemory: String = "Keine Fehler",
+    onRunSelfTest: () -> Unit = {},
+    onPrimeCannula: () -> Unit = {}
+) {
+    OutlinedCard(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ),
+        border = BorderStroke(2.dp, AppColorBlue.copy(alpha = 0.3f))
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+        ) {
+            Text(
+                text = stringResource(R.string.system_control_plugin_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    ControlDetailRow(
+                        label = "Wartungsstatus"
+                    ) {
+                        Text(
+                            text = maintenanceStatus,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    ControlDetailRow(
+                        label = "Aktives Profil"
+                    ) {
+                        Text(
+                            text = activeProfileName,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            ControlDetailRow(
+                label = "Fehlerspeicher"
+            ) {
+                Text(
+                    text = errorMemory,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = onRunSelfTest,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = "Selbsttest",
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Button(
+                    onClick = onPrimeCannula,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = "Kanüle füllen",
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    }
+}
 
 @Preview(showBackground = true, name = "Pump Tab - Light Mode")
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Pump Tab - Dark Mode")
