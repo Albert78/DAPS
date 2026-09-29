@@ -528,6 +528,8 @@ private fun <T> StatusMetricText(
     val glucoseUnit = LocalGlucoseUnit.current
     val timestamp = metric.value as? Timestamp
 
+    val isSet = metric.value != null && (timestamp == null || timestamp.isValid())
+
     val formattedValue = if (metric.value != null && formatValue != null) {
         formatValue(metric.value)
     } else {
@@ -575,7 +577,7 @@ private fun <T> StatusMetricText(
     StatusValueText(
         value = formattedValue,
         relativeTime = relativeTime,
-        status = metric.status,
+        status = if (isSet) metric.status else null,
         modifier = modifier
     )
 }
@@ -585,7 +587,8 @@ private fun StatusValueText(
     value: String,
     modifier: Modifier = Modifier,
     relativeTime: String? = null,
-    status: ValueStatus? = null
+    status: ValueStatus? = null,
+    reserveIconSpace: Boolean = true
 ) {
     Column(modifier = modifier) {
         Row(
@@ -604,6 +607,8 @@ private fun StatusValueText(
                     tint = tint,
                     modifier = Modifier.size(16.dp)
                 )
+            } else if (reserveIconSpace) {
+                Spacer(modifier = Modifier.size(16.dp))
             }
             Text(
                 text = value,
@@ -616,7 +621,7 @@ private fun StatusValueText(
                 text = relativeTime,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = if (status != null) 20.dp else 0.dp)
+                modifier = Modifier.padding(start = if (status != null || reserveIconSpace) 20.dp else 0.dp)
             )
         }
     }

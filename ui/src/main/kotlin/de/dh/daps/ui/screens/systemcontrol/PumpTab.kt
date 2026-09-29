@@ -50,6 +50,7 @@ import de.dh.daps.ui.common.icons.PumpReservoir
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.shortRelativeTimeAgo
 import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.daps.ui.common.time
 
 @Composable
@@ -228,8 +229,8 @@ fun PumpOverviewCard(
                         else -> stringResource(R.string.system_control_pump_state_active)
                     }
                     val statusColor = when {
-                        uiState.isSuspended -> MaterialTheme.colorScheme.tertiary
-                        else -> MaterialTheme.colorScheme.secondary
+                        uiState.isSuspended -> ExtendedTheme.semanticColors.warning
+                        else -> ExtendedTheme.semanticColors.good
                     }
 
                     val lastConnTimestamp = uiState.lastConnectionTimestamp
