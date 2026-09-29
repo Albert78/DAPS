@@ -56,58 +56,79 @@ data class StatusMetric<T>(
     val status: ValueStatus? = null
 )
 
-data class OverviewAndroidSystemUiState(
-    val bluetoothStatus: StatusMetric<Boolean> = StatusMetric(false, status = ValueStatus.BAD),
-    val phoneBattery: StatusMetric<Int> = StatusMetric(0, status = ValueStatus.BAD),
-    val permissionsStatus: StatusMetric<Int> = StatusMetric(0, status = ValueStatus.BAD),
-    val dapsServiceStatus: StatusMetric<Boolean> = StatusMetric(false, status = ValueStatus.BAD)
-)
+sealed interface OverviewAndroidSystemUiState {
+    data object Loading : OverviewAndroidSystemUiState
+    data class Content(
+        val bluetoothStatus: StatusMetric<Boolean>,
+        val phoneBattery: StatusMetric<Int>,
+        val permissionsStatus: StatusMetric<Int>,
+        val dapsServiceStatus: StatusMetric<Boolean>
+    ) : OverviewAndroidSystemUiState
+}
 
-data class OverviewApsSystemUiState(
-    val mode: StatusMetric<ApsMode> = StatusMetric(ApsMode.AutoCorrection, status = ValueStatus.GOOD),
-    val lastCalculation: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD),
-    val status: StatusMetric<Int> = StatusMetric(0, status = ValueStatus.GOOD)
-)
+sealed interface OverviewApsSystemUiState {
+    data object Loading : OverviewApsSystemUiState
+    data class Content(
+        val mode: StatusMetric<ApsMode>,
+        val lastCalculation: StatusMetric<Timestamp>,
+        val status: StatusMetric<Int>
+    ) : OverviewApsSystemUiState
+}
 
-data class OverviewGlucoseSourceUiState(
-    val sensorName: UiText,
-    val status: StatusMetric<GlucoseSourceStatus> = StatusMetric(status = ValueStatus.GOOD),
-    val lastConnection: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD),
-    val lastReading: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD),
-    val sensorExpiration: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD)
-)
+sealed interface OverviewGlucoseSourceUiState {
+    data object Loading : OverviewGlucoseSourceUiState
+    data object NoneConfigured : OverviewGlucoseSourceUiState
+    data class Content(
+        val sensorName: UiText,
+        val status: StatusMetric<GlucoseSourceStatus>,
+        val lastConnection: StatusMetric<Timestamp>,
+        val lastReading: StatusMetric<Timestamp>,
+        val sensorExpiration: StatusMetric<Timestamp>
+    ) : OverviewGlucoseSourceUiState
+}
 
-data class OverviewPumpUiState(
-    val pumpName: UiText,
-    val state: StatusMetric<OverviewPumpState> = StatusMetric(OverviewPumpState.ACTIVE, status = ValueStatus.GOOD),
-    val lastBolus: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD),
-    val battery: StatusMetric<Int> = StatusMetric(status = ValueStatus.GOOD),
-    val reservoir: StatusMetric<InsulinAmount> = StatusMetric(status = ValueStatus.GOOD),
-    val lastConnection: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD),
-    val nextCannulaChange: StatusMetric<Timestamp> = StatusMetric(status = ValueStatus.GOOD)
-)
+sealed interface OverviewPumpUiState {
+    data object Loading : OverviewPumpUiState
+    data object NoneConfigured : OverviewPumpUiState
+    data class Content(
+        val pumpName: UiText,
+        val state: StatusMetric<OverviewPumpState>,
+        val lastBolus: StatusMetric<Timestamp>,
+        val battery: StatusMetric<Int>,
+        val reservoir: StatusMetric<InsulinAmount>,
+        val lastConnection: StatusMetric<Timestamp>,
+        val nextCannulaChange: StatusMetric<Timestamp>
+    ) : OverviewPumpUiState
+}
 
-data class OverviewTabUiState(
-    val androidSystem: OverviewAndroidSystemUiState = OverviewAndroidSystemUiState(),
-    val apsSystem: OverviewApsSystemUiState = OverviewApsSystemUiState(),
-    val glucoseSource: OverviewGlucoseSourceUiState? = null,
-    val insulinPump: OverviewPumpUiState? = null
-)
+sealed interface OverviewTabUiState {
+    data object Loading : OverviewTabUiState
+    data class Content(
+        val androidSystem: OverviewAndroidSystemUiState,
+        val apsSystem: OverviewApsSystemUiState,
+        val glucoseSource: OverviewGlucoseSourceUiState,
+        val insulinPump: OverviewPumpUiState
+    ) : OverviewTabUiState
+}
 
-data class SourceTabUiState(
-    val glucoseSourceName: UiText,
-    val sensorTypeName: String,
-    val readingsInterval: BgReadingsInterval,
-    val manufacturer: String? = null,
-    val serialNumber: String? = null,
-    val lastBgReading: BgReading? = null,
-    val nextPredictedTimestamp: Timestamp? = null,
-    val hasNextPrediction: Boolean = false,
-    val sensorCode: String? = null,
-    val transmitterSerialNumber: String? = null,
-    val estimatedExpirationTimestamp: Timestamp? = null,
-    val glucoseSourcePluginSection: (@Composable () -> Unit)? = null
-)
+sealed interface SourceTabUiState {
+    data object Loading : SourceTabUiState
+    data object NoneConfigured : SourceTabUiState
+    data class Content(
+        val glucoseSourceName: UiText,
+        val sensorTypeName: String,
+        val readingsInterval: BgReadingsInterval,
+        val manufacturer: String? = null,
+        val serialNumber: String? = null,
+        val lastBgReading: BgReading? = null,
+        val nextPredictedTimestamp: Timestamp? = null,
+        val hasNextPrediction: Boolean = false,
+        val sensorCode: String? = null,
+        val transmitterSerialNumber: String? = null,
+        val estimatedExpirationTimestamp: Timestamp? = null,
+        val glucoseSourcePluginSection: (@Composable () -> Unit)? = null
+    ) : SourceTabUiState
+}
 
 data class PumpJobItem(
     val id: String,
@@ -116,25 +137,32 @@ data class PumpJobItem(
     val hasError: Boolean = errorMessage != null
 )
 
-data class PumpTabUiState(
-    val pumpName: UiText,
-    val batteryPercent: Int,
-    val reservoirRemaining: InsulinAmount,
-    val lastConnectionTimestamp: Timestamp,
-    val pumpModel: String? = null,
-    val manufacturer: String? = null,
-    val serialNumber: String? = null,
-    val pumpConnected: Boolean = false,
-    val isSuspended: Boolean = false,
-    val pendingJobs: List<PumpJobItem> = emptyList(),
-    val pumpPluginSection: (@Composable () -> Unit)? = null
-)
+sealed interface PumpTabUiState {
+    data object Loading : PumpTabUiState
+    data object NoneConfigured : PumpTabUiState
+    data class Content(
+        val pumpName: UiText,
+        val batteryPercent: Int,
+        val reservoirRemaining: InsulinAmount,
+        val lastConnectionTimestamp: Timestamp,
+        val pumpModel: String? = null,
+        val manufacturer: String? = null,
+        val serialNumber: String? = null,
+        val pumpConnected: Boolean = false,
+        val isSuspended: Boolean = false,
+        val pendingJobs: List<PumpJobItem> = emptyList(),
+        val pumpPluginSection: (@Composable () -> Unit)? = null
+    ) : PumpTabUiState
+}
 
-data class SystemControlUiState(
-    val overviewUiState: OverviewTabUiState = OverviewTabUiState(),
-    val sourceTabUiState: SourceTabUiState? = null,
-    val pumpTabUiState: PumpTabUiState? = null
-)
+sealed interface SystemControlUiState {
+    data object Loading : SystemControlUiState
+    data class Content(
+        val overviewUiState: OverviewTabUiState,
+        val sourceTabUiState: SourceTabUiState,
+        val pumpTabUiState: PumpTabUiState
+    ) : SystemControlUiState
+}
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SystemControlViewModel(
@@ -184,7 +212,7 @@ class SystemControlViewModel(
         deviceStatusRepository.isServiceRunning,
         permissionRepository.permissionSummary
     ) { btStatus, batteryPct, isRunning, permSummary ->
-        OverviewAndroidSystemUiState(
+        OverviewAndroidSystemUiState.Content(
             bluetoothStatus = StatusMetric(
                 value = btStatus == BluetoothStatus.ENABLED,
                 status = when (btStatus) {
@@ -305,7 +333,7 @@ class SystemControlViewModel(
             ApsMode.BasalOnly -> ValueStatus.WARNING
             ApsMode.Suspend -> ValueStatus.BAD
         }
-        OverviewApsSystemUiState(
+        OverviewApsSystemUiState.Content(
             mode = StatusMetric(mode, status = modeValueStatus),
             lastCalculation = StatusMetric(
                 value = lastCalcTs,
@@ -325,90 +353,94 @@ class SystemControlViewModel(
         androidSystemInfo
     ) { apsSystem, gInfo, pInfo, lastBolusTs, androidSystem ->
         // Overview Tab State
-        val overviewGlucoseSource = gInfo?.let {
-            val (glucoseSourceStatus, glucoseValueStatus) = when (it.status) {
-                GlucoseSourceStatus.Ok -> it.status to ValueStatus.GOOD
-                GlucoseSourceStatus.Expired -> it.status to ValueStatus.WARNING
-                GlucoseSourceStatus.Error -> it.status to ValueStatus.BAD
+        val overviewGlucoseSource: OverviewGlucoseSourceUiState = if (gInfo == null) {
+            OverviewGlucoseSourceUiState.NoneConfigured
+        } else {
+            val (glucoseSourceStatus, glucoseValueStatus) = when (gInfo.status) {
+                GlucoseSourceStatus.Ok -> gInfo.status to ValueStatus.GOOD
+                GlucoseSourceStatus.Expired -> gInfo.status to ValueStatus.WARNING
+                GlucoseSourceStatus.Error -> gInfo.status to ValueStatus.BAD
             }
             val lastConnectionStatus = when {
-                it.lastConnection == null || it.lastConnection.isInvalid() -> ValueStatus.BAD
-                it.lastConnection < Timestamp.now().minusMinutes(CONNECTION_WARNING_THRESHOLD_MINUTES) -> ValueStatus.WARNING
+                gInfo.lastConnection == null || gInfo.lastConnection.isInvalid() -> ValueStatus.BAD
+                gInfo.lastConnection < Timestamp.now().minusMinutes(CONNECTION_WARNING_THRESHOLD_MINUTES) -> ValueStatus.WARNING
                 else -> ValueStatus.GOOD
             }
-            OverviewGlucoseSourceUiState(
-                sensorName = it.sourceName,
+            OverviewGlucoseSourceUiState.Content(
+                sensorName = gInfo.sourceName,
                 status = StatusMetric(
                     value = glucoseSourceStatus,
                     status = glucoseValueStatus
                 ),
                 lastConnection = StatusMetric(
-                    value = it.lastConnection,
+                    value = gInfo.lastConnection,
                     status = lastConnectionStatus
                 ),
                 lastReading = StatusMetric(
-                    value = it.lastBgReading?.timestamp,
+                    value = gInfo.lastBgReading?.timestamp,
                     status = ValueStatus.GOOD
                 ),
                 sensorExpiration = StatusMetric(
-                    value = it.estimatedExpirationTimestamp,
+                    value = gInfo.estimatedExpirationTimestamp,
                     status = ValueStatus.GOOD
                 )
             )
         }
 
-        val overviewInsulinPump = pInfo?.let {
+        val overviewInsulinPump: OverviewPumpUiState = if (pInfo == null) {
+            OverviewPumpUiState.NoneConfigured
+        } else {
             val (pumpOverviewState, pumpValueStatus) = when {
-                it.hasError -> OverviewPumpState.ERROR to ValueStatus.BAD
-                it.isSuspended -> OverviewPumpState.SUSPENDED to ValueStatus.WARNING
+                pInfo.hasError -> OverviewPumpState.ERROR to ValueStatus.BAD
+                pInfo.isSuspended -> OverviewPumpState.SUSPENDED to ValueStatus.WARNING
                 else -> OverviewPumpState.ACTIVE to ValueStatus.GOOD
             }
             val lastConnectionStatus = when {
-                it.lastConnection.isInvalid() -> ValueStatus.BAD
-                it.lastConnection < Timestamp.now().minusMinutes(CONNECTION_WARNING_THRESHOLD_MINUTES) -> ValueStatus.WARNING
+                pInfo.lastConnection.isInvalid() -> ValueStatus.BAD
+                pInfo.lastConnection < Timestamp.now().minusMinutes(CONNECTION_WARNING_THRESHOLD_MINUTES) -> ValueStatus.WARNING
                 else -> ValueStatus.GOOD
             }
             val nextCannulaChangeStatus = when {
-                it.nextCannulaChange == null || it.nextCannulaChange.isInvalid() -> ValueStatus.GOOD
-                it.nextCannulaChange <= Timestamp.now() -> ValueStatus.BAD
-                it.nextCannulaChange < Timestamp.now().plusHours(CANNULA_CHANGE_WARNING_THRESHOLD_HOURS) -> ValueStatus.WARNING
+                pInfo.nextCannulaChange == null || pInfo.nextCannulaChange.isInvalid() -> ValueStatus.GOOD
+                pInfo.nextCannulaChange <= Timestamp.now() -> ValueStatus.BAD
+                pInfo.nextCannulaChange < Timestamp.now().plusHours(CANNULA_CHANGE_WARNING_THRESHOLD_HOURS) -> ValueStatus.WARNING
                 else -> ValueStatus.GOOD
             }
-            OverviewPumpUiState(
-                pumpName = it.pumpName,
+            OverviewPumpUiState.Content(
+                pumpName = pInfo.pumpName,
                 state = StatusMetric(
                     value = pumpOverviewState,
                     status = pumpValueStatus
                 ),
                 lastBolus = StatusMetric(value = lastBolusTs, status = if (lastBolusTs == null) ValueStatus.WARNING else ValueStatus.GOOD),
                 battery = StatusMetric(
-                    value = it.status.batteryRemainingPercent,
+                    value = pInfo.status.batteryRemainingPercent,
                     status = when {
-                        it.status.batteryRemainingPercent <= PUMP_BATTERY_LOW_THRESHOLD -> ValueStatus.BAD
-                        it.status.batteryRemainingPercent < PUMP_BATTERY_WARNING_THRESHOLD -> ValueStatus.WARNING
+                        pInfo.status.batteryRemainingPercent <= PUMP_BATTERY_LOW_THRESHOLD -> ValueStatus.BAD
+                        pInfo.status.batteryRemainingPercent < PUMP_BATTERY_WARNING_THRESHOLD -> ValueStatus.WARNING
                         else -> ValueStatus.GOOD
                     }
                 ),
                 reservoir = StatusMetric(
-                    value = it.status.reservoirRemainingUnits,
+                    value = pInfo.status.reservoirRemainingUnits,
                     status = when {
-                        it.status.reservoirRemainingUnits <= PUMP_RESERVOIR_LOW_THRESHOLD -> ValueStatus.BAD
-                        it.status.reservoirRemainingUnits < PUMP_RESERVOIR_WARNING_THRESHOLD -> ValueStatus.WARNING
+                        pInfo.status.reservoirRemainingUnits <= PUMP_RESERVOIR_LOW_THRESHOLD -> ValueStatus.BAD
+                        pInfo.status.reservoirRemainingUnits < PUMP_RESERVOIR_WARNING_THRESHOLD -> ValueStatus.WARNING
                         else -> ValueStatus.GOOD
                     }
                 ),
                 lastConnection = StatusMetric(
-                    value = it.lastConnection,
+                    value = pInfo.lastConnection,
                     status = lastConnectionStatus
                 ),
                 nextCannulaChange = StatusMetric(
-                    value = it.nextCannulaChange,
+                    value = pInfo.nextCannulaChange,
                     status = nextCannulaChangeStatus
                 )
             )
         }
 
-        val overviewState = OverviewTabUiState(
+        val overviewState = OverviewTabUiState.Content(
             androidSystem = androidSystem,
             apsSystem = apsSystem,
             glucoseSource = overviewGlucoseSource,
@@ -416,23 +448,27 @@ class SystemControlViewModel(
         )
 
         // Source Tab State
-        val sourceTabState = gInfo?.let {
-            SourceTabUiState(
-                glucoseSourceName = it.sourceName,
+        val sourceTabState: SourceTabUiState = if (gInfo == null) {
+            SourceTabUiState.NoneConfigured
+        } else {
+            SourceTabUiState.Content(
+                glucoseSourceName = gInfo.sourceName,
                 manufacturer = null,
-                sensorTypeName = it.sensorTypeName,
-                readingsInterval = it.readingsInterval,
-                lastBgReading = it.lastBgReading,
-                nextPredictedTimestamp = it.nextPredictedTimestamp,
-                hasNextPrediction = it.hasNextPrediction,
-                estimatedExpirationTimestamp = it.estimatedExpirationTimestamp,
-                glucoseSourcePluginSection = it.pluginUiProvider?.let { provider -> { provider.GlucoseSourceControlSection() } }
+                sensorTypeName = gInfo.sensorTypeName,
+                readingsInterval = gInfo.readingsInterval,
+                lastBgReading = gInfo.lastBgReading,
+                nextPredictedTimestamp = gInfo.nextPredictedTimestamp,
+                hasNextPrediction = gInfo.hasNextPrediction,
+                estimatedExpirationTimestamp = gInfo.estimatedExpirationTimestamp,
+                glucoseSourcePluginSection = gInfo.pluginUiProvider?.let { provider -> { provider.GlucoseSourceControlSection() } }
             )
         }
 
         // Pump Tab State
-        val pumpTabState = pInfo?.let {
-            val pumpJobsList = it.jobs.map { job ->
+        val pumpTabState: PumpTabUiState = if (pInfo == null) {
+            PumpTabUiState.NoneConfigured
+        } else {
+            val pumpJobsList = pInfo.jobs.map { job ->
                 val titleText = when (val cmd = job.command) {
                     is PumpCommand.RefreshStatus -> UiText.StringResource(R.string.system_control_pump_job_type_refresh_status)
                     is PumpCommand.SyncHistory -> UiText.StringResource(R.string.system_control_pump_job_type_history_sync)
@@ -466,22 +502,22 @@ class SystemControlViewModel(
                 )
             }
 
-            PumpTabUiState(
-                pumpName = it.pumpName,
-                pumpModel = it.model,
-                manufacturer = it.manufacturer,
-                serialNumber = it.serialNumber,
-                pumpConnected = it.connected,
-                isSuspended = it.isSuspended,
-                batteryPercent = it.status.batteryRemainingPercent,
-                reservoirRemaining = it.status.reservoirRemainingUnits,
-                lastConnectionTimestamp = it.lastConnection,
+            PumpTabUiState.Content(
+                pumpName = pInfo.pumpName,
+                pumpModel = pInfo.model,
+                manufacturer = pInfo.manufacturer,
+                serialNumber = pInfo.serialNumber,
+                pumpConnected = pInfo.connected,
+                isSuspended = pInfo.isSuspended,
+                batteryPercent = pInfo.status.batteryRemainingPercent,
+                reservoirRemaining = pInfo.status.reservoirRemainingUnits,
+                lastConnectionTimestamp = pInfo.lastConnection,
                 pendingJobs = pumpJobsList,
-                pumpPluginSection = it.pluginUiProvider?.let { provider -> { provider.PumpControlSection() } }
+                pumpPluginSection = pInfo.pluginUiProvider?.let { provider -> { provider.PumpControlSection() } }
             )
         }
 
-        SystemControlUiState(
+        SystemControlUiState.Content(
             overviewUiState = overviewState,
             sourceTabUiState = sourceTabState,
             pumpTabUiState = pumpTabState
@@ -489,7 +525,7 @@ class SystemControlViewModel(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = SystemControlUiState()
+        initialValue = SystemControlUiState.Loading
     )
 
     fun stopActiveGlucoseSource() {

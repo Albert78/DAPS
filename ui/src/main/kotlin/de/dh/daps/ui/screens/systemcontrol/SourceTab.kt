@@ -2,6 +2,7 @@ package de.dh.daps.ui.screens.systemcontrol
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -19,6 +20,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -53,7 +55,7 @@ import de.dh.daps.ui.common.time
 @Composable
 fun SourceTabContent(
     modifier: Modifier = Modifier,
-    uiState: SourceTabUiState? = null,
+    uiState: SourceTabUiState = SourceTabUiState.Loading,
     onChangeGlucoseSource: () -> Unit = {},
     @Suppress("UNUSED_PARAMETER") onStopSensor: () -> Unit = {}
 ) {
@@ -63,7 +65,7 @@ fun SourceTabContent(
             onChangeGlucoseSource = onChangeGlucoseSource
         )
 
-        if (uiState?.glucoseSourcePluginSection != null) {
+        if (uiState is SourceTabUiState.Content && uiState.glucoseSourcePluginSection != null) {
             Spacer(modifier = Modifier.height(8.dp))
             SectionHeader(
                 title = stringResource(R.string.system_control_source_section_title)
@@ -76,7 +78,7 @@ fun SourceTabContent(
 
 @Composable
 fun SourceOverviewCard(
-    uiState: SourceTabUiState?,
+    uiState: SourceTabUiState,
     modifier: Modifier = Modifier,
     onChangeGlucoseSource: () -> Unit = {}
 ) {
@@ -91,131 +93,163 @@ fun SourceOverviewCard(
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = uiState?.glucoseSourceName?.asString() ?: stringResource(R.string.system_control_source_none_active),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
-                )
-                Spacer(modifier = Modifier.width(16.dp))
-                OutlinedIconButton(
-                    onClick = onChangeGlucoseSource
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.SwapHoriz,
-                        contentDescription = if (uiState != null) {
-                            stringResource(R.string.system_control_source_change)
-                        } else {
-                            stringResource(R.string.system_control_source_setup)
-                        }
-                    )
-                }
-            }
-
-            if (uiState != null) {
-                val notAvailableText = stringResource(R.string.system_control_value_not_available)
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(24.dp)
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        ControlDetailRow(
-                            label = stringResource(R.string.system_control_source_sensor_type_label),
-                            reserveIconSpace = true
-                        ) {
-                            Text(
-                                text = uiState.sensorTypeName,
-                                style = MaterialTheme.typography.bodyMedium,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
+            when (uiState) {
+                is SourceTabUiState.Loading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
                     }
-                    Column(modifier = Modifier.weight(1f)) {
-                        ControlDetailRow(
-                            label = stringResource(R.string.system_control_source_measurement_interval_label),
-                            reserveIconSpace = true
+                }
+                is SourceTabUiState.NoneConfigured -> {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(R.string.system_control_source_none_active),
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        OutlinedIconButton(
+                            onClick = onChangeGlucoseSource
                         ) {
-                            val intervalText = readingsInterval(uiState.readingsInterval)
-                            Text(
-                                text = intervalText,
-                                style = MaterialTheme.typography.bodyMedium,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
+                            Icon(
+                                imageVector = Icons.Default.SwapHoriz,
+                                contentDescription = stringResource(R.string.system_control_source_setup)
                             )
                         }
                     }
                 }
+                is SourceTabUiState.Content -> {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = uiState.glucoseSourceName.asString(),
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        OutlinedIconButton(
+                            onClick = onChangeGlucoseSource
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.SwapHoriz,
+                                contentDescription = stringResource(R.string.system_control_source_change)
+                            )
+                        }
+                    }
 
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 20.dp),
-                    thickness = 0.5.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant
-                )
+                    val notAvailableText = stringResource(R.string.system_control_value_not_available)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(24.dp)
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            ControlDetailRow(
+                                label = stringResource(R.string.system_control_source_sensor_type_label),
+                                reserveIconSpace = true
+                            ) {
+                                Text(
+                                    text = uiState.sensorTypeName,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            ControlDetailRow(
+                                label = stringResource(R.string.system_control_source_measurement_interval_label),
+                                reserveIconSpace = true
+                            ) {
+                                val intervalText = readingsInterval(uiState.readingsInterval)
+                                Text(
+                                    text = intervalText,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+                    }
 
-                val lastReading = uiState.lastBgReading
-                val bgValueText = if (lastReading != null) {
-                    glucoseValue(lastReading.value, withUnit = true)
-                } else {
-                    notAvailableText
-                }
-
-                val lastTimeText = if (lastReading != null && lastReading.timestamp.isValid()) {
-                    time(lastReading.timestamp)
-                } else {
-                    notAvailableText
-                }
-
-                val lastRelativeTime = if (lastReading != null && lastReading.timestamp.isValid()) {
-                    shortRelativeTimeAgo(lastReading.timestamp)
-                } else {
-                    null
-                }
-
-                ControlDetailRow(
-                    label = stringResource(R.string.system_control_source_last_reading_label),
-                    icon = Icon_Previous
-                ) {
-                    GlucoseFragments(
-                        value = bgValueText,
-                        time = lastTimeText,
-                        extra = lastRelativeTime,
-                        stackVertical = true
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 20.dp),
+                        thickness = 0.5.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant
                     )
-                }
 
-                if (uiState.hasNextPrediction) {
-                    val nextPred = uiState.nextPredictedTimestamp
-                    val nextTimeText = if (nextPred != null && nextPred.isValid()) {
-                        time(nextPred)
+                    val lastReading = uiState.lastBgReading
+                    val bgValueText = if (lastReading != null) {
+                        glucoseValue(lastReading.value, withUnit = true)
                     } else {
                         notAvailableText
                     }
 
-                    val nextRelativeTime = if (nextPred != null && nextPred.isValid()) {
-                        shortRelativeTimeUntil(nextPred)
+                    val lastTimeText = if (lastReading != null && lastReading.timestamp.isValid()) {
+                        time(lastReading.timestamp)
+                    } else {
+                        notAvailableText
+                    }
+
+                    val lastRelativeTime = if (lastReading != null && lastReading.timestamp.isValid()) {
+                        shortRelativeTimeAgo(lastReading.timestamp)
                     } else {
                         null
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
                     ControlDetailRow(
-                        label = stringResource(R.string.system_control_source_next_reading_label),
-                        icon = Icon_Next
+                        label = stringResource(R.string.system_control_source_last_reading_label),
+                        icon = Icon_Previous
                     ) {
                         GlucoseFragments(
-                            value = notAvailableText,
-                            time = nextTimeText,
-                            extra = nextRelativeTime,
+                            value = bgValueText,
+                            time = lastTimeText,
+                            extra = lastRelativeTime,
                             stackVertical = true
                         )
+                    }
+
+                    if (uiState.hasNextPrediction) {
+                        val nextPred = uiState.nextPredictedTimestamp
+                        val nextTimeText = if (nextPred != null && nextPred.isValid()) {
+                            time(nextPred)
+                        } else {
+                            notAvailableText
+                        }
+
+                        val nextRelativeTime = if (nextPred != null && nextPred.isValid()) {
+                            shortRelativeTimeUntil(nextPred)
+                        } else {
+                            null
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+                        ControlDetailRow(
+                            label = stringResource(R.string.system_control_source_next_reading_label),
+                            icon = Icon_Next
+                        ) {
+                            GlucoseFragments(
+                                value = notAvailableText,
+                                time = nextTimeText,
+                                extra = nextRelativeTime,
+                                stackVertical = true
+                            )
+                        }
                     }
                 }
             }
@@ -408,7 +442,7 @@ fun GlucoseSourcePluginExampleCard(
     }
 }
 
-internal fun sampleSourceTabUiState() = SourceTabUiState(
+internal fun sampleSourceTabUiState(): SourceTabUiState = SourceTabUiState.Content(
     glucoseSourceName = UiText.DynamicString("SimBody Virtueller Glukosesensor"),
     manufacturer = "DAPS",
     serialNumber = "SIM-98765432",
@@ -448,13 +482,27 @@ fun SourceTabPreview() {
     }
 }
 
+@Preview(showBackground = true, name = "Source Tab - Loading")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Source Tab - Loading - Dark Mode")
+@Composable
+fun SourceTabLoadingPreview() {
+    AppTheme {
+        Surface {
+            SourceTabContent(
+                uiState = SourceTabUiState.Loading,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
+}
+
 @Preview(showBackground = true, name = "Source Tab - Disconnected")
 @Composable
 fun SourceTabDisconnectedPreview() {
     AppTheme {
         Surface {
             SourceTabContent(
-                uiState = null,
+                uiState = SourceTabUiState.NoneConfigured,
                 modifier = Modifier.padding(16.dp)
             )
         }

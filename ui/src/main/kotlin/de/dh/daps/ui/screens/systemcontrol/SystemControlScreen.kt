@@ -1,15 +1,18 @@
 package de.dh.daps.ui.screens.systemcontrol
 
 import android.content.res.Configuration
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -25,12 +28,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import de.dh.daps.common.model.ApsMode
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
@@ -136,25 +141,41 @@ fun SystemControlContent(
                 .contentScrollIndicator(listState)
                 .padding(start = 16.dp, end = 16.dp, top = 16.dp)
         ) {
-            item {
-                when (selectedTabIndex) {
-                    SYSTEM_CONTROL_TAB_OVERVIEW -> OverviewTabContent(
-                        uiState = uiState.overviewUiState,
-                        onRefreshPumpStatus = onRefreshPumpStatus,
-                        onNavigateToCoreDecisions = onNavigateToCoreDecisions
-                    )
-                    SYSTEM_CONTROL_TAB_GLUCOSE_SOURCE -> SourceTabContent(
-                        uiState = uiState.sourceTabUiState,
-                        onChangeGlucoseSource = onNavigateToGlucoseSourceSetup,
-                        onStopSensor = onStopGlucoseSource
-                    )
-                    SYSTEM_CONTROL_TAB_PUMP -> PumpTabContent(
-                        uiState = uiState.pumpTabUiState,
-                        onChangePumpDriver = onNavigateToPumpSetup,
-                        onRefreshPumpStatus = onRefreshPumpStatus,
-                        onDisconnectForMaintenance = onDisconnectForMaintenance,
-                        onCancelPumpJob = onCancelPumpJob
-                    )
+            when (uiState) {
+                is SystemControlUiState.Loading -> {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(250.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                }
+                is SystemControlUiState.Content -> {
+                    item {
+                        when (selectedTabIndex) {
+                            SYSTEM_CONTROL_TAB_OVERVIEW -> OverviewTabContent(
+                                uiState = uiState.overviewUiState,
+                                onRefreshPumpStatus = onRefreshPumpStatus,
+                                onNavigateToCoreDecisions = onNavigateToCoreDecisions
+                            )
+                            SYSTEM_CONTROL_TAB_GLUCOSE_SOURCE -> SourceTabContent(
+                                uiState = uiState.sourceTabUiState,
+                                onChangeGlucoseSource = onNavigateToGlucoseSourceSetup,
+                                onStopSensor = onStopGlucoseSource
+                            )
+                            SYSTEM_CONTROL_TAB_PUMP -> PumpTabContent(
+                                uiState = uiState.pumpTabUiState,
+                                onChangePumpDriver = onNavigateToPumpSetup,
+                                onRefreshPumpStatus = onRefreshPumpStatus,
+                                onDisconnectForMaintenance = onDisconnectForMaintenance,
+                                onCancelPumpJob = onCancelPumpJob
+                            )
+                        }
+                    }
                 }
             }
             item {
@@ -236,17 +257,48 @@ fun SystemControlPumpPreview() {
     }
 }
 
-private fun previewUiState() = SystemControlUiState(
+@Preview(showBackground = true, name = "System Control Screen - Loading State")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "System Control Screen - Loading State - Dark")
+@Composable
+fun SystemControlScreenLoadingPreview() {
+    AppPreview {
+        SystemControlContent(
+            uiState = previewLoadingUiState(),
+            initialTab = SYSTEM_CONTROL_TAB_OVERVIEW,
+            onNavigateUp = {},
+            onNavigateToCoreDecisions = {},
+            onStopGlucoseSource = {},
+            onDisconnectForMaintenance = {},
+            onCancelPumpJob = {},
+            onRefreshPumpStatus = {}
+        )
+    }
+}
+
+private fun previewUiState() = SystemControlUiState.Content(
     overviewUiState = sampleOverviewTabUiState(),
     sourceTabUiState = sampleSourceTabUiState(),
     pumpTabUiState = samplePumpTabUiState()
 )
 
-private fun previewUnconfiguredUiState() = SystemControlUiState(
-    overviewUiState = sampleOverviewTabUiState().copy(
-        glucoseSource = null,
-        insulinPump = null
+private fun previewUnconfiguredUiState() = SystemControlUiState.Content(
+    overviewUiState = OverviewTabUiState.Content(
+        androidSystem = OverviewAndroidSystemUiState.Content(
+            bluetoothStatus = StatusMetric(true, status = ValueStatus.GOOD),
+            phoneBattery = StatusMetric(82, status = ValueStatus.GOOD),
+            permissionsStatus = StatusMetric(0, status = ValueStatus.GOOD),
+            dapsServiceStatus = StatusMetric(true, status = ValueStatus.GOOD)
+        ),
+        apsSystem = OverviewApsSystemUiState.Content(
+            mode = StatusMetric(ApsMode.AutoCorrection, status = ValueStatus.GOOD),
+            lastCalculation = StatusMetric(status = ValueStatus.GOOD),
+            status = StatusMetric(0, status = ValueStatus.GOOD)
+        ),
+        glucoseSource = OverviewGlucoseSourceUiState.NoneConfigured,
+        insulinPump = OverviewPumpUiState.NoneConfigured
     ),
-    sourceTabUiState = null,
-    pumpTabUiState = null
+    sourceTabUiState = SourceTabUiState.NoneConfigured,
+    pumpTabUiState = PumpTabUiState.NoneConfigured
 )
+
+private fun previewLoadingUiState() = SystemControlUiState.Loading
