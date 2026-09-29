@@ -333,19 +333,9 @@ class ApsAlgorithmImpl(
             // to be able to calculate deviations between the static predictions and the actual readings.
             predictionModel.advanceToTick(nowTick.minus(PRESERVE_PREDICTIONS_PAST_TIME))
 
-            // Fill the "past" part of our tick states with real BG values from out input.
-            // This is necessary at cold start and for each state when the algorithm didn't recalculate for some reason.
-            predictionModel.rollingHistory.forEachS(to = nowTick) { tick, state ->
-                val bg = sampledBgReadings.getAt(tick)
-                if (bg.isValid()) {
-                    state.assumedBg = bg
-                }
-            }
-
             // ------------------------------- BG Filtering & Validation -------------------------------
 
-            // currentBg is proved to be valid
-            val currentBg = run {
+            val validFilteredBg = run {
                 // Filter BG values to avoid big jumps caused by measurement errors.
                 // If we have enough input values, we can use the better SavitzkyGolay filter, else fallback to PTWMA
                 var filtered = sampledBgReadings.calculateSavitzkyGolayEndBorder3()
@@ -378,6 +368,14 @@ class ApsAlgorithmImpl(
                 filtered
             }
 
+            // Fill the "past" part of our tick states with real BG values from out input.
+            // This is necessary at cold start and for each state when the algorithm didn't recalculate for some reason.
+            predictionModel.rollingHistory.forEachS(to = nowTick) { tick, state ->
+                if (validFilteredBg.isValid()) {
+                    state.assumedBg = validFilteredBg
+                }
+            }
+
             // TODO: We should check if there is much more insulin then carbs,
             //  If this is the situation, tell the user to manually check the situation.
 
@@ -408,7 +406,7 @@ class ApsAlgorithmImpl(
             val crNow = therapyManager.getCrFactor(now)
 
             insight = insight.copy(
-                bgFiltered = currentBg,
+                bgFiltered = validFilteredBg,
                 deviationPerTick = avgCurrentDeviationPerTick,
                 targetBg = targetBg,
                 isf = isfNow,
@@ -426,7 +424,7 @@ class ApsAlgorithmImpl(
             // Prediction block:
             // Update predicted BGI, update predicted BG
             predictionModel.calculate(
-                currentBg = currentBg,
+                currentBg = validFilteredBg,
                 avgCurrentDeviationPerTick = avgCurrentDeviationPerTick,
                 meals = meals,
                 insulinDoses = activeDoses,
