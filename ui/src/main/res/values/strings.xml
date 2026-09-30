@@ -713,6 +713,7 @@
     <string name="setup_wizard_busy_text">System wird eingerichtet…</string>
     <string name="setup_wizard_btn_back">Zurück</string>
     <string name="setup_wizard_btn_next">Weiter</string>
+    <string name="setup_wizard_btn_skip">Überspringen</string>
     <string name="setup_wizard_unit_mgdl_suffix"> mg/dL</string>
 
     <string name="setup_wizard_mode_card_title">Ersteinrichtung erforderlich</string>
@@ -721,29 +722,32 @@
     <string name="setup_wizard_mode_demo_desc">Befüllt das System mit vordefinierten Standard-Profilen, Insulintypen und Alarmeinstellungen, um direkt starten zu können.</string>
     <string name="setup_wizard_mode_demo_btn">Demo-Daten laden</string>
     <string name="setup_wizard_mode_manual_title">Manuelle Einrichtung</string>
-    <string name="setup_wizard_mode_manual_desc">Gehe Schritt für Schritt durch die Konfiguration deiner Ziel-Blutzuckerwerte und Basalrate.</string>
+    <string name="setup_wizard_mode_manual_desc">Gehe Schritt für Schritt durch die Konfiguration deiner Maßeinheiten, Insulintypen, Therapieparameter und Hardware-Anbindung.</string>
     <string name="setup_wizard_mode_manual_btn">Manuell einrichten</string>
     <string name="setup_wizard_mode_import_title">Daten importieren</string>
     <string name="setup_wizard_mode_import_desc">Stelle eine früher gesicherte Backup-Datei (JSON/ZIP) wieder her.</string>
     <string name="setup_wizard_mode_import_btn">Backup-Datei auswählen</string>
 
-    <string name="setup_wizard_step1_title">Schritt 1: Stammdaten-Typen</string>
-    <string name="setup_wizard_step1_card_text1">Es werden Standard-Insulintypen (z.B. Rapid-acting, Fiasp) sowie Mahlzeitentypen zur Initialisierung angelegt.</string>
-    <string name="setup_wizard_step1_card_text2">Du kannst diese Einstellungen später jederzeit in den Stammdaten anpassen.</string>
+    <string name="setup_wizard_step1_units_title">Schritt 1: Maßeinheiten wählen</string>
+    <string name="setup_wizard_step1_units_desc">Wähle deine bevorzugten Maßeinheiten für Blutzucker- und Kohlenhydratwerte.</string>
 
-    <string name="setup_wizard_step2_title">Schritt 2: Blutzucker-Zielwerte</string>
-    <string name="setup_wizard_step2_target_bg_label">Ziel-Blutzucker (mg/dL)</string>
-    <string name="setup_wizard_step2_low_threshold_label">Hypo-Schwelle (mg/dL)</string>
+    <string name="setup_wizard_step2_insulin_title">Schritt 2: Insulintyp auswählen</string>
+    <string name="setup_wizard_step2_insulin_desc">Wähle das Insulin, das du hauptsächlich verwendest, oder passe dessen Wirkprofil an.</string>
+    <string name="setup_wizard_step2_insulin_custom_btn">Eigener Insulintyp / Bearbeiten</string>
 
-    <string name="setup_wizard_step3_title">Schritt 3: Basalrate</string>
-    <string name="setup_wizard_step3_basal_label">Standard Basalrate (U/h)</string>
-    <string name="setup_wizard_step3_basal_desc">Gilt als ganztägiges Standardprofil. Detaillierte Zeitabschnitte können später unter \'Insulinprofile\' konfiguriert werden.</string>
+    <string name="setup_wizard_step3_profile_title">Schritt 3: Insulinprofil (Basal, ISF, CR)</string>
+    <string name="setup_wizard_step4_bg_targets_title">Schritt 4: Blutzucker-Zielwerte &amp; Hypo-Schwellen</string>
+    <string name="setup_wizard_step5_glucose_source_title">Schritt 5: BZ-Quelle / Sensor verbinden</string>
+    <string name="setup_wizard_step6_pump_title">Schritt 6: Insulinpumpe verbinden</string>
 
-    <string name="setup_wizard_step4_title">Schritt 4: Zusammenfassung</string>
-    <string name="setup_wizard_step4_card_title">Konfigurierte Parameter</string>
-    <string name="setup_wizard_step4_target_bg_format">• Ziel-BZ: %1$d mg/dL</string>
-    <string name="setup_wizard_step4_low_threshold_format">• Hypo-Schwelle: %1$d mg/dL</string>
-    <string name="setup_wizard_step4_basal_rate_format">• Basalrate: %1$s U/h</string>
+    <string name="setup_wizard_step7_title">Schritt 7: Zusammenfassung</string>
+    <string name="setup_wizard_step7_card_title">Konfigurierte Parameter</string>
+    <string name="setup_wizard_summary_units_format">• Maßeinheiten: BZ: %1$s, KH: %2$s</string>
+    <string name="setup_wizard_summary_insulin_type_format">• Insulintyp: %1$s (DIA: %2$d min, Peak: %3$d min)</string>
+    <string name="setup_wizard_summary_profile_format">• Profilname: %1$s</string>
+    <string name="setup_wizard_summary_cgm_format">• BZ-Quelle: %1$s</string>
+    <string name="setup_wizard_summary_pump_format">• Insulinpumpe: %1$s</string>
+    <string name="setup_wizard_summary_not_connected">Keine verbunden (kann später eingerichtet werden)</string>
     <string name="setup_wizard_step4_complete_btn">Einrichtung abschließen</string>
 
     <string name="setup_wizard_error_load_demo_data">Fehler beim Laden der Demo-Daten</string>

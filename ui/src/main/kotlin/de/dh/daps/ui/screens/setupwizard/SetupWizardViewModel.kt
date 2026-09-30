@@ -6,9 +6,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import de.dh.daps.common.DEFAULT_BG_LOW_THRESHOLD_MGDL
 import de.dh.daps.common.DEFAULT_BG_TARGET_MGDL
+import de.dh.daps.common.model.InsulinConcentration
+import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.data.BgBlock
 import de.dh.daps.common.model.data.BgValue
-import de.dh.daps.common.model.data.Block
+import de.dh.daps.common.model.data.CarbsUnit
+import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.getDefaultInsulinProfile
 import de.dh.daps.common.model.getDefaultInsulinTypes
@@ -16,37 +20,80 @@ import de.dh.daps.common.model.getDefaultMealTypes
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.core.SetupOption
 import de.dh.daps.core.SystemRegistry
+import de.dh.daps.setCarbsUnit
+import de.dh.daps.setGlucoseUnit
 import de.dh.daps.ui.R
+import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupViewModel
+import de.dh.daps.ui.screens.insulintypes.InsulinTypeEditorUiState
+import de.dh.daps.ui.screens.pumpsetup.PumpSetupViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 enum class SetupWizardStep {
     MODE_SELECTION,
-    MANUAL_STEP_1_TYPES,
-    MANUAL_STEP_2_BG_TARGETS,
-    MANUAL_STEP_3_BASAL_RATE,
-    MANUAL_STEP_4_SUMMARY
+    MANUAL_STEP_1_UNITS,
+    MANUAL_STEP_2_INSULIN_TYPE,
+    MANUAL_STEP_3_INSULIN_PROFILE,
+    MANUAL_STEP_4_BG_TARGETS,
+    MANUAL_STEP_5_GLUCOSE_SOURCE,
+    MANUAL_STEP_6_PUMP,
+    MANUAL_STEP_7_SUMMARY
 }
 
 data class SetupWizardUiState(
     val currentStep: SetupWizardStep = SetupWizardStep.MODE_SELECTION,
     val isBusy: Boolean = false,
     val errorMessage: UiText? = null,
-    val targetBgMgDl: Double = DEFAULT_BG_TARGET_MGDL.toDouble(),
-    val lowThresholdMgDl: Double = DEFAULT_BG_LOW_THRESHOLD_MGDL.toDouble(),
-    val basalRateUPerHour: Double = 1.0,
-    val profileName: String = "Standard"
+    val glucoseUnit: GlucoseUnit = GlucoseUnit.MG_DL,
+    val carbsUnit: CarbsUnit = CarbsUnit.GRAMS,
+    val availableInsulinTypes: List<InsulinType> = emptyList(),
+    val selectedInsulinType: InsulinType? = null,
+    val isEditingInsulinType: Boolean = false,
+    val insulinTypeEditorUiState: InsulinTypeEditorUiState = InsulinTypeEditorUiState(),
+    val insulinProfile: InsulinProfile? = null,
+    val bgBlocks: List<BgBlock> = emptyList()
 )
 
 class SetupWizardViewModel(
     private val registry: SystemRegistry
 ) : ViewModel() {
 
+    val glucoseSourceSetupViewModel = GlucoseSourceSetupViewModel(registry)
+    val pumpSetupViewModel = PumpSetupViewModel(registry)
+
     private val _uiState = MutableStateFlow(SetupWizardUiState())
     val uiState: StateFlow<SetupWizardUiState> = _uiState.asStateFlow()
+
+    init {
+        val context = registry.appContext
+        val defaultTypes = getDefaultInsulinTypes(context)
+        val primaryType = defaultTypes.firstOrNull()
+
+        val initialProfile = if (primaryType != null) {
+            getDefaultInsulinProfile(context, primaryType)
+        } else null
+
+        val initialBgBlocks = listOf(
+            BgBlock(
+                duration = Minutes.ofHours(24),
+                target = BgValue.fromMgDl(DEFAULT_BG_TARGET_MGDL),
+                lowThreshold = BgValue.fromMgDl(DEFAULT_BG_LOW_THRESHOLD_MGDL)
+            )
+        )
+
+        _uiState.update {
+            it.copy(
+                availableInsulinTypes = defaultTypes,
+                selectedInsulinType = primaryType,
+                insulinProfile = initialProfile,
+                bgBlocks = initialBgBlocks
+            )
+        }
+    }
 
     fun selectDemoData() {
         viewModelScope.launch {
@@ -75,40 +122,140 @@ class SetupWizardViewModel(
     }
 
     fun startManualSetup() {
-        _uiState.update { it.copy(currentStep = SetupWizardStep.MANUAL_STEP_1_TYPES) }
+        _uiState.update { it.copy(currentStep = SetupWizardStep.MANUAL_STEP_1_UNITS) }
     }
 
-    fun setBgTargets(targetBg: Double, lowThreshold: Double) {
-        _uiState.update {
-            it.copy(
-                targetBgMgDl = targetBg,
-                lowThresholdMgDl = lowThreshold,
-                currentStep = SetupWizardStep.MANUAL_STEP_3_BASAL_RATE
+    fun setGlucoseUnit(unit: GlucoseUnit) {
+        _uiState.update { it.copy(glucoseUnit = unit) }
+    }
+
+    fun setCarbsUnit(unit: CarbsUnit) {
+        _uiState.update { it.copy(carbsUnit = unit) }
+    }
+
+    fun selectInsulinType(type: InsulinType) {
+        _uiState.update { state ->
+            val updatedProfile = state.insulinProfile?.copy(
+                insulinType = type,
+                dia = type.dia,
+                peak = type.peak,
+                insulinConcentration = type.defaultConcentration
+            )
+            state.copy(
+                selectedInsulinType = type,
+                insulinProfile = updatedProfile
             )
         }
     }
 
-    fun setBasalRate(rate: Double) {
-        _uiState.update {
-            it.copy(
-                basalRateUPerHour = rate,
-                currentStep = SetupWizardStep.MANUAL_STEP_4_SUMMARY
+    fun startEditingInsulinType(typeToEdit: InsulinType? = null) {
+        val type = typeToEdit ?: _uiState.value.selectedInsulinType
+        _uiState.update { state ->
+            state.copy(
+                isEditingInsulinType = true,
+                insulinTypeEditorUiState = InsulinTypeEditorUiState(
+                    id = type?.id,
+                    name = type?.name ?: "",
+                    peak = type?.peak?.value?.toString() ?: "50",
+                    dia = type?.dia?.value?.toString() ?: "300",
+                    concentration = type?.defaultConcentration ?: InsulinConcentration.U100
+                )
             )
         }
     }
 
-    fun goToNextStepFromTypes() {
-        _uiState.update { it.copy(currentStep = SetupWizardStep.MANUAL_STEP_2_BG_TARGETS) }
+    fun cancelEditingInsulinType() {
+        _uiState.update { it.copy(isEditingInsulinType = false) }
+    }
+
+    fun updateInsulinTypeEditorName(name: String) {
+        _uiState.update { state ->
+            state.copy(insulinTypeEditorUiState = state.insulinTypeEditorUiState.copy(name = name))
+        }
+    }
+
+    fun updateInsulinTypeEditorPeak(peak: String) {
+        _uiState.update { state ->
+            state.copy(insulinTypeEditorUiState = state.insulinTypeEditorUiState.copy(peak = peak))
+        }
+    }
+
+    fun updateInsulinTypeEditorDia(dia: String) {
+        _uiState.update { state ->
+            state.copy(insulinTypeEditorUiState = state.insulinTypeEditorUiState.copy(dia = dia))
+        }
+    }
+
+    fun updateInsulinTypeEditorConcentration(concentration: InsulinConcentration) {
+        _uiState.update { state ->
+            state.copy(insulinTypeEditorUiState = state.insulinTypeEditorUiState.copy(concentration = concentration))
+        }
+    }
+
+    fun saveEditedInsulinType() {
+        val editorState = _uiState.value.insulinTypeEditorUiState
+        if (!editorState.isValid) return
+
+        val newType = InsulinType(
+            id = editorState.id ?: UUID.randomUUID().toString(),
+            name = editorState.name.trim(),
+            peak = Minutes((editorState.peak.toIntOrNull() ?: 50).toShort()),
+            dia = Minutes((editorState.dia.toIntOrNull() ?: 300).toShort()),
+            defaultConcentration = editorState.concentration
+        )
+
+        _uiState.update { state ->
+            val updatedTypes = (state.availableInsulinTypes.filterNot { it.id == newType.id } + newType)
+            val updatedProfile = state.insulinProfile?.copy(
+                insulinType = newType,
+                dia = newType.dia,
+                peak = newType.peak,
+                insulinConcentration = newType.defaultConcentration
+            )
+            state.copy(
+                availableInsulinTypes = updatedTypes,
+                selectedInsulinType = newType,
+                insulinProfile = updatedProfile,
+                isEditingInsulinType = false
+            )
+        }
+    }
+
+    fun setInsulinProfile(profile: InsulinProfile) {
+        _uiState.update { it.copy(insulinProfile = profile) }
+    }
+
+    fun setBgBlocks(blocks: List<BgBlock>) {
+        _uiState.update { it.copy(bgBlocks = blocks) }
+    }
+
+    fun goToNextStep() {
+        _uiState.update { state ->
+            val nextStep = when (state.currentStep) {
+                SetupWizardStep.MODE_SELECTION -> SetupWizardStep.MANUAL_STEP_1_UNITS
+                SetupWizardStep.MANUAL_STEP_1_UNITS -> SetupWizardStep.MANUAL_STEP_2_INSULIN_TYPE
+                SetupWizardStep.MANUAL_STEP_2_INSULIN_TYPE -> SetupWizardStep.MANUAL_STEP_3_INSULIN_PROFILE
+                SetupWizardStep.MANUAL_STEP_3_INSULIN_PROFILE -> SetupWizardStep.MANUAL_STEP_4_BG_TARGETS
+                SetupWizardStep.MANUAL_STEP_4_BG_TARGETS -> SetupWizardStep.MANUAL_STEP_5_GLUCOSE_SOURCE
+                SetupWizardStep.MANUAL_STEP_5_GLUCOSE_SOURCE -> SetupWizardStep.MANUAL_STEP_6_PUMP
+                SetupWizardStep.MANUAL_STEP_6_PUMP -> SetupWizardStep.MANUAL_STEP_7_SUMMARY
+                SetupWizardStep.MANUAL_STEP_7_SUMMARY -> SetupWizardStep.MANUAL_STEP_7_SUMMARY
+            }
+            state.copy(currentStep = nextStep)
+        }
     }
 
     fun goToPreviousStep() {
         _uiState.update { state ->
             val prevStep = when (state.currentStep) {
                 SetupWizardStep.MODE_SELECTION -> SetupWizardStep.MODE_SELECTION
-                SetupWizardStep.MANUAL_STEP_1_TYPES -> SetupWizardStep.MODE_SELECTION
-                SetupWizardStep.MANUAL_STEP_2_BG_TARGETS -> SetupWizardStep.MANUAL_STEP_1_TYPES
-                SetupWizardStep.MANUAL_STEP_3_BASAL_RATE -> SetupWizardStep.MANUAL_STEP_2_BG_TARGETS
-                SetupWizardStep.MANUAL_STEP_4_SUMMARY -> SetupWizardStep.MANUAL_STEP_3_BASAL_RATE
+                SetupWizardStep.MANUAL_STEP_1_UNITS -> SetupWizardStep.MODE_SELECTION
+                SetupWizardStep.MANUAL_STEP_2_INSULIN_TYPE -> SetupWizardStep.MANUAL_STEP_1_UNITS
+                SetupWizardStep.MANUAL_STEP_3_INSULIN_PROFILE -> SetupWizardStep.MANUAL_STEP_2_INSULIN_TYPE
+                SetupWizardStep.MANUAL_STEP_4_BG_TARGETS -> SetupWizardStep.MANUAL_STEP_3_INSULIN_PROFILE
+                SetupWizardStep.MANUAL_STEP_5_GLUCOSE_SOURCE -> SetupWizardStep.MANUAL_STEP_4_BG_TARGETS
+                SetupWizardStep.MANUAL_STEP_6_PUMP -> SetupWizardStep.MANUAL_STEP_5_GLUCOSE_SOURCE
+                SetupWizardStep.MANUAL_STEP_7_SUMMARY -> SetupWizardStep.MANUAL_STEP_6_PUMP
             }
             state.copy(currentStep = prevStep)
         }
@@ -121,42 +268,45 @@ class SetupWizardViewModel(
                 val state = _uiState.value
                 val context = registry.appContext
 
-                // 1. Types
-                val defaultInsulinTypes = getDefaultInsulinTypes(context)
-                defaultInsulinTypes.forEach {
+                // 1. Save preferences
+                registry.appPreferencesRepository.setGlucoseUnit(state.glucoseUnit)
+                registry.appPreferencesRepository.setCarbsUnit(state.carbsUnit)
+
+                // 2. Insert Insulin Types and Meal Types
+                val selectedType = state.selectedInsulinType
+                    ?: throw IllegalStateException(context.getString(R.string.setup_wizard_error_no_insulin_type))
+
+                val allTypesToInsert = (state.availableInsulinTypes + selectedType).distinctBy { it.id }
+                allTypesToInsert.forEach {
                     registry.treatmentRepository.insertInsulinType(it)
                 }
                 getDefaultMealTypes(context).forEach {
                     registry.treatmentRepository.insertMealType(it)
                 }
 
-                val primaryInsulinType = defaultInsulinTypes.firstOrNull()
-                    ?: throw IllegalStateException(context.getString(R.string.setup_wizard_error_no_insulin_type))
-
-                // 2. Profile
-                val baseProfile = getDefaultInsulinProfile(context, primaryInsulinType)
-                val customProfile = baseProfile.copy(
-                    name = state.profileName,
-                    basalBlocks = listOf(
-                        Block(Minutes.ofHours(24), state.basalRateUPerHour)
-                    )
+                // 3. Insert Insulin Profile
+                val profileToInsert = (state.insulinProfile ?: getDefaultInsulinProfile(context, selectedType)).copy(
+                    insulinType = selectedType,
+                    dia = selectedType.dia,
+                    peak = selectedType.peak
                 )
+                val insertedProfileId = registry.therapyRepository.insertInsulinProfile(profileToInsert)
 
-                val insertedProfileId = registry.therapyRepository.insertInsulinProfile(customProfile)
-
-                // 3. Therapy settings
+                // 4. Save Therapy Settings with configured BgBlocks
                 registry.therapyRepository.updateCurrentTherapySettings(
                     insulinProfileId = insertedProfileId,
-                    defaultBgBlocks = listOf(
-                        BgBlock(
-                            duration = Minutes.ofHours(24),
-                            target = BgValue.fromMgDl(state.targetBgMgDl.toInt().toShort()),
-                            lowThreshold = BgValue.fromMgDl(state.lowThresholdMgDl.toInt().toShort())
+                    defaultBgBlocks = state.bgBlocks.ifEmpty {
+                        listOf(
+                            BgBlock(
+                                duration = Minutes.ofHours(24),
+                                target = BgValue.fromMgDl(DEFAULT_BG_TARGET_MGDL),
+                                lowThreshold = BgValue.fromMgDl(DEFAULT_BG_LOW_THRESHOLD_MGDL)
+                            )
                         )
-                    )
+                    }
                 )
 
-                // 4. Complete system initialization
+                // 5. Complete system initialization
                 registry.completeInitialization(SetupOption.ManualSetupCompleted)
             }.onFailure { error ->
                 val message = error.localizedMessage?.let { UiText.DynamicString(it) }
