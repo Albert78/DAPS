@@ -247,23 +247,24 @@ class BackupRepositoryImpl(
 
             // 3. Database Restore in an atomic Room Transaction
             appDatabase.withTransaction {
+                val metricsDao = appDatabase.systemMetricsDao()
                 val therapyDao = appDatabase.therapyDao()
                 val providerDao = appDatabase.providerDao()
                 val settingsDao = appDatabase.settingsDao()
                 val alarmDao = appDatabase.alarmProfileDao()
                 val metabolicDao = appDatabase.metabolicEventsDao()
                 val mealReminderDao = appDatabase.mealReminderDao()
-                val metricsDao = appDatabase.systemMetricsDao()
 
-                // Delete optional history data if history is being imported
-                if (options.includeHistory) {
-                    metabolicDao.deleteAllDeferredBoluses()
-                    mealReminderDao.deleteAllMealReminders()
-                    metabolicDao.deleteAllMeals()
-                    metabolicDao.deleteAllInsulinApplications()
-                    providerDao.deleteAllGlucoseReadings()
-                    therapyDao.deleteAllScheduledTherapyAdjustments()
-                }
+                // Core metrics
+                metricsDao.deleteAllCoreInsights()
+
+                // Delete history data, regardless of whether history is imported or not
+                metabolicDao.deleteAllDeferredBoluses()
+                mealReminderDao.deleteAllMealReminders()
+                metabolicDao.deleteAllMeals()
+                metabolicDao.deleteAllInsulinApplications()
+                providerDao.deleteAllGlucoseReadings()
+                therapyDao.deleteAllScheduledTherapyAdjustments()
 
                 // Delete core therapy & settings
                 therapyDao.deleteAllCurrentTherapySettings()
@@ -272,41 +273,37 @@ class BackupRepositoryImpl(
                 alarmDao.deleteAllAlarmProfiles()
                 therapyDao.deleteAllInsulinProfiles()
 
-                if (options.includeHistory) {
-                    providerDao.deleteAllSensorTypes()
-                    providerDao.deleteAllDataProviders()
-                    metabolicDao.deleteAllMealTypes()
-                    metabolicDao.deleteAllInsulinTypes()
-                }
+                // Types metadata
+                providerDao.deleteAllSensorTypes()
+                providerDao.deleteAllDataProviders()
+                metabolicDao.deleteAllMealTypes()
+                metabolicDao.deleteAllInsulinTypes()
 
-                if (options.includeDiagnostics) {
-                    metricsDao.deleteAllCoreInsights()
-                }
 
                 // Insert Therapy Config in parent-first order
                 if (therapyConfig.insulinTypes.isNotEmpty()) {
-                    metabolicDao.insertInsulinTypes(therapyConfig.insulinTypes.map { it.toEntity() })
+                metabolicDao.insertInsulinTypes(therapyConfig.insulinTypes.map { it.toEntity() })
                 }
                 if (therapyConfig.mealTypes.isNotEmpty()) {
-                    metabolicDao.insertMealTypes(therapyConfig.mealTypes.map { it.toEntity() })
+                metabolicDao.insertMealTypes(therapyConfig.mealTypes.map { it.toEntity() })
                 }
                 if (therapyConfig.sensorTypes.isNotEmpty()) {
-                    providerDao.insertSensorTypes(therapyConfig.sensorTypes.map { it.toEntity() })
+                providerDao.insertSensorTypes(therapyConfig.sensorTypes.map { it.toEntity() })
                 }
                 if (therapyConfig.dataProviders.isNotEmpty()) {
-                    providerDao.insertDataProviders(therapyConfig.dataProviders.map { it.toEntity() })
+                providerDao.insertDataProviders(therapyConfig.dataProviders.map { it.toEntity() })
                 }
                 if (therapyConfig.insulinProfiles.isNotEmpty()) {
-                    therapyDao.insertInsulinProfiles(therapyConfig.insulinProfiles.map { it.toEntity() })
+                therapyDao.insertInsulinProfiles(therapyConfig.insulinProfiles.map { it.toEntity() })
                 }
                 if (therapyConfig.alarmProfiles.isNotEmpty()) {
-                    alarmDao.insertAlarmProfiles(therapyConfig.alarmProfiles.map { it.toEntity() })
+                alarmDao.insertAlarmProfiles(therapyConfig.alarmProfiles.map { it.toEntity() })
                 }
                 therapyConfig.currentSettings?.let {
                     settingsDao.insertCurrentSettingsList(listOf(it.toEntity()))
                 }
                 if (therapyConfig.therapyAdjustments.isNotEmpty()) {
-                    therapyDao.insertTherapyAdjustments(therapyConfig.therapyAdjustments.map { it.toEntity() })
+                therapyDao.insertTherapyAdjustments(therapyConfig.therapyAdjustments.map { it.toEntity() })
                 }
                 therapyConfig.currentTherapySettings?.let {
                     therapyDao.insertCurrentTherapySettingsList(listOf(it.toEntity()))
@@ -359,14 +356,15 @@ class BackupRepositoryImpl(
 
     override suspend fun resetToDefaultData() = withContext(Dispatchers.IO) {
         appDatabase.withTransaction {
+            val metricsDao = appDatabase.systemMetricsDao()
             val therapyDao = appDatabase.therapyDao()
             val providerDao = appDatabase.providerDao()
             val settingsDao = appDatabase.settingsDao()
             val alarmDao = appDatabase.alarmProfileDao()
             val metabolicDao = appDatabase.metabolicEventsDao()
             val mealReminderDao = appDatabase.mealReminderDao()
-            val metricsDao = appDatabase.systemMetricsDao()
 
+            metricsDao.deleteAllCoreInsights()
             metabolicDao.deleteAllDeferredBoluses()
             mealReminderDao.deleteAllMealReminders()
             metabolicDao.deleteAllMeals()
@@ -382,7 +380,6 @@ class BackupRepositoryImpl(
             providerDao.deleteAllDataProviders()
             metabolicDao.deleteAllMealTypes()
             metabolicDao.deleteAllInsulinTypes()
-            metricsDao.deleteAllCoreInsights()
         }
 
         // Clear in-memory cache after database wipe so DatabaseInitializer detects empty tables
