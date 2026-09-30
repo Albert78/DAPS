@@ -21,10 +21,11 @@ import kotlinx.coroutines.launch
 data class DashboardUiState(
     val isLoading: Boolean = false,
     val isError: Boolean = false,
-    val apsMode: ApsMode = ApsMode.ApsSuspended,
+    val apsMode: ApsMode = ApsMode.Suspend,
     // TODO: Get selectable modes from core
     val availableApsModes: List<ApsMode> = ApsMode.entries,
     val recommendations: List<ApsRecommendation> = emptyList(),
+    val isMealCorrectionBolusAllowed: Boolean = false,
     val activeFiringAlarm: AlarmType? = null,
     val activeFiringConfig: AlarmSignalConfig? = null,
     val snoozedAlarms: Map<AlarmType, AlarmSnoozeState> = emptyMap()
@@ -61,6 +62,7 @@ class DashboardViewModel(
         state.copy(
             apsMode = mode,
             recommendations = recommendations,
+            isMealCorrectionBolusAllowed = systemOrchestrator.canOpenMealCorrectionBolus(),
             activeFiringAlarm = activeFiring,
             activeFiringConfig = config,
             snoozedAlarms = snoozedMap

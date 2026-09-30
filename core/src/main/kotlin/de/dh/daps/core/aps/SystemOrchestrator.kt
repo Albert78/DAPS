@@ -126,6 +126,11 @@ interface SystemOrchestrator {
      */
     fun getBolusCorrectionCalculator(): BolusCorrectionCalculator
 
+    /**
+     * Returns whether the meal bolus screen can be opened.
+     */
+    fun canOpenMealCorrectionBolus(): Boolean
+
     companion object {
         const val EXECUTION_DELAY_AFTER_BG_MS = 20_000L
     }
@@ -147,7 +152,7 @@ class SystemOrchestratorImpl(
     private val coreDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     private val coreScope = CoroutineScope(coreDispatcher + SupervisorJob())
 
-    private val _apsMode = MutableStateFlow(ApsMode.ApsSuspended)
+    private val _apsMode = MutableStateFlow(ApsMode.Suspend)
     override val apsMode: StateFlow<ApsMode> = _apsMode.asStateFlow()
 
     private val _apsIssues = MutableStateFlow<Set<ApsIssue>>(emptySet())
@@ -409,11 +414,13 @@ class SystemOrchestratorImpl(
             launch {
                 apsMode.collect { mode ->
                     when (mode) {
-                        ApsMode.AutoCorrection, ApsMode.OnlySuggestions -> core.activate()
-                        ApsMode.ApsSuspended -> core.suspend()
-                    }
-                    if (mode != ApsMode.ApsSuspended) {
-                        core.processCalculation()
+                        ApsMode.AutoCorrection, ApsMode.OnlySuggestions -> {
+                            core.activate()
+                            core.processCalculation()
+                        }
+                        ApsMode.Suspend -> {
+                            core.suspend()
+                        }
                     }
                 }
             }
@@ -479,6 +486,11 @@ class SystemOrchestratorImpl(
         } else {
             NoopAlgorithm().getBolusCorrectionCalculator()
         }
+    }
+
+    override fun canOpenMealCorrectionBolus(): Boolean = when (apsMode.value) {
+        ApsMode.AutoCorrection, ApsMode.BasalOnly -> true
+        ApsMode.Suspend -> false
     }
 
     override fun setApsMode(mode: ApsMode) {

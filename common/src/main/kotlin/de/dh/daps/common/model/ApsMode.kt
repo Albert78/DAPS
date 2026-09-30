@@ -13,8 +13,7 @@ enum class ApsMode {
     OnlySuggestions,
 
     /**
-     * The pump delivers basal as configured, manual interaction is possible, but APS doesn't calculate
-     * nor produces suggestions.
+     * The system is suspended, only manual interaction with the pump is possible.
      */
-    ApsSuspended
+    Suspend
 }

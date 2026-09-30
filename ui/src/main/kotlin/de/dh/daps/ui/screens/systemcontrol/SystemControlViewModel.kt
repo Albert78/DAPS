@@ -334,7 +334,7 @@ class SystemControlViewModel(
         val modeValueStatus = when (mode) {
             ApsMode.AutoCorrection -> ValueStatus.GOOD
             ApsMode.OnlySuggestions -> ValueStatus.WARNING
-            ApsMode.ApsSuspended -> ValueStatus.BAD
+            ApsMode.Suspend -> ValueStatus.BAD
         }
         OverviewApsSystemUiState.Content(
             mode = StatusMetric(mode, status = modeValueStatus),

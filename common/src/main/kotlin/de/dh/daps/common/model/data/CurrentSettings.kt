@@ -9,5 +9,5 @@ import de.dh.daps.common.model.ApsMode
  */
 data class CurrentSettings(
     var id: Long = ID_UNDEFINED,
-    val apsMode: ApsMode = ApsMode.ApsSuspended
+    val apsMode: ApsMode = ApsMode.Suspend
 )

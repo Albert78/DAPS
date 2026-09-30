@@ -128,6 +128,7 @@ fun DashboardScreen(
         onNavigateToPermissions = onNavigateToPermissions,
         onNavigateToTherapySettings = onNavigateToTherapySettings,
         onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus,
+        isMealCorrectionBolusAllowed = uiState.isMealCorrectionBolusAllowed,
         onNavigateToSystemControl = onNavigateToSystemControl,
         onNavigateToManualControl = onNavigateToManualControl,
         onHistoryChartClick = onHistoryChartClick,
@@ -153,6 +154,7 @@ fun DashboardContent(
     onNavigateToPermissions: () -> Unit,
     onNavigateToTherapySettings: () -> Unit,
     onNavigateToMealCorrectionBolus: (Double?) -> Unit = {},
+    isMealCorrectionBolusAllowed: Boolean,
     onNavigateToSystemControl: () -> Unit,
     onNavigateToManualControl: (ManualControlInitialDialog) -> Unit = {},
     onHistoryChartClick: (() -> Unit)?,
@@ -343,6 +345,7 @@ fun DashboardContent(
 
             PrimaryButton(
                 onClick = { onNavigateToMealCorrectionBolus(null) },
+                enabled = isMealCorrectionBolusAllowed,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
@@ -504,7 +507,8 @@ fun DashboardPreview() {
             onHistoryChartClick = {},
             onApsModeSelect = {},
             onAdjustmentClick = {},
-            onNavigateToMealCorrectionBolus = {}
+            onNavigateToMealCorrectionBolus = {},
+            isMealCorrectionBolusAllowed = true
         )
     }
 }
@@ -563,7 +567,8 @@ fun DashboardPermissionsWarningPreview() {
                 onHistoryChartClick = {},
                 onApsModeSelect = {},
                 onAdjustmentClick = {},
-                onNavigateToMealCorrectionBolus = {}
+                onNavigateToMealCorrectionBolus = {},
+                isMealCorrectionBolusAllowed = true
             )
     }
 }

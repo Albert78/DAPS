@@ -116,7 +116,7 @@ private fun ModeOption(
                 containerColor = when (mode) {
                     ApsMode.AutoCorrection -> SoftGreen
                     ApsMode.OnlySuggestions -> SoftBlue
-                    ApsMode.ApsSuspended -> SoftRed
+                    ApsMode.Suspend -> SoftRed
                 }
             ),
             border = if (isSelected) {
@@ -134,15 +134,15 @@ private fun ModeOption(
 
 @Composable
 private fun ApsMode.toDisplayStringFull(): String = stringResource(id = when (this) {
-    ApsMode.ApsSuspended -> R.string.aps_mode_aps_suspended
     ApsMode.OnlySuggestions -> R.string.aps_mode_only_suggestions
+    ApsMode.Suspend -> R.string.aps_mode_suspend
     ApsMode.AutoCorrection -> R.string.aps_mode_auto_correction
 })
 
 @Composable
 private fun ApsMode.toDescriptionString(): String = stringResource(id = when (this) {
-    ApsMode.ApsSuspended -> R.string.aps_mode_aps_suspended_desc
     ApsMode.OnlySuggestions -> R.string.aps_mode_only_suggestions_desc
+    ApsMode.Suspend -> R.string.aps_mode_suspend_desc
     ApsMode.AutoCorrection -> R.string.aps_mode_auto_correction_desc
 })
 

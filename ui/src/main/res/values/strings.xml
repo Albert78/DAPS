@@ -212,15 +212,15 @@
     <string name="insulin_unit_label_format">%1$.2f I.E.</string>
 
     <string name="aps_mode_dialog_title">Modus wählen</string>
-    <string name="aps_mode_aps_suspended">Algorithmus Stop</string>
-    <string name="aps_mode_aps_suspended_short">Algorithmus Stop</string>
-    <string name="aps_mode_aps_suspended_desc">Die normale Basalrate läuft normal, manuelle Eingriffe sind möglich, das System errechnet aber keine Behandlungsvorschläge.</string>
-    <string name="aps_mode_only_suggestions">Nur Vorschläge</string>
-    <string name="aps_mode_only_suggestions_short">Nur Vorschläge</string>
-    <string name="aps_mode_only_suggestions_desc">Das System berechnet Behandlungsvorschläge, die manuell akzeptiert werden müssen. Die normale Basalabgabe wird durchgeführt.</string>
     <string name="aps_mode_auto_correction">Automatische Korrektur</string>
     <string name="aps_mode_auto_correction_short">Auto-Korr.</string>
     <string name="aps_mode_auto_correction_desc">Das System steuert die Insulinabgabe vollständig und nimmt automatische Korrekturen vor.</string>
+    <string name="aps_mode_only_suggestions">Nur Vorschläge</string>
+    <string name="aps_mode_only_suggestions_short">Nur Vorschläge</string>
+    <string name="aps_mode_only_suggestions_desc">Das System berechnet Behandlungsvorschläge, die manuell akzeptiert werden müssen. Die normale Basalabgabe wird durchgeführt.</string>
+    <string name="aps_mode_suspend">Stopp der Pumpe</string>
+    <string name="aps_mode_suspend_short">Pumpe Stopp</string>
+    <string name="aps_mode_suspend_desc">Die Insulinabgabe ist vollständig unterbrochen. Eingriffe sind nur manuell an der Pumpe möglich.</string>
     <string name="aps_control_basal_label">Basal: %1$s I.E./h</string>
     <string name="aps_control_temp_basal_label">Temp-Basal: %1$s I.E./h</string>
     <string name="aps_control_cr_label">CR %1$s</string>
