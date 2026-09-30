@@ -522,6 +522,17 @@ class TherapyManager(
         )
     }
 
+    /**
+     * Sets the suspend state on the insulin pump.
+     *
+     * @param suspended `true` to suspend delivery, `false` to resume delivery.
+     */
+    fun setSuspend(suspended: Boolean) {
+        pumpManager.issueCommand(
+            PumpCommand.SetSuspend(suspended)
+        )
+    }
+
     suspend fun addDeferredBolus(treatmentLock: TreatmentLock, deferredBolus: DeferredBolus) {
         checkLock(treatmentLock)
         treatmentRepository.addDeferredBolus(deferredBolus)

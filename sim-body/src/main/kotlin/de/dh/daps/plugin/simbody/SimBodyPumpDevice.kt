@@ -99,6 +99,9 @@ class SimBodyPumpDevice(
     private val _isBroken = MutableStateFlow(false)
     val isBroken: StateFlow<Boolean> = _isBroken.asStateFlow()
 
+    private val _isSuspended = MutableStateFlow(false)
+    val isSuspended: StateFlow<Boolean> = _isSuspended.asStateFlow()
+
     private val _activeProfile = MutableStateFlow(initialProfile)
     val activeProfile: StateFlow<InsulinProfile> = _activeProfile.asStateFlow()
 
@@ -124,6 +127,7 @@ class SimBodyPumpDevice(
                     _isPrimed.value = state.isPrimed
                     _hasHardwareError.value = state.hasHardwareError
                     _isBroken.value = state.isBroken
+                    _isSuspended.value = state.isSuspended
                     lastBasalDeliveryTimestamp = state.lastBasalDeliveryTimestamp
                     _tempBasalPercent.value = state.tempBasalPercent
                     _tempBasalExpiry.value = state.tempBasalExpiry
@@ -157,6 +161,7 @@ class SimBodyPumpDevice(
                     isPrimed = _isPrimed.value,
                     hasHardwareError = _hasHardwareError.value,
                     isBroken = _isBroken.value,
+                    isSuspended = _isSuspended.value,
                     lastBasalDeliveryTimestamp = lastBasalDeliveryTimestamp ?: Timestamp.now(),
                     tempBasalPercent = _tempBasalPercent.value,
                     tempBasalExpiry = _tempBasalExpiry.value
@@ -192,6 +197,12 @@ class SimBodyPumpDevice(
 
     fun setBroken(broken: Boolean) {
         _isBroken.value = broken
+        persistState()
+    }
+
+    fun setSuspended(suspended: Boolean) {
+        checkGeneralErrors("setSuspended")
+        _isSuspended.value = suspended
         persistState()
     }
 

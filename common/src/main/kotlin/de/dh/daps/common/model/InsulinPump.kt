@@ -249,6 +249,15 @@ interface InsulinPump {
     suspend fun cancelTempBasal()
 
     /**
+     * Sets the suspend state of the insulin pump.
+     *
+     * @param suspended True to suspend insulin delivery, false to resume.
+     * @throws PumpConnectionException if the technical connection fails.
+     * @throws PumpCommandException if the command is rejected by the pump hardware.
+     */
+    suspend fun setSuspend(suspended: Boolean)
+
+    /**
      * Sets the active therapy profile on the pump.
      *
      * @throws PumpConnectionException if the technical connection fails.

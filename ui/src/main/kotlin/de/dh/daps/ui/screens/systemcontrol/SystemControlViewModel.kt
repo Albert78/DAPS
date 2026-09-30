@@ -481,6 +481,7 @@ class SystemControlViewModel(
                     is PumpCommand.SetProfile -> UiText.StringResource(R.string.system_control_pump_job_type_profile)
                     is PumpCommand.CancelTempBasal -> UiText.StringResource(R.string.system_control_pump_job_type_cancel_temp_basal)
                     is PumpCommand.CancelBolus -> UiText.StringResource(R.string.system_control_pump_job_type_cancel_bolus)
+                    is PumpCommand.SetSuspend -> if (cmd.suspended) UiText.StringResource(R.string.system_control_pump_job_type_suspend) else UiText.StringResource(R.string.system_control_pump_job_type_resume)
                 }
                 val errText = job.lastError?.let { err ->
                     when (err) {

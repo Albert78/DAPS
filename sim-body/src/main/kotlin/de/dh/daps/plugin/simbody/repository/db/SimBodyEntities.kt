@@ -61,6 +61,7 @@ data class PumpStateEntity(
     val isPrimed: Boolean,
     val hasHardwareError: Boolean,
     val isBroken: Boolean,
+    val isSuspended: Boolean = false,
     val lastBasalDeliveryTimestamp: Timestamp,
     val tempBasalPercent: Int?,
     val tempBasalExpiry: Timestamp? = null

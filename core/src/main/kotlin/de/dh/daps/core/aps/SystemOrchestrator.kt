@@ -23,6 +23,7 @@ import de.dh.daps.core.system.AndroidNotifications
 import de.dh.daps.core.system.SystemWakeService
 import de.dh.daps.core.system.WakeupHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -139,6 +140,7 @@ interface SystemOrchestrator {
 /**
  * Implementation of [SystemOrchestrator].
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class SystemOrchestratorImpl(
     private val glucoseSourceManager: GlucoseSourceManager,
     private val glucoseRepository: GlucoseRepository,
@@ -489,12 +491,15 @@ class SystemOrchestratorImpl(
     }
 
     override fun canOpenMealCorrectionBolus(): Boolean = when (apsMode.value) {
-        ApsMode.AutoCorrection, ApsMode.BasalOnly -> true
+        ApsMode.AutoCorrection, ApsMode.OnlySuggestions -> true
         ApsMode.Suspend -> false
     }
 
     override fun setApsMode(mode: ApsMode) {
         _apsMode.value = mode
+
+        val shouldBeSuspended = (mode == ApsMode.Suspend)
+        therapyManager?.setSuspend(shouldBeSuspended)
 
         scope.launch {
             val currentSettings = settingsRepository.getCurrentSettings()

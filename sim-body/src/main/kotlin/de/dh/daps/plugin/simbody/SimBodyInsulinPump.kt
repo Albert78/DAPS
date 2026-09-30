@@ -104,10 +104,11 @@ class SimBodyInsulinPump(
         device.batteryLevel,
         device.reservoirLevel,
         device.isBroken,
+        device.isSuspended,
         _isConnected
-    ) { battery, reservoir, broken, connected ->
+    ) { battery, reservoir, broken, suspended, connected ->
         object : InsulinPumpStatus {
-            override val pumpSuspended: Boolean = broken
+            override val pumpSuspended: Boolean = broken || suspended
             override val batteryRemainingPercent: Int = (battery * 100).toInt()
             override val reservoirRemainingUnits: InsulinAmount = reservoir
             override val lastSyncTimestamp: Timestamp = if (connected) Timestamp.now() else Timestamp.INVALID
@@ -141,7 +142,7 @@ class SimBodyInsulinPump(
         device.tempBasalPercent,
         device.tempBasalExpiry,
         device.activeProfile,
-        combine(device.isBroken, device.hasHardwareError, device.isOccluded) { b, h, o -> b || h || o }
+        combine(device.isBroken, device.hasHardwareError, device.isOccluded, device.isSuspended) { b, h, o, s -> b || h || o || s }
     ) { tempPercent, tempExpiry, profile, isSuspended ->
         val normalRate = profile.basalBlocks.getAmountForMinute(Timestamp.now().minutesSinceMidnight())
         val activeRate = if (isSuspended) 0.0 else {
@@ -237,6 +238,12 @@ class SimBodyInsulinPump(
     override suspend fun cancelTempBasal() {
         if (!_isConnected.value) throw PumpConnectionException("Pump not connected to App")
         device.updateTempBasalPercent(null) // Clear temp basal override
+        refreshStatus()
+    }
+
+    override suspend fun setSuspend(suspended: Boolean) {
+        if (!_isConnected.value) throw PumpConnectionException("Pump not connected to App")
+        device.setSuspended(suspended)
         refreshStatus()
     }
 

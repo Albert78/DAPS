@@ -87,6 +87,10 @@ class SampleInsulinPump : InsulinPump, PumpPluginUiProvider {
         // TODO: Cancel temporary basal rate
     }
 
+    override suspend fun setSuspend(suspended: Boolean) {
+        // TODO: Set pump suspend state
+    }
+
     override suspend fun setProfile(profile: InsulinProfile) {
         // TODO: Set therapy profile
     }

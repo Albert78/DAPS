@@ -41,6 +41,7 @@ sealed class PumpCommand {
     object CancelTempBasal : PumpCommand()
     data class DeliverBolus(val amount: InsulinAmount, val bolusId: String? = null) : PumpCommand()
     object CancelBolus : PumpCommand()
+    data class SetSuspend(val suspended: Boolean) : PumpCommand()
 }
 
 /**
@@ -359,6 +360,7 @@ class PumpCoordinator(
             }
             is PumpCommand.CancelTempBasal -> pump.cancelTempBasal()
             is PumpCommand.CancelBolus -> pump.stopBolus()
+            is PumpCommand.SetSuspend -> pump.setSuspend(command.suspended)
         }
     }
 
