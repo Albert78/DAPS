@@ -1,5 +1,6 @@
 package de.dh.daps.ui.screens.setupwizard
 
+import android.content.res.Configuration
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -44,10 +45,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.ui.common.composables.EditableValueStepper
 import de.dh.daps.ui.common.composables.InsulinAmountStepper
 import de.dh.daps.ui.common.composables.screenTitle
+import de.dh.daps.ui.common.theme.AppPreview
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -458,5 +461,47 @@ private fun SummaryStepContent(
                 Text("Einrichtung abschließen")
             }
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Mode Selection - Light")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Mode Selection - Dark")
+@Composable
+fun SetupWizardModeSelectionPreview() {
+    AppPreview {
+        ModeSelectionContent(
+            onSelectDemo = {},
+            onStartManual = {},
+            onSelectImport = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "BG Targets Step")
+@Composable
+fun SetupWizardBgTargetsStepPreview() {
+    AppPreview {
+        BgTargetsStepContent(
+            initialTargetBg = 100.0,
+            initialLowThreshold = 70.0,
+            onNext = { _, _ -> },
+            onBack = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Summary Step")
+@Composable
+fun SetupWizardSummaryStepPreview() {
+    AppPreview {
+        SummaryStepContent(
+            uiState = SetupWizardUiState(
+                targetBgMgDl = 100.0,
+                lowThresholdMgDl = 70.0,
+                basalRateUPerHour = 1.0
+            ),
+            onComplete = {},
+            onBack = {}
+        )
     }
 }
