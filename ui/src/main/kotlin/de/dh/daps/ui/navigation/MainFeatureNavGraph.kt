@@ -164,6 +164,7 @@ class MainFeatureNavGraph(
 
                 InsulinProfileEditorScreen(
                     viewModel = vm,
+                    title = stringResource(id = R.string.insulin_profile_editor_screen_title),
                     onNavigateUp = { navViewModel.pop() }
                 )
             }

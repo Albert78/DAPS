@@ -99,13 +99,15 @@ import de.dh.daps.common.R as CommonR
 @Composable
 fun InsulinProfileEditorScreen(
     viewModel: InsulinProfileSettingsViewModel,
-    onNavigateUp: () -> Unit
+    onNavigateUp: () -> Unit,
+    title: String = stringResource(id = R.string.insulin_profile_editor_screen_title)
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val copyNameFormat = stringResource(R.string.insulin_profile_editor_copy_name_format)
 
     InsulinProfileEditorContent(
         uiState = uiState,
+        title = title,
         onNavigateUp = onNavigateUp,
         onSaveProfile = { viewModel.saveInsulinProfile(it) },
         onStopEditing = { viewModel.stopEditing() },
@@ -153,7 +155,8 @@ fun InsulinProfileEditorContent(
     onDeleteProfile: (InsulinProfile) -> Unit,
     onCopyProfile: (InsulinProfile) -> Unit,
     onConfirmDeleteProfile: (InsulinProfile) -> Unit,
-    onCancelDeleteDialog: () -> Unit
+    onCancelDeleteDialog: () -> Unit,
+    title: String = stringResource(id = R.string.insulin_profile_editor_screen_title)
 ) {
     if (uiState.editingProfile != null) {
         InsulinProfileDetailEditor(
@@ -166,6 +169,7 @@ fun InsulinProfileEditorContent(
     } else {
         InsulinProfileList(
             uiState = uiState,
+            title = title,
             onNavigateUp = onNavigateUp,
             onAddProfile = onAddProfile,
             onEditProfile = onEditProfile,
@@ -201,12 +205,13 @@ fun InsulinProfileList(
     onAddProfile: () -> Unit,
     onEditProfile: (InsulinProfile) -> Unit,
     onDeleteProfile: (InsulinProfile) -> Unit,
-    onCopyProfile: (InsulinProfile) -> Unit
+    onCopyProfile: (InsulinProfile) -> Unit,
+    title: String = stringResource(id = R.string.insulin_profile_editor_screen_title)
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = screenTitle(stringResource(id = R.string.insulin_profile_editor_screen_title)),
+                title = screenTitle(title),
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
                         Icon(
