@@ -195,7 +195,8 @@ class SystemRegistryImpl(
                 treatmentRepository = treatmentRepository,
                 therapyRepository = therapyRepository,
                 settingsRepository = settingsRepository,
-                alarmRepository = alarmRepository
+                alarmRepository = alarmRepository,
+                glucoseRepository = glucoseRepository
             )
 
             val registryInstance = SystemRegistryImpl(

@@ -10,6 +10,7 @@ import de.dh.daps.common.model.data.CarbsUnit
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.core.repository.AlarmRepository
 import de.dh.daps.core.repository.DatabaseInitializer
+import de.dh.daps.core.repository.GlucoseRepository
 import de.dh.daps.core.repository.SettingsRepository
 import de.dh.daps.core.repository.TherapyRepository
 import de.dh.daps.core.repository.TreatmentRepository
@@ -53,6 +54,7 @@ class BackupRepositoryImpl(
     private val therapyRepository: TherapyRepository,
     private val settingsRepository: SettingsRepository,
     private val alarmRepository: AlarmRepository,
+    private val glucoseRepository: GlucoseRepository? = null,
 ) : BackupRepository {
     private val json = Json {
         prettyPrint = true
@@ -344,6 +346,11 @@ class BackupRepositoryImpl(
                 }
             }
 
+            // Sync in-memory state across repositories after importing database
+            treatmentRepository.load()
+            therapyRepository.clearCache()
+            glucoseRepository?.initialize()
+
             BackupResult.Success(manifest)
         }.getOrElse {
             BackupResult.Error(it)
@@ -377,6 +384,12 @@ class BackupRepositoryImpl(
             metabolicDao.deleteAllInsulinTypes()
             metricsDao.deleteAllCoreInsights()
         }
+
+        // Clear in-memory cache after database wipe so DatabaseInitializer detects empty tables
+        treatmentRepository.load()
+        therapyRepository.clearCache()
+        glucoseRepository?.initialize()
+
         DatabaseInitializer.initialize(
             context = context,
             treatmentRepository = treatmentRepository,
@@ -384,5 +397,11 @@ class BackupRepositoryImpl(
             settingsRepository = settingsRepository,
             alarmRepository = alarmRepository
         )
+
+        // Reload in-memory state after initialization
+        treatmentRepository.load()
+        therapyRepository.clearCache()
+        glucoseRepository?.initialize()
+        Unit
     }
 }
