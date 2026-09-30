@@ -29,6 +29,7 @@ import de.dh.daps.core.system.WakeupHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -81,7 +82,7 @@ class TherapyManager(
     /**
      * Wires up the therapy manager with external components, sync history.
      */
-    fun startInitialization() {
+    suspend fun startInitialization() {
         pumpManager.setOnHistoryUpdateListener { history ->
             updatePumpHistory(history)
         }
@@ -100,14 +101,20 @@ class TherapyManager(
             }
         })
 
-        scope.launch {
-            checkAndApplyTherapyAdjustmentTiming()
+        checkAndApplyTherapyAdjustmentTiming()
+
+        val currentSettings = runCatching { getCurrentTherapySettings() }.getOrNull()
+        if (currentSettings != null) {
+            pumpManager.issueCommand(
+                PumpCommand.SetProfile(currentSettings.effectiveInsulinProfile)
+            )
         }
 
         scope.launch {
             currentTherapySettingsFlow
                 .map { it.effectiveInsulinProfile }
                 .distinctUntilChanged()
+                .drop(1)
                 .collect { effectiveProfile ->
                     pumpManager.issueCommand(
                         PumpCommand.SetProfile(effectiveProfile)

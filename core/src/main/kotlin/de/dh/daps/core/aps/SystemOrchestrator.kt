@@ -97,7 +97,7 @@ interface SystemOrchestrator {
     /**
      * Starts the initialization of the system core.
      */
-    fun startInitialization(
+    suspend fun startInitialization(
         treatmentRepository: TreatmentRepository,
         therapyManager: TherapyManager,
         recommendationManager: RecommendationManager,
@@ -208,7 +208,7 @@ class SystemOrchestratorImpl(
         }
     }
 
-    override fun startInitialization(
+    override suspend fun startInitialization(
         treatmentRepository: TreatmentRepository,
         therapyManager: TherapyManager,
         recommendationManager: RecommendationManager,
@@ -251,8 +251,13 @@ class SystemOrchestratorImpl(
 
         wakeService.registerHandler(WAKE_TAG, SystemWakeupHandler())
 
+        val currentSettings = runCatching { settingsRepository.getCurrentSettings() }.getOrNull()
+        if (currentSettings != null) {
+            _apsMode.value = currentSettings.apsMode
+        }
+
         scope.launch {
-            settingsRepository.observeCurrentSettings().collect { settings ->
+            settingsRepository.observeCurrentSettings().drop(1).collect { settings ->
                 if (settings != null) {
                     _apsMode.value = settings.apsMode
                 }

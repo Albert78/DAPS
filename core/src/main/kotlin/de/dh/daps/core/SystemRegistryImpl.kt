@@ -46,10 +46,11 @@ import de.dh.daps.core.system.SystemWakeService
 import de.dh.daps.core.system.SystemWakeServiceImpl
 import de.dh.daps.core.system.TimeServiceImpl
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 
 /**
  * Default implementation of the [SystemRegistry].
@@ -192,10 +193,12 @@ class SystemRegistryImpl(
             androidNotifications: AndroidNotifications,
             onPermissionsChanged: () -> Unit,
         ): SystemRegistry {
+            // Phase 1: Create all repositories and managers
+
             val appPreferencesRepository = AppPreferencesRepository(context = application, scope = scope)
             val appDatabase = AppDatabase.getInstance(application)
 
-            // Initialize repositories
+            // Repositories
             val glucoseRepository = GlucoseRepository(appDatabase)
             val therapyRepository = TherapyRepository(appDatabase)
             val alarmRepository = AlarmRepositoryImpl(appDatabase.alarmProfileDao())
@@ -215,7 +218,7 @@ class SystemRegistryImpl(
             val deviceStatusRepository = DeviceStatusRepository(application)
             val permissionRepository = PermissionRepository(application)
 
-            // Initialize Managers
+            // Managers
             val wakeService = SystemWakeServiceImpl(
                 context = application,
                 systemMetricsRepository = systemMetricsRepository,
@@ -298,6 +301,7 @@ class SystemRegistryImpl(
                 glucoseRepository = glucoseRepository
             )
 
+            // Wire up registry
             val registryInstance = SystemRegistryImpl(
                 appContext = application,
                 glucoseRepository = glucoseRepository,
@@ -330,24 +334,27 @@ class SystemRegistryImpl(
                 permissionsChangedHandler = permissionsHandler
             )
 
-            // Phase 1: Provide PluginContext to all registered plugins early (setup)
+            // Provide PluginContext to all registered plugins early (setup)
             pluginManager.getPlugins().forEach { plugin ->
                 plugin.setup(registryInstance)
             }
 
-            // Phase 2: Check database initialization state and conditionally start core engines
-            val isDbInitialized = runBlocking {
-                glucoseRepository.initialize()
-                treatmentRepository.load()
-                registryInstance.isDatabaseInitialized()
-            }
+            // Phase 2: Asynchronously check database initialization state and conditionally start core engines
+            registryInstance._initializationState.value = InitializationState.INITIALIZING
+            scope.launch(Dispatchers.Default) {
+                runCatching {
+                    glucoseRepository.initialize()
+                    treatmentRepository.load()
+                    val isDbInitialized = registryInstance.isDatabaseInitialized()
 
-            if (isDbInitialized) {
-                runBlocking {
-                    registryInstance.startCoreEngine()
+                    if (isDbInitialized) {
+                        registryInstance.startCoreEngine()
+                    } else {
+                        registryInstance._initializationState.value = InitializationState.REQUIRES_SETUP
+                    }
+                }.onFailure {
+                    registryInstance._initializationState.value = InitializationState.REQUIRES_SETUP
                 }
-            } else {
-                registryInstance._initializationState.value = InitializationState.REQUIRES_SETUP
             }
 
             return registryInstance
