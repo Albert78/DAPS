@@ -255,6 +255,7 @@ class SystemOrchestratorImpl(
         scope.launch {
             glucoseRepository.currentBg.drop(1).collect { bg ->
                 if (bg != null) {
+                    _isBgStale.value = false
                     // Schedule stale check for the next window
                     val nextCheck = nextBgStaleCheckAt()
                     wakeService.scheduleWakeup(WAKE_TAG, WAKEUP_STALE_CHECK, nextCheck)
