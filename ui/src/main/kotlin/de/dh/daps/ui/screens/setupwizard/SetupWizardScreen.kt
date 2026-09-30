@@ -45,8 +45,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.EditableValueStepper
 import de.dh.daps.ui.common.composables.InsulinAmountStepper
 import de.dh.daps.ui.common.composables.contentScrollIndicator
@@ -60,6 +63,7 @@ fun SetupWizardScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
@@ -72,7 +76,7 @@ fun SetupWizardScreen(
     LaunchedEffect(uiState.errorMessage) {
         val error = uiState.errorMessage
         if (error != null) {
-            snackbarHostState.showSnackbar(error)
+            snackbarHostState.showSnackbar(error.asString(context))
         }
     }
 
@@ -80,13 +84,13 @@ fun SetupWizardScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = screenTitle("Willkommen bei DAPS"),
+                title = screenTitle(stringResource(R.string.setup_wizard_title)),
                 navigationIcon = {
                     if (uiState.currentStep != SetupWizardStep.MODE_SELECTION) {
                         IconButton(onClick = { viewModel.goToPreviousStep() }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Zurück"
+                                contentDescription = stringResource(R.string.setup_wizard_btn_back)
                             )
                         }
                     }
@@ -108,7 +112,7 @@ fun SetupWizardScreen(
                     CircularProgressIndicator()
                     Spacer(Modifier.height(16.dp))
                     Text(
-                        text = "System wird eingerichtet...",
+                        text = stringResource(R.string.setup_wizard_busy_text),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
@@ -178,12 +182,12 @@ private fun ModeSelectionContent(
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "Ersteinrichtung erforderlich",
+                    text = stringResource(R.string.setup_wizard_mode_card_title),
                     style = MaterialTheme.typography.titleLarge
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    text = "Die Anwendungsdatenbank ist zurzeit leer. Bitte wähle aus, wie du deine Stammdaten initialisieren möchtest:",
+                    text = stringResource(R.string.setup_wizard_mode_card_desc),
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
@@ -198,11 +202,14 @@ private fun ModeSelectionContent(
                         tint = MaterialTheme.colorScheme.primary
                     )
                     Spacer(Modifier.width(8.dp))
-                    Text("Demo-Daten verwenden", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        text = stringResource(R.string.setup_wizard_mode_demo_title),
+                        style = MaterialTheme.typography.titleMedium
+                    )
                 }
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "Befüllt das System mit vordefinierten Standard-Profilen, Insulintypen und Alarmeinstellungen, um direkt starten zu können.",
+                    text = stringResource(R.string.setup_wizard_mode_demo_desc),
                     style = MaterialTheme.typography.bodySmall
                 )
                 Spacer(Modifier.height(12.dp))
@@ -210,7 +217,7 @@ private fun ModeSelectionContent(
                     onClick = onSelectDemo,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Demo-Daten laden")
+                    Text(stringResource(R.string.setup_wizard_mode_demo_btn))
                 }
             }
         }
@@ -224,11 +231,14 @@ private fun ModeSelectionContent(
                         tint = MaterialTheme.colorScheme.primary
                     )
                     Spacer(Modifier.width(8.dp))
-                    Text("Manuelle Einrichtung", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        text = stringResource(R.string.setup_wizard_mode_manual_title),
+                        style = MaterialTheme.typography.titleMedium
+                    )
                 }
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "Gehe Schritt für Schritt durch die Konfiguration deiner Ziel-Blutzuckerwerte und Basalrate.",
+                    text = stringResource(R.string.setup_wizard_mode_manual_desc),
                     style = MaterialTheme.typography.bodySmall
                 )
                 Spacer(Modifier.height(12.dp))
@@ -236,7 +246,7 @@ private fun ModeSelectionContent(
                     onClick = onStartManual,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Manuell einrichten")
+                    Text(stringResource(R.string.setup_wizard_mode_manual_btn))
                 }
             }
         }
@@ -250,11 +260,14 @@ private fun ModeSelectionContent(
                         tint = MaterialTheme.colorScheme.primary
                     )
                     Spacer(Modifier.width(8.dp))
-                    Text("Daten importieren", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        text = stringResource(R.string.setup_wizard_mode_import_title),
+                        style = MaterialTheme.typography.titleMedium
+                    )
                 }
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "Stelle eine früher gesicherte Backup-Datei (JSON/ZIP) wieder her.",
+                    text = stringResource(R.string.setup_wizard_mode_import_desc),
                     style = MaterialTheme.typography.bodySmall
                 )
                 Spacer(Modifier.height(12.dp))
@@ -262,7 +275,7 @@ private fun ModeSelectionContent(
                     onClick = onSelectImport,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Backup-Datei auswählen")
+                    Text(stringResource(R.string.setup_wizard_mode_import_btn))
                 }
             }
         }
@@ -293,17 +306,20 @@ private fun TypesStepContent(
                     .fillMaxWidth()
                     .verticalScroll(scrollState)
             ) {
-                Text("Schritt 1: Stammdaten-Typen", style = MaterialTheme.typography.titleLarge)
+                Text(
+                    text = stringResource(R.string.setup_wizard_step1_title),
+                    style = MaterialTheme.typography.titleLarge
+                )
                 Spacer(Modifier.height(16.dp))
                 Card {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            "Es werden Standard-Insulintypen (z.B. Rapid-acting, Fiasp) sowie Mahlzeitentypen zur Initialisierung angelegt.",
+                            text = stringResource(R.string.setup_wizard_step1_card_text1),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            "Du kannst diese Einstellungen später jederzeit in den Stammdaten anpassen.",
+                            text = stringResource(R.string.setup_wizard_step1_card_text2),
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
@@ -318,10 +334,10 @@ private fun TypesStepContent(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             OutlinedButton(onClick = onBack) {
-                Text("Zurück")
+                Text(stringResource(R.string.setup_wizard_btn_back))
             }
             Button(onClick = onNext) {
-                Text("Weiter")
+                Text(stringResource(R.string.setup_wizard_btn_next))
             }
         }
     }
@@ -355,14 +371,20 @@ private fun BgTargetsStepContent(
                     .fillMaxWidth()
                     .verticalScroll(scrollState)
             ) {
-                Text("Schritt 2: Blutzucker-Zielwerte", style = MaterialTheme.typography.titleLarge)
+                Text(
+                    text = stringResource(R.string.setup_wizard_step2_title),
+                    style = MaterialTheme.typography.titleLarge
+                )
                 Spacer(Modifier.height(16.dp))
 
-                Text("Ziel-Blutzucker (mg/dL)", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    text = stringResource(R.string.setup_wizard_step2_target_bg_label),
+                    style = MaterialTheme.typography.titleMedium
+                )
                 EditableValueStepper(
                     currentValue = targetBg,
                     onValueChange = { targetBg = it },
-                    suffix = " mg/dL",
+                    suffix = stringResource(R.string.setup_wizard_unit_mgdl_suffix),
                     minValue = 40.0,
                     maxValue = 400.0,
                     modifier = Modifier.fillMaxWidth()
@@ -370,11 +392,14 @@ private fun BgTargetsStepContent(
 
                 Spacer(Modifier.height(16.dp))
 
-                Text("Hypo-Schwelle (mg/dL)", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    text = stringResource(R.string.setup_wizard_step2_low_threshold_label),
+                    style = MaterialTheme.typography.titleMedium
+                )
                 EditableValueStepper(
                     currentValue = lowThreshold,
                     onValueChange = { lowThreshold = it },
-                    suffix = " mg/dL",
+                    suffix = stringResource(R.string.setup_wizard_unit_mgdl_suffix),
                     minValue = 40.0,
                     maxValue = 400.0,
                     modifier = Modifier.fillMaxWidth()
@@ -389,10 +414,10 @@ private fun BgTargetsStepContent(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             OutlinedButton(onClick = onBack) {
-                Text("Zurück")
+                Text(stringResource(R.string.setup_wizard_btn_back))
             }
             Button(onClick = { onNext(targetBg, lowThreshold) }) {
-                Text("Weiter")
+                Text(stringResource(R.string.setup_wizard_btn_next))
             }
         }
     }
@@ -424,10 +449,16 @@ private fun BasalRateStepContent(
                     .fillMaxWidth()
                     .verticalScroll(scrollState)
             ) {
-                Text("Schritt 3: Basalrate", style = MaterialTheme.typography.titleLarge)
+                Text(
+                    text = stringResource(R.string.setup_wizard_step3_title),
+                    style = MaterialTheme.typography.titleLarge
+                )
                 Spacer(Modifier.height(16.dp))
 
-                Text("Standard Basalrate (U/h)", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    text = stringResource(R.string.setup_wizard_step3_basal_label),
+                    style = MaterialTheme.typography.titleMedium
+                )
                 Spacer(Modifier.height(8.dp))
                 InsulinAmountStepper(
                     currentValue = basalRate,
@@ -436,7 +467,7 @@ private fun BasalRateStepContent(
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "Gilt als ganztägiges Standardprofil. Detaillierte Zeitabschnitte können später unter 'Insulinprofile' konfiguriert werden.",
+                    text = stringResource(R.string.setup_wizard_step3_basal_desc),
                     style = MaterialTheme.typography.bodySmall
                 )
             }
@@ -449,10 +480,10 @@ private fun BasalRateStepContent(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             OutlinedButton(onClick = onBack) {
-                Text("Zurück")
+                Text(stringResource(R.string.setup_wizard_btn_back))
             }
             Button(onClick = { onNext(basalRate) }) {
-                Text("Weiter")
+                Text(stringResource(R.string.setup_wizard_btn_next))
             }
         }
     }
@@ -483,7 +514,10 @@ private fun SummaryStepContent(
                     .fillMaxWidth()
                     .verticalScroll(scrollState)
             ) {
-                Text("Schritt 4: Zusammenfassung", style = MaterialTheme.typography.titleLarge)
+                Text(
+                    text = stringResource(R.string.setup_wizard_step4_title),
+                    style = MaterialTheme.typography.titleLarge
+                )
                 Spacer(Modifier.height(16.dp))
 
                 Card(modifier = Modifier.fillMaxWidth()) {
@@ -495,14 +529,32 @@ private fun SummaryStepContent(
                                 tint = MaterialTheme.colorScheme.primary
                             )
                             Spacer(Modifier.width(8.dp))
-                            Text("Konfigurierte Parameter", style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                text = stringResource(R.string.setup_wizard_step4_card_title),
+                                style = MaterialTheme.typography.titleMedium
+                            )
                         }
                         Spacer(Modifier.height(12.dp))
-                        Text("• Ziel-BZ: ${uiState.targetBgMgDl.toInt()} mg/dL")
+                        Text(
+                            stringResource(
+                                R.string.setup_wizard_step4_target_bg_format,
+                                uiState.targetBgMgDl.toInt()
+                            )
+                        )
                         Spacer(Modifier.height(4.dp))
-                        Text("• Hypo-Schwelle: ${uiState.lowThresholdMgDl.toInt()} mg/dL")
+                        Text(
+                            stringResource(
+                                R.string.setup_wizard_step4_low_threshold_format,
+                                uiState.lowThresholdMgDl.toInt()
+                            )
+                        )
                         Spacer(Modifier.height(4.dp))
-                        Text("• Basalrate: ${"%.2f".format(uiState.basalRateUPerHour)} U/h")
+                        Text(
+                            stringResource(
+                                R.string.setup_wizard_step4_basal_rate_format,
+                                "%.2f".format(uiState.basalRateUPerHour)
+                            )
+                        )
                     }
                 }
             }
@@ -515,10 +567,10 @@ private fun SummaryStepContent(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             OutlinedButton(onClick = onBack) {
-                Text("Zurück")
+                Text(stringResource(R.string.setup_wizard_btn_back))
             }
             Button(onClick = onComplete) {
-                Text("Einrichtung abschließen")
+                Text(stringResource(R.string.setup_wizard_step4_complete_btn))
             }
         }
     }

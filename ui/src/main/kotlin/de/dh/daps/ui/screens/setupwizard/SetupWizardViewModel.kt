@@ -13,8 +13,10 @@ import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.getDefaultInsulinProfile
 import de.dh.daps.common.model.getDefaultInsulinTypes
 import de.dh.daps.common.model.getDefaultMealTypes
+import de.dh.daps.common.ui.UiText
 import de.dh.daps.core.SetupOption
 import de.dh.daps.core.SystemRegistry
+import de.dh.daps.ui.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,7 +34,7 @@ enum class SetupWizardStep {
 data class SetupWizardUiState(
     val currentStep: SetupWizardStep = SetupWizardStep.MODE_SELECTION,
     val isBusy: Boolean = false,
-    val errorMessage: String? = null,
+    val errorMessage: UiText? = null,
     val targetBgMgDl: Double = DEFAULT_BG_TARGET_MGDL.toDouble(),
     val lowThresholdMgDl: Double = DEFAULT_BG_LOW_THRESHOLD_MGDL.toDouble(),
     val basalRateUPerHour: Double = 1.0,
@@ -52,7 +54,9 @@ class SetupWizardViewModel(
             runCatching {
                 registry.completeInitialization(SetupOption.SeedDemoData)
             }.onFailure { error ->
-                _uiState.update { it.copy(isBusy = false, errorMessage = error.localizedMessage ?: "Fehler beim Laden der Demo-Daten") }
+                val message = error.localizedMessage?.let { UiText.DynamicString(it) }
+                    ?: UiText.StringResource(R.string.setup_wizard_error_load_demo_data)
+                _uiState.update { it.copy(isBusy = false, errorMessage = message) }
             }
         }
     }
@@ -63,7 +67,9 @@ class SetupWizardViewModel(
             runCatching {
                 registry.completeInitialization(SetupOption.ImportBackup(uri))
             }.onFailure { error ->
-                _uiState.update { it.copy(isBusy = false, errorMessage = error.localizedMessage ?: "Fehler beim Wiederherstellen des Backups") }
+                val message = error.localizedMessage?.let { UiText.DynamicString(it) }
+                    ?: UiText.StringResource(R.string.setup_wizard_error_import_backup)
+                _uiState.update { it.copy(isBusy = false, errorMessage = message) }
             }
         }
     }
@@ -125,7 +131,7 @@ class SetupWizardViewModel(
                 }
 
                 val primaryInsulinType = defaultInsulinTypes.firstOrNull()
-                    ?: throw IllegalStateException("Kein Insulintyp verfügbar.")
+                    ?: throw IllegalStateException(context.getString(R.string.setup_wizard_error_no_insulin_type))
 
                 // 2. Profile
                 val baseProfile = getDefaultInsulinProfile(context, primaryInsulinType)
@@ -153,7 +159,9 @@ class SetupWizardViewModel(
                 // 4. Complete system initialization
                 registry.completeInitialization(SetupOption.ManualSetupCompleted)
             }.onFailure { error ->
-                _uiState.update { it.copy(isBusy = false, errorMessage = error.localizedMessage ?: "Fehler bei der manuellen Einrichtung") }
+                val message = error.localizedMessage?.let { UiText.DynamicString(it) }
+                    ?: UiText.StringResource(R.string.setup_wizard_error_manual_setup)
+                _uiState.update { it.copy(isBusy = false, errorMessage = message) }
             }
         }
     }
