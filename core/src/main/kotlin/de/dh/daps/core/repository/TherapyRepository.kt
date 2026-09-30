@@ -13,8 +13,8 @@ import de.dh.daps.common.model.data.ScheduledTherapyAdjustment
 import de.dh.daps.common.model.data.TherapyAdjustment
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.repository.db.AppDatabase
-import de.dh.daps.core.repository.db.MetabolicEventsDao
-import de.dh.daps.core.repository.db.TherapyDao
+import de.dh.daps.core.repository.db.dao.MetabolicEventsDao
+import de.dh.daps.core.repository.db.dao.TherapyDao
 import de.dh.daps.core.repository.db.entities.CurrentTherapySettingsEntity
 import de.dh.daps.core.repository.db.mappers.toDb
 import de.dh.daps.core.repository.db.mappers.toEntity

@@ -14,7 +14,7 @@ import de.dh.daps.common.model.MealType
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.repository.db.AppDatabase
-import de.dh.daps.core.repository.db.MetabolicEventsDao
+import de.dh.daps.core.repository.db.dao.MetabolicEventsDao
 import de.dh.daps.core.repository.db.mappers.toEntity
 import de.dh.daps.core.repository.db.mappers.toModel
 import kotlinx.coroutines.flow.Flow

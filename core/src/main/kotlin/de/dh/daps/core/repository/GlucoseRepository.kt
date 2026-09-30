@@ -6,7 +6,7 @@ import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.SensorType
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.repository.db.AppDatabase
-import de.dh.daps.core.repository.db.ProviderDao
+import de.dh.daps.core.repository.db.dao.ProviderDao
 import de.dh.daps.core.repository.db.entities.DataProviderEntity
 import de.dh.daps.core.repository.db.entities.SensorTypeEntity
 import de.dh.daps.core.repository.db.mappers.toEntity

@@ -2,7 +2,7 @@ package de.dh.daps.core.repository
 
 import de.dh.daps.common.model.data.CurrentSettings
 import de.dh.daps.core.repository.db.AppDatabase
-import de.dh.daps.core.repository.db.SettingsDao
+import de.dh.daps.core.repository.db.dao.SettingsDao
 import de.dh.daps.core.repository.db.mappers.toEntity
 import de.dh.daps.core.repository.db.mappers.toModel
 import kotlinx.coroutines.flow.Flow
