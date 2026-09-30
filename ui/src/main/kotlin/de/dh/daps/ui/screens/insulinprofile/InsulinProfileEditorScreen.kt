@@ -104,57 +104,88 @@ fun InsulinProfileEditorScreen(
     val uiState by viewModel.uiState.collectAsState()
     val copyNameFormat = stringResource(R.string.insulin_profile_editor_copy_name_format)
 
+    InsulinProfileEditorContent(
+        uiState = uiState,
+        onNavigateUp = onNavigateUp,
+        onSaveProfile = { viewModel.saveInsulinProfile(it) },
+        onStopEditing = { viewModel.stopEditing() },
+        isNameUnique = { name, id -> viewModel.isNameUnique(name, id) },
+        onAddProfile = {
+            val defaultInsulinType = uiState.insulinTypes.firstOrNull()
+            if (defaultInsulinType != null) {
+                viewModel.startEditing(
+                    InsulinProfile(
+                        name = "",
+                        basalBlocks = listOf(
+                            Block(
+                                Minutes.ofHours(24),
+                                DEFAULT_BASAL_UNITS_PER_HOUR
+                            )
+                        ),
+                        isfBlocks = listOf(Block(Minutes.ofHours(24), DEFAULT_ISF_MGDL_PER_UNIT)),
+                        crBlocks = listOf(Block(Minutes.ofHours(24), DEFAULT_CR_GRAM_PER_UNIT)),
+                        insulinType = defaultInsulinType,
+                        dia = defaultInsulinType.dia,
+                        peak = defaultInsulinType.peak
+                    )
+                )
+            }
+        },
+        onEditProfile = { viewModel.startEditing(it) },
+        onDeleteProfile = { viewModel.confirmDelete(it) },
+        onCopyProfile = { profile ->
+            viewModel.copyInsulinProfile(profile, copyNameFormat.format(profile.name))
+        },
+        onConfirmDeleteProfile = { profile -> viewModel.deleteInsulinProfile(profile) },
+        onCancelDeleteDialog = { viewModel.cancelDelete() }
+    )
+}
+
+@Composable
+fun InsulinProfileEditorContent(
+    uiState: InsulinProfileSettingsUiState,
+    onNavigateUp: () -> Unit,
+    onSaveProfile: (InsulinProfile) -> Unit,
+    onStopEditing: () -> Unit,
+    isNameUnique: (String, Long) -> Boolean = { _, _ -> true },
+    onAddProfile: () -> Unit,
+    onEditProfile: (InsulinProfile) -> Unit,
+    onDeleteProfile: (InsulinProfile) -> Unit,
+    onCopyProfile: (InsulinProfile) -> Unit,
+    onConfirmDeleteProfile: (InsulinProfile) -> Unit,
+    onCancelDeleteDialog: () -> Unit
+) {
     if (uiState.editingProfile != null) {
         InsulinProfileDetailEditor(
-            profile = uiState.editingProfile!!,
+            profile = uiState.editingProfile,
             insulinTypes = uiState.insulinTypes,
-            onSave = { viewModel.saveInsulinProfile(it) },
-            onCancel = { viewModel.stopEditing() },
-            isNameUnique = { name, id -> viewModel.isNameUnique(name, id) }
+            onSave = onSaveProfile,
+            onCancel = onStopEditing,
+            isNameUnique = isNameUnique
         )
     } else {
         InsulinProfileList(
             uiState = uiState,
             onNavigateUp = onNavigateUp,
-            onAddProfile = {
-                val defaultInsulinType = uiState.insulinTypes.firstOrNull()
-                if (defaultInsulinType != null) {
-                    viewModel.startEditing(
-                        InsulinProfile(
-                            name = "",
-                            basalBlocks = listOf(Block(
-                                Minutes.ofHours(24),
-                                DEFAULT_BASAL_UNITS_PER_HOUR
-                            )),
-                            isfBlocks = listOf(Block(Minutes.ofHours(24), DEFAULT_ISF_MGDL_PER_UNIT)),
-                            crBlocks = listOf(Block(Minutes.ofHours(24), DEFAULT_CR_GRAM_PER_UNIT)),
-                            insulinType = defaultInsulinType,
-                            dia = defaultInsulinType.dia,
-                            peak = defaultInsulinType.peak
-                        )
-                    )
-                }
-            },
-            onEditProfile = { viewModel.startEditing(it) },
-            onDeleteProfile = { viewModel.confirmDelete(it) },
-            onCopyProfile = { profile ->
-                viewModel.copyInsulinProfile(profile, copyNameFormat.format(profile.name))
-            }
+            onAddProfile = onAddProfile,
+            onEditProfile = onEditProfile,
+            onDeleteProfile = onDeleteProfile,
+            onCopyProfile = onCopyProfile
         )
     }
 
     uiState.showDeleteConfirmation?.let { profile ->
         AlertDialog(
-            onDismissRequest = { viewModel.cancelDelete() },
+            onDismissRequest = onCancelDeleteDialog,
             title = { Text(stringResource(id = R.string.delete_profile_title)) },
             text = { Text(stringResource(id = R.string.delete_profile_message, profile.name)) },
             confirmButton = {
-                NormalTextButton(onClick = { viewModel.deleteInsulinProfile(profile) }) {
+                NormalTextButton(onClick = { onConfirmDeleteProfile(profile) }) {
                     Text(stringResource(id = android.R.string.ok))
                 }
             },
             dismissButton = {
-                NormalTextButton(onClick = { viewModel.cancelDelete() }) {
+                NormalTextButton(onClick = onCancelDeleteDialog) {
                     Text(stringResource(id = android.R.string.cancel))
                 }
             }
