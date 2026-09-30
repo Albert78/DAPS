@@ -49,6 +49,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.ui.common.composables.EditableValueStepper
 import de.dh.daps.ui.common.composables.InsulinAmountStepper
+import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppPreview
 
@@ -165,8 +166,9 @@ private fun ModeSelectionContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(scrollState),
+            .contentScrollIndicator(scrollState)
+            .verticalScroll(scrollState)
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Card(
@@ -272,29 +274,44 @@ private fun TypesStepContent(
     onNext: () -> Unit,
     onBack: () -> Unit
 ) {
+    val scrollState = rememberScrollState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Column {
-            Text("Schritt 1: Stammdaten-Typen", style = MaterialTheme.typography.titleLarge)
-            Spacer(Modifier.height(16.dp))
-            Card {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        "Es werden Standard-Insulintypen (z.B. Rapid-acting, Fiasp) sowie Mahlzeitentypen zur Initialisierung angelegt.",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        "Du kannst diese Einstellungen später jederzeit in den Stammdaten anpassen.",
-                        style = MaterialTheme.typography.bodySmall
-                    )
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .contentScrollIndicator(scrollState)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(scrollState)
+            ) {
+                Text("Schritt 1: Stammdaten-Typen", style = MaterialTheme.typography.titleLarge)
+                Spacer(Modifier.height(16.dp))
+                Card {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            "Es werden Standard-Insulintypen (z.B. Rapid-acting, Fiasp) sowie Mahlzeitentypen zur Initialisierung angelegt.",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            "Du kannst diese Einstellungen später jederzeit in den Stammdaten anpassen.",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
                 }
             }
         }
+
+        Spacer(Modifier.height(16.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -319,6 +336,7 @@ private fun BgTargetsStepContent(
 ) {
     var targetBg by remember { mutableDoubleStateOf(initialTargetBg) }
     var lowThreshold by remember { mutableDoubleStateOf(initialLowThreshold) }
+    val scrollState = rememberScrollState()
 
     Column(
         modifier = Modifier
@@ -326,32 +344,45 @@ private fun BgTargetsStepContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Column {
-            Text("Schritt 2: Blutzucker-Zielwerte", style = MaterialTheme.typography.titleLarge)
-            Spacer(Modifier.height(16.dp))
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .contentScrollIndicator(scrollState)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(scrollState)
+            ) {
+                Text("Schritt 2: Blutzucker-Zielwerte", style = MaterialTheme.typography.titleLarge)
+                Spacer(Modifier.height(16.dp))
 
-            Text("Ziel-Blutzucker (mg/dL)", style = MaterialTheme.typography.titleMedium)
-            EditableValueStepper(
-                currentValue = targetBg,
-                onValueChange = { targetBg = it },
-                suffix = " mg/dL",
-                minValue = 40.0,
-                maxValue = 400.0,
-                modifier = Modifier.fillMaxWidth()
-            )
+                Text("Ziel-Blutzucker (mg/dL)", style = MaterialTheme.typography.titleMedium)
+                EditableValueStepper(
+                    currentValue = targetBg,
+                    onValueChange = { targetBg = it },
+                    suffix = " mg/dL",
+                    minValue = 40.0,
+                    maxValue = 400.0,
+                    modifier = Modifier.fillMaxWidth()
+                )
 
-            Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(16.dp))
 
-            Text("Hypo-Schwelle (mg/dL)", style = MaterialTheme.typography.titleMedium)
-            EditableValueStepper(
-                currentValue = lowThreshold,
-                onValueChange = { lowThreshold = it },
-                suffix = " mg/dL",
-                minValue = 40.0,
-                maxValue = 400.0,
-                modifier = Modifier.fillMaxWidth()
-            )
+                Text("Hypo-Schwelle (mg/dL)", style = MaterialTheme.typography.titleMedium)
+                EditableValueStepper(
+                    currentValue = lowThreshold,
+                    onValueChange = { lowThreshold = it },
+                    suffix = " mg/dL",
+                    minValue = 40.0,
+                    maxValue = 400.0,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
+
+        Spacer(Modifier.height(16.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -374,6 +405,7 @@ private fun BasalRateStepContent(
     onBack: () -> Unit
 ) {
     var basalRate by remember { mutableDoubleStateOf(initialBasalRate) }
+    val scrollState = rememberScrollState()
 
     Column(
         modifier = Modifier
@@ -381,23 +413,36 @@ private fun BasalRateStepContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Column {
-            Text("Schritt 3: Basalrate", style = MaterialTheme.typography.titleLarge)
-            Spacer(Modifier.height(16.dp))
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .contentScrollIndicator(scrollState)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(scrollState)
+            ) {
+                Text("Schritt 3: Basalrate", style = MaterialTheme.typography.titleLarge)
+                Spacer(Modifier.height(16.dp))
 
-            Text("Standard Basalrate (U/h)", style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(8.dp))
-            InsulinAmountStepper(
-                currentValue = basalRate,
-                onValueChange = { basalRate = it },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(Modifier.height(8.dp))
-            Text(
-                "Gilt als ganztägiges Standardprofil. Detaillierte Zeitabschnitte können später unter 'Insulinprofile' konfiguriert werden.",
-                style = MaterialTheme.typography.bodySmall
-            )
+                Text("Standard Basalrate (U/h)", style = MaterialTheme.typography.titleMedium)
+                Spacer(Modifier.height(8.dp))
+                InsulinAmountStepper(
+                    currentValue = basalRate,
+                    onValueChange = { basalRate = it },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "Gilt als ganztägiges Standardprofil. Detaillierte Zeitabschnitte können später unter 'Insulinprofile' konfiguriert werden.",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
         }
+
+        Spacer(Modifier.height(16.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -419,36 +464,51 @@ private fun SummaryStepContent(
     onComplete: () -> Unit,
     onBack: () -> Unit
 ) {
+    val scrollState = rememberScrollState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Column {
-            Text("Schritt 4: Zusammenfassung", style = MaterialTheme.typography.titleLarge)
-            Spacer(Modifier.height(16.dp))
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .contentScrollIndicator(scrollState)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(scrollState)
+            ) {
+                Text("Schritt 4: Zusammenfassung", style = MaterialTheme.typography.titleLarge)
+                Spacer(Modifier.height(16.dp))
 
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.CheckCircle,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text("Konfigurierte Parameter", style = MaterialTheme.typography.titleMedium)
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text("Konfigurierte Parameter", style = MaterialTheme.typography.titleMedium)
+                        }
+                        Spacer(Modifier.height(12.dp))
+                        Text("• Ziel-BZ: ${uiState.targetBgMgDl.toInt()} mg/dL")
+                        Spacer(Modifier.height(4.dp))
+                        Text("• Hypo-Schwelle: ${uiState.lowThresholdMgDl.toInt()} mg/dL")
+                        Spacer(Modifier.height(4.dp))
+                        Text("• Basalrate: ${"%.2f".format(uiState.basalRateUPerHour)} U/h")
                     }
-                    Spacer(Modifier.height(12.dp))
-                    Text("• Ziel-BZ: ${uiState.targetBgMgDl.toInt()} mg/dL")
-                    Spacer(Modifier.height(4.dp))
-                    Text("• Hypo-Schwelle: ${uiState.lowThresholdMgDl.toInt()} mg/dL")
-                    Spacer(Modifier.height(4.dp))
-                    Text("• Basalrate: ${"%.2f".format(uiState.basalRateUPerHour)} U/h")
                 }
             }
         }
+
+        Spacer(Modifier.height(16.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
