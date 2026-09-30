@@ -62,7 +62,7 @@ fun SetupWizardScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     val filePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+        contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
         if (uri != null) {
             viewModel.importBackup(uri)
@@ -118,7 +118,7 @@ fun SetupWizardScreen(
                         ModeSelectionContent(
                             onSelectDemo = { viewModel.selectDemoData() },
                             onStartManual = { viewModel.startManualSetup() },
-                            onSelectImport = { filePickerLauncher.launch("*/*") }
+                            onSelectImport = { filePickerLauncher.launch(arrayOf("*/*")) }
                         )
                     }
                     SetupWizardStep.MANUAL_STEP_1_TYPES -> {

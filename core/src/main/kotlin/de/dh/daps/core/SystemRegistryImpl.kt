@@ -20,8 +20,10 @@ import de.dh.daps.core.aps.RecommendationManager
 import de.dh.daps.core.aps.SystemOrchestrator
 import de.dh.daps.core.aps.SystemOrchestratorImpl
 import de.dh.daps.core.aps.TherapyManager
+import de.dh.daps.core.backup.BackupOptions
 import de.dh.daps.core.backup.BackupRepository
 import de.dh.daps.core.backup.BackupRepositoryImpl
+import de.dh.daps.core.backup.BackupResult
 import de.dh.daps.core.device.DeviceConnectionManager
 import de.dh.daps.core.pump.PumpDriverManager
 import de.dh.daps.core.pump.PumpManager
@@ -94,45 +96,67 @@ class SystemRegistryImpl(
 
     override suspend fun completeInitialization(option: SetupOption) {
         _initializationState.value = InitializationState.INITIALIZING
-        when (option) {
-            is SetupOption.SeedDemoData -> {
-                DatabaseInitializer.initializeDefaultData(
-                    appContext,
-                    treatmentRepository,
-                    therapyRepository,
-                    settingsRepository,
-                    alarmRepository
-                )
-            }
-            is SetupOption.ManualSetupCompleted -> {
-                DatabaseInitializer.ensureMinimumSettings(
-                    appContext,
-                    treatmentRepository,
-                    therapyRepository,
-                    settingsRepository,
-                    alarmRepository
-                )
-            }
-            is SetupOption.ImportBackup -> {
-                val inputStream = appContext.contentResolver.openInputStream(option.uri)
-                if (inputStream != null) {
-                    inputStream.use { stream ->
-                        backupRepository.importBackup(stream)
+        runCatching {
+            when (option) {
+                is SetupOption.SeedDemoData -> {
+                    DatabaseInitializer.initializeDefaultData(
+                        appContext,
+                        treatmentRepository,
+                        therapyRepository,
+                        settingsRepository,
+                        alarmRepository
+                    )
+                }
+                is SetupOption.ManualSetupCompleted -> {
+                    DatabaseInitializer.ensureMinimumSettings(
+                        appContext,
+                        treatmentRepository,
+                        therapyRepository,
+                        settingsRepository,
+                        alarmRepository
+                    )
+                }
+                is SetupOption.ImportBackup -> {
+                    val inputStream = appContext.contentResolver.openInputStream(option.uri)
+                        ?: throw IllegalStateException("Unable to open the selected file")
+                    val result = inputStream.use { stream ->
+                        backupRepository.importBackup(
+                            stream,
+                            BackupOptions(
+                                includeHistory = true,
+                                includeDiagnostics = true,
+                                includeDescriptors = true
+                            )
+                        )
                     }
+                    if (result is BackupResult.Error) {
+                        throw result.exception
+                    }
+                    DatabaseInitializer.ensureMinimumSettings(
+                        appContext,
+                        treatmentRepository,
+                        therapyRepository,
+                        settingsRepository,
+                        alarmRepository
+                    )
                 }
             }
+
+            // Reload caches after database setup
+            treatmentRepository.load()
+            therapyRepository.clearCache()
+            glucoseRepository.initialize()
+
+            // Start active engine and services
+            startCoreEngine()
+        }.onFailure { exception ->
+            _initializationState.value = InitializationState.REQUIRES_SETUP
+            throw exception
         }
-
-        // Reload caches after database setup
-        treatmentRepository.load()
-        therapyRepository.clearCache()
-        glucoseRepository.initialize()
-
-        // Start active engine and services
-        startCoreEngine()
     }
 
     suspend fun startCoreEngine() {
+        // TODO: Check result, handle errors
         deviceConnectionManager.restoreConnections()
 
         therapyManager.startInitialization()

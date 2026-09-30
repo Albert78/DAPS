@@ -206,7 +206,8 @@ class BackupRepositoryImpl(
                 var entry = zipIn.nextEntry
                 while (entry != null) {
                     val content = zipIn.readBytes().toString(Charsets.UTF_8)
-                    when (entry.name) {
+                    val entryName = entry.name.substringAfterLast('/')
+                    when (entryName) {
                         "manifest.json" -> manifestDto = json.decodeFromString(content)
                         "preferences.json" -> preferencesDto = json.decodeFromString(content)
                         "therapy_config.json" -> therapyConfigDto = json.decodeFromString(content)
