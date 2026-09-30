@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.IBinder
 import de.dh.daps.MainApplication
+import de.dh.daps.core.InitializationState
 import de.dh.daps.core.system.AndroidNotifications
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,6 +22,12 @@ class ApsService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+
+        val registry = MainApplication.instance.registry
+        if (registry.initializationState.value != InitializationState.READY) {
+            stopSelf()
+            return
+        }
 
         startServiceInForeground()
 

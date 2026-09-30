@@ -30,6 +30,9 @@ import de.dh.daps.core.repository.TherapyRepository
 import de.dh.daps.core.repository.TreatmentRepository
 import de.dh.daps.core.system.SystemWakeService
 
+import android.net.Uri
+import kotlinx.coroutines.flow.StateFlow
+
 /**
  * Functional interface for handling permission change events.
  */
@@ -39,6 +42,30 @@ fun interface PermissionsChangedHandler {
      * need to be updated.
      */
     fun onPermissionsChanged()
+}
+
+/**
+ * State representing the initialization progress of the system.
+ */
+enum class InitializationState {
+    /** System requires setup/master data before background engines can start. */
+    REQUIRES_SETUP,
+    /** System initialization is in progress. */
+    INITIALIZING,
+    /** System is fully initialized and core engines are running. */
+    READY
+}
+
+/**
+ * Option chosen in the setup wizard for initial data setup.
+ */
+sealed interface SetupOption {
+    /** Initialize database with default/demo data. */
+    object SeedDemoData : SetupOption
+    /** Manual setup completed by the user in the wizard. */
+    object ManualSetupCompleted : SetupOption
+    /** Restore database and settings from a backup file URI. */
+    data class ImportBackup(val uri: Uri) : SetupOption
 }
 
 /**
@@ -199,4 +226,21 @@ interface SystemRegistry : PluginContext {
      * Handler for permission change events.
      */
     val permissionsChangedHandler: PermissionsChangedHandler
+
+    // System Initialization & Lifecycle
+
+    /**
+     * Observable initialization state of the system registry and database.
+     */
+    val initializationState: StateFlow<InitializationState>
+
+    /**
+     * Checks if the database is already populated with required master data.
+     */
+    suspend fun isDatabaseInitialized(): Boolean
+
+    /**
+     * Completes system initialization with the chosen setup option and starts core engines.
+     */
+    suspend fun completeInitialization(option: SetupOption)
 }

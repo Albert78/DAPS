@@ -6,6 +6,7 @@ import android.app.ForegroundServiceStartNotAllowedException
 import android.content.Intent
 import android.os.Bundle
 import androidx.core.content.ContextCompat
+import de.dh.daps.core.InitializationState
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.SystemRegistryImpl
 import de.dh.daps.core.system.RegistryProvider
@@ -18,6 +19,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 /**
  * Main application class for DAPS.
@@ -38,8 +40,8 @@ class MainApplication : Application(), RegistryProvider {
 
         registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
             override fun onActivityResumed(activity: Activity) {
-                startApsService()
-                if (::registry.isInitialized) {
+                if (::registry.isInitialized && registry.initializationState.value == InitializationState.READY) {
+                    startApsService()
                     registry.permissionRepository.refreshPermissions()
                 }
             }
@@ -66,10 +68,14 @@ class MainApplication : Application(), RegistryProvider {
             onPermissionsChanged = { startApsService() }
         )
 
-        startApsService()
-
-        // Initial device setup - connects default devices on first launch if not configured yet
-        setupInitialDevices(registry)
+        applicationScope.launch {
+            registry.initializationState.collect { state ->
+                if (state == InitializationState.READY) {
+                    startApsService()
+                    setupInitialDevices(registry)
+                }
+            }
+        }
 
         MainActivity.getExtraNavGraphs = ::getExtraNavGraphs
 

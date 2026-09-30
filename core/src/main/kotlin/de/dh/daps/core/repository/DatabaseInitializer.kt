@@ -14,7 +14,26 @@ import de.dh.daps.common.model.getDefaultMealTypes
 import de.dh.daps.common.model.getDefaultTherapyAdjustments
 
 object DatabaseInitializer {
+    suspend fun isInitialized(
+        therapyRepository: TherapyRepository,
+        settingsRepository: SettingsRepository
+    ): Boolean {
+        val settings = settingsRepository.getCurrentSettings()
+        val therapySettings = therapyRepository.getCurrentTherapySettingsOrNull()
+        return settings != null && therapySettings != null
+    }
+
     suspend fun initialize(
+        context: Context,
+        treatmentRepository: TreatmentRepository,
+        therapyRepository: TherapyRepository,
+        settingsRepository: SettingsRepository,
+        alarmRepository: AlarmRepository
+    ) {
+        initializeDefaultData(context, treatmentRepository, therapyRepository, settingsRepository, alarmRepository)
+    }
+
+    suspend fun initializeDefaultData(
         context: Context,
         treatmentRepository: TreatmentRepository,
         therapyRepository: TherapyRepository,
@@ -24,6 +43,20 @@ object DatabaseInitializer {
         initializeInsulinTypes(context, treatmentRepository)
         initializeMealTypes(context, treatmentRepository)
         initializeDefaultInsulinProfileAndCurrentTherapy(context, therapyRepository)
+        initializeSettings(settingsRepository)
+        initializeDefaultAlarmProfiles(context, alarmRepository)
+        initializeDefaultTherapyAdjustments(context, therapyRepository)
+    }
+
+    suspend fun ensureMinimumSettings(
+        context: Context,
+        treatmentRepository: TreatmentRepository,
+        therapyRepository: TherapyRepository,
+        settingsRepository: SettingsRepository,
+        alarmRepository: AlarmRepository
+    ) {
+        initializeInsulinTypes(context, treatmentRepository)
+        initializeMealTypes(context, treatmentRepository)
         initializeSettings(settingsRepository)
         initializeDefaultAlarmProfiles(context, alarmRepository)
         initializeDefaultTherapyAdjustments(context, therapyRepository)

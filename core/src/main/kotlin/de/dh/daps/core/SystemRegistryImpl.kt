@@ -44,6 +44,9 @@ import de.dh.daps.core.system.SystemWakeService
 import de.dh.daps.core.system.SystemWakeServiceImpl
 import de.dh.daps.core.system.TimeServiceImpl
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -81,6 +84,78 @@ class SystemRegistryImpl(
     override val carbsInsulinCalculator: CarbsInsulinCalculator,
     override val permissionsChangedHandler: PermissionsChangedHandler,
 ) : SystemRegistry {
+
+    private val _initializationState = MutableStateFlow(InitializationState.REQUIRES_SETUP)
+    override val initializationState: StateFlow<InitializationState> = _initializationState.asStateFlow()
+
+    override suspend fun isDatabaseInitialized(): Boolean {
+        return DatabaseInitializer.isInitialized(therapyRepository, settingsRepository)
+    }
+
+    override suspend fun completeInitialization(option: SetupOption) {
+        _initializationState.value = InitializationState.INITIALIZING
+        when (option) {
+            is SetupOption.SeedDemoData -> {
+                DatabaseInitializer.initializeDefaultData(
+                    appContext,
+                    treatmentRepository,
+                    therapyRepository,
+                    settingsRepository,
+                    alarmRepository
+                )
+            }
+            is SetupOption.ManualSetupCompleted -> {
+                DatabaseInitializer.ensureMinimumSettings(
+                    appContext,
+                    treatmentRepository,
+                    therapyRepository,
+                    settingsRepository,
+                    alarmRepository
+                )
+            }
+            is SetupOption.ImportBackup -> {
+                val inputStream = appContext.contentResolver.openInputStream(option.uri)
+                if (inputStream != null) {
+                    inputStream.use { stream ->
+                        backupRepository.importBackup(stream)
+                    }
+                }
+            }
+        }
+
+        // Reload caches after database setup
+        treatmentRepository.load()
+        therapyRepository.clearCache()
+        glucoseRepository.initialize()
+
+        // Start active engine and services
+        startCoreEngine()
+    }
+
+    suspend fun startCoreEngine() {
+        deviceConnectionManager.restoreConnections()
+
+        therapyManager.startInitialization()
+
+        systemOrchestrator.startInitialization(
+            treatmentRepository = treatmentRepository,
+            therapyManager = therapyManager,
+            recommendationManager = recommendationManager,
+            pumpManager = pumpManager,
+            appPreferencesRepository = appPreferencesRepository,
+            carbsInsulinCalculator = carbsInsulinCalculator,
+            systemMetricsRepository = systemMetricsRepository
+        )
+
+        alarmEvaluator.start()
+
+        pluginManager.getPlugins().forEach { plugin ->
+            plugin.initialize(this)
+        }
+
+        _initializationState.value = InitializationState.READY
+    }
+
     companion object {
         /**
          * Factory method to create and initialize the [SystemRegistry].
@@ -236,31 +311,19 @@ class SystemRegistryImpl(
                 plugin.setup(registryInstance)
             }
 
-            // Phase 2: Core initialization (load repositories, restore connections & start managers)
-            runBlocking {
+            // Phase 2: Check database initialization state and conditionally start core engines
+            val isDbInitialized = runBlocking {
                 glucoseRepository.initialize()
                 treatmentRepository.load()
-                DatabaseInitializer.initialize(application, treatmentRepository, therapyRepository, settingsRepository, alarmRepository)
-                deviceConnectionManager.restoreConnections()
+                registryInstance.isDatabaseInitialized()
             }
 
-            therapyManager.startInitialization()
-
-            systemOrchestrator.startInitialization(
-                treatmentRepository = treatmentRepository,
-                therapyManager = therapyManager,
-                recommendationManager = recommendationManager,
-                pumpManager = pumpManager,
-                appPreferencesRepository = appPreferencesRepository,
-                carbsInsulinCalculator = carbsInsulinCalculator,
-                systemMetricsRepository = systemMetricsRepository
-            )
-
-            alarmEvaluator.start()
-
-            // Phase 3: Trigger post-initialization for plugins on the fully initialized system
-            pluginManager.getPlugins().forEach { plugin ->
-                plugin.initialize(registryInstance)
+            if (isDbInitialized) {
+                runBlocking {
+                    registryInstance.startCoreEngine()
+                }
+            } else {
+                registryInstance._initializationState.value = InitializationState.REQUIRES_SETUP
             }
 
             return registryInstance

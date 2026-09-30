@@ -74,11 +74,16 @@ import de.dh.daps.common.navigation.NavigationViewModel
 import de.dh.daps.common.navigation.PreferencesMainRoute
 import de.dh.daps.common.navigation.SystemControlRoute
 import de.dh.daps.common.navigation.combineEntryProviders
+import de.dh.daps.core.InitializationState
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.system.RegistryProvider
 import de.dh.daps.ui.GlobalViewModel
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.EdgeToEdgeHandler
+import de.dh.daps.ui.screens.setupwizard.SetupWizardScreen
+import de.dh.daps.ui.screens.setupwizard.SetupWizardViewModel
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.lifecycle.viewmodel.compose.viewModel
 import de.dh.daps.ui.common.icons.Icon_App_Data
 import de.dh.daps.ui.common.icons.Icon_Bolus
 import de.dh.daps.ui.common.icons.Icon_Food_Database
@@ -121,6 +126,7 @@ class MainActivity : ComponentActivity() {
             val useDarkTheme = rememberUseDarkTheme(registry.appPreferencesRepository)
             val glucoseUnit by globalViewModel.glucoseUnit.collectAsState()
             val carbsUnit by globalViewModel.carbsUnit.collectAsState()
+            val initState by registry.initializationState.collectAsState()
 
             EdgeToEdgeHandler(useDarkTheme)
             AppTheme(
@@ -132,7 +138,29 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainApp(registry)
+                    when (initState) {
+                        InitializationState.REQUIRES_SETUP -> {
+                            val setupViewModel: SetupWizardViewModel = viewModel(
+                                factory = SetupWizardViewModel.Factory(registry)
+                            )
+                            SetupWizardScreen(viewModel = setupViewModel)
+                        }
+                        InitializationState.INITIALIZING -> {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    CircularProgressIndicator()
+                                    Spacer(Modifier.height(16.dp))
+                                    Text("System wird initialisiert...")
+                                }
+                            }
+                        }
+                        InitializationState.READY -> {
+                            MainApp(registry)
+                        }
+                    }
                 }
             }
         }
