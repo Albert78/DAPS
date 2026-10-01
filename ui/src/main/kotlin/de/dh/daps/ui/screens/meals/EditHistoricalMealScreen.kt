@@ -41,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -494,7 +495,7 @@ fun EditMealCard(
 @Preview(showBackground = true)
 @Composable
 private fun EditHistoricalMealContentPreview() {
-    val sampleMealTypes = getDefaultMealTypes()
+    val sampleMealTypes = getDefaultMealTypes(LocalContext.current)
     val sampleMealType = sampleMealTypes[1]
     val sampleMeal = MealEntry(
         timestamp = Timestamp.now(),

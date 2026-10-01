@@ -1,5 +1,6 @@
 package de.dh.daps.plugin.simbody
 
+import android.content.Context
 import androidx.compose.runtime.mutableStateListOf
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinOrigin
@@ -14,6 +15,7 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.data.getAmountForMinute
 import de.dh.daps.common.model.getDefaultMealTypes
 import de.dh.daps.common.model.getDefaultStandardMealType
+import de.dh.daps.plugin.simbody.SimBodyInsulinPump.Companion.SIM_PUMP_MIN_BOLUS_INCREMENT
 import de.dh.daps.plugin.simbody.model.BodyProfile
 import de.dh.daps.plugin.simbody.repository.db.SimBodyDao
 import de.dh.daps.plugin.simbody.repository.db.SimEventEntity
@@ -49,7 +51,8 @@ data class SimInsulinApplication(
  */
 class BodyModel(
     initialProfile: BodyProfile,
-    private val simBodyDao: SimBodyDao? = null
+    private val simBodyDao: SimBodyDao? = null,
+    context: Context
 ) {
     private val scope = CoroutineScope(Dispatchers.IO)
 
@@ -61,7 +64,7 @@ class BodyModel(
         peak = Minutes(75)
     )
 
-    private val defaultMealType = getDefaultStandardMealType()
+    private val defaultMealType = getDefaultStandardMealType(context)
 
     // Inputs (historical data) - using Compose state for UI updates
     val meals = mutableStateListOf<MealEntry>()
@@ -449,7 +452,7 @@ class BodyModel(
         type: InsulinType? = null,
         timestamp: Timestamp = Timestamp.now()
     ) {
-        if (amount < SimBodyInsulinPump.SIM_PUMP_MIN_BOLUS_INCREMENT) return
+        if (amount < SIM_PUMP_MIN_BOLUS_INCREMENT) return
 
         val insulinType = type ?: defaultInsulinType
         val entry = SimInsulinApplication(
@@ -526,8 +529,6 @@ class BodyModel(
     }
 
     companion object {
-        val SIM_MEAL_TYPES = getDefaultMealTypes()
-
-        fun findSimMealType(id: String): MealType? = SIM_MEAL_TYPES.find { it.id == id }
+        fun getSimMealTypes(context: Context): List<MealType> = getDefaultMealTypes(context)
     }
 }

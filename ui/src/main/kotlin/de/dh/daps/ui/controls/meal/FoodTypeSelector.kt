@@ -29,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -170,25 +171,29 @@ fun FoodTypeSelector(
     }
 }
 
-private fun getPreviewMealTypes(): List<MealType> = listOf(
-    getDefaultFastMealType(),
-    getDefaultStandardMealType(),
-    getDefaultSlowMealType(),
-    MealType(
-        id = "custom_m",
-        name = "Müsli",
-        symbol = "M",
-        components = listOf(CarbCurveComponentData(100, Minutes(45))),
-        cat = Minutes(150)
-    ),
-    MealType(
-        id = "custom_4",
-        name = "Pizza",
-        symbol = "4",
-        components = listOf(CarbCurveComponentData(100, Minutes(120))),
-        cat = Minutes(300)
+@Composable
+private fun getPreviewMealTypes(): List<MealType> {
+    val context = LocalContext.current
+    return listOf(
+        getDefaultFastMealType(context),
+        getDefaultStandardMealType(context),
+        getDefaultSlowMealType(context),
+        MealType(
+            id = "custom_m",
+            name = "Müsli",
+            symbol = "M",
+            components = listOf(CarbCurveComponentData(100, Minutes(45))),
+            cat = Minutes(150)
+        ),
+        MealType(
+            id = "custom_4",
+            name = "Pizza",
+            symbol = "4",
+            components = listOf(CarbCurveComponentData(100, Minutes(120))),
+            cat = Minutes(300)
+        )
     )
-)
+}
 
 @Preview(name = "Light Mode", showBackground = true)
 @Preview(name = "Dark Mode", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)

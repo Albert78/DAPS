@@ -22,6 +22,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -157,8 +158,9 @@ private fun ImpactRow(label: String, value: String) {
 @Preview(showBackground = true)
 @Composable
 fun SimBodyImpactsScreenPreview() {
-    val bodyModel = remember {
-        BodyModel(DEFAULT_SIM_BODY_PROFILE).apply {
+    val context = LocalContext.current
+    val bodyModel = remember(context) {
+        BodyModel(DEFAULT_SIM_BODY_PROFILE, context = context).apply {
             impactHistory.add(
                 Impacts(
                     carbImpact = 1.25,

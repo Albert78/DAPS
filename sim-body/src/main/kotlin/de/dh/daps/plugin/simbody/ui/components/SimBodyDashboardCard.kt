@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -202,8 +203,9 @@ fun SimBodyDashboardCardPreview() {
         isfBlocks = listOf(Block(Minutes.ofHours(24), 50.0)),
         liverGlucoseOutputBlocks = listOf(Block(Minutes.ofHours(24), 5.0))
     )
-    val bodyModel = remember {
-        BodyModel(mockProfile).apply {
+    val context = LocalContext.current
+    val bodyModel = remember(context) {
+        BodyModel(mockProfile, context = context).apply {
             bloodGlucose = 140.0
             exerciseIntensity = 0.2
             illnessFactor = 1.1

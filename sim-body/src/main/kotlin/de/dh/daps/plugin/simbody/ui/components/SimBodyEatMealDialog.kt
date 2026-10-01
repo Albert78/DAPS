@@ -14,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -32,7 +33,8 @@ fun SimBodyEatMealDialog(
     onDismiss: () -> Unit,
     onConfirm: (Double, MealType) -> Unit
 ) {
-    val mealTypes = BodyModel.SIM_MEAL_TYPES
+    val context = LocalContext.current
+    val mealTypes = remember(context) { BodyModel.getSimMealTypes(context) }
     var carbs by remember { mutableDoubleStateOf(0.0) }
     var selectedType by remember { mutableStateOf(mealTypes.find { it.id == ID_MEAL_STANDARD } ?: mealTypes.first()) }
 
@@ -96,7 +98,8 @@ fun SimBodyEatMealDialogContent(
 @Preview(showBackground = true)
 @Composable
 fun SimBodyEatMealDialogPreview() {
-    val mealTypes = BodyModel.SIM_MEAL_TYPES
+    val context = LocalContext.current
+    val mealTypes = remember(context) { BodyModel.getSimMealTypes(context) }
     AppPreview {
         SimBodyEatMealDialogContent(
             carbs = 30.0,

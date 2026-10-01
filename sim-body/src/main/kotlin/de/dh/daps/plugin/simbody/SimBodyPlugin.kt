@@ -19,7 +19,7 @@ class SimBodyPlugin(
     val application: Application
 ) : Plugin {
     private val database = SimBodyDatabase.getInstance(application)
-    val bodyModel = BodyModel(DEFAULT_SIM_BODY_PROFILE, database.impactDao())
+    val bodyModel = BodyModel(DEFAULT_SIM_BODY_PROFILE, database.impactDao(), application)
     val pumpDevice = SimBodyPumpDevice(bodyModel, DEFAULT_SIM_INSULIN_PROFILE, database.pumpDao())
     val pumpDriver = SimBodyInsulinPumpDriver(this)
     val glucoseSourceDriver = SimBodyGlucoseSourceDriver(this)

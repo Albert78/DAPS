@@ -25,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -181,10 +182,12 @@ fun SimBodyHistoryScreen(
 @Preview(showBackground = true)
 @Composable
 fun SimBodyHistoryScreenPreview() {
-    val bodyModel = remember {
-        BodyModel(DEFAULT_SIM_BODY_PROFILE).apply {
-            eat(50.0, BodyModel.SIM_MEAL_TYPES[0])
-            eat(25.0, BodyModel.SIM_MEAL_TYPES[1])
+    val context = LocalContext.current
+    val mealTypes = remember(context) { BodyModel.getSimMealTypes(context) }
+    val bodyModel = remember(context) {
+        BodyModel(DEFAULT_SIM_BODY_PROFILE, context = context).apply {
+            eat(50.0, mealTypes[0])
+            eat(25.0, mealTypes[1])
             bolus(InsulinAmount(5.0))
             bolus(InsulinAmount(2.5))
         }
