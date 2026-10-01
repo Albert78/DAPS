@@ -59,6 +59,10 @@ DAPS relies on a strict separation of concerns through a modular system:
 *   **Persistence:** Room Database
 *   **Background Processing:** Optimized Android Foreground Services for long-running health services.
 
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
 ---
 
 <a id="deutsch"></a>
@@ -122,3 +126,7 @@ DAPS setzt auf eine strikte Trennung der Verantwortlichkeiten durch ein modulare
 *   **Nebenläufigkeit:** Kotlin Coroutines & Flow für reaktive Daten-Pipelines.
 *   **Persistenz:** Room Database
 *   **Hintergrundverarbeitung:** Optimierte Android Foreground Services für dauerhafte Gesundheitsdienste.
+
+## Lizenz
+
+Dieses Projekt steht unter der [MIT-Lizenz](LICENSE).
