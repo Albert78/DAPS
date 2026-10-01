@@ -2,6 +2,7 @@ package de.dh.daps.ui.screens.setupwizard
 
 import android.content.res.Configuration
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -187,6 +188,15 @@ fun SetupWizardContent(
         }
     }
 
+    val canGoBack = uiState.currentStep != SetupWizardStep.MODE_SELECTION || uiState.isEditingInsulinType
+    BackHandler(enabled = canGoBack) {
+        if (uiState.isEditingInsulinType) {
+            onCancelEditingInsulinType()
+        } else {
+            onGoToPreviousStep()
+        }
+    }
+
     CompositionLocalProvider(
         LocalGlucoseUnit provides uiState.glucoseUnit,
         LocalCarbsUnit provides uiState.carbsUnit
@@ -301,15 +311,17 @@ fun SetupWizardContent(
 
                 SetupWizardStep.MANUAL_STEP_5_GLUCOSE_SOURCE -> {
                     Box(modifier = Modifier.fillMaxSize()) {
-                        GlucoseSourceSetupContent(
-                            uiState = cgmUiState,
-                            onNavigateUp = onGoToPreviousStep,
-                            onSelectDriver = onSelectCgmDriver,
-                            onConnectGlucoseSource = { descriptor ->
-                                onConnectGlucoseSource(descriptor) { onGoToNextStep() }
-                            },
-                            onClearError = onClearCgmError
-                        )
+                        Box(modifier = Modifier.fillMaxSize().padding(bottom = 72.dp)) {
+                            GlucoseSourceSetupContent(
+                                uiState = cgmUiState,
+                                onNavigateUp = onGoToPreviousStep,
+                                onSelectDriver = onSelectCgmDriver,
+                                onConnectGlucoseSource = { descriptor ->
+                                    onConnectGlucoseSource(descriptor) { onGoToNextStep() }
+                                },
+                                onClearError = onClearCgmError
+                            )
+                        }
                         Row(
                             modifier = Modifier
                                 .align(Alignment.BottomCenter)
@@ -334,15 +346,17 @@ fun SetupWizardContent(
 
                 SetupWizardStep.MANUAL_STEP_6_PUMP -> {
                     Box(modifier = Modifier.fillMaxSize()) {
-                        PumpSetupContent(
-                            uiState = pumpUiState,
-                            onNavigateUp = onGoToPreviousStep,
-                            onSelectDriver = onSelectPumpDriver,
-                            onConnectPump = { descriptor ->
-                                onConnectPump(descriptor) { onGoToNextStep() }
-                            },
-                            onClearError = onClearPumpError
-                        )
+                        Box(modifier = Modifier.fillMaxSize().padding(bottom = 72.dp)) {
+                            PumpSetupContent(
+                                uiState = pumpUiState,
+                                onNavigateUp = onGoToPreviousStep,
+                                onSelectDriver = onSelectPumpDriver,
+                                onConnectPump = { descriptor ->
+                                    onConnectPump(descriptor) { onGoToNextStep() }
+                                },
+                                onClearError = onClearPumpError
+                            )
+                        }
                         Row(
                             modifier = Modifier
                                 .align(Alignment.BottomCenter)
@@ -413,7 +427,13 @@ private fun WizardScaffold(
             )
         }
     ) { innerPadding ->
-        content(innerPadding)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            content(innerPadding)
+        }
     }
 }
 

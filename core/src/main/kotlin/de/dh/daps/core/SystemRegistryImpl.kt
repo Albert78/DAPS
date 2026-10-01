@@ -51,6 +51,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Default implementation of the [SystemRegistry].
@@ -96,63 +97,65 @@ class SystemRegistryImpl(
     }
 
     override suspend fun completeInitialization(option: SetupOption) {
-        _initializationState.value = InitializationState.INITIALIZING
-        runCatching {
-            when (option) {
-                is SetupOption.SeedDemoData -> {
-                    DatabaseInitializer.initializeDefaultData(
-                        appContext,
-                        treatmentRepository,
-                        therapyRepository,
-                        settingsRepository,
-                        alarmRepository
-                    )
-                }
-                is SetupOption.ManualSetupCompleted -> {
-                    DatabaseInitializer.ensureMinimumSettings(
-                        appContext,
-                        treatmentRepository,
-                        therapyRepository,
-                        settingsRepository,
-                        alarmRepository
-                    )
-                }
-                is SetupOption.ImportBackup -> {
-                    val inputStream = appContext.contentResolver.openInputStream(option.uri)
-                        ?: throw IllegalStateException("Unable to open the selected file")
-                    val result = inputStream.use { stream ->
-                        backupRepository.importBackup(
-                            stream,
-                            BackupOptions(
-                                includeHistory = true,
-                                includeDiagnostics = true,
-                                includeDescriptors = true
-                            )
+        withContext(Dispatchers.Default) {
+            _initializationState.value = InitializationState.INITIALIZING
+            runCatching {
+                when (option) {
+                    is SetupOption.SeedDemoData -> {
+                        DatabaseInitializer.initializeDefaultData(
+                            appContext,
+                            treatmentRepository,
+                            therapyRepository,
+                            settingsRepository,
+                            alarmRepository
                         )
                     }
-                    if (result is BackupResult.Error) {
-                        throw result.exception
+                    is SetupOption.ManualSetupCompleted -> {
+                        DatabaseInitializer.ensureMinimumSettings(
+                            appContext,
+                            treatmentRepository,
+                            therapyRepository,
+                            settingsRepository,
+                            alarmRepository
+                        )
                     }
-                    DatabaseInitializer.ensureMinimumSettings(
-                        appContext,
-                        treatmentRepository,
-                        therapyRepository,
-                        settingsRepository,
-                        alarmRepository
-                    )
+                    is SetupOption.ImportBackup -> {
+                        val inputStream = appContext.contentResolver.openInputStream(option.uri)
+                            ?: throw IllegalStateException("Unable to open the selected file")
+                        val result = inputStream.use { stream ->
+                            backupRepository.importBackup(
+                                stream,
+                                BackupOptions(
+                                    includeHistory = true,
+                                    includeDiagnostics = true,
+                                    includeDescriptors = true
+                                )
+                            )
+                        }
+                        if (result is BackupResult.Error) {
+                            throw result.exception
+                        }
+                        DatabaseInitializer.ensureMinimumSettings(
+                            appContext,
+                            treatmentRepository,
+                            therapyRepository,
+                            settingsRepository,
+                            alarmRepository
+                        )
+                    }
                 }
+
+                // Reload caches after database setup
+                treatmentRepository.load()
+                therapyRepository.clearCache()
+                glucoseRepository.initialize()
+
+                // Start active engine and services
+                startCoreEngine()
+            }.onFailure { exception ->
+                _initializationState.value = InitializationState.REQUIRES_SETUP
+                throw exception
             }
-
-            // Reload caches after database setup
-            treatmentRepository.load()
-            therapyRepository.clearCache()
-            glucoseRepository.initialize()
-
-            // Start active engine and services
-            startCoreEngine()
-        }.onFailure { exception ->
-            _initializationState.value = InitializationState.REQUIRES_SETUP
-            throw exception
         }
     }
 

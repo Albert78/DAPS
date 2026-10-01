@@ -26,6 +26,7 @@ import de.dh.daps.setCarbsUnit
 import de.dh.daps.setGlucoseUnit
 import de.dh.daps.ui.R
 import de.dh.daps.ui.screens.insulintypes.InsulinTypeEditorUiState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -98,7 +99,7 @@ class SetupWizardViewModel(
     }
 
     fun selectDemoData() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             _uiState.update { it.copy(isBusy = true, errorMessage = null) }
             runCatching {
                 registry.completeInitialization(SetupOption.SeedDemoData)
@@ -111,7 +112,7 @@ class SetupWizardViewModel(
     }
 
     fun importBackup(uri: Uri) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             _uiState.update { it.copy(isBusy = true, errorMessage = null) }
             runCatching {
                 registry.completeInitialization(SetupOption.ImportBackup(uri))
@@ -264,7 +265,7 @@ class SetupWizardViewModel(
     }
 
     fun completeManualSetup() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             _uiState.update { it.copy(isBusy = true, errorMessage = null) }
             runCatching {
                 val state = _uiState.value
