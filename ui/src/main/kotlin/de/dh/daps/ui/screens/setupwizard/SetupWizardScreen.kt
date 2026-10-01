@@ -27,8 +27,8 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Restaurant
-import androidx.compose.material.icons.filled.Science
+import de.dh.daps.ui.common.icons.Icon_Carbs_Unit
+import de.dh.daps.ui.common.icons.Icon_Glucose_Unit
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -598,7 +598,7 @@ private fun UnitsStepContent(
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
-                                imageVector = Icons.Default.Science,
+                                imageVector = Icon_Glucose_Unit,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.primary
                             )
@@ -644,7 +644,7 @@ private fun UnitsStepContent(
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
-                                imageVector = Icons.Default.Restaurant,
+                                imageVector = Icon_Carbs_Unit,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.primary
                             )

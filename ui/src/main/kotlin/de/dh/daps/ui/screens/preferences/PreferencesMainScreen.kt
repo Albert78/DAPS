@@ -12,11 +12,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.Restaurant
-import androidx.compose.material.icons.filled.Science
+import de.dh.daps.ui.common.icons.Icon_Carbs_Unit
+import de.dh.daps.ui.common.icons.Icon_Navigate_Next
+import de.dh.daps.ui.common.icons.Icon_Glucose_Unit
+import de.dh.daps.ui.common.icons.Icon_Ui
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -123,7 +122,7 @@ fun PreferencesContent(
             PreferenceItem(
                 title = stringResource(R.string.pref_theme_title),
                 summary = currentThemeLabel,
-                icon = Icons.Default.Palette,
+                icon = Icon_Ui,
                 onClick = { showThemeDialog = true }
             )
 
@@ -134,14 +133,14 @@ fun PreferencesContent(
             PreferenceItem(
                 title = stringResource(R.string.pref_glucose_unit_title),
                 summary = glucoseUnitLabel(uiState.glucoseUnit),
-                icon = Icons.Default.Science,
+                icon = Icon_Glucose_Unit,
                 onClick = { showGlucoseUnitDialog = true }
             )
 
             PreferenceItem(
                 title = stringResource(R.string.pref_carbs_unit_title),
                 summary = carbsUnitLabel(uiState.carbsUnit),
-                icon = Icons.Default.Restaurant,
+                icon = Icon_Carbs_Unit,
                 onClick = { showCarbsUnitDialog = true }
             )
 
@@ -419,7 +418,7 @@ fun PreferenceItem(
         }
         if (showChevron) {
             Icon(
-                imageVector = Icons.Default.ChevronRight,
+                imageVector = Icon_Navigate_Next,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.outline
             )

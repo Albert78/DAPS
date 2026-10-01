@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.Comment
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
+import androidx.compose.material.icons.automirrored.outlined.NavigateNext
 import androidx.compose.material.icons.filled.Adjust
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
@@ -37,6 +38,7 @@ import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material.icons.outlined.Science
 import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Snooze
@@ -87,6 +89,8 @@ val Icon_Permissions = Icons.Outlined.Security
 val Icon_Meal_Types = Icons.Outlined.Meal_Types
 val Icon_Master_Data = Icons.Outlined.Badge
 val Icon_App_Data = Icons.Outlined.Database
+val Icon_Glucose_Unit = Icons.Outlined.Science
+val Icon_Carbs_Unit = Icons.Filled.Carbs
 
 val Icon_Add = Icons.Outlined.Add
 val Icon_Edit = Icons.Outlined.Edit
@@ -98,11 +102,11 @@ val Icon_Delete = Icons.Outlined.Delete
 val Icon_Archive = Icons.Outlined.Archive
 val Icon_Warning = Icons.Outlined.Warning
 val Icon_Arrow_Up = Icons.Outlined.ArrowUpward
+val Icon_Arrow_Down = Icons.Outlined.ArrowDownward
 val Icon_Check_No = Icons.Outlined.Close
+val Icon_Check_Yes = Icons.Outlined.Check
 val Icon_Comments = Icons.AutoMirrored.Outlined.Comment
 val Icon_Settings = Icons.Outlined.Settings
-val Icon_Check_Yes = Icons.Outlined.Check
-val Icon_Arrow_Down = Icons.Outlined.ArrowDownward
 val Icon_Next = Icons.Filled.Next
 val Icon_Previous = Icons.Filled.Previous
 val Icon_Plus = Icons.Filled.Plus
@@ -111,6 +115,7 @@ val Icon_Alarm_Snooze = Icons.Outlined.Snooze
 val Icon_Theme_Light_Dark = Icons.Outlined.Theme_Light_Dark
 val Icon_Scrollview_Arrow_Up = Icons.Outlined.KeyboardArrowUp
 val Icon_Scrollview_Arrow_Down = Icons.Outlined.KeyboardArrowDown
+val Icon_Navigate_Next = Icons.AutoMirrored.Outlined.NavigateNext
 val Icon_Ui = Icons.Outlined.Palette
 val Icon_Backup = Icons.Outlined.Backup
 val Icon_Restore = Icons.Outlined.Restore
@@ -157,6 +162,8 @@ private val iconsForPreview = listOf(
     IconPreview("Meal_Types", Icon_Meal_Types),
     IconPreview("Master_Data", Icon_Master_Data),
     IconPreview("App_Data", Icon_App_Data),
+    IconPreview("Glucose_Unit", Icon_Glucose_Unit),
+    IconPreview("Carbs_Unit", Icon_Carbs_Unit),
     IconPreview("More", Icon_More),
     IconPreview("Delete_Filled", Icon_Delete_Filled),
     IconPreview("Icon_Screen_Back", Icon_Screen_Back),
@@ -171,15 +178,16 @@ private val iconsForPreview = listOf(
     IconPreview("Archive", Icon_Archive),
     IconPreview("Warning", Icon_Warning),
     IconPreview("Arrow_Up", Icon_Arrow_Up),
+    IconPreview("Arrow_Down", Icon_Arrow_Down),
     IconPreview("Check_No", Icon_Check_No),
+    IconPreview("Check_Yes", Icon_Check_Yes),
     IconPreview("Comments", Icon_Comments),
     IconPreview("Settings", Icon_Settings),
-    IconPreview("Check_Yes", Icon_Check_Yes),
-    IconPreview("Arrow_Down", Icon_Arrow_Down),
     IconPreview("Alarm_Snooze", Icon_Alarm_Snooze),
     IconPreview("Theme_Light_Dark", Icon_Theme_Light_Dark),
     IconPreview("Scrollview_Arrow_Up", Icon_Scrollview_Arrow_Up),
     IconPreview("Scrollview_Arrow_Down", Icon_Scrollview_Arrow_Down),
+    IconPreview("Chevron_Right", Icon_Navigate_Next),
     IconPreview("Ui", Icon_Ui),
     IconPreview("Backup", Icon_Backup),
     IconPreview("Restore", Icon_Restore),

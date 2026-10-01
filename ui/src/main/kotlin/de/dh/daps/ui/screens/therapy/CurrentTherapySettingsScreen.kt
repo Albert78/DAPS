@@ -21,7 +21,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Adjust
 import androidx.compose.material.icons.filled.Edit
@@ -76,6 +75,7 @@ import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.glucoseValue
+import de.dh.daps.ui.common.icons.Icon_Navigate_Next
 import de.dh.daps.ui.common.icons.Icon_Insulin_Adjustment
 import de.dh.daps.ui.common.icons.Icon_Insulin_Profile
 import de.dh.daps.ui.common.icons.Icon_Therapy_Adjustment
@@ -383,7 +383,7 @@ private fun ActiveInsulinProfileCard(
                     )
 
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        imageVector = Icon_Navigate_Next,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(24.dp)
@@ -653,7 +653,7 @@ private fun BgTargetCard(
             Spacer(modifier = Modifier.width(8.dp))
 
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                imageVector = Icon_Navigate_Next,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp)
@@ -722,7 +722,7 @@ private fun TemporaryAdjustmentCard(
                 )
 
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    imageVector = Icon_Navigate_Next,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(20.dp)
@@ -1019,7 +1019,7 @@ private fun ScheduledAdjustmentCard(
                 }
 
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    imageVector = Icon_Navigate_Next,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(20.dp)
