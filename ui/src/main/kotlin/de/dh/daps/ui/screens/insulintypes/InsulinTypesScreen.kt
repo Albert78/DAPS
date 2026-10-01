@@ -35,13 +35,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.data.Minutes
-import de.dh.daps.common.model.getDefaultInsulinTypes
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.screenTitle
@@ -106,18 +104,8 @@ fun InsulinTypesContent(
                     expanded = showAddMenu,
                     onDismissRequest = { showAddMenu = false }
                 ) {
-                    val context = LocalContext.current
-                    val allStandardTypes = remember(context) { getDefaultInsulinTypes(context) }
-                    val availableStandardTypes = remember(allStandardTypes, uiState.insulinTypes) {
-                        allStandardTypes.filter { std ->
-                            uiState.insulinTypes.none { existing ->
-                                existing.id == std.id || existing.name.equals(std.name, ignoreCase = true)
-                            }
-                        }
-                    }
-
-                    if (availableStandardTypes.isNotEmpty()) {
-                        availableStandardTypes.forEach { standardType ->
+                    if (uiState.availableStandardTypes.isNotEmpty()) {
+                        uiState.availableStandardTypes.forEach { standardType ->
                             DropdownMenuItem(
                                 text = { Text(standardType.name) },
                                 onClick = {

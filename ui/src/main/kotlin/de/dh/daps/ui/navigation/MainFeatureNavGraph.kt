@@ -7,6 +7,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -15,6 +17,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import de.dh.daps.common.ID_UNDEFINED
+import de.dh.daps.common.model.getDefaultInsulinTypes
 import de.dh.daps.common.navigation.AlarmProfileEditorRoute
 import de.dh.daps.common.navigation.AlarmProfilesRoute
 import de.dh.daps.common.navigation.AppDataRoute
@@ -490,8 +493,10 @@ class MainFeatureNavGraph(
             }
 
             is InsulinTypesRoute -> NavEntry(key) {
+                val context = LocalContext.current
+                val defaultInsulinTypes = remember(context) { getDefaultInsulinTypes(context) }
                 val vm: InsulinTypesViewModel = viewModel(
-                    factory = InsulinTypesViewModel.Companion.Factory(registry)
+                    factory = InsulinTypesViewModel.Companion.Factory(registry, defaultInsulinTypes)
                 )
                 InsulinTypesScreen(
                     viewModel = vm,

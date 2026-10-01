@@ -69,9 +69,6 @@ import de.dh.daps.common.BASAL_MAX
 import de.dh.daps.common.BASAL_MIN
 import de.dh.daps.common.CR_MAX
 import de.dh.daps.common.CR_MIN
-import de.dh.daps.common.DEFAULT_BASAL_UNITS_PER_HOUR
-import de.dh.daps.common.DEFAULT_CR_GRAM_PER_UNIT
-import de.dh.daps.common.DEFAULT_ISF_MGDL_PER_UNIT
 import de.dh.daps.common.ID_UNDEFINED
 import de.dh.daps.common.ISF_MAX
 import de.dh.daps.common.ISF_MIN
@@ -112,27 +109,7 @@ fun InsulinProfileEditorScreen(
         onSaveProfile = { viewModel.saveInsulinProfile(it) },
         onStopEditing = { viewModel.stopEditing() },
         isNameUnique = { name, id -> viewModel.isNameUnique(name, id) },
-        onAddProfile = {
-            val defaultInsulinType = uiState.insulinTypes.firstOrNull()
-            if (defaultInsulinType != null) {
-                viewModel.startEditing(
-                    InsulinProfile(
-                        name = "",
-                        basalBlocks = listOf(
-                            Block(
-                                Minutes.ofHours(24),
-                                DEFAULT_BASAL_UNITS_PER_HOUR
-                            )
-                        ),
-                        isfBlocks = listOf(Block(Minutes.ofHours(24), DEFAULT_ISF_MGDL_PER_UNIT)),
-                        crBlocks = listOf(Block(Minutes.ofHours(24), DEFAULT_CR_GRAM_PER_UNIT)),
-                        insulinType = defaultInsulinType,
-                        dia = defaultInsulinType.dia,
-                        peak = defaultInsulinType.peak
-                    )
-                )
-            }
-        },
+        onAddProfile = { viewModel.startEditingNewProfile() },
         onEditProfile = { viewModel.startEditing(it) },
         onDeleteProfile = { viewModel.confirmDelete(it) },
         onCopyProfile = { profile ->

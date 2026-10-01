@@ -14,6 +14,7 @@ import java.util.UUID
 
 data class InsulinTypesUiState(
     val insulinTypes: List<InsulinType> = emptyList(),
+    val availableStandardTypes: List<InsulinType> = emptyList(),
     val usedInsulinTypeIds: Set<String> = emptySet(),
     val isLoading: Boolean = false
 ) {
@@ -27,7 +28,8 @@ data class InsulinTypesUiState(
 }
 
 class InsulinTypesViewModel(
-    registry: SystemRegistry
+    registry: SystemRegistry,
+    private val defaultInsulinTypes: List<InsulinType> = emptyList()
 ) : ViewModel() {
 
     private val treatmentRepository = registry.treatmentRepository
@@ -36,8 +38,14 @@ class InsulinTypesViewModel(
         treatmentRepository.observeInsulinTypes(),
         treatmentRepository.observeUsedInsulinTypeIds()
     ) { types, usedIds ->
+        val availableStandard = defaultInsulinTypes.filter { std ->
+            types.none { existing ->
+                existing.id == std.id || existing.name.equals(std.name, ignoreCase = true)
+            }
+        }
         InsulinTypesUiState(
             insulinTypes = types,
+            availableStandardTypes = availableStandard,
             usedInsulinTypeIds = usedIds,
             isLoading = false
         )
@@ -70,10 +78,13 @@ class InsulinTypesViewModel(
     }
 
     companion object {
-        class Factory(private val registry: SystemRegistry) : ViewModelProvider.Factory {
+        class Factory(
+            private val registry: SystemRegistry,
+            private val defaultInsulinTypes: List<InsulinType> = emptyList()
+        ) : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return InsulinTypesViewModel(registry) as T
+                return InsulinTypesViewModel(registry, defaultInsulinTypes) as T
             }
         }
     }

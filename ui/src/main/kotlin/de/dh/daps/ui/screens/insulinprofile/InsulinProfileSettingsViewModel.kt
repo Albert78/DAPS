@@ -4,9 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import de.dh.daps.common.DEFAULT_BASAL_UNITS_PER_HOUR
+import de.dh.daps.common.DEFAULT_CR_GRAM_PER_UNIT
+import de.dh.daps.common.DEFAULT_ISF_MGDL_PER_UNIT
 import de.dh.daps.common.ID_UNDEFINED
 import de.dh.daps.common.model.InsulinType
+import de.dh.daps.common.model.data.Block
 import de.dh.daps.common.model.data.InsulinProfile
+import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -52,6 +57,26 @@ class InsulinProfileSettingsViewModel(
 
     fun startEditing(profile: InsulinProfile?) {
         _uiState.update { it.copy(editingProfile = profile) }
+    }
+
+    fun startEditingNewProfile() {
+        val defaultInsulinType = _uiState.value.insulinTypes.firstOrNull() ?: return
+        startEditing(
+            InsulinProfile(
+                name = "",
+                basalBlocks = listOf(
+                    Block(
+                        Minutes.ofHours(24),
+                        DEFAULT_BASAL_UNITS_PER_HOUR
+                    )
+                ),
+                isfBlocks = listOf(Block(Minutes.ofHours(24), DEFAULT_ISF_MGDL_PER_UNIT)),
+                crBlocks = listOf(Block(Minutes.ofHours(24), DEFAULT_CR_GRAM_PER_UNIT)),
+                insulinType = defaultInsulinType,
+                dia = defaultInsulinType.dia,
+                peak = defaultInsulinType.peak
+            )
+        )
     }
 
     fun copyInsulinProfile(profile: InsulinProfile, newName: String) {
