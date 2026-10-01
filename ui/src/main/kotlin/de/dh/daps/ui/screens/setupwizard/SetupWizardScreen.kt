@@ -1,6 +1,7 @@
 package de.dh.daps.ui.screens.setupwizard
 
 import android.content.res.Configuration
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -58,9 +59,16 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
+import de.dh.daps.common.model.GlucoseSourceDriver
+import de.dh.daps.common.model.InsulinConcentration
+import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.InsulinType
+import de.dh.daps.common.model.PumpConnectionDescriptor
+import de.dh.daps.common.model.data.BgBlock
 import de.dh.daps.common.model.data.CarbsUnit
 import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.LocalCarbsUnit
@@ -71,16 +79,96 @@ import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupContent
+import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupUiState
+import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupViewModel
 import de.dh.daps.ui.screens.insulinprofile.InsulinProfileDetailEditor
 import de.dh.daps.ui.screens.insulintypes.InsulinTypeEditorContent
 import de.dh.daps.ui.screens.pumpsetup.PumpSetupContent
+import de.dh.daps.ui.screens.pumpsetup.PumpSetupUiState
+import de.dh.daps.ui.screens.pumpsetup.PumpSetupViewModel
 import de.dh.daps.ui.screens.therapy.BgEditorContent
 
 @Composable
 fun SetupWizardScreen(
-    viewModel: SetupWizardViewModel
+    viewModel: SetupWizardViewModel,
+    glucoseSourceSetupViewModel: GlucoseSourceSetupViewModel,
+    pumpSetupViewModel: PumpSetupViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val cgmState by glucoseSourceSetupViewModel.uiState.collectAsState()
+    val pumpState by pumpSetupViewModel.uiState.collectAsState()
+    val cgmDescriptor by viewModel.activeGlucoseSourceDescriptor.collectAsState()
+    val pumpDescriptor by viewModel.activePumpDescriptor.collectAsState()
+
+    SetupWizardContent(
+        uiState = uiState,
+        cgmUiState = cgmState,
+        pumpUiState = pumpState,
+        cgmDescriptor = cgmDescriptor,
+        pumpDescriptor = pumpDescriptor,
+        onSelectDemo = viewModel::selectDemoData,
+        onStartManual = viewModel::startManualSetup,
+        onImportBackup = viewModel::importBackup,
+        onSetGlucoseUnit = viewModel::setGlucoseUnit,
+        onSetCarbsUnit = viewModel::setCarbsUnit,
+        onSelectInsulinType = viewModel::selectInsulinType,
+        onStartEditingInsulinType = viewModel::startEditingInsulinType,
+        onCancelEditingInsulinType = viewModel::cancelEditingInsulinType,
+        onUpdateInsulinTypeEditorName = viewModel::updateInsulinTypeEditorName,
+        onUpdateInsulinTypeEditorPeak = viewModel::updateInsulinTypeEditorPeak,
+        onUpdateInsulinTypeEditorDia = viewModel::updateInsulinTypeEditorDia,
+        onUpdateInsulinTypeEditorConcentration = viewModel::updateInsulinTypeEditorConcentration,
+        onSaveEditedInsulinType = viewModel::saveEditedInsulinType,
+        onSetInsulinProfile = viewModel::setInsulinProfile,
+        onSetBgBlocks = viewModel::setBgBlocks,
+        onSelectCgmDriver = glucoseSourceSetupViewModel::selectDriver,
+        onConnectGlucoseSource = { descriptor, onSuccess ->
+            glucoseSourceSetupViewModel.connectGlucoseSource(descriptor, onSuccess)
+        },
+        onClearCgmError = glucoseSourceSetupViewModel::clearError,
+        onSelectPumpDriver = pumpSetupViewModel::selectDriver,
+        onConnectPump = { descriptor, onSuccess ->
+            pumpSetupViewModel.connectPump(descriptor, onSuccess)
+        },
+        onClearPumpError = pumpSetupViewModel::clearError,
+        onGoToNextStep = viewModel::goToNextStep,
+        onGoToPreviousStep = viewModel::goToPreviousStep,
+        onCompleteManualSetup = viewModel::completeManualSetup
+    )
+}
+
+@Composable
+fun SetupWizardContent(
+    uiState: SetupWizardUiState,
+    cgmUiState: GlucoseSourceSetupUiState,
+    pumpUiState: PumpSetupUiState,
+    cgmDescriptor: GlucoseSourceConnectionDescriptor?,
+    pumpDescriptor: PumpConnectionDescriptor?,
+    onSelectDemo: () -> Unit,
+    onStartManual: () -> Unit,
+    onImportBackup: (Uri) -> Unit,
+    onSetGlucoseUnit: (GlucoseUnit) -> Unit,
+    onSetCarbsUnit: (CarbsUnit) -> Unit,
+    onSelectInsulinType: (InsulinType) -> Unit,
+    onStartEditingInsulinType: (InsulinType?) -> Unit,
+    onCancelEditingInsulinType: () -> Unit,
+    onUpdateInsulinTypeEditorName: (String) -> Unit,
+    onUpdateInsulinTypeEditorPeak: (String) -> Unit,
+    onUpdateInsulinTypeEditorDia: (String) -> Unit,
+    onUpdateInsulinTypeEditorConcentration: (InsulinConcentration) -> Unit,
+    onSaveEditedInsulinType: () -> Unit,
+    onSetInsulinProfile: (InsulinProfile) -> Unit,
+    onSetBgBlocks: (List<BgBlock>) -> Unit,
+    onSelectCgmDriver: (GlucoseSourceDriver?) -> Unit,
+    onConnectGlucoseSource: (GlucoseSourceConnectionDescriptor, onSuccess: () -> Unit) -> Unit,
+    onClearCgmError: () -> Unit,
+    onSelectPumpDriver: (InsulinPumpDriver?) -> Unit,
+    onConnectPump: (PumpConnectionDescriptor, onSuccess: () -> Unit) -> Unit,
+    onClearPumpError: () -> Unit,
+    onGoToNextStep: () -> Unit,
+    onGoToPreviousStep: () -> Unit,
+    onCompleteManualSetup: () -> Unit
+) {
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
 
@@ -88,7 +176,7 @@ fun SetupWizardScreen(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
         if (uri != null) {
-            viewModel.importBackup(uri)
+            onImportBackup(uri)
         }
     }
 
@@ -130,8 +218,8 @@ fun SetupWizardScreen(
                         snackbarHostState = snackbarHostState
                     ) {
                         ModeSelectionContent(
-                            onSelectDemo = { viewModel.selectDemoData() },
-                            onStartManual = { viewModel.startManualSetup() },
+                            onSelectDemo = onSelectDemo,
+                            onStartManual = onStartManual,
                             onSelectImport = { filePickerLauncher.launch(arrayOf("*/*")) }
                         )
                     }
@@ -141,16 +229,16 @@ fun SetupWizardScreen(
                     WizardScaffold(
                         title = stringResource(R.string.setup_wizard_step1_units_title),
                         showBackButton = true,
-                        onBack = { viewModel.goToPreviousStep() },
+                        onBack = onGoToPreviousStep,
                         snackbarHostState = snackbarHostState
                     ) {
                         UnitsStepContent(
                             glucoseUnit = uiState.glucoseUnit,
                             carbsUnit = uiState.carbsUnit,
-                            onGlucoseUnitSelected = { viewModel.setGlucoseUnit(it) },
-                            onCarbsUnitSelected = { viewModel.setCarbsUnit(it) },
-                            onNext = { viewModel.goToNextStep() },
-                            onBack = { viewModel.goToPreviousStep() }
+                            onGlucoseUnitSelected = onSetGlucoseUnit,
+                            onCarbsUnitSelected = onSetCarbsUnit,
+                            onNext = onGoToNextStep,
+                            onBack = onGoToPreviousStep
                         )
                     }
                 }
@@ -159,28 +247,28 @@ fun SetupWizardScreen(
                     if (uiState.isEditingInsulinType) {
                         InsulinTypeEditorContent(
                             uiState = uiState.insulinTypeEditorUiState,
-                            onNameChange = viewModel::updateInsulinTypeEditorName,
-                            onPeakChange = viewModel::updateInsulinTypeEditorPeak,
-                            onDiaChange = viewModel::updateInsulinTypeEditorDia,
-                            onConcentrationChange = viewModel::updateInsulinTypeEditorConcentration,
-                            onSave = viewModel::saveEditedInsulinType,
-                            onNavigateUp = viewModel::cancelEditingInsulinType
+                            onNameChange = onUpdateInsulinTypeEditorName,
+                            onPeakChange = onUpdateInsulinTypeEditorPeak,
+                            onDiaChange = onUpdateInsulinTypeEditorDia,
+                            onConcentrationChange = onUpdateInsulinTypeEditorConcentration,
+                            onSave = onSaveEditedInsulinType,
+                            onNavigateUp = onCancelEditingInsulinType
                         )
                     } else {
                         WizardScaffold(
                             title = stringResource(R.string.setup_wizard_step2_insulin_title),
                             showBackButton = true,
-                            onBack = { viewModel.goToPreviousStep() },
+                            onBack = onGoToPreviousStep,
                             snackbarHostState = snackbarHostState
                         ) {
                             InsulinTypeStepContent(
                                 availableTypes = uiState.availableInsulinTypes,
                                 selectedType = uiState.selectedInsulinType,
-                                onSelectType = viewModel::selectInsulinType,
-                                onEditType = { viewModel.startEditingInsulinType(it) },
-                                onAddNewType = { viewModel.startEditingInsulinType(null) },
-                                onNext = { viewModel.goToNextStep() },
-                                onBack = { viewModel.goToPreviousStep() }
+                                onSelectType = onSelectInsulinType,
+                                onEditType = { onStartEditingInsulinType(it) },
+                                onAddNewType = { onStartEditingInsulinType(null) },
+                                onNext = onGoToNextStep,
+                                onBack = onGoToPreviousStep
                             )
                         }
                     }
@@ -193,10 +281,10 @@ fun SetupWizardScreen(
                             profile = profile,
                             insulinTypes = uiState.availableInsulinTypes,
                             onSave = { updatedProfile ->
-                                viewModel.setInsulinProfile(updatedProfile)
-                                viewModel.goToNextStep()
+                                onSetInsulinProfile(updatedProfile)
+                                onGoToNextStep()
                             },
-                            onCancel = { viewModel.goToPreviousStep() }
+                            onCancel = onGoToPreviousStep
                         )
                     }
                 }
@@ -204,27 +292,23 @@ fun SetupWizardScreen(
                 SetupWizardStep.MANUAL_STEP_4_BG_TARGETS -> {
                     BgEditorContent(
                         blocks = uiState.bgBlocks,
-                        onBlocksChanged = { viewModel.setBgBlocks(it) },
-                        onSave = { viewModel.goToNextStep() },
-                        onNavigateUp = { viewModel.goToPreviousStep() },
+                        onBlocksChanged = onSetBgBlocks,
+                        onSave = onGoToNextStep,
+                        onNavigateUp = onGoToPreviousStep,
                         originalBlocks = uiState.bgBlocks
                     )
                 }
 
                 SetupWizardStep.MANUAL_STEP_5_GLUCOSE_SOURCE -> {
-                    val cgmState by viewModel.glucoseSourceSetupViewModel.uiState.collectAsState()
                     Box(modifier = Modifier.fillMaxSize()) {
                         GlucoseSourceSetupContent(
-                            uiState = cgmState,
-                            onNavigateUp = { viewModel.goToPreviousStep() },
-                            onSelectDriver = { viewModel.glucoseSourceSetupViewModel.selectDriver(it) },
+                            uiState = cgmUiState,
+                            onNavigateUp = onGoToPreviousStep,
+                            onSelectDriver = onSelectCgmDriver,
                             onConnectGlucoseSource = { descriptor ->
-                                viewModel.glucoseSourceSetupViewModel.connectGlucoseSource(
-                                    descriptor = descriptor,
-                                    onSuccess = { viewModel.goToNextStep() }
-                                )
+                                onConnectGlucoseSource(descriptor) { onGoToNextStep() }
                             },
-                            onClearError = { viewModel.glucoseSourceSetupViewModel.clearError() }
+                            onClearError = onClearCgmError
                         )
                         Row(
                             modifier = Modifier
@@ -233,12 +317,12 @@ fun SetupWizardScreen(
                                 .padding(16.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            OutlinedButton(onClick = { viewModel.goToPreviousStep() }) {
+                            OutlinedButton(onClick = onGoToPreviousStep) {
                                 Text(stringResource(R.string.setup_wizard_btn_back))
                             }
-                            Button(onClick = { viewModel.goToNextStep() }) {
+                            Button(onClick = onGoToNextStep) {
                                 Text(
-                                    if (cgmState.activeSourceDescriptor != null)
+                                    if (cgmUiState.activeSourceDescriptor != null)
                                         stringResource(R.string.setup_wizard_btn_next)
                                     else
                                         stringResource(R.string.setup_wizard_btn_skip)
@@ -249,19 +333,15 @@ fun SetupWizardScreen(
                 }
 
                 SetupWizardStep.MANUAL_STEP_6_PUMP -> {
-                    val pumpState by viewModel.pumpSetupViewModel.uiState.collectAsState()
                     Box(modifier = Modifier.fillMaxSize()) {
                         PumpSetupContent(
-                            uiState = pumpState,
-                            onNavigateUp = { viewModel.goToPreviousStep() },
-                            onSelectDriver = { viewModel.pumpSetupViewModel.selectDriver(it) },
+                            uiState = pumpUiState,
+                            onNavigateUp = onGoToPreviousStep,
+                            onSelectDriver = onSelectPumpDriver,
                             onConnectPump = { descriptor ->
-                                viewModel.pumpSetupViewModel.connectPump(
-                                    descriptor = descriptor,
-                                    onSuccess = { viewModel.goToNextStep() }
-                                )
+                                onConnectPump(descriptor) { onGoToNextStep() }
                             },
-                            onClearError = { viewModel.pumpSetupViewModel.clearError() }
+                            onClearError = onClearPumpError
                         )
                         Row(
                             modifier = Modifier
@@ -270,12 +350,12 @@ fun SetupWizardScreen(
                                 .padding(16.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            OutlinedButton(onClick = { viewModel.goToPreviousStep() }) {
+                            OutlinedButton(onClick = onGoToPreviousStep) {
                                 Text(stringResource(R.string.setup_wizard_btn_back))
                             }
-                            Button(onClick = { viewModel.goToNextStep() }) {
+                            Button(onClick = onGoToNextStep) {
                                 Text(
-                                    if (pumpState.activePumpDescriptor != null)
+                                    if (pumpUiState.activePumpDescriptor != null)
                                         stringResource(R.string.setup_wizard_btn_next)
                                     else
                                         stringResource(R.string.setup_wizard_btn_skip)
@@ -286,21 +366,18 @@ fun SetupWizardScreen(
                 }
 
                 SetupWizardStep.MANUAL_STEP_7_SUMMARY -> {
-                    val cgmState by viewModel.glucoseSourceSetupViewModel.uiState.collectAsState()
-                    val pumpState by viewModel.pumpSetupViewModel.uiState.collectAsState()
-
                     WizardScaffold(
                         title = stringResource(R.string.setup_wizard_step7_title),
                         showBackButton = true,
-                        onBack = { viewModel.goToPreviousStep() },
+                        onBack = onGoToPreviousStep,
                         snackbarHostState = snackbarHostState
                     ) {
                         SummaryStepContent(
                             uiState = uiState,
-                            cgmDisplayName = cgmState.activeSourceDescriptor?.displayName,
-                            pumpDisplayName = pumpState.activePumpDescriptor?.displayName,
-                            onComplete = { viewModel.completeManualSetup() },
-                            onBack = { viewModel.goToPreviousStep() }
+                            cgmDisplayName = cgmDescriptor?.displayName,
+                            pumpDisplayName = pumpDescriptor?.displayName,
+                            onComplete = onCompleteManualSetup,
+                            onBack = onGoToPreviousStep
                         )
                     }
                 }

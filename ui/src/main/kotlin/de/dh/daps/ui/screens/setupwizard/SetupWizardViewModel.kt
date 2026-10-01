@@ -6,8 +6,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import de.dh.daps.common.DEFAULT_BG_LOW_THRESHOLD_MGDL
 import de.dh.daps.common.DEFAULT_BG_TARGET_MGDL
+import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinType
+import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.model.data.BgBlock
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.CarbsUnit
@@ -23,9 +25,7 @@ import de.dh.daps.core.SystemRegistry
 import de.dh.daps.setCarbsUnit
 import de.dh.daps.setGlucoseUnit
 import de.dh.daps.ui.R
-import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupViewModel
 import de.dh.daps.ui.screens.insulintypes.InsulinTypeEditorUiState
-import de.dh.daps.ui.screens.pumpsetup.PumpSetupViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -59,11 +59,13 @@ data class SetupWizardUiState(
 )
 
 class SetupWizardViewModel(
-    private val registry: SystemRegistry
+    val registry: SystemRegistry
 ) : ViewModel() {
+    val activeGlucoseSourceDescriptor: StateFlow<GlucoseSourceConnectionDescriptor?> =
+        registry.deviceManagementRepository.glucoseSourceDescriptor
 
-    val glucoseSourceSetupViewModel = GlucoseSourceSetupViewModel(registry)
-    val pumpSetupViewModel = PumpSetupViewModel(registry)
+    val activePumpDescriptor: StateFlow<PumpConnectionDescriptor?> =
+        registry.deviceManagementRepository.pumpDescriptor
 
     private val _uiState = MutableStateFlow(SetupWizardUiState())
     val uiState: StateFlow<SetupWizardUiState> = _uiState.asStateFlow()
@@ -306,7 +308,7 @@ class SetupWizardViewModel(
                     }
                 )
 
-                // 5. Complete system initialization
+                // 5. Complete initialization
                 registry.completeInitialization(SetupOption.ManualSetupCompleted)
             }.onFailure { error ->
                 val message = error.localizedMessage?.let { UiText.DynamicString(it) }
