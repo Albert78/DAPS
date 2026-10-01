@@ -66,6 +66,10 @@
 
     <string name="insulin_type_novorapid_name">NovoRapid</string>
     <string name="insulin_type_fiasp_name">Fiasp</string>
+    <string name="insulin_type_humalog_name">Humalog</string>
+    <string name="insulin_type_lyumjev_name">Lyumjev</string>
+    <string name="insulin_type_apidra_name">Apidra</string>
+    <string name="insulin_type_actrapid_name">Actrapid</string>
     <string name="meal_type_fast_carbs_name">Schnelle Kohlenhydrate</string>
     <string name="meal_type_standard_meal_name">Standard Mahlzeit</string>
     <string name="meal_type_high_fat_meal_name">Fettreiche Mahlzeit</string>

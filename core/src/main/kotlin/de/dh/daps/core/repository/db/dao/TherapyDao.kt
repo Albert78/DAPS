@@ -38,6 +38,12 @@ interface TherapyDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertInsulinProfiles(items: List<InsulinProfileEntity>)
 
+    @Query("SELECT DISTINCT insulin_type_id FROM insulin_profiles")
+    fun observeUsedInsulinTypeIdsInProfiles(): Flow<List<String>>
+
+    @Query("SELECT COUNT(*) FROM insulin_profiles WHERE insulin_type_id = :insulinTypeId")
+    suspend fun countProfilesUsingInsulinType(insulinTypeId: String): Int
+
     // Current Therapy Settings
     @Query("SELECT * FROM current_therapy_settings LIMIT 1")
     suspend fun getCurrentTherapySettings(): CurrentTherapySettingsEntity?

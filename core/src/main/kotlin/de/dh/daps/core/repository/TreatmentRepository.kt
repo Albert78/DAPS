@@ -1,5 +1,6 @@
 package de.dh.daps.core.repository
 
+import androidx.annotation.GuardedBy
 import de.dh.daps.common.ID_UNDEFINED
 import de.dh.daps.common.model.DeferredBolus
 import de.dh.daps.common.model.InsulinAmount
@@ -15,9 +16,11 @@ import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.repository.db.AppDatabase
 import de.dh.daps.core.repository.db.dao.MetabolicEventsDao
+import de.dh.daps.core.repository.db.dao.TherapyDao
 import de.dh.daps.core.repository.db.mappers.toEntity
 import de.dh.daps.core.repository.db.mappers.toModel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -35,6 +38,7 @@ class TreatmentRepository(
     appDatabase: AppDatabase
 ) {
     private val metabolicEventsDao: MetabolicEventsDao = appDatabase.metabolicEventsDao()
+    private val therapyDao: TherapyDao = appDatabase.therapyDao()
     private val mutex = Mutex()
 
     private var mealsHistory: MutableList<MealEntry> = mutableListOf()
@@ -470,6 +474,43 @@ class TreatmentRepository(
     }
 
     /**
+     * Observes IDs of insulin types currently referenced in profiles or history.
+     */
+    fun observeUsedInsulinTypeIds(): Flow<Set<String>> {
+        return combine(
+            therapyDao.observeUsedInsulinTypeIdsInProfiles(),
+            metabolicEventsDao.observeUsedInsulinTypeIdsInHistory()
+        ) { profileTypeIds, historyTypeIds ->
+            (profileTypeIds + historyTypeIds).toSet()
+        }
+    }
+
+    /**
+     * Checks if an insulin type is currently referenced in profiles or history.
+     */
+    suspend fun isInsulinTypeInUse(insulinTypeId: String): Boolean {
+        val profileCount = therapyDao.countProfilesUsingInsulinType(insulinTypeId)
+        val historyCount = metabolicEventsDao.countInsulinEntriesUsingInsulinType(insulinTypeId)
+        return profileCount > 0 || historyCount > 0
+    }
+
+    /**
+     * Checks if an insulin type can be safely deleted.
+     */
+    suspend fun canDeleteInsulinType(insulinTypeId: String): Boolean = mutex.withLock {
+        return@withLock canDeleteInsulinTypeUnlocked(insulinTypeId)
+    }
+
+    /**
+     * Helper method to check if an insulin type can be safely deleted.
+     * MUST be called while holding [mutex].
+     */
+    @GuardedBy("mutex")
+    private suspend fun canDeleteInsulinTypeUnlocked(insulinTypeId: String): Boolean {
+        return insulinTypes.size > 1 && !isInsulinTypeInUse(insulinTypeId)
+    }
+
+    /**
      * Inserts or updates an insulin type in the database and updates the in-memory list.
      */
     suspend fun insertInsulinType(insulinType: InsulinType) = mutex.withLock {
@@ -478,9 +519,12 @@ class TreatmentRepository(
     }
 
     /**
-     * Deletes an insulin type from the database and updates the in-memory list.
+     * Deletes an insulin type from the database and updates the in-memory list if allowed.
      */
     suspend fun deleteInsulinType(insulinType: InsulinType) = mutex.withLock {
+        if (!canDeleteInsulinTypeUnlocked(insulinType.id)) {
+            throw IllegalStateException("Insulintyp '${insulinType.name}' kann nicht gelöscht werden, da er in Verwendung oder der einzige Insulintyp ist.")
+        }
         metabolicEventsDao.deleteInsulinType(insulinType.id)
         insulinTypes = insulinTypes.filter { it.id != insulinType.id }
     }

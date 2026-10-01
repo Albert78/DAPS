@@ -104,6 +104,12 @@ interface MetabolicEventsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertInsulinTypes(items: List<InsulinTypeEntity>)
 
+    @Query("SELECT DISTINCT insulin_type_id FROM insulin")
+    fun observeUsedInsulinTypeIdsInHistory(): Flow<List<String>>
+
+    @Query("SELECT COUNT(*) FROM insulin WHERE insulin_type_id = :insulinTypeId")
+    suspend fun countInsulinEntriesUsingInsulinType(insulinTypeId: String): Int
+
     // Insulin
     @Query("SELECT * FROM insulin ORDER BY timestamp ASC")
     suspend fun getAllInsulinApplications(): List<InsulinEntity>

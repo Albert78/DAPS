@@ -53,6 +53,16 @@ class TherapyRepository(
         return metabolicEventsDao.getAllInsulinTypes().map { it.toModel() }
     }
 
+    suspend fun isInsulinTypeInUse(insulinTypeId: String): Boolean {
+        val profileCount = therapyDao.countProfilesUsingInsulinType(insulinTypeId)
+        val historyCount = metabolicEventsDao.countInsulinEntriesUsingInsulinType(insulinTypeId)
+        return profileCount > 0 || historyCount > 0
+    }
+
+    suspend fun canDeleteInsulinType(insulinTypeId: String): Boolean {
+        return getAllInsulinTypes().size > 1 && !isInsulinTypeInUse(insulinTypeId)
+    }
+
     // --- Profile Operations ---
 
     suspend fun getAllInsulinProfiles(): List<InsulinProfile> {

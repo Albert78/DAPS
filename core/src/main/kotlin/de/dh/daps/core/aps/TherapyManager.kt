@@ -247,6 +247,14 @@ class TherapyManager(
         return currentSettings.insulinProfile.insulinType
     }
 
+    suspend fun isInsulinTypeInUse(insulinTypeId: String): Boolean {
+        return treatmentRepository.isInsulinTypeInUse(insulinTypeId)
+    }
+
+    suspend fun canDeleteInsulinType(insulinTypeId: String): Boolean {
+        return treatmentRepository.canDeleteInsulinType(insulinTypeId)
+    }
+
     suspend fun getPumpCapabilities() = pumpManager.insulinPump?.pumpCapabilities?.value
 
     suspend fun getAllInsulinProfiles() = therapyRepository.getAllInsulinProfiles()

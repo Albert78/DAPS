@@ -4,7 +4,11 @@ import android.content.Context
 import de.dh.daps.common.DEFAULT_BASAL_UNITS_PER_HOUR
 import de.dh.daps.common.DEFAULT_CR_GRAM_PER_UNIT
 import de.dh.daps.common.DEFAULT_ISF_MGDL_PER_UNIT
+import de.dh.daps.common.ID_INSULIN_ACTRAPID
+import de.dh.daps.common.ID_INSULIN_APIDRA
 import de.dh.daps.common.ID_INSULIN_FIASP
+import de.dh.daps.common.ID_INSULIN_HUMALOG
+import de.dh.daps.common.ID_INSULIN_LYUMJEV
 import de.dh.daps.common.ID_INSULIN_NOVORAPID
 import de.dh.daps.common.ID_MEAL_FAST
 import de.dh.daps.common.ID_MEAL_HIGH_FAT
@@ -31,6 +35,34 @@ fun getDefaultInsulinTypes(context: Context): List<InsulinType> = listOf(
         name = context.getString(R.string.insulin_type_fiasp_name),
         dia = Minutes.ofHours(4),
         peak = Minutes(55),
+        defaultConcentration = InsulinConcentration.U100,
+    ),
+    InsulinType(
+        id = ID_INSULIN_HUMALOG,
+        name = context.getString(R.string.insulin_type_humalog_name),
+        dia = Minutes.ofHours(5),
+        peak = Minutes(60),
+        defaultConcentration = InsulinConcentration.U100,
+    ),
+    InsulinType(
+        id = ID_INSULIN_LYUMJEV,
+        name = context.getString(R.string.insulin_type_lyumjev_name),
+        dia = Minutes.ofHours(5),
+        peak = Minutes(45),
+        defaultConcentration = InsulinConcentration.U100,
+    ),
+    InsulinType(
+        id = ID_INSULIN_APIDRA,
+        name = context.getString(R.string.insulin_type_apidra_name),
+        dia = Minutes.ofHours(5),
+        peak = Minutes(60),
+        defaultConcentration = InsulinConcentration.U100,
+    ),
+    InsulinType(
+        id = ID_INSULIN_ACTRAPID,
+        name = context.getString(R.string.insulin_type_actrapid_name),
+        dia = Minutes.ofHours(8),
+        peak = Minutes(120),
         defaultConcentration = InsulinConcentration.U100,
     )
 )
