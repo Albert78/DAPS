@@ -66,7 +66,10 @@ fun InsulinTypeStep(
 
         SetupStepScaffold(
             title = stringResource(titleRes),
-            showBackButton = true,
+            showTopBackButton = true,
+            useCloseIcon = true,
+            onTopBack = onCancelEditing,
+            showBottomBackButton = true,
             onBack = onCancelEditing,
             nextButtonText = stringResource(de.dh.daps.common.R.string.action_save),
             onNext = onSaveEditedType,
@@ -85,7 +88,8 @@ fun InsulinTypeStep(
     } else {
         SetupStepScaffold(
             title = stringResource(R.string.setup_wizard_step2_insulin_title),
-            showBackButton = true,
+            showTopBackButton = false,
+            showBottomBackButton = true,
             onBack = onBack,
             onNext = onNext,
             isNextEnabled = selectedType != null,

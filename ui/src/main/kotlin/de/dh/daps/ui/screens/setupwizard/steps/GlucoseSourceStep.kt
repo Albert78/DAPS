@@ -62,8 +62,9 @@ fun GlucoseSourceStep(
     val titleText = selectedDriver?.driverDisplayName?.asString()
         ?: stringResource(id = R.string.glucose_source_setup_screen_title)
 
-    val handleBack: () -> Unit = {
-        if (selectedDriver != null && uiState.availableDrivers.size > 1) {
+    val showTopBack = selectedDriver != null
+    val onTopBackClick: () -> Unit = {
+        if (selectedDriver != null) {
             onSelectDriver(null)
         } else {
             onBack()
@@ -78,8 +79,10 @@ fun GlucoseSourceStep(
 
     SetupStepScaffold(
         title = titleText,
-        showBackButton = true,
-        onBack = handleBack,
+        showTopBackButton = showTopBack,
+        onTopBack = onTopBackClick,
+        showBottomBackButton = true,
+        onBack = onBack,
         nextButtonText = nextButtonText,
         onNext = onNext,
         snackbarHostState = snackbarHostState
@@ -99,7 +102,7 @@ fun GlucoseSourceStep(
                         onConnected = { _, descriptor ->
                             onConnectGlucoseSource(descriptor) { onNext() }
                         },
-                        onCancel = handleBack
+                        onCancel = { onSelectDriver(null) }
                     )
                 }
             } else {

@@ -62,8 +62,9 @@ fun PumpStep(
     val titleText = selectedDriver?.driverDisplayName?.asString()
         ?: stringResource(id = R.string.pump_setup_screen_title)
 
-    val handleBack: () -> Unit = {
-        if (selectedDriver != null && uiState.availableDrivers.size > 1) {
+    val showTopBack = selectedDriver != null
+    val onTopBackClick: () -> Unit = {
+        if (selectedDriver != null) {
             onSelectDriver(null)
         } else {
             onBack()
@@ -78,8 +79,10 @@ fun PumpStep(
 
     SetupStepScaffold(
         title = titleText,
-        showBackButton = true,
-        onBack = handleBack,
+        showTopBackButton = showTopBack,
+        onTopBack = onTopBackClick,
+        showBottomBackButton = true,
+        onBack = onBack,
         nextButtonText = nextButtonText,
         onNext = onNext,
         snackbarHostState = snackbarHostState
@@ -99,7 +102,7 @@ fun PumpStep(
                         onConnected = { _, descriptor ->
                             onConnectPump(descriptor) { onNext() }
                         },
-                        onCancel = handleBack
+                        onCancel = { onSelectDriver(null) }
                     )
                 }
             } else {

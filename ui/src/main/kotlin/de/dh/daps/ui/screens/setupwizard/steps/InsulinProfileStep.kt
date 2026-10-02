@@ -59,7 +59,8 @@ fun InsulinProfileStep(
 
     SetupStepScaffold(
         title = stringResource(R.string.setup_wizard_step3_profile_title),
-        showBackButton = true,
+        showTopBackButton = false,
+        showBottomBackButton = true,
         onBack = onBack,
         onNext = ::handleSaveAndNext,
         isNextEnabled = isValid,

@@ -27,7 +27,8 @@ fun BgTargetsStep(
 
     SetupStepScaffold(
         title = stringResource(R.string.bg_editor_title),
-        showBackButton = true,
+        showTopBackButton = false,
+        showBottomBackButton = true,
         onBack = onBack,
         onNext = onNext,
         snackbarHostState = snackbarHostState

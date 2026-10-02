@@ -48,7 +48,8 @@ fun UnitsStep(
 ) {
     SetupStepScaffold(
         title = stringResource(R.string.setup_wizard_step1_units_title),
-        showBackButton = true,
+        showTopBackButton = false,
+        showBottomBackButton = true,
         onBack = onBack,
         onNext = onNext,
         snackbarHostState = snackbarHostState

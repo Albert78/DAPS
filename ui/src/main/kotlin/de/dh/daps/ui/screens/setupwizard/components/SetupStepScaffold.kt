@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -33,7 +34,10 @@ import de.dh.daps.ui.common.composables.screenTitle
 @Composable
 fun SetupStepScaffold(
     title: String,
-    showBackButton: Boolean = true,
+    showTopBackButton: Boolean = false,
+    useCloseIcon: Boolean = false,
+    onTopBack: () -> Unit = {},
+    showBottomBackButton: Boolean = true,
     onBack: () -> Unit = {},
     nextButtonText: String? = stringResource(R.string.setup_wizard_btn_next),
     onNext: (() -> Unit)? = null,
@@ -51,11 +55,13 @@ fun SetupStepScaffold(
             TopAppBar(
                 title = screenTitle(title),
                 navigationIcon = {
-                    if (showBackButton) {
-                        IconButton(onClick = onBack) {
+                    if (showTopBackButton) {
+                        IconButton(onClick = onTopBack) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(R.string.setup_wizard_btn_back)
+                                imageVector = if (useCloseIcon) Icons.Default.Close else Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(
+                                    if (useCloseIcon) de.dh.daps.common.R.string.cd_cancel else R.string.setup_wizard_btn_back
+                                )
                             )
                         }
                     }
@@ -63,7 +69,7 @@ fun SetupStepScaffold(
             )
         },
         bottomBar = {
-            if (showBackButton || onNext != null) {
+            if (showBottomBackButton || onNext != null) {
                 Surface(tonalElevation = 2.dp) {
                     Row(
                         modifier = Modifier
@@ -71,7 +77,7 @@ fun SetupStepScaffold(
                             .padding(16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        if (showBackButton) {
+                        if (showBottomBackButton) {
                             OutlinedButton(onClick = onBack) {
                                 Text(stringResource(R.string.setup_wizard_btn_back))
                             }

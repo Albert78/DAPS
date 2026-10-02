@@ -52,7 +52,8 @@ fun ModeSelectionStep(
 
     SetupStepScaffold(
         title = stringResource(R.string.setup_wizard_title),
-        showBackButton = false,
+        showTopBackButton = false,
+        showBottomBackButton = false,
         snackbarHostState = snackbarHostState
     ) { innerPadding ->
         val scrollState = rememberScrollState()

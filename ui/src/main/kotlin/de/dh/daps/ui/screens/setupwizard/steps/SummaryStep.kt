@@ -43,7 +43,8 @@ fun SummaryStep(
 ) {
     SetupStepScaffold(
         title = stringResource(R.string.setup_wizard_step7_title),
-        showBackButton = true,
+        showTopBackButton = false,
+        showBottomBackButton = true,
         onBack = onBack,
         nextButtonText = stringResource(R.string.setup_wizard_step4_complete_btn),
         onNext = onComplete,
