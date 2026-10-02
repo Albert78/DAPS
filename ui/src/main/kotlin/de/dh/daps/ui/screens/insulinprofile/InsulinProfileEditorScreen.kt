@@ -109,13 +109,6 @@ fun InsulinProfileDetailEditor(
     var selectedTab by remember { mutableIntStateOf(0) }
     var showDiscardConfirmation by remember { mutableStateOf(false) }
 
-    val tabs = listOf(
-        stringResource(id = R.string.insulin_profile_editor_tab_insulin),
-        stringResource(id = R.string.insulin_profile_editor_tab_basal),
-        stringResource(id = R.string.insulin_profile_editor_tab_isf),
-        stringResource(id = R.string.insulin_profile_editor_tab_cr)
-    )
-
     val isNameValid = name.trim().isNotBlank() && isNameUnique(name.trim(), profile.id)
     val diaValue = dia.toIntOrNull() ?: 0
     val peakValue = peak.toIntOrNull() ?: 0
@@ -186,102 +179,34 @@ fun InsulinProfileDetailEditor(
             )
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text(stringResource(id = R.string.insulin_profile_editor_name_label)) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                singleLine = true,
-                isError = !isNameValid,
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
-            )
-
-            SecondaryTabRow(selectedTabIndex = selectedTab) {
-                tabs.forEachIndexed { index, title ->
-                    Tab(
-                        selected = selectedTab == index,
-                        onClick = { selectedTab = index },
-                        text = { Text(title) }
-                    )
-                }
-            }
-
-            Box(modifier = Modifier.weight(1f)) {
-                when (selectedTab) {
-                    0 -> InsulinSettingsEditor(
-                        insulinTypes = insulinTypes,
-                        selectedInsulinType = insulinType,
-                        onInsulinTypeSelected = {
-                            insulinType = it
-                            dia = it.dia.value.toString()
-                            peak = it.peak.value.toString()
-                            insulinConcentration = it.defaultConcentration
-                        },
-                        selectedConcentration = insulinConcentration,
-                        onConcentrationSelected = { insulinConcentration = it },
-                        dia = dia,
-                        onDiaChanged = { dia = it },
-                        peak = peak,
-                        onPeakChanged = { peak = it }
-                    )
-                    1 -> TherapyBlockListEditor(
-                        title = stringResource(id = R.string.insulin_profile_editor_basal_title),
-                        description = stringResource(id = R.string.insulin_profile_editor_basal_desc) + " " + stringResource(R.string.insulin_profile_editor_unit_info_format, stringResource(CommonR.string.unit_u_per_h)),
-                        blocks = basalBlocks,
-                        onBlocksChanged = { basalBlocks = it },
-                        step = 0.05,
-                        format = "%.2f",
-                        minValue = BASAL_MIN,
-                        maxValue = BASAL_MAX
-                    )
-                    2 -> {
-                        val glucoseUnit = LocalGlucoseUnit.current
-                        val isfStep = if (glucoseUnit == GlucoseUnit.MG_DL) 1.0 else 0.1
-                        val isfFormat = if (glucoseUnit == GlucoseUnit.MG_DL) "%.0f" else "%.1f"
-                        val isfMin = if (glucoseUnit == GlucoseUnit.MG_DL) ISF_MIN else BgDelta.fromMgDl(ISF_MIN.toInt().toShort()).mmol
-                        val isfMax = if (glucoseUnit == GlucoseUnit.MG_DL) ISF_MAX else BgDelta.fromMgDl(ISF_MAX.toInt().toShort()).mmol
-
-                        val displayBlocks = remember(isfBlocks, glucoseUnit) {
-                            isfBlocks.map { block ->
-                                block.copy(amount = if (glucoseUnit == GlucoseUnit.MG_DL) block.amount else BgDelta.fromMgDl(block.amount.toInt().toShort()).mmol)
-                            }
-                        }
-
-                        TherapyBlockListEditor(
-                            title = stringResource(id = R.string.insulin_profile_editor_isf_title),
-                            description = stringResource(id = R.string.insulin_profile_editor_isf_desc) + " " + stringResource(R.string.insulin_profile_editor_unit_info_format, isfUnitLabel()),
-                            blocks = displayBlocks,
-                            onBlocksChanged = { newDisplayBlocks ->
-                                isfBlocks = newDisplayBlocks.map { block ->
-                                    block.copy(amount = if (glucoseUnit == GlucoseUnit.MG_DL) block.amount else BgDelta.fromMmol(block.amount).mgdl.toDouble())
-                                }
-                            },
-                            step = isfStep,
-                            format = isfFormat,
-                            minValue = isfMin,
-                            maxValue = isfMax
-                        )
-                    }
-                    3 -> TherapyBlockListEditor(
-                        title = stringResource(id = R.string.insulin_profile_editor_cr_title),
-                        description = stringResource(id = R.string.insulin_profile_editor_cr_desc) + " " + stringResource(R.string.insulin_profile_editor_unit_info_format, stringResource(CommonR.string.unit_g_per_u)),
-                        blocks = crBlocks,
-                        onBlocksChanged = { crBlocks = it },
-                        step = 0.1,
-                        format = "%.1f",
-                        minValue = CR_MIN,
-                        maxValue = CR_MAX
-                    )
-                }
-            }
-        }
+        InsulinProfileEditorContent(
+            name = name,
+            onNameChange = { name = it },
+            isNameValid = isNameValid,
+            selectedTab = selectedTab,
+            onTabSelected = { selectedTab = it },
+            insulinTypes = insulinTypes,
+            selectedInsulinType = insulinType,
+            onInsulinTypeSelected = {
+                insulinType = it
+                dia = it.dia.value.toString()
+                peak = it.peak.value.toString()
+                insulinConcentration = it.defaultConcentration
+            },
+            selectedConcentration = insulinConcentration,
+            onConcentrationSelected = { insulinConcentration = it },
+            dia = dia,
+            onDiaChanged = { dia = it },
+            peak = peak,
+            onPeakChanged = { peak = it },
+            basalBlocks = basalBlocks,
+            onBasalBlocksChanged = { basalBlocks = it },
+            isfBlocks = isfBlocks,
+            onIsfBlocksChanged = { isfBlocks = it },
+            crBlocks = crBlocks,
+            onCrBlocksChanged = { crBlocks = it },
+            modifier = Modifier.padding(innerPadding)
+        )
     }
 
     if (showDiscardConfirmation) {
@@ -309,6 +234,136 @@ fun InsulinProfileDetailEditor(
                 }
             }
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun InsulinProfileEditorContent(
+    name: String,
+    onNameChange: (String) -> Unit,
+    insulinTypes: List<InsulinType>,
+    selectedInsulinType: InsulinType,
+    onInsulinTypeSelected: (InsulinType) -> Unit,
+    selectedConcentration: InsulinConcentration,
+    onConcentrationSelected: (InsulinConcentration) -> Unit,
+    dia: String,
+    onDiaChanged: (String) -> Unit,
+    peak: String,
+    onPeakChanged: (String) -> Unit,
+    basalBlocks: List<Block>,
+    onBasalBlocksChanged: (List<Block>) -> Unit,
+    isfBlocks: List<Block>,
+    onIsfBlocksChanged: (List<Block>) -> Unit,
+    crBlocks: List<Block>,
+    onCrBlocksChanged: (List<Block>) -> Unit,
+    modifier: Modifier = Modifier,
+    isNameValid: Boolean = true,
+    selectedTab: Int = 0,
+    onTabSelected: ((Int) -> Unit)? = null
+) {
+    var internalSelectedTab by remember { mutableIntStateOf(selectedTab) }
+    val currentTab = if (onTabSelected != null) selectedTab else internalSelectedTab
+
+    val tabs = listOf(
+        stringResource(id = R.string.insulin_profile_editor_tab_insulin),
+        stringResource(id = R.string.insulin_profile_editor_tab_basal),
+        stringResource(id = R.string.insulin_profile_editor_tab_isf),
+        stringResource(id = R.string.insulin_profile_editor_tab_cr)
+    )
+
+    Column(
+        modifier = modifier.fillMaxSize()
+    ) {
+        OutlinedTextField(
+            value = name,
+            onValueChange = onNameChange,
+            label = { Text(stringResource(id = R.string.insulin_profile_editor_name_label)) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            singleLine = true,
+            isError = !isNameValid,
+            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
+        )
+
+        SecondaryTabRow(selectedTabIndex = currentTab) {
+            tabs.forEachIndexed { index, title ->
+                Tab(
+                    selected = currentTab == index,
+                    onClick = {
+                        internalSelectedTab = index
+                        onTabSelected?.invoke(index)
+                    },
+                    text = { Text(title) }
+                )
+            }
+        }
+
+        Box(modifier = Modifier.weight(1f)) {
+            when (currentTab) {
+                0 -> InsulinSettingsEditor(
+                    insulinTypes = insulinTypes,
+                    selectedInsulinType = selectedInsulinType,
+                    onInsulinTypeSelected = onInsulinTypeSelected,
+                    selectedConcentration = selectedConcentration,
+                    onConcentrationSelected = onConcentrationSelected,
+                    dia = dia,
+                    onDiaChanged = onDiaChanged,
+                    peak = peak,
+                    onPeakChanged = onPeakChanged
+                )
+                1 -> TherapyBlockListEditor(
+                    title = stringResource(id = R.string.insulin_profile_editor_basal_title),
+                    description = stringResource(id = R.string.insulin_profile_editor_basal_desc) + " " + stringResource(R.string.insulin_profile_editor_unit_info_format, stringResource(CommonR.string.unit_u_per_h)),
+                    blocks = basalBlocks,
+                    onBlocksChanged = onBasalBlocksChanged,
+                    step = 0.05,
+                    format = "%.2f",
+                    minValue = BASAL_MIN,
+                    maxValue = BASAL_MAX
+                )
+                2 -> {
+                    val glucoseUnit = LocalGlucoseUnit.current
+                    val isfStep = if (glucoseUnit == GlucoseUnit.MG_DL) 1.0 else 0.1
+                    val isfFormat = if (glucoseUnit == GlucoseUnit.MG_DL) "%.0f" else "%.1f"
+                    val isfMin = if (glucoseUnit == GlucoseUnit.MG_DL) ISF_MIN else BgDelta.fromMgDl(ISF_MIN.toInt().toShort()).mmol
+                    val isfMax = if (glucoseUnit == GlucoseUnit.MG_DL) ISF_MAX else BgDelta.fromMgDl(ISF_MAX.toInt().toShort()).mmol
+
+                    val displayBlocks = remember(isfBlocks, glucoseUnit) {
+                        isfBlocks.map { block ->
+                            block.copy(amount = if (glucoseUnit == GlucoseUnit.MG_DL) block.amount else BgDelta.fromMgDl(block.amount.toInt().toShort()).mmol)
+                        }
+                    }
+
+                    TherapyBlockListEditor(
+                        title = stringResource(id = R.string.insulin_profile_editor_isf_title),
+                        description = stringResource(id = R.string.insulin_profile_editor_isf_desc) + " " + stringResource(R.string.insulin_profile_editor_unit_info_format, isfUnitLabel()),
+                        blocks = displayBlocks,
+                        onBlocksChanged = { newDisplayBlocks ->
+                            val updatedBlocks = newDisplayBlocks.map { block ->
+                                block.copy(amount = if (glucoseUnit == GlucoseUnit.MG_DL) block.amount else BgDelta.fromMmol(block.amount).mgdl)
+                            }
+                            onIsfBlocksChanged(updatedBlocks)
+                        },
+                        step = isfStep,
+                        format = isfFormat,
+                        minValue = isfMin,
+                        maxValue = isfMax
+                    )
+                }
+                3 -> TherapyBlockListEditor(
+                    title = stringResource(id = R.string.insulin_profile_editor_cr_title),
+                    description = stringResource(id = R.string.insulin_profile_editor_cr_desc) + " " + stringResource(R.string.insulin_profile_editor_unit_info_format, stringResource(CommonR.string.unit_g_per_u)),
+                    blocks = crBlocks,
+                    onBlocksChanged = onCrBlocksChanged,
+                    step = 0.1,
+                    format = "%.1f",
+                    minValue = CR_MIN,
+                    maxValue = CR_MAX
+                )
+            }
+        }
     }
 }
 
@@ -693,6 +748,33 @@ private fun InsulinProfileDetailEditorPreview() {
             ),
             onSave = {},
             onCancel = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun InsulinProfileEditorContentPreview() {
+    val sampleInsulinType = InsulinType(name = "Humalog", dia = Minutes.ofHours(5), peak = Minutes.ofHours(1))
+    AppPreview {
+        InsulinProfileEditorContent(
+            name = "Normal",
+            onNameChange = {},
+            insulinTypes = listOf(sampleInsulinType),
+            selectedInsulinType = sampleInsulinType,
+            onInsulinTypeSelected = {},
+            selectedConcentration = InsulinConcentration.U100,
+            onConcentrationSelected = {},
+            dia = "300",
+            onDiaChanged = {},
+            peak = "60",
+            onPeakChanged = {},
+            basalBlocks = listOf(Block(Minutes.ofHours(24), 1.0)),
+            onBasalBlocksChanged = {},
+            isfBlocks = listOf(Block(Minutes.ofHours(24), 50.0)),
+            onIsfBlocksChanged = {},
+            crBlocks = listOf(Block(Minutes.ofHours(24), 10.0)),
+            onCrBlocksChanged = {}
         )
     }
 }
