@@ -107,10 +107,11 @@ private fun ModeOption(
     ) {
         Text(
             text = if (!isAvailable) {
-                when (mode) {
-                    ApsMode.AutoCorrection -> stringResource(R.string.aps_mode_requires_cgm_and_pump)
-                    ApsMode.OnlySuggestions -> stringResource(R.string.aps_mode_requires_pump)
-                    ApsMode.Suspend -> mode.toDescriptionString()
+                when {
+                    mode.requiresPump && mode.requiresGlucoseSource -> stringResource(R.string.aps_mode_requires_glucose_source_and_pump)
+                    mode.requiresPump -> stringResource(R.string.aps_mode_requires_pump)
+                    mode.requiresGlucoseSource -> stringResource(R.string.aps_mode_requires_glucose_source)
+                    else -> mode.toDescriptionString()
                 }
             } else {
                 mode.toDescriptionString()

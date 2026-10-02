@@ -170,29 +170,18 @@ class SystemOrchestratorImpl(
         glucoseSourceManager.activeGlucoseSource,
         pumpManager.activeInsulinPump
     ) { glucoseSource, pump ->
-        calculateAvailableApsModes(
-            hasCgm = glucoseSource != null,
+        getAvailableApsModes(
+            hasGlucoseSource = glucoseSource != null,
             hasPump = pump != null
         )
     }.stateIn(
         scope = scope,
         started = SharingStarted.Eagerly,
-        initialValue = calculateAvailableApsModes(
-            hasCgm = glucoseSourceManager.activeGlucoseSource.value != null,
-            hasPump = pumpManager.activeInsulinPump.value != null
-        )
+        initialValue = ApsMode.entries
     )
 
-    private fun calculateAvailableApsModes(hasCgm: Boolean, hasPump: Boolean): List<ApsMode> {
-        val modes = mutableListOf(ApsMode.Suspend)
-        if (hasPump) {
-            modes.add(ApsMode.OnlySuggestions)
-            if (hasCgm) {
-                modes.add(ApsMode.AutoCorrection)
-            }
-        }
-        return modes
-    }
+    private fun getAvailableApsModes(hasGlucoseSource: Boolean, hasPump: Boolean): List<ApsMode> =
+        ApsMode.entries.filter { it.isAvailable(hasPump = hasPump, hasGlucoseSource = hasGlucoseSource) }
 
     private val _apsIssues = MutableStateFlow<Set<ApsIssue>>(emptySet())
     override val apsIssues: StateFlow<Set<ApsIssue>> = _apsIssues.asStateFlow()
