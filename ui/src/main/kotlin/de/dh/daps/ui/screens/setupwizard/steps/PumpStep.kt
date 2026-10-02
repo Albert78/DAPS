@@ -1,5 +1,6 @@
 package de.dh.daps.ui.screens.setupwizard.steps
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,16 +28,21 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.PumpConnectionDescriptor
+import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.LoadingOverlayCard
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.screens.pumpsetup.PumpSetupUiState
 import de.dh.daps.ui.screens.setupwizard.components.SetupStepScaffold
 
@@ -322,5 +328,71 @@ private fun DriverCard(
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
+}
+
+private class PreviewPumpDriver(
+    override val driverId: String,
+    override val driverDisplayName: UiText
+) : InsulinPumpDriver {
+    @Composable
+    override fun SetupScreen(
+        onConnected: (InsulinPump, PumpConnectionDescriptor) -> Unit,
+        onCancel: () -> Unit
+    ) {
+    }
+
+    override suspend fun connect(descriptor: PumpConnectionDescriptor): Result<InsulinPump> {
+        return Result.failure(UnsupportedOperationException())
+    }
+}
+
+@Preview(showBackground = true, name = "Light Mode")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
+@Composable
+private fun PumpStepPreview() {
+    AppPreview {
+        PumpStep(
+            uiState = PumpSetupUiState(
+                availableDrivers = listOf(
+                    PreviewPumpDriver("de.dh.daps.plugin.sample", UiText.DynamicString("Sample Pump Driver")),
+                    PreviewPumpDriver("de.dh.daps.plugin.simbody", UiText.DynamicString("SimBody Virtual Pump Driver"))
+                )
+            ),
+            onSelectDriver = {},
+            onConnectPump = { _, _ -> },
+            onClearError = {},
+            onNext = {},
+            onBack = {},
+            snackbarHostState = remember { SnackbarHostState() },
+            stepProgress = Pair(6, 7)
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Active Pump - Light")
+@Composable
+private fun PumpStepActivePreview() {
+    AppPreview {
+        PumpStep(
+            uiState = PumpSetupUiState(
+                availableDrivers = listOf(
+                    PreviewPumpDriver("de.dh.daps.plugin.sample", UiText.DynamicString("Sample Pump Driver")),
+                    PreviewPumpDriver("de.dh.daps.plugin.simbody", UiText.DynamicString("SimBody Virtual Pump Driver"))
+                ),
+                activePumpDescriptor = PumpConnectionDescriptor(
+                    driverId = "de.dh.daps.plugin.simbody",
+                    deviceId = "simbody-virtual-pump-01",
+                    displayName = "SimBody Virtual Insulin Pump"
+                )
+            ),
+            onSelectDriver = {},
+            onConnectPump = { _, _ -> },
+            onClearError = {},
+            onNext = {},
+            onBack = {},
+            snackbarHostState = remember { SnackbarHostState() },
+            stepProgress = Pair(6, 7)
+        )
     }
 }

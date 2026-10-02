@@ -1,5 +1,6 @@
 package de.dh.daps.ui.screens.setupwizard.steps
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,11 +21,13 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.data.CarbsUnit
 import de.dh.daps.common.model.data.GlucoseUnit
@@ -34,6 +37,7 @@ import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.icons.Icon_Carbs_Unit
 import de.dh.daps.ui.common.icons.Icon_Glucose_Unit
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.screens.setupwizard.components.SetupStepScaffold
 
 @Composable
@@ -164,5 +168,23 @@ fun UnitsStep(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Light Mode")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
+@Composable
+private fun UnitsStepPreview() {
+    AppPreview {
+        UnitsStep(
+            glucoseUnit = GlucoseUnit.MG_DL,
+            carbsUnit = CarbsUnit.GRAMS,
+            onGlucoseUnitSelected = {},
+            onCarbsUnitSelected = {},
+            onNext = {},
+            onBack = {},
+            snackbarHostState = remember { SnackbarHostState() },
+            stepProgress = Pair(1, 7)
+        )
     }
 }

@@ -1,5 +1,6 @@
 package de.dh.daps.ui.screens.setupwizard.steps
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,16 +28,21 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.GlucoseSourceDriver
+import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.LoadingOverlayCard
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupUiState
 import de.dh.daps.ui.screens.setupwizard.components.SetupStepScaffold
 
@@ -322,5 +328,71 @@ private fun GlucoseSourceDriverCard(
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
+}
+
+private class PreviewGlucoseSourceDriver(
+    override val driverId: String,
+    override val driverDisplayName: UiText
+) : GlucoseSourceDriver {
+    @Composable
+    override fun SetupScreen(
+        onConnected: (GlucoseSource, GlucoseSourceConnectionDescriptor) -> Unit,
+        onCancel: () -> Unit
+    ) {
+    }
+
+    override suspend fun connect(descriptor: GlucoseSourceConnectionDescriptor): Result<GlucoseSource> {
+        return Result.failure(UnsupportedOperationException())
+    }
+}
+
+@Preview(showBackground = true, name = "Light Mode")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
+@Composable
+private fun GlucoseSourceStepPreview() {
+    AppPreview {
+        GlucoseSourceStep(
+            uiState = GlucoseSourceSetupUiState(
+                availableDrivers = listOf(
+                    PreviewGlucoseSourceDriver("de.dh.daps.plugin.glucose.receiver", UiText.DynamicString("xDrip+ Broadcast Receiver")),
+                    PreviewGlucoseSourceDriver("de.dh.daps.plugin.simbody", UiText.DynamicString("SimBody Virtual Glucose Source"))
+                )
+            ),
+            onSelectDriver = {},
+            onConnectGlucoseSource = { _, _ -> },
+            onClearError = {},
+            onNext = {},
+            onBack = {},
+            snackbarHostState = remember { SnackbarHostState() },
+            stepProgress = Pair(5, 7)
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Active Source - Light")
+@Composable
+private fun GlucoseSourceStepActivePreview() {
+    AppPreview {
+        GlucoseSourceStep(
+            uiState = GlucoseSourceSetupUiState(
+                availableDrivers = listOf(
+                    PreviewGlucoseSourceDriver("de.dh.daps.plugin.glucose.receiver", UiText.DynamicString("xDrip+ Broadcast Receiver")),
+                    PreviewGlucoseSourceDriver("de.dh.daps.plugin.simbody", UiText.DynamicString("SimBody Virtual Glucose Source"))
+                ),
+                activeSourceDescriptor = GlucoseSourceConnectionDescriptor(
+                    driverId = "de.dh.daps.plugin.simbody",
+                    sourceId = "simbody-sensor-01",
+                    displayName = "SimBody Virtual Glucose Sensor"
+                )
+            ),
+            onSelectDriver = {},
+            onConnectGlucoseSource = { _, _ -> },
+            onClearError = {},
+            onNext = {},
+            onBack = {},
+            snackbarHostState = remember { SnackbarHostState() },
+            stepProgress = Pair(5, 7)
+        )
     }
 }

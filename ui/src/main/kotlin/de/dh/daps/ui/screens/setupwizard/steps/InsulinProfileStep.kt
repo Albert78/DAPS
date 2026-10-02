@@ -1,5 +1,6 @@
 package de.dh.daps.ui.screens.setupwizard.steps
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -10,10 +11,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinType
+import de.dh.daps.common.model.data.Block
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.screens.insulinprofile.InsulinProfileEditorContent
 import de.dh.daps.ui.screens.setupwizard.components.SetupStepScaffold
 
@@ -95,6 +100,42 @@ fun InsulinProfileStep(
             crBlocks = crBlocks,
             onCrBlocksChanged = { crBlocks = it },
             modifier = Modifier.padding(innerPadding)
+        )
+    }
+}
+
+private val previewInsulinType = InsulinType(
+    id = "1",
+    name = "NovoRapid",
+    dia = Minutes.ofHours(5),
+    peak = Minutes(75)
+)
+
+private val previewInsulinProfile = InsulinProfile(
+    id = 1L,
+    name = "Standard",
+    basalBlocks = listOf(Block(Minutes.ofHours(24), 1.0)),
+    isfBlocks = listOf(Block(Minutes.ofHours(24), 40.0)),
+    crBlocks = listOf(Block(Minutes.ofHours(24), 10.0)),
+    insulinType = previewInsulinType,
+    insulinConcentration = InsulinConcentration.U100,
+    dia = Minutes.ofHours(5),
+    peak = Minutes(75)
+)
+
+@Preview(showBackground = true, name = "Light Mode")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
+@Composable
+private fun InsulinProfileStepPreview() {
+    AppPreview {
+        InsulinProfileStep(
+            profile = previewInsulinProfile,
+            availableInsulinTypes = listOf(previewInsulinType),
+            onSaveProfile = {},
+            onNext = {},
+            onBack = {},
+            snackbarHostState = remember { SnackbarHostState() },
+            stepProgress = Pair(3, 7)
         )
     }
 }

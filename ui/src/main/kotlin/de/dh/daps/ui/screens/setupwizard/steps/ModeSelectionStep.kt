@@ -1,5 +1,6 @@
 package de.dh.daps.ui.screens.setupwizard.steps
 
+import android.content.res.Configuration
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -27,12 +28,15 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.contentScrollIndicator
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.screens.setupwizard.components.SetupStepScaffold
 
 @Composable
@@ -172,5 +176,19 @@ fun ModeSelectionStep(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Light Mode")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
+@Composable
+private fun ModeSelectionStepPreview() {
+    AppPreview {
+        ModeSelectionStep(
+            onSelectDemo = {},
+            onStartManual = {},
+            onImportBackup = {},
+            snackbarHostState = remember { SnackbarHostState() }
+        )
     }
 }

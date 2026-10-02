@@ -1,5 +1,6 @@
 package de.dh.daps.ui.screens.setupwizard.steps
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,17 +28,21 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinType
+import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.contentScrollIndicator
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.screens.insulintypes.InsulinTypeEditorFormContent
 import de.dh.daps.ui.screens.insulintypes.InsulinTypeEditorUiState
 import de.dh.daps.ui.screens.setupwizard.components.SetupStepScaffold
@@ -260,5 +265,80 @@ fun InsulinTypeStep(
                 }
             }
         }
+    }
+}
+
+private val previewInsulinType1 = InsulinType(
+    id = "1",
+    name = "NovoRapid",
+    dia = Minutes.ofHours(5),
+    peak = Minutes(75)
+)
+
+private val previewInsulinType2 = InsulinType(
+    id = "2",
+    name = "Fiasp",
+    dia = Minutes.ofHours(5),
+    peak = Minutes(50)
+)
+
+@Preview(showBackground = true, name = "Light Mode")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
+@Composable
+private fun InsulinTypeStepPreview() {
+    AppPreview {
+        InsulinTypeStep(
+            availableTypes = listOf(previewInsulinType1, previewInsulinType2),
+            selectedTypeIds = setOf("1", "2"),
+            primaryTypeId = "1",
+            isEditing = false,
+            editorUiState = InsulinTypeEditorUiState(),
+            onToggleTypeSelection = {},
+            onSelectPrimaryType = {},
+            onStartEditing = {},
+            onCancelEditing = {},
+            onUpdateName = {},
+            onUpdatePeak = {},
+            onUpdateDia = {},
+            onUpdateConcentration = {},
+            onSaveEditedType = {},
+            onNext = {},
+            onBack = {},
+            snackbarHostState = remember { SnackbarHostState() },
+            stepProgress = Pair(2, 7)
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Editing Insulin Type - Light")
+@Composable
+private fun InsulinTypeStepEditingPreview() {
+    AppPreview {
+        InsulinTypeStep(
+            availableTypes = listOf(previewInsulinType1),
+            selectedTypeIds = setOf("1"),
+            primaryTypeId = "1",
+            isEditing = true,
+            editorUiState = InsulinTypeEditorUiState(
+                id = previewInsulinType1.id,
+                name = previewInsulinType1.name,
+                peak = previewInsulinType1.peak.value.toString(),
+                dia = previewInsulinType1.dia.value.toString(),
+                concentration = previewInsulinType1.defaultConcentration
+            ),
+            onToggleTypeSelection = {},
+            onSelectPrimaryType = {},
+            onStartEditing = {},
+            onCancelEditing = {},
+            onUpdateName = {},
+            onUpdatePeak = {},
+            onUpdateDia = {},
+            onUpdateConcentration = {},
+            onSaveEditedType = {},
+            onNext = {},
+            onBack = {},
+            snackbarHostState = remember { SnackbarHostState() },
+            stepProgress = Pair(2, 7)
+        )
     }
 }

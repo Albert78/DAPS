@@ -1,5 +1,6 @@
 package de.dh.daps.ui.screens.setupwizard.steps
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,16 +20,26 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.model.InsulinConcentration
+import de.dh.daps.common.model.InsulinType
+import de.dh.daps.common.model.data.Block
+import de.dh.daps.common.model.data.CarbsUnit
+import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.common.model.data.InsulinProfile
+import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.carbsUnitLabel
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.glucoseUnitLabel
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.screens.setupwizard.SetupWizardUiState
 import de.dh.daps.ui.screens.setupwizard.components.SetupStepScaffold
 
@@ -130,5 +141,48 @@ fun SummaryStep(
                 }
             }
         }
+    }
+}
+
+private val previewInsulinType = InsulinType(
+    id = "1",
+    name = "NovoRapid",
+    dia = Minutes.ofHours(5),
+    peak = Minutes(75)
+)
+
+private val previewInsulinProfile = InsulinProfile(
+    id = 1L,
+    name = "Standard",
+    basalBlocks = listOf(Block(Minutes.ofHours(24), 1.0)),
+    isfBlocks = listOf(Block(Minutes.ofHours(24), 40.0)),
+    crBlocks = listOf(Block(Minutes.ofHours(24), 10.0)),
+    insulinType = previewInsulinType,
+    insulinConcentration = InsulinConcentration.U100,
+    dia = Minutes.ofHours(5),
+    peak = Minutes(75)
+)
+
+@Preview(showBackground = true, name = "Light Mode")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
+@Composable
+private fun SummaryStepPreview() {
+    AppPreview {
+        SummaryStep(
+            uiState = SetupWizardUiState(
+                glucoseUnit = GlucoseUnit.MG_DL,
+                carbsUnit = CarbsUnit.GRAMS,
+                availableInsulinTypes = listOf(previewInsulinType),
+                selectedInsulinTypeIds = setOf(previewInsulinType.id),
+                primaryInsulinTypeId = previewInsulinType.id,
+                insulinProfile = previewInsulinProfile
+            ),
+            cgmDisplayName = "SimBody Virtual Glucose Sensor",
+            pumpDisplayName = "SimBody Virtual Insulin Pump",
+            onComplete = {},
+            onBack = {},
+            snackbarHostState = remember { SnackbarHostState() },
+            stepProgress = Pair(7, 7)
+        )
     }
 }
