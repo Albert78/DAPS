@@ -13,7 +13,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,6 +29,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import de.dh.daps.core.aps.TreatmentLock
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.LoadingScreen
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.Red
 import de.dh.daps.ui.common.theme.AppPreview
@@ -66,24 +66,11 @@ fun TreatmentLockScreenContent(
             modifier = Modifier.fillMaxSize()
         ) {
             TreatmentLockHeader(title = title, onNavigateUp = onNavigateUp)
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                CircularProgressIndicator()
-                Spacer(Modifier.height(16.dp))
-                val message = when (uiState.status) {
-                    LockStatus.Syncing -> stringResource(R.string.treatment_lock_syncing)
-                    else -> stringResource(R.string.treatment_lock_busy_system, uiState.busyOwner ?: "System")
-                }
-                Text(
-                    text = message,
-                    style = MaterialTheme.typography.bodyMedium
-                )
+            val message = when (uiState.status) {
+                LockStatus.Syncing -> stringResource(R.string.treatment_lock_syncing)
+                else -> stringResource(R.string.treatment_lock_busy_system, uiState.busyOwner ?: "System")
             }
+            LoadingScreen(message = message)
         }
     }
 

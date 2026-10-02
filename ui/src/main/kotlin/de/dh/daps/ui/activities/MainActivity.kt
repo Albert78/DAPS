@@ -80,11 +80,11 @@ import de.dh.daps.core.system.RegistryProvider
 import de.dh.daps.ui.GlobalViewModel
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.EdgeToEdgeHandler
+import de.dh.daps.ui.common.composables.LoadingScreen
 import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupViewModel
 import de.dh.daps.ui.screens.pumpsetup.PumpSetupViewModel
 import de.dh.daps.ui.screens.setupwizard.SetupWizardScreen
 import de.dh.daps.ui.screens.setupwizard.SetupWizardViewModel
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.dh.daps.ui.common.icons.Icon_App_Data
 import de.dh.daps.ui.common.icons.Icon_Bolus
@@ -158,16 +158,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         InitializationState.INITIALIZING -> {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    CircularProgressIndicator()
-                                    Spacer(Modifier.height(16.dp))
-                                    Text("System wird initialisiert...")
-                                }
-                            }
+                            LoadingScreen(message = "System wird initialisiert...")
                         }
                         InitializationState.READY -> {
                             MainApp(registry)

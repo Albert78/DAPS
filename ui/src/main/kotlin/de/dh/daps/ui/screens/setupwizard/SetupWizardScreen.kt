@@ -27,12 +27,9 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.PlayArrow
-import de.dh.daps.ui.common.icons.Icon_Carbs_Unit
-import de.dh.daps.ui.common.icons.Icon_Glucose_Unit
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -77,9 +74,12 @@ import de.dh.daps.ui.R
 import de.dh.daps.ui.common.LocalCarbsUnit
 import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.carbsUnitLabel
+import de.dh.daps.ui.common.composables.LoadingScreen
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.glucoseUnitLabel
+import de.dh.daps.ui.common.icons.Icon_Carbs_Unit
+import de.dh.daps.ui.common.icons.Icon_Glucose_Unit
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupContent
 import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupUiState
@@ -206,20 +206,10 @@ fun SetupWizardContent(
     ) {
         if (uiState.isBusy) {
             Scaffold { innerPadding ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    CircularProgressIndicator()
-                    Spacer(Modifier.height(16.dp))
-                    Text(
-                        text = stringResource(R.string.setup_wizard_busy_text),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
+                LoadingScreen(
+                    message = stringResource(R.string.setup_wizard_busy_text),
+                    modifier = Modifier.padding(innerPadding)
+                )
             }
         } else {
             when (uiState.currentStep) {
@@ -964,16 +954,6 @@ private val previewBgBlocks = listOf(
     )
 )
 
-@Preview(showBackground = true, name = "0 - Initializing / Busy")
-@Composable
-fun SetupWizardBusyPreview() {
-    AppPreview {
-        SetupWizardContent(
-            uiState = SetupWizardUiState(isBusy = true)
-        )
-    }
-}
-
 @Preview(showBackground = true, name = "1 - Mode Selection")
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "1 - Mode Selection (Dark)")
 @Composable
@@ -1100,6 +1080,16 @@ fun SetupWizardSummaryStepPreview() {
                 insulinProfile = previewInsulinProfile,
                 bgBlocks = previewBgBlocks
             )
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Initializing / Busy")
+@Composable
+fun SetupWizardBusyPreview() {
+    AppPreview {
+        SetupWizardContent(
+            uiState = SetupWizardUiState(isBusy = true)
         )
     }
 }
