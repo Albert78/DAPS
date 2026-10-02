@@ -733,9 +733,12 @@
     <string name="setup_wizard_step1_units_title">Schritt 1: Maßeinheiten wählen</string>
     <string name="setup_wizard_step1_units_desc">Wähle deine bevorzugten Maßeinheiten für Blutzucker- und Kohlenhydratwerte.</string>
 
-    <string name="setup_wizard_step2_insulin_title">Schritt 2: Insulintyp auswählen</string>
-    <string name="setup_wizard_step2_insulin_desc">Wähle das Insulin, das du hauptsächlich verwendest, oder passe dessen Wirkprofil an.</string>
-    <string name="setup_wizard_step2_insulin_custom_btn">Eigener Insulintyp / Bearbeiten</string>
+    <string name="setup_wizard_step2_insulin_title">Schritt 2: Insulintypen auswählen</string>
+    <string name="setup_wizard_step2_insulin_desc">Wähle die Insulintypen aus, die du in deiner persönlichen Auswahl nutzen möchtest, oder füge eigene hinzu.</string>
+    <string name="setup_wizard_step2_insulin_custom_btn">+ Eigenen Insulintyp hinzufügen</string>
+    <string name="setup_wizard_step2_primary_header">Standard-Insulin festlegen</string>
+    <string name="setup_wizard_step2_primary_desc">Welcher der ausgewählten Insulintypen soll als dein Standard-Insulin verwendet werden?</string>
+    <string name="setup_wizard_step2_primary_badge">Standard</string>
 
     <string name="setup_wizard_step3_profile_title">Schritt 3: Insulinprofil (Basal, ISF, CR)</string>
     <string name="setup_wizard_step4_bg_targets_title">Schritt 4: Blutzucker-Zielwerte &amp; Hypo-Schwellen</string>

@@ -77,7 +77,8 @@ fun SetupWizardScreen(
         onImportBackup = viewModel::importBackup,
         onSetGlucoseUnit = viewModel::setGlucoseUnit,
         onSetCarbsUnit = viewModel::setCarbsUnit,
-        onSelectInsulinType = viewModel::selectInsulinType,
+        onToggleInsulinTypeSelection = viewModel::toggleInsulinTypeSelection,
+        onSelectPrimaryInsulinType = viewModel::selectPrimaryInsulinType,
         onStartEditingInsulinType = viewModel::startEditingInsulinType,
         onCancelEditingInsulinType = viewModel::cancelEditingInsulinType,
         onUpdateInsulinTypeEditorName = viewModel::updateInsulinTypeEditorName,
@@ -115,7 +116,8 @@ fun SetupWizardContent(
     onImportBackup: (Uri) -> Unit = {},
     onSetGlucoseUnit: (GlucoseUnit) -> Unit = {},
     onSetCarbsUnit: (CarbsUnit) -> Unit = {},
-    onSelectInsulinType: (InsulinType) -> Unit = {},
+    onToggleInsulinTypeSelection: (InsulinType) -> Unit = {},
+    onSelectPrimaryInsulinType: (InsulinType) -> Unit = {},
     onStartEditingInsulinType: (InsulinType?) -> Unit = {},
     onCancelEditingInsulinType: () -> Unit = {},
     onUpdateInsulinTypeEditorName: (String) -> Unit = {},
@@ -204,10 +206,12 @@ fun SetupWizardContent(
                     SetupWizardStep.MANUAL_STEP_2_INSULIN_TYPE -> {
                         InsulinTypeStep(
                             availableTypes = uiState.availableInsulinTypes,
-                            selectedType = uiState.selectedInsulinType,
+                            selectedTypeIds = uiState.selectedInsulinTypeIds,
+                            primaryTypeId = uiState.primaryInsulinTypeId,
                             isEditing = uiState.isEditingInsulinType,
                             editorUiState = uiState.insulinTypeEditorUiState,
-                            onSelectType = onSelectInsulinType,
+                            onToggleTypeSelection = onToggleInsulinTypeSelection,
+                            onSelectPrimaryType = onSelectPrimaryInsulinType,
                             onStartEditing = onStartEditingInsulinType,
                             onCancelEditing = onCancelEditingInsulinType,
                             onUpdateName = onUpdateInsulinTypeEditorName,
@@ -226,7 +230,7 @@ fun SetupWizardContent(
                         if (profile != null) {
                             InsulinProfileStep(
                                 profile = profile,
-                                availableInsulinTypes = uiState.availableInsulinTypes,
+                                availableInsulinTypes = uiState.selectedInsulinTypes,
                                 onSaveProfile = onSetInsulinProfile,
                                 onNext = onGoToNextStep,
                                 onBack = onGoToPreviousStep,
@@ -347,7 +351,8 @@ fun SetupWizardInsulinTypeStepPreview() {
             uiState = SetupWizardUiState(
                 currentStep = SetupWizardStep.MANUAL_STEP_2_INSULIN_TYPE,
                 availableInsulinTypes = listOf(previewInsulinType),
-                selectedInsulinType = previewInsulinType
+                selectedInsulinTypeIds = setOf(previewInsulinType.id),
+                primaryInsulinTypeId = previewInsulinType.id
             )
         )
     }
@@ -381,7 +386,8 @@ fun SetupWizardInsulinProfileStepPreview() {
             uiState = SetupWizardUiState(
                 currentStep = SetupWizardStep.MANUAL_STEP_3_INSULIN_PROFILE,
                 availableInsulinTypes = listOf(previewInsulinType),
-                selectedInsulinType = previewInsulinType,
+                selectedInsulinTypeIds = setOf(previewInsulinType.id),
+                primaryInsulinTypeId = previewInsulinType.id,
                 insulinProfile = previewInsulinProfile
             )
         )
@@ -434,7 +440,8 @@ fun SetupWizardSummaryStepPreview() {
                 currentStep = SetupWizardStep.MANUAL_STEP_7_SUMMARY,
                 glucoseUnit = GlucoseUnit.MG_DL,
                 carbsUnit = CarbsUnit.GRAMS,
-                selectedInsulinType = previewInsulinType,
+                selectedInsulinTypeIds = setOf(previewInsulinType.id),
+                primaryInsulinTypeId = previewInsulinType.id,
                 insulinProfile = previewInsulinProfile,
                 bgBlocks = previewBgBlocks
             )
