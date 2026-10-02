@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import de.dh.daps.common.DEFAULT_DIA_MINUTES
+import de.dh.daps.common.DEFAULT_PEAK_MINUTES
 import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.data.Minutes
@@ -18,8 +20,8 @@ import java.util.UUID
 data class InsulinTypeEditorUiState(
     val id: String? = null,
     val name: String = "",
-    val peak: String = "50",
-    val dia: String = "300",
+    val peak: String = DEFAULT_PEAK_MINUTES.toString(),
+    val dia: String = DEFAULT_DIA_MINUTES.toString(),
     val concentration: InsulinConcentration = InsulinConcentration.U100,
     val isSaving: Boolean = false,
     val isLoading: Boolean = false
@@ -95,8 +97,8 @@ class InsulinTypeEditorViewModel(
             val insulinType = InsulinType(
                 id = state.id ?: UUID.randomUUID().toString(),
                 name = state.name.trim(),
-                peak = Minutes((state.peak.toIntOrNull() ?: 50).toShort()),
-                dia = Minutes((state.dia.toIntOrNull() ?: 300).toShort()),
+                peak = Minutes((state.peak.toIntOrNull() ?: DEFAULT_PEAK_MINUTES).toShort()),
+                dia = Minutes((state.dia.toIntOrNull() ?: DEFAULT_DIA_MINUTES).toShort()),
                 defaultConcentration = state.concentration
             )
             treatmentRepository.insertInsulinType(insulinType)

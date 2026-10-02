@@ -6,6 +6,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import de.dh.daps.common.DEFAULT_BG_LOW_THRESHOLD_MGDL
 import de.dh.daps.common.DEFAULT_BG_TARGET_MGDL
+import de.dh.daps.common.DEFAULT_DIA_MINUTES
+import de.dh.daps.common.DEFAULT_PEAK_MINUTES
 import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinType
@@ -238,8 +240,8 @@ class SetupWizardViewModel(
                 insulinTypeEditorUiState = InsulinTypeEditorUiState(
                     id = typeToEdit?.id,
                     name = typeToEdit?.name ?: "",
-                    peak = typeToEdit?.peak?.value?.toString() ?: "50",
-                    dia = typeToEdit?.dia?.value?.toString() ?: "300",
+                    peak = typeToEdit?.peak?.value?.toString() ?: DEFAULT_PEAK_MINUTES.toString(),
+                    dia = typeToEdit?.dia?.value?.toString() ?: DEFAULT_DIA_MINUTES.toString(),
                     concentration = typeToEdit?.defaultConcentration ?: InsulinConcentration.U100
                 )
             )
@@ -281,8 +283,8 @@ class SetupWizardViewModel(
         val newType = InsulinType(
             id = editorState.id ?: UUID.randomUUID().toString(),
             name = editorState.name.trim(),
-            peak = Minutes((editorState.peak.toIntOrNull() ?: 50).toShort()),
-            dia = Minutes((editorState.dia.toIntOrNull() ?: 300).toShort()),
+            peak = Minutes((editorState.peak.toIntOrNull() ?: DEFAULT_PEAK_MINUTES).toShort()),
+            dia = Minutes((editorState.dia.toIntOrNull() ?: DEFAULT_DIA_MINUTES).toShort()),
             defaultConcentration = editorState.concentration
         )
 
