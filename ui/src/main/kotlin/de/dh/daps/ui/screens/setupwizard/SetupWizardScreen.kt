@@ -67,6 +67,8 @@ import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.model.data.BgBlock
+import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.Block
 import de.dh.daps.common.model.data.CarbsUnit
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.InsulinProfile
@@ -84,6 +86,7 @@ import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupUiState
 import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupViewModel
 import de.dh.daps.ui.screens.insulinprofile.InsulinProfileDetailEditor
 import de.dh.daps.ui.screens.insulintypes.InsulinTypeEditorContent
+import de.dh.daps.ui.screens.insulintypes.InsulinTypeEditorUiState
 import de.dh.daps.ui.screens.pumpsetup.PumpSetupContent
 import de.dh.daps.ui.screens.pumpsetup.PumpSetupUiState
 import de.dh.daps.ui.screens.pumpsetup.PumpSetupViewModel
@@ -141,34 +144,34 @@ fun SetupWizardScreen(
 @Composable
 fun SetupWizardContent(
     uiState: SetupWizardUiState,
-    cgmUiState: GlucoseSourceSetupUiState,
-    pumpUiState: PumpSetupUiState,
-    cgmDescriptor: GlucoseSourceConnectionDescriptor?,
-    pumpDescriptor: PumpConnectionDescriptor?,
-    onSelectDemo: () -> Unit,
-    onStartManual: () -> Unit,
-    onImportBackup: (Uri) -> Unit,
-    onSetGlucoseUnit: (GlucoseUnit) -> Unit,
-    onSetCarbsUnit: (CarbsUnit) -> Unit,
-    onSelectInsulinType: (InsulinType) -> Unit,
-    onStartEditingInsulinType: (InsulinType?) -> Unit,
-    onCancelEditingInsulinType: () -> Unit,
-    onUpdateInsulinTypeEditorName: (String) -> Unit,
-    onUpdateInsulinTypeEditorPeak: (String) -> Unit,
-    onUpdateInsulinTypeEditorDia: (String) -> Unit,
-    onUpdateInsulinTypeEditorConcentration: (InsulinConcentration) -> Unit,
-    onSaveEditedInsulinType: () -> Unit,
-    onSetInsulinProfile: (InsulinProfile) -> Unit,
-    onSetBgBlocks: (List<BgBlock>) -> Unit,
-    onSelectCgmDriver: (GlucoseSourceDriver?) -> Unit,
-    onConnectGlucoseSource: (GlucoseSourceConnectionDescriptor, onSuccess: () -> Unit) -> Unit,
-    onClearCgmError: () -> Unit,
-    onSelectPumpDriver: (InsulinPumpDriver?) -> Unit,
-    onConnectPump: (PumpConnectionDescriptor, onSuccess: () -> Unit) -> Unit,
-    onClearPumpError: () -> Unit,
-    onGoToNextStep: () -> Unit,
-    onGoToPreviousStep: () -> Unit,
-    onCompleteManualSetup: () -> Unit
+    cgmUiState: GlucoseSourceSetupUiState = GlucoseSourceSetupUiState(),
+    pumpUiState: PumpSetupUiState = PumpSetupUiState(),
+    cgmDescriptor: GlucoseSourceConnectionDescriptor? = null,
+    pumpDescriptor: PumpConnectionDescriptor? = null,
+    onSelectDemo: () -> Unit = {},
+    onStartManual: () -> Unit = {},
+    onImportBackup: (Uri) -> Unit = {},
+    onSetGlucoseUnit: (GlucoseUnit) -> Unit = {},
+    onSetCarbsUnit: (CarbsUnit) -> Unit = {},
+    onSelectInsulinType: (InsulinType) -> Unit = {},
+    onStartEditingInsulinType: (InsulinType?) -> Unit = {},
+    onCancelEditingInsulinType: () -> Unit = {},
+    onUpdateInsulinTypeEditorName: (String) -> Unit = {},
+    onUpdateInsulinTypeEditorPeak: (String) -> Unit = {},
+    onUpdateInsulinTypeEditorDia: (String) -> Unit = {},
+    onUpdateInsulinTypeEditorConcentration: (InsulinConcentration) -> Unit = {},
+    onSaveEditedInsulinType: () -> Unit = {},
+    onSetInsulinProfile: (InsulinProfile) -> Unit = {},
+    onSetBgBlocks: (List<BgBlock>) -> Unit = {},
+    onSelectCgmDriver: (GlucoseSourceDriver?) -> Unit = {},
+    onConnectGlucoseSource: (GlucoseSourceConnectionDescriptor, onSuccess: () -> Unit) -> Unit = { _, _ -> },
+    onClearCgmError: () -> Unit = {},
+    onSelectPumpDriver: (InsulinPumpDriver?) -> Unit = {},
+    onConnectPump: (PumpConnectionDescriptor, onSuccess: () -> Unit) -> Unit = { _, _ -> },
+    onClearPumpError: () -> Unit = {},
+    onGoToNextStep: () -> Unit = {},
+    onGoToPreviousStep: () -> Unit = {},
+    onCompleteManualSetup: () -> Unit = {}
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
@@ -934,51 +937,169 @@ private fun SummaryStepContent(
     }
 }
 
-@Preview(showBackground = true, name = "Mode Selection - Light")
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Mode Selection - Dark")
+private val previewInsulinType = InsulinType(
+    id = "1",
+    name = "NovoRapid",
+    dia = Minutes.ofHours(5),
+    peak = Minutes(75)
+)
+
+private val previewInsulinProfile = InsulinProfile(
+    id = 1L,
+    name = "Standard",
+    basalBlocks = listOf(Block(Minutes.ofHours(24), 1.0)),
+    isfBlocks = listOf(Block(Minutes.ofHours(24), 40.0)),
+    crBlocks = listOf(Block(Minutes.ofHours(24), 10.0)),
+    insulinType = previewInsulinType,
+    insulinConcentration = InsulinConcentration.U100,
+    dia = Minutes.ofHours(5),
+    peak = Minutes(75)
+)
+
+private val previewBgBlocks = listOf(
+    BgBlock(
+        duration = Minutes.ofHours(24),
+        target = BgValue.fromMgDl(100.0),
+        lowThreshold = BgValue.fromMgDl(70.0)
+    )
+)
+
+@Preview(showBackground = true, name = "0 - Initializing / Busy")
+@Composable
+fun SetupWizardBusyPreview() {
+    AppPreview {
+        SetupWizardContent(
+            uiState = SetupWizardUiState(isBusy = true)
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "1 - Mode Selection")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "1 - Mode Selection (Dark)")
 @Composable
 fun SetupWizardModeSelectionPreview() {
     AppPreview {
-        ModeSelectionContent(
-            onSelectDemo = {},
-            onStartManual = {},
-            onSelectImport = {}
+        SetupWizardContent(
+            uiState = SetupWizardUiState(
+                currentStep = SetupWizardStep.MODE_SELECTION
+            )
         )
     }
 }
 
-@Preview(showBackground = true, name = "Units Step")
+@Preview(showBackground = true, name = "2 - Step 1: Units")
 @Composable
 fun SetupWizardUnitsStepPreview() {
     AppPreview {
-        UnitsStepContent(
-            glucoseUnit = GlucoseUnit.MG_DL,
-            carbsUnit = CarbsUnit.GRAMS,
-            onGlucoseUnitSelected = {},
-            onCarbsUnitSelected = {},
-            onNext = {},
-            onBack = {}
+        SetupWizardContent(
+            uiState = SetupWizardUiState(
+                currentStep = SetupWizardStep.MANUAL_STEP_1_UNITS,
+                glucoseUnit = GlucoseUnit.MG_DL,
+                carbsUnit = CarbsUnit.GRAMS
+            )
         )
     }
 }
 
-@Preview(showBackground = true, name = "Insulin Type Step")
+@Preview(showBackground = true, name = "3 - Step 2: Insulin Type")
 @Composable
 fun SetupWizardInsulinTypeStepPreview() {
-    val sampleType = InsulinType(
-        name = "NovoRapid",
-        dia = Minutes.ofHours(5),
-        peak = Minutes(75)
-    )
     AppPreview {
-        InsulinTypeStepContent(
-            availableTypes = listOf(sampleType),
-            selectedType = sampleType,
-            onSelectType = {},
-            onEditType = {},
-            onAddNewType = {},
-            onNext = {},
-            onBack = {}
+        SetupWizardContent(
+            uiState = SetupWizardUiState(
+                currentStep = SetupWizardStep.MANUAL_STEP_2_INSULIN_TYPE,
+                availableInsulinTypes = listOf(previewInsulinType),
+                selectedInsulinType = previewInsulinType
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "3b - Step 2: Edit Insulin Type")
+@Composable
+fun SetupWizardInsulinTypeEditPreview() {
+    AppPreview {
+        SetupWizardContent(
+            uiState = SetupWizardUiState(
+                currentStep = SetupWizardStep.MANUAL_STEP_2_INSULIN_TYPE,
+                isEditingInsulinType = true,
+                insulinTypeEditorUiState = InsulinTypeEditorUiState(
+                    id = previewInsulinType.id,
+                    name = previewInsulinType.name,
+                    peak = previewInsulinType.peak.value.toString(),
+                    dia = previewInsulinType.dia.value.toString(),
+                    concentration = previewInsulinType.defaultConcentration
+                )
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "4 - Step 3: Insulin Profile")
+@Composable
+fun SetupWizardInsulinProfileStepPreview() {
+    AppPreview {
+        SetupWizardContent(
+            uiState = SetupWizardUiState(
+                currentStep = SetupWizardStep.MANUAL_STEP_3_INSULIN_PROFILE,
+                availableInsulinTypes = listOf(previewInsulinType),
+                selectedInsulinType = previewInsulinType,
+                insulinProfile = previewInsulinProfile
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "5 - Step 4: BG Targets")
+@Composable
+fun SetupWizardBgTargetsStepPreview() {
+    AppPreview {
+        SetupWizardContent(
+            uiState = SetupWizardUiState(
+                currentStep = SetupWizardStep.MANUAL_STEP_4_BG_TARGETS,
+                bgBlocks = previewBgBlocks
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "6 - Step 5: Glucose Source")
+@Composable
+fun SetupWizardGlucoseSourceStepPreview() {
+    AppPreview {
+        SetupWizardContent(
+            uiState = SetupWizardUiState(
+                currentStep = SetupWizardStep.MANUAL_STEP_5_GLUCOSE_SOURCE
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "7 - Step 6: Pump")
+@Composable
+fun SetupWizardPumpStepPreview() {
+    AppPreview {
+        SetupWizardContent(
+            uiState = SetupWizardUiState(
+                currentStep = SetupWizardStep.MANUAL_STEP_6_PUMP
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "8 - Step 7: Summary")
+@Composable
+fun SetupWizardSummaryStepPreview() {
+    AppPreview {
+        SetupWizardContent(
+            uiState = SetupWizardUiState(
+                currentStep = SetupWizardStep.MANUAL_STEP_7_SUMMARY,
+                glucoseUnit = GlucoseUnit.MG_DL,
+                carbsUnit = CarbsUnit.GRAMS,
+                selectedInsulinType = previewInsulinType,
+                insulinProfile = previewInsulinProfile,
+                bgBlocks = previewBgBlocks
+            )
         )
     }
 }
