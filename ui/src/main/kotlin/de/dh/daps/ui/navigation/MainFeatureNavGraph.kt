@@ -157,6 +157,8 @@ class MainFeatureNavGraph(
                     onNavigateToManualControl = { initialDialog -> navViewModel.push(ManualControlRoute(initialDialog = initialDialog)) },
                     onAdjustmentClick = { navViewModel.push(TherapyAdjustmentRoute) },
                     onHistoryChartClick = { navViewModel.push(HistoryRoute) },
+                    onNavigateToGlucoseSourceSetup = { navViewModel.push(GlucoseSourceSetupRoute()) },
+                    onNavigateToPumpSetup = { navViewModel.push(PumpSetupRoute()) },
                     extraContent = extraDashboardContent
                 )
             }

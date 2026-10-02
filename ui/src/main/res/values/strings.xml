@@ -104,6 +104,9 @@
 
     <string name="dashboard_permissions_missing">Für eine ordnungsgemäße Funktion benötigt die App weitere Berechtigungen</string>
     <string name="dashboard_fix_permissions_link">Reparieren</string>
+    <string name="dashboard_glucose_source_missing">Es ist keine Glucosequelle konfiguriert.</string>
+    <string name="dashboard_pump_missing">Es ist keine Insulinpumpe konfiguriert.</string>
+    <string name="dashboard_configure_link">Einrichten</string>
     <string name="dashboard_history_title">Aktueller Verlauf</string>
 
     <string name="error_app_settings_could_not_be_opened_message">Die App-Einstellungen konnten nicht geöffnet werden. Bitte öffne sie aus den Geräteeinstellungen.</string>

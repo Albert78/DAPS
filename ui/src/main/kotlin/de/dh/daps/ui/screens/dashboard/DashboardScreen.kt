@@ -106,6 +106,8 @@ fun DashboardScreen(
     onNavigateToManualControl: (ManualControlInitialDialog) -> Unit = {},
     onAdjustmentClick: () -> Unit,
     onHistoryChartClick: () -> Unit,
+    onNavigateToGlucoseSourceSetup: () -> Unit = {},
+    onNavigateToPumpSetup: () -> Unit = {},
     extraContent: @Composable () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -136,6 +138,8 @@ fun DashboardScreen(
         onAdjustmentClick = onAdjustmentClick,
         onSnoozeAlarm = { type, min -> viewModel.snoozeAlarm(type, min) },
         onCancelSnooze = { type -> viewModel.cancelSnooze(type) },
+        onNavigateToGlucoseSourceSetup = onNavigateToGlucoseSourceSetup,
+        onNavigateToPumpSetup = onNavigateToPumpSetup,
         extraContent = extraContent
     )
 }
@@ -162,6 +166,8 @@ fun DashboardContent(
     onAdjustmentClick: () -> Unit,
     onSnoozeAlarm: (AlarmType, Int) -> Unit = { _, _ -> },
     onCancelSnooze: (AlarmType) -> Unit = {},
+    onNavigateToGlucoseSourceSetup: () -> Unit = {},
+    onNavigateToPumpSetup: () -> Unit = {},
     extraContent: @Composable () -> Unit = {}
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
@@ -215,6 +221,24 @@ fun DashboardContent(
                     warningText = stringResource(id = R.string.dashboard_permissions_missing),
                     actionText = stringResource(id = R.string.dashboard_fix_permissions_link),
                     onActionClick = onFixPermissionsClick
+                )
+            }
+
+            // Glucose source warning header
+            if (!dashboardUiState.isGlucoseSourceConfigured) {
+                WarningBanner(
+                    warningText = stringResource(id = R.string.dashboard_glucose_source_missing),
+                    actionText = stringResource(id = R.string.dashboard_configure_link),
+                    onActionClick = onNavigateToGlucoseSourceSetup
+                )
+            }
+
+            // Pump warning header
+            if (!dashboardUiState.isPumpConfigured) {
+                WarningBanner(
+                    warningText = stringResource(id = R.string.dashboard_pump_missing),
+                    actionText = stringResource(id = R.string.dashboard_configure_link),
+                    onActionClick = onNavigateToPumpSetup
                 )
             }
 

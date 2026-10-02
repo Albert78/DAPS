@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import de.dh.daps.common.model.ApsMode
+import de.dh.daps.common.model.GlucoseSource
+import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.data.AlarmSignalConfig
 import de.dh.daps.common.model.data.AlarmType
 import de.dh.daps.core.SystemRegistry
@@ -27,7 +29,9 @@ data class DashboardUiState(
     val isMealCorrectionBolusAllowed: Boolean = false,
     val activeFiringAlarm: AlarmType? = null,
     val activeFiringConfig: AlarmSignalConfig? = null,
-    val snoozedAlarms: Map<AlarmType, AlarmSnoozeState> = emptyMap()
+    val snoozedAlarms: Map<AlarmType, AlarmSnoozeState> = emptyMap(),
+    val isGlucoseSourceConfigured: Boolean = true,
+    val isPumpConfigured: Boolean = true
 )
 
 /**
@@ -48,7 +52,9 @@ class DashboardViewModel(
         systemRegistry.recommendationManager.recommendations,
         alarmEvaluator.activeFiringAlarm,
         alarmEvaluator.activeFiringConfig,
-        alarmSnoozeManager.snoozedAlarms
+        alarmSnoozeManager.snoozedAlarms,
+        systemRegistry.glucoseSourceManager.activeGlucoseSource,
+        systemRegistry.pumpManager.activeInsulinPump
     ) { flows ->
         val state = flows[0] as DashboardUiState
         val mode = flows[1] as ApsMode
@@ -60,6 +66,8 @@ class DashboardViewModel(
         val config = flows[5] as AlarmSignalConfig?
         @Suppress("UNCHECKED_CAST")
         val snoozedMap = flows[6] as Map<AlarmType, AlarmSnoozeState>
+        val activeGlucoseSource = flows[7] as GlucoseSource?
+        val activePump = flows[8] as InsulinPump?
 
         state.copy(
             apsMode = mode,
@@ -68,7 +76,9 @@ class DashboardViewModel(
             isMealCorrectionBolusAllowed = systemOrchestrator.canOpenMealCorrectionBolus(),
             activeFiringAlarm = activeFiring,
             activeFiringConfig = config,
-            snoozedAlarms = snoozedMap
+            snoozedAlarms = snoozedMap,
+            isGlucoseSourceConfigured = activeGlucoseSource != null,
+            isPumpConfigured = activePump != null
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DashboardUiState())
 
