@@ -232,16 +232,15 @@ class SetupWizardViewModel(
     }
 
     fun startEditingInsulinType(typeToEdit: InsulinType? = null) {
-        val type = typeToEdit ?: _uiState.value.selectedInsulinType
         _uiState.update { state ->
             state.copy(
                 isEditingInsulinType = true,
                 insulinTypeEditorUiState = InsulinTypeEditorUiState(
-                    id = type?.id,
-                    name = type?.name ?: "",
-                    peak = type?.peak?.value?.toString() ?: "50",
-                    dia = type?.dia?.value?.toString() ?: "300",
-                    concentration = type?.defaultConcentration ?: InsulinConcentration.U100
+                    id = typeToEdit?.id,
+                    name = typeToEdit?.name ?: "",
+                    peak = typeToEdit?.peak?.value?.toString() ?: "50",
+                    dia = typeToEdit?.dia?.value?.toString() ?: "300",
+                    concentration = typeToEdit?.defaultConcentration ?: InsulinConcentration.U100
                 )
             )
         }
