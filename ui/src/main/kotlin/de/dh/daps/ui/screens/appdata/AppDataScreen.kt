@@ -51,6 +51,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Surface
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.screenTitle
@@ -447,32 +453,9 @@ fun AppDataContent(
 
     // Confirm Reset Dialog
     if (uiState.showResetDialog) {
-        AlertDialog(
-            onDismissRequest = onResetDismiss,
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Warning,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.error
-                )
-            },
-            title = { Text(stringResource(R.string.app_data_dialog_reset_title)) },
-            text = { Text(stringResource(R.string.app_data_dialog_reset_message)) },
-            confirmButton = {
-                Button(
-                    onClick = onResetConfirm,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error
-                    )
-                ) {
-                    Text(stringResource(R.string.app_data_btn_reset))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = onResetDismiss) {
-                    Text(stringResource(CommonR.string.action_cancel))
-                }
-            }
+        ResetConfirmationDialog(
+            onConfirm = onResetConfirm,
+            onDismiss = onResetDismiss
         )
     }
 
@@ -531,6 +514,177 @@ fun AppDataContentPreview() {
             onResetDismiss = {},
             onImportConfirm = {},
             onImportDismiss = {}
+        )
+    }
+}
+
+@Composable
+fun ResetConfirmationDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false
+        )
+    ) {
+        ResetConfirmationFullscreenDialogContent(
+            onConfirm = onConfirm,
+            onDismiss = onDismiss
+        )
+    }
+}
+
+@Composable
+fun ResetConfirmationFullscreenDialogContent(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.error,
+        contentColor = MaterialTheme.colorScheme.onError
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                // Big Warning Icon
+                Icon(
+                    imageVector = Icons.Default.Warning,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onError,
+                    modifier = Modifier.size(96.dp)
+                )
+
+                // Title
+                Text(
+                    text = stringResource(R.string.app_data_dialog_reset_title),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onError,
+                    textAlign = TextAlign.Center
+                )
+
+                // Warning Card
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.onError.copy(alpha = 0.15f),
+                        contentColor = MaterialTheme.colorScheme.onError
+                    ),
+                    border = BorderStroke(2.dp, MaterialTheme.colorScheme.onError)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.RestartAlt,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onError
+                            )
+                            Text(
+                                text = stringResource(R.string.app_data_card_reset_title),
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = MaterialTheme.colorScheme.onError
+                            )
+                        }
+
+                        Text(
+                            text = stringResource(R.string.app_data_dialog_reset_message),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onError,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Action Buttons
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Button(
+                    onClick = onConfirm,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.onError,
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Warning,
+                            contentDescription = null
+                        )
+                        Text(
+                            text = stringResource(R.string.app_data_btn_reset),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                OutlinedButton(
+                    onClick = onDismiss,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(2.dp, MaterialTheme.colorScheme.onError),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onError
+                    )
+                ) {
+                    Text(
+                        text = stringResource(CommonR.string.action_cancel),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun ResetConfirmationFullscreenDialogContentPreview() {
+    AppPreview {
+        ResetConfirmationFullscreenDialogContent(
+            onConfirm = {},
+            onDismiss = {}
         )
     }
 }
