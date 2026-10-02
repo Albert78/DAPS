@@ -94,7 +94,7 @@ fun InsulinTypeStep(
         val isNextEnabled = selectedTypeIds.isNotEmpty() && primaryTypeId != null
 
         SetupStepScaffold(
-            title = stringResource(R.string.setup_wizard_step2_insulin_title),
+            title = stringResource(R.string.setup_wizard_insulin_title),
             showTopBackButton = false,
             showBottomBackButton = true,
             onBack = onBack,
@@ -114,7 +114,7 @@ fun InsulinTypeStep(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.setup_wizard_step2_insulin_desc),
+                    text = stringResource(R.string.setup_wizard_insulin_desc),
                     style = MaterialTheme.typography.bodyMedium
                 )
 
@@ -167,7 +167,7 @@ fun InsulinTypeStep(
                                                 shape = MaterialTheme.shapes.extraSmall
                                             ) {
                                                 Text(
-                                                    text = stringResource(R.string.setup_wizard_step2_primary_badge),
+                                                    text = stringResource(R.string.setup_wizard_insulin_primary_badge),
                                                     style = MaterialTheme.typography.labelSmall,
                                                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                                 )
@@ -197,7 +197,7 @@ fun InsulinTypeStep(
                     onClick = { onStartEditing(null) },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(stringResource(R.string.setup_wizard_step2_insulin_custom_btn))
+                    Text(stringResource(R.string.setup_wizard_insulin_custom_btn))
                 }
 
                 val selectedTypes = availableTypes.filter { it.id in selectedTypeIds }
@@ -215,12 +215,12 @@ fun InsulinTypeStep(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Text(
-                                text = stringResource(R.string.setup_wizard_step2_primary_header),
+                                text = stringResource(R.string.setup_wizard_insulin_primary_header),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = stringResource(R.string.setup_wizard_step2_primary_desc),
+                                text = stringResource(R.string.setup_wizard_insulin_primary_desc),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

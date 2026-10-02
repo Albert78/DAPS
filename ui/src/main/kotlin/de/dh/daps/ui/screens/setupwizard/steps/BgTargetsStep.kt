@@ -26,7 +26,7 @@ fun BgTargetsStep(
     var showHelpDialog by remember { mutableStateOf(false) }
 
     SetupStepScaffold(
-        title = stringResource(R.string.bg_editor_title),
+        title = stringResource(R.string.setup_wizard_bg_targets_title),
         showTopBackButton = false,
         showBottomBackButton = true,
         onBack = onBack,

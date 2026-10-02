@@ -58,7 +58,7 @@ fun InsulinProfileStep(
     }
 
     SetupStepScaffold(
-        title = stringResource(R.string.setup_wizard_step3_profile_title),
+        title = stringResource(R.string.setup_wizard_profile_title),
         showTopBackButton = false,
         showBottomBackButton = true,
         onBack = onBack,

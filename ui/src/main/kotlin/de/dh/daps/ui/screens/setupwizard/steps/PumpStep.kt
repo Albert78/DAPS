@@ -60,7 +60,7 @@ fun PumpStep(
 
     val selectedDriver = uiState.selectedDriver
     val titleText = selectedDriver?.driverDisplayName?.asString()
-        ?: stringResource(id = R.string.pump_setup_screen_title)
+        ?: stringResource(id = R.string.setup_wizard_pump_title)
 
     val showTopBack = selectedDriver != null
     val onTopBackClick: () -> Unit = {

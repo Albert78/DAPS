@@ -42,11 +42,11 @@ fun SummaryStep(
     snackbarHostState: SnackbarHostState
 ) {
     SetupStepScaffold(
-        title = stringResource(R.string.setup_wizard_step7_title),
+        title = stringResource(R.string.setup_wizard_summary_title),
         showTopBackButton = false,
         showBottomBackButton = true,
         onBack = onBack,
-        nextButtonText = stringResource(R.string.setup_wizard_step4_complete_btn),
+        nextButtonText = stringResource(R.string.setup_wizard_complete_btn),
         onNext = onComplete,
         snackbarHostState = snackbarHostState
     ) { innerPadding ->
@@ -71,7 +71,7 @@ fun SummaryStep(
                         )
                         Spacer(Modifier.width(8.dp))
                         Text(
-                            text = stringResource(R.string.setup_wizard_step7_card_title),
+                            text = stringResource(R.string.setup_wizard_summary_card_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )

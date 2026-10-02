@@ -60,7 +60,7 @@ fun GlucoseSourceStep(
 
     val selectedDriver = uiState.selectedDriver
     val titleText = selectedDriver?.driverDisplayName?.asString()
-        ?: stringResource(id = R.string.glucose_source_setup_screen_title)
+        ?: stringResource(id = R.string.setup_wizard_glucose_source_title)
 
     val showTopBack = selectedDriver != null
     val onTopBackClick: () -> Unit = {

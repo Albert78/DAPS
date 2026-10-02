@@ -47,7 +47,7 @@ fun UnitsStep(
     snackbarHostState: SnackbarHostState
 ) {
     SetupStepScaffold(
-        title = stringResource(R.string.setup_wizard_step1_units_title),
+        title = stringResource(R.string.setup_wizard_units_title),
         showTopBackButton = false,
         showBottomBackButton = true,
         onBack = onBack,
@@ -66,7 +66,7 @@ fun UnitsStep(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = stringResource(R.string.setup_wizard_step1_units_desc),
+                text = stringResource(R.string.setup_wizard_units_desc),
                 style = MaterialTheme.typography.bodyMedium
             )
 

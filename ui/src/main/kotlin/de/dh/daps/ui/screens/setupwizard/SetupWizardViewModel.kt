@@ -37,13 +37,13 @@ import java.util.UUID
 
 enum class SetupWizardStep {
     MODE_SELECTION,
-    MANUAL_STEP_1_UNITS,
-    MANUAL_STEP_2_INSULIN_TYPE,
-    MANUAL_STEP_3_INSULIN_PROFILE,
-    MANUAL_STEP_4_BG_TARGETS,
-    MANUAL_STEP_5_GLUCOSE_SOURCE,
-    MANUAL_STEP_6_PUMP,
-    MANUAL_STEP_7_SUMMARY
+    MANUAL_UNITS,
+    MANUAL_INSULIN_TYPE,
+    MANUAL_INSULIN_PROFILE,
+    MANUAL_BG_TARGETS,
+    MANUAL_GLUCOSE_SOURCE,
+    MANUAL_PUMP,
+    MANUAL_SUMMARY
 }
 
 data class SetupWizardUiState(
@@ -153,7 +153,7 @@ class SetupWizardViewModel(
     }
 
     fun startManualSetup() {
-        _uiState.update { it.copy(currentStep = SetupWizardStep.MANUAL_STEP_1_UNITS) }
+        _uiState.update { it.copy(currentStep = SetupWizardStep.MANUAL_UNITS) }
     }
 
     fun setGlucoseUnit(unit: GlucoseUnit) {
@@ -311,14 +311,14 @@ class SetupWizardViewModel(
     fun goToNextStep() {
         _uiState.update { state ->
             val nextStep = when (state.currentStep) {
-                SetupWizardStep.MODE_SELECTION -> SetupWizardStep.MANUAL_STEP_1_UNITS
-                SetupWizardStep.MANUAL_STEP_1_UNITS -> SetupWizardStep.MANUAL_STEP_2_INSULIN_TYPE
-                SetupWizardStep.MANUAL_STEP_2_INSULIN_TYPE -> SetupWizardStep.MANUAL_STEP_3_INSULIN_PROFILE
-                SetupWizardStep.MANUAL_STEP_3_INSULIN_PROFILE -> SetupWizardStep.MANUAL_STEP_4_BG_TARGETS
-                SetupWizardStep.MANUAL_STEP_4_BG_TARGETS -> SetupWizardStep.MANUAL_STEP_5_GLUCOSE_SOURCE
-                SetupWizardStep.MANUAL_STEP_5_GLUCOSE_SOURCE -> SetupWizardStep.MANUAL_STEP_6_PUMP
-                SetupWizardStep.MANUAL_STEP_6_PUMP -> SetupWizardStep.MANUAL_STEP_7_SUMMARY
-                SetupWizardStep.MANUAL_STEP_7_SUMMARY -> SetupWizardStep.MANUAL_STEP_7_SUMMARY
+                SetupWizardStep.MODE_SELECTION -> SetupWizardStep.MANUAL_UNITS
+                SetupWizardStep.MANUAL_UNITS -> SetupWizardStep.MANUAL_INSULIN_TYPE
+                SetupWizardStep.MANUAL_INSULIN_TYPE -> SetupWizardStep.MANUAL_INSULIN_PROFILE
+                SetupWizardStep.MANUAL_INSULIN_PROFILE -> SetupWizardStep.MANUAL_BG_TARGETS
+                SetupWizardStep.MANUAL_BG_TARGETS -> SetupWizardStep.MANUAL_GLUCOSE_SOURCE
+                SetupWizardStep.MANUAL_GLUCOSE_SOURCE -> SetupWizardStep.MANUAL_PUMP
+                SetupWizardStep.MANUAL_PUMP -> SetupWizardStep.MANUAL_SUMMARY
+                SetupWizardStep.MANUAL_SUMMARY -> SetupWizardStep.MANUAL_SUMMARY
             }
             state.copy(currentStep = nextStep)
         }
@@ -328,13 +328,13 @@ class SetupWizardViewModel(
         _uiState.update { state ->
             val prevStep = when (state.currentStep) {
                 SetupWizardStep.MODE_SELECTION -> SetupWizardStep.MODE_SELECTION
-                SetupWizardStep.MANUAL_STEP_1_UNITS -> SetupWizardStep.MODE_SELECTION
-                SetupWizardStep.MANUAL_STEP_2_INSULIN_TYPE -> SetupWizardStep.MANUAL_STEP_1_UNITS
-                SetupWizardStep.MANUAL_STEP_3_INSULIN_PROFILE -> SetupWizardStep.MANUAL_STEP_2_INSULIN_TYPE
-                SetupWizardStep.MANUAL_STEP_4_BG_TARGETS -> SetupWizardStep.MANUAL_STEP_3_INSULIN_PROFILE
-                SetupWizardStep.MANUAL_STEP_5_GLUCOSE_SOURCE -> SetupWizardStep.MANUAL_STEP_4_BG_TARGETS
-                SetupWizardStep.MANUAL_STEP_6_PUMP -> SetupWizardStep.MANUAL_STEP_5_GLUCOSE_SOURCE
-                SetupWizardStep.MANUAL_STEP_7_SUMMARY -> SetupWizardStep.MANUAL_STEP_6_PUMP
+                SetupWizardStep.MANUAL_UNITS -> SetupWizardStep.MODE_SELECTION
+                SetupWizardStep.MANUAL_INSULIN_TYPE -> SetupWizardStep.MANUAL_UNITS
+                SetupWizardStep.MANUAL_INSULIN_PROFILE -> SetupWizardStep.MANUAL_INSULIN_TYPE
+                SetupWizardStep.MANUAL_BG_TARGETS -> SetupWizardStep.MANUAL_INSULIN_PROFILE
+                SetupWizardStep.MANUAL_GLUCOSE_SOURCE -> SetupWizardStep.MANUAL_BG_TARGETS
+                SetupWizardStep.MANUAL_PUMP -> SetupWizardStep.MANUAL_GLUCOSE_SOURCE
+                SetupWizardStep.MANUAL_SUMMARY -> SetupWizardStep.MANUAL_PUMP
             }
             state.copy(currentStep = prevStep)
         }
@@ -347,11 +347,11 @@ class SetupWizardViewModel(
                 val state = _uiState.value
                 val context = registry.appContext
 
-                // 1. Save preferences
+                // Save preferences
                 registry.appPreferencesRepository.setGlucoseUnit(state.glucoseUnit)
                 registry.appPreferencesRepository.setCarbsUnit(state.carbsUnit)
 
-                // 2. Insert Insulin Types and Meal Types
+                // Insert Insulin Types and Meal Types
                 val selectedTypes = state.selectedInsulinTypes
                 val primaryType = state.selectedInsulinType
                     ?: throw IllegalStateException(context.getString(R.string.setup_wizard_error_no_insulin_type))
@@ -363,7 +363,7 @@ class SetupWizardViewModel(
                     registry.treatmentRepository.insertMealType(it)
                 }
 
-                // 3. Insert Insulin Profile
+                // Insert Insulin Profile
                 val profileToInsert = (state.insulinProfile ?: getDefaultInsulinProfile(context, primaryType)).copy(
                     insulinType = primaryType,
                     dia = primaryType.dia,
@@ -371,7 +371,7 @@ class SetupWizardViewModel(
                 )
                 val insertedProfileId = registry.therapyRepository.insertInsulinProfile(profileToInsert)
 
-                // 4. Save Therapy Settings with configured BgBlocks
+                // Save Therapy Settings with configured BgBlocks
                 registry.therapyRepository.updateCurrentTherapySettings(
                     insulinProfileId = insertedProfileId,
                     defaultBgBlocks = state.bgBlocks.ifEmpty {
@@ -385,7 +385,7 @@ class SetupWizardViewModel(
                     }
                 )
 
-                // 5. Complete initialization
+                // Complete initialization
                 registry.completeInitialization(SetupOption.ManualSetupCompleted)
             }.onSuccess {
                 resetState()
