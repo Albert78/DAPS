@@ -15,7 +15,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.onEach
 
 class SimBodyGlucoseSource(
-    private val glucoseReadings: Flow<BgReading>
+    private val glucoseReadings: Flow<BgReading>,
+    private val onStart: (() -> Unit)? = null
 ): GlucoseSource {
     override val glucoseSourceId: String = SOURCE_ID
     override val sourceDisplayName: UiText = UiText.StringResource(R.string.sim_body_cgm_sensor_display_name)
@@ -38,6 +39,7 @@ class SimBodyGlucoseSource(
     )
 
     override fun start() {
+        onStart?.invoke()
     }
 
     override fun stop() {

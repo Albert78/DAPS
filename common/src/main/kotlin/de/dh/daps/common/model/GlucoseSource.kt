@@ -61,6 +61,13 @@ interface GlucoseSource {
 
     fun getValues(): Flow<BgReading>
 
+    /**
+     * Starts the values flow.
+     */
     fun start()
+
+    /**
+     * Stops the values flow.
+     */
     fun stop()
 }

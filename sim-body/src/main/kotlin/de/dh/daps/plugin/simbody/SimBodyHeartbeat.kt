@@ -75,6 +75,21 @@ class SimBodyHeartbeat(
         Log.d(TAG, "SimBody Heartbeat stopped")
     }
 
+    /**
+     * Triggers an immediate simulation step and reschedules the next step.
+     * Starts the heartbeat if it was not started yet.
+     */
+    fun triggerImmediateStep() {
+        if (!started) {
+            start()
+        } else {
+            scope.launch {
+                performSimulationStep()
+                scheduleNext()
+            }
+        }
+    }
+
     override fun onWakeup(wakeupId: UInt?, intent: Intent?) {
         if (!started) return
         if (wakeupId == WAKEUP_ID_SIMULATION) {

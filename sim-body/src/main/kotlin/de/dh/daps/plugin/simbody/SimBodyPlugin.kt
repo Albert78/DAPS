@@ -25,7 +25,7 @@ class SimBodyPlugin(
     val glucoseSourceDriver = SimBodyGlucoseSourceDriver(this)
 
     private val _glucoseReadings = MutableSharedFlow<BgReading>(
-        replay = 0,
+        replay = 1,
         extraBufferCapacity = 16
     )
 
@@ -50,7 +50,10 @@ class SimBodyPlugin(
         heartbeat?.start()
     }
 
-    fun getGlucoseSource(): GlucoseSource = SimBodyGlucoseSource(_glucoseReadings.asSharedFlow())
+    fun getGlucoseSource(): GlucoseSource = SimBodyGlucoseSource(
+        glucoseReadings = _glucoseReadings.asSharedFlow(),
+        onStart = { heartbeat?.triggerImmediateStep() }
+    )
     fun getInsulinPump(): InsulinPump = SimBodyInsulinPump(pumpDevice)
 
     companion object {
