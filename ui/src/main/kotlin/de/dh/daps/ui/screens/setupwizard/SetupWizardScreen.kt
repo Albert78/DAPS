@@ -252,7 +252,8 @@ fun SetupWizardContent(
                             onConnectGlucoseSource = onConnectGlucoseSource,
                             onClearError = onClearCgmError,
                             onNext = onGoToNextStep,
-                            onBack = onGoToPreviousStep
+                            onBack = onGoToPreviousStep,
+                            snackbarHostState = snackbarHostState
                         )
                     }
 
@@ -263,7 +264,8 @@ fun SetupWizardContent(
                             onConnectPump = onConnectPump,
                             onClearError = onClearPumpError,
                             onNext = onGoToNextStep,
-                            onBack = onGoToPreviousStep
+                            onBack = onGoToPreviousStep,
+                            snackbarHostState = snackbarHostState
                         )
                     }
 
