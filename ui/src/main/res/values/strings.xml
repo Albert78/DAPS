@@ -54,7 +54,7 @@
 
     <string name="alarm_profiles_screen_title">Alarmprofile</string>
 
-    <string name="insulin_profile_editor_screen_title">Insulin-Profile verwalten</string>
+    <string name="insulin_profiles_screen_title">Insulin-Profile verwalten</string>
     <string name="insulin_profile_editor_new_profile">Neues Insulin-Profil</string>
     <string name="insulin_profile_editor_edit_profile">Insulin-Profil bearbeiten</string>
     <string name="insulin_profile_editor_name_label">Name des Insulin-Profils</string>
@@ -82,7 +82,7 @@
     <string name="bg_editor_help_specific">Diese Werte definieren deinen gewünschten Blutzucker-Bereich über den gesamten Tag. Das System versucht, dich im Zielbereich zu halten und warnt, wenn die Niedrig-Schwelle unterschritten wird.</string>
     <string name="insulin_profile_editor_discard_title">Änderungen verwerfen?</string>
     <string name="insulin_profile_editor_discard_message">Es gibt ungespeicherte Änderungen. Möchtest du den Editor wirklich verlassen?</string>
-    <string name="insulin_profile_editor_copy_name_format">%1$s (Kopie)</string>
+    <string name="insulin_profiles_copy_name_format">%1$s (Kopie)</string>
 
     <string name="bg_editor_title">Ziel-BZ &amp; Low-Schwelle</string>
     <string name="bg_editor_desc">Der angestrebte Blutzucker und die Schwelle für niedrige Werte über den Tag.</string>
@@ -92,15 +92,15 @@
     <string name="discard_confirm_button">Verwerfen</string>
     <string name="discard_dismiss_button">Bleiben</string>
     <string name="invalid_profile">Ungültiges Insulin-Profil</string>
-    <string name="cd_add_profile">Insulin-Profil hinzufügen</string>
-    <string name="cd_save_profile">Insulin-Profil speichern</string>
-    <string name="cd_delete_profile">Insulin-Profil löschen</string>
+    <string name="cd_add_insulin_profile">Insulin-Profil hinzufügen</string>
+    <string name="cd_save_insulin_profile">Insulin-Profil speichern</string>
+    <string name="cd_delete_insulin_profile">Insulin-Profil löschen</string>
     <string name="cd_insert_block">Einfügen</string>
     <string name="cd_help">Hilfe anzeigen</string>
     <string name="cd_refresh_calculations">Berechnungen aktualisieren</string>
 
-    <string name="delete_profile_title">Profil löschen</string>
-    <string name="delete_profile_message">Möchtest du das Profil \"%1$s\" wirklich löschen?</string>
+    <string name="delete_insulin_profile_title">Profil löschen</string>
+    <string name="delete_insulin_profile_message">Möchtest du das Profil \"%1$s\" wirklich löschen?</string>
 
     <string name="dashboard_permissions_missing">Für eine ordnungsgemäße Funktion benötigt die App weitere Berechtigungen</string>
     <string name="dashboard_fix_permissions_link">Reparieren</string>
@@ -286,7 +286,7 @@
     <string name="history_impact_ke_label">KE</string>
     <string name="history_impact_carbs_10_grams_per_h_label">10g/h</string>
     <string name="history_impact_carbs_ke_per_h_label">KE/h</string>
-    <string name="cd_copy_profile">Profil kopieren</string>
+    <string name="cd_copy_insulin_profile">Profil kopieren</string>
     <string name="label_increased">erhöht</string>
     <string name="label_decreased">reduziert</string>
     <string name="label_active">Aktiv</string>

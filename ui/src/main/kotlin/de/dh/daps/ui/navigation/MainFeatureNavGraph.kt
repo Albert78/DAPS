@@ -70,7 +70,7 @@ import de.dh.daps.ui.screens.fooddatabase.FoodDatabaseScreen
 import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupScreen
 import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupViewModel
 import de.dh.daps.ui.screens.history.HistoryScreen
-import de.dh.daps.ui.screens.insulinprofile.InsulinProfileEditorScreen
+import de.dh.daps.ui.screens.insulinprofile.InsulinProfilesScreen
 import de.dh.daps.ui.screens.insulinprofile.InsulinProfileSettingsViewModel
 import de.dh.daps.ui.screens.insulintypes.InsulinTypeEditorScreen
 import de.dh.daps.ui.screens.insulintypes.InsulinTypeEditorViewModel
@@ -165,9 +165,9 @@ class MainFeatureNavGraph(
                     factory = InsulinProfileSettingsViewModel.Companion.Factory(registry)
                 )
 
-                InsulinProfileEditorScreen(
+                InsulinProfilesScreen(
                     viewModel = vm,
-                    title = stringResource(id = R.string.insulin_profile_editor_screen_title),
+                    title = stringResource(id = R.string.insulin_profiles_screen_title),
                     onNavigateUp = { navViewModel.pop() }
                 )
             }

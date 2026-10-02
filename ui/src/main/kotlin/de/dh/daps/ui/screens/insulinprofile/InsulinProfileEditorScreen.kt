@@ -25,20 +25,16 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -48,7 +44,6 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -92,166 +87,6 @@ import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.isfUnitLabel
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.common.R as CommonR
-
-@Composable
-fun InsulinProfileEditorScreen(
-    viewModel: InsulinProfileSettingsViewModel,
-    onNavigateUp: () -> Unit,
-    title: String = stringResource(id = R.string.insulin_profile_editor_screen_title)
-) {
-    val uiState by viewModel.uiState.collectAsState()
-    val copyNameFormat = stringResource(R.string.insulin_profile_editor_copy_name_format)
-
-    InsulinProfileEditorContent(
-        uiState = uiState,
-        title = title,
-        onNavigateUp = onNavigateUp,
-        onSaveProfile = { viewModel.saveInsulinProfile(it) },
-        onStopEditing = { viewModel.stopEditing() },
-        isNameUnique = { name, id -> viewModel.isNameUnique(name, id) },
-        onAddProfile = { viewModel.startEditingNewProfile() },
-        onEditProfile = { viewModel.startEditing(it) },
-        onDeleteProfile = { viewModel.confirmDelete(it) },
-        onCopyProfile = { profile ->
-            viewModel.copyInsulinProfile(profile, copyNameFormat.format(profile.name))
-        },
-        onConfirmDeleteProfile = { profile -> viewModel.deleteInsulinProfile(profile) },
-        onCancelDeleteDialog = { viewModel.cancelDelete() }
-    )
-}
-
-@Composable
-fun InsulinProfileEditorContent(
-    uiState: InsulinProfileSettingsUiState,
-    onNavigateUp: () -> Unit,
-    onSaveProfile: (InsulinProfile) -> Unit,
-    onStopEditing: () -> Unit,
-    isNameUnique: (String, Long) -> Boolean = { _, _ -> true },
-    onAddProfile: () -> Unit,
-    onEditProfile: (InsulinProfile) -> Unit,
-    onDeleteProfile: (InsulinProfile) -> Unit,
-    onCopyProfile: (InsulinProfile) -> Unit,
-    onConfirmDeleteProfile: (InsulinProfile) -> Unit,
-    onCancelDeleteDialog: () -> Unit,
-    title: String = stringResource(id = R.string.insulin_profile_editor_screen_title)
-) {
-    if (uiState.editingProfile != null) {
-        InsulinProfileDetailEditor(
-            profile = uiState.editingProfile,
-            insulinTypes = uiState.insulinTypes,
-            onSave = onSaveProfile,
-            onCancel = onStopEditing,
-            isNameUnique = isNameUnique
-        )
-    } else {
-        InsulinProfileList(
-            uiState = uiState,
-            title = title,
-            onNavigateUp = onNavigateUp,
-            onAddProfile = onAddProfile,
-            onEditProfile = onEditProfile,
-            onDeleteProfile = onDeleteProfile,
-            onCopyProfile = onCopyProfile
-        )
-    }
-
-    uiState.showDeleteConfirmation?.let { profile ->
-        AlertDialog(
-            onDismissRequest = onCancelDeleteDialog,
-            title = { Text(stringResource(id = R.string.delete_profile_title)) },
-            text = { Text(stringResource(id = R.string.delete_profile_message, profile.name)) },
-            confirmButton = {
-                NormalTextButton(onClick = { onConfirmDeleteProfile(profile) }) {
-                    Text(stringResource(id = android.R.string.ok))
-                }
-            },
-            dismissButton = {
-                NormalTextButton(onClick = onCancelDeleteDialog) {
-                    Text(stringResource(id = android.R.string.cancel))
-                }
-            }
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun InsulinProfileList(
-    uiState: InsulinProfileSettingsUiState,
-    onNavigateUp: () -> Unit,
-    onAddProfile: () -> Unit,
-    onEditProfile: (InsulinProfile) -> Unit,
-    onDeleteProfile: (InsulinProfile) -> Unit,
-    onCopyProfile: (InsulinProfile) -> Unit,
-    title: String = stringResource(id = R.string.insulin_profile_editor_screen_title)
-) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = screenTitle(title),
-                navigationIcon = {
-                    IconButton(onClick = onNavigateUp) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(id = CommonR.string.cd_navigate_up)
-                        )
-                    }
-                }
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = onAddProfile) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = stringResource(id = R.string.cd_add_profile)
-                )
-            }
-        }
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            if (uiState.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            } else {
-                val listState = rememberLazyListState()
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier.fillMaxSize().contentScrollIndicator(listState)
-                ) {
-                    items(uiState.profiles.size) { index ->
-                        val profile = uiState.profiles[index]
-                        ListItem(
-                            headlineContent = { Text(profile.name) },
-                            modifier = Modifier
-                                .padding(8.dp)
-                                .clickable { onEditProfile(profile) },
-                            trailingContent = {
-                                Row {
-                                    IconButton(onClick = { onCopyProfile(profile) }) {
-                                        Icon(
-                                            imageVector = Icons.Default.ContentCopy,
-                                            contentDescription = stringResource(id = R.string.cd_copy_profile)
-                                        )
-                                    }
-                                    IconButton(onClick = { onDeleteProfile(profile) }) {
-                                        Icon(
-                                            imageVector = Icons.Default.Delete,
-                                            contentDescription = stringResource(id = R.string.cd_delete_profile)
-                                        )
-                                    }
-                                }
-                            },
-                            tonalElevation = 2.dp
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -303,16 +138,18 @@ fun InsulinProfileDetailEditor(
     }
 
     fun saveChanges() {
-        onSave(profile.copy(
-            name = name.trim(),
-            basalBlocks = basalBlocks,
-            isfBlocks = isfBlocks,
-            crBlocks = crBlocks,
-            insulinType = insulinType,
-            insulinConcentration = insulinConcentration,
-            dia = Minutes(diaValue.toShort()),
-            peak = Minutes(peakValue.toShort())
-        ))
+        onSave(
+            profile.copy(
+                name = name.trim(),
+                basalBlocks = basalBlocks,
+                isfBlocks = isfBlocks,
+                crBlocks = crBlocks,
+                insulinType = insulinType,
+                insulinConcentration = insulinConcentration,
+                dia = Minutes(diaValue.toShort()),
+                peak = Minutes(peakValue.toShort())
+            )
+        )
     }
 
     BackHandler(onBack = ::handleBack)
@@ -320,7 +157,10 @@ fun InsulinProfileDetailEditor(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = screenTitle(if (profile.id == ID_UNDEFINED) stringResource(id = R.string.insulin_profile_editor_new_profile) else stringResource(id = R.string.insulin_profile_editor_edit_profile)),
+                title = screenTitle(
+                    if (profile.id == ID_UNDEFINED) stringResource(id = R.string.insulin_profile_editor_new_profile)
+                    else stringResource(id = R.string.insulin_profile_editor_edit_profile)
+                ),
                 navigationIcon = {
                     IconButton(onClick = ::handleBack) {
                         Icon(
@@ -339,7 +179,7 @@ fun InsulinProfileDetailEditor(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Save,
-                            contentDescription = stringResource(id = R.string.cd_save_profile)
+                            contentDescription = stringResource(id = R.string.cd_save_insulin_profile)
                         )
                     }
                 }
@@ -828,45 +668,6 @@ fun InsertButton(canInsert: Boolean, onClick: () -> Unit) {
 
 @Preview(showBackground = true)
 @Composable
-private fun InsulinProfileListPreview() {
-    val sampleInsulinType = InsulinType(name = "Humalog", dia = Minutes.ofHours(5), peak = Minutes.ofHours(1))
-    val sampleProfiles = listOf(
-        InsulinProfile(
-            id = 1,
-            name = "Normal",
-            basalBlocks = listOf(Block(Minutes.ofHours(24), 0.8)),
-            isfBlocks = listOf(Block(Minutes.ofHours(24), 50.0)),
-            crBlocks = listOf(Block(Minutes.ofHours(24), 10.0)),
-            insulinType = sampleInsulinType,
-            dia = sampleInsulinType.dia,
-            peak = sampleInsulinType.peak
-        ),
-        InsulinProfile(
-            id = 2,
-            name = "Sport",
-            basalBlocks = listOf(Block(Minutes.ofHours(24), 0.5)),
-            isfBlocks = listOf(Block(Minutes.ofHours(24), 80.0)),
-            crBlocks = listOf(Block(Minutes.ofHours(24), 15.0)),
-            insulinType = sampleInsulinType,
-            dia = sampleInsulinType.dia,
-            peak = sampleInsulinType.peak
-        )
-    )
-
-    AppPreview {
-        InsulinProfileList(
-            uiState = InsulinProfileSettingsUiState(profiles = sampleProfiles),
-            onNavigateUp = {},
-            onAddProfile = {},
-            onEditProfile = {},
-            onDeleteProfile = {},
-            onCopyProfile = {}
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
 private fun InsulinProfileDetailEditorPreview() {
     val sampleInsulinType = InsulinType(name = "Humalog", dia = Minutes.ofHours(5), peak = Minutes.ofHours(1))
     val sampleProfile = InsulinProfile(
@@ -886,7 +687,10 @@ private fun InsulinProfileDetailEditorPreview() {
     AppPreview {
         InsulinProfileDetailEditor(
             profile = sampleProfile,
-            insulinTypes = listOf(sampleInsulinType, InsulinType(name = "NovoRapid", dia = Minutes.ofHours(5), peak = Minutes.ofHours(1))),
+            insulinTypes = listOf(
+                sampleInsulinType,
+                InsulinType(name = "NovoRapid", dia = Minutes.ofHours(5), peak = Minutes.ofHours(1))
+            ),
             onSave = {},
             onCancel = {}
         )
