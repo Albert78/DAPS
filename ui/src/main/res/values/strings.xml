@@ -223,6 +223,8 @@
     <string name="aps_mode_suspend">Stopp der Pumpe</string>
     <string name="aps_mode_suspend_short">Pumpe Stopp</string>
     <string name="aps_mode_suspend_desc">Die Insulinabgabe ist vollständig unterbrochen. Eingriffe sind nur manuell an der Pumpe möglich.</string>
+    <string name="aps_mode_requires_pump">Insulinpumpe erforderlich</string>
+    <string name="aps_mode_requires_cgm_and_pump">CGM und Insulinpumpe erforderlich</string>
     <string name="aps_control_basal_label">Basal: %1$s I.E./h</string>
     <string name="aps_control_temp_basal_label">Temp-Basal: %1$s I.E./h</string>
     <string name="aps_control_cr_label">CR %1$s</string>

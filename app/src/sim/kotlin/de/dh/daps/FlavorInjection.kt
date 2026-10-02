@@ -1,15 +1,11 @@
 package de.dh.daps
 
 import android.app.Application
-import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.PluginManager
-import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.navigation.FeatureNavGraph
 import de.dh.daps.common.navigation.NavigationViewModel
-import de.dh.daps.core.SystemRegistry
 import de.dh.daps.plugin.simbody.SimBodyPlugin
 import de.dh.daps.plugin.simbody.ui.SimBodyNavGraph
-import kotlinx.coroutines.runBlocking
 
 private var simBodyPlugin: SimBodyPlugin? = null
 
@@ -22,36 +18,6 @@ fun registerPlugins(pluginManager: PluginManager, application: Application) {
     pluginManager.addPlugin(plugin)
     pluginManager.addPlugin(plugin.glucoseSourceDriver)
     pluginManager.addPlugin(plugin.pumpDriver)
-}
-
-/**
- * Connects initial simulation devices if no device configuration exists yet in [DeviceManagementRepository].
- */
-// TODO: This method will be removed once we have a proper initial system setup
-fun setupInitialDevices(registry: SystemRegistry) {
-    val plugin = simBodyPlugin
-    runBlocking {
-        val deviceRepository = registry.deviceManagementRepository
-        val connectionManager = registry.deviceConnectionManager
-
-        if (deviceRepository.getGlucoseSourceDescriptor() == null && plugin != null) {
-            val glucoseSourceDescriptor = GlucoseSourceConnectionDescriptor(
-                driverId = plugin.glucoseSourceDriver.driverId,
-                sourceId = "sim_body_glucose",
-                displayName = "SimBody Glucose Source"
-            )
-            connectionManager.connectGlucoseSource(glucoseSourceDescriptor)
-        }
-
-        if (deviceRepository.getPumpDescriptor() == null && plugin != null) {
-            val pumpDescriptor = PumpConnectionDescriptor(
-                driverId = plugin.pumpDriver.driverId,
-                deviceId = "sim_body_pump",
-                displayName = "SimBody Insulin Pump"
-            )
-            connectionManager.connectPump(pumpDescriptor)
-        }
-    }
 }
 
 fun getExtraNavGraphs(

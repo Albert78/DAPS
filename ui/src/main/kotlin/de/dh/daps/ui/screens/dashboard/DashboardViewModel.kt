@@ -22,7 +22,6 @@ data class DashboardUiState(
     val isLoading: Boolean = false,
     val isError: Boolean = false,
     val apsMode: ApsMode = ApsMode.Suspend,
-    // TODO: Get selectable modes from core
     val availableApsModes: List<ApsMode> = ApsMode.entries,
     val recommendations: List<ApsRecommendation> = emptyList(),
     val isMealCorrectionBolusAllowed: Boolean = false,
@@ -45,6 +44,7 @@ class DashboardViewModel(
     val uiState: StateFlow<DashboardUiState> = combine(
         _uiState,
         systemOrchestrator.apsMode,
+        systemOrchestrator.availableApsModes,
         systemRegistry.recommendationManager.recommendations,
         alarmEvaluator.activeFiringAlarm,
         alarmEvaluator.activeFiringConfig,
@@ -53,14 +53,17 @@ class DashboardViewModel(
         val state = flows[0] as DashboardUiState
         val mode = flows[1] as ApsMode
         @Suppress("UNCHECKED_CAST")
-        val recommendations = flows[2] as List<ApsRecommendation>
-        val activeFiring = flows[3] as AlarmType?
-        val config = flows[4] as AlarmSignalConfig?
+        val availableModes = flows[2] as List<ApsMode>
         @Suppress("UNCHECKED_CAST")
-        val snoozedMap = flows[5] as Map<AlarmType, AlarmSnoozeState>
+        val recommendations = flows[3] as List<ApsRecommendation>
+        val activeFiring = flows[4] as AlarmType?
+        val config = flows[5] as AlarmSignalConfig?
+        @Suppress("UNCHECKED_CAST")
+        val snoozedMap = flows[6] as Map<AlarmType, AlarmSnoozeState>
 
         state.copy(
             apsMode = mode,
+            availableApsModes = availableModes,
             recommendations = recommendations,
             isMealCorrectionBolusAllowed = systemOrchestrator.canOpenMealCorrectionBolus(),
             activeFiringAlarm = activeFiring,

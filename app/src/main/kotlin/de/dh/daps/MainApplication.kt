@@ -72,7 +72,6 @@ class MainApplication : Application(), RegistryProvider {
             registry.initializationState.collect { state ->
                 if (state == InitializationState.READY) {
                     startApsService()
-                    setupInitialDevices(registry)
                 }
             }
         }

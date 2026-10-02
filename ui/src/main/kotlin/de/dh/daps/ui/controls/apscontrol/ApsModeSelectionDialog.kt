@@ -68,18 +68,21 @@ private fun ApsModeSelectionContent(
     onModeChange: (ApsMode) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val modes = ApsMode.entries
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.fillMaxWidth()
     ) {
-        availableModes.forEachIndexed { index, mode ->
+        modes.forEachIndexed { index, mode ->
+            val isAvailable = mode in availableModes
             ModeOption(
                 mode = mode,
                 isSelected = mode == selectedMode,
+                isAvailable = isAvailable,
                 onClick = { onModeChange(mode) }
             )
-            if (index < availableModes.size - 1) {
+            if (index < modes.size - 1) {
                 HorizontalDivider(
                     modifier = Modifier.padding(top = 8.dp),
                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
@@ -93,6 +96,7 @@ private fun ApsModeSelectionContent(
 private fun ModeOption(
     mode: ApsMode,
     isSelected: Boolean,
+    isAvailable: Boolean,
     onClick: () -> Unit
 ) {
     Column(
@@ -101,14 +105,23 @@ private fun ModeOption(
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            text = mode.toDescriptionString(),
+            text = if (!isAvailable) {
+                when (mode) {
+                    ApsMode.AutoCorrection -> stringResource(R.string.aps_mode_requires_cgm_and_pump)
+                    ApsMode.OnlySuggestions -> stringResource(R.string.aps_mode_requires_pump)
+                    ApsMode.Suspend -> mode.toDescriptionString()
+                }
+            } else {
+                mode.toDescriptionString()
+            },
             style = MaterialTheme.typography.bodySmall,
             textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = if (isAvailable) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
             modifier = Modifier.padding(horizontal = 8.dp)
         )
         PrimaryButton(
             onClick = onClick,
+            enabled = isAvailable,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp),

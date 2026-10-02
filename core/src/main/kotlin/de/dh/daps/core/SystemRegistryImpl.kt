@@ -298,6 +298,7 @@ class SystemRegistryImpl(
 
             val systemOrchestrator = SystemOrchestratorImpl(
                 glucoseSourceManager = glucoseSourceManager,
+                pumpManager = pumpManager,
                 glucoseRepository = glucoseRepository,
                 wakeService = wakeService,
                 settingsRepository = settingsRepository,

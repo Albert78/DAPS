@@ -20,34 +20,6 @@ fun registerPlugins(pluginManager: PluginManager, application: Application) {
     pluginManager.addPlugin(SampleInsulinPumpDriver())
 }
 
-/**
- * Connects initial default hardware devices if no device configuration exists yet in [DeviceManagementRepository].
- */
-fun setupInitialDevices(registry: SystemRegistry) {
-    runBlocking {
-        val deviceRepository = registry.deviceManagementRepository
-        val connectionManager = registry.deviceConnectionManager
-
-        if (deviceRepository.getGlucoseSourceDescriptor() == null) {
-            val glucoseSourceDescriptor = GlucoseSourceConnectionDescriptor(
-                driverId = "de.dh.daps.plugin.glucose.receiver",
-                sourceId = ExternalSourceType.xDrip5Min.name,
-                displayName = "xDrip Receiver (5 Min)"
-            )
-            connectionManager.connectGlucoseSource(glucoseSourceDescriptor)
-        }
-
-        if (deviceRepository.getPumpDescriptor() == null) {
-            val pumpDescriptor = PumpConnectionDescriptor(
-                driverId = "de.dh.daps.plugin.pump.sample",
-                deviceId = "sample_pump_1",
-                displayName = "Sample Insulin Pump"
-            )
-            connectionManager.connectPump(pumpDescriptor)
-        }
-    }
-}
-
 fun getExtraNavGraphs(
     navViewModel: NavigationViewModel,
 ): List<FeatureNavGraph> {

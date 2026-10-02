@@ -2,6 +2,7 @@ package de.dh.daps.core.aps
 
 import android.app.Notification
 import android.content.Intent
+import android.util.Log
 import de.dh.daps.AppPreferencesRepository
 import de.dh.daps.common.model.ApsMode
 import de.dh.daps.common.model.MealEntry
@@ -29,10 +30,12 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
@@ -68,6 +71,11 @@ interface SystemOrchestrator {
      * The current APS mode.
      */
     val apsMode: StateFlow<ApsMode>
+
+    /**
+     * The list of currently available APS modes based on configured hardware (CGM and Pump).
+     */
+    val availableApsModes: StateFlow<List<ApsMode>>
 
     /**
      * Active issues of the APS.
@@ -143,6 +151,7 @@ interface SystemOrchestrator {
 @OptIn(ExperimentalCoroutinesApi::class)
 class SystemOrchestratorImpl(
     private val glucoseSourceManager: GlucoseSourceManager,
+    private val pumpManager: PumpManager,
     private val glucoseRepository: GlucoseRepository,
     private val wakeService: SystemWakeService,
     private val settingsRepository: SettingsRepository,
@@ -156,6 +165,34 @@ class SystemOrchestratorImpl(
 
     private val _apsMode = MutableStateFlow(ApsMode.Suspend)
     override val apsMode: StateFlow<ApsMode> = _apsMode.asStateFlow()
+
+    override val availableApsModes: StateFlow<List<ApsMode>> = combine(
+        glucoseSourceManager.activeGlucoseSource,
+        pumpManager.activeInsulinPump
+    ) { glucoseSource, pump ->
+        calculateAvailableApsModes(
+            hasCgm = glucoseSource != null,
+            hasPump = pump != null
+        )
+    }.stateIn(
+        scope = scope,
+        started = SharingStarted.Eagerly,
+        initialValue = calculateAvailableApsModes(
+            hasCgm = glucoseSourceManager.activeGlucoseSource.value != null,
+            hasPump = pumpManager.activeInsulinPump.value != null
+        )
+    )
+
+    private fun calculateAvailableApsModes(hasCgm: Boolean, hasPump: Boolean): List<ApsMode> {
+        val modes = mutableListOf(ApsMode.Suspend)
+        if (hasPump) {
+            modes.add(ApsMode.OnlySuggestions)
+            if (hasCgm) {
+                modes.add(ApsMode.AutoCorrection)
+            }
+        }
+        return modes
+    }
 
     private val _apsIssues = MutableStateFlow<Set<ApsIssue>>(emptySet())
     override val apsIssues: StateFlow<Set<ApsIssue>> = _apsIssues.asStateFlow()
@@ -253,13 +290,43 @@ class SystemOrchestratorImpl(
 
         val currentSettings = runCatching { settingsRepository.getCurrentSettings() }.getOrNull()
         if (currentSettings != null) {
-            _apsMode.value = currentSettings.apsMode
+            val allowed = availableApsModes.value
+            val initialMode = if (currentSettings.apsMode in allowed) {
+                currentSettings.apsMode
+            } else {
+                val fallback = allowed.lastOrNull() ?: ApsMode.Suspend
+                Log.w(TAG, "Restored APS mode ${currentSettings.apsMode} is not allowed with current devices. Falling back to $fallback.")
+                scope.launch {
+                    settingsRepository.updateCurrentSettings(currentSettings.copy(apsMode = fallback))
+                }
+                fallback
+            }
+            _apsMode.value = initialMode
         }
 
         scope.launch {
             settingsRepository.observeCurrentSettings().drop(1).collect { settings ->
                 if (settings != null) {
-                    _apsMode.value = settings.apsMode
+                    val allowed = availableApsModes.value
+                    if (settings.apsMode in allowed) {
+                        _apsMode.value = settings.apsMode
+                    } else {
+                        val fallback = allowed.lastOrNull() ?: ApsMode.Suspend
+                        if (_apsMode.value != fallback) {
+                            setApsMode(fallback)
+                        }
+                    }
+                }
+            }
+        }
+
+        scope.launch {
+            availableApsModes.collect { allowed ->
+                val current = _apsMode.value
+                if (current !in allowed) {
+                    val fallback = allowed.lastOrNull() ?: ApsMode.Suspend
+                    Log.w(TAG, "Current APS mode $current is no longer available. Downgrading to $fallback.")
+                    setApsMode(fallback)
                 }
             }
         }
@@ -501,15 +568,24 @@ class SystemOrchestratorImpl(
     }
 
     override fun setApsMode(mode: ApsMode) {
-        _apsMode.value = mode
+        val allowed = availableApsModes.value
+        val validMode = if (mode in allowed) {
+            mode
+        } else {
+            val fallback = allowed.lastOrNull() ?: ApsMode.Suspend
+            Log.w(TAG, "Attempted to set unavailable APS mode $mode. Using $fallback instead.")
+            fallback
+        }
 
-        val shouldBeSuspended = (mode == ApsMode.Suspend)
+        _apsMode.value = validMode
+
+        val shouldBeSuspended = (validMode == ApsMode.Suspend)
         therapyManager?.setSuspend(shouldBeSuspended)
 
         scope.launch {
             val currentSettings = settingsRepository.getCurrentSettings()
             if (currentSettings != null) {
-                settingsRepository.updateCurrentSettings(currentSettings.copy(apsMode = mode))
+                settingsRepository.updateCurrentSettings(currentSettings.copy(apsMode = validMode))
             }
         }
     }
@@ -529,6 +605,7 @@ class SystemOrchestratorImpl(
     }
 
     companion object {
+        private val TAG = SystemOrchestratorImpl::class.simpleName
         const val WAKE_TAG = "SystemOrchestrator"
         const val WAKEUP_STALE_CHECK = 0u
     }
