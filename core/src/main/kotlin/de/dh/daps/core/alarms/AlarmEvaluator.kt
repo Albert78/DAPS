@@ -1,6 +1,7 @@
 package de.dh.daps.core.alarms
 
 import android.util.Log
+import de.dh.daps.common.model.ApsMode
 import de.dh.daps.common.model.data.AlarmProfile
 import de.dh.daps.common.model.data.AlarmSeverity
 import de.dh.daps.common.model.data.AlarmSignalConfig
@@ -52,13 +53,15 @@ class AlarmEvaluator(
                 glucoseRepository.currentBg,
                 systemOrchestrator.apsIssues,
                 therapyRepository.observeCurrentTherapySettings().map { it.effectiveAlarmProfile },
-                alarmSnoozeManager.snoozedAlarms
-            ) { currentBgReading, apsIssues, activeProfile, snoozedMap ->
+                alarmSnoozeManager.snoozedAlarms,
+                systemOrchestrator.apsMode
+            ) { currentBgReading, apsIssues, activeProfile, snoozedMap, apsMode ->
                 EvaluationInput(
                     bgReading = currentBgReading,
                     apsIssues = apsIssues,
                     activeProfile = activeProfile,
-                    snoozedMap = snoozedMap
+                    snoozedMap = snoozedMap,
+                    apsMode = apsMode
                 )
             }.collect { input ->
                 evaluate(input)
@@ -98,7 +101,12 @@ class AlarmEvaluator(
                 is ApsIssue.StaleBG -> activeSet.add(AlarmType.CGM_SIGNAL_LOSS)
                 is ApsIssue.Pump -> {
                     when (issue.issue) {
-                        is PumpIssue.Inoperative -> activeSet.add(AlarmType.PUMP_OCCLUSION)
+                        is PumpIssue.Inoperative -> {
+                            if (input.apsMode != ApsMode.Suspend) {
+                                activeSet.add(AlarmType.PUMP_SUSPENDED)
+                            }
+                        }
+                        is PumpIssue.Occlusion -> activeSet.add(AlarmType.PUMP_OCCLUSION)
                         is PumpIssue.LowInsulin -> activeSet.add(AlarmType.PUMP_LOW_INSULIN)
                         is PumpIssue.LowBattery -> activeSet.add(AlarmType.PUMP_LOW_BATTERY)
                         else -> {}
@@ -154,7 +162,8 @@ class AlarmEvaluator(
         val bgReading: BgReading?,
         val apsIssues: Set<ApsIssue>,
         val activeProfile: AlarmProfile?,
-        val snoozedMap: Map<AlarmType, AlarmSnoozeState>
+        val snoozedMap: Map<AlarmType, AlarmSnoozeState>,
+        val apsMode: ApsMode = ApsMode.Suspend
     )
 
     companion object {

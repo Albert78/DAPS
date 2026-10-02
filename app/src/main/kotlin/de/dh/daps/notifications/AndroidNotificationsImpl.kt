@@ -310,6 +310,7 @@ class AndroidNotificationsImpl(
         AlarmType.LOW_BG -> context.getString(UiR.string.alarm_type_low_bg)
         AlarmType.HIGH_BG -> context.getString(UiR.string.alarm_type_high_bg)
         AlarmType.PUMP_OCCLUSION -> context.getString(UiR.string.alarm_type_pump_occlusion)
+        AlarmType.PUMP_SUSPENDED -> context.getString(UiR.string.alarm_type_pump_suspended)
         AlarmType.PUMP_LOW_INSULIN -> context.getString(UiR.string.alarm_type_pump_low_insulin)
         AlarmType.PUMP_LOW_BATTERY -> context.getString(UiR.string.alarm_type_pump_low_battery)
         AlarmType.CGM_SIGNAL_LOSS -> context.getString(UiR.string.alarm_type_cgm_signal_loss)
@@ -325,7 +326,8 @@ class AndroidNotificationsImpl(
             }
         }
         AlarmType.CGM_SIGNAL_LOSS -> context.getString(UiR.string.core_issue_no_recent_values, 15)
-        AlarmType.PUMP_OCCLUSION -> context.getString(UiR.string.pump_issue_inoperative)
+        AlarmType.PUMP_OCCLUSION -> context.getString(UiR.string.pump_issue_occlusion)
+        AlarmType.PUMP_SUSPENDED -> context.getString(UiR.string.pump_issue_suspended)
         AlarmType.PUMP_LOW_INSULIN -> context.getString(UiR.string.pump_issue_low_insulin)
         AlarmType.PUMP_LOW_BATTERY -> context.getString(UiR.string.pump_issue_low_battery)
         AlarmType.SYSTEM_BATTERY_LOW -> context.getString(UiR.string.alarm_type_system_battery_low)

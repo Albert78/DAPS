@@ -51,6 +51,7 @@ interface InsulinPumpStatus {
 data class PumpAlerts(
     val batteryLow: Boolean = false,
     val reservoirLow: Boolean = false,
+    val occlusion: Boolean = false,
     val other: Boolean = false
 )
 

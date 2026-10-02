@@ -26,6 +26,11 @@ enum class AlarmType(
         category = AlarmCategory.PUMP,
         isSafetyCritical = true
     ),
+    PUMP_SUSPENDED(
+        defaultSeverity = AlarmSeverity.CRITICAL,
+        category = AlarmCategory.PUMP,
+        isSafetyCritical = true
+    ),
     PUMP_LOW_INSULIN(
         defaultSeverity = AlarmSeverity.WARNING,
         category = AlarmCategory.PUMP

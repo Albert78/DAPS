@@ -112,6 +112,12 @@ class PumpManagerImpl(
                             } else if (pc.pump.pumpStatus.value.reservoirRemainingUnits > PUMP_RESERVOIR_LOW_THRESHOLD || pc.pump.pumpStatus.value.reservoirRemainingUnits <= InsulinAmount.ZERO) {
                                 removeIssue(PumpIssue.LowInsulin)
                             }
+
+                            if (alerts.occlusion) {
+                                setIssue(PumpIssue.Occlusion)
+                            } else {
+                                removeIssue(PumpIssue.Occlusion)
+                            }
                         }
                     }
                     // Sync history

@@ -19,6 +19,11 @@ sealed interface PumpIssue {
     data object Inoperative : PumpIssue
 
     /**
+     * An occlusion / blockage was detected in the pump or delivery line.
+     */
+    data object Occlusion : PumpIssue
+
+    /**
      * A command sent to the pump failed with a specific status or error.
      */
     data class CommandFailed(val status: PumpStatus) : PumpIssue
