@@ -20,6 +20,7 @@ import de.dh.daps.common.model.InsulinPumpStatus
 import de.dh.daps.common.model.InsulinStatus
 import de.dh.daps.common.model.PumpHardwareInformation
 import de.dh.daps.common.model.ReplaceableComponent
+import de.dh.daps.common.model.ToDo
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.Timestamp
@@ -539,7 +540,7 @@ class SystemControlViewModel(
     }
 
     fun disconnectPumpForMaintenance() {
-        // TODO
+        ToDo.toBeImplemented("disconnectPumpForMaintainance")
     }
 
     fun cancelPumpJob(jobId: String) {

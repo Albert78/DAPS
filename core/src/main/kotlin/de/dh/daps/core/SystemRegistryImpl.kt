@@ -189,7 +189,6 @@ class SystemRegistryImpl(
     }
 
     suspend fun startCoreEngine() {
-        // TODO: Check result, handle errors
         deviceConnectionManager.restoreConnections()
 
         therapyManager.startInitialization()

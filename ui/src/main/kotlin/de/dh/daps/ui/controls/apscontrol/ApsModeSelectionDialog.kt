@@ -1,5 +1,6 @@
 package de.dh.daps.ui.controls.apscontrol
 
+import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -160,6 +161,7 @@ private fun ApsMode.toDescriptionString(): String = stringResource(id = when (th
 })
 
 @Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun PreviewApsModeSelectionContent() {
     AppPreview(modifier = Modifier.padding(16.dp)) {
