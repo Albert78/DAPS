@@ -1,7 +1,7 @@
 package de.dh.daps.ui.screens.meals
 
+import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -55,11 +55,11 @@ import de.dh.daps.common.model.getDefaultMealTypes
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.AbsoluteTimeStepper
 import de.dh.daps.ui.common.composables.CarbsValueStepper
+import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.ImageCaptionWithSwitch
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.theme.AppPreview
-import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.daps.ui.controls.meal.BolusPlanEditorDialog
 import de.dh.daps.ui.controls.meal.FoodTypeSelector
 import de.dh.daps.ui.controls.meal.PlannedBolusUiModel
@@ -352,13 +352,8 @@ fun EditMealCard(
     onToggleMealReminder: () -> Unit = {},
     onOpenBolusPlanSheet: () -> Unit
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(2.dp, ExtendedTheme.semanticColors.border),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        )
+    FramedCard(
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier
@@ -493,6 +488,7 @@ fun EditMealCard(
 }
 
 @Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun EditHistoricalMealContentPreview() {
     val sampleMealTypes = getDefaultMealTypes(LocalContext.current)

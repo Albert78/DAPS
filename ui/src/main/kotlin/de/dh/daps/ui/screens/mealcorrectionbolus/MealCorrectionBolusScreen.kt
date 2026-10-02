@@ -29,8 +29,6 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -72,6 +70,7 @@ import de.dh.daps.ui.R
 import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.composables.CarbsValueStepper
 import de.dh.daps.ui.common.composables.ImageCaptionWithSwitch
+import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.InsulinAmountStepper
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.StepperDefaults
@@ -165,13 +164,8 @@ fun MealCorrectionBolusContent(
                 }
 
                 // Mahlzeit Card (Carbs + Food Type + Meal Time)
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(2.dp, ExtendedTheme.semanticColors.border),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                    )
+                FramedCard(
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
                         modifier = Modifier
@@ -268,13 +262,8 @@ fun MealCorrectionBolusContent(
                 }
 
                 // Insulin Card (Final Insulin Stepper)
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(2.dp, ExtendedTheme.semanticColors.border),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                    )
+                FramedCard(
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
                         modifier = Modifier
@@ -728,15 +717,10 @@ fun InsulinPlanCard(
     plan: List<PlannedInsulinUiModel>,
     onOpenBolusPlanDialog: () -> Unit
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onOpenBolusPlanDialog() },
-        shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(1.dp, ExtendedTheme.semanticColors.border),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        )
+    FramedCard(
+        onClick = onOpenBolusPlanDialog,
+        borderWidth = 1.dp,
+        modifier = Modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier

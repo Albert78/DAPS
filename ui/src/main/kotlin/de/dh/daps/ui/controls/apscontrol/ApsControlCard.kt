@@ -1,7 +1,6 @@
 package de.dh.daps.ui.controls.apscontrol
 
 import android.content.res.Configuration
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Adjust
 import androidx.compose.material.icons.filled.VerticalAlignBottom
@@ -47,6 +45,7 @@ import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
+import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.glucoseValue
@@ -54,7 +53,6 @@ import de.dh.daps.ui.common.icons.Icon_Alarms
 import de.dh.daps.ui.common.icons.Icon_Insulin_Adjustment
 import de.dh.daps.ui.common.icons.Icon_Insulin_Profile
 import de.dh.daps.ui.common.theme.AppPreview
-import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.daps.ui.common.theme.NeutralGrey
 import de.dh.daps.ui.common.theme.SoftBlue
 import de.dh.daps.ui.common.theme.SoftGreen
@@ -86,11 +84,8 @@ fun ApsControlCard(
         neutralLabel = stringResource(R.string.aps_control_adjustment_neutral)
     )
 
-    Surface(
-        modifier = modifier.height(IntrinsicSize.Min),
-        shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-        border = BorderStroke(2.dp, ExtendedTheme.semanticColors.border)
+    FramedCard(
+        modifier = modifier.height(IntrinsicSize.Min)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),

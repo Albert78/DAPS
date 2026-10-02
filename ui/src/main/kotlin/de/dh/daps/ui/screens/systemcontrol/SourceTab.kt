@@ -16,16 +16,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.SwapHoriz
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -44,7 +40,7 @@ import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.composables.AppColorBlue
+import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.glucoseValue
 import de.dh.daps.ui.common.icons.Icon_Next
 import de.dh.daps.ui.common.icons.Icon_Previous
@@ -124,15 +120,10 @@ fun SourceOverviewCard(
     uiState: SourceTabUiState,
     modifier: Modifier = Modifier
 ) {
-    OutlinedCard(
+    FramedCard(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        ),
-        border = BorderStroke(2.dp, AppColorBlue.copy(alpha = 0.3f))
+            .padding(vertical = 4.dp)
     ) {
         Column(
             modifier = Modifier
@@ -385,15 +376,10 @@ fun GlucoseSourcePluginExampleCard(
     modifier: Modifier = Modifier,
     estimatedExpirationTimestamp: Timestamp? = null
 ) {
-    OutlinedCard(
+    FramedCard(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        ),
-        border = BorderStroke(2.dp, AppColorBlue.copy(alpha = 0.3f))
+            .padding(vertical = 4.dp)
     ) {
         Column(
             modifier = Modifier

@@ -1,7 +1,6 @@
 package de.dh.daps.ui.screens.systemcontrol
 
 import android.content.res.Configuration
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,20 +12,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -45,7 +41,7 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.LocalGlucoseUnit
-import de.dh.daps.ui.common.composables.AppColorBlue
+import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.pluralStringResourceZero
@@ -123,15 +119,10 @@ private fun ApsCard(
     state: OverviewApsSystemUiState,
     onNavigateToCoreDecisions: () -> Unit = {}
 ) {
-    OutlinedCard(
+    FramedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        ),
-        border = BorderStroke(2.dp, AppColorBlue.copy(alpha = 0.3f))
+            .padding(vertical = 4.dp)
     ) {
         Column(
             modifier = Modifier
@@ -227,15 +218,10 @@ private fun ApsCard(
 private fun AndroidSystemCard(
     state: OverviewAndroidSystemUiState
 ) {
-    OutlinedCard(
+    FramedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        ),
-        border = BorderStroke(2.dp, AppColorBlue.copy(alpha = 0.3f))
+            .padding(vertical = 4.dp)
     ) {
         Column(
             modifier = Modifier
@@ -312,15 +298,10 @@ private fun AndroidSystemCard(
 private fun OverviewGlucoseSourceCard(
     state: OverviewGlucoseSourceUiState
 ) {
-    OutlinedCard(
+    FramedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        ),
-        border = BorderStroke(2.dp, AppColorBlue.copy(alpha = 0.3f))
+            .padding(vertical = 4.dp)
     ) {
         Column(
             modifier = Modifier
@@ -402,15 +383,10 @@ private fun OverviewPumpCard(
     state: OverviewPumpUiState,
     onRefresh: () -> Unit = {}
 ) {
-    OutlinedCard(
+    FramedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        ),
-        border = BorderStroke(2.dp, AppColorBlue.copy(alpha = 0.3f))
+            .padding(vertical = 4.dp)
     ) {
         Column(
             modifier = Modifier

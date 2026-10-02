@@ -69,6 +69,7 @@ import de.dh.daps.common.model.data.ScheduledTherapyAdjustment
 import de.dh.daps.common.model.data.TherapyAdjustment
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
+import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.InsulinProfileSelectionDialog
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
@@ -81,7 +82,6 @@ import de.dh.daps.ui.common.icons.Icon_Insulin_Profile
 import de.dh.daps.ui.common.icons.Icon_Therapy_Adjustment
 import de.dh.daps.ui.common.isfUnitLabel
 import de.dh.daps.ui.common.theme.AppPreview
-import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.daps.ui.common.theme.NeutralGrey
 import de.dh.daps.ui.common.theme.SoftBlue
 import de.dh.daps.ui.common.theme.SoftRed
@@ -347,13 +347,8 @@ private fun ActiveInsulinProfileCard(
     onManageInsulinProfilesClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(2.dp, ExtendedTheme.semanticColors.border),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        )
+    FramedCard(
+        modifier = modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier.fillMaxWidth()
@@ -522,15 +517,9 @@ private fun BgTargetCard(
 
     val unit = glucoseUnitLabel()
 
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(2.dp, ExtendedTheme.semanticColors.border),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        )
+    FramedCard(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier
@@ -679,15 +668,9 @@ private fun TemporaryAdjustmentCard(
         neutralLabel = stringResource(R.string.aps_control_adjustment_neutral)
     )
 
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(2.dp, ExtendedTheme.semanticColors.border),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        )
+    FramedCard(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier.padding(16.dp),

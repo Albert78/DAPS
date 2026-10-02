@@ -1,6 +1,5 @@
 package de.dh.daps.ui.screens.setupwizard.steps
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
@@ -38,8 +36,8 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinType
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.contentScrollIndicator
-import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.daps.ui.screens.insulintypes.InsulinTypeEditorFormContent
 import de.dh.daps.ui.screens.insulintypes.InsulinTypeEditorUiState
 import de.dh.daps.ui.screens.setupwizard.components.SetupStepScaffold
@@ -207,13 +205,8 @@ fun InsulinTypeStep(
 
                 val selectedTypes = availableTypes.filter { it.id in selectedTypeIds }
                 if (selectedTypes.size > 1) {
-                    OutlinedCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.outlinedCardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                        ),
-                        border = BorderStroke(2.dp, ExtendedTheme.semanticColors.border)
+                    FramedCard(
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(
                             modifier = Modifier
