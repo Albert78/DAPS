@@ -105,6 +105,7 @@ import de.dh.daps.ui.screens.systemcontrol.CoreDecisionsViewModel
 import de.dh.daps.ui.screens.systemcontrol.SystemControlScreen
 import de.dh.daps.ui.screens.systemcontrol.SystemControlViewModel
 import de.dh.daps.ui.screens.therapy.BgEditorScreen
+import de.dh.daps.ui.screens.therapy.BgEditorViewModel
 import de.dh.daps.ui.screens.therapy.CurrentTherapySettingsScreen
 import de.dh.daps.ui.screens.therapy.CurrentTherapyViewModel
 import de.dh.daps.ui.screens.therapy.ScheduledTherapyAdjustmentScreen
@@ -187,11 +188,11 @@ class MainFeatureNavGraph(
             }
 
             is BgEditorRoute -> NavEntry(key) {
-                val currentTherapyVM: CurrentTherapyViewModel =
-                    viewModel(factory = CurrentTherapyViewModel.Companion.Factory(registry))
+                val bgEditorVM: BgEditorViewModel =
+                    viewModel(factory = BgEditorViewModel.Companion.Factory(registry))
 
                 BgEditorScreen(
-                    viewModel = currentTherapyVM,
+                    viewModel = bgEditorVM,
                     onNavigateUp = { navViewModel.pop() }
                 )
             }

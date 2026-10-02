@@ -90,7 +90,7 @@ data class CurrentTherapyUiState(
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class CurrentTherapyViewModel(
-    private val systemRegistry: SystemRegistry
+    systemRegistry: SystemRegistry
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(CurrentTherapyUiState())
     val uiState: StateFlow<CurrentTherapyUiState> = _uiState
@@ -226,12 +226,6 @@ class CurrentTherapyViewModel(
             formatVal(min)
         } else {
             "${formatVal(min)} – ${formatVal(max)}"
-        }
-    }
-
-    fun updateDefaultBgBlocks(blocks: List<BgBlock>) {
-        viewModelScope.launch {
-            therapyManager.updateDefaultBgBlocks(blocks)
         }
     }
 

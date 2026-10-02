@@ -65,7 +65,7 @@ import de.dh.daps.common.R as CommonR
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BgEditorScreen(
-    viewModel: CurrentTherapyViewModel,
+    viewModel: BgEditorViewModel,
     onNavigateUp: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
