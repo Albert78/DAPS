@@ -11,7 +11,7 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 
-class BackupRepositoryTest {
+class AppDataManagementRepositoryTest {
 
     private val json = Json {
         prettyPrint = true

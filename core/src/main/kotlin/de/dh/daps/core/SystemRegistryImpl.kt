@@ -21,8 +21,8 @@ import de.dh.daps.core.aps.SystemOrchestrator
 import de.dh.daps.core.aps.SystemOrchestratorImpl
 import de.dh.daps.core.aps.TherapyManager
 import de.dh.daps.core.backup.BackupOptions
-import de.dh.daps.core.backup.BackupRepository
-import de.dh.daps.core.backup.BackupRepositoryImpl
+import de.dh.daps.core.backup.AppDataManagementRepository
+import de.dh.daps.core.backup.AppDataManagementRepositoryImpl
 import de.dh.daps.core.backup.BackupResult
 import de.dh.daps.core.device.DeviceConnectionManager
 import de.dh.daps.core.pump.PumpDriverManager
@@ -73,7 +73,7 @@ class SystemRegistryImpl(
     override val deviceStatusRepository: DeviceStatusRepository,
     override val permissionRepository: PermissionRepository,
     override val appPreferencesRepository: AppPreferencesRepository,
-    override val backupRepository: BackupRepository,
+    override val appDataManagementRepository: AppDataManagementRepository,
     override val glucoseSourceManager: GlucoseSourceManager,
     override val glucoseSourceDriverManager: GlucoseSourceDriverManager,
     override val therapyManager: TherapyManager,
@@ -123,7 +123,7 @@ class SystemRegistryImpl(
                         val inputStream = appContext.contentResolver.openInputStream(option.uri)
                             ?: throw IllegalStateException("Unable to open the selected file")
                         val result = inputStream.use { stream ->
-                            backupRepository.importBackup(
+                            appDataManagementRepository.importBackup(
                                 stream,
                                 BackupOptions(
                                     includeHistory = true,
@@ -173,7 +173,7 @@ class SystemRegistryImpl(
                 alarmSnoozeManager.clearAllSnoozes()
 
                 // 2. Wipe database and app preferences
-                backupRepository.clearAllData()
+                appDataManagementRepository.clearAllData()
                 appPreferencesRepository.editPreferences { mutablePreferences ->
                     mutablePreferences.clear()
                 }
@@ -322,7 +322,7 @@ class SystemRegistryImpl(
                 onPermissionsChanged()
             }
 
-            val backupRepository = BackupRepositoryImpl(
+            val appDataManagementRepository = AppDataManagementRepositoryImpl(
                 context = application,
                 appDatabase = appDatabase,
                 preferencesRepository = appPreferencesRepository,
@@ -350,7 +350,7 @@ class SystemRegistryImpl(
                 deviceStatusRepository = deviceStatusRepository,
                 permissionRepository = permissionRepository,
                 appPreferencesRepository = appPreferencesRepository,
-                backupRepository = backupRepository,
+                appDataManagementRepository = appDataManagementRepository,
                 therapyManager = therapyManager,
                 recommendationManager = recommendationManager,
                 glucoseSourceManager = glucoseSourceManager,

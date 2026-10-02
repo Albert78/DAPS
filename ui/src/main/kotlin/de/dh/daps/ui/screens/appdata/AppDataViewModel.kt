@@ -10,7 +10,7 @@ import de.dh.daps.AppPreferencesRepository
 import de.dh.daps.backupDirectoryUri
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.backup.BackupOptions
-import de.dh.daps.core.backup.BackupRepository
+import de.dh.daps.core.backup.AppDataManagementRepository
 import de.dh.daps.core.backup.BackupResult
 import de.dh.daps.setBackupDirectoryUri
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,7 +37,7 @@ data class AppDataUiState(
 class AppDataViewModel(
     private val systemRegistry: SystemRegistry
 ) : ViewModel() {
-    private val backupRepository: BackupRepository = systemRegistry.backupRepository
+    private val appDataManagementRepository: AppDataManagementRepository = systemRegistry.appDataManagementRepository
     private val appPreferencesRepository: AppPreferencesRepository = systemRegistry.appPreferencesRepository
 
     private val _uiState = MutableStateFlow(AppDataUiState())
@@ -128,7 +128,7 @@ class AppDataViewModel(
                     includeDiagnostics = _uiState.value.includeDiagnostics,
                     includeDescriptors = true
                 )
-                val result = backupRepository.exportBackup(outputStream, options)
+                val result = appDataManagementRepository.exportBackup(outputStream, options)
                 when (result) {
                     is BackupResult.Success -> {
                         _uiState.update {
@@ -183,7 +183,7 @@ class AppDataViewModel(
                     includeDiagnostics = _uiState.value.importIncludeDiagnostics,
                     includeDescriptors = _uiState.value.importIncludeDescriptors
                 )
-                val result = backupRepository.importBackup(inputStream, options)
+                val result = appDataManagementRepository.importBackup(inputStream, options)
                 when (result) {
                     is BackupResult.Success -> {
                         _uiState.update {

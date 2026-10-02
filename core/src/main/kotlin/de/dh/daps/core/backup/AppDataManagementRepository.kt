@@ -33,7 +33,7 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 
-interface BackupRepository {
+interface AppDataManagementRepository {
     suspend fun exportBackup(outputStream: OutputStream, options: BackupOptions): BackupResult
     suspend fun importBackup(
         inputStream: InputStream,
@@ -47,7 +47,7 @@ interface BackupRepository {
     suspend fun clearAllData()
 }
 
-class BackupRepositoryImpl(
+class AppDataManagementRepositoryImpl(
     private val context: Context,
     private val appDatabase: AppDatabase,
     private val preferencesRepository: AppPreferencesRepository,
@@ -56,7 +56,7 @@ class BackupRepositoryImpl(
     private val settingsRepository: SettingsRepository,
     private val alarmRepository: AlarmRepository,
     private val glucoseRepository: GlucoseRepository? = null,
-) : BackupRepository {
+) : AppDataManagementRepository {
     private val json = Json {
         prettyPrint = true
         ignoreUnknownKeys = true
@@ -284,28 +284,28 @@ class BackupRepositoryImpl(
 
                 // Insert Therapy Config in parent-first order
                 if (therapyConfig.insulinTypes.isNotEmpty()) {
-                metabolicDao.insertInsulinTypes(therapyConfig.insulinTypes.map { it.toEntity() })
+                    metabolicDao.insertInsulinTypes(therapyConfig.insulinTypes.map { it.toEntity() })
                 }
                 if (therapyConfig.mealTypes.isNotEmpty()) {
-                metabolicDao.insertMealTypes(therapyConfig.mealTypes.map { it.toEntity() })
+                    metabolicDao.insertMealTypes(therapyConfig.mealTypes.map { it.toEntity() })
                 }
                 if (therapyConfig.sensorTypes.isNotEmpty()) {
-                providerDao.insertSensorTypes(therapyConfig.sensorTypes.map { it.toEntity() })
+                    providerDao.insertSensorTypes(therapyConfig.sensorTypes.map { it.toEntity() })
                 }
                 if (therapyConfig.dataProviders.isNotEmpty()) {
-                providerDao.insertDataProviders(therapyConfig.dataProviders.map { it.toEntity() })
+                    providerDao.insertDataProviders(therapyConfig.dataProviders.map { it.toEntity() })
                 }
                 if (therapyConfig.insulinProfiles.isNotEmpty()) {
-                therapyDao.insertInsulinProfiles(therapyConfig.insulinProfiles.map { it.toEntity() })
+                    therapyDao.insertInsulinProfiles(therapyConfig.insulinProfiles.map { it.toEntity() })
                 }
                 if (therapyConfig.alarmProfiles.isNotEmpty()) {
-                alarmDao.insertAlarmProfiles(therapyConfig.alarmProfiles.map { it.toEntity() })
+                    alarmDao.insertAlarmProfiles(therapyConfig.alarmProfiles.map { it.toEntity() })
                 }
                 therapyConfig.currentSettings?.let {
                     settingsDao.insertCurrentSettingsList(listOf(it.toEntity()))
                 }
                 if (therapyConfig.therapyAdjustments.isNotEmpty()) {
-                therapyDao.insertTherapyAdjustments(therapyConfig.therapyAdjustments.map { it.toEntity() })
+                    therapyDao.insertTherapyAdjustments(therapyConfig.therapyAdjustments.map { it.toEntity() })
                 }
                 therapyConfig.currentTherapySettings?.let {
                     therapyDao.insertCurrentTherapySettingsList(listOf(it.toEntity()))
