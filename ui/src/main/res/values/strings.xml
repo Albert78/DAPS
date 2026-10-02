@@ -683,8 +683,8 @@
     <string name="app_data_card_reset_title">App-Daten neu initialisieren</string>
     <string name="app_data_card_reset_desc">Löscht alle gespeicherten Behandlungsdaten und Einstellungen und setzt die Anwendung auf den Werkszustand zurück.</string>
     <string name="app_data_btn_reset">Daten zurücksetzen</string>
-    <string name="app_data_dialog_reset_title">Daten wirklich zurücksetzen?</string>
-    <string name="app_data_dialog_reset_message">Achtung: Alle gespeicherten Behandlungsdaten, Protokolle und Einstellungen werden unwiderruflich gelöscht und auf den Werkszustand zurückgesetzt!</string>
+    <string name="app_data_dialog_reset_title">DAPS wirklich zurücksetzen?</string>
+    <string name="app_data_dialog_reset_message">Achtung: Alle gespeicherten Behandlungsdaten, Protokolle und Einstellungen in DAPS werden unwiderruflich gelöscht und auf den Werkszustand zurückgesetzt!</string>
     <string name="app_data_section_storage_title">Speicherort</string>
     <string name="app_data_card_storage_title">Datenverzeichnis festlegen</string>
     <string name="app_data_card_storage_desc">Wähle einen Ordner für automatische und manuelle Backups über den Storage Access Framework (SAF).</string>
