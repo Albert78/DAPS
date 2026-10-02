@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -38,6 +39,7 @@ import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -49,12 +51,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Surface
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
@@ -196,54 +196,7 @@ fun AppDataContent(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Sektion 1: Re-Initialisierung (Reset)
-                Text(
-                    text = stringResource(R.string.app_data_section_reset_title),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(2.dp, ExtendedTheme.semanticColors.border),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                    )
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.RestartAlt,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(
-                                text = stringResource(R.string.app_data_card_reset_title),
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = stringResource(R.string.app_data_card_reset_desc),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        OutlinedButton(
-                            onClick = onResetClick,
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = MaterialTheme.colorScheme.error
-                            ),
-                            modifier = Modifier.align(Alignment.End)
-                        ) {
-                            Text(stringResource(R.string.app_data_btn_reset))
-                        }
-                    }
-                }
-
-                // Sektion 2: Speicherort / SAF Verzeichnis
+                // Storage location / SAF directory
                 Text(
                     text = stringResource(R.string.app_data_section_storage_title),
                     style = MaterialTheme.typography.labelLarge,
@@ -296,7 +249,7 @@ fun AppDataContent(
                     }
                 }
 
-                // Sektion 3: Export / Backup
+                // Export / Backup
                 Text(
                     text = stringResource(R.string.app_data_section_export_title),
                     style = MaterialTheme.typography.labelLarge,
@@ -363,7 +316,7 @@ fun AppDataContent(
                     }
                 }
 
-                // Sektion 4: Import / Restore
+                // Import / Restore
                 Text(
                     text = stringResource(R.string.app_data_section_import_title),
                     style = MaterialTheme.typography.labelLarge,
@@ -440,6 +393,53 @@ fun AppDataContent(
                         }
                     }
                 }
+
+                // Re-initialization (Reset)
+                Text(
+                    text = stringResource(R.string.app_data_section_reset_title),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(2.dp, ExtendedTheme.semanticColors.border),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.RestartAlt,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = stringResource(R.string.app_data_card_reset_title),
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = stringResource(R.string.app_data_card_reset_desc),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        OutlinedButton(
+                            onClick = onResetClick,
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.error
+                            ),
+                            modifier = Modifier.align(Alignment.End)
+                        ) {
+                            Text(stringResource(R.string.app_data_btn_reset))
+                        }
+                    }
+                }
             }
 
             // Progress Overlay
@@ -488,8 +488,8 @@ fun AppDataContent(
     }
 }
 
-@Preview(showBackground = true, heightDp = 1400)
-@Preview(showBackground = true, heightDp = 1400, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(showBackground = true, heightDp = 1450)
+@Preview(showBackground = true, heightDp = 1450, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun AppDataContentPreview() {
     AppPreview {
