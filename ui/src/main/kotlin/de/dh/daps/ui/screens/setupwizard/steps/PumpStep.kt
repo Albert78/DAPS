@@ -48,7 +48,8 @@ fun PumpStep(
     onClearError: () -> Unit,
     onNext: () -> Unit,
     onBack: () -> Unit,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    stepProgress: Pair<Int, Int>? = null
 ) {
     val errorMessage = uiState.errorMessage
     LaunchedEffect(errorMessage) {
@@ -79,6 +80,7 @@ fun PumpStep(
 
     SetupStepScaffold(
         title = titleText,
+        stepProgress = stepProgress,
         showTopBackButton = showTopBack,
         onTopBack = onTopBackClick,
         showBottomBackButton = true,

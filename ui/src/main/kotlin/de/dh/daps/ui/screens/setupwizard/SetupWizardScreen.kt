@@ -199,7 +199,8 @@ fun SetupWizardContent(
                             onCarbsUnitSelected = onSetCarbsUnit,
                             onNext = onGoToNextStep,
                             onBack = onGoToPreviousStep,
-                            snackbarHostState = snackbarHostState
+                            snackbarHostState = snackbarHostState,
+                            stepProgress = step.progress
                         )
                     }
 
@@ -221,7 +222,8 @@ fun SetupWizardContent(
                             onSaveEditedType = onSaveEditedInsulinType,
                             onNext = onGoToNextStep,
                             onBack = onGoToPreviousStep,
-                            snackbarHostState = snackbarHostState
+                            snackbarHostState = snackbarHostState,
+                            stepProgress = step.progress
                         )
                     }
 
@@ -234,7 +236,8 @@ fun SetupWizardContent(
                                 onSaveProfile = onSetInsulinProfile,
                                 onNext = onGoToNextStep,
                                 onBack = onGoToPreviousStep,
-                                snackbarHostState = snackbarHostState
+                                snackbarHostState = snackbarHostState,
+                                stepProgress = step.progress
                             )
                         }
                     }
@@ -245,7 +248,8 @@ fun SetupWizardContent(
                             onSetBgBlocks = onSetBgBlocks,
                             onNext = onGoToNextStep,
                             onBack = onGoToPreviousStep,
-                            snackbarHostState = snackbarHostState
+                            snackbarHostState = snackbarHostState,
+                            stepProgress = step.progress
                         )
                     }
 
@@ -257,7 +261,8 @@ fun SetupWizardContent(
                             onClearError = onClearCgmError,
                             onNext = onGoToNextStep,
                             onBack = onGoToPreviousStep,
-                            snackbarHostState = snackbarHostState
+                            snackbarHostState = snackbarHostState,
+                            stepProgress = step.progress
                         )
                     }
 
@@ -269,7 +274,8 @@ fun SetupWizardContent(
                             onClearError = onClearPumpError,
                             onNext = onGoToNextStep,
                             onBack = onGoToPreviousStep,
-                            snackbarHostState = snackbarHostState
+                            snackbarHostState = snackbarHostState,
+                            stepProgress = step.progress
                         )
                     }
 
@@ -280,7 +286,8 @@ fun SetupWizardContent(
                             pumpDisplayName = pumpDescriptor?.displayName,
                             onComplete = onCompleteManualSetup,
                             onBack = onGoToPreviousStep,
-                            snackbarHostState = snackbarHostState
+                            snackbarHostState = snackbarHostState,
+                            stepProgress = step.progress
                         )
                     }
                 }

@@ -43,7 +43,20 @@ enum class SetupWizardStep {
     MANUAL_BG_TARGETS,
     MANUAL_GLUCOSE_SOURCE,
     MANUAL_PUMP,
-    MANUAL_SUMMARY
+    MANUAL_SUMMARY;
+
+    val manualStepIndex: Int?
+        get() {
+            val steps = entries.filter { it != MODE_SELECTION }
+            val index = steps.indexOf(this)
+            return if (index >= 0) index + 1 else null
+        }
+
+    val totalManualSteps: Int
+        get() = entries.count { it != MODE_SELECTION }
+
+    val progress: Pair<Int, Int>?
+        get() = manualStepIndex?.let { Pair(it, totalManualSteps) }
 }
 
 data class SetupWizardUiState(

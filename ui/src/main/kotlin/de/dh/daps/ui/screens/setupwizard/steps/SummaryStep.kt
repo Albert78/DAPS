@@ -39,10 +39,12 @@ fun SummaryStep(
     pumpDisplayName: String?,
     onComplete: () -> Unit,
     onBack: () -> Unit,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    stepProgress: Pair<Int, Int>? = null
 ) {
     SetupStepScaffold(
         title = stringResource(R.string.setup_wizard_summary_title),
+        stepProgress = stepProgress,
         showTopBackButton = false,
         showBottomBackButton = true,
         onBack = onBack,

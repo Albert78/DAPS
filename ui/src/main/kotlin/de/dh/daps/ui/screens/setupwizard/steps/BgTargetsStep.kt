@@ -21,12 +21,14 @@ fun BgTargetsStep(
     onSetBgBlocks: (List<BgBlock>) -> Unit,
     onNext: () -> Unit,
     onBack: () -> Unit,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    stepProgress: Pair<Int, Int>? = null
 ) {
     var showHelpDialog by remember { mutableStateOf(false) }
 
     SetupStepScaffold(
         title = stringResource(R.string.setup_wizard_bg_targets_title),
+        stepProgress = stepProgress,
         showTopBackButton = false,
         showBottomBackButton = true,
         onBack = onBack,

@@ -44,10 +44,12 @@ fun UnitsStep(
     onCarbsUnitSelected: (CarbsUnit) -> Unit,
     onNext: () -> Unit,
     onBack: () -> Unit,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    stepProgress: Pair<Int, Int>? = null
 ) {
     SetupStepScaffold(
         title = stringResource(R.string.setup_wizard_units_title),
+        stepProgress = stepProgress,
         showTopBackButton = false,
         showBottomBackButton = true,
         onBack = onBack,

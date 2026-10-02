@@ -60,7 +60,8 @@ fun InsulinTypeStep(
     onSaveEditedType: () -> Unit,
     onNext: () -> Unit,
     onBack: () -> Unit,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    stepProgress: Pair<Int, Int>? = null
 ) {
     if (isEditing) {
         val titleRes = if (editorUiState.id == null) {
@@ -71,6 +72,7 @@ fun InsulinTypeStep(
 
         SetupStepScaffold(
             title = stringResource(titleRes),
+            stepProgress = stepProgress,
             showTopBackButton = true,
             useCloseIcon = true,
             onTopBack = onCancelEditing,
@@ -95,6 +97,7 @@ fun InsulinTypeStep(
 
         SetupStepScaffold(
             title = stringResource(R.string.setup_wizard_insulin_title),
+            stepProgress = stepProgress,
             showTopBackButton = false,
             showBottomBackButton = true,
             onBack = onBack,

@@ -24,7 +24,8 @@ fun InsulinProfileStep(
     onSaveProfile: (InsulinProfile) -> Unit,
     onNext: () -> Unit,
     onBack: () -> Unit,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    stepProgress: Pair<Int, Int>? = null
 ) {
     var name by remember(profile) { mutableStateOf(profile.name) }
     var basalBlocks by remember(profile) { mutableStateOf(profile.basalBlocks) }
@@ -59,6 +60,7 @@ fun InsulinProfileStep(
 
     SetupStepScaffold(
         title = stringResource(R.string.setup_wizard_profile_title),
+        stepProgress = stepProgress,
         showTopBackButton = false,
         showBottomBackButton = true,
         onBack = onBack,
