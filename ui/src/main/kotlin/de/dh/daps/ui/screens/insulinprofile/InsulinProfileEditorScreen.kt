@@ -56,6 +56,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -284,7 +285,10 @@ fun InsulinProfileEditorContent(
                 .padding(16.dp),
             singleLine = true,
             isError = !isNameValid,
-            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Next
+            )
         )
 
         SecondaryTabRow(selectedTabIndex = currentTab) {
@@ -467,14 +471,22 @@ fun InsulinSettingsEditor(
                 onValueChange = { onDiaChanged(it) },
                 label = { Text(stringResource(id = R.string.insulin_profile_editor_dia_label)) },
                 modifier = Modifier.weight(1f),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Next
+                )
             )
             OutlinedTextField(
                 value = peak,
                 onValueChange = { onPeakChanged(it) },
                 label = { Text(stringResource(id = R.string.insulin_profile_editor_peak_label)) },
                 modifier = Modifier.weight(1f),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done
+                )
             )
         }
     }

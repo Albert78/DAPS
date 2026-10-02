@@ -47,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.Hyphens
@@ -190,7 +191,10 @@ fun MealTypeEditorContent(
                     label = { Text(stringResource(R.string.meal_type_name_label)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Sentences,
+                        imeAction = ImeAction.Next
+                    )
                 )
             }
 
@@ -252,7 +256,10 @@ fun MealTypeEditorContent(
                                 textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
                                 singleLine = true,
                                 modifier = Modifier.width(64.dp),
-                                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters)
+                                keyboardOptions = KeyboardOptions(
+                                    capitalization = KeyboardCapitalization.Characters,
+                                    imeAction = ImeAction.Next
+                                )
                             )
 
                             Column(modifier = Modifier.weight(1f)) {
@@ -283,7 +290,10 @@ fun MealTypeEditorContent(
                     label = { Text(stringResource(R.string.meal_type_cat_label)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Next
+                    )
                 )
             }
 
@@ -391,7 +401,11 @@ fun ComponentItem(
                 },
                 label = { Text(stringResource(R.string.meal_type_weight_label)) },
                 modifier = Modifier.weight(1f),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Next
+                )
             )
             OutlinedTextField(
                 value = if (component.peakMinutes.value == 0.toShort()) "" else component.peakMinutes.value.toString(),
@@ -403,7 +417,11 @@ fun ComponentItem(
                 },
                 label = { Text(stringResource(R.string.meal_type_peak_label)) },
                 modifier = Modifier.weight(1f),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done
+                )
             )
             IconButton(onClick = onDelete) {
                 Icon(Icons.Default.Delete, contentDescription = "Löschen")

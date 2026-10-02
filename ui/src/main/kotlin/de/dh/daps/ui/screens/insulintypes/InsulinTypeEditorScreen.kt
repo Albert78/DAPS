@@ -34,6 +34,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -230,14 +232,21 @@ fun InsulinTypeEditorFormContent(
             onValueChange = onNameChange,
             label = { Text(stringResource(id = R.string.insulin_type_editor_name_label)) },
             modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Next
+            )
         )
 
         OutlinedTextField(
             value = uiState.peak,
             onValueChange = onPeakChange,
             label = { Text(stringResource(id = R.string.insulin_type_editor_peak_label)) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Next
+            ),
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
@@ -246,7 +255,10 @@ fun InsulinTypeEditorFormContent(
             value = uiState.dia,
             onValueChange = onDiaChange,
             label = { Text(stringResource(id = R.string.insulin_type_editor_dia_label)) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Done
+            ),
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
