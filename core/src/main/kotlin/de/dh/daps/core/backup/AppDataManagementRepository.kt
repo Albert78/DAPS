@@ -5,6 +5,7 @@ import androidx.room.withTransaction
 import de.dh.daps.AppPreferencesRepository
 import de.dh.daps.carbsUnit
 import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
+import de.dh.daps.common.model.PluginManager
 import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.model.data.CarbsUnit
 import de.dh.daps.common.model.data.GlucoseUnit
@@ -56,6 +57,7 @@ class AppDataManagementRepositoryImpl(
     private val settingsRepository: SettingsRepository,
     private val alarmRepository: AlarmRepository,
     private val glucoseRepository: GlucoseRepository? = null,
+    private val pluginManager: PluginManager? = null,
 ) : AppDataManagementRepository {
     private val json = Json {
         prettyPrint = true
@@ -183,6 +185,17 @@ class AppDataManagementRepositoryImpl(
                     zipOut.write(json.encodeToString(diagnosticsDto).toByteArray(Charsets.UTF_8))
                     zipOut.closeEntry()
                 }
+
+                // 7. Write Plugin Backup Data
+                pluginManager?.getPlugins()?.forEach { plugin ->
+                    val pluginData = plugin.exportBackupData(options.includeHistory, options.includeDiagnostics)
+                    pluginData?.forEach { (key, content) ->
+                        val entryPath = if (key.startsWith("plugins/")) key else "plugins/$key"
+                        zipOut.putNextEntry(ZipEntry(entryPath))
+                        zipOut.write(content.toByteArray(Charsets.UTF_8))
+                        zipOut.closeEntry()
+                    }
+                }
             }
 
             BackupResult.Success(manifestDto)
@@ -201,19 +214,26 @@ class AppDataManagementRepositoryImpl(
             var therapyConfigDto: TherapyConfigDto? = null
             var medicalHistoryDto: MedicalHistoryDto? = null
             var diagnosticsDto: DiagnosticsDto? = null
+            val pluginDataMap = mutableMapOf<String, String>()
 
             // 1. Unzip and deserialize JSON files
             ZipInputStream(BufferedInputStream(inputStream)).use { zipIn ->
                 var entry = zipIn.nextEntry
                 while (entry != null) {
                     val content = zipIn.readBytes().toString(Charsets.UTF_8)
-                    val entryName = entry.name.substringAfterLast('/')
-                    when (entryName) {
-                        "manifest.json" -> manifestDto = json.decodeFromString(content)
-                        "preferences.json" -> preferencesDto = json.decodeFromString(content)
-                        "therapy_config.json" -> therapyConfigDto = json.decodeFromString(content)
-                        "medical_history.json" -> medicalHistoryDto = json.decodeFromString(content)
-                        "diagnostics.json" -> diagnosticsDto = json.decodeFromString(content)
+                    val fullPath = entry.name
+                    if (fullPath.startsWith("plugins/")) {
+                        val relativeKey = fullPath.removePrefix("plugins/")
+                        pluginDataMap[relativeKey] = content
+                    } else {
+                        val entryName = fullPath.substringAfterLast('/')
+                        when (entryName) {
+                            "manifest.json" -> manifestDto = json.decodeFromString(content)
+                            "preferences.json" -> preferencesDto = json.decodeFromString(content)
+                            "therapy_config.json" -> therapyConfigDto = json.decodeFromString(content)
+                            "medical_history.json" -> medicalHistoryDto = json.decodeFromString(content)
+                            "diagnostics.json" -> diagnosticsDto = json.decodeFromString(content)
+                        }
                     }
                     zipIn.closeEntry()
                     entry = zipIn.nextEntry
@@ -350,6 +370,13 @@ class AppDataManagementRepositoryImpl(
             therapyRepository.clearCache()
             glucoseRepository?.initialize()
 
+            // Restore Plugin Data
+            pluginManager?.getPlugins()?.forEach { plugin ->
+                runCatching {
+                    plugin.importBackupData(pluginDataMap, options.includeHistory, options.includeDiagnostics)
+                }
+            }
+
             BackupResult.Success(manifest)
         }.getOrElse {
             BackupResult.Error(it)
@@ -387,6 +414,9 @@ class AppDataManagementRepositoryImpl(
     }
 
     private suspend fun wipeDatabaseInternal() {
+        pluginManager?.getPlugins()?.forEach { plugin ->
+            runCatching { plugin.onResetToFactorySettings() }
+        }
         appDatabase.withTransaction {
             val metricsDao = appDatabase.systemMetricsDao()
             val therapyDao = appDatabase.therapyDao()

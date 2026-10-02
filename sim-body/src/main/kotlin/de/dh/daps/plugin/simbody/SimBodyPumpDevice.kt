@@ -120,7 +120,8 @@ class SimBodyPumpDevice(
         val dao = pumpDao ?: return
         scope.launch {
             try {
-                dao.getPumpState()?.let { state ->
+                val state = dao.getPumpState()
+                if (state != null) {
                     _batteryLevel.value = state.batteryLevel
                     _reservoirLevel.value = InsulinAmount(state.reservoirLevel)
                     _isOccluded.value = state.isOccluded
@@ -131,6 +132,17 @@ class SimBodyPumpDevice(
                     lastBasalDeliveryTimestamp = state.lastBasalDeliveryTimestamp
                     _tempBasalPercent.value = state.tempBasalPercent
                     _tempBasalExpiry.value = state.tempBasalExpiry
+                } else {
+                    _batteryLevel.value = 1.0
+                    _reservoirLevel.value = InsulinAmount(300.0)
+                    _isOccluded.value = false
+                    _isPrimed.value = true
+                    _hasHardwareError.value = false
+                    _isBroken.value = false
+                    _isSuspended.value = false
+                    lastBasalDeliveryTimestamp = null
+                    _tempBasalPercent.value = null
+                    _tempBasalExpiry.value = null
                 }
 
                 val threshold = Timestamp.now().minusHours(72)

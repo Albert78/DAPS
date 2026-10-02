@@ -50,7 +50,7 @@ data class SimInsulinApplication(
  * It tracks blood glucose levels influenced by meals, insulin, exercise, and health states.
  */
 class BodyModel(
-    initialProfile: BodyProfile,
+    val initialProfile: BodyProfile,
     private val simBodyDao: SimBodyDao? = null,
     context: Context
 ) {
@@ -227,9 +227,12 @@ class BodyModel(
                     _isSensorEnabled.value = state.isSensorEnabled
                     _sensorNoiseFactor.value = state.sensorNoiseFactor
                 } else {
-                    // First run defaults
+                    // First run or reset defaults
                     // Set last simulation timestamp to 5 minutes ago so heartbeat triggers immediately on start
                     _lastSimulationTimestamp.value = Timestamp.now().minusMinutes(5)
+                    _exerciseIntensity.value = 0.0
+                    _stressLevel.value = 0.0
+                    _illnessFactor.value = 1.0
                     _isSensorEnabled.value = true
                     _sensorNoiseFactor.value = 0.0
                 }
@@ -243,12 +246,15 @@ class BodyModel(
                 }
 
                 // Load active profile if exists
-                dao.getActiveBodyProfile()?.let { entity ->
+                val activeEntity = dao.getActiveBodyProfile()
+                if (activeEntity != null) {
                     activeProfile = BodyProfile(
-                        crBlocks = parseBlocks(entity.crBlocks),
-                        isfBlocks = parseBlocks(entity.isfBlocks),
-                        liverGlucoseOutputBlocks = parseBlocks(entity.liverGlucoseOutputBlocks)
+                        crBlocks = parseBlocks(activeEntity.crBlocks),
+                        isfBlocks = parseBlocks(activeEntity.isfBlocks),
+                        liverGlucoseOutputBlocks = parseBlocks(activeEntity.liverGlucoseOutputBlocks)
                     )
+                } else {
+                    activeProfile = initialProfile
                 }
 
                 val threshold = Timestamp.now().minusHours(10)

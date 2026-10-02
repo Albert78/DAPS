@@ -109,6 +109,9 @@ class SystemRegistryImpl(
                             settingsRepository,
                             alarmRepository
                         )
+                        pluginManager.getPlugins().forEach { plugin ->
+                            runCatching { plugin.onSeedDefaultData() }
+                        }
                     }
                     is SetupOption.ManualSetupCompleted -> {
                         DatabaseInitializer.ensureMinimumSettings(
@@ -330,7 +333,8 @@ class SystemRegistryImpl(
                 therapyRepository = therapyRepository,
                 settingsRepository = settingsRepository,
                 alarmRepository = alarmRepository,
-                glucoseRepository = glucoseRepository
+                glucoseRepository = glucoseRepository,
+                pluginManager = pluginManager
             )
 
             // Wire up registry
