@@ -54,12 +54,13 @@ fun ModeSelectionStep(
         title = stringResource(R.string.setup_wizard_title),
         showBackButton = false,
         snackbarHostState = snackbarHostState
-    ) {
+    ) { innerPadding ->
         val scrollState = rememberScrollState()
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(innerPadding)
                 .contentScrollIndicator(scrollState)
                 .verticalScroll(scrollState)
                 .padding(16.dp),

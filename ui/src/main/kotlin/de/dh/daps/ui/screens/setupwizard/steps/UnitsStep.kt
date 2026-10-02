@@ -52,12 +52,13 @@ fun UnitsStep(
         onBack = onBack,
         onNext = onNext,
         snackbarHostState = snackbarHostState
-    ) {
+    ) { innerPadding ->
         val scrollState = rememberScrollState()
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(innerPadding)
                 .contentScrollIndicator(scrollState)
                 .verticalScroll(scrollState)
                 .padding(16.dp),

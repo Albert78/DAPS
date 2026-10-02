@@ -48,12 +48,13 @@ fun SummaryStep(
         nextButtonText = stringResource(R.string.setup_wizard_step4_complete_btn),
         onNext = onComplete,
         snackbarHostState = snackbarHostState
-    ) {
+    ) { innerPadding ->
         val scrollState = rememberScrollState()
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(innerPadding)
                 .contentScrollIndicator(scrollState)
                 .verticalScroll(scrollState)
                 .padding(16.dp),

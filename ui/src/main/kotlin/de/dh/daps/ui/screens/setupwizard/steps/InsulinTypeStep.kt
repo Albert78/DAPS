@@ -90,12 +90,13 @@ fun InsulinTypeStep(
             onNext = onNext,
             isNextEnabled = selectedType != null,
             snackbarHostState = snackbarHostState
-        ) {
+        ) { innerPadding ->
             val scrollState = rememberScrollState()
 
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(innerPadding)
                     .contentScrollIndicator(scrollState)
                     .verticalScroll(scrollState)
                     .padding(16.dp),
