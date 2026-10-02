@@ -124,16 +124,6 @@ fun InsulinTypeEditorContent(
 
     BackHandler(onBack = ::handleBack)
 
-    val scrollState = rememberScrollState()
-    var expandedConc by remember { mutableStateOf(false) }
-
-    val concentrations = listOf(
-        InsulinConcentration.U20,
-        InsulinConcentration.U40,
-        InsulinConcentration.U100,
-        InsulinConcentration.U200
-    )
-
     val titleRes = if (uiState.id == null) {
         R.string.insulin_type_editor_title_new
     } else {
@@ -169,72 +159,14 @@ fun InsulinTypeEditorContent(
             )
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .contentScrollIndicator(scrollState)
-                .verticalScroll(scrollState)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            OutlinedTextField(
-                value = uiState.name,
-                onValueChange = onNameChange,
-                label = { Text(stringResource(id = R.string.insulin_type_editor_name_label)) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            OutlinedTextField(
-                value = uiState.peak,
-                onValueChange = onPeakChange,
-                label = { Text(stringResource(id = R.string.insulin_type_editor_peak_label)) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            OutlinedTextField(
-                value = uiState.dia,
-                onValueChange = onDiaChange,
-                label = { Text(stringResource(id = R.string.insulin_type_editor_dia_label)) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            ExposedDropdownMenuBox(
-                expanded = expandedConc,
-                onExpandedChange = { expandedConc = !expandedConc }
-            ) {
-                OutlinedTextField(
-                    value = "U${(uiState.concentration.factor * 100).toInt()}",
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text(stringResource(id = R.string.insulin_type_editor_concentration_label)) },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedConc) },
-                    modifier = Modifier
-                        .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
-                        .fillMaxWidth()
-                )
-
-                ExposedDropdownMenu(
-                    expanded = expandedConc,
-                    onDismissRequest = { expandedConc = false }
-                ) {
-                    concentrations.forEach { conc ->
-                        DropdownMenuItem(
-                            text = { Text("U${(conc.factor * 100).toInt()}") },
-                            onClick = {
-                                onConcentrationChange(conc)
-                                expandedConc = false
-                            }
-                        )
-                    }
-                }
-            }
-        }
+        InsulinTypeEditorFormContent(
+            uiState = uiState,
+            onNameChange = onNameChange,
+            onPeakChange = onPeakChange,
+            onDiaChange = onDiaChange,
+            onConcentrationChange = onConcentrationChange,
+            modifier = Modifier.padding(innerPadding)
+        )
     }
 
     if (showDiscardConfirmation) {
@@ -265,6 +197,93 @@ fun InsulinTypeEditorContent(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun InsulinTypeEditorFormContent(
+    uiState: InsulinTypeEditorUiState,
+    onNameChange: (String) -> Unit,
+    onPeakChange: (String) -> Unit,
+    onDiaChange: (String) -> Unit,
+    onConcentrationChange: (InsulinConcentration) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val scrollState = rememberScrollState()
+    var expandedConc by remember { mutableStateOf(false) }
+
+    val concentrations = listOf(
+        InsulinConcentration.U20,
+        InsulinConcentration.U40,
+        InsulinConcentration.U100,
+        InsulinConcentration.U200
+    )
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .contentScrollIndicator(scrollState)
+            .verticalScroll(scrollState)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        OutlinedTextField(
+            value = uiState.name,
+            onValueChange = onNameChange,
+            label = { Text(stringResource(id = R.string.insulin_type_editor_name_label)) },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        OutlinedTextField(
+            value = uiState.peak,
+            onValueChange = onPeakChange,
+            label = { Text(stringResource(id = R.string.insulin_type_editor_peak_label)) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        OutlinedTextField(
+            value = uiState.dia,
+            onValueChange = onDiaChange,
+            label = { Text(stringResource(id = R.string.insulin_type_editor_dia_label)) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        ExposedDropdownMenuBox(
+            expanded = expandedConc,
+            onExpandedChange = { expandedConc = !expandedConc }
+        ) {
+            OutlinedTextField(
+                value = "U${(uiState.concentration.factor * 100).toInt()}",
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(stringResource(id = R.string.insulin_type_editor_concentration_label)) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedConc) },
+                modifier = Modifier
+                    .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
+                    .fillMaxWidth()
+            )
+
+            ExposedDropdownMenu(
+                expanded = expandedConc,
+                onDismissRequest = { expandedConc = false }
+            ) {
+                concentrations.forEach { conc ->
+                    DropdownMenuItem(
+                        text = { Text("U${(conc.factor * 100).toInt()}") },
+                        onClick = {
+                            onConcentrationChange(conc)
+                            expandedConc = false
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
 @Preview(showBackground = true, name = "Light Mode")
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
@@ -283,6 +302,26 @@ fun InsulinTypeEditorPreview() {
             onConcentrationChange = {},
             onSave = {},
             onNavigateUp = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Form Content Light Mode")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Form Content Dark Mode")
+@Composable
+fun InsulinTypeEditorFormContentPreview() {
+    AppPreview {
+        InsulinTypeEditorFormContent(
+            uiState = InsulinTypeEditorUiState(
+                id = "1",
+                name = "Fiasp",
+                peak = "50",
+                dia = "300"
+            ),
+            onNameChange = {},
+            onPeakChange = {},
+            onDiaChange = {},
+            onConcentrationChange = {}
         )
     }
 }
