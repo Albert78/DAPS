@@ -136,40 +136,12 @@ fun BgEditorContent(
             )
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = stringResource(id = R.string.bg_editor_desc),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.weight(1f)
-                )
-                IconButton(onClick = { showHelpDialog = true }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.HelpOutline,
-                        contentDescription = stringResource(id = R.string.cd_help),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-
-            BgBlockList(
-                blocks = blocks,
-                onBlocksChanged = onBlocksChanged,
-                modifier = Modifier.weight(1f)
-            )
-        }
+        BgEditorFormContent(
+            blocks = blocks,
+            onBlocksChanged = onBlocksChanged,
+            onHelpClick = { showHelpDialog = true },
+            modifier = Modifier.padding(innerPadding)
+        )
     }
 
     if (showDiscardConfirmation) {
@@ -198,6 +170,48 @@ fun BgEditorContent(
 
     if (showHelpDialog) {
         BgEditorHelpDialog(onDismiss = { showHelpDialog = false })
+    }
+}
+
+@Composable
+fun BgEditorFormContent(
+    blocks: List<BgBlock>,
+    onBlocksChanged: (List<BgBlock>) -> Unit,
+    onHelpClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = stringResource(id = R.string.bg_editor_desc),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f)
+            )
+            IconButton(onClick = onHelpClick) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.HelpOutline,
+                    contentDescription = stringResource(id = R.string.cd_help),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+
+        BgBlockList(
+            blocks = blocks,
+            onBlocksChanged = onBlocksChanged,
+            modifier = Modifier.weight(1f)
+        )
     }
 }
 
