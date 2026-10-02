@@ -44,6 +44,7 @@ interface BackupRepository {
         )
     ): BackupResult
     suspend fun resetToDefaultData()
+    suspend fun clearAllData()
 }
 
 class BackupRepositoryImpl(
@@ -355,7 +356,37 @@ class BackupRepositoryImpl(
         }
     }
 
+    override suspend fun clearAllData() = withContext(Dispatchers.IO) {
+        wipeDatabaseInternal()
+        treatmentRepository.load()
+        therapyRepository.clearCache()
+        glucoseRepository?.initialize()
+        Unit
+    }
+
     override suspend fun resetToDefaultData() = withContext(Dispatchers.IO) {
+        wipeDatabaseInternal()
+
+        treatmentRepository.load()
+        therapyRepository.clearCache()
+        glucoseRepository?.initialize()
+
+        DatabaseInitializer.initialize(
+            context = context,
+            treatmentRepository = treatmentRepository,
+            therapyRepository = therapyRepository,
+            settingsRepository = settingsRepository,
+            alarmRepository = alarmRepository
+        )
+
+        // Reload in-memory state after initialization
+        treatmentRepository.load()
+        therapyRepository.clearCache()
+        glucoseRepository?.initialize()
+        Unit
+    }
+
+    private suspend fun wipeDatabaseInternal() {
         appDatabase.withTransaction {
             val metricsDao = appDatabase.systemMetricsDao()
             val therapyDao = appDatabase.therapyDao()
@@ -382,24 +413,5 @@ class BackupRepositoryImpl(
             metabolicDao.deleteAllMealTypes()
             metabolicDao.deleteAllInsulinTypes()
         }
-
-        // Clear in-memory cache after database wipe so DatabaseInitializer detects empty tables
-        treatmentRepository.load()
-        therapyRepository.clearCache()
-        glucoseRepository?.initialize()
-
-        DatabaseInitializer.initialize(
-            context = context,
-            treatmentRepository = treatmentRepository,
-            therapyRepository = therapyRepository,
-            settingsRepository = settingsRepository,
-            alarmRepository = alarmRepository
-        )
-
-        // Reload in-memory state after initialization
-        treatmentRepository.load()
-        therapyRepository.clearCache()
-        glucoseRepository?.initialize()
-        Unit
     }
 }

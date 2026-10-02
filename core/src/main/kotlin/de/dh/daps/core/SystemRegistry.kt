@@ -243,4 +243,10 @@ interface SystemRegistry : PluginContext {
      * Completes system initialization with the chosen setup option and starts core engines.
      */
     suspend fun completeInitialization(option: SetupOption)
+
+    /**
+     * Resets the system to factory settings by stopping active services, clearing database
+     * tables and preferences, and setting the initialization state back to [InitializationState.REQUIRES_SETUP].
+     */
+    suspend fun resetToFactorySettings()
 }

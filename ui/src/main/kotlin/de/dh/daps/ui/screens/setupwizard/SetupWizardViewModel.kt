@@ -20,6 +20,7 @@ import de.dh.daps.common.model.getDefaultInsulinProfile
 import de.dh.daps.common.model.getDefaultInsulinTypes
 import de.dh.daps.common.model.getDefaultMealTypes
 import de.dh.daps.common.ui.UiText
+import de.dh.daps.core.InitializationState
 import de.dh.daps.core.SetupOption
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.setCarbsUnit
@@ -72,6 +73,17 @@ class SetupWizardViewModel(
     val uiState: StateFlow<SetupWizardUiState> = _uiState.asStateFlow()
 
     init {
+        resetState()
+        viewModelScope.launch {
+            registry.initializationState.collect { state ->
+                if (state == InitializationState.REQUIRES_SETUP) {
+                    resetState()
+                }
+            }
+        }
+    }
+
+    fun resetState() {
         val context = registry.appContext
         val defaultTypes = getDefaultInsulinTypes(context)
         val primaryType = defaultTypes.firstOrNull()
@@ -88,14 +100,17 @@ class SetupWizardViewModel(
             )
         )
 
-        _uiState.update {
-            it.copy(
-                availableInsulinTypes = defaultTypes,
-                selectedInsulinType = primaryType,
-                insulinProfile = initialProfile,
-                bgBlocks = initialBgBlocks
-            )
-        }
+        _uiState.value = SetupWizardUiState(
+            currentStep = SetupWizardStep.MODE_SELECTION,
+            isBusy = false,
+            errorMessage = null,
+            glucoseUnit = GlucoseUnit.MG_DL,
+            carbsUnit = CarbsUnit.GRAMS,
+            availableInsulinTypes = defaultTypes,
+            selectedInsulinType = primaryType,
+            insulinProfile = initialProfile,
+            bgBlocks = initialBgBlocks
+        )
     }
 
     fun selectDemoData() {
@@ -103,6 +118,8 @@ class SetupWizardViewModel(
             _uiState.update { it.copy(isBusy = true, errorMessage = null) }
             runCatching {
                 registry.completeInitialization(SetupOption.SeedDemoData)
+            }.onSuccess {
+                resetState()
             }.onFailure { error ->
                 val message = error.localizedMessage?.let { UiText.DynamicString(it) }
                     ?: UiText.StringResource(R.string.setup_wizard_error_load_demo_data)
@@ -116,6 +133,8 @@ class SetupWizardViewModel(
             _uiState.update { it.copy(isBusy = true, errorMessage = null) }
             runCatching {
                 registry.completeInitialization(SetupOption.ImportBackup(uri))
+            }.onSuccess {
+                resetState()
             }.onFailure { error ->
                 val message = error.localizedMessage?.let { UiText.DynamicString(it) }
                     ?: UiText.StringResource(R.string.setup_wizard_error_import_backup)
@@ -311,6 +330,8 @@ class SetupWizardViewModel(
 
                 // 5. Complete initialization
                 registry.completeInitialization(SetupOption.ManualSetupCompleted)
+            }.onSuccess {
+                resetState()
             }.onFailure { error ->
                 val message = error.localizedMessage?.let { UiText.DynamicString(it) }
                     ?: UiText.StringResource(R.string.setup_wizard_error_manual_setup)

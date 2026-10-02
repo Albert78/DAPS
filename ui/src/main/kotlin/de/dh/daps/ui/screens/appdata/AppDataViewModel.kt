@@ -35,7 +35,7 @@ data class AppDataUiState(
 )
 
 class AppDataViewModel(
-    systemRegistry: SystemRegistry
+    private val systemRegistry: SystemRegistry
 ) : ViewModel() {
     private val backupRepository: BackupRepository = systemRegistry.backupRepository
     private val appPreferencesRepository: AppPreferencesRepository = systemRegistry.appPreferencesRepository
@@ -95,14 +95,7 @@ class AppDataViewModel(
         _uiState.update { it.copy(isProcessing = true, userMessage = null) }
         viewModelScope.launch {
             try {
-                backupRepository.resetToDefaultData()
-                _uiState.update {
-                    it.copy(
-                        isProcessing = false,
-                        userMessage = "RESET_SUCCESS",
-                        isError = false
-                    )
-                }
+                systemRegistry.resetToFactorySettings()
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(

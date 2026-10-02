@@ -130,6 +130,12 @@ class MainActivity : ComponentActivity() {
             val carbsUnit by globalViewModel.carbsUnit.collectAsState()
             val initState by registry.initializationState.collectAsState()
 
+            LaunchedEffect(initState) {
+                if (initState == InitializationState.REQUIRES_SETUP) {
+                    navViewModel.reset(listOf(DashboardRoute))
+                }
+            }
+
             EdgeToEdgeHandler(useDarkTheme)
             AppTheme(
                 darkTheme = useDarkTheme,

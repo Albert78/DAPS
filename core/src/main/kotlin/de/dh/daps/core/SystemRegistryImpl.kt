@@ -159,6 +159,35 @@ class SystemRegistryImpl(
         }
     }
 
+    override suspend fun resetToFactorySettings() {
+        withContext(Dispatchers.Default) {
+            _initializationState.value = InitializationState.INITIALIZING
+            runCatching {
+                // 1. Stop background engines and disconnect active devices
+                deviceConnectionManager.disconnectGlucoseSource()
+                deviceConnectionManager.disconnectPump()
+                glucoseSourceManager.stop()
+                systemOrchestrator.stop()
+                alarmEvaluator.stop()
+                alarmPlayerManager.stopAlarm()
+                alarmSnoozeManager.clearAllSnoozes()
+
+                // 2. Wipe database and app preferences
+                backupRepository.clearAllData()
+                appPreferencesRepository.editPreferences { mutablePreferences ->
+                    mutablePreferences.clear()
+                }
+
+                // 3. Reload in-memory state
+                treatmentRepository.load()
+                therapyRepository.clearCache()
+                glucoseRepository.initialize()
+            }.also {
+                _initializationState.value = InitializationState.REQUIRES_SETUP
+            }
+        }
+    }
+
     suspend fun startCoreEngine() {
         // TODO: Check result, handle errors
         deviceConnectionManager.restoreConnections()

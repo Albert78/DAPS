@@ -13,6 +13,7 @@ import de.dh.daps.core.repository.GlucoseRepository
 import de.dh.daps.core.repository.TherapyRepository
 import de.dh.daps.core.system.AndroidNotifications
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -42,8 +43,11 @@ class AlarmEvaluator(
     private val _activeFiringConfig = MutableStateFlow<AlarmSignalConfig?>(null)
     val activeFiringConfig: StateFlow<AlarmSignalConfig?> = _activeFiringConfig.asStateFlow()
 
+    private var evaluationJob: Job? = null
+
     fun start() {
-        scope.launch {
+        stop()
+        evaluationJob = scope.launch {
             combine(
                 glucoseRepository.currentBg,
                 systemOrchestrator.apsIssues,
@@ -60,6 +64,15 @@ class AlarmEvaluator(
                 evaluate(input)
             }
         }
+    }
+
+    fun stop() {
+        evaluationJob?.cancel()
+        evaluationJob = null
+        _activeAlarms.value = emptySet()
+        _activeFiringAlarm.value = null
+        _activeFiringConfig.value = null
+        androidNotifications.cancelAlarmNotification()
     }
 
     private fun evaluate(input: EvaluationInput) {
