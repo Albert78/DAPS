@@ -4,7 +4,6 @@ import android.content.Context
 import de.dh.daps.common.DEFAULT_BASAL_UNITS_PER_HOUR
 import de.dh.daps.common.DEFAULT_CR_GRAM_PER_UNIT
 import de.dh.daps.common.DEFAULT_ISF_MGDL_PER_UNIT
-import de.dh.daps.common.ID_INSULIN_ACTRAPID
 import de.dh.daps.common.ID_INSULIN_APIDRA
 import de.dh.daps.common.ID_INSULIN_FIASP
 import de.dh.daps.common.ID_INSULIN_HUMALOG
@@ -58,13 +57,6 @@ fun getDefaultInsulinTypes(context: Context): List<InsulinType> = listOf(
         peak = Minutes(60),
         defaultConcentration = InsulinConcentration.U100,
     ),
-    InsulinType(
-        id = ID_INSULIN_ACTRAPID,
-        name = context.getString(R.string.insulin_type_actrapid_name),
-        dia = Minutes.ofHours(8),
-        peak = Minutes(120),
-        defaultConcentration = InsulinConcentration.U100,
-    )
 )
 
 fun getDefaultFastMealType(context: Context): MealType = MealType(
