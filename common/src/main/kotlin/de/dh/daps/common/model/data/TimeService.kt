@@ -72,4 +72,9 @@ interface TimeService {
      * @param synchronizationTimestamp The desired point in time for the current or next tick to align with.
      */
     fun synchronize(synchronizationTimestamp: Timestamp)
+
+    /**
+     * Stops scheduled ticking wakeups.
+     */
+    fun stop() {}
 }

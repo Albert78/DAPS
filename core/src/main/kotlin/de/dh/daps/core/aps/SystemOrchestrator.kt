@@ -561,6 +561,9 @@ class SystemOrchestratorImpl(
         coreDispatcher?.close()
         coreDispatcher = null
 
+        wakeService.cancelWakeup(WAKE_TAG, WAKEUP_STALE_CHECK)
+        wakeService.unregisterHandler(WAKE_TAG)
+
         _apsIssues.value = emptySet()
         _isBgStale.value = false
         _coreState.value = CoreState.Uninitialized

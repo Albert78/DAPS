@@ -154,6 +154,10 @@ class TimeServiceImpl(
         scheduleNextTick()
     }
 
+    override fun stop() {
+        wakeService.cancelWakeup(WAKE_TAG)
+    }
+
     init {
         wakeService.registerHandler(WAKE_TAG, this)
 

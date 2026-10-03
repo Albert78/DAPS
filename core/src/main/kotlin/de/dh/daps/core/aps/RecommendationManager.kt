@@ -116,6 +116,15 @@ class RecommendationManager(
     }
 
     /**
+     * Clears all active treatment recommendations and cancels scheduled wakeups.
+     */
+    fun stop() {
+        clearRecommendations()
+        wakeService.cancelWakeup(WAKE_TAG_MEAL_REMINDER, WAKEUP_ID_MEAL_REMINDER)
+        wakeService.unregisterHandler(WAKE_TAG_MEAL_REMINDER)
+    }
+
+    /**
      * Clears all active treatment recommendations.
      */
     fun clearRecommendations() {

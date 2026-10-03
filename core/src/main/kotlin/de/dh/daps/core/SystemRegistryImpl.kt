@@ -176,7 +176,8 @@ class SystemRegistryImpl(
                 alarmEvaluator.stop()
                 alarmPlayerManager.stopAlarm()
                 alarmSnoozeManager.clearAllSnoozes()
-                recommendationManager.clearRecommendations()
+                recommendationManager.stop()
+                timeService.stop()
 
                 // 2. Wipe database and app preferences
                 appDataManagementRepository.clearAllData()

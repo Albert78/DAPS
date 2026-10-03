@@ -37,6 +37,33 @@ class SystemWakeServiceImpl(
         handlers[tag] = handler
     }
 
+    override fun unregisterHandler(tag: String) {
+        handlers.remove(tag)
+    }
+
+    override fun cancelWakeup(tag: String, wakeupId: UInt?) {
+        val internalWakeupId = wakeupId?.toInt() ?: -1
+        val requestCode = (tag.hashCode() xor internalWakeupId)
+
+        val intent = Intent(context, SystemWakeReceiver::class.java).apply {
+            action = ACTION_WAKEUP
+            putExtra(EXTRA_TAG, tag)
+        }
+
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            requestCode,
+            intent,
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        if (pendingIntent != null) {
+            alarmManager.cancel(pendingIntent)
+            pendingIntent.cancel()
+            Log.d(TAG, "Cancelled system wakeup for $tag with ID $internalWakeupId")
+        }
+    }
+
     @SuppressLint("ObsoleteSdkInt", "MissingPermission")
     override fun scheduleWakeup(tag: String, wakeupId: UInt?, timestamp: Timestamp) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {

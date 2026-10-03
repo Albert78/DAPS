@@ -28,6 +28,11 @@ interface SystemWakeService {
     fun registerHandler(tag: String, handler: WakeupHandler)
 
     /**
+     * Unregisters the handler for a specific tag.
+     */
+    fun unregisterHandler(tag: String)
+
+    /**
      * Schedules a system wakeup at the given timestamp for a specific tag.
      *
      * @param tag The tag associated with the handler. This tag must be unique among all
@@ -36,6 +41,11 @@ interface SystemWakeService {
      * @param timestamp The absolute time for the wakeup.
      */
     fun scheduleWakeup(tag: String, wakeupId: UInt?, timestamp: Timestamp)
+
+    /**
+     * Cancels a previously scheduled system wakeup for a specific tag and wakeupId.
+     */
+    fun cancelWakeup(tag: String, wakeupId: UInt? = null)
 
     /**
      * Acquires a wake lock to prevent the device from sleeping.

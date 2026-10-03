@@ -136,6 +136,9 @@ class TherapyManager(
         initScope = null
         pumpManager.setOnHistoryUpdateListener {}
         pumpManager.setOnBolusStatusUpdateListener {}
+        wakeService?.cancelWakeup(WAKEUP_TAG_ADJUSTMENT, WAKEUP_ID_START)
+        wakeService?.cancelWakeup(WAKEUP_TAG_ADJUSTMENT, WAKEUP_ID_END)
+        wakeService?.unregisterHandler(WAKEUP_TAG_ADJUSTMENT)
     }
 
     suspend fun checkAndApplyTherapyAdjustmentTiming() {
