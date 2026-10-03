@@ -14,6 +14,8 @@ import de.dh.daps.core.repository.db.mappers.toModel
 import de.dh.daps.core.system.SystemWakeService
 import de.dh.daps.core.system.WakeupHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,22 +50,43 @@ class RecommendationManager(
     private val dueMealRemindersChannel = Channel<MealReminder>(capacity = Channel.UNLIMITED)
     val dueMealReminders: Flow<MealReminder> = dueMealRemindersChannel.receiveAsFlow()
 
-    init {
+    private var initScope: CoroutineScope? = null
+
+    /**
+     * Wires up the recommendation manager with external wakeService and meal reminder observers.
+     */
+    fun startInitialization() {
+        stop()
+
+        val currentScope = CoroutineScope(scope.coroutineContext + SupervisorJob())
+        initScope = currentScope
+
         wakeService.registerHandler(WAKE_TAG_MEAL_REMINDER, object : WakeupHandler {
             override fun onWakeup(wakeupId: UInt?, intent: Intent?) {
-                scope.launch {
+                currentScope.launch {
                     checkAndProcessReminders()
                 }
             }
         })
 
-        scope.launch {
+        currentScope.launch {
             mealReminderDao.observeAllMealReminders().collect { entities ->
                 val models = entities.map { it.toModel() }
                 _mealReminders.value = models
                 checkAndProcessReminders(models)
             }
         }
+    }
+
+    /**
+     * Clears all active treatment recommendations and cancels scheduled wakeups.
+     */
+    fun stop() {
+        initScope?.cancel()
+        initScope = null
+        clearRecommendations()
+        wakeService.cancelWakeup(WAKE_TAG_MEAL_REMINDER, WAKEUP_ID_MEAL_REMINDER)
+        wakeService.unregisterHandler(WAKE_TAG_MEAL_REMINDER)
     }
 
     // -----------------------------------------------------------------------------------------
@@ -113,15 +136,6 @@ class RecommendationManager(
      */
     fun clearTempBasalRecommendation() {
         _recommendations.value = _recommendations.value.filterNot { it is ApsRecommendation.TempBasal }
-    }
-
-    /**
-     * Clears all active treatment recommendations and cancels scheduled wakeups.
-     */
-    fun stop() {
-        clearRecommendations()
-        wakeService.cancelWakeup(WAKE_TAG_MEAL_REMINDER, WAKEUP_ID_MEAL_REMINDER)
-        wakeService.unregisterHandler(WAKE_TAG_MEAL_REMINDER)
     }
 
     /**

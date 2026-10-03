@@ -199,6 +199,7 @@ class SystemRegistryImpl(
         deviceConnectionManager.restoreConnections()
 
         therapyManager.startInitialization()
+        recommendationManager.startInitialization()
 
         systemOrchestrator.startInitialization(
             treatmentRepository = treatmentRepository,
