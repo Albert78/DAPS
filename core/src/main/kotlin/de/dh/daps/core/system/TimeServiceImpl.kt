@@ -10,7 +10,6 @@ import de.dh.daps.common.model.data.Timeline
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.repository.SystemMetricsRepository
 import de.dh.daps.core.repository.TickHandlerMetric
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,10 +29,13 @@ class TimeServiceImpl(
 ) : TimeService, WakeupHandler {
     override val timeline = Timeline(tickInterval)
 
+    @Volatile
+    private var isSynchronized = false
+
     override var executionOffsetMs: Long = 0L
         set(value) {
             field = value
-            if (firstSyncDeferred.isCompleted) {
+            if (isSynchronized) {
                 scheduleNextTick()
             }
         }
@@ -46,8 +48,6 @@ class TimeServiceImpl(
 
     private data class HandlerEntry(val priority: Int, val handler: TickHandler, val name: String)
     private val handlers = CopyOnWriteArrayList<HandlerEntry>()
-
-    private val firstSyncDeferred = CompletableDeferred<Unit>()
 
     override fun registerTickHandler(priority: Int, handler: TickHandler, name: String?) {
         val handlerName = name ?: handler.javaClass.simpleName.ifBlank { handler.toString() }
@@ -117,10 +117,10 @@ class TimeServiceImpl(
     override fun synchronize(synchronizationTimestamp: Timestamp) {
         val tickSizeMs = timeline.tickSizeMs
 
-        if (!firstSyncDeferred.isCompleted) {
+        if (!isSynchronized) {
             timeline.offsetMs = Math.floorMod(synchronizationTimestamp.ms, tickSizeMs)
-
-            firstSyncDeferred.complete(Unit)
+            isSynchronized = true
+            scheduleNextTick()
             return
         }
 
@@ -156,18 +156,12 @@ class TimeServiceImpl(
 
     override fun stop() {
         wakeService.cancelWakeup(WAKE_TAG)
+        isSynchronized = false
+        timeline.offsetMs = 0L
     }
 
     init {
         wakeService.registerHandler(WAKE_TAG, this)
-
-        scope.launch {
-            Log.d(TAG, "Waiting for initial synchronization...")
-            firstSyncDeferred.await()
-            Log.d(TAG, "Starting event-driven ticking cycle with offset ${timeline.offsetMs}")
-
-            scheduleNextTick()
-        }
     }
 
     companion object {

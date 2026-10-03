@@ -79,12 +79,16 @@ class RecommendationManager(
     }
 
     /**
-     * Clears all active treatment recommendations and cancels scheduled wakeups.
+     * Clears all active treatment recommendations, meal reminders, and cancels scheduled wakeups.
      */
     fun stop() {
         initScope?.cancel()
         initScope = null
         clearRecommendations()
+        _mealReminders.value = emptyList()
+        while (dueMealRemindersChannel.tryReceive().isSuccess) {
+            // Drain channel buffer to avoid stale reminders after reset
+        }
         wakeService.cancelWakeup(WAKE_TAG_MEAL_REMINDER, WAKEUP_ID_MEAL_REMINDER)
         wakeService.unregisterHandler(WAKE_TAG_MEAL_REMINDER)
     }

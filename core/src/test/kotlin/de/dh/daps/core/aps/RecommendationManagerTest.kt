@@ -28,7 +28,9 @@ class RecommendationManagerTest {
 
     private val fakeWakeService = object : SystemWakeService {
         override fun registerHandler(tag: String, handler: WakeupHandler) {}
+        override fun unregisterHandler(tag: String) {}
         override fun scheduleWakeup(tag: String, wakeupId: UInt?, timestamp: Timestamp) {}
+        override fun cancelWakeup(tag: String, wakeupId: UInt?) {}
         override fun acquireBusyState(tag: String) {}
         override fun releaseBusyState(tag: String) {}
         override fun dispatchWakeup(intent: Intent) {}
@@ -52,5 +54,19 @@ class RecommendationManagerTest {
         assertEquals(1.23, bolusRec.amount.iu, 0.0001)
         assertEquals(0.56, bolusRec.correctionPart.iu, 0.0001)
         assertEquals(0.68, bolusRec.basalPart.iu, 0.0001)
+    }
+
+    @Test
+    fun testStopClearsRecommendationsMealRemindersAndDrainsChannel() {
+        val scope = CoroutineScope(Dispatchers.Unconfined)
+        val manager = RecommendationManager(fakeDao, fakeWakeService, scope)
+
+        manager.addCarbsRecommendation(30)
+        assertEquals(1, manager.recommendations.value.size)
+
+        manager.stop()
+
+        assertEquals(0, manager.recommendations.value.size)
+        assertEquals(0, manager.mealReminders.value.size)
     }
 }
