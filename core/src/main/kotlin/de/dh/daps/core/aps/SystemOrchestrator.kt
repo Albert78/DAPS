@@ -24,6 +24,7 @@ import de.dh.daps.core.system.AndroidNotifications
 import de.dh.daps.core.system.SystemWakeService
 import de.dh.daps.core.system.WakeupHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -160,8 +161,12 @@ class SystemOrchestratorImpl(
     private val scope: CoroutineScope
 ) : SystemOrchestrator {
     // Threading: Single background thread to avoid race conditions in the core logic
-    private val coreDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
-    private val coreScope = CoroutineScope(coreDispatcher + SupervisorJob())
+    private var coreDispatcher: ExecutorCoroutineDispatcher? = null
+    private var coreScope: CoroutineScope? = null
+    private var initScope: CoroutineScope? = null
+
+    private var notificationTickHandler: TickHandler? = null
+    private var apsCoreTickHandler: TickHandler? = null
 
     private val _apsMode = MutableStateFlow(ApsMode.Suspend)
     override val apsMode: StateFlow<ApsMode> = _apsMode.asStateFlow()
@@ -219,8 +224,8 @@ class SystemOrchestratorImpl(
     /**
      * Executes the given block on the internal core thread asynchronously.
      */
-    private fun inCoreThreadAsync(block: suspend CoroutineScope.() -> Unit): Job {
-        return coreScope.launch {
+    private fun inCoreThreadAsync(block: suspend CoroutineScope.() -> Unit): Job? {
+        return coreScope?.launch {
             block()
         }
     }
@@ -228,8 +233,9 @@ class SystemOrchestratorImpl(
     /**
      * Executes the given block on the internal core thread and waits for its completion.
      */
-    private suspend fun <T> inCoreThreadSync(block: suspend CoroutineScope.() -> T): T {
-        return withContext(coreDispatcher) {
+    private suspend fun <T> inCoreThreadSync(block: suspend CoroutineScope.() -> T): T? {
+        val dispatcher = coreDispatcher ?: return null
+        return withContext(dispatcher) {
             block()
         }
     }
@@ -243,11 +249,21 @@ class SystemOrchestratorImpl(
         carbsInsulinCalculator: CarbsInsulinCalculator,
         systemMetricsRepository: SystemMetricsRepository
     ) {
+        stop()
+
+        val newInitScope = CoroutineScope(scope.coroutineContext + SupervisorJob())
+        initScope = newInitScope
+
+        val dispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+        coreDispatcher = dispatcher
+        val newCoreScope = CoroutineScope(dispatcher + SupervisorJob())
+        coreScope = newCoreScope
+
         this.therapyManager = therapyManager
         this.treatmentRepository = treatmentRepository
         this.carbsInsulinCalculator = carbsInsulinCalculator
 
-        scope.launch {
+        newInitScope.launch {
             combine(
                 _isBgStale,
                 coreState,
@@ -285,7 +301,7 @@ class SystemOrchestratorImpl(
             } else {
                 val fallback = allowed.lastOrNull() ?: ApsMode.Suspend
                 Log.w(TAG, "Restored APS mode ${currentSettings.apsMode} is not allowed with current devices. Falling back to $fallback.")
-                scope.launch {
+                newInitScope.launch {
                     settingsRepository.updateCurrentSettings(currentSettings.copy(apsMode = fallback))
                 }
                 fallback
@@ -293,7 +309,7 @@ class SystemOrchestratorImpl(
             _apsMode.value = initialMode
         }
 
-        scope.launch {
+        newInitScope.launch {
             settingsRepository.observeCurrentSettings().drop(1).collect { settings ->
                 if (settings != null) {
                     val allowed = availableApsModes.value
@@ -309,7 +325,7 @@ class SystemOrchestratorImpl(
             }
         }
 
-        scope.launch {
+        newInitScope.launch {
             availableApsModes.collect { allowed ->
                 val current = _apsMode.value
                 if (current !in allowed) {
@@ -320,7 +336,7 @@ class SystemOrchestratorImpl(
             }
         }
 
-        scope.launch {
+        newInitScope.launch {
             glucoseRepository.currentBg.drop(1).collect { bg ->
                 if (bg != null) {
                     _isBgStale.value = false
@@ -355,15 +371,17 @@ class SystemOrchestratorImpl(
         }
 
         androidNotifications.createNotificationChannels()
-        timeService.registerTickHandler(TickPriority.UI, NotificationTickHandler(), "Notifications")
+        val notifHandler = NotificationTickHandler()
+        notificationTickHandler = notifHandler
+        timeService.registerTickHandler(TickPriority.UI, notifHandler, "Notifications")
 
-        scope.launch {
+        newInitScope.launch {
             appPreferencesRepository.glucoseUnit.drop(1).collect {
                 androidNotifications.updateMainAppNotification(glucoseRepository)
             }
         }
 
-        scope.launch {
+        newInitScope.launch {
             recommendationManager.recommendations.collect { recommendations ->
                 val carbRec = recommendations.filterIsInstance<ApsRecommendation.Carbs>().firstOrNull()
                 if (carbRec != null) {
@@ -382,7 +400,7 @@ class SystemOrchestratorImpl(
             }
         }
 
-        scope.launch {
+        newInitScope.launch {
             recommendationManager.dueMealReminders.collect { reminder ->
                 androidNotifications.showMealReminderNotification(reminder)
             }
@@ -457,15 +475,15 @@ class SystemOrchestratorImpl(
             onClearRecommendations = { recommendationManager.clearRecommendations() },
             onWaitForPumpSync = { treatmentLock -> therapyManager.waitForPumpSync(treatmentLock) },
             systemMetricsRepository = systemMetricsRepository,
-            scope = scope
+            scope = newInitScope
         )
 
-        scope.launch {
+        newInitScope.launch {
             core.coreState.collect { state ->
                 _coreState.value = state
             }
         }
-        scope.launch {
+        newInitScope.launch {
             core.lastSuccessfulCoreCalculation.collect { timestamp ->
                 _lastSuccessfulCoreCalculation.value = timestamp
             }
@@ -503,13 +521,16 @@ class SystemOrchestratorImpl(
                 }
             }
         }
-        timeService.registerTickHandler(TickPriority.APS, object : TickHandler {
+
+        val apsHandler = object : TickHandler {
             override suspend fun onTick(tick: Tick) {
                 inCoreThreadSync {
                     core.processCalculation()
                 }
             }
-        }, "APS Core")
+        }
+        apsCoreTickHandler = apsHandler
+        timeService.registerTickHandler(TickPriority.APS, apsHandler, "APS Core")
     }
 
     private fun acquireBusyState() {
@@ -525,12 +546,29 @@ class SystemOrchestratorImpl(
     }
 
     override fun stop() {
-        coreScope.cancel()
-        coreDispatcher.close()
+        initScope?.cancel()
+        initScope = null
+
+        notificationTickHandler?.let { timeService.unregisterTickHandler(it) }
+        notificationTickHandler = null
+
+        apsCoreTickHandler?.let { timeService.unregisterTickHandler(it) }
+        apsCoreTickHandler = null
+
+        coreScope?.cancel()
+        coreScope = null
+
+        coreDispatcher?.close()
+        coreDispatcher = null
+
+        _apsIssues.value = emptySet()
+        _isBgStale.value = false
+        _coreState.value = CoreState.Uninitialized
+        _apsMode.value = ApsMode.Suspend
     }
 
     override suspend fun getAssumedBg(timestamp: Timestamp): BgValue {
-        return if (::core.isInitialized) {
+        return if (::core.isInitialized && coreScope != null) {
             core.getAssumedBg(timestamp)
         } else {
             BgValue.INVALID
@@ -542,7 +580,7 @@ class SystemOrchestratorImpl(
         val tr = treatmentRepository
         val cic = carbsInsulinCalculator
 
-        return if (::core.isInitialized) {
+        return if (::core.isInitialized && coreScope != null) {
             core.getBolusCorrectionCalculator()
         } else if (tm != null && tr != null && cic != null) {
             SimpleBolusCorrectionCalculator(tm, glucoseRepository)

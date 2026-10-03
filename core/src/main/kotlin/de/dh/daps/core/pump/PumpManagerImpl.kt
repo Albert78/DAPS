@@ -158,6 +158,11 @@ class PumpManagerImpl(
         pumpCoordinator?.reset()
     }
 
+    override fun stop() {
+        insulinPump = null
+        _pumpIssues.value = emptySet()
+    }
+
     override fun hasPendingJobs(): Boolean {
         return pumpCoordinator?.hasPendingJobs() ?: false
     }

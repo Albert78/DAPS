@@ -27,6 +27,8 @@ import de.dh.daps.core.repository.TreatmentRepository
 import de.dh.daps.core.system.SystemWakeService
 import de.dh.daps.core.system.WakeupHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
@@ -77,12 +79,18 @@ class TherapyManager(
     private val executionMutex = Mutex()
     private var currentExecutionOwner: String? = null
 
+    private var initScope: CoroutineScope? = null
+
     val currentTherapySettingsFlow: Flow<CurrentTherapySettings> = therapyRepository.observeCurrentTherapySettings()
 
     /**
      * Wires up the therapy manager with external components, sync history.
      */
     suspend fun startInitialization() {
+        stop()
+        val currentScope = CoroutineScope(scope.coroutineContext + SupervisorJob())
+        initScope = currentScope
+
         pumpManager.setOnHistoryUpdateListener { history ->
             updatePumpHistory(history)
         }
@@ -95,7 +103,7 @@ class TherapyManager(
 
         wakeService?.registerHandler(WAKEUP_TAG_ADJUSTMENT, object : WakeupHandler {
             override fun onWakeup(wakeupId: UInt?, intent: Intent?) {
-                scope.launch {
+                currentScope.launch {
                     checkAndApplyTherapyAdjustmentTiming()
                 }
             }
@@ -110,7 +118,7 @@ class TherapyManager(
             )
         }
 
-        scope.launch {
+        currentScope.launch {
             currentTherapySettingsFlow
                 .map { it.effectiveInsulinProfile }
                 .distinctUntilChanged()
@@ -121,6 +129,13 @@ class TherapyManager(
                     )
                 }
         }
+    }
+
+    fun stop() {
+        initScope?.cancel()
+        initScope = null
+        pumpManager.setOnHistoryUpdateListener {}
+        pumpManager.setOnBolusStatusUpdateListener {}
     }
 
     suspend fun checkAndApplyTherapyAdjustmentTiming() {

@@ -20,9 +20,9 @@ import de.dh.daps.core.aps.RecommendationManager
 import de.dh.daps.core.aps.SystemOrchestrator
 import de.dh.daps.core.aps.SystemOrchestratorImpl
 import de.dh.daps.core.aps.TherapyManager
-import de.dh.daps.core.backup.BackupOptions
 import de.dh.daps.core.backup.AppDataManagementRepository
 import de.dh.daps.core.backup.AppDataManagementRepositoryImpl
+import de.dh.daps.core.backup.BackupOptions
 import de.dh.daps.core.backup.BackupResult
 import de.dh.daps.core.device.DeviceConnectionManager
 import de.dh.daps.core.pump.PumpDriverManager
@@ -170,10 +170,13 @@ class SystemRegistryImpl(
                 deviceConnectionManager.disconnectGlucoseSource()
                 deviceConnectionManager.disconnectPump()
                 glucoseSourceManager.stop()
+                pumpManager.stop()
+                therapyManager.stop()
                 systemOrchestrator.stop()
                 alarmEvaluator.stop()
                 alarmPlayerManager.stopAlarm()
                 alarmSnoozeManager.clearAllSnoozes()
+                recommendationManager.clearRecommendations()
 
                 // 2. Wipe database and app preferences
                 appDataManagementRepository.clearAllData()

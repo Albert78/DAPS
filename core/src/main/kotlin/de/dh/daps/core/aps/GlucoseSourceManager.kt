@@ -52,6 +52,7 @@ class GlucoseSourceManager(
 
     private fun restartGlucosePipeline() {
         glucoseJob?.cancel()
+        glucoseJob = null
         val gs = glucoseSource ?: return
 
         glucoseJob = scope.launch {
@@ -72,10 +73,8 @@ class GlucoseSourceManager(
     }
 
     fun stop() {
-        glucoseSource?.stop()
         glucoseSource = null
-        glucoseJob?.cancel()
-        glucoseJob = null
+        _lastInputTimestamp.value = Timestamp.INVALID
     }
 
     fun predictNextValueTimestamp(): Timestamp {
