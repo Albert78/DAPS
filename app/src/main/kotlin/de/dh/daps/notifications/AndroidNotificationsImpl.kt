@@ -42,7 +42,7 @@ class AndroidNotificationsImpl(
     override fun createNotificationChannels() {
         // Channel for the foreground service (BG values)
         val serviceName = context.getString(UiR.string.aps_service_notification_channel_name)
-        val serviceImportance = NotificationManager.IMPORTANCE_HIGH
+        val serviceImportance = NotificationManager.IMPORTANCE_LOW
         val serviceChannel = NotificationChannel(SERVICE_CHANNEL_ID, serviceName, serviceImportance)
         serviceChannel.setShowBadge(false)
 
@@ -124,7 +124,7 @@ class AndroidNotificationsImpl(
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setAllowSystemGeneratedContextualActions(false)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
     }
 
@@ -343,7 +343,6 @@ class AndroidNotificationsImpl(
             return
         }
         try {
-            manager.cancel(notificationId) // To force the update of the notification
             manager.notify(notificationId, notification)
         } catch (e: SecurityException) {
             // Fallback to log message below
