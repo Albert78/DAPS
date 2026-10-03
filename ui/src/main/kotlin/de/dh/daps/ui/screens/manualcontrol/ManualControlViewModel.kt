@@ -47,6 +47,7 @@ data class ManualControlContextInfoUiModel(
  * Represents the status and capabilities of the connected insulin pump.
  */
 data class ManualControlPumpUiModel(
+    val isConfigured: Boolean = false,
     val isConnected: Boolean = false,
     val model: String? = null,
     val basalStatus: BasalStatus? = null,
@@ -123,7 +124,7 @@ class ManualControlViewModel(
 
     private val pumpFlow: Flow<ManualControlPumpUiModel> = pumpManager.activeInsulinPump.flatMapLatest { pump ->
         if (pump == null) {
-            flowOf(ManualControlPumpUiModel())
+            flowOf(ManualControlPumpUiModel(isConfigured = false))
         } else {
             combine(
                 pump.isConnected,
@@ -133,6 +134,7 @@ class ManualControlViewModel(
                 pump.pumpCapabilities
             ) { connected, hardware, basal, bolus, capabilities ->
                 ManualControlPumpUiModel(
+                    isConfigured = true,
                     isConnected = connected,
                     model = hardware?.model,
                     basalStatus = basal,
@@ -215,6 +217,7 @@ class ManualControlViewModel(
         basalPart: InsulinAmount = InsulinAmount.ZERO,
         recommendationToDismiss: ApsRecommendation? = null
     ) {
+        if (!uiState.value.pump.isConfigured) return
         viewModelScope.launch {
             val acquired = acquireTreatmentLockAndExecute { treatmentLock ->
                 therapyManager.issueBolus(
@@ -234,6 +237,7 @@ class ManualControlViewModel(
     }
 
     fun cancelBolus() {
+        if (!uiState.value.pump.isConfigured) return
         viewModelScope.launch {
             acquireTreatmentLockAndExecute { treatmentLock ->
                 therapyManager.cancelBolus(treatmentLock)
@@ -246,6 +250,7 @@ class ManualControlViewModel(
         percent: Int,
         recommendationToDismiss: ApsRecommendation? = null
     ) {
+        if (!uiState.value.pump.isConfigured) return
         viewModelScope.launch {
             val acquired = acquireTreatmentLockAndExecute { treatmentLock ->
                 therapyManager.clearTempBasal(treatmentLock)

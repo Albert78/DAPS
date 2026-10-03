@@ -480,6 +480,11 @@ class TherapyManager(
     ) {
         checkLock(treatmentLock)
 
+        if (pumpManager.activeInsulinPump.value == null) {
+            Log.w(TAG, "Cannot issue pump bolus: No insulin pump configured.")
+            return
+        }
+
         // Record insulin administration in meals
         val isMealBolus = meal != null || (handledDeferredBoluses?.any { it.mealId != null } == true)
         if (meal != null && meal.id != ID_UNDEFINED) {
@@ -527,6 +532,10 @@ class TherapyManager(
      */
     fun setTempBasal(treatmentLock: TreatmentLock, durationInHours: Int, percent: Int) {
         checkLock(treatmentLock)
+        if (pumpManager.activeInsulinPump.value == null) {
+            Log.w(TAG, "Cannot set temp basal: No insulin pump configured.")
+            return
+        }
         pumpManager.issueCommand(
             PumpCommand.SetTempBasal(
                 percent = percent,
@@ -540,6 +549,7 @@ class TherapyManager(
      */
     fun clearTempBasal(treatmentLock: TreatmentLock) {
         checkLock(treatmentLock)
+        if (pumpManager.activeInsulinPump.value == null) return
         pumpManager.issueCommand(
             PumpCommand.CancelTempBasal
         )
@@ -550,6 +560,7 @@ class TherapyManager(
      */
     fun cancelBolus(treatmentLock: TreatmentLock) {
         checkLock(treatmentLock)
+        if (pumpManager.activeInsulinPump.value == null) return
         pumpManager.issueCommand(
             PumpCommand.CancelBolus
         )

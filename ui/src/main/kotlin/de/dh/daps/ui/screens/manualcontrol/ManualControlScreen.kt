@@ -127,8 +127,8 @@ fun ManualControlContent(
     var activeDialog by remember { mutableStateOf<ManualControlDialog?>(null) }
     var handledInitialDialog by rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(initialDialog, uiState.recommendations) {
-        if (!handledInitialDialog) {
+    LaunchedEffect(initialDialog, uiState.recommendations, uiState.pump.isConfigured) {
+        if (!handledInitialDialog && uiState.pump.isConfigured) {
             val bolusRec = uiState.recommendations.filterIsInstance<ApsRecommendation.Bolus>().firstOrNull()
             val tempBasalRec = uiState.recommendations.filterIsInstance<ApsRecommendation.TempBasal>().firstOrNull()
 

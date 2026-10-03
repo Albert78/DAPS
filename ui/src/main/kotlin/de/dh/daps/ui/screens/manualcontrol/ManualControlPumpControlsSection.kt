@@ -163,10 +163,15 @@ fun ManualControlPumpControlsSection(
                         Text(stringResource(id = R.string.manual_control_cancel_bolus))
                     }
                 } else {
+                    val statusText = if (!pump.isConfigured) {
+                        stringResource(id = R.string.manual_control_pump_not_configured)
+                    } else {
+                        stringResource(id = R.string.manual_control_no_active_bolus)
+                    }
                     Text(
-                        text = stringResource(id = R.string.manual_control_no_active_bolus),
+                        text = statusText,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = if (!pump.isConfigured) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(14.dp))
                     PrimaryButton(
@@ -177,6 +182,7 @@ fun ManualControlPumpControlsSection(
                                 )
                             )
                         },
+                        enabled = pump.isConfigured,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Icon(imageVector = Icons.Outlined.Syringe, contentDescription = null, modifier = Modifier.size(20.dp))
@@ -270,6 +276,7 @@ fun ManualControlPumpControlsSection(
                                     )
                                 )
                             },
+                            enabled = pump.isConfigured,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(imageVector = Icon_Temp_Basal, contentDescription = null, modifier = Modifier.size(20.dp))
@@ -345,6 +352,7 @@ fun ManualControlPumpControlsSection(
                                     )
                                 )
                             },
+                            enabled = pump.isConfigured,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(imageVector = Icon_Temp_Basal, contentDescription = null, modifier = Modifier.size(20.dp))
@@ -353,10 +361,15 @@ fun ManualControlPumpControlsSection(
                         }
                     }
                 } else {
+                    val basalText = if (!pump.isConfigured) {
+                        stringResource(id = R.string.manual_control_pump_not_configured)
+                    } else {
+                        stringResource(id = R.string.manual_control_basal_rate_format, "--")
+                    }
                     Text(
-                        text = stringResource(id = R.string.manual_control_basal_rate_format, "--"),
+                        text = basalText,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = if (!pump.isConfigured) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(14.dp))
                     PrimaryButton(
@@ -368,6 +381,7 @@ fun ManualControlPumpControlsSection(
                                 )
                             )
                         },
+                        enabled = pump.isConfigured,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Icon(imageVector = Icon_Temp_Basal, contentDescription = null, modifier = Modifier.size(20.dp))
