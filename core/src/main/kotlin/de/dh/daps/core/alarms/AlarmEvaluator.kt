@@ -7,6 +7,7 @@ import de.dh.daps.common.model.data.AlarmSeverity
 import de.dh.daps.common.model.data.AlarmSignalConfig
 import de.dh.daps.common.model.data.AlarmType
 import de.dh.daps.common.model.data.BgReading
+import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.aps.ApsIssue
 import de.dh.daps.core.aps.SystemOrchestrator
 import de.dh.daps.core.pump.PumpIssue
@@ -15,12 +16,14 @@ import de.dh.daps.core.repository.TherapyRepository
 import de.dh.daps.core.system.AndroidNotifications
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Continuously evaluates glucose values, pump/system issues, active alarm profile settings,
@@ -45,6 +48,7 @@ class AlarmEvaluator(
     val activeFiringConfig: StateFlow<AlarmSignalConfig?> = _activeFiringConfig.asStateFlow()
 
     private var evaluationJob: Job? = null
+    private var gracePeriodJob: Job? = null
 
     fun start() {
         stop()
@@ -54,14 +58,17 @@ class AlarmEvaluator(
                 systemOrchestrator.apsIssues,
                 therapyRepository.observeCurrentTherapySettings().map { it.effectiveAlarmProfile },
                 alarmSnoozeManager.snoozedAlarms,
-                systemOrchestrator.apsMode
-            ) { currentBgReading, apsIssues, activeProfile, snoozedMap, apsMode ->
+                systemOrchestrator.apsMode,
+                systemOrchestrator.resumeRequestedAt
+            ) { flows ->
+                @Suppress("UNCHECKED_CAST")
                 EvaluationInput(
-                    bgReading = currentBgReading,
-                    apsIssues = apsIssues,
-                    activeProfile = activeProfile,
-                    snoozedMap = snoozedMap,
-                    apsMode = apsMode
+                    bgReading = flows[0] as BgReading?,
+                    apsIssues = flows[1] as Set<ApsIssue>,
+                    activeProfile = flows[2] as AlarmProfile?,
+                    snoozedMap = flows[3] as Map<AlarmType, AlarmSnoozeState>,
+                    apsMode = flows[4] as ApsMode,
+                    resumeRequestedAt = flows[5] as Timestamp?
                 )
             }.collect { input ->
                 evaluate(input)
@@ -72,6 +79,8 @@ class AlarmEvaluator(
     fun stop() {
         evaluationJob?.cancel()
         evaluationJob = null
+        gracePeriodJob?.cancel()
+        gracePeriodJob = null
         _activeAlarms.value = emptySet()
         _activeFiringAlarm.value = null
         _activeFiringConfig.value = null
@@ -79,6 +88,9 @@ class AlarmEvaluator(
     }
 
     private fun evaluate(input: EvaluationInput) {
+        gracePeriodJob?.cancel()
+        gracePeriodJob = null
+
         val activeSet = mutableSetOf<AlarmType>()
 
         // 1. Evaluate Glucose thresholds
@@ -96,13 +108,32 @@ class AlarmEvaluator(
         }
 
         // 2. Evaluate Issues
+        // When switching out of ApsMode.Suspend to an active mode, the pump resume command is executed asynchronously
+        // on the physical device. During this transient phase, the pump remains reported as suspended (`PumpIssue.Inoperative`)
+        // until the status update arrives. To prevent false alarm flashing on the UI, we grant a grace period
+        // (PUMP_RESUME_GRACE_PERIOD_MS) during which the PUMP_SUSPENDED alarm is suppressed.
+        val now = Timestamp.now()
+        val isWithinResumeGracePeriod = input.resumeRequestedAt?.let { ts ->
+            now < ts.plusMs(PUMP_RESUME_GRACE_PERIOD_MS)
+        } ?: false
+
+        if (input.apsMode != ApsMode.Suspend && input.resumeRequestedAt != null) {
+            val remainingMs = PUMP_RESUME_GRACE_PERIOD_MS - (now.ms - input.resumeRequestedAt.ms)
+            if (remainingMs > 0 && input.apsIssues.any { it is ApsIssue.Pump && it.issue is PumpIssue.Inoperative }) {
+                gracePeriodJob = scope.launch {
+                    delay(remainingMs.milliseconds)
+                    evaluate(input)
+                }
+            }
+        }
+
         input.apsIssues.forEach { issue ->
             when (issue) {
                 is ApsIssue.StaleBG -> activeSet.add(AlarmType.CGM_SIGNAL_LOSS)
                 is ApsIssue.Pump -> {
                     when (issue.issue) {
                         is PumpIssue.Inoperative -> {
-                            if (input.apsMode != ApsMode.Suspend) {
+                            if (input.apsMode != ApsMode.Suspend && !isWithinResumeGracePeriod) {
                                 activeSet.add(AlarmType.PUMP_SUSPENDED)
                             }
                         }
@@ -163,7 +194,8 @@ class AlarmEvaluator(
         val apsIssues: Set<ApsIssue>,
         val activeProfile: AlarmProfile?,
         val snoozedMap: Map<AlarmType, AlarmSnoozeState>,
-        val apsMode: ApsMode = ApsMode.Suspend
+        val apsMode: ApsMode = ApsMode.Suspend,
+        val resumeRequestedAt: Timestamp? = null
     )
 
     companion object {
@@ -171,5 +203,6 @@ class AlarmEvaluator(
         const val CRITICAL_LOW_THRESHOLD_MGDL = 54.0
         const val LOW_THRESHOLD_MGDL = 70.0
         const val HIGH_THRESHOLD_MGDL = 250.0
+        const val PUMP_RESUME_GRACE_PERIOD_MS = 10_000L
     }
 }

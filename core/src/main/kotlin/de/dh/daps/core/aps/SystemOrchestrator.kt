@@ -102,6 +102,12 @@ interface SystemOrchestrator {
     val lastSuccessfulCoreCalculation: StateFlow<Timestamp>
 
     /**
+     * Timestamp of when resume was requested (transition out of ApsMode.Suspend).
+     * Null when APS mode is Suspend or no resume transition is active.
+     */
+    val resumeRequestedAt: StateFlow<Timestamp?>
+
+    /**
      * Updates the APS mode and persists the change.
      */
     fun setApsMode(mode: ApsMode)
@@ -202,6 +208,9 @@ class SystemOrchestratorImpl(
 
     private val _lastSuccessfulCoreCalculation = MutableStateFlow(Timestamp.now())
     override val lastSuccessfulCoreCalculation: StateFlow<Timestamp> = _lastSuccessfulCoreCalculation.asStateFlow()
+
+    private val _resumeRequestedAt = MutableStateFlow<Timestamp?>(null)
+    override val resumeRequestedAt: StateFlow<Timestamp?> = _resumeRequestedAt.asStateFlow()
 
     // Computation Core: Pure logic and state, completely thread-agnostic
     private lateinit var core: Core
@@ -577,6 +586,7 @@ class SystemOrchestratorImpl(
         _isBgStale.value = false
         _coreState.value = CoreState.Uninitialized
         _apsMode.value = ApsMode.Suspend
+        _resumeRequestedAt.value = null
     }
 
     override suspend fun getAssumedBg(timestamp: Timestamp): BgValue {
@@ -616,7 +626,16 @@ class SystemOrchestratorImpl(
             fallback
         }
 
+        val previousMode = _apsMode.value
         _apsMode.value = validMode
+
+        // Track when transitioning out of Suspend mode to grant a grace period in AlarmEvaluator
+        // while the pump processes the asynchronous resume command.
+        if (previousMode == ApsMode.Suspend && validMode != ApsMode.Suspend) {
+            _resumeRequestedAt.value = Timestamp.now()
+        } else if (validMode == ApsMode.Suspend) {
+            _resumeRequestedAt.value = null
+        }
 
         val shouldBeSuspended = (validMode == ApsMode.Suspend)
         therapyManager?.setSuspend(shouldBeSuspended)
