@@ -36,10 +36,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import java.util.concurrent.Executors
+import kotlin.time.Duration.Companion.milliseconds
 
 sealed interface ApsIssue {
     /**
@@ -293,23 +296,29 @@ class SystemOrchestratorImpl(
 
         wakeService.registerHandler(WAKE_TAG, SystemWakeupHandler())
 
-        val currentSettings = runCatching { settingsRepository.getCurrentSettings() }.getOrNull()
-        if (currentSettings != null) {
-            val allowed = availableApsModes.value
-            val initialMode = if (currentSettings.apsMode in allowed) {
-                currentSettings.apsMode
-            } else {
-                val fallback = allowed.lastOrNull() ?: ApsMode.Suspend
-                Log.w(TAG, "Restored APS mode ${currentSettings.apsMode} is not allowed with current devices. Falling back to $fallback.")
-                newInitScope.launch {
-                    settingsRepository.updateCurrentSettings(currentSettings.copy(apsMode = fallback))
-                }
-                fallback
-            }
-            _apsMode.value = initialMode
-        }
-
         newInitScope.launch {
+            // Asynchronously restore the persisted APS mode on application startup.
+            // Wait up to DEVICE_INITIALIZATION_TIMEOUT_MS for device drivers (pump and CGM) to finish reconnecting,
+            // so we can evaluate if the previously saved APS mode is allowed by current hardware state.
+            val currentSettings = runCatching { settingsRepository.getCurrentSettings() }.getOrNull()
+            if (currentSettings != null) {
+                val targetMode = currentSettings.apsMode
+                // Wait until availableApsModes contains the target mode or timeout elapses
+                val allowed = withTimeoutOrNull(DEVICE_INITIALIZATION_TIMEOUT_MS.milliseconds) {
+                    availableApsModes.first { modes -> targetMode in modes }
+                } ?: availableApsModes.value
+
+                val initialMode = if (targetMode in allowed) {
+                    targetMode
+                } else {
+                    val fallback = allowed.lastOrNull() ?: ApsMode.Suspend
+                    Log.w(TAG, "Restored APS mode $targetMode is not allowed with current devices. Falling back to $fallback.")
+                    settingsRepository.updateCurrentSettings(currentSettings.copy(apsMode = fallback))
+                    fallback
+                }
+                _apsMode.value = initialMode
+            }
+
             settingsRepository.observeCurrentSettings().drop(1).collect { settings ->
                 if (settings != null) {
                     val allowed = availableApsModes.value
@@ -638,5 +647,6 @@ class SystemOrchestratorImpl(
         private val TAG = SystemOrchestratorImpl::class.simpleName
         const val WAKE_TAG = "SystemOrchestrator"
         const val WAKEUP_STALE_CHECK = 0u
+        const val DEVICE_INITIALIZATION_TIMEOUT_MS = 1000L
     }
 }
