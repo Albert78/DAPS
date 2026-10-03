@@ -359,7 +359,7 @@ fun ManualControlScreenPreview() {
                     ApsRecommendation.TempBasal(durationInHours = 2, percent = 80)
                 ),
                 pump = ManualControlPumpUiModel(
-                    isConnected = true,
+                    isConfigured = true,
                     basalStatus = BasalStatus(
                         isSuspended = false,
                         activeRate = InsulinAmount(0.5),

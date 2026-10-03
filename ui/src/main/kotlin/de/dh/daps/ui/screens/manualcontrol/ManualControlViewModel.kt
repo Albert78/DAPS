@@ -48,7 +48,6 @@ data class ManualControlContextInfoUiModel(
  */
 data class ManualControlPumpUiModel(
     val isConfigured: Boolean = false,
-    val isConnected: Boolean = false,
     val model: String? = null,
     val basalStatus: BasalStatus? = null,
     val bolusStatus: BolusStatus? = null,
@@ -127,15 +126,13 @@ class ManualControlViewModel(
             flowOf(ManualControlPumpUiModel(isConfigured = false))
         } else {
             combine(
-                pump.isConnected,
                 pump.hardwareInformation,
                 pump.basalStatus,
                 pump.bolusStatus,
                 pump.pumpCapabilities
-            ) { connected, hardware, basal, bolus, capabilities ->
+            ) { hardware, basal, bolus, capabilities ->
                 ManualControlPumpUiModel(
                     isConfigured = true,
-                    isConnected = connected,
                     model = hardware?.model,
                     basalStatus = basal,
                     bolusStatus = bolus,

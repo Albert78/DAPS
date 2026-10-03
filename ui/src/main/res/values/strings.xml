@@ -673,7 +673,6 @@
     <string name="manual_control_duration_hours_label">Dauer (Stunden)</string>
     <string name="manual_control_unit_hours_short">Std</string>
     <string name="manual_control_rate_percent_label">Basalrate (%)</string>
-    <string name="manual_control_pump_not_connected">Pumpe nicht verbunden</string>
     <string name="manual_control_pump_not_configured">Keine Insulinpumpe konfiguriert</string>
     <string name="manual_control_dialog_deliver_bolus_title">Bolus abgeben</string>
     <string name="manual_control_dialog_set_temp_basal_title">Temporäre Basalrate setzen</string>

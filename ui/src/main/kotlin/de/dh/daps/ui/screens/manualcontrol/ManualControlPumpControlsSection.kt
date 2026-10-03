@@ -401,7 +401,7 @@ fun ManualControlPumpControlsPreview() {
     AppPreview(modifier = Modifier.padding(16.dp)) {
         ManualControlPumpControlsSection(
             pump = ManualControlPumpUiModel(
-                isConnected = true,
+                isConfigured = true,
                 basalStatus = BasalStatus(
                     isSuspended = false,
                     activeRate = InsulinAmount(0.5),
@@ -429,7 +429,7 @@ fun ManualControlPumpControlsTempBasalActivePreview() {
     AppPreview(modifier = Modifier.padding(16.dp)) {
         ManualControlPumpControlsSection(
             pump = ManualControlPumpUiModel(
-                isConnected = true,
+                isConfigured = true,
                 basalStatus = BasalStatus(
                     isSuspended = false,
                     activeRate = InsulinAmount(0.6),
