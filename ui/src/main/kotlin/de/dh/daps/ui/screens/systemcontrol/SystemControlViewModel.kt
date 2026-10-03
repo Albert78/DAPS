@@ -5,14 +5,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import de.dh.daps.common.BG_READING_BAD_THRESHOLD_MINUTES
+import de.dh.daps.common.BG_READING_WARNING_THRESHOLD_MINUTES
 import de.dh.daps.common.CANNULA_CHANGE_WARNING_THRESHOLD_HOURS
+import de.dh.daps.common.CONNECTION_BAD_THRESHOLD_MINUTES
 import de.dh.daps.common.CONNECTION_WARNING_THRESHOLD_MINUTES
+import de.dh.daps.common.CORE_CALCULATION_BAD_THRESHOLD_MINUTES
+import de.dh.daps.common.CORE_CALCULATION_WARNING_THRESHOLD_MINUTES
 import de.dh.daps.common.PHONE_BATTERY_LOW_THRESHOLD
 import de.dh.daps.common.PHONE_BATTERY_WARNING_THRESHOLD
 import de.dh.daps.common.PUMP_BATTERY_LOW_THRESHOLD
 import de.dh.daps.common.PUMP_BATTERY_WARNING_THRESHOLD
 import de.dh.daps.common.PUMP_RESERVOIR_LOW_THRESHOLD
 import de.dh.daps.common.PUMP_RESERVOIR_WARNING_THRESHOLD
+import de.dh.daps.common.SENSOR_EXPIRATION_WARNING_THRESHOLD_HOURS
 import de.dh.daps.common.model.ApsMode
 import de.dh.daps.common.model.GlucoseSourceStatus
 import de.dh.daps.common.model.InsulinAmount
@@ -337,11 +343,16 @@ class SystemControlViewModel(
             ApsMode.OnlySuggestions -> ValueStatus.WARNING
             ApsMode.Suspend -> ValueStatus.BAD
         }
+        val lastCalcStatus = when {
+            lastCalcTs.isInvalid() || lastCalcTs < Timestamp.now().minusMinutes(CORE_CALCULATION_BAD_THRESHOLD_MINUTES) -> ValueStatus.BAD
+            lastCalcTs < Timestamp.now().minusMinutes(CORE_CALCULATION_WARNING_THRESHOLD_MINUTES) -> ValueStatus.WARNING
+            else -> ValueStatus.GOOD
+        }
         OverviewApsSystemUiState.Content(
             mode = StatusMetric(mode, status = modeValueStatus),
             lastCalculation = StatusMetric(
                 value = lastCalcTs,
-                status = if (lastCalcTs.isValid()) ValueStatus.GOOD else ValueStatus.WARNING
+                status = lastCalcStatus
             ),
             status = StatusMetric(statusValue, status = statusValueStatus)
         )
@@ -366,8 +377,21 @@ class SystemControlViewModel(
                 GlucoseSourceStatus.Error -> gInfo.status to ValueStatus.BAD
             }
             val lastConnectionStatus = when {
-                gInfo.lastConnection == null || gInfo.lastConnection.isInvalid() -> ValueStatus.BAD
+                gInfo.lastConnection == null || gInfo.lastConnection.isInvalid() || gInfo.lastConnection < Timestamp.now().minusMinutes(CONNECTION_BAD_THRESHOLD_MINUTES) -> ValueStatus.BAD
                 gInfo.lastConnection < Timestamp.now().minusMinutes(CONNECTION_WARNING_THRESHOLD_MINUTES) -> ValueStatus.WARNING
+                else -> ValueStatus.GOOD
+            }
+            val lastReadingTs = gInfo.lastBgReading?.timestamp
+            val lastReadingStatus = when {
+                lastReadingTs == null || lastReadingTs.isInvalid() || lastReadingTs < Timestamp.now().minusMinutes(BG_READING_BAD_THRESHOLD_MINUTES) -> ValueStatus.BAD
+                lastReadingTs < Timestamp.now().minusMinutes(BG_READING_WARNING_THRESHOLD_MINUTES) -> ValueStatus.WARNING
+                else -> ValueStatus.GOOD
+            }
+            val sensorExpirationTs = gInfo.estimatedExpirationTimestamp
+            val sensorExpirationStatus = when {
+                sensorExpirationTs == null || sensorExpirationTs.isInvalid() -> ValueStatus.GOOD
+                sensorExpirationTs <= Timestamp.now() -> ValueStatus.BAD
+                sensorExpirationTs < Timestamp.now().plusHours(SENSOR_EXPIRATION_WARNING_THRESHOLD_HOURS) -> ValueStatus.WARNING
                 else -> ValueStatus.GOOD
             }
             OverviewGlucoseSourceUiState.Content(
@@ -381,12 +405,12 @@ class SystemControlViewModel(
                     status = lastConnectionStatus
                 ),
                 lastReading = StatusMetric(
-                    value = gInfo.lastBgReading?.timestamp,
-                    status = ValueStatus.GOOD
+                    value = lastReadingTs,
+                    status = lastReadingStatus
                 ),
                 sensorExpiration = StatusMetric(
-                    value = gInfo.estimatedExpirationTimestamp,
-                    status = ValueStatus.GOOD
+                    value = sensorExpirationTs,
+                    status = sensorExpirationStatus
                 )
             )
         }
@@ -400,7 +424,7 @@ class SystemControlViewModel(
                 else -> OverviewPumpState.ACTIVE to ValueStatus.GOOD
             }
             val lastConnectionStatus = when {
-                pInfo.lastConnection.isInvalid() -> ValueStatus.BAD
+                pInfo.lastConnection.isInvalid() || pInfo.lastConnection < Timestamp.now().minusMinutes(CONNECTION_BAD_THRESHOLD_MINUTES) -> ValueStatus.BAD
                 pInfo.lastConnection < Timestamp.now().minusMinutes(CONNECTION_WARNING_THRESHOLD_MINUTES) -> ValueStatus.WARNING
                 else -> ValueStatus.GOOD
             }

@@ -27,6 +27,18 @@ const val MS_PER_DAY = MS_PER_HOUR * HOURS_PER_DAY
 
 // Connection Thresholds (Minutes)
 const val CONNECTION_WARNING_THRESHOLD_MINUTES = 20
+const val CONNECTION_BAD_THRESHOLD_MINUTES = 60
+
+// Core Calculation Thresholds (Minutes)
+const val CORE_CALCULATION_WARNING_THRESHOLD_MINUTES = 10
+const val CORE_CALCULATION_BAD_THRESHOLD_MINUTES = 20
+
+// Glucose Reading Thresholds (Minutes)
+const val BG_READING_WARNING_THRESHOLD_MINUTES = 10
+const val BG_READING_BAD_THRESHOLD_MINUTES = 20
+
+// Sensor Expiration Thresholds (Hours)
+const val SENSOR_EXPIRATION_WARNING_THRESHOLD_HOURS = 24
 
 // Pod Change Thresholds (Hours)
 const val CANNULA_CHANGE_WARNING_THRESHOLD_HOURS = 24
