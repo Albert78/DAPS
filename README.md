@@ -1,22 +1,25 @@
 # DAPS — Your Diabetes, Your Control, Your Freedom! 🚀
 
-![Screenshots-Light](docs/images/collage-light.png)
-![Screenshots-Dark](docs/images/collage-dark.png)
-
 [[Deutsche Version]](#deutsch)
-
-> [!WARNING]
-> **Experimental software — not a medical device.**
->
-> DAPS is under active development and is open-source software. Use it at your own risk. Do not rely exclusively on this app for medical decisions or insulin dosing. Always verify important readings using your manufacturers' official devices.
-
----
 
 ## 🌟 Your therapy, as flexible as your life
 
 **DAPS** (Automated Insulin Delivery / APS) was created to give you back **maximum freedom and full control** over your diabetes management. No rigid constraints, no complicated detours — just a modern, intelligent system that smoothly adapts to *your* daily life.
 
 Whether in everyday routines, during sports, for a spontaneous snack, or at night: DAPS supports you right where you need it, remaining remarkably simple and intuitive.
+
+Some screenshots:
+![Screenshots-Light](docs/images/collage-light.png)
+
+And in dark theme:
+![Screenshots-Dark](docs/images/collage-dark.png)
+
+---
+
+> [!WARNING]
+> **Experimental software — not a medical device.**
+>
+> DAPS is under active development and is open-source software. Use it at your own risk. Do not rely exclusively on this app for medical decisions or insulin dosing. Always verify important readings using your manufacturers' official devices.
 
 ---
 
