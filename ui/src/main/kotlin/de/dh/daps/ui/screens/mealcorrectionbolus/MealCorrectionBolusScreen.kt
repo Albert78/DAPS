@@ -46,8 +46,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.Hyphens
@@ -69,8 +69,8 @@ import de.dh.daps.core.aps.TreatmentLock
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.composables.CarbsValueStepper
-import de.dh.daps.ui.common.composables.ImageCaptionWithSwitch
 import de.dh.daps.ui.common.composables.FramedCard
+import de.dh.daps.ui.common.composables.ImageCaptionWithSwitch
 import de.dh.daps.ui.common.composables.InsulinAmountStepper
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.StepperDefaults
@@ -948,7 +948,7 @@ fun MealCorrectionBolusZeroKePreview() {
 @Preview(showBackground = true, name = "Default Mode", heightDp = 1050)
 @Preview(showBackground = true, name = "Default Mode - Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, heightDp = 1050)
 @Composable
-fun MealCorrectionBolusScreenshotPreview() {
+fun MealCorrectionBolusScreenshotLowPreview() {
     val sampleMealTypes = getDefaultMealTypes(LocalContext.current)
     val now = remember { Timestamp.now() }
     AppPreview {
@@ -995,6 +995,84 @@ fun MealCorrectionBolusScreenshotPreview() {
                         mealTimestamp = now,
                         now = now,
                         partWeight = 30
+                    )
+                ),
+                submissionStatus = SubmissionStatus.NotSubmitted,
+                isMealReminderAllowed = true,
+                isMealReminderEnabled = true
+            ),
+            onCarbsChange = {},
+            onMealTimeChange = {},
+            onApplySuggestedCarbs = {},
+            onApplySuggestedImi = {},
+            onMealTypeChange = {},
+            onManualBolusChange = {},
+            onOpenBolusPlanDialog = {},
+            onCloseBolusPlanDialog = {},
+            onUpdateBolusTime = { _, _ -> },
+            onUpdateBolusAmount = { _, _ -> },
+            onAddDeferredBolus = {},
+            onRemoveDeferredBolus = {},
+            onToggleMealReminder = {},
+            onRefreshProjections = {},
+            onClose = {},
+            onSubmit = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Default Mode", heightDp = 1050)
+@Preview(showBackground = true, name = "Default Mode - Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, heightDp = 1050)
+@Composable
+fun MealCorrectionBolusScreenshotHighPreview() {
+    val sampleMealTypes = getDefaultMealTypes(LocalContext.current)
+    val now = remember { Timestamp.now() }
+    val mealTimestamp = remember { now.plusMinutes(15) }
+    AppPreview {
+        MealCorrectionBolusContent(
+            uiState = MealCorrectionBolusUiState(
+                isLoading = false,
+                suggestedImi = Minutes(10),
+                suggestedCarbsGrams = 0.0,
+                input = MealInput(
+                    carbsGrams = 40.0,
+                    selectedMealType = sampleMealTypes[2],
+                    manualBolus = InsulinAmount(4.9),
+                    mealTimestamp = mealTimestamp,
+                    mealTimeFromNow = Minutes(15),
+                ),
+                mealTypes = sampleMealTypes,
+                projections = BolusProjections(
+                    timestamp = mealTimestamp,
+                    bg = BgValue.fromMgDl(145),
+                    isProjected = true,
+                    iob = InsulinAmount.ZERO,
+                    cob = 0.0,
+                    futureCarbs = 0.0
+                ),
+                targetBg = BgValue.fromMgDl(100),
+                isf = BgDelta.fromMgDl(50),
+                cr = 10.0,
+                calculation = BolusCalculationDetails(
+                    mealPart = InsulinAmount(4.0),
+                    correctionPart = InsulinAmount(0.9),
+                    iobPart = InsulinAmount.ZERO,
+                    proposedTotal = InsulinAmount(4.9),
+                ),
+                insulinPlan = listOf(
+                    PlannedInsulinUiModel.create(
+                        amount = InsulinAmount(2.3),
+                        timeFromMeal = Minutes(-10),
+                        mealTimestamp = mealTimestamp,
+                        now = now,
+                        partWeight = 35
+                    ),
+                    PlannedInsulinUiModel.create(
+                        amount = InsulinAmount(2.6),
+                        timeFromMeal = Minutes(230),
+                        mealTimestamp = mealTimestamp,
+                        now = now,
+                        partWeight = 65
                     )
                 ),
                 submissionStatus = SubmissionStatus.NotSubmitted,
