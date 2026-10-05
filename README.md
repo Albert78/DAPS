@@ -19,7 +19,7 @@ And in dark theme:
 > [!WARNING]
 > **Experimental software — not a medical device.**
 >
-> DAPS is under active development and is open-source software. Use it at your own risk. Do not rely exclusively on this app for medical decisions or insulin dosing. Always verify important readings using your manufacturers' official devices.
+> DAPS is under active development and is open-source software. Use it at your own risk. Do not rely exclusively on this app for medical decisions or insulin dosing. Always verify medical decisions using your manufacturers' official devices.
 
 ---
 
@@ -93,7 +93,7 @@ This project is licensed under the [MIT License](LICENSE).
 > [!WARNING]
 > **Experimentelle Software — kein Medizinprodukt.**
 >
-> DAPS befindet sich in aktiver Entwicklung und ist eine Open-Source-Software. Die Nutzung erfolgt auf eigene Gefahr. Verlasse dich nicht ausschließlich auf diese App für medizinische Entscheidungen oder Insulindosierungen. Überprüfe wichtige Messwerte stets mit den offiziellen Geräten deiner Hersteller.
+> DAPS befindet sich in aktiver Entwicklung und ist eine Open-Source-Software. Die Nutzung erfolgt auf eigene Gefahr. Verlasse dich nicht ausschließlich auf diese App für medizinische Entscheidungen oder Insulindosierungen. Überprüfe wichtige medizinische Entscheidungen stets mit den offiziellen Geräten deiner Hersteller.
 
 ---
 
