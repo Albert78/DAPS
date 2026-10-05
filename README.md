@@ -1,146 +1,78 @@
-# DAPS
+# DAPS — Dein Diabetes, deine Kontrolle, deine Freiheit! 🚀
 
 ![Screenshots-Light](docs/images/collage-light.png)
 ![Screenshots-Dark](docs/images/collage-dark.png)
 
-[[Deutsche Version]](#deutsch)
-
-DAPS is an open-source project focused on developing a modern, full-featured Automated Insulin Delivery (AID/APS) app for Android using Kotlin / Jetpack compose.
-The unaltered original version can be found at https://github.com/Albert78/DAPS
-
-> [!WARNING]
-> **Experimental software — not a medical device.**
->
-> DAAPS may contain bugs. Use it at your own risk and watch the app carefully. Do not rely on it as the sole basis for treatment, insulin dosing, diagnosis, or other medical decisions. Always verify clinically significant readings using the manufacturer's official system or another appropriate method.
-
-**Note on UI & Localization:** The UI is currently only available in German. If needed, localization can be performed using an AI tool like Gemini. Furthermore, the interface is currently optimized for the Samsung Galaxy S26.
-
-## TL;DR
-git clone
-
-Open with Android Studio.
-
-Run on device (debug version, release build is not necessary).
-
-Updates might need a database clean (long click on app symbol, force stop, delete local data)
-
-## Project Goal
-
-The goal of DAPS is to provide a full-featured APS app based on a modern architecture. It is a **greenfield development** that consistently utilizes current technologies to avoid legacy architectural burdens.
-
-As a person with diabetes, I am developing this app primarily for my own needs to create a solution that meets my expectations for performance and user-friendliness.
-
-While technical development is progressing, areas such as general project organization, building a broader ecosystem, and comprehensive documentation are currently still open. I am very open to support and collaboration if someone is interested in driving these aspects forward.
-
-*   **Modern Android Integration:** Utilizing the latest Android standards for a memory-efficient, high-performance, and battery-friendly system.
-*   **Clean Functionality:** Focusing on tidy and intuitive app features while still providing users with the necessary flexibility for individual therapy.
-*   **Efficiency:** Inspired by [AndroidAPS (AAPS)](https://github.com/nightscout/AndroidAPS), but optimized for modularity, performance, and fast build times.
-
-## Current Status
-
-The project is actively **under development**.
-
-*   **CGM Integration:** There is an open interface for easy integration of any CGM modules. Currently, for simplicity, data delivery via **xDrip+** is supported. Support for further CGM sources is planned, including contributions from third parties.
-*   **Pump Integration:** Connection to real insulin pumps is currently being developed in a **separate repository** (current focus: **Dana-i**). The goal is to support various pump models through a modular system.
-*   **Development & Simulation:** The internal **sim-body module** is used for development and algorithm testing.
-
-## Development with the Sim-Body Module
-
-Since working on an AID system without hardware connectivity is difficult, DAPS includes a specialized simulation module. **To use the simulation features, the `app` module must be built using the `simDebug` build flavor.**
-
-*   **Simulated Body:** The `sim-body` module simulates the glucose response to insulin and carbohydrates.
-*   **Scenarios:** Various influences (meals, exercise, stress) can be simulated to test control algorithms under controlled conditions.
-*   **Interactive UI:** The overview is in the Dashboard at the bottom. Meals can be entered and simulations controlled via special dialogs in the app.
-
-## Architecture & Plugins
-
-DAPS relies on a strict separation of concerns through a modular system:
-
-*   **Core Engine:** Handles the central processing of glucose data and the calculation of therapy adjustments.
-*   **Plugins for CGM Sources and Pumps:** Hardware interfaces are completely decoupled from the core. This allows for flexible integration of different pump models and CGM sources.
-*   **Modularity:** The goal is an extensible ecosystem where hardware-specific plugins can be developed and maintained independently of the calculation core.
-
-## Tech Stack
-
-*   **Language:** Kotlin
-*   **UI:** Jetpack Compose with Navigation 3
-*   **Concurrency:** Kotlin Coroutines & Flow for reactive data pipelines.
-*   **Persistence:** Room Database
-*   **Background Processing:** Optimized Android Foreground Services for long-running health services.
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
-
----
-
-<a id="deutsch"></a>
-# DAPS (Deutsche Version)
-
-DAPS ist ein Open-Source-Projekt zur Entwicklung einer modernen, vollumfänglichen Automated Insulin Delivery (AID/APS) App für Android.
-Die unveränderte Originalversion findest du unter https://github.com/Albert78/DAPS
-
 > [!WARNING]
 > **Experimentelle Software — kein Medizinprodukt.**
 >
-> DAPS kann Fehler enthalten. Die Nutzung erfolgt auf eigene Gefahr; überwache die App sorgfältig. Verlasse dich nicht auf sie als alleinige Grundlage für Behandlungen, Insulindosierung, Diagnosen oder sonstige medizinische Entscheidungen. Überprüfe klinisch relevante Messwerte stets mit dem offiziellen System des Herstellers oder einer anderen geeigneten Methode.
+> DAPS befindet sich in aktiver Entwicklung und ist eine Open-Source-Software. Die Nutzung erfolgt auf eigene Gefahr. Verlasse dich nicht ausschließlich auf diese App für medizinische Entscheidungen oder Insulindosierungen. Überprüfe wichtige Messwerte stets mit den offiziellen Geräten deiner Hersteller.
 
-**Hinweis zu UI & Lokalisierung:** Die Benutzeroberfläche existiert aktuell nur auf Deutsch. Die Lokalisierung kann bei Bedarf mithilfe von Gemini übersetzt werden. Zudem ist die UI derzeit auf das Samsung Galaxy S26 optimiert.
+---
 
-## TL;DR
-git clone
+## 🌟 Deine Therapie, exakt so flexibel wie dein Leben
 
-Mit Android Studio öffnen.
+**DAPS** (Automated Insulin Delivery / APS) wurde entwickelt, um dir die **maximale Freiheit und volle Kontrolle** über dein Diabetes-Management zurückzugeben. Kein starres Korsett, keine komplizierten Umwege – sondern ein modernes, intelligentes System, das sich geschmeidig an *deinen* Alltag anpasst.
 
-Auf Handy ausführen (Debug-Version reicht aus, Release-Build ist nicht notwendig).
+Egal ob im Alltag, beim Sport, beim spontanen Snack zwischendurch oder in der Nacht: DAPS unterstützt dich genau dort, wo du es brauchst, und bleibt dabei erstaunlich einfach und intuitiv.
 
-Bei Aktualisierungen kann es notwendig sein, die lokale Datenbank zu löschen (Langes Tippen auf App-Symbol, Stop erzwingen, Lokale Daten löschen)
+---
 
+## ✨ Das macht DAPS so besonders
 
-## Projektziel
+### 📊 Übersichtlich & Alles auf einen Blick
+Ein **modernes, aufgeräumtes Dashboard** zeigt dir sekundenschnell genau das, was jetzt zählt: deine aktuellen Glukosewerte, Trends, aktives Insulin (IOB), aktive Kohlenhydrate (COB) und den Status deines Loops. Kein Suchen, kein Überladen – einfach klar und verständlich.
 
-Das Ziel von DAPS ist die Bereitstellung einer Full-Featured APS-App, die auf einer modernen Architektur basiert. Es handelt sich um eine **Greenfield-Entwicklung**, die konsequent auf aktuelle Technologien setzt, um architektonische Altlasten zu vermeiden.
+### ⚙️ Maximale Freiheit bei den Einstellungen
+Dein Diabetes ist so individuell wie du. DAPS bietet dir **unzählige Einstellmöglichkeiten**, um Zielbereiche, Basalraten, Faktoren und Algorithmen exakt auf deine persönlichen Bedürfnisse abzustimmen. Du kannst flexibel **einzelne Werte spontan übersteuern** oder komplette **Presets** für bestimmte Lebenssituationen wie Sport, Krankheit oder Stress konfigurieren. Du behältst jederzeit das Steuer in der Hand.
 
-Als Diabetiker entwickle ich diese App primär für den eigenen Bedarf, um eine Lösung zu schaffen, die meinen Vorstellungen von Performance und Benutzerfreundlichkeit entspricht. 
+### 💡 Einfach & Selbsterklärend
+Kein langes Einarbeiten nötig! Die Benutzeroberfläche ist von Grund auf so gestaltet, dass du dich **sofort zurechtfindest**. Klare Icons, verständliche Dialoge und ein durchdachtes Bedienkonzept machen die tägliche Nutzung spielend leicht.
 
-Während die technische Entwicklung voranschreitet, sind Bereiche wie die allgemeine Organisation des Projekts, der Aufbau eines breiteren Ökosystems und eine umfassende Dokumentation derzeit noch offen. Ich bin sehr offen für Unterstützung und Zusammenarbeit, falls sich jemand findet, der diese Aspekte vorantreiben möchte.
+### 🔍 Volle Transparenz & Maximale Dateneinsicht
+Keine Blackbox! DAPS stellt dir **alle wichtigen Daten übersichtlich bereit**: von aktuellen Blutzuckerwerten, aktivem Insulin (IOB) und aktiven Kohlenhydraten (COB) über die exakte Mahlzeiten- und Insulin-Wirkung bis hin zu einem **detaillierten Log**. Jede Entscheidung des Algorithmus bleibt dadurch für dich jederzeit transparent und nachvollziehbar.
 
-*   **Moderne Android-Integration:** Einsatz aktuellster Android-Standards für ein speichereffizientes, performantes und batterieschonendes System.
-*   **Saubere Funktionalität:** Fokus auf aufgeräumte und intuitive App-Funktionen, die dem Nutzer dennoch die nötige Flexibilität für eine individuelle Therapie bieten.
-*   **Effizienz:** Inspiriert von [AndroidAPS (AAPS)](https://github.com/nightscout/AndroidAPS), jedoch optimiert für Modularität, Performance und schnelle Build-Zeiten.
+### 🍽️ Flexible Mahlzeitendeklaration
+Schneller Snack, ausgiebiges Menü oder fett- und eiweißreiche Speisen? Erfasse deine Mahlzeiten genau so, wie es für dich am besten passt. Die **flexible Eingabe** macht die Erfassung von Kohlenhydraten unkompliziert und extrem anpassungsfähig.
 
-## Aktueller Status
+### 💉 Intelligente Insulinplanung
+Plane Bolusgaben und Mahlzeiten voraus! Mit der integrierten **Insulinplanung** berechnet DAPS präzise Vorschläge, berücksichtigt Wirkprofile und hilft dir, Mahlzeiten-Spitzen effektiv abzufangen. Auch für schwierige Situationen wie Pizza, Ofenkäse, Fleisch etc.
 
-Das Projekt befindet sich aktiv **in der Entwicklung**. 
+### 🔌 Einfache Anbindung von CGM & Pumpen
+DAPS setzt auf ein modulares System: Zur Anbindung neuer CGM-Systeme und Insulinpumpen muss lediglich ein **sehr einfaches Kotlin-Interface** implementiert werden. Die Entwicklung und Einbindung echter Hardware-Treiber ist derzeit aktiv im Gange. Du möchtest mitmachen und einen eigenen CGM- oder Pumpentreiber beisteuern? Melde dich gerne!
 
-*   **CGM-Anbindung:** Es gibt ein offenes Interface zur einfachen Integration beliebiger CGM-Module. Aktuell wird der Einfachheit halber die Datenanlieferung durch **xDrip+** unterstützt. Die Unterstützung weiterer CGM-Quellen ist geplant, auch durch Zulieferung von Dritten.
-*   **Pumpen-Anbindung:** Die Anbindung an reale Insulinpumpen wird aktuell in einem **separaten Repository** entwickelt (aktueller Fokus: **Dana-i**). Ziel ist die Unterstützung verschiedener Pumpenmodelle über ein modulares System.
-*   **Entwicklung & Simulation:** Für die Entwicklung und das Testen von Algorithmen wird das interne **Sim-Body-Modul** verwendet.
+### ⚡ Hochperformant & Modern
+DAPS ist eine echte **Greenfield-Entwicklung** auf Basis neuester Android-Technologien (Kotlin & Jetpack Compose). Das bedeutet: blitzschnelle Reaktionen, minimaler Akkuverbrauch und flüssige Animationen – im eleganten Light- und Dark-Mode.
 
-## Entwicklung mit dem Sim-Body-Modul
+---
 
-Da die Arbeit an einem AID-System ohne Hardware-Anbindung schwierig ist, enthält DAPS ein spezialisiertes Simulations-Modul. **Um die Simulationsfunktionen nutzen zu können, muss das `app`-Modul im Build-Flavor `simDebug` gebaut werden.**
+## 🚀 Für Entwickler & Neugierige
 
-*   **Simulierter Körper:** Das `sim-body`-Modul simuliert die Glukose-Reaktion auf Insulin und Kohlenhydrate.
-*   **Szenarien:** Es können verschiedene Einflüsse (Mahlzeiten, Sport, Stress) simuliert werden, um die Regelalgorithmen unter kontrollierten Bedingungen zu testen.
-*   **Interaktive UI:** Im Dashboard unten findet man die Übersicht. Über spezielle Dialoge in der App können Mahlzeiten eingegeben und Simulationen gesteuert werden.
+Du möchtest DAPS ausprobieren oder mitgestalten? Das Projekt setzt auf eine **moderne, modulare Architektur** mit strikter Trennung von Core-Engine, CGM-Schnittstellen und Pumpen-Anbindung.
 
-## Architektur & Plugins
+### 🛠️ Quickstart
 
-DAPS setzt auf eine strikte Trennung der Verantwortlichkeiten durch ein modulares System:
+1. Repository klonen:
+   ```bash
+   git clone https://github.com/Albert78/DAPS.git
+   ```
+2. Projekt in **Android Studio** öffnen.
+3. Direkt auf deinem Android-Smartphone ausführen (`simDebug`-Flavor für den integrierten Körper-Simulator nutzen!).
 
-*   **Core Engine:** Übernimmt die zentrale Verarbeitung von Glukosedaten und die Berechnung von Therapieanpassungen.
-*   **Plugins für CGM-Quellen und Pumpen:** Die Schnittstellen für Hardware sind vollständig vom Kern entkoppelt. Dies ermöglicht es, verschiedene Pumpenmodelle und CGM-Quellen flexibel zu integrieren.
-*   **Modularität:** Das Ziel ist ein erweiterbares Ökosystem, in dem Hardwarespezifische Plugins unabhängig vom Rechenkern entwickelt und gewartet werden können.
+*Hinweis: Bei großen Updates kann ein Löschen der lokalen App-Daten erforderlich sein (App-Info ➔ Speicher ➔ Daten löschen).*
 
-## Tech Stack
+### 🧪 Integrierter Körper-Simulator (`sim-body`)
+Teste Algorithmen, Mahlzeiten und Reaktionen gefahrlos ohne Hardware! Bau einfach die App im `simDebug`-Build-Flavor und simuliere Glukoseverläufe, Sport oder Stress direkt auf dem Handy.
 
-*   **Sprache:** Kotlin
-*   **UI:** Jetpack Compose mit Navigation 3
-*   **Nebenläufigkeit:** Kotlin Coroutines & Flow für reaktive Daten-Pipelines.
-*   **Persistenz:** Room Database
-*   **Hintergrundverarbeitung:** Optimierte Android Foreground Services für dauerhafte Gesundheitsdienste.
+### 🧱 Tech Stack
+* **Sprache:** Kotlin
+* **UI & Navigation:** Jetpack Compose & Navigation 3
+* **Reaktivität:** Kotlin Coroutines & Flow
+* **Persistenz:** Room Database
+* **Hintergrund:** Optimierte Android Foreground Services
 
-## Lizenz
+---
+
+## 📄 Lizenz
 
 Dieses Projekt steht unter der [MIT-Lizenz](LICENSE).
