@@ -455,6 +455,7 @@ fun MealTypeEditorPreview() {
 }
 
 @Preview(showBackground = true, name = "Standard Meal Type Editor")
+@Preview(showBackground = true, name = "Standard Meal Type Editor Dark", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun StandardMealTypeEditorPreview() {
     AppPreview {

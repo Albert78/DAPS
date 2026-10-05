@@ -46,10 +46,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.ApsMode
+import de.dh.daps.common.model.CarbCurveComponentData
 import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.InsulinApplication
+import de.dh.daps.common.model.InsulinOrigin
+import de.dh.daps.common.model.InsulinType
+import de.dh.daps.common.model.MealEntry
+import de.dh.daps.common.model.MealType
 import de.dh.daps.common.model.data.AlarmSeverity
 import de.dh.daps.common.model.data.AlarmType
 import de.dh.daps.common.model.data.BgDelta
+import de.dh.daps.common.model.data.BgReading
+import de.dh.daps.common.model.data.BgSampleKind
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
@@ -58,11 +66,11 @@ import de.dh.daps.core.aps.ApsRecommendation
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.LocalCarbsUnit
 import de.dh.daps.ui.common.LocalGlucoseUnit
+import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.composables.ExpandableInfoCard
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.WarningBanner
 import de.dh.daps.ui.common.composables.screenTitle
-import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.getBolusRecommendationText
 import de.dh.daps.ui.common.icons.Icon_Permissions
 import de.dh.daps.ui.common.theme.AppPreview
@@ -71,13 +79,13 @@ import de.dh.daps.ui.controls.history.HistoryAndImpactChartOrDefault
 import de.dh.daps.ui.controls.history.HistoryAndImpactDiagramData
 import de.dh.daps.ui.controls.history.HistoryUiState
 import de.dh.daps.ui.controls.history.HistoryViewModel
+import de.dh.daps.ui.controls.history.createSampleReadings
 import de.dh.daps.ui.controls.history.rememberBgHistoryChartState
 import de.dh.daps.ui.controls.state.CurrentBgUiState
 import de.dh.daps.ui.controls.state.CurrentStateView
 import de.dh.daps.ui.controls.state.SystemViewModel
 import de.dh.daps.ui.controls.state.createSampleGoodBgUiState
 import de.dh.daps.ui.screens.alarm.getAlarmTypeTitle
-import de.dh.daps.ui.screens.history.createSampleHistoryUiState
 import de.dh.daps.ui.screens.permissions.PermissionStatus
 import de.dh.daps.ui.screens.permissions.PermissionsUiModel
 import de.dh.daps.ui.screens.permissions.PermissionsViewModel
@@ -477,18 +485,133 @@ fun SnoozedAlarmBanner(
     }
 }
 
+fun createSampleHistoryUiState(
+    size: Int = 120,
+    minsInterval: Short = 5,
+    base: Double = 90.0,
+    amplitude: Double = 10.0,
+    noiseFactor: Double = 1.0
+): HistoryUiState {
+    val now = Timestamp.now()
+    val rawReadings = createSampleReadings(
+        size = size,
+        minsInterval = minsInterval,
+        base = base,
+        amplitude = amplitude,
+        noiseFactor = noiseFactor
+    )
+    val readings = if (rawReadings.isNotEmpty()) {
+        rawReadings.dropLast(1) + BgReading(
+            value = BgValue.fromMgDl(83),
+            sampleKind = BgSampleKind.Value,
+            timestamp = now.minusMinutes(12)
+        ) + BgReading(
+            value = BgValue.fromMgDl(87),
+            sampleKind = BgSampleKind.Value,
+            timestamp = now.minusMinutes(7)
+        ) + BgReading(
+            value = BgValue.fromMgDl(90),
+            sampleKind = BgSampleKind.Value,
+            timestamp = now.minusMinutes(2)
+        )
+    } else {
+        rawReadings
+    }
+
+    val sampleMealType = MealType(
+        id = "1",
+        name = "Normal",
+        components = listOf(CarbCurveComponentData(100, Minutes(90))),
+        cat = Minutes(180)
+    )
+
+    val sampleInsulinType = InsulinType(
+        id = "1",
+        name = "Rapid",
+        peak = Minutes(60.toShort()),
+        dia = Minutes(300.toShort())
+    )
+
+    val meals = listOf(
+        MealEntry(
+            id = 1,
+            timestamp = now.minusMinutes(30),
+            carbGrams = 30.0,
+            mealType = sampleMealType
+        )
+    )
+
+    val insulinApplications = listOf(
+        // Bolus 10 min before meal (40 min ago)
+        InsulinApplication(
+            id = 1,
+            timestamp = now.minusMinutes(35),
+            amount = InsulinAmount(2.0),
+            insulinType = sampleInsulinType,
+            origin = InsulinOrigin.Manual,
+            meal = true
+        ),
+        // 4 basal doses distributed over the last hour (total 0.5 I.E.)
+        InsulinApplication(
+            id = 2,
+            timestamp = now.minusMinutes(60),
+            amount = InsulinAmount(0.125),
+            insulinType = sampleInsulinType,
+            origin = InsulinOrigin.Pump,
+            basal = true
+        ),
+        InsulinApplication(
+            id = 3,
+            timestamp = now.minusMinutes(45),
+            amount = InsulinAmount(0.125),
+            insulinType = sampleInsulinType,
+            origin = InsulinOrigin.Pump,
+            basal = true
+        ),
+        InsulinApplication(
+            id = 4,
+            timestamp = now.minusMinutes(30),
+            amount = InsulinAmount(0.125),
+            insulinType = sampleInsulinType,
+            origin = InsulinOrigin.Pump,
+            basal = true
+        ),
+        InsulinApplication(
+            id = 5,
+            timestamp = now.minusMinutes(15),
+            amount = InsulinAmount(0.125),
+            insulinType = sampleInsulinType,
+            origin = InsulinOrigin.Pump,
+            basal = true
+        )
+    )
+
+    return HistoryUiState(
+        isLoading = false,
+        isError = false,
+        readings = readings,
+        insulinApplications = insulinApplications,
+        meals = meals
+    )
+}
+
 @Preview(showBackground = true, name = "Light Mode")
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
 fun DashboardPreview() {
     AppPreview {
         DashboardContent(
-            dashboardUiState = DashboardUiState(isLoading = false, isError = false),
+            dashboardUiState = DashboardUiState(
+                isLoading = false,
+                isError = false,
+                apsMode = ApsMode.AutoCorrection
+            ),
             currentBgUiState = createSampleGoodBgUiState(),
             historyUiState = createSampleHistoryUiState(),
             iob = InsulinAmount(1.57),
             cob = 12.0,
             currentTherapyUiState = CurrentTherapyUiState(
+                isLoading = false,
                 activeTherapyStatus = ActiveTherapyStatusUiState(
                     profile = InsulinProfileUiState(
                         name = "Normal",
@@ -508,6 +631,7 @@ fun DashboardPreview() {
                     currentIsf = BgDelta.fromMgDl(50),
                     currentCr = 10.0,
                     currentBasal = InsulinAmount(0.5),
+                    activeAlarmProfileName = "Draußen",
                     target = BgValue.fromMgDl(110),
                     lowThreshold = BgValue.fromMgDl(70),
                     baseTarget = BgValue.fromMgDl(110),
@@ -543,12 +667,17 @@ fun DashboardPreview() {
 fun DashboardPermissionsWarningPreview() {
     AppPreview {
         DashboardContent(
-                dashboardUiState = DashboardUiState(isLoading = false, isError = false),
+                dashboardUiState = DashboardUiState(
+                    isLoading = false,
+                    isError = false,
+                    apsMode = ApsMode.AutoCorrection
+                ),
                 currentBgUiState = createSampleGoodBgUiState(),
                 historyUiState = createSampleHistoryUiState(),
                 iob = InsulinAmount(1.57),
                 cob = 12.0,
                 currentTherapyUiState = CurrentTherapyUiState(
+                    isLoading = false,
                     activeTherapyStatus = ActiveTherapyStatusUiState(
                         profile = InsulinProfileUiState(
                             name = "Normal",
@@ -568,6 +697,7 @@ fun DashboardPermissionsWarningPreview() {
                         currentIsf = BgDelta.fromMgDl(50),
                         currentCr = 10.0,
                         currentBasal = InsulinAmount(0.5),
+                        activeAlarmProfileName = "Draußen",
                         target = BgValue.fromMgDl(110),
                         lowThreshold = BgValue.fromMgDl(70),
                         baseTarget = BgValue.fromMgDl(110),

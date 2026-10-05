@@ -339,8 +339,8 @@ fun TherapyAdjustmentContent(
     }
 }
 
-@Preview(showBackground = true, name = "Light Mode", heightDp = 1000)
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode", heightDp = 1000)
+@Preview(showBackground = true, name = "Light Mode", heightDp = 950)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode", heightDp = 950)
 @Composable
 private fun TherapyAdjustmentPreviewValues() {
     AppPreview {

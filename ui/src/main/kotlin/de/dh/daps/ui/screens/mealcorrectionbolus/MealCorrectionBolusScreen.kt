@@ -758,6 +758,8 @@ fun InsulinPlanCard(
                 )
             }
 
+            Spacer(modifier = Modifier.width(8.dp))
+
             OutlinedButton(onClick = onOpenBolusPlanDialog) {
                 Icon(
                     imageVector = Icons.Default.Edit,
@@ -943,8 +945,84 @@ fun MealCorrectionBolusZeroKePreview() {
     }
 }
 
-@Preview(showBackground = true, name = "Default Mode")
-@Preview(showBackground = true, name = "Default Mode - Dark", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(showBackground = true, name = "Default Mode", heightDp = 1050)
+@Preview(showBackground = true, name = "Default Mode - Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, heightDp = 1050)
+@Composable
+fun MealCorrectionBolusScreenshotPreview() {
+    val sampleMealTypes = getDefaultMealTypes(LocalContext.current)
+    val now = remember { Timestamp.now() }
+    AppPreview {
+        MealCorrectionBolusContent(
+            uiState = MealCorrectionBolusUiState(
+                isLoading = false,
+                suggestedImi = Minutes(0),
+                suggestedCarbsGrams = 10.0,
+                input = MealInput(
+                    carbsGrams = 60.0,
+                    selectedMealType = sampleMealTypes[1],
+                    manualBolus = InsulinAmount(5.25),
+                    mealTimestamp = now,
+                ),
+                mealTypes = sampleMealTypes,
+                projections = BolusProjections(
+                    timestamp = now,
+                    bg = BgValue.fromMgDl(70),
+                    isProjected = true,
+                    iob = InsulinAmount(0.15),
+                    cob = 0.0,
+                    futureCarbs = 0.0
+                ),
+                targetBg = BgValue.fromMgDl(100),
+                isf = BgDelta.fromMgDl(50),
+                cr = 10.0,
+                calculation = BolusCalculationDetails(
+                    mealPart = InsulinAmount(6.0),
+                    correctionPart = InsulinAmount(-0.6),
+                    iobPart = InsulinAmount(0.15),
+                    proposedTotal = InsulinAmount(5.25),
+                ),
+                insulinPlan = listOf(
+                    PlannedInsulinUiModel.create(
+                        amount = InsulinAmount(3.49),
+                        timeFromMeal = Minutes(0),
+                        mealTimestamp = now,
+                        now = now,
+                        partWeight = 70
+                    ),
+                    PlannedInsulinUiModel.create(
+                        amount = InsulinAmount(1.76),
+                        timeFromMeal = Minutes(150),
+                        mealTimestamp = now,
+                        now = now,
+                        partWeight = 30
+                    )
+                ),
+                submissionStatus = SubmissionStatus.NotSubmitted,
+                isMealReminderAllowed = true,
+                isMealReminderEnabled = true
+            ),
+            onCarbsChange = {},
+            onMealTimeChange = {},
+            onApplySuggestedCarbs = {},
+            onApplySuggestedImi = {},
+            onMealTypeChange = {},
+            onManualBolusChange = {},
+            onOpenBolusPlanDialog = {},
+            onCloseBolusPlanDialog = {},
+            onUpdateBolusTime = { _, _ -> },
+            onUpdateBolusAmount = { _, _ -> },
+            onAddDeferredBolus = {},
+            onRemoveDeferredBolus = {},
+            onToggleMealReminder = {},
+            onRefreshProjections = {},
+            onClose = {},
+            onSubmit = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Default Mode", heightDp = 1050)
+@Preview(showBackground = true, name = "Default Mode - Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, heightDp = 1050)
 @Composable
 fun MealCorrectionBolusDefaultPreview() {
     val sampleMealTypes = getDefaultMealTypes(LocalContext.current)

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -57,6 +56,7 @@ import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppPreview
 import kotlinx.coroutines.delay
+import java.util.Calendar
 import kotlin.time.Duration.Companion.milliseconds
 import de.dh.daps.common.R as CommonR
 
@@ -312,8 +312,8 @@ fun ManualControlContent(
     }
 }
 
-@Preview(showBackground = true, name = "Light Mode")
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
+@Preview(showBackground = true, name = "Light Mode", heightDp = 1380)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode", heightDp = 1380)
 @Composable
 fun ManualControlScreenPreview() {
     AppPreview {
@@ -357,6 +357,75 @@ fun ManualControlScreenPreview() {
                         basalPart = InsulinAmount(0.0)
                     ),
                     ApsRecommendation.TempBasal(durationInHours = 2, percent = 80)
+                ),
+                pump = ManualControlPumpUiModel(
+                    isConfigured = true,
+                    basalStatus = BasalStatus(
+                        isSuspended = false,
+                        activeRate = InsulinAmount(0.5),
+                        isTempBasal = false,
+                    )
+                )
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Carb Recommendation", heightDp = 1000)
+@Preview(showBackground = true, name = "Carb Recommendation Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, heightDp = 1000)
+@Composable
+fun ManualControlCarbRecommendationPreview() {
+    val context = LocalContext.current
+    val time1320 = remember {
+        Timestamp(
+            Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, 13)
+                set(Calendar.MINUTE, 20)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }.timeInMillis
+        )
+    }
+    val time0845 = remember {
+        Timestamp(
+            Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, 8)
+                set(Calendar.MINUTE, 45)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }.timeInMillis
+        )
+    }
+
+    AppPreview {
+        ManualControlContent(
+            uiState = ManualControlUiState(
+                contextInfo = ManualControlContextInfoUiModel(
+                    lastBgReading = BgReading(
+                        value = BgValue.fromMgDl(75),
+                        sampleKind = BgSampleKind.Value,
+                        timestamp = time1320
+                    ),
+                    iob = InsulinAmount(0.2),
+                    cob = 0.0,
+                    lastPastMeal = MealEntry(
+                        id = 1L,
+                        timestamp = time0845,
+                        carbGrams = 45.0,
+                        mealType = getDefaultStandardMealType(context),
+                        administeredInsulinAmount = InsulinAmount(3.5)
+                    ),
+                    nextPlannedMeal = null,
+                    hasNextPlannedMealReminder = false,
+                    lastBolus = InsulinApplication(
+                        timestamp = time0845,
+                        amount = InsulinAmount(3.5),
+                        insulinType = InsulinType(name = "NovoRapid", peak = Minutes(75), dia = Minutes(300)),
+                        origin = InsulinOrigin.Pump
+                    )
+                ),
+                recommendations = listOf(
+                    ApsRecommendation.Carbs(amountInGram = 10)
                 ),
                 pump = ManualControlPumpUiModel(
                     isConfigured = true,

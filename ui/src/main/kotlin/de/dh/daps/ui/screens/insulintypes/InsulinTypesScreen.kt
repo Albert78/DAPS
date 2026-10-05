@@ -268,7 +268,7 @@ fun InsulinTypesPreview() {
         InsulinTypesContent(
             uiState = InsulinTypesUiState(
                 insulinTypes = listOf(fiasp, novorapid),
-                usedInsulinTypeIds = setOf("1")
+                usedInsulinTypeIds = setOf("2")
             ),
             onDeleteInsulinType = {},
             onAddStandardInsulinType = {},

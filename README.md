@@ -1,8 +1,17 @@
 # DAPS
+
+![Screenshots-Light](docs/images/collage-light.png)
+![Screenshots-Dark](docs/images/collage-dark.png)
+
 [[Deutsche Version]](#deutsch)
 
-DAPS is an open-source project focused on developing a modern, full-featured Automated Insulin Delivery (AID/APS) app for Android.
+DAPS is an open-source project focused on developing a modern, full-featured Automated Insulin Delivery (AID/APS) app for Android using Kotlin / Jetpack compose.
 The unaltered original version can be found at https://github.com/Albert78/DAPS
+
+> [!WARNING]
+> **Experimental software — not a medical device.**
+>
+> DAAPS may contain bugs. Use it at your own risk and watch the app carefully. Do not rely on it as the sole basis for treatment, insulin dosing, diagnosis, or other medical decisions. Always verify clinically significant readings using the manufacturer's official system or another appropriate method.
 
 **Note on UI & Localization:** The UI is currently only available in German. If needed, localization can be performed using an AI tool like Gemini. Furthermore, the interface is currently optimized for the Samsung Galaxy S26.
 
@@ -70,6 +79,11 @@ This project is licensed under the [MIT License](LICENSE).
 
 DAPS ist ein Open-Source-Projekt zur Entwicklung einer modernen, vollumfänglichen Automated Insulin Delivery (AID/APS) App für Android.
 Die unveränderte Originalversion findest du unter https://github.com/Albert78/DAPS
+
+> [!WARNING]
+> **Experimentelle Software — kein Medizinprodukt.**
+>
+> DAPS kann Fehler enthalten. Die Nutzung erfolgt auf eigene Gefahr; überwache die App sorgfältig. Verlasse dich nicht auf sie als alleinige Grundlage für Behandlungen, Insulindosierung, Diagnosen oder sonstige medizinische Entscheidungen. Überprüfe klinisch relevante Messwerte stets mit dem offiziellen System des Herstellers oder einer anderen geeigneten Methode.
 
 **Hinweis zu UI & Lokalisierung:** Die Benutzeroberfläche existiert aktuell nur auf Deutsch. Die Lokalisierung kann bei Bedarf mithilfe von Gemini übersetzt werden. Zudem ist die UI derzeit auf das Samsung Galaxy S26 optimiert.
 

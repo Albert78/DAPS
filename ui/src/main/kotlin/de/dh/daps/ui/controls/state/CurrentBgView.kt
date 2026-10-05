@@ -213,11 +213,11 @@ fun createSampleGoodBgUiState(): CurrentBgUiState {
     return CurrentBgUiState(
         isLoading = false,
         isError = false,
-        CurrentBgData(
-            bgValue = BgValue.fromMgDl(125),
-            delta = BgDelta.fromMgDl(+10),
-            trend = BgTrend.FortyFiveUp,
-            timestamp = Timestamp.now().minusMinutes(90)
+        currentBgValue = CurrentBgData.valid(
+            bgValue = BgValue.fromMgDl(90),
+            delta = BgDelta.fromMgDl(0),
+            trend = BgTrend.Flat,
+            timestamp = Timestamp.now().minusMinutes(2)
         )
     )
 }

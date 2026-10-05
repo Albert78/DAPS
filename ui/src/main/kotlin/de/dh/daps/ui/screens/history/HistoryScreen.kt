@@ -94,11 +94,23 @@ fun HistoryContent(
     }
 }
 
-fun createSampleHistoryUiState(): HistoryUiState {
+fun createSampleHistoryUiState(
+    size: Int = 120,
+    minsInterval: Short = 5,
+    base: Double = 120.0,
+    amplitude: Double = 20.0,
+    noiseFactor: Double = 2.0
+): HistoryUiState {
     return HistoryUiState(
         isLoading = false,
         isError = false,
-        readings = createSampleReadings(120, 5)
+        readings = createSampleReadings(
+            size = size,
+            minsInterval = minsInterval,
+            base = base,
+            amplitude = amplitude,
+            noiseFactor = noiseFactor
+        )
     )
 }
 

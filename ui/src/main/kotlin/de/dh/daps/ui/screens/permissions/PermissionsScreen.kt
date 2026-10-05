@@ -1,5 +1,6 @@
 package de.dh.daps.ui.screens.permissions
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -288,7 +289,8 @@ fun PermissionItem(
     }
 }
 
-@Preview(showBackground = true, heightDp = 1300)
+@Preview(showBackground = true, name = "Light mode", heightDp = 900)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode", heightDp = 900)
 @Composable
 fun PermissionsScreenPreview() {
     AppPreview {
