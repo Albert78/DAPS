@@ -1,7 +1,91 @@
-# DAPS — Dein Diabetes, deine Kontrolle, deine Freiheit! 🚀
+# DAPS — Your Diabetes, Your Control, Your Freedom! 🚀
 
 ![Screenshots-Light](docs/images/collage-light.png)
 ![Screenshots-Dark](docs/images/collage-dark.png)
+
+[[Deutsche Version]](#deutsch)
+
+> [!WARNING]
+> **Experimental software — not a medical device.**
+>
+> DAPS is under active development and is open-source software. Use it at your own risk. Do not rely exclusively on this app for medical decisions or insulin dosing. Always verify important readings using your manufacturers' official devices.
+
+---
+
+## 🌟 Your therapy, as flexible as your life
+
+**DAPS** (Automated Insulin Delivery / APS) was created to give you back **maximum freedom and full control** over your diabetes management. No rigid constraints, no complicated detours — just a modern, intelligent system that smoothly adapts to *your* daily life.
+
+Whether in everyday routines, during sports, for a spontaneous snack, or at night: DAPS supports you right where you need it, remaining remarkably simple and intuitive.
+
+---
+
+## ✨ What makes DAPS special
+
+### 📊 Clear & Everything at a glance
+A **modern, clean dashboard** shows you exactly what matters in seconds: your current glucose values, trends, active insulin (IOB), active carbohydrates (COB), and loop status. No searching, no clutter — just clear and easy to understand.
+
+### ⚙️ Maximum freedom in settings
+Your diabetes is as individual as you are. DAPS offers **countless customization options** to tune target ranges, basal rates, factors, and algorithms precisely to your personal needs. You can flexibly **override individual values on the fly** or configure complete **presets** for specific life situations like sports, illness, or stress. You stay in full control at all times.
+
+### 💡 Simple & Self-explanatory
+No long learning curve required! The user interface is built from the ground up so that you can **find your way around immediately**. Clear icons, understandable dialogs, and a well-thought-out operating concept make daily use child's play.
+
+### 🔍 Full transparency & Maximum data insight
+No black box! DAPS provides **all key data clearly**: from current blood glucose values, active insulin (IOB), and active carbohydrates (COB) to exact meal and insulin action curves and a **detailed log**. Every decision made by the algorithm remains transparent and comprehensible for you at all times.
+
+### 🍽️ Flexible meal declaration
+Quick snack, multi-course meal, or high-fat/high-protein food? Record your meals exactly the way it suits you best. The **flexible entry system** makes carbohydrate tracking straightforward and extremely adaptable.
+
+### 💉 Intelligent insulin planning
+Plan boluses and meals ahead of time! With integrated **insulin planning**, DAPS calculates precise suggestions, takes activity profiles into account, and helps you effectively cushion meal spikes — even for tricky situations like pizza, baked cheese, meat, etc.
+
+### 🔌 Easy CGM & Pump connection
+DAPS relies on a modular system: To connect new CGM systems and insulin pumps, only a **very simple Kotlin interface** needs to be implemented. Development and integration of real hardware drivers is currently actively underway. Want to participate and contribute your own CGM or pump driver? Feel free to reach out!
+
+### ⚡ High-performance & Modern
+DAPS is a true **greenfield development** based on the latest Android technologies (Kotlin & Jetpack Compose). That means lightning-fast responsiveness, minimal battery consumption, and smooth animations — in elegant Light and Dark mode.
+
+---
+
+## 🚀 For Developers & The Curious
+
+Want to try out DAPS or help shape it? The project relies on a **modern, modular architecture** with strict separation between core engine, CGM interfaces, and pump integration.
+
+### 🛠️ Quickstart
+
+1. Clone repository:
+   ```bash
+   git clone https://github.com/Albert78/DAPS.git
+   ```
+2. Open project in **Android Studio**.
+3. Run directly on your Android smartphone (use the `simDebug` flavor for the integrated body simulator!).
+
+*Note: Major updates may require clearing local app data (App Info ➔ Storage ➔ Clear Data).*
+
+### 🧪 Integrated Body Simulator (`sim-body`)
+Test algorithms, meals, and reactions safely without hardware! Simply build the app in the `simDebug` build flavor and simulate glucose curves, sports, or stress directly on your phone.
+
+### 🧱 Tech Stack
+* **Language:** Kotlin
+* **UI & Navigation:** Jetpack Compose & Navigation 3
+* **Reactivity:** Kotlin Coroutines & Flow
+* **Persistence:** Room Database
+* **Background:** Optimized Android Foreground Services
+
+### UI & Localization
+The user interface is currently only localized in German and is optimized for the Samsung Galaxy S26.
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
+<a id="deutsch"></a>
+# DAPS (Deutsche Version) — Dein Diabetes, deine Kontrolle, deine Freiheit! 🚀
 
 > [!WARNING]
 > **Experimentelle Software — kein Medizinprodukt.**
@@ -70,6 +154,9 @@ Teste Algorithmen, Mahlzeiten und Reaktionen gefahrlos ohne Hardware! Bau einfac
 * **Reaktivität:** Kotlin Coroutines & Flow
 * **Persistenz:** Room Database
 * **Hintergrund:** Optimierte Android Foreground Services
+
+### Hinweis zu UI & Lokalisierung
+Die Benutzeroberfläche ist aktuell nur auf Deutsch lokalisiert und auf das Samsung Galaxy S26 optimiert.
 
 ---
 
