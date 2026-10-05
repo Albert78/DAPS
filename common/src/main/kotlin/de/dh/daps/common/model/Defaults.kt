@@ -25,6 +25,7 @@ fun getDefaultInsulinTypes(context: Context): List<InsulinType> = listOf(
     InsulinType(
         id = ID_INSULIN_NOVORAPID,
         name = context.getString(R.string.insulin_type_novorapid_name),
+        activeSubstance = context.getString(R.string.insulin_type_aspart_substance),
         dia = Minutes.ofHours(5),
         peak = Minutes(75),
         defaultConcentration = InsulinConcentration.U100,
@@ -32,6 +33,7 @@ fun getDefaultInsulinTypes(context: Context): List<InsulinType> = listOf(
     InsulinType(
         id = ID_INSULIN_FIASP,
         name = context.getString(R.string.insulin_type_fiasp_name),
+        activeSubstance = context.getString(R.string.insulin_type_aspart_substance),
         dia = Minutes.ofHours(4),
         peak = Minutes(55),
         defaultConcentration = InsulinConcentration.U100,
@@ -39,6 +41,7 @@ fun getDefaultInsulinTypes(context: Context): List<InsulinType> = listOf(
     InsulinType(
         id = ID_INSULIN_HUMALOG,
         name = context.getString(R.string.insulin_type_humalog_name),
+        activeSubstance = context.getString(R.string.insulin_type_lispro_substance),
         dia = Minutes.ofHours(5),
         peak = Minutes(60),
         defaultConcentration = InsulinConcentration.U100,
@@ -46,6 +49,7 @@ fun getDefaultInsulinTypes(context: Context): List<InsulinType> = listOf(
     InsulinType(
         id = ID_INSULIN_LYUMJEV,
         name = context.getString(R.string.insulin_type_lyumjev_name),
+        activeSubstance = context.getString(R.string.insulin_type_lispro_substance),
         dia = Minutes.ofHours(5),
         peak = Minutes(45),
         defaultConcentration = InsulinConcentration.U100,
@@ -53,6 +57,7 @@ fun getDefaultInsulinTypes(context: Context): List<InsulinType> = listOf(
     InsulinType(
         id = ID_INSULIN_APIDRA,
         name = context.getString(R.string.insulin_type_apidra_name),
+        activeSubstance = context.getString(R.string.insulin_type_glulisine_substance),
         dia = Minutes.ofHours(5),
         peak = Minutes(60),
         defaultConcentration = InsulinConcentration.U100,

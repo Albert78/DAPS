@@ -54,6 +54,7 @@ data class InsulinTypeEntity(
     @PrimaryKey
     val id: String,
     val name: String,
+    val active_substance: String?,
     val peak: Minutes,
     val dia: Minutes,
     val default_concentration: Double = 1.0

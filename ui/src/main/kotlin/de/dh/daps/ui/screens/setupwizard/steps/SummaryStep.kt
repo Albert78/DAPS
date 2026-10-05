@@ -104,10 +104,15 @@ fun SummaryStep(
 
                     val insulin = uiState.selectedInsulinType
                     if (insulin != null) {
+                        val insulinDisplayName = if (!insulin.activeSubstance.isNullOrBlank()) {
+                            "${insulin.name} (${insulin.activeSubstance})"
+                        } else {
+                            insulin.name
+                        }
                         Text(
                             stringResource(
                                 R.string.setup_wizard_summary_insulin_type_format,
-                                insulin.name,
+                                insulinDisplayName,
                                 insulin.dia.value.toInt(),
                                 insulin.peak.value.toInt()
                             )
@@ -147,6 +152,7 @@ fun SummaryStep(
 private val previewInsulinType = InsulinType(
     id = "1",
     name = "NovoRapid",
+    activeSubstance = "Insulin aspart",
     dia = Minutes.ofHours(5),
     peak = Minutes(75)
 )

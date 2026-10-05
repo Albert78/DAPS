@@ -50,6 +50,7 @@ import de.dh.daps.common.R as CommonR
 private data class InitialInsulinTypeValues(
     val id: String?,
     val name: String,
+    val activeSubstance: String?,
     val peak: String,
     val dia: String,
     val concentration: InsulinConcentration
@@ -65,6 +66,7 @@ fun InsulinTypeEditorScreen(
     InsulinTypeEditorContent(
         uiState = uiState,
         onNameChange = viewModel::onNameChange,
+        onActiveSubstanceChange = viewModel::onActiveSubstanceChange,
         onPeakChange = viewModel::onPeakChange,
         onDiaChange = viewModel::onDiaChange,
         onConcentrationChange = viewModel::onConcentrationChange,
@@ -80,6 +82,7 @@ fun InsulinTypeEditorScreen(
 fun InsulinTypeEditorContent(
     uiState: InsulinTypeEditorUiState,
     onNameChange: (String) -> Unit,
+    onActiveSubstanceChange: (String) -> Unit,
     onPeakChange: (String) -> Unit,
     onDiaChange: (String) -> Unit,
     onConcentrationChange: (InsulinConcentration) -> Unit,
@@ -93,6 +96,7 @@ fun InsulinTypeEditorContent(
             InitialInsulinTypeValues(
                 id = uiState.id,
                 name = uiState.name,
+                activeSubstance = uiState.activeSubstance,
                 peak = uiState.peak,
                 dia = uiState.dia,
                 concentration = uiState.concentration
@@ -102,6 +106,7 @@ fun InsulinTypeEditorContent(
 
     val hasChanges = remember(
         uiState.name,
+        uiState.activeSubstance,
         uiState.peak,
         uiState.dia,
         uiState.concentration,
@@ -110,6 +115,7 @@ fun InsulinTypeEditorContent(
         if (initialValues == null) false
         else {
             uiState.name != initialValues.name ||
+                    uiState.activeSubstance != initialValues.activeSubstance ||
                     uiState.peak != initialValues.peak ||
                     uiState.dia != initialValues.dia ||
                     uiState.concentration != initialValues.concentration
@@ -164,6 +170,7 @@ fun InsulinTypeEditorContent(
         InsulinTypeEditorFormContent(
             uiState = uiState,
             onNameChange = onNameChange,
+            onActiveSubstanceChange = onActiveSubstanceChange,
             onPeakChange = onPeakChange,
             onDiaChange = onDiaChange,
             onConcentrationChange = onConcentrationChange,
@@ -204,6 +211,7 @@ fun InsulinTypeEditorContent(
 fun InsulinTypeEditorFormContent(
     uiState: InsulinTypeEditorUiState,
     onNameChange: (String) -> Unit,
+    onActiveSubstanceChange: (String) -> Unit,
     onPeakChange: (String) -> Unit,
     onDiaChange: (String) -> Unit,
     onConcentrationChange: (InsulinConcentration) -> Unit,
@@ -231,6 +239,18 @@ fun InsulinTypeEditorFormContent(
             value = uiState.name,
             onValueChange = onNameChange,
             label = { Text(stringResource(id = R.string.insulin_type_editor_name_label)) },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Next
+            )
+        )
+
+        OutlinedTextField(
+            value = uiState.activeSubstance ?: "",
+            onValueChange = onActiveSubstanceChange,
+            label = { Text(stringResource(id = R.string.insulin_type_editor_active_substance_label)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             keyboardOptions = KeyboardOptions(
@@ -305,10 +325,12 @@ fun InsulinTypeEditorPreview() {
             uiState = InsulinTypeEditorUiState(
                 id = "1",
                 name = "Fiasp",
+                activeSubstance = "Insulin aspart",
                 peak = "50",
                 dia = "300"
             ),
             onNameChange = {},
+            onActiveSubstanceChange = {},
             onPeakChange = {},
             onDiaChange = {},
             onConcentrationChange = {},
@@ -327,10 +349,12 @@ fun InsulinTypeEditorFormContentPreview() {
             uiState = InsulinTypeEditorUiState(
                 id = "1",
                 name = "Fiasp",
+                activeSubstance = "Insulin aspart",
                 peak = "50",
                 dia = "300"
             ),
             onNameChange = {},
+            onActiveSubstanceChange = {},
             onPeakChange = {},
             onDiaChange = {},
             onConcentrationChange = {}

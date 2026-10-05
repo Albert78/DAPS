@@ -17,6 +17,7 @@ import kotlin.math.round
 data class InsulinType(
     val id: String = UUID.randomUUID().toString(),
     val name: String,
+    val activeSubstance: String?,
     val peak: Minutes,
     val dia: Minutes,
     val defaultConcentration: InsulinConcentration = InsulinConcentration.U100

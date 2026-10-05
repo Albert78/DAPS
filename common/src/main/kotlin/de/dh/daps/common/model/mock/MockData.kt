@@ -7,6 +7,7 @@ import de.dh.daps.common.model.data.Minutes
 
 fun mockInsulinType() = InsulinType(
     name = "Mock Insulin",
+    activeSubstance = "Insulin aspart",
     dia = Minutes.ofHours(5),
     peak = Minutes(75)
 )

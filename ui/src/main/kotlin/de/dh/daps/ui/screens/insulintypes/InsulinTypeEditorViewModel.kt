@@ -20,6 +20,7 @@ import java.util.UUID
 data class InsulinTypeEditorUiState(
     val id: String? = null,
     val name: String = "",
+    val activeSubstance: String? = null,
     val peak: String = DEFAULT_PEAK_MINUTES.toString(),
     val dia: String = DEFAULT_DIA_MINUTES.toString(),
     val concentration: InsulinConcentration = InsulinConcentration.U100,
@@ -60,6 +61,7 @@ class InsulinTypeEditorViewModel(
                     it.copy(
                         id = type.id,
                         name = type.name,
+                        activeSubstance = type.activeSubstance,
                         peak = type.peak.value.toString(),
                         dia = type.dia.value.toString(),
                         concentration = type.defaultConcentration,
@@ -74,6 +76,10 @@ class InsulinTypeEditorViewModel(
 
     fun onNameChange(name: String) {
         _uiState.update { it.copy(name = name) }
+    }
+
+    fun onActiveSubstanceChange(activeSubstance: String) {
+        _uiState.update { it.copy(activeSubstance = activeSubstance.ifBlank { null }) }
     }
 
     fun onPeakChange(peak: String) {
@@ -97,6 +103,7 @@ class InsulinTypeEditorViewModel(
             val insulinType = InsulinType(
                 id = state.id ?: UUID.randomUUID().toString(),
                 name = state.name.trim(),
+                activeSubstance = state.activeSubstance?.trim()?.ifEmpty { null },
                 peak = Minutes((state.peak.toIntOrNull() ?: DEFAULT_PEAK_MINUTES).toShort()),
                 dia = Minutes((state.dia.toIntOrNull() ?: DEFAULT_DIA_MINUTES).toShort()),
                 defaultConcentration = state.concentration

@@ -511,8 +511,11 @@ fun AddManualBolusDialog(
                         onExpandedChange = { expanded = !expanded },
                         modifier = Modifier.fillMaxWidth()
                     ) {
+                        val selectedTypeText = selectedInsulinType?.let { type ->
+                            if (!type.activeSubstance.isNullOrBlank()) "${type.name} (${type.activeSubstance})" else type.name
+                        } ?: ""
                         OutlinedTextField(
-                            value = selectedInsulinType?.name ?: "",
+                            value = selectedTypeText,
                             onValueChange = {},
                             readOnly = true,
                             label = { Text(stringResource(id = R.string.insulin_profile_editor_insulin_type_label)) },
@@ -527,8 +530,9 @@ fun AddManualBolusDialog(
                             onDismissRequest = { expanded = false }
                         ) {
                             availableInsulinTypes.forEach { type ->
+                                val typeText = if (!type.activeSubstance.isNullOrBlank()) "${type.name} (${type.activeSubstance})" else type.name
                                 DropdownMenuItem(
-                                    text = { Text(type.name) },
+                                    text = { Text(typeText) },
                                     onClick = {
                                         selectedInsulinType = type
                                         expanded = false
@@ -606,7 +610,7 @@ fun BolusHistoryPreview() {
 @Preview(showBackground = true, name = "With Data")
 @Composable
 fun BolusHistoryWithDataPreview() {
-    val sampleInsulinType = InsulinType(name = "Fiasp", peak = Minutes(50.toShort()), dia = Minutes(300.toShort()))
+    val sampleInsulinType = InsulinType(name = "Fiasp", activeSubstance = "Insulin aspart", peak = Minutes(50.toShort()), dia = Minutes(300.toShort()))
     val sampleEntries = listOf(
         InsulinApplication(id = 1, timestamp = Timestamp.now().minusHours(8), amount = InsulinAmount(5.0), insulinType = sampleInsulinType, origin = InsulinOrigin.Pump, meal = true, correction = true),
         InsulinApplication(id = 2, timestamp = Timestamp.now().minusHours(5), amount = InsulinAmount(2.5), insulinType = sampleInsulinType, origin = InsulinOrigin.Manual, meal = true),

@@ -12,6 +12,7 @@ import de.dh.daps.plugin.simbody.model.BodyProfile
 val DEFAULT_SIM_INSULIN_TYPE = InsulinType(
     id = "sim-aspart-id",
     name = "Sim Aspart",
+    activeSubstance = "Insulin aspart",
     dia = Minutes.ofHours(5),
     peak = Minutes(75)
 )

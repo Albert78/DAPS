@@ -877,6 +877,7 @@ private fun formatMinutes(minutes: Minutes): String {
 fun CurrentTherapySettingsPreview() {
     val mockInsulinType = InsulinType(
         name = "Rapid",
+        activeSubstance = "Insulin aspart",
         peak = Minutes(75),
         dia = Minutes(300)
     )

@@ -70,6 +70,9 @@
     <string name="insulin_type_lyumjev_name">Lyumjev</string>
     <string name="insulin_type_apidra_name">Apidra</string>
     <string name="insulin_type_actrapid_name">Actrapid</string>
+    <string name="insulin_type_aspart_substance">Insulin aspart</string>
+    <string name="insulin_type_lispro_substance">Insulin lispro</string>
+    <string name="insulin_type_glulisine_substance">Insulin glulisine</string>
     <string name="meal_type_fast_carbs_name">Schnelle Kohlenhydrate</string>
     <string name="meal_type_standard_meal_name">Standard Mahlzeit</string>
     <string name="meal_type_high_fat_meal_name">Fettreiche Mahlzeit</string>

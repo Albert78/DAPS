@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -106,8 +107,13 @@ fun InsulinTypesContent(
                 ) {
                     if (uiState.availableStandardTypes.isNotEmpty()) {
                         uiState.availableStandardTypes.forEach { standardType ->
+                            val labelText = if (!standardType.activeSubstance.isNullOrBlank()) {
+                                "${standardType.name} (${standardType.activeSubstance})"
+                            } else {
+                                standardType.name
+                            }
                             DropdownMenuItem(
-                                text = { Text(standardType.name) },
+                                text = { Text(labelText) },
                                 onClick = {
                                     showAddMenu = false
                                     onAddStandardInsulinType(standardType)
@@ -236,7 +242,23 @@ fun InsulinTypeItem(
                 }
             }
         },
-        supportingContent = { Text(detailsStr) },
+        supportingContent = {
+            Column {
+                val activeSubstance = insulinType.activeSubstance
+                if (!activeSubstance.isNullOrBlank()) {
+                    Text(
+                        text = activeSubstance,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Text(
+                    text = detailsStr,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        },
         leadingContent = {
             Icon(
                 imageVector = Icon_Insulin,
@@ -262,8 +284,8 @@ fun InsulinTypeItem(
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
 fun InsulinTypesPreview() {
-    val fiasp = InsulinType(id = "1", name = "Fiasp", peak = Minutes(50), dia = Minutes(300))
-    val novorapid = InsulinType(id = "2", name = "NovoRapid", peak = Minutes(75), dia = Minutes(360))
+    val fiasp = InsulinType(id = "1", name = "Fiasp", activeSubstance = "Insulin aspart", peak = Minutes(50), dia = Minutes(300))
+    val novorapid = InsulinType(id = "2", name = "NovoRapid", activeSubstance = "Insulin aspart", peak = Minutes(75), dia = Minutes(360))
     AppPreview {
         InsulinTypesContent(
             uiState = InsulinTypesUiState(

@@ -82,6 +82,7 @@ fun SetupWizardScreen(
         onStartEditingInsulinType = viewModel::startEditingInsulinType,
         onCancelEditingInsulinType = viewModel::cancelEditingInsulinType,
         onUpdateInsulinTypeEditorName = viewModel::updateInsulinTypeEditorName,
+        onUpdateInsulinTypeEditorActiveSubstance = viewModel::updateInsulinTypeEditorActiveSubstance,
         onUpdateInsulinTypeEditorPeak = viewModel::updateInsulinTypeEditorPeak,
         onUpdateInsulinTypeEditorDia = viewModel::updateInsulinTypeEditorDia,
         onUpdateInsulinTypeEditorConcentration = viewModel::updateInsulinTypeEditorConcentration,
@@ -121,6 +122,7 @@ fun SetupWizardContent(
     onStartEditingInsulinType: (InsulinType?) -> Unit = {},
     onCancelEditingInsulinType: () -> Unit = {},
     onUpdateInsulinTypeEditorName: (String) -> Unit = {},
+    onUpdateInsulinTypeEditorActiveSubstance: (String) -> Unit = {},
     onUpdateInsulinTypeEditorPeak: (String) -> Unit = {},
     onUpdateInsulinTypeEditorDia: (String) -> Unit = {},
     onUpdateInsulinTypeEditorConcentration: (InsulinConcentration) -> Unit = {},
@@ -216,6 +218,7 @@ fun SetupWizardContent(
                             onStartEditing = onStartEditingInsulinType,
                             onCancelEditing = onCancelEditingInsulinType,
                             onUpdateName = onUpdateInsulinTypeEditorName,
+                            onUpdateActiveSubstance = onUpdateInsulinTypeEditorActiveSubstance,
                             onUpdatePeak = onUpdateInsulinTypeEditorPeak,
                             onUpdateDia = onUpdateInsulinTypeEditorDia,
                             onUpdateConcentration = onUpdateInsulinTypeEditorConcentration,
@@ -299,6 +302,7 @@ fun SetupWizardContent(
 private val previewInsulinType = InsulinType(
     id = "1",
     name = "NovoRapid",
+    activeSubstance = "Insulin aspart",
     dia = Minutes.ofHours(5),
     peak = Minutes(75)
 )

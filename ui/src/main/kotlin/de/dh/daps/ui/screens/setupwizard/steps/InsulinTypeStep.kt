@@ -59,6 +59,7 @@ fun InsulinTypeStep(
     onStartEditing: (InsulinType?) -> Unit,
     onCancelEditing: () -> Unit,
     onUpdateName: (String) -> Unit,
+    onUpdateActiveSubstance: (String) -> Unit = {},
     onUpdatePeak: (String) -> Unit,
     onUpdateDia: (String) -> Unit,
     onUpdateConcentration: (InsulinConcentration) -> Unit,
@@ -91,6 +92,7 @@ fun InsulinTypeStep(
             InsulinTypeEditorFormContent(
                 uiState = editorUiState,
                 onNameChange = onUpdateName,
+                onActiveSubstanceChange = onUpdateActiveSubstance,
                 onPeakChange = onUpdatePeak,
                 onDiaChange = onUpdateDia,
                 onConcentrationChange = onUpdateConcentration,
@@ -183,6 +185,14 @@ fun InsulinTypeStep(
                                         }
                                     }
                                     Spacer(Modifier.height(4.dp))
+                                    val activeSubstance = type.activeSubstance
+                                    if (!activeSubstance.isNullOrBlank()) {
+                                        Text(
+                                            text = activeSubstance,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
                                     Text(
                                         text = "DIA: ${type.dia.value} min, Peak: ${type.peak.value} min (U${(type.defaultConcentration.factor * 100).toInt()})",
                                         style = MaterialTheme.typography.bodySmall,
@@ -271,6 +281,7 @@ fun InsulinTypeStep(
 private val previewInsulinType1 = InsulinType(
     id = "1",
     name = "NovoRapid",
+    activeSubstance = "Insulin aspart",
     dia = Minutes.ofHours(5),
     peak = Minutes(75)
 )
@@ -278,6 +289,7 @@ private val previewInsulinType1 = InsulinType(
 private val previewInsulinType2 = InsulinType(
     id = "2",
     name = "Fiasp",
+    activeSubstance = "Insulin aspart",
     dia = Minutes.ofHours(5),
     peak = Minutes(50)
 )

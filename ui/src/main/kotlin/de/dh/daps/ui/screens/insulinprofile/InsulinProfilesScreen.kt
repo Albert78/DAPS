@@ -203,7 +203,7 @@ fun InsulinProfileList(
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
 private fun InsulinProfilesPreview() {
-    val sampleInsulinType = InsulinType(name = "Humalog", dia = Minutes.ofHours(5), peak = Minutes.ofHours(1))
+    val sampleInsulinType = InsulinType(name = "Humalog", activeSubstance = "Insulin lispro", dia = Minutes.ofHours(5), peak = Minutes.ofHours(1))
     val sampleProfiles = listOf(
         InsulinProfile(
             id = 1,

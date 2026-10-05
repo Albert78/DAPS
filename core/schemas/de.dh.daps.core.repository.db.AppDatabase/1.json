@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "4f1f5e9c504b01da49b34a5bb8e8bd28",
+    "identityHash": "daedbd4d7bc12ffdef9fd4274eddb559",
     "entities": [
       {
         "tableName": "sensor_type",
@@ -30,7 +30,7 @@
       },
       {
         "tableName": "data_provider",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `type` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -41,12 +41,6 @@
           {
             "fieldPath": "name",
             "columnName": "name",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "type",
-            "columnName": "type",
             "affinity": "TEXT",
             "notNull": true
           }
@@ -349,6 +343,51 @@
         }
       },
       {
+        "tableName": "therapy_adjustments",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `percentage` INTEGER NOT NULL, `target_bg_override` INTEGER, `low_threshold_override` INTEGER, `alarm_profile_override_id` INTEGER)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "percentage",
+            "columnName": "percentage",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "target_bg_override",
+            "columnName": "target_bg_override",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "low_threshold_override",
+            "columnName": "low_threshold_override",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "alarm_profile_override_id",
+            "columnName": "alarm_profile_override_id",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
         "tableName": "current_settings",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `aps_mode` TEXT NOT NULL)",
         "fields": [
@@ -422,7 +461,7 @@
       },
       {
         "tableName": "meal_type",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `symbol` TEXT, `curve_components` TEXT NOT NULL, `cat` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `symbol` TEXT, `curve_components` TEXT NOT NULL, `cat` INTEGER NOT NULL, `sort_order` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -450,6 +489,12 @@
           {
             "fieldPath": "cat",
             "columnName": "cat",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sortOrder",
+            "columnName": "sort_order",
             "affinity": "INTEGER",
             "notNull": true
           }
@@ -523,8 +568,49 @@
         ]
       },
       {
+        "tableName": "meal_reminders",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `meal_id` INTEGER, `meal_timestamp` INTEGER NOT NULL, `reminder_timestamp` INTEGER NOT NULL, `description` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "meal_id",
+            "columnName": "meal_id",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "meal_timestamp",
+            "columnName": "meal_timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reminder_timestamp",
+            "columnName": "reminder_timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
         "tableName": "insulin_type",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `peak` INTEGER NOT NULL, `dia` INTEGER NOT NULL, `default_concentration` REAL NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `active_substance` TEXT, `peak` INTEGER NOT NULL, `dia` INTEGER NOT NULL, `default_concentration` REAL NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -537,6 +623,11 @@
             "columnName": "name",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "active_substance",
+            "columnName": "active_substance",
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "peak",
@@ -913,7 +1004,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4f1f5e9c504b01da49b34a5bb8e8bd28')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'daedbd4d7bc12ffdef9fd4274eddb559')"
     ]
   }
 }

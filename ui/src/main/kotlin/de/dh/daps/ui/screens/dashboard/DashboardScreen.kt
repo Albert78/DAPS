@@ -528,6 +528,7 @@ fun createSampleHistoryUiState(
     val sampleInsulinType = InsulinType(
         id = "1",
         name = "Rapid",
+        activeSubstance = "Insulin aspart",
         peak = Minutes(60.toShort()),
         dia = Minutes(300.toShort())
     )

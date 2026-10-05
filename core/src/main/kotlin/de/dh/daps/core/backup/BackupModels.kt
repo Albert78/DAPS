@@ -128,6 +128,7 @@ data class MealTypeDto(
 data class InsulinTypeDto(
     val id: String,
     val name: String,
+    val activeSubstance: String?,
     val peakMinutes: Short,
     val diaMinutes: Short,
     val defaultConcentration: Double = 1.0
@@ -399,6 +400,7 @@ fun MealTypeDto.toEntity() = MealTypeEntity(
 fun InsulinTypeEntity.toDto() = InsulinTypeDto(
     id = id,
     name = name,
+    activeSubstance = active_substance,
     peakMinutes = peak.value,
     diaMinutes = dia.value,
     defaultConcentration = default_concentration
@@ -407,6 +409,7 @@ fun InsulinTypeEntity.toDto() = InsulinTypeDto(
 fun InsulinTypeDto.toEntity() = InsulinTypeEntity(
     id = id,
     name = name,
+    active_substance = activeSubstance,
     peak = Minutes(peakMinutes),
     dia = Minutes(diaMinutes),
     default_concentration = defaultConcentration

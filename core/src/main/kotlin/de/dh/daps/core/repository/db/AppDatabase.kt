@@ -56,7 +56,7 @@ import java.util.concurrent.Executors
     CoreInsightEntity::class,
     WakeupMetricEntity::class,
     TickMetricEntity::class
-], version = 2)
+], version = 1)
 @TypeConverters(
     DbTypeConverters::class
 )

@@ -345,7 +345,7 @@ fun ManualControlScreenPreview() {
                     lastBolus = InsulinApplication(
                         timestamp = Timestamp.now().minusHours(1),
                         amount = InsulinAmount(2.5),
-                        insulinType = InsulinType(name = "NovoRapid", peak = Minutes(75), dia = Minutes(300)),
+                        insulinType = InsulinType(name = "NovoRapid", activeSubstance = "Insulin aspart", peak = Minutes(75), dia = Minutes(300)),
                         origin = InsulinOrigin.Pump
                     )
                 ),
@@ -420,7 +420,7 @@ fun ManualControlCarbRecommendationPreview() {
                     lastBolus = InsulinApplication(
                         timestamp = time0845,
                         amount = InsulinAmount(3.5),
-                        insulinType = InsulinType(name = "NovoRapid", peak = Minutes(75), dia = Minutes(300)),
+                        insulinType = InsulinType(name = "NovoRapid", activeSubstance = "Insulin aspart", peak = Minutes(75), dia = Minutes(300)),
                         origin = InsulinOrigin.Pump
                     )
                 ),

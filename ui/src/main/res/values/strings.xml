@@ -41,6 +41,7 @@
     <string name="insulin_type_editor_title_edit">Insulintyp bearbeiten</string>
     <string name="insulin_type_editor_title_new">Neuer Insulintyp</string>
     <string name="insulin_type_editor_name_label">Name des Insulintyps</string>
+    <string name="insulin_type_editor_active_substance_label">Wirkstoff</string>
     <string name="insulin_type_editor_peak_label">Peak-Zeit (Minuten)</string>
     <string name="insulin_type_editor_dia_label">Wirkdauer DIA (Minuten)</string>
     <string name="insulin_type_editor_concentration_label">Standard-Konzentration</string>

@@ -60,6 +60,7 @@ class BodyModel(
     private val defaultInsulinType = InsulinType(
         id = "sim-aspart-id",
         name = "Sim Aspart",
+        activeSubstance = "Insulin aspart",
         dia = Minutes.ofHours(5),
         peak = Minutes(75)
     )

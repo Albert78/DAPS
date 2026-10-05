@@ -240,6 +240,7 @@ class SetupWizardViewModel(
                 insulinTypeEditorUiState = InsulinTypeEditorUiState(
                     id = typeToEdit?.id,
                     name = typeToEdit?.name ?: "",
+                    activeSubstance = typeToEdit?.activeSubstance,
                     peak = typeToEdit?.peak?.value?.toString() ?: DEFAULT_PEAK_MINUTES.toString(),
                     dia = typeToEdit?.dia?.value?.toString() ?: DEFAULT_DIA_MINUTES.toString(),
                     concentration = typeToEdit?.defaultConcentration ?: InsulinConcentration.U100
@@ -255,6 +256,12 @@ class SetupWizardViewModel(
     fun updateInsulinTypeEditorName(name: String) {
         _uiState.update { state ->
             state.copy(insulinTypeEditorUiState = state.insulinTypeEditorUiState.copy(name = name))
+        }
+    }
+
+    fun updateInsulinTypeEditorActiveSubstance(activeSubstance: String) {
+        _uiState.update { state ->
+            state.copy(insulinTypeEditorUiState = state.insulinTypeEditorUiState.copy(activeSubstance = activeSubstance.ifBlank { null }))
         }
     }
 
@@ -283,6 +290,7 @@ class SetupWizardViewModel(
         val newType = InsulinType(
             id = editorState.id ?: UUID.randomUUID().toString(),
             name = editorState.name.trim(),
+            activeSubstance = editorState.activeSubstance?.trim()?.ifEmpty { null },
             peak = Minutes((editorState.peak.toIntOrNull() ?: DEFAULT_PEAK_MINUTES).toShort()),
             dia = Minutes((editorState.dia.toIntOrNull() ?: DEFAULT_DIA_MINUTES).toShort()),
             defaultConcentration = editorState.concentration

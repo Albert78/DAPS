@@ -107,6 +107,7 @@ fun InsulinProfileStep(
 private val previewInsulinType = InsulinType(
     id = "1",
     name = "NovoRapid",
+    activeSubstance = "Insulin aspart",
     dia = Minutes.ofHours(5),
     peak = Minutes(75)
 )

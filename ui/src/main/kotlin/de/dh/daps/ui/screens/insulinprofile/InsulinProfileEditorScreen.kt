@@ -410,7 +410,11 @@ fun InsulinSettingsEditor(
             onExpandedChange = { expandedType = !expandedType }
         ) {
             OutlinedTextField(
-                value = selectedInsulinType.name,
+                value = if (!selectedInsulinType.activeSubstance.isNullOrBlank()) {
+                    "${selectedInsulinType.name} (${selectedInsulinType.activeSubstance})"
+                } else {
+                    selectedInsulinType.name
+                },
                 onValueChange = {},
                 readOnly = true,
                 label = { Text(stringResource(id = R.string.insulin_profile_editor_insulin_type_label)) },
@@ -424,8 +428,13 @@ fun InsulinSettingsEditor(
                 onDismissRequest = { expandedType = false }
             ) {
                 insulinTypes.forEach { type ->
+                    val typeText = if (!type.activeSubstance.isNullOrBlank()) {
+                        "${type.name} (${type.activeSubstance})"
+                    } else {
+                        type.name
+                    }
                     DropdownMenuItem(
-                        text = { Text(type.name) },
+                        text = { Text(typeText) },
                         onClick = {
                             onInsulinTypeSelected(type)
                             expandedType = false
@@ -736,7 +745,7 @@ fun InsertButton(canInsert: Boolean, onClick: () -> Unit) {
 @Preview(showBackground = true)
 @Composable
 private fun InsulinProfileDetailEditorPreview() {
-    val sampleInsulinType = InsulinType(name = "Humalog", dia = Minutes.ofHours(5), peak = Minutes.ofHours(1))
+    val sampleInsulinType = InsulinType(name = "Humalog", activeSubstance = "Insulin lispro", dia = Minutes.ofHours(5), peak = Minutes.ofHours(1))
     val sampleProfile = InsulinProfile(
         id = 1,
         name = "Normal",
@@ -756,7 +765,7 @@ private fun InsulinProfileDetailEditorPreview() {
             profile = sampleProfile,
             insulinTypes = listOf(
                 sampleInsulinType,
-                InsulinType(name = "NovoRapid", dia = Minutes.ofHours(5), peak = Minutes.ofHours(1))
+                InsulinType(name = "NovoRapid", activeSubstance = "Insulin aspart", dia = Minutes.ofHours(5), peak = Minutes.ofHours(1))
             ),
             onSave = {},
             onCancel = {}
@@ -767,7 +776,7 @@ private fun InsulinProfileDetailEditorPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun InsulinProfileEditorContentPreview() {
-    val sampleInsulinType = InsulinType(name = "Humalog", dia = Minutes.ofHours(5), peak = Minutes.ofHours(1))
+    val sampleInsulinType = InsulinType(name = "Humalog", activeSubstance = "Insulin lispro", dia = Minutes.ofHours(5), peak = Minutes.ofHours(1))
     AppPreview {
         InsulinProfileEditorContent(
             name = "Normal",
