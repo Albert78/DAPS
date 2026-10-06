@@ -21,6 +21,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
+import de.dh.daps.common.ui.UiText
+
 /**
  * Adapter that maps the Dana-i specific [DanaIPump] to the generic [InsulinPump] interface.
  */
@@ -29,6 +31,10 @@ class DanaIPumpAdapter(
     val controller: DanaIController,
     private val scope: CoroutineScope
 ) : InsulinPump {
+    override val insulinPumpId: String = PUMP_DRIVER_ID
+    override val insulinPumpDisplayName: UiText
+        get() = UiText.DynamicString(controller.deviceName.ifBlank { "Sooil Dana-i" })
+
     override var insulinConcentration: InsulinConcentration
         get() = pump.insulinConcentration
         set(value) {
@@ -112,6 +118,8 @@ class DanaIPumpAdapter(
     }
 
     companion object {
+        const val PUMP_DRIVER_ID = "de.dh.daps.plugin.danai"
+
         fun create(link: DanaILink, appLogger: DanaILogger, scope: CoroutineScope): DanaIPumpAdapter {
             val pump = DanaIPump()
             val controller = DanaIController(pump, link, appLogger, scope)

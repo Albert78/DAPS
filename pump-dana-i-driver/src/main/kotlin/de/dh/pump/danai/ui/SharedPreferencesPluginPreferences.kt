@@ -1,4 +1,4 @@
-package de.dh.pump.app
+package de.dh.pump.danai.ui
 
 import android.content.SharedPreferences
 import androidx.core.content.edit
