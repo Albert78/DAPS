@@ -1,9 +1,8 @@
-package de.dh.pump.commands
+package de.dh.pump.client.singleframe
 
 import de.dh.pump.PumpStatus
 import de.dh.pump.protocol.ByteReader
 import de.dh.pump.protocol.ByteWriter
-import de.dh.pump.protocol.CommandId
 
 /**
  * Describes the operational risk class of a command.

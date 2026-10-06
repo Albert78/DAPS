@@ -1,13 +1,7 @@
-package de.dh.pump
+package de.dh.pump.client.singleframe
 
-import de.dh.pump.commands.PumpCommand
-import de.dh.pump.commands.PumpResponse
-import de.dh.pump.commands.PumpStreamCommand
 import de.dh.pump.protocol.ByteReader
 import de.dh.pump.protocol.ByteWriter
-import de.dh.pump.protocol.CommandId
-import de.dh.pump.protocol.ProtocolFrame
-import de.dh.pump.protocol.PumpProtocolCodec
 import de.dh.pump.transport.BleTransport
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -25,12 +19,15 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * Executes typed pump commands over a byte-oriented BLE transport.
+ * Executes typed pump commands over a byte-oriented BLE transport for synchronous single-frame
+ * request-response pumps (e.g. Sooil Dana-i or Ypsomed YpsoPump).
  *
- * The client intentionally knows nothing about a concrete pump model. Command classes encode and
- * decode their own payloads, while the injected [PumpProtocolCodec] handles the outer packet format
- * used by a specific pump family. Requests are serialized because many pump BLE protocols only allow
- * one in-flight command and because command ordering is safety-relevant for write/control actions.
+ * This client is designed for pump protocols that exchange one request frame per response frame over a
+ * single transport channel.
+ *
+ * NOTE: Multi-step, streaming, or patch pump protocols with RTS/CTS handshakes and dual-characteristic
+ * channels (such as Insulet Omnipod Dash) should NOT use this client. They should implement a dedicated
+ * message orchestrator on top of [BleTransport].
  */
 class PumpClient(
     private val transport: BleTransport,
@@ -125,7 +122,7 @@ class PumpClient(
                                 }
                             }
                     }
-                } catch (e: StreamCompleteException) {
+                } catch (_: StreamCompleteException) {
                     // Normal termination
                 }
             }

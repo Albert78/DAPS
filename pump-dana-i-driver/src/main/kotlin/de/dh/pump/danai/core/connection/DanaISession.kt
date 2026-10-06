@@ -3,7 +3,8 @@ package de.dh.pump.danai.core.connection
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.content.Context
-import de.dh.pump.PumpClient
+import de.dh.daps.common.model.PluginPreferences
+import de.dh.pump.client.singleframe.PumpClient
 import de.dh.pump.dana.DanaBleProfiles
 import de.dh.pump.dana.protocol.DanaRsHandshake
 import de.dh.pump.dana.protocol.DanaRsHandshakeResult
@@ -12,7 +13,6 @@ import de.dh.pump.dana.protocol.DanaRsPacketCodec
 import de.dh.pump.dana.protocol.DanaRsPairingSecrets
 import de.dh.pump.danai.core.DanaILogger
 import de.dh.pump.danai.core.DanaPumpPreferences
-import de.dh.daps.common.model.PluginPreferences
 import de.dh.pump.transport.AndroidBleTransport
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers

@@ -1,6 +1,6 @@
 package de.dh.pump.dana.commands
 
-import de.dh.pump.commands.PumpResponse
+import de.dh.pump.client.singleframe.PumpResponse
 import de.dh.pump.PumpStatus
 
 interface DanaRsResponse : PumpResponse

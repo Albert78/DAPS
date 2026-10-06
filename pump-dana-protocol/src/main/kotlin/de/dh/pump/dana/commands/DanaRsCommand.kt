@@ -1,10 +1,10 @@
 package de.dh.pump.dana.commands
 
-import de.dh.pump.commands.PumpCommand
+import de.dh.pump.client.singleframe.CommandId
+import de.dh.pump.client.singleframe.PumpCommand
 import de.dh.pump.dana.DanaPumpStatus
 import de.dh.pump.protocol.ByteReader
 import de.dh.pump.protocol.ByteWriter
-import de.dh.pump.protocol.CommandId
 
 /**
  * Base class for one concrete DanaRS packet command.

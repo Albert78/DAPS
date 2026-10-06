@@ -1,6 +1,6 @@
 package de.dh.pump.dana.protocol
 
-import de.dh.pump.protocol.ProtocolFrame
+import de.dh.pump.client.singleframe.ProtocolFrame
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Test

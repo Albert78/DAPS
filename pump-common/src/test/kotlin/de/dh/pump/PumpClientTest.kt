@@ -1,13 +1,8 @@
-package de.dh.pump
+package de.dh.pump.client.singleframe
 
-import de.dh.pump.commands.AckResponse
-import de.dh.pump.commands.CommandKind
-import de.dh.pump.commands.PumpCommand
+import de.dh.pump.PumpStatus
 import de.dh.pump.protocol.ByteReader
 import de.dh.pump.protocol.ByteWriter
-import de.dh.pump.protocol.CommandId
-import de.dh.pump.protocol.ProtocolFrame
-import de.dh.pump.protocol.PumpProtocolCodec
 import de.dh.pump.transport.BleTransport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -20,7 +15,7 @@ import org.junit.Test
 import kotlin.time.Duration
 
 /**
- * Tests showing how to use the generic PumpClient with a custom Transport and Codec.
+ * Tests showing how to use the generic single-frame PumpClient with a custom Transport and Codec.
  */
 class PumpClientTest {
 
@@ -39,7 +34,7 @@ class PumpClientTest {
             sequence = 1,
             commandId = command.commandId,
             flags = 0,
-            payload = byteArrayOf(0x00) // OK status
+            payload = byteArrayOf(0x00), // OK status
         )
         val responseBytes = testCodec.encode(responseFrame)
 

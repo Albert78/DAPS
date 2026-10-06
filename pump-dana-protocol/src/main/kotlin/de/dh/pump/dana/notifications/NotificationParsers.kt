@@ -3,7 +3,7 @@ package de.dh.pump.dana.notifications
 import de.dh.pump.dana.commands.requireRemainingAtLeast
 import de.dh.pump.dana.protocol.DanaRsBleEncryption
 import de.dh.pump.protocol.ByteReader
-import de.dh.pump.protocol.ProtocolFrame
+import de.dh.pump.client.singleframe.ProtocolFrame
 
 /**
  * Decoders for DanaRS/Dana-i notification packets.

@@ -1,9 +1,9 @@
 package de.dh.pump.dana.protocol
 
+import de.dh.pump.client.singleframe.CommandId
+import de.dh.pump.client.singleframe.ProtocolFrame
 import de.dh.pump.dana.DanaPacketCodec
-import de.dh.pump.protocol.CommandId
 import de.dh.pump.protocol.ProtocolException
-import de.dh.pump.protocol.ProtocolFrame
 
 /**
  * Stateful DanaRS/Dana-i packet codec.

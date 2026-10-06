@@ -2,7 +2,7 @@ package de.dh.pump.dana.commands.history
 
 import de.dh.pump.PumpStatus
 import de.dh.pump.dana.DanaPumpStatus
-import de.dh.pump.commands.PumpStreamCommand
+import de.dh.pump.client.singleframe.PumpStreamCommand
 import de.dh.pump.dana.commands.DanaRsPacketCommand
 import de.dh.pump.dana.commands.DanaRsPacketDefinition
 import de.dh.pump.dana.commands.DanaRsPacketRegistry

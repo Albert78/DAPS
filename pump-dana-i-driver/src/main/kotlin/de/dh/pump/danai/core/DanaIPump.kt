@@ -1,11 +1,5 @@
 package de.dh.pump.danai.core
 
-import de.dh.pump.PumpCommandException
-import de.dh.pump.PumpConnectionException
-import de.dh.pump.commands.PumpCommand
-import de.dh.pump.commands.PumpResponse
-import de.dh.pump.commands.PumpStreamCommand
-import de.dh.pump.danai.core.model.DanaIBolusSpeed
 import de.dh.daps.common.model.BasalStatus
 import de.dh.daps.common.model.BolusEvent
 import de.dh.daps.common.model.BolusStatus
@@ -19,6 +13,12 @@ import de.dh.daps.common.model.PumpAlerts
 import de.dh.daps.common.model.PumpCapabilities
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.pump.PumpCommandException
+import de.dh.pump.PumpConnectionException
+import de.dh.pump.client.singleframe.PumpCommand
+import de.dh.pump.client.singleframe.PumpResponse
+import de.dh.pump.client.singleframe.PumpStreamCommand
+import de.dh.pump.danai.core.model.DanaIBolusSpeed
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow

@@ -1,7 +1,7 @@
 package de.dh.pump.dana.commands.aps
 
 import de.dh.pump.PumpStatus
-import de.dh.pump.commands.PumpStreamCommand
+import de.dh.pump.client.singleframe.PumpStreamCommand
 import de.dh.pump.dana.commands.DanaRsAckPacketCommand
 import de.dh.pump.dana.commands.DanaRsPacketCommand
 import de.dh.pump.dana.commands.DanaRsPacketRegistry

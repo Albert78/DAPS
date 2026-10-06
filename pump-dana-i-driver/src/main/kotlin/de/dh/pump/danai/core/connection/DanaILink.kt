@@ -2,14 +2,14 @@ package de.dh.pump.danai.core.connection
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
-import de.dh.pump.PumpClient
-import de.dh.pump.PumpConnectionException
-import de.dh.pump.commands.PumpCommand
-import de.dh.pump.commands.PumpResponse
-import de.dh.pump.commands.PumpStreamCommand
-import de.dh.pump.danai.core.DanaILogger
 import de.dh.daps.common.model.PluginPreferences
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.pump.PumpConnectionException
+import de.dh.pump.client.singleframe.PumpClient
+import de.dh.pump.client.singleframe.PumpCommand
+import de.dh.pump.client.singleframe.PumpResponse
+import de.dh.pump.client.singleframe.PumpStreamCommand
+import de.dh.pump.danai.core.DanaILogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

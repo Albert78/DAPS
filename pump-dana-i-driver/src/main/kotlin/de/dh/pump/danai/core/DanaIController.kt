@@ -15,11 +15,12 @@ import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.PumpTimestamp
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.data.getAmountForMinute
-import de.dh.pump.PumpClient
 import de.dh.pump.PumpCommandException
 import de.dh.pump.PumpConnectionException
 import de.dh.pump.PumpStatus
-import de.dh.pump.commands.PumpResponse
+import de.dh.pump.client.singleframe.ProtocolFrame
+import de.dh.pump.client.singleframe.PumpClient
+import de.dh.pump.client.singleframe.PumpResponse
 import de.dh.pump.dana.commands.DanaRsCommands
 import de.dh.pump.dana.commands.general.DanaRsPumpErrorState
 import de.dh.pump.dana.commands.history.DanaRsHistoryRecord
@@ -32,7 +33,6 @@ import de.dh.pump.dana.protocol.DanaRsBleEncryption
 import de.dh.pump.danai.core.connection.DanaILink
 import de.dh.pump.danai.core.connection.SessionState
 import de.dh.pump.danai.core.model.DanaIBolusSpeed
-import de.dh.pump.protocol.ProtocolFrame
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

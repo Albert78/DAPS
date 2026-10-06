@@ -1,11 +1,10 @@
-package de.dh.pump.protocol
+package de.dh.pump.client.singleframe
 
 /**
- * Converts between the common frame model and the raw bytes exchanged over BLE.
+ * Converts between the common single-frame model and the raw bytes exchanged over BLE.
  *
- * This interface is the protocol boundary between PumpCommon and pump-specific modules. PumpCommon
- * can run command sequencing and timeout logic without embedding any Dana, Medtronic, or other
- * vendor packet details.
+ * This interface is the protocol boundary between single-frame client orchestration and
+ * pump-specific packet codecs.
  */
 interface PumpProtocolCodec {
     fun encode(frame: ProtocolFrame): ByteArray

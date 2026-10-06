@@ -40,9 +40,3 @@ internal fun ByteReader.readDanaLocalDateTime(): LocalDateTime {
 }
 
 internal fun ByteReader.readSignedInt8(): Int = readBytes(1)[0].toInt()
-
-internal fun ByteReader.readUInt16Be(): Int {
-    val hi = readUInt8()
-    val lo = readUInt8()
-    return (hi shl 8) or lo
-}

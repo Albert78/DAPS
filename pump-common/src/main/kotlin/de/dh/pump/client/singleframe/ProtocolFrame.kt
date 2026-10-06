@@ -1,10 +1,10 @@
-package de.dh.pump.protocol
+package de.dh.pump.client.singleframe
 
 /**
- * Generic request/response envelope used by the common client.
+ * Generic request/response envelope used by single-frame synchronous clients.
  *
  * Real pump modules may map this model to a very different on-wire packet format. The important
- * contract for [PumpClient][de.dh.pump.PumpClient] is that the decoded frame exposes a
+ * contract for [PumpClient] is that the decoded frame exposes a
  * sequence number and command id so a notification can be correlated with the command that caused it.
  */
 data class ProtocolFrame(

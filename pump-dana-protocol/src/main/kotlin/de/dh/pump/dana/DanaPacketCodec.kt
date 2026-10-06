@@ -1,6 +1,6 @@
 package de.dh.pump.dana
 
-import de.dh.pump.protocol.PumpProtocolCodec
+import de.dh.pump.client.singleframe.PumpProtocolCodec
 
 /**
  * Marker interface for the real DanaRS/Dana-i packet codec.

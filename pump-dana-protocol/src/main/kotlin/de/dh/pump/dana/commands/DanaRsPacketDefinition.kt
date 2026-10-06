@@ -1,6 +1,6 @@
 package de.dh.pump.dana.commands
 
-import de.dh.pump.commands.CommandKind
+import de.dh.pump.client.singleframe.CommandKind
 import de.dh.pump.dana.protocol.DanaRsBleEncryption
 
 /**

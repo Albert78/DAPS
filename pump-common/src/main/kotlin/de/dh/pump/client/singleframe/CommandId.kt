@@ -1,4 +1,4 @@
-package de.dh.pump.protocol
+package de.dh.pump.client.singleframe
 
 @JvmInline
 value class CommandId(val value: Int) {
