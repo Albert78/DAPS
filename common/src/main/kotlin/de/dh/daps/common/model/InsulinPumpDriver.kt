@@ -14,7 +14,7 @@ interface InsulinPumpDriver {
     val driverId: String
 
     /**
-     * Human-readable display name of the pump type or manufacturer (e.g. "Ypsomed YpsoPump").
+     * Human-readable display name of the pump type or manufacturer (e.g. "Sooil Dana-i").
      */
     val driverDisplayName: UiText
 

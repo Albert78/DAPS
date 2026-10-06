@@ -407,7 +407,7 @@ fun PumpSetupMultipleDriversPreview() {
                 availableDrivers = listOf(
                     PreviewPumpDriver("de.dh.daps.plugin.simbody", UiText.DynamicString("SimBody Virtual Pump Driver")),
                     PreviewPumpDriver("de.dh.daps.plugin.sample", UiText.DynamicString("Sample Pump Driver")),
-                    PreviewPumpDriver("de.dh.daps.plugin.ypso", UiText.DynamicString("Ypsomed YpsoPump Driver mit langem Namen für automatischen Zeilenumbruch"))
+                    PreviewPumpDriver("de.dh.daps.plugin.danai", UiText.DynamicString("Sooil Dana-i Driver mit langem Namen für automatischen Zeilenumbruch"))
                 ),
                 activePumpDescriptor = PumpConnectionDescriptor(
                     driverId = "de.dh.daps.plugin.simbody",

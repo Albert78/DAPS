@@ -20,7 +20,7 @@ data class PumpConnectionDescriptor(
     val deviceId: String,
 
     /**
-     * Display name of the pump device shown to the user (e.g. "YpsoPump 12345678").
+     * Display name of the pump device shown to the user (e.g. "Dana-i 12345678").
      */
     val displayName: String,
 
