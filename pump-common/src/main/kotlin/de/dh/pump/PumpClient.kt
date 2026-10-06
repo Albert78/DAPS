@@ -6,7 +6,6 @@ import de.dh.pump.commands.PumpStreamCommand
 import de.dh.pump.protocol.ByteReader
 import de.dh.pump.protocol.ByteWriter
 import de.dh.pump.protocol.CommandId
-import de.dh.pump.protocol.FrameCodec
 import de.dh.pump.protocol.ProtocolFrame
 import de.dh.pump.protocol.PumpProtocolCodec
 import de.dh.pump.transport.BleTransport
@@ -36,7 +35,7 @@ import kotlin.time.Duration.Companion.seconds
 class PumpClient(
     private val transport: BleTransport,
     private val scope: CoroutineScope,
-    private val codec: PumpProtocolCodec = FrameCodec,
+    private val codec: PumpProtocolCodec,
     private val defaultTimeout: Duration = 5.seconds,
     private val defaultStreamTimeout: Duration = 15.seconds,
 ) {
