@@ -1,8 +1,8 @@
 package de.dh.daps.core
 
 import android.content.Context
+import android.net.Uri
 import de.dh.daps.AppPreferencesRepository
-import de.dh.daps.common.model.PluginContext
 import de.dh.daps.common.model.PluginManager
 import de.dh.daps.common.model.calculation.CarbsInsulinCalculator
 import de.dh.daps.common.model.data.TimeService
@@ -29,8 +29,6 @@ import de.dh.daps.core.repository.SystemMetricsRepository
 import de.dh.daps.core.repository.TherapyRepository
 import de.dh.daps.core.repository.TreatmentRepository
 import de.dh.daps.core.system.SystemWakeService
-
-import android.net.Uri
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -72,11 +70,11 @@ sealed interface SetupOption {
  * Central registry for all core services, repositories, and coordinators.
  * This acts as the single source of truth for component access within the application.
  */
-interface SystemRegistry : PluginContext {
+interface SystemRegistry {
     /**
      * The global application context.
      */
-    override val appContext: Context
+    val appContext: Context
 
     // Data Repositories
 
@@ -149,7 +147,7 @@ interface SystemRegistry : PluginContext {
     /**
      * Repository for lightweight application preferences and key-value pairs.
      */
-    override val appPreferencesRepository: AppPreferencesRepository
+    val appPreferencesRepository: AppPreferencesRepository
 
     /**
      * Repository for app data management, backup, restore and reset operations.
@@ -161,7 +159,7 @@ interface SystemRegistry : PluginContext {
     /**
      * Central coordinator for managing system plugins (e.g., pump or glucose source drivers).
      */
-    override val pluginManager: PluginManager
+    val pluginManager: PluginManager
 
     /**
      * Manages system wakeups and wake locks to ensure critical background tasks are executed.
@@ -171,14 +169,14 @@ interface SystemRegistry : PluginContext {
     /**
      * Provides the system-wide time reference and handles synchronized ticking for background processes.
      */
-    override val timeService: TimeService
+    val timeService: TimeService
 
     // Domain Managers and Services
 
     /**
      * The mathematical core for calculating insulin-on-board (IOB) and carbs-on-board (COB).
      */
-    override val carbsInsulinCalculator: CarbsInsulinCalculator
+    val carbsInsulinCalculator: CarbsInsulinCalculator
 
     /**
      * Manages the active glucose data source and processes incoming blood glucose readings.

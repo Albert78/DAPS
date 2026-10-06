@@ -62,7 +62,7 @@ class SimBodyPlugin(
     override val neededPermissions: Collection<String> = emptyList()
 
     override fun setup(context: PluginContext) {
-        val registry = context as SystemRegistry
+        val registry = context.registry as SystemRegistry
         bodyModel.loadState()
         pumpDevice.loadState()
         heartbeat = SimBodyHeartbeat(

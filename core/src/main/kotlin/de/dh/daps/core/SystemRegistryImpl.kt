@@ -6,7 +6,10 @@ import de.dh.daps.AppPreferencesRepository
 import de.dh.daps.common.METABOLIC_EVENTS_HISTORY_HOURS
 import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.common.model.InsulinPumpDriver
+import de.dh.daps.common.model.Plugin
+import de.dh.daps.common.model.PluginContext
 import de.dh.daps.common.model.PluginManager
+import de.dh.daps.common.model.ScopedPluginPreferences
 import de.dh.daps.common.model.calculation.CarbsInsulinCalculator
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.TimeService
@@ -25,6 +28,7 @@ import de.dh.daps.core.backup.AppDataManagementRepositoryImpl
 import de.dh.daps.core.backup.BackupOptions
 import de.dh.daps.core.backup.BackupResult
 import de.dh.daps.core.device.DeviceConnectionManager
+import de.dh.daps.core.plugin.PluginContextImpl
 import de.dh.daps.core.pump.PumpDriverManager
 import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.pump.PumpManagerImpl
@@ -52,6 +56,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Default implementation of the [SystemRegistry].
@@ -88,6 +93,20 @@ class SystemRegistryImpl(
     override val carbsInsulinCalculator: CarbsInsulinCalculator,
     override val permissionsChangedHandler: PermissionsChangedHandler,
 ) : SystemRegistry {
+    private val pluginContexts = ConcurrentHashMap<String, PluginContext>()
+
+    fun getPluginContext(plugin: Plugin): PluginContext {
+        return pluginContexts.getOrPut(plugin.pluginId) {
+            PluginContextImpl(
+                appContext = appContext,
+                pluginManager = pluginManager,
+                timeService = timeService,
+                carbsInsulinCalculator = carbsInsulinCalculator,
+                preferences = ScopedPluginPreferences(plugin.pluginId, appPreferencesRepository),
+                registry = this
+            )
+        }
+    }
 
     private val _initializationState = MutableStateFlow(InitializationState.REQUIRES_SETUP)
     override val initializationState: StateFlow<InitializationState> = _initializationState.asStateFlow()
@@ -214,7 +233,7 @@ class SystemRegistryImpl(
         alarmEvaluator.start()
 
         pluginManager.getPlugins().forEach { plugin ->
-            plugin.initialize(this)
+            plugin.initialize(getPluginContext(plugin))
         }
 
         _initializationState.value = InitializationState.READY
@@ -377,7 +396,7 @@ class SystemRegistryImpl(
 
             // Provide PluginContext to all registered plugins early (setup)
             pluginManager.getPlugins().forEach { plugin ->
-                plugin.setup(registryInstance)
+                plugin.setup(registryInstance.getPluginContext(plugin))
             }
 
             // Phase 2: Asynchronously check database initialization state and conditionally start core engines
