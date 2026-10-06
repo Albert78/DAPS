@@ -16,7 +16,7 @@ interface GlucoseSourceDriver {
     /**
      * Human-readable display name of the glucose source type or manufacturer (e.g. "xDrip+ Receiver").
      */
-    val driverDisplayName: UiText
+    val displayName: UiText
 
     /**
      * Renders the driver's custom UI workflow for initial setup, transmitter pairing, or configuration.

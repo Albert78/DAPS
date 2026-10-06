@@ -30,10 +30,8 @@ import de.dh.daps.common.ui.UiText
 
 interface Plugin {
     val pluginId: String
-    val pluginDisplayName: UiText
-        get() = (this as? InsulinPumpDriver)?.driverDisplayName
-            ?: (this as? GlucoseSourceDriver)?.driverDisplayName
-            ?: UiText.DynamicString(pluginId)
+    val displayName: UiText
+        get() = UiText.DynamicString(pluginId)
 
     val neededPermissions: Collection<String>
         get() = emptyList()

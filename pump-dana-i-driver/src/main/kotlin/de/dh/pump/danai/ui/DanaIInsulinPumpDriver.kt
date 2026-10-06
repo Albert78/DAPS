@@ -29,7 +29,7 @@ import de.dh.pump.danai.R
  */
 class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
     override val driverId: String = DRIVER_ID
-    override val driverDisplayName: UiText = UiText.StringResource(R.string.danai_pump_driver_display_name)
+    override val displayName: UiText = UiText.StringResource(R.string.danai_pump_driver_display_name)
     override val pluginId: String = DRIVER_ID
     override val neededPermissions: Collection<String> = listOf(
         Manifest.permission.BLUETOOTH_SCAN,

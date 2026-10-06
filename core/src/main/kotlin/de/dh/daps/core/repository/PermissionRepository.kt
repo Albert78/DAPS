@@ -95,7 +95,7 @@ class PermissionRepository(
                 pluginPermissions.add(
                     PluginPermissionStatus(
                         pluginId = plugin.pluginId,
-                        pluginDisplayName = plugin.pluginDisplayName,
+                        pluginDisplayName = plugin.displayName,
                         permissionString = permissionStr,
                         isGranted = isGranted
                     )

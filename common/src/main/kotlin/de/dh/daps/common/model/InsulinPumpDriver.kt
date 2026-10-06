@@ -16,7 +16,7 @@ interface InsulinPumpDriver {
     /**
      * Human-readable display name of the pump type or manufacturer (e.g. "Sooil Dana-i").
      */
-    val driverDisplayName: UiText
+    val displayName: UiText
 
     /**
      * Renders the driver's custom UI workflow for initial setup, device scanning, and pairing.
