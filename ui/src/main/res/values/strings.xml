@@ -505,6 +505,7 @@
     <string name="pump_setup_no_drivers_description">Es wurden keine registrierten Pumpentreiber-Plugins gefunden.</string>
     <string name="pump_setup_active_badge">Aktiv</string>
     <string name="pump_setup_connecting">Pumpe wird verbunden…</string>
+    <string name="pump_setup_more_drivers_in_development">Weitere Treiber befinden sich in der Entwicklung. Wenn du die Möglichkeit hast, helfe mit, für deine Pumpe einen passenden Treiber zu entwickeln.</string>
 
     <string name="glucose_source_setup_screen_title">Blutzucker-Quelle einrichten</string>
     <string name="glucose_source_setup_select_driver_subtitle">Wähle den passenden Treiber für deine Blutzucker-Quelle aus, um das Gerät oder die App zu verbinden:</string>
@@ -514,6 +515,7 @@
     <string name="glucose_source_setup_no_drivers_description">Es wurden keine registrierten Glukosetreiber-Plugins gefunden.</string>
     <string name="glucose_source_setup_active_badge">Aktiv</string>
     <string name="glucose_source_setup_connecting">Glukose-Quelle wird verbunden…</string>
+    <string name="glucose_source_setup_more_drivers_in_development">Aktuell wird für DAPS noch eine App zum Anliefern von Glucosewerten benötigt, wie z.B. xDrip oder Juggluco. Native Treiber befinden sich in der Entwicklung und werden sukzessive bereitgestellt. Wenn du die Möglichkeit hast, helfe mit, für dein CGM einen passenden Treiber zu entwickeln.</string>
 
     <string name="system_control_tab_overview">Übersicht</string>
     <string name="system_control_core_history_button">Verlauf</string>
