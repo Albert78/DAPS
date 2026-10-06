@@ -150,6 +150,13 @@ fun PermissionsScreenContent(
                     )
                 }
 
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = stringResource(id = R.string.system_permissions_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+
                 HorizontalDivider()
 
                 // Notifications
