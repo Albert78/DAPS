@@ -5,7 +5,6 @@ import de.dh.daps.common.model.PluginManager
 import de.dh.daps.common.navigation.FeatureNavGraph
 import de.dh.daps.common.navigation.NavigationViewModel
 import de.dh.daps.plugin.glucose.receiver.ReceiverGlucosePlugin
-import de.dh.daps.plugin.pump.SampleInsulinPumpDriver
 import de.dh.pump.danai.ui.DanaIInsulinPumpDriver
 
 /**
@@ -13,7 +12,6 @@ import de.dh.pump.danai.ui.DanaIInsulinPumpDriver
  */
 fun registerPlugins(pluginManager: PluginManager, application: Application) {
     pluginManager.addPlugin(ReceiverGlucosePlugin(application))
-    pluginManager.addPlugin(SampleInsulinPumpDriver())
     pluginManager.addPlugin(DanaIInsulinPumpDriver())
 }
 
