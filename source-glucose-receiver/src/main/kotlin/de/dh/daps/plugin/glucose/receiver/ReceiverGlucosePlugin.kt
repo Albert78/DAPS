@@ -54,7 +54,7 @@ class ReceiverGlucosePlugin(
     override val displayName: UiText = UiText.StringResource(R.string.glucose_broadcast_receiver_display_name)
     override val sourceDisplayName: UiText = UiText.StringResource(R.string.glucose_broadcast_receiver_display_name)
     override val pluginId: String = DRIVER_ID
-    override val neededPermissions: Collection<String> = listOf("com.eveningoutpost.dexdrip.permissions.RECEIVE_BG_ESTIMATE")
+    override val neededPermissions: Collection<String> = emptyList()
 
     override val readingsInterval: BgReadingsInterval
         get() = externalSourceType.readingsInterval

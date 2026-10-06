@@ -47,6 +47,8 @@ import de.dh.daps.ui.common.icons.Icon_Screen_Back
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.common.R as CommonR
 
+import androidx.compose.ui.platform.LocalContext
+
 @Composable
 fun PermissionsScreen(
     viewModel: PermissionsViewModel,
@@ -57,11 +59,17 @@ fun PermissionsScreen(
     onOpenAutoRevokeSettings: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
     val requestPermissionsLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
-    ) {
+    ) { result ->
         viewModel.updateAppPermissions()
+        val allGranted = result.values.all { it }
+        if (!allGranted) {
+            // Fallback: If system dialog was blocked or permission remained denied, open App Settings
+            openAppSettings(context)
+        }
     }
 
     PermissionsScreenContent(
