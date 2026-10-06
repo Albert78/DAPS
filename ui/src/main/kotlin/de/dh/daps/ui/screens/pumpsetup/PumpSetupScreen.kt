@@ -1,5 +1,6 @@
 package de.dh.daps.ui.screens.pumpsetup
 
+import androidx.activity.compose.BackHandler
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -94,6 +95,10 @@ fun PumpSetupContent(
     val selectedDriver = uiState.selectedDriver
     val titleText = selectedDriver?.displayName?.asString() ?: stringResource(id = R.string.pump_setup_screen_title)
 
+    BackHandler(enabled = selectedDriver != null) {
+        onSelectDriver(null)
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -101,7 +106,7 @@ fun PumpSetupContent(
                 navigationIcon = {
                     IconButton(
                         onClick = {
-                            if (selectedDriver != null && uiState.availableDrivers.size > 1) {
+                            if (selectedDriver != null) {
                                 onSelectDriver(null)
                             } else {
                                 onNavigateUp()

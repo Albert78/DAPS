@@ -37,6 +37,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.InsulinPump
+import androidx.activity.compose.BackHandler
 import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.ui.UiText
@@ -68,6 +69,10 @@ fun PumpStep(
     val selectedDriver = uiState.selectedDriver
     val titleText = selectedDriver?.displayName?.asString()
         ?: stringResource(id = R.string.setup_wizard_pump_title)
+
+    BackHandler(enabled = selectedDriver != null) {
+        onSelectDriver(null)
+    }
 
     val showTopBack = selectedDriver != null
     val onTopBackClick: () -> Unit = {

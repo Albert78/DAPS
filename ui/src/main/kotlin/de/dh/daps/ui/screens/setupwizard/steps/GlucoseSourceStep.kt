@@ -37,6 +37,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.GlucoseSource
+import androidx.activity.compose.BackHandler
 import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.common.ui.UiText
@@ -68,6 +69,10 @@ fun GlucoseSourceStep(
     val selectedDriver = uiState.selectedDriver
     val titleText = selectedDriver?.displayName?.asString()
         ?: stringResource(id = R.string.setup_wizard_glucose_source_title)
+
+    BackHandler(enabled = selectedDriver != null) {
+        onSelectDriver(null)
+    }
 
     val showTopBack = selectedDriver != null
     val onTopBackClick: () -> Unit = {
