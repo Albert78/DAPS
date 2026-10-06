@@ -1,23 +1,5 @@
 package de.dh.pump.danai.core
 
-import de.dh.pump.PumpClient
-import de.dh.pump.PumpCommandException
-import de.dh.pump.PumpConnectionException
-import de.dh.pump.commands.PumpResponse
-import de.dh.pump.PumpStatus
-import de.dh.pump.dana.commands.DanaRsCommands
-import de.dh.pump.dana.commands.general.DanaRsPumpErrorState
-import de.dh.pump.dana.commands.history.DanaRsHistoryRecord
-import de.dh.pump.dana.notifications.DanaAlarmNotification
-import de.dh.pump.dana.notifications.DanaDeliveryCompleteNotification
-import de.dh.pump.dana.notifications.DanaDeliveryRateDisplayNotification
-import de.dh.pump.dana.notifications.DanaMissedBolusAlarmNotification
-import de.dh.pump.dana.notifications.NotificationParsers
-import de.dh.pump.dana.protocol.DanaRsBleEncryption
-import de.dh.pump.protocol.ProtocolFrame
-import de.dh.pump.danai.core.connection.DanaILink
-import de.dh.pump.danai.core.connection.SessionState
-import de.dh.pump.danai.core.model.DanaIBolusSpeed
 import de.dh.daps.common.model.BasalStatus
 import de.dh.daps.common.model.BolusDeliveryState
 import de.dh.daps.common.model.BolusEvent
@@ -33,6 +15,24 @@ import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.PumpTimestamp
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.data.getAmountForMinute
+import de.dh.pump.PumpClient
+import de.dh.pump.PumpCommandException
+import de.dh.pump.PumpConnectionException
+import de.dh.pump.PumpStatus
+import de.dh.pump.commands.PumpResponse
+import de.dh.pump.dana.commands.DanaRsCommands
+import de.dh.pump.dana.commands.general.DanaRsPumpErrorState
+import de.dh.pump.dana.commands.history.DanaRsHistoryRecord
+import de.dh.pump.dana.notifications.DanaAlarmNotification
+import de.dh.pump.dana.notifications.DanaDeliveryCompleteNotification
+import de.dh.pump.dana.notifications.DanaDeliveryRateDisplayNotification
+import de.dh.pump.dana.notifications.DanaMissedBolusAlarmNotification
+import de.dh.pump.dana.notifications.NotificationParsers
+import de.dh.pump.dana.protocol.DanaRsBleEncryption
+import de.dh.pump.danai.core.connection.DanaILink
+import de.dh.pump.danai.core.connection.SessionState
+import de.dh.pump.danai.core.model.DanaIBolusSpeed
+import de.dh.pump.protocol.ProtocolFrame
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -325,13 +325,16 @@ class DanaIController(
             val basalInfo = client.execute(commands.basalGetBasalRate())
             val bolusInfo = client.execute(commands.bolusGetStepBolusInformation())
 
+            val minBolusIncrement =
+                InsulinAmount.fromPumpUnits(bolusInfo.bolusStepUnits, pump.insulinConcentration)
             pump.updatePumpCapabilities(
                 PumpCapabilities(
                     minBasalRate = DANA_I_MIN_BASAL_RATE,
                     supportsZeroBasal = true,
                     // TODO: Check if the values from the commands really have this meaning
-                    minBasalIncrement = if (basalInfo.basalStepSupported) InsulinAmount.fromPumpUnits(basalInfo.basalStepUnits, pump.insulinConcentration) else DANA_I_DEFAULT_MIN_BASAL_INCREMENT,
-                    minBolusIncrement = InsulinAmount.fromPumpUnits(bolusInfo.bolusStepUnits, pump.insulinConcentration),
+                    minBasalIncrement = if (basalInfo.basalStepSupported) InsulinAmount.fromPumpUnits(basalInfo.basalStepUnits, pump.insulinConcentration) else DANA_I_MIN_BASAL_INCREMENT,
+                    minBolusAmount = minBolusIncrement,
+                    minBolusIncrement = minBolusIncrement,
                     maxBolusSize = InsulinAmount.fromPumpUnits(bolusInfo.maxBolusUnits, pump.insulinConcentration)
                 )
             )

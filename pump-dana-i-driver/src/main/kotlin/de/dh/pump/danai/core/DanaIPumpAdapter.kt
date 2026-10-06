@@ -1,11 +1,8 @@
 package de.dh.pump.danai.core
 
-import de.dh.pump.danai.core.connection.DanaILink
-import de.dh.pump.danai.core.model.DanaIBolusSpeed
 import de.dh.daps.common.model.BasalStatus
 import de.dh.daps.common.model.BolusEvent
 import de.dh.daps.common.model.BolusStatus
-import de.dh.daps.common.model.HardwareInformation
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinHistory
@@ -13,7 +10,10 @@ import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpStatus
 import de.dh.daps.common.model.PumpAlerts
 import de.dh.daps.common.model.PumpCapabilities
+import de.dh.daps.common.model.PumpHardwareInformation
 import de.dh.daps.common.model.data.InsulinProfile
+import de.dh.pump.danai.core.connection.DanaILink
+import de.dh.pump.danai.core.model.DanaIBolusSpeed
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -34,13 +34,12 @@ class DanaIPumpAdapter(
         set(value) {
             pump.insulinConcentration = value
         }
-    override val hardwareInformation: StateFlow<HardwareInformation?> = pump.hardware.map { hi ->
+    override val hardwareInformation: StateFlow<PumpHardwareInformation?> = pump.hardware.map { hi ->
         hi?.let {
-            HardwareInformation(
+            PumpHardwareInformation(
                 DANA_I_MANUFACTURER,
                 it.hardwareModel.toString(),
-                it.serialNumber,
-                "${it.productCode} (${it.bleModel})"
+                it.serialNumber
             )
         }
     }.stateIn(scope, SharingStarted.Eagerly, null)
@@ -49,17 +48,19 @@ class DanaIPumpAdapter(
         it ?: PumpCapabilities(
             minBasalRate = DANA_I_MIN_BASAL_RATE,
             supportsZeroBasal = true,
-            minBasalIncrement = DANA_I_DEFAULT_MIN_BASAL_INCREMENT,
-            minBolusIncrement = DANA_I_DEFAULT_MIN_BOLUS_INCREMENT,
-            maxBolusSize = DANA_I_DEFAULT_MAX_BOLUS_VALUE
+            minBasalIncrement = DANA_I_MIN_BASAL_INCREMENT,
+            minBolusAmount = DANA_I_MIN_BOLUS_AMOUNT,
+            minBolusIncrement = DANA_I_MIN_BOLUS_INCREMENT,
+            maxBolusSize = DANA_I_MAX_BOLUS_VALUE
         )
     }.stateIn(
         scope, SharingStarted.Eagerly, PumpCapabilities(
             minBasalRate = DANA_I_MIN_BASAL_RATE,
             supportsZeroBasal = true,
-            minBasalIncrement = DANA_I_DEFAULT_MIN_BASAL_INCREMENT,
-            minBolusIncrement = DANA_I_DEFAULT_MIN_BOLUS_INCREMENT,
-            maxBolusSize = DANA_I_DEFAULT_MAX_BOLUS_VALUE
+            minBasalIncrement = DANA_I_MIN_BASAL_INCREMENT,
+            minBolusAmount = DANA_I_MIN_BOLUS_AMOUNT,
+            minBolusIncrement = DANA_I_MIN_BOLUS_INCREMENT,
+            maxBolusSize = DANA_I_MAX_BOLUS_VALUE
         )
     )
 

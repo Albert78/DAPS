@@ -15,6 +15,8 @@ lifecycle = "2.11.0"
 ksp = "2.3.10"
 datastorePreferences = "1.2.1"
 activityCompose = "1.13.0"
+kotlinxCoroutines = "1.10.1"
+androidxAnnotation = "1.9.1"
 
 # Core Navigation 3
 nav3Core = "1.1.7"
@@ -28,6 +30,9 @@ vico = "3.3.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-annotation = { group = "androidx.annotation", name = "annotation", version.ref = "androidxAnnotation" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

@@ -57,6 +57,7 @@ dependencies {
     // Configuration for "prod" flavor; set the modules for your CGM and pump
     "prodImplementation"(project(":source-glucose-receiver"))
     "prodImplementation"(project(":pump-sample"))
+    "prodImplementation"(project(":pump-dana-i-driver"))
 
     // The sample modules are meant as copy template for real source and pump modules
 //    implementation(project(":source-cgm-sample"))
