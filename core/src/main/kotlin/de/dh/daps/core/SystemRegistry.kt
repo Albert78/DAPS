@@ -5,7 +5,8 @@ import android.net.Uri
 import de.dh.daps.AppPreferencesRepository
 import de.dh.daps.common.model.PluginManager
 import de.dh.daps.common.model.calculation.CarbsInsulinCalculator
-import de.dh.daps.common.model.data.TimeService
+import de.dh.daps.common.service.SystemWakeService
+import de.dh.daps.common.service.TimeService
 import de.dh.daps.core.alarms.AlarmEvaluator
 import de.dh.daps.core.alarms.AlarmPlayerManager
 import de.dh.daps.core.alarms.AlarmSnoozeManager
@@ -28,7 +29,6 @@ import de.dh.daps.core.repository.SettingsRepository
 import de.dh.daps.core.repository.SystemMetricsRepository
 import de.dh.daps.core.repository.TherapyRepository
 import de.dh.daps.core.repository.TreatmentRepository
-import de.dh.daps.core.system.SystemWakeService
 import kotlinx.coroutines.flow.StateFlow
 
 /**

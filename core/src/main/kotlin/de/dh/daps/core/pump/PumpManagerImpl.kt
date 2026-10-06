@@ -9,8 +9,8 @@ import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinHistory
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.core.system.SystemWakeService
-import de.dh.daps.core.system.WakeupHandler
+import de.dh.daps.common.service.SystemWakeService
+import de.dh.daps.common.service.WakeupHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

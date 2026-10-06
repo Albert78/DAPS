@@ -10,10 +10,12 @@ import de.dh.daps.common.model.calculation.CarbsInsulinCalculator
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Tick
-import de.dh.daps.common.model.data.TickHandler
-import de.dh.daps.common.model.data.TickPriority
-import de.dh.daps.common.model.data.TimeService
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.service.SystemWakeService
+import de.dh.daps.common.service.TickHandler
+import de.dh.daps.common.service.TickPriority
+import de.dh.daps.common.service.TimeService
+import de.dh.daps.common.service.WakeupHandler
 import de.dh.daps.core.pump.PumpIssue
 import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.repository.GlucoseRepository
@@ -21,8 +23,6 @@ import de.dh.daps.core.repository.SettingsRepository
 import de.dh.daps.core.repository.SystemMetricsRepository
 import de.dh.daps.core.repository.TreatmentRepository
 import de.dh.daps.core.system.AndroidNotifications
-import de.dh.daps.core.system.SystemWakeService
-import de.dh.daps.core.system.WakeupHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi

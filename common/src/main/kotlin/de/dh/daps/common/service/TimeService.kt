@@ -1,5 +1,9 @@
-package de.dh.daps.common.model.data
+package de.dh.daps.common.service
 
+import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.Tick
+import de.dh.daps.common.model.data.Timeline
+import de.dh.daps.common.model.data.Timestamp
 import kotlinx.coroutines.flow.StateFlow
 
 /**

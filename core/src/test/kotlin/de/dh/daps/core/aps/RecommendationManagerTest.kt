@@ -5,8 +5,8 @@ import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.repository.db.dao.MealReminderDao
 import de.dh.daps.core.repository.db.entities.MealReminderEntity
-import de.dh.daps.core.system.SystemWakeService
-import de.dh.daps.core.system.WakeupHandler
+import de.dh.daps.common.service.SystemWakeService
+import de.dh.daps.common.service.WakeupHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

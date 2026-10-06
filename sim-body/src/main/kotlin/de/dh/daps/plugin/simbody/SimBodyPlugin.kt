@@ -10,7 +10,6 @@ import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.PluginContext
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.core.SystemRegistry
 import de.dh.daps.plugin.simbody.backup.BodyProfileBackupDto
 import de.dh.daps.plugin.simbody.backup.PumpHistoryBackupDto
 import de.dh.daps.plugin.simbody.backup.PumpStateBackupDto
@@ -62,11 +61,10 @@ class SimBodyPlugin(
     override val neededPermissions: Collection<String> = emptyList()
 
     override fun setup(context: PluginContext) {
-        val registry = context.registry as SystemRegistry
         bodyModel.loadState()
         pumpDevice.loadState()
         heartbeat = SimBodyHeartbeat(
-            wakeService = registry.wakeService,
+            wakeService = context.wakeService,
             bodyModel = bodyModel,
             pumpDevice = pumpDevice,
             onBgReading = { _glucoseReadings.tryEmit(it) }

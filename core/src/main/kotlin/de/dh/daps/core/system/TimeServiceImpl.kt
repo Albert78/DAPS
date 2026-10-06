@@ -4,10 +4,12 @@ import android.content.Intent
 import android.util.Log
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Tick
-import de.dh.daps.common.model.data.TickHandler
-import de.dh.daps.common.model.data.TimeService
 import de.dh.daps.common.model.data.Timeline
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.service.SystemWakeService
+import de.dh.daps.common.service.TickHandler
+import de.dh.daps.common.service.TimeService
+import de.dh.daps.common.service.WakeupHandler
 import de.dh.daps.core.repository.SystemMetricsRepository
 import de.dh.daps.core.repository.TickHandlerMetric
 import kotlinx.coroutines.CoroutineScope

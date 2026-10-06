@@ -1,5 +1,31 @@
 package de.dh.daps.common.model
 
+/**
+ * Generic interface bridging the hardcoded core system and dynamically added components and aspects.
+ *
+ * ### Overview & Architecture
+ * A plugin encapsulates dynamic capabilities — such as hardware drivers (e.g., CGM sensors or insulin pumps),
+ * simulators, external data receivers, or custom UI providers — without requiring the core system
+ * to have hardcoded knowledge of specific implementations.
+ *
+ * ### Plugin Registration & Querying
+ * - The [PluginManager] maintains a generic list of registered [Plugin] instances during system setup.
+ * - The [PluginManager] itself acts as an agnostic container and does not directly know what specific tasks
+ *   individual plugins perform.
+ * - The core system queries plugin functionality at specific extension points by filtering registered
+ *   plugins for specialized role interfaces, for example:
+ *   ```kotlin
+ *   val pumpDrivers = pluginManager.getPlugins().filterIsInstance<InsulinPumpDriver>()
+ *   val glucoseDrivers = pluginManager.getPlugins().filterIsInstance<GlucoseSourceDriver>()
+ *   ```
+ *
+ * ### Lifecycle & Features
+ * Plugins can participate in application lifecycle events:
+ * - [setup]: Called early to provide a [PluginContext] (granting access to isolated preferences, time service, etc.).
+ * - [initialize]: Called once core repositories, managers, and services are fully started.
+ * - Reset and seeding hooks ([onResetToFactorySettings], [onSeedDefaultData]).
+ * - Backup and restore hooks ([exportBackupData], [importBackupData]).
+ */
 interface Plugin {
     val pluginId: String
     val neededPermissions: Collection<String>

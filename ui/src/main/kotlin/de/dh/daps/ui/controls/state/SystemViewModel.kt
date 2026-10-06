@@ -13,8 +13,8 @@ import de.dh.daps.common.model.data.BgSampleKind
 import de.dh.daps.common.model.data.CurrentTherapySettings
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.Tick
-import de.dh.daps.common.model.data.TickHandler
-import de.dh.daps.common.model.data.TickPriority
+import de.dh.daps.common.service.TickHandler
+import de.dh.daps.common.service.TickPriority
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.toActiveDoses
 import de.dh.daps.core.SystemRegistry

@@ -24,8 +24,8 @@ import de.dh.daps.core.pump.PumpCommand
 import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.repository.TherapyRepository
 import de.dh.daps.core.repository.TreatmentRepository
-import de.dh.daps.core.system.SystemWakeService
-import de.dh.daps.core.system.WakeupHandler
+import de.dh.daps.common.service.SystemWakeService
+import de.dh.daps.common.service.WakeupHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel

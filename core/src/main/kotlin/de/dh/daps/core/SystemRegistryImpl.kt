@@ -12,7 +12,8 @@ import de.dh.daps.common.model.PluginManager
 import de.dh.daps.common.model.ScopedPluginPreferences
 import de.dh.daps.common.model.calculation.CarbsInsulinCalculator
 import de.dh.daps.common.model.data.Minutes
-import de.dh.daps.common.model.data.TimeService
+import de.dh.daps.common.service.SystemWakeService
+import de.dh.daps.common.service.TimeService
 import de.dh.daps.core.alarms.AlarmEvaluator
 import de.dh.daps.core.alarms.AlarmPlayerManager
 import de.dh.daps.core.alarms.AlarmPlayerManagerImpl
@@ -46,7 +47,6 @@ import de.dh.daps.core.repository.TherapyRepository
 import de.dh.daps.core.repository.TreatmentRepository
 import de.dh.daps.core.repository.db.AppDatabase
 import de.dh.daps.core.system.AndroidNotifications
-import de.dh.daps.core.system.SystemWakeService
 import de.dh.daps.core.system.SystemWakeServiceImpl
 import de.dh.daps.core.system.TimeServiceImpl
 import kotlinx.coroutines.CoroutineScope
@@ -103,7 +103,7 @@ class SystemRegistryImpl(
                 timeService = timeService,
                 carbsInsulinCalculator = carbsInsulinCalculator,
                 preferences = ScopedPluginPreferences(plugin.pluginId, appPreferencesRepository),
-                registry = this
+                wakeService = wakeService
             )
         }
     }

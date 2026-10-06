@@ -1,4 +1,4 @@
-package de.dh.daps.core.system
+package de.dh.daps.common.service
 
 import android.content.Intent
 import de.dh.daps.common.model.data.Timestamp
@@ -65,7 +65,7 @@ interface SystemWakeService {
 
     /**
      * Dispatches an incoming wakeup intent to the appropriate handler.
-     * This is intended to be called by the central [SystemWakeReceiver].
+     * This is intended to be called by the central SystemWakeReceiver.
      */
     fun dispatchWakeup(intent: Intent)
 }
