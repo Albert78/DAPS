@@ -1,6 +1,7 @@
 package de.dh.daps.ui.screens.permissions
 
 import android.content.res.Resources
+import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.DisplayTextUtils
 
@@ -37,6 +38,13 @@ sealed class PermissionStatus {
     }
 }
 
+data class PluginPermissionUiModel(
+    val pluginId: String,
+    val pluginDisplayName: UiText,
+    val permissionString: String,
+    val status: PermissionStatus
+)
+
 data class PermissionsUiModel(
     val isLoading: Boolean,
     val alarmPermissionStatus: PermissionStatus,
@@ -44,6 +52,7 @@ data class PermissionsUiModel(
     val fullscreenPermissionStatus: PermissionStatus,
     val ignoreBatteryOptimizationPermissionStatus: PermissionStatus,
     val autoRevokePermissionsPermissionStatus: PermissionStatus,
+    val pluginPermissions: List<PluginPermissionUiModel> = emptyList(),
     val numPermissionsMissing: Int,
     val permissionsMissingText: String
 ) {
@@ -56,6 +65,7 @@ data class PermissionsUiModel(
             fullscreenPermissionStatus: PermissionStatus,
             ignoreBatteryOptimizationPermissionStatus: PermissionStatus,
             autoRevokePermissionsPermissionStatus: PermissionStatus,
+            pluginPermissions: List<PluginPermissionUiModel> = emptyList(),
             resources: Resources
         ): PermissionsUiModel {
             val numMissing = getNumPermissionsMissing(
@@ -63,7 +73,8 @@ data class PermissionsUiModel(
                 notificationPermissionStatus,
                 fullscreenPermissionStatus,
                 ignoreBatteryOptimizationPermissionStatus,
-                autoRevokePermissionsPermissionStatus
+                autoRevokePermissionsPermissionStatus,
+                pluginPermissions
             )
 
             val permissionsText = DisplayTextUtils.getQuantityStringZero(
@@ -81,6 +92,7 @@ data class PermissionsUiModel(
                 fullscreenPermissionStatus = fullscreenPermissionStatus,
                 ignoreBatteryOptimizationPermissionStatus = ignoreBatteryOptimizationPermissionStatus,
                 autoRevokePermissionsPermissionStatus = autoRevokePermissionsPermissionStatus,
+                pluginPermissions = pluginPermissions,
                 numPermissionsMissing = numMissing,
                 permissionsMissingText = permissionsText
             )
@@ -94,6 +106,7 @@ data class PermissionsUiModel(
                 fullscreenPermissionStatus = PermissionStatus.NotNeeded,
                 ignoreBatteryOptimizationPermissionStatus = PermissionStatus.NotNeeded,
                 autoRevokePermissionsPermissionStatus = PermissionStatus.NotNeeded,
+                pluginPermissions = emptyList(),
                 numPermissionsMissing = 0,
                 permissionsMissingText = ""
             )
@@ -106,6 +119,7 @@ data class PermissionsUiModel(
                 fullscreenPermissionStatus = PermissionStatus.Denied,
                 ignoreBatteryOptimizationPermissionStatus = PermissionStatus.Denied,
                 autoRevokePermissionsPermissionStatus = PermissionStatus.Denied,
+                pluginPermissions = emptyList(),
                 resources = resources
             )
         }
@@ -117,6 +131,7 @@ data class PermissionsUiModel(
                 fullscreenPermissionStatus = PermissionStatus.Granted,
                 ignoreBatteryOptimizationPermissionStatus = PermissionStatus.Granted,
                 autoRevokePermissionsPermissionStatus = PermissionStatus.Granted,
+                pluginPermissions = emptyList(),
                 resources = resources
             )
         }
@@ -126,7 +141,8 @@ data class PermissionsUiModel(
             notificationPermissionStatus: PermissionStatus,
             fullscreenPermissionStatus: PermissionStatus,
             ignoreBatteryOptimizationPermissionStatus: PermissionStatus,
-            autoRevokePermissionsPermissionStatus: PermissionStatus
+            autoRevokePermissionsPermissionStatus: PermissionStatus,
+            pluginPermissions: List<PluginPermissionUiModel> = emptyList()
         ): Int {
             val permissions = listOf(
                 alarmPermissionStatus,
@@ -135,7 +151,9 @@ data class PermissionsUiModel(
                 ignoreBatteryOptimizationPermissionStatus,
                 autoRevokePermissionsPermissionStatus
             )
-            return permissions.count { !it.isSatisfied() }
+            val missingCore = permissions.count { !it.isSatisfied() }
+            val missingPlugins = pluginPermissions.count { !it.status.isSatisfied() }
+            return missingCore + missingPlugins
         }
     }
 }

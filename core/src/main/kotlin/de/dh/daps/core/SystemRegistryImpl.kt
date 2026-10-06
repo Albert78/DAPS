@@ -274,7 +274,7 @@ class SystemRegistryImpl(
             val settingsRepository = SettingsRepository(appDatabase)
             val systemMetricsRepository = SystemMetricsRepository(appDatabase)
             val deviceStatusRepository = DeviceStatusRepository(application)
-            val permissionRepository = PermissionRepository(application)
+            val permissionRepository = PermissionRepository(application, pluginManager)
 
             // Managers
             val wakeService = SystemWakeServiceImpl(

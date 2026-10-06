@@ -26,9 +26,17 @@ package de.dh.daps.common.model
  * - Reset and seeding hooks ([onResetToFactorySettings], [onSeedDefaultData]).
  * - Backup and restore hooks ([exportBackupData], [importBackupData]).
  */
+import de.dh.daps.common.ui.UiText
+
 interface Plugin {
     val pluginId: String
+    val pluginDisplayName: UiText
+        get() = (this as? InsulinPumpDriver)?.driverDisplayName
+            ?: (this as? GlucoseSourceDriver)?.driverDisplayName
+            ?: UiText.DynamicString(pluginId)
+
     val neededPermissions: Collection<String>
+        get() = emptyList()
 
     /**
      * Called early during application creation before core system services start initialization.
@@ -41,6 +49,12 @@ interface Plugin {
      * Allows plugins to start active background processes or execute post-initialization tasks.
      */
     fun initialize(context: PluginContext) {}
+
+    /**
+     * Called when application permissions have changed (e.g. granted by the user).
+     * Allows plugins to restart background services or retry tasks that depend on permissions.
+     */
+    fun onPermissionsChanged() {}
 
     /**
      * Called when the system is reset to factory settings or data is cleared.

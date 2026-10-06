@@ -30,6 +30,8 @@ class PluginManagerImpl(
     }
 
     override fun triggerUpdatesAfterPermissionsChange() {
-        // TODO: Update plugins
+        for (plugin in plugins) {
+            plugin.onPermissionsChanged()
+        }
     }
 }

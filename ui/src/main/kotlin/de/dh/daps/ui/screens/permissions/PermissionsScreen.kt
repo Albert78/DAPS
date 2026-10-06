@@ -1,6 +1,9 @@
 package de.dh.daps.ui.screens.permissions
 
+import android.Manifest
 import android.content.res.Configuration
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -55,10 +58,11 @@ fun PermissionsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    // Refresh state when coming back from settings
-    // In Compose, we rely on the Lifecycle of the Activity/Fragment to trigger updates,
-    // or we can use onResume behavior. For now, the ViewModel init handles the first load.
-    // The Activity onResume should trigger a refresh.
+    val requestPermissionsLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) {
+        viewModel.updateAppPermissions()
+    }
 
     PermissionsScreenContent(
         uiModel = uiState,
@@ -66,7 +70,10 @@ fun PermissionsScreen(
         onOpenNotificationSettings = onOpenNotificationSettings,
         onOpenFullscreenSettings = onOpenFullscreenSettings,
         onOpenBatteryOptimizationSettings = onOpenBatteryOptimizationSettings,
-        onOpenAutoRevokeSettings = onOpenAutoRevokeSettings
+        onOpenAutoRevokeSettings = onOpenAutoRevokeSettings,
+        onRequestPluginPermissions = { permissions ->
+            requestPermissionsLauncher.launch(permissions.toTypedArray())
+        }
     )
 }
 
@@ -78,7 +85,8 @@ fun PermissionsScreenContent(
     onOpenNotificationSettings: () -> Unit,
     onOpenFullscreenSettings: () -> Unit,
     onOpenBatteryOptimizationSettings: () -> Unit,
-    onOpenAutoRevokeSettings: () -> Unit
+    onOpenAutoRevokeSettings: () -> Unit,
+    onRequestPluginPermissions: (Collection<String>) -> Unit = {}
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val scrollState = rememberScrollState()
@@ -178,6 +186,54 @@ fun PermissionsScreenContent(
                     onClick = onOpenAutoRevokeSettings
                 )
 
+                if (uiModel.pluginPermissions.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = stringResource(id = R.string.plugin_permissions_title),
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                    Text(
+                        text = stringResource(id = R.string.plugin_permissions_subtitle),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                    )
+
+                    HorizontalDivider()
+
+                    val groupedByPlugin = uiModel.pluginPermissions.groupBy { it.pluginId }
+
+                    groupedByPlugin.forEach { (pluginId, permissions) ->
+                        val pluginName = permissions.firstOrNull()?.pluginDisplayName?.asString() ?: pluginId
+
+                        Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                            Text(
+                                text = pluginName,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                            )
+
+                            permissions.forEach { perm ->
+                                val permDescription = formatPermissionDescription(perm.permissionString)
+                                PermissionItem(
+                                    description = permDescription,
+                                    grantedText = stringResource(id = R.string.permission_granted_text),
+                                    notGrantedText = stringResource(id = R.string.permission_not_granted_text),
+                                    status = perm.status,
+                                    onClick = {
+                                        if (perm.status is PermissionStatus.Denied) {
+                                            onRequestPluginPermissions(listOf(perm.permissionString))
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                        HorizontalDivider()
+                    }
+                }
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -205,6 +261,17 @@ fun PermissionsScreenContent(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun formatPermissionDescription(permissionString: String): String {
+    return when (permissionString) {
+        Manifest.permission.BLUETOOTH_SCAN -> stringResource(id = R.string.permission_bluetooth_scan_desc)
+        Manifest.permission.BLUETOOTH_CONNECT -> stringResource(id = R.string.permission_bluetooth_connect_desc)
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION -> stringResource(id = R.string.permission_location_desc)
+        else -> permissionString.substringAfterLast(".")
     }
 }
 

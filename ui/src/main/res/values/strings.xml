@@ -140,6 +140,12 @@
     <string name="permission_granted_text">Berechtigung freigegeben</string>
     <string name="permission_not_granted_text">Berechtigung nicht erteilt</string>
 
+    <string name="plugin_permissions_title">Plugin-Berechtigungen</string>
+    <string name="plugin_permissions_subtitle">Von aktivierten Treibern und Erweiterungen angeforderte Rechte:</string>
+    <string name="permission_bluetooth_scan_desc">Bluetooth-Geräte in der Umgebung suchen</string>
+    <string name="permission_bluetooth_connect_desc">Verbindung zu Bluetooth-Geräten herstellen</string>
+    <string name="permission_location_desc">Standortzugriff (von Android für Bluetooth-Suche vorausgesetzt)</string>
+
     <string name="permissions_were_declined_but_needed">Es fehlen Berechtigungen</string>
     <string name="permissions_needed_fix_action">Reparieren</string>
 

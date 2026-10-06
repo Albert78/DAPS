@@ -35,6 +35,7 @@ class PermissionsViewModel(
      */
     fun updateAppPermissions() {
         systemRegistry.permissionRepository.refreshPermissions()
+        systemRegistry.pluginManager.triggerUpdatesAfterPermissionsChange()
     }
 
     private fun refreshUiState() {
@@ -57,12 +58,22 @@ class PermissionsViewModel(
         val ignoreBatteryOptimizationPermissionStatus = getStatus(NeededPermission.IGNORE_BATTERY_OPTIMIZATIONS, permSummary.isIgnoringBatteryOptimizations)
         val autoRevokePermissionsPermissionStatus = getStatus(NeededPermission.MANAGE_AUTO_REVOKE, permSummary.isAutoRevokeExempted)
 
+        val pluginPermissions = permSummary.pluginPermissions.map { status ->
+            PluginPermissionUiModel(
+                pluginId = status.pluginId,
+                pluginDisplayName = status.pluginDisplayName,
+                permissionString = status.permissionString,
+                status = if (status.isGranted) PermissionStatus.Granted else PermissionStatus.Denied
+            )
+        }
+
         updateUiModel(
             alarmPermissionStatus = alarmPermissionStatus,
             notificationPermissionStatus = notificationPermissionStatus,
             fullscreenPermissionStatus = fullscreenPermissionStatus,
             ignoreBatteryOptimizationPermissionStatus = ignoreBatteryOptimizationPermissionStatus,
-            autoRevokePermissionsPermissionStatus = autoRevokePermissionsPermissionStatus
+            autoRevokePermissionsPermissionStatus = autoRevokePermissionsPermissionStatus,
+            pluginPermissions = pluginPermissions
         )
     }
 
@@ -71,7 +82,8 @@ class PermissionsViewModel(
         notificationPermissionStatus: PermissionStatus,
         fullscreenPermissionStatus: PermissionStatus,
         ignoreBatteryOptimizationPermissionStatus: PermissionStatus,
-        autoRevokePermissionsPermissionStatus: PermissionStatus
+        autoRevokePermissionsPermissionStatus: PermissionStatus,
+        pluginPermissions: List<PluginPermissionUiModel>
     ) {
         _uiState.update {
             PermissionsUiModel.create(
@@ -80,6 +92,7 @@ class PermissionsViewModel(
                 fullscreenPermissionStatus,
                 ignoreBatteryOptimizationPermissionStatus,
                 autoRevokePermissionsPermissionStatus,
+                pluginPermissions = pluginPermissions,
                 resources = systemRegistry.appContext.resources
             )
         }
