@@ -445,6 +445,7 @@
     <string name="system_control_source_control_title">Sensor-Steuerung</string>
     <string name="system_control_source_sensor_code_label">Sensor-Code</string>
     <string name="system_control_source_transmitter_sn_label">Transmitter-Seriennummer</string>
+    <string name="system_control_source_expiration_label">Ablaufdatum</string>
     <string name="system_control_source_estimated_expiration_label">Geschätztes Ablaufdatum</string>
     <string name="system_control_source_action_stop_sensor">Sensor stoppen</string>
     <string name="system_control_cgm_value_at_time">%1$s um %2$s</string>

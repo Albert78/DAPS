@@ -642,7 +642,7 @@ internal fun sampleOverviewTabUiState(): OverviewTabUiState = OverviewTabUiState
         status = StatusMetric(GlucoseSourceStatus.Ok, status = ValueStatus.GOOD),
         lastConnection = StatusMetric(Timestamp(System.currentTimeMillis() - 60_000), status = ValueStatus.GOOD),
         lastReading = StatusMetric(Timestamp(System.currentTimeMillis() - 120_000), status = ValueStatus.GOOD),
-        sensorExpiration = StatusMetric(Timestamp(System.currentTimeMillis() + 864_000_000), status = ValueStatus.GOOD)
+        sensorExpiration = StatusMetric(ExpirationDate.Hard(Timestamp(System.currentTimeMillis() + 864_000_000)), status = ValueStatus.GOOD)
     ),
     insulinPump = OverviewPumpUiState.Content(
         pumpName = UiText.DynamicString("SimBody Virtuelle Insulinpumpe"),

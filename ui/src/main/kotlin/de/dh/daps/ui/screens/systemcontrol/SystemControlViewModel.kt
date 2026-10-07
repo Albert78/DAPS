@@ -96,7 +96,7 @@ sealed interface OverviewGlucoseSourceUiState {
         val status: StatusMetric<GlucoseSourceStatus>,
         val lastConnection: StatusMetric<Timestamp>,
         val lastReading: StatusMetric<Timestamp>,
-        val sensorExpiration: StatusMetric<Timestamp>
+        val sensorExpiration: StatusMetric<ExpirationDate>
     ) : OverviewGlucoseSourceUiState
 }
 
@@ -137,7 +137,7 @@ sealed interface SourceTabUiState {
         val lastBgReading: BgReading? = null,
         val nextPredictedTimestamp: Timestamp? = null,
         val hasNextPrediction: Boolean = false,
-        val estimatedExpirationTimestamp: Timestamp? = null,
+        val expiration: Expiration? = null,
         val glucoseSourcePluginSection: (@Composable () -> Unit)? = null
     ) : SourceTabUiState
 }
@@ -194,7 +194,7 @@ class SystemControlViewModel(
         val lastBgReading: BgReading? = null,
         val nextPredictedTimestamp: Timestamp? = null,
         val hasNextPrediction: Boolean = false,
-        val estimatedExpirationTimestamp: Timestamp? = null,
+        val expiration: Expiration? = null,
         val pluginUiProvider: GlucoseSourcePluginUiProvider? = null
     )
 
@@ -293,7 +293,7 @@ class SystemControlViewModel(
                 val currentBg = array[3] as BgReading?
                 val lastConn = array[4] as Timestamp?
                 val startDate = array[5] as Timestamp?
-                val endDate = array[6] as Timestamp?
+                val endDate = array[6] as Expiration?
                 val isExpired = array[7] as Boolean
 
                 if (isExpired) {
@@ -311,7 +311,7 @@ class SystemControlViewModel(
                         lastBgReading = currentBg,
                         nextPredictedTimestamp = if (hasPrediction) nextPredicted else null,
                         hasNextPrediction = hasPrediction,
-                        estimatedExpirationTimestamp = endDate,
+                        expiration = endDate,
                         pluginUiProvider = provider
                     )
                 }
@@ -429,12 +429,27 @@ class SystemControlViewModel(
                 lastReadingTs < Timestamp.now().minusMinutes(BG_READING_WARNING_THRESHOLD_MINUTES) -> ValueStatus.WARNING
                 else -> ValueStatus.GOOD
             }
-            val sensorExpirationTs = gInfo.estimatedExpirationTimestamp
-            val sensorExpirationStatus = when {
-                sensorExpirationTs == null || sensorExpirationTs.isInvalid() -> ValueStatus.GOOD
-                sensorExpirationTs <= Timestamp.now() -> ValueStatus.BAD
-                sensorExpirationTs < Timestamp.now().plusHours(SENSOR_EXPIRATION_WARNING_THRESHOLD_HOURS) -> ValueStatus.WARNING
-                else -> ValueStatus.GOOD
+            val sensorExpiration = gInfo.expiration?.date
+            val sensorExpirationStatus = when (sensorExpiration) {
+                null -> ValueStatus.GOOD
+                is ExpirationDate.Hard -> {
+                    val ts = sensorExpiration.dateTime
+                    when {
+                        ts.isInvalid() -> ValueStatus.GOOD
+                        ts <= Timestamp.now() -> ValueStatus.BAD
+                        ts < Timestamp.now().plusHours(SENSOR_EXPIRATION_WARNING_THRESHOLD_HOURS) -> ValueStatus.WARNING
+                        else -> ValueStatus.GOOD
+                    }
+                }
+                is ExpirationDate.Approximate -> {
+                    val date = sensorExpiration.date
+                    val today = LocalDate.now()
+                    when {
+                        date <= today -> ValueStatus.BAD
+                        date <= today.plusDays(1) -> ValueStatus.WARNING
+                        else -> ValueStatus.GOOD
+                    }
+                }
             }
             OverviewGlucoseSourceUiState.Content(
                 sensorName = gInfo.sourceName,
@@ -451,7 +466,7 @@ class SystemControlViewModel(
                     status = lastReadingStatus
                 ),
                 sensorExpiration = StatusMetric(
-                    value = sensorExpirationTs,
+                    value = sensorExpiration,
                     status = sensorExpirationStatus
                 )
             )
@@ -554,7 +569,7 @@ class SystemControlViewModel(
                 lastBgReading = gInfo.lastBgReading,
                 nextPredictedTimestamp = gInfo.nextPredictedTimestamp,
                 hasNextPrediction = gInfo.hasNextPrediction,
-                estimatedExpirationTimestamp = gInfo.estimatedExpirationTimestamp,
+                expiration = gInfo.expiration,
                 glucoseSourcePluginSection = gInfo.pluginUiProvider?.let { provider -> { provider.GlucoseSourceControlSection() } }
             )
         }

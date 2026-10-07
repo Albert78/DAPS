@@ -10,7 +10,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.model.Expiration
 import de.dh.daps.common.model.GlucoseSource
+import de.dh.daps.common.model.GlucoseSourcePluginUiProvider
 import de.dh.daps.common.model.GlucoseSourceStatus
 import de.dh.daps.common.model.SourceHardwareInformation
 import de.dh.daps.common.model.data.BgReading
@@ -21,7 +23,6 @@ import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.RawBg
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
-import de.dh.daps.common.model.GlucoseSourcePluginUiProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,7 +40,7 @@ class SampleGlucoseSource : GlucoseSource, GlucoseSourcePluginUiProvider {
     override val readingsTimeDelay = Minutes(5)
     override val status: StateFlow<GlucoseSourceStatus> = MutableStateFlow(GlucoseSourceStatus.Ok)
     override val startDate: StateFlow<Timestamp?> = MutableStateFlow(null)
-    override val endDate: StateFlow<Timestamp?> = MutableStateFlow(null)
+    override val endDate: StateFlow<Expiration?> = MutableStateFlow(null)
     override val isExpired: StateFlow<Boolean> = MutableStateFlow(false)
     override val lastConnection: StateFlow<Timestamp?> = MutableStateFlow(null)
     override val sensorType: StateFlow<String> = MutableStateFlow("Dexcom-G6")

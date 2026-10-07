@@ -7,7 +7,6 @@ import de.dh.pump.PumpCommandException
 import de.dh.pump.PumpConnectionException
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import java.time.LocalDate
 
 /**
  * Manufacturer and hardware information about a pump.
@@ -150,28 +149,6 @@ sealed interface BolusEvent {
         override val timestamp: Timestamp = Timestamp.now(),
     ) : BolusEvent
 }
-
-sealed interface ReplaceableComponentType {
-    data object Sensor : ReplaceableComponentType
-    data object Cannula : ReplaceableComponentType
-    data object Patch : ReplaceableComponentType
-}
-
-sealed interface ExpirationDate {
-    data class Approximate(
-        val date: LocalDate
-    ) : ExpirationDate
-
-    data class Hard(
-        val dateTime: Timestamp
-    ) : ExpirationDate
-}
-
-data class Expiration(
-    val type: ReplaceableComponentType,
-    val date: ExpirationDate,
-    val graceUntil: Timestamp? = null
-)
 
 /**
  * Generic interface for an insulin pump.

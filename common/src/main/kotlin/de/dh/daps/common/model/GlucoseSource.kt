@@ -56,9 +56,9 @@ interface GlucoseSource {
     val startDate: StateFlow<Timestamp?>
 
     /**
-     * Scheduled expiration / replacement end timestamp of the glucose source, or null if unknown or not applicable.
+     * Scheduled expiration / replacement end data of the glucose source, or null if unknown or not applicable.
      */
-    val endDate: StateFlow<Timestamp?>
+    val endDate: StateFlow<Expiration?>
 
     /**
      * Flag indicating whether the glucose source is completely expired and no longer functioning.

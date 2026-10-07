@@ -1,5 +1,6 @@
 package de.dh.daps.plugin.simbody
 
+import de.dh.daps.common.model.Expiration
 import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.GlucoseSourceStatus
 import de.dh.daps.common.model.SourceHardwareInformation
@@ -25,7 +26,7 @@ class SimBodyGlucoseSource(
     override val readingsTimeDelay = DEFAULT_READINGS_DELAY
     override val status: StateFlow<GlucoseSourceStatus> = MutableStateFlow(GlucoseSourceStatus.Ok)
     override val startDate: StateFlow<Timestamp?> = MutableStateFlow(null)
-    override val endDate: StateFlow<Timestamp?> = MutableStateFlow(null)
+    override val endDate: StateFlow<Expiration?> = MutableStateFlow(null)
     override val isExpired: StateFlow<Boolean> = MutableStateFlow(false)
 
     private val _lastConnection = MutableStateFlow<Timestamp?>(null)

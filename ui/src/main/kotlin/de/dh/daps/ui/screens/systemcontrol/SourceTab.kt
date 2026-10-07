@@ -33,6 +33,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.model.Expiration
+import de.dh.daps.common.model.ExpirationDate
+import de.dh.daps.common.model.ReplaceableComponentType
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.BgSampleKind
@@ -42,6 +45,7 @@ import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.glucoseValue
+import de.dh.daps.ui.common.longDate
 import de.dh.daps.ui.common.icons.Icon_Next
 import de.dh.daps.ui.common.icons.Icon_Previous
 import de.dh.daps.ui.common.longDateTime
@@ -374,7 +378,7 @@ fun GlucoseSourcePluginExampleCard(
     transmitterSerialNumber: String?,
     onStopSensor: () -> Unit,
     modifier: Modifier = Modifier,
-    estimatedExpirationTimestamp: Timestamp? = null
+    expiration: Expiration? = null
 ) {
     FramedCard(
         modifier = modifier
@@ -433,10 +437,19 @@ fun GlucoseSourcePluginExampleCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            val expDateDisplay = longDateTime(estimatedExpirationTimestamp)
+            val expDateDisplay = when (val expDate = expiration?.date) {
+                is ExpirationDate.Hard -> longDateTime(expDate.dateTime)
+                is ExpirationDate.Approximate -> longDate(expDate.date)
+                null -> stringResource(R.string.system_control_value_not_available)
+            }
+
+            val expLabel = when (expiration?.date) {
+                is ExpirationDate.Approximate -> stringResource(R.string.system_control_source_estimated_expiration_label)
+                else -> stringResource(R.string.system_control_source_expiration_label)
+            }
 
             ControlDetailRow(
-                label = stringResource(R.string.system_control_source_estimated_expiration_label)
+                label = expLabel
             ) {
                 Text(
                     text = expDateDisplay,
@@ -485,12 +498,18 @@ internal fun sampleSourceTabUiState(): SourceTabUiState = SourceTabUiState.Conte
     ),
     hasNextPrediction = true,
     nextPredictedTimestamp = Timestamp(System.currentTimeMillis() + 180_000),
-    estimatedExpirationTimestamp = Timestamp(System.currentTimeMillis() + 864000000),
+    expiration = Expiration(
+        type = ReplaceableComponentType.Sensor,
+        date = ExpirationDate.Hard(Timestamp(System.currentTimeMillis() + 864000000))
+    ),
     glucoseSourcePluginSection = {
         GlucoseSourcePluginExampleCard(
             sensorCode = "8132",
             transmitterSerialNumber = "8G1234",
-            estimatedExpirationTimestamp = Timestamp(System.currentTimeMillis() + 864000000),
+            expiration = Expiration(
+                type = ReplaceableComponentType.Sensor,
+                date = ExpirationDate.Hard(Timestamp(System.currentTimeMillis() + 864000000))
+            ),
             onStopSensor = {}
         )
     }
