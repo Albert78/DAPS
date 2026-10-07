@@ -445,6 +445,7 @@
     <string name="system_control_source_control_title">Sensor-Steuerung</string>
     <string name="system_control_source_sensor_code_label">Sensor-Code</string>
     <string name="system_control_source_transmitter_sn_label">Transmitter-Seriennummer</string>
+    <string name="system_control_source_start_time_label">Startzeit</string>
     <string name="system_control_source_expiration_label">Ablaufdatum</string>
     <string name="system_control_source_estimated_expiration_label">Geschätztes Ablaufdatum</string>
     <string name="system_control_expiration_grace_until_label">Nachfrist bis</string>
@@ -561,7 +562,7 @@
 
     <string name="overview_pump_none_configured">Keine Insulinpumpe konfiguriert</string>
     <string name="overview_pump_cd_refresh_status">Pumpenstatus aktualisieren</string>
-    <string name="overview_pump_next_cannula_change_label">Nächster Kanülenwechsel</string>
+    <string name="overview_pump_next_catheter_change_label">Nächster Katheterwechsel</string>
     <string name="overview_pump_next_patch_change_label">Nächster Patch-Wechsel</string>
     <string name="overview_pump_next_sensor_change_label">Nächster Sensor-Wechsel</string>
     <string name="overview_pump_next_expiration_label">Nächster Wechsel</string>

@@ -54,6 +54,7 @@ import de.dh.daps.ui.common.shortRelativeTimeAgo
 import de.dh.daps.ui.common.shortRelativeTimeUntil
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.time
+import java.time.ZoneId
 
 @Composable
 fun SourceTabContent(
@@ -378,6 +379,7 @@ fun GlucoseSourcePluginExampleCard(
     transmitterSerialNumber: String?,
     onStopSensor: () -> Unit,
     modifier: Modifier = Modifier,
+    startDate: Timestamp? = null,
     expiration: Expiration? = null
 ) {
     FramedCard(
@@ -437,9 +439,47 @@ fun GlucoseSourcePluginExampleCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            val startDateDisplay = if (startDate != null && startDate.isValid()) {
+                longDateTime(startDate)
+            } else {
+                notAvailableText
+            }
+
+            ControlDetailRow(
+                label = stringResource(R.string.system_control_source_start_time_label)
+            ) {
+                Text(
+                    text = startDateDisplay,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             val expDateDisplay = when (val expDate = expiration?.date) {
-                is ExpirationDate.Hard -> longDateTime(expDate.dateTime)
-                is ExpirationDate.Approximate -> longDate(expDate.date)
+                is ExpirationDate.Hard -> {
+                    val dt = longDateTime(expDate.dateTime)
+                    val rel = if (expDate.dateTime.ms < System.currentTimeMillis()) {
+                        shortRelativeTimeAgo(expDate.dateTime)
+                    } else {
+                        shortRelativeTimeUntil(expDate.dateTime)
+                    }
+                    if (rel.isNotEmpty()) "$dt ($rel)" else dt
+                }
+                is ExpirationDate.Approximate -> {
+                    val d = longDate(expDate.date)
+                    val targetMs = expDate.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                    val diffMs = targetMs - System.currentTimeMillis()
+                    val rel = if (diffMs < 0) {
+                        shortRelativeTimeAgo(-diffMs)
+                    } else {
+                        shortRelativeTimeUntil(diffMs)
+                    }
+                    if (rel.isNotEmpty()) "$d ($rel)" else d
+                }
                 null -> stringResource(R.string.system_control_value_not_available)
             }
 
@@ -464,7 +504,11 @@ fun GlucoseSourcePluginExampleCard(
             if (graceUntil != null && graceUntil.isValid()) {
                 Spacer(modifier = Modifier.height(12.dp))
                 val graceTimeDisplay = longDateTime(graceUntil)
-                val graceRelativeText = shortRelativeTimeUntil(graceUntil)
+                val graceRelativeText = if (graceUntil.ms < System.currentTimeMillis()) {
+                    shortRelativeTimeAgo(graceUntil)
+                } else {
+                    shortRelativeTimeUntil(graceUntil)
+                }
                 val fullGraceDisplay = if (graceRelativeText.isNotEmpty()) {
                     "$graceTimeDisplay ($graceRelativeText)"
                 } else {
@@ -515,6 +559,7 @@ internal fun sampleSourceTabUiState(): SourceTabUiState = SourceTabUiState.Conte
     model = "SimBody Glukosesensor",
     serialNumber = "12345",
     readingsInterval = BgReadingsInterval.FiveMinutes,
+    startDate = Timestamp(System.currentTimeMillis() - 86_400_000),
     lastBgReading = BgReading(
         value = BgValue.fromMgDl(124),
         sampleKind = BgSampleKind.Value,
@@ -530,9 +575,44 @@ internal fun sampleSourceTabUiState(): SourceTabUiState = SourceTabUiState.Conte
         GlucoseSourcePluginExampleCard(
             sensorCode = "8132",
             transmitterSerialNumber = "8G1234",
+            startDate = Timestamp(System.currentTimeMillis() - 86_400_000),
             expiration = Expiration(
                 type = ReplaceableComponentType.Sensor,
                 date = ExpirationDate.Hard(Timestamp(System.currentTimeMillis() + 864000000))
+            ),
+            onStopSensor = {}
+        )
+    }
+)
+
+internal fun sampleSourceTabExpiredUiState(): SourceTabUiState = SourceTabUiState.Content(
+    glucoseSourceName = UiText.DynamicString("SimBody Virtueller Glukosesensor"),
+    manufacturer = "DAPS",
+    model = "SimBody Glukosesensor",
+    serialNumber = "12345",
+    readingsInterval = BgReadingsInterval.FiveMinutes,
+    startDate = Timestamp(System.currentTimeMillis() - 10 * 86_400_000L),
+    lastBgReading = BgReading(
+        value = BgValue.fromMgDl(110),
+        sampleKind = BgSampleKind.Value,
+        timestamp = Timestamp(System.currentTimeMillis() - 900_000)
+    ),
+    hasNextPrediction = false,
+    nextPredictedTimestamp = null,
+    expiration = Expiration(
+        type = ReplaceableComponentType.Sensor,
+        date = ExpirationDate.Hard(Timestamp(System.currentTimeMillis() - 7_200_000L)),
+        graceUntil = Timestamp(System.currentTimeMillis() - 1_800_000L)
+    ),
+    glucoseSourcePluginSection = {
+        GlucoseSourcePluginExampleCard(
+            sensorCode = "8132",
+            transmitterSerialNumber = "8G1234",
+            startDate = Timestamp(System.currentTimeMillis() - 10 * 86_400_000L),
+            expiration = Expiration(
+                type = ReplaceableComponentType.Sensor,
+                date = ExpirationDate.Hard(Timestamp(System.currentTimeMillis() - 7_200_000L)),
+                graceUntil = Timestamp(System.currentTimeMillis() - 1_800_000L)
             ),
             onStopSensor = {}
         )
@@ -547,6 +627,20 @@ fun SourceTabPreview() {
         Surface {
             SourceTabContent(
                 uiState = sampleSourceTabUiState(),
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Source Tab - Expired")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Source Tab - Expired - Dark Mode")
+@Composable
+fun SourceTabExpiredPreview() {
+    AppTheme {
+        Surface {
+            SourceTabContent(
+                uiState = sampleSourceTabExpiredUiState(),
                 modifier = Modifier.padding(16.dp)
             )
         }

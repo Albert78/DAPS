@@ -5,7 +5,7 @@ import java.time.LocalDate
 
 sealed interface ReplaceableComponentType {
     data object Sensor : ReplaceableComponentType
-    data object Cannula : ReplaceableComponentType
+    data object Catheter : ReplaceableComponentType
     data object Patch : ReplaceableComponentType
 }
 

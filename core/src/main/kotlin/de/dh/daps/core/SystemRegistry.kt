@@ -120,7 +120,7 @@ interface SystemRegistry {
     val foodRepository: FoodRepository
 
     /**
-     * Repository for tracking device-related events, such as cannula or reservoir changes.
+     * Repository for tracking device-related events, such as catheter or reservoir changes.
      */
     val deviceManagementRepository: DeviceManagementRepository
 

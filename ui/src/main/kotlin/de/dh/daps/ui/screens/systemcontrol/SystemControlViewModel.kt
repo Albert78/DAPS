@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import de.dh.daps.common.BG_READING_BAD_THRESHOLD_MINUTES
 import de.dh.daps.common.BG_READING_WARNING_THRESHOLD_MINUTES
-import de.dh.daps.common.CANNULA_CHANGE_WARNING_THRESHOLD_HOURS
+import de.dh.daps.common.CATHETER_CHANGE_WARNING_THRESHOLD_HOURS
 import de.dh.daps.common.CONNECTION_BAD_THRESHOLD_MINUTES
 import de.dh.daps.common.CONNECTION_WARNING_THRESHOLD_MINUTES
 import de.dh.daps.common.CORE_CALCULATION_BAD_THRESHOLD_MINUTES
@@ -499,7 +499,7 @@ class SystemControlViewModel(
                     when {
                         ts.isInvalid() -> ValueStatus.GOOD
                         ts <= Timestamp.now() -> ValueStatus.BAD
-                        ts < Timestamp.now().plusHours(CANNULA_CHANGE_WARNING_THRESHOLD_HOURS) -> ValueStatus.WARNING
+                        ts < Timestamp.now().plusHours(CATHETER_CHANGE_WARNING_THRESHOLD_HOURS) -> ValueStatus.WARNING
                         else -> ValueStatus.GOOD
                     }
                 }

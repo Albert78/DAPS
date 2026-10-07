@@ -451,7 +451,7 @@ private fun OverviewPumpCard(
                         Column(modifier = Modifier.weight(1f)) {
                             val nextExp = state.nextExpiration.value
                             val label = when (nextExp?.type) {
-                                ReplaceableComponentType.Cannula -> stringResource(id = R.string.overview_pump_next_cannula_change_label)
+                                ReplaceableComponentType.Catheter -> stringResource(id = R.string.overview_pump_next_catheter_change_label)
                                 ReplaceableComponentType.Patch -> stringResource(id = R.string.overview_pump_next_patch_change_label)
                                 ReplaceableComponentType.Sensor -> stringResource(id = R.string.overview_pump_next_sensor_change_label)
                                 null -> stringResource(id = R.string.overview_pump_next_expiration_label)
@@ -665,7 +665,7 @@ internal fun sampleOverviewTabUiState(): OverviewTabUiState = OverviewTabUiState
         lastConnection = StatusMetric(Timestamp(System.currentTimeMillis() - 60_000), status = ValueStatus.GOOD),
         nextExpiration = StatusMetric(
             value = Expiration(
-                type = ReplaceableComponentType.Cannula,
+                type = ReplaceableComponentType.Catheter,
                 date = ExpirationDate.Hard(Timestamp(System.currentTimeMillis() + 172_800_000))
             ),
             status = ValueStatus.GOOD

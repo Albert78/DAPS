@@ -40,8 +40,8 @@ const val BG_READING_BAD_THRESHOLD_MINUTES = 20
 // Sensor Expiration Thresholds (Hours)
 const val SENSOR_EXPIRATION_WARNING_THRESHOLD_HOURS = 24
 
-// Pod Change Thresholds (Hours)
-const val CANNULA_CHANGE_WARNING_THRESHOLD_HOURS = 24
+// Catheter Change Thresholds (Hours)
+const val CATHETER_CHANGE_WARNING_THRESHOLD_HOURS = 24
 
 const val ID_INSULIN_NOVORAPID = "9d860e7e-8c88-466d-a7f4-3e91851e3c88"
 const val ID_INSULIN_FIASP = "4e0e9803-0c48-433b-8f7d-2b4f2c96791a"

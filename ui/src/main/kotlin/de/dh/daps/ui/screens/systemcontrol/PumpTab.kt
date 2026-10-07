@@ -412,7 +412,7 @@ fun PumpExpirationsCard(
                 }
 
                 val typeLabel = when (exp.type) {
-                    ReplaceableComponentType.Cannula -> stringResource(R.string.overview_pump_next_cannula_change_label)
+                    ReplaceableComponentType.Catheter -> stringResource(R.string.overview_pump_next_catheter_change_label)
                     ReplaceableComponentType.Patch -> stringResource(R.string.overview_pump_next_patch_change_label)
                     ReplaceableComponentType.Sensor -> stringResource(R.string.overview_pump_next_sensor_change_label)
                 }
@@ -420,13 +420,22 @@ fun PumpExpirationsCard(
                 val expDateDisplay = when (val expDate = exp.date) {
                     is ExpirationDate.Hard -> {
                         val dt = longDateTime(expDate.dateTime)
-                        val rel = shortRelativeTimeUntil(expDate.dateTime)
+                        val rel = if (expDate.dateTime.ms < System.currentTimeMillis()) {
+                            shortRelativeTimeAgo(expDate.dateTime)
+                        } else {
+                            shortRelativeTimeUntil(expDate.dateTime)
+                        }
                         if (rel.isNotEmpty()) "$dt ($rel)" else dt
                     }
                     is ExpirationDate.Approximate -> {
                         val d = longDate(expDate.date)
                         val targetMs = expDate.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                        val rel = shortRelativeTimeUntil(targetMs - System.currentTimeMillis())
+                        val diffMs = targetMs - System.currentTimeMillis()
+                        val rel = if (diffMs < 0) {
+                            shortRelativeTimeAgo(-diffMs)
+                        } else {
+                            shortRelativeTimeUntil(diffMs)
+                        }
                         if (rel.isNotEmpty()) "$d ($rel)" else d
                     }
                 }
@@ -448,7 +457,11 @@ fun PumpExpirationsCard(
                 if (graceUntil != null && graceUntil.isValid()) {
                     Spacer(modifier = Modifier.height(8.dp))
                     val graceTimeDisplay = longDateTime(graceUntil)
-                    val graceRelativeText = shortRelativeTimeUntil(graceUntil)
+                    val graceRelativeText = if (graceUntil.ms < System.currentTimeMillis()) {
+                        shortRelativeTimeAgo(graceUntil)
+                    } else {
+                        shortRelativeTimeUntil(graceUntil)
+                    }
                     val fullGraceDisplay = if (graceRelativeText.isNotEmpty()) {
                         "$graceTimeDisplay ($graceRelativeText)"
                     } else {
@@ -625,7 +638,7 @@ internal fun samplePumpTabUiState(): PumpTabUiState = PumpTabUiState.Content(
     serialNumber = "SIM-001",
     expirations = listOf(
         Expiration(
-            type = ReplaceableComponentType.Cannula,
+            type = ReplaceableComponentType.Catheter,
             date = ExpirationDate.Hard(Timestamp(System.currentTimeMillis() + 172_800_000)),
             graceUntil = Timestamp(System.currentTimeMillis() + 180_000_000)
         )
@@ -648,7 +661,7 @@ fun PumpPluginExampleCard(
     activeProfileName: String = "Standard",
     errorMemory: String = "Keine Fehler",
     onRunSelfTest: () -> Unit = {},
-    onPrimeCannula: () -> Unit = {}
+    onPrimeCatheter: () -> Unit = {}
 ) {
     FramedCard(
         modifier = modifier
@@ -722,11 +735,11 @@ fun PumpPluginExampleCard(
                     )
                 }
                 Button(
-                    onClick = onPrimeCannula,
+                    onClick = onPrimeCatheter,
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = "Kanüle füllen",
+                        text = "Katheter füllen",
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -734,6 +747,27 @@ fun PumpPluginExampleCard(
         }
     }
 }
+
+internal fun samplePumpTabExpiredUiState(): PumpTabUiState = PumpTabUiState.Content(
+    pumpName = UiText.DynamicString("SimBody Virtuelle Insulinpumpe"),
+    batteryPercent = 45,
+    reservoirRemaining = InsulinAmount(15.0),
+    lastConnectionTimestamp = Timestamp(System.currentTimeMillis() - 120_000),
+    manufacturer = "DAPS",
+    pumpModel = "Simulator",
+    serialNumber = "SIM-001",
+    expirations = listOf(
+        Expiration(
+            type = ReplaceableComponentType.Catheter,
+            date = ExpirationDate.Hard(Timestamp(System.currentTimeMillis() - 7_200_000)),
+            graceUntil = Timestamp(System.currentTimeMillis() - 1_800_000)
+        )
+    ),
+    pendingJobs = emptyList(),
+    pumpPluginSection = {
+        PumpPluginExampleCard()
+    }
+)
 
 @Preview(showBackground = true, name = "Pump Tab - Light Mode")
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Pump Tab - Dark Mode")
@@ -743,6 +777,20 @@ fun PumpTabPreview() {
         Surface {
             PumpTabContent(
                 uiState = samplePumpTabUiState(),
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Pump Tab - Expired")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Pump Tab - Expired - Dark Mode")
+@Composable
+fun PumpTabExpiredPreview() {
+    AppTheme {
+        Surface {
+            PumpTabContent(
+                uiState = samplePumpTabExpiredUiState(),
                 modifier = Modifier.padding(16.dp)
             )
         }

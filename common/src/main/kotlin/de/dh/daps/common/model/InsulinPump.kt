@@ -177,7 +177,7 @@ interface InsulinPump {
     val isExpired: StateFlow<Boolean>
 
     /**
-     * List of expiration dates for various replaceable components (e.g. Cannula, Patch).
+     * List of expiration dates for various replaceable components (e.g. Catheter, Patch).
      */
     val expirations: StateFlow<List<Expiration>>
 

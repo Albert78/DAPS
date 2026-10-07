@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.stateIn
 
 /**
  * Repository for managing diabetes-device-related configurations (CGM, pump), active connection descriptors,
- * and device events (like cannula or reservoir changes).
+ * and device events (like catheter or reservoir changes).
  */
 class DeviceManagementRepository(
     private val appDatabase: AppDatabase,
