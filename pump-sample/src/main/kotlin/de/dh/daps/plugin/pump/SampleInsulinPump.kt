@@ -24,7 +24,7 @@ import de.dh.daps.common.model.PumpHardwareInformation
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
-import de.dh.daps.ui.screens.systemcontrol.PumpPluginUiProvider
+import de.dh.daps.common.model.PumpPluginUiProvider
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow

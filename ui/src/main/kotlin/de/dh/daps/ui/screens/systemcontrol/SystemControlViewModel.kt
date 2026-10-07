@@ -20,11 +20,13 @@ import de.dh.daps.common.PUMP_RESERVOIR_LOW_THRESHOLD
 import de.dh.daps.common.PUMP_RESERVOIR_WARNING_THRESHOLD
 import de.dh.daps.common.SENSOR_EXPIRATION_WARNING_THRESHOLD_HOURS
 import de.dh.daps.common.model.ApsMode
+import de.dh.daps.common.model.GlucoseSourcePluginUiProvider
 import de.dh.daps.common.model.GlucoseSourceStatus
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinPumpStatus
 import de.dh.daps.common.model.InsulinStatus
 import de.dh.daps.common.model.PumpHardwareInformation
+import de.dh.daps.common.model.PumpPluginUiProvider
 import de.dh.daps.common.model.ReplaceableComponent
 import de.dh.daps.common.model.ToDo
 import de.dh.daps.common.model.data.BgReading

@@ -26,6 +26,7 @@ enum class GlucoseSourceStatus {
 /**
  * Represents a source for blood glucose data.
  * Provides a stream of [BgReading]s and metadata about the sensor and its update frequency.
+ * To support glucose source specific commands to the user, this object can implement [GlucoseSourcePluginUiProvider].
  */
 interface GlucoseSource {
     /**

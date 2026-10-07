@@ -1,4 +1,4 @@
-package de.dh.daps.ui.screens.systemcontrol
+package de.dh.daps.common.model
 
 import androidx.compose.runtime.Composable
 

@@ -21,7 +21,7 @@ import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.RawBg
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
-import de.dh.daps.ui.screens.systemcontrol.GlucoseSourcePluginUiProvider
+import de.dh.daps.common.model.GlucoseSourcePluginUiProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow

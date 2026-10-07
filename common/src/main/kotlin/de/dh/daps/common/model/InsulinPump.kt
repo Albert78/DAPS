@@ -152,6 +152,7 @@ sealed interface BolusEvent {
 
 /**
  * Generic interface for an insulin pump.
+ * To support pump specific commands to the user, this object can implement [PumpPluginUiProvider].
  */
 interface InsulinPump {
     /**
