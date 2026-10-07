@@ -72,12 +72,16 @@ class DeviceStatusRepository(private val context: Context) {
 
         fun getCurrentStatus(): BluetoothStatus {
             if (adapter == null) return BluetoothStatus.UNAVAILABLE
-            return when (adapter.state) {
-                BluetoothAdapter.STATE_ON -> BluetoothStatus.ENABLED
-                BluetoothAdapter.STATE_OFF -> BluetoothStatus.DISABLED
-                BluetoothAdapter.STATE_TURNING_ON -> BluetoothStatus.TURNING_ON
-                BluetoothAdapter.STATE_TURNING_OFF -> BluetoothStatus.TURNING_OFF
-                else -> BluetoothStatus.DISABLED
+            return try {
+                when (adapter.state) {
+                    BluetoothAdapter.STATE_ON -> BluetoothStatus.ENABLED
+                    BluetoothAdapter.STATE_OFF -> BluetoothStatus.DISABLED
+                    BluetoothAdapter.STATE_TURNING_ON -> BluetoothStatus.TURNING_ON
+                    BluetoothAdapter.STATE_TURNING_OFF -> BluetoothStatus.TURNING_OFF
+                    else -> BluetoothStatus.DISABLED
+                }
+            } catch (e: SecurityException) {
+                BluetoothStatus.UNAVAILABLE
             }
         }
 

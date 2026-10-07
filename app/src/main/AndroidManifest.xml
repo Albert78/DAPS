@@ -16,6 +16,8 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"
             tools:ignore="FullScreenIntentPolicy" />
+    <!-- Required for Android 11 (API 30) and below -->
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" /> <!-- Needed for DeviceStatusRepository -->
 
     <application
         android:name=".MainApplication"
