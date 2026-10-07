@@ -147,6 +147,25 @@ fun time(time: LocalTime, withUnit: Boolean): String {
     return if (withUnit) timeWithUnit(time) else time(time)
 }
 
+/**
+ * Composable UI function.
+ * Formats a [Timestamp] as a pure time ("HH:mm") if it is less than 24 hours ago,
+ * otherwise as a short date-time ("dd.MM.yy, HH:mm").
+ *
+ * @example smartTime(timestamp) -> "14:30" (if < 24h ago)
+ * @example smartTime(timestamp) -> "18.10.26, 14:30" (if >= 24h ago)
+ */
+@Composable
+fun smartTime(timestamp: Timestamp?, default: String = "-"): String {
+    if (timestamp == null || !timestamp.isValid()) return default
+    val diffMs = abs(System.currentTimeMillis() - timestamp.ms)
+    return if (diffMs < 24 * 60 * 60 * 1000L) {
+        time(timestamp)
+    } else {
+        shortDateTime(timestamp, default)
+    }
+}
+
 /////////////////////////////////////////////// Long date time //////////////////////////////////////
 
 /**

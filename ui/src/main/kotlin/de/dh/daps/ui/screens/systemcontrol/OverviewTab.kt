@@ -52,9 +52,9 @@ import de.dh.daps.ui.common.shortDate
 import de.dh.daps.ui.common.shortDateTime
 import de.dh.daps.ui.common.shortRelativeTimeAgo
 import de.dh.daps.ui.common.shortRelativeTimeUntil
+import de.dh.daps.ui.common.smartTime
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.ExtendedTheme
-import de.dh.daps.ui.common.time
 import java.time.ZoneId
 
 @Composable
@@ -550,7 +550,7 @@ private fun <T> StatusMetricText(
                 if (isDateTime) {
                     shortDateTime(v)
                 } else {
-                    time(v)
+                    smartTime(v)
                 }
             } else stringResource(id = R.string.system_control_value_not_available)
             is ExpirationDate -> when (v) {

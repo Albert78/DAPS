@@ -53,6 +53,7 @@ import de.dh.daps.ui.common.shortDate
 import de.dh.daps.ui.common.shortDateTime
 import de.dh.daps.ui.common.shortRelativeTimeAgo
 import de.dh.daps.ui.common.shortRelativeTimeUntil
+import de.dh.daps.ui.common.smartTime
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.ExtendedTheme
 import java.time.ZoneId
@@ -258,7 +259,7 @@ fun PumpOverviewCard(
 
                     val lastConnTimestamp = uiState.lastConnectionTimestamp
                     val lastConnTimeText = if (lastConnTimestamp.isValid()) {
-                        shortDateTime(lastConnTimestamp)
+                        smartTime(lastConnTimestamp)
                     } else {
                         notAvailableText
                     }

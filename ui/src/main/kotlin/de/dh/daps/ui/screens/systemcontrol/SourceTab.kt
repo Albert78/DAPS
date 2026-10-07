@@ -53,9 +53,9 @@ import de.dh.daps.ui.common.shortDate
 import de.dh.daps.ui.common.shortDateTime
 import de.dh.daps.ui.common.shortRelativeTimeAgo
 import de.dh.daps.ui.common.shortRelativeTimeUntil
+import de.dh.daps.ui.common.smartTime
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.ExtendedTheme
-import de.dh.daps.ui.common.time
 import java.time.ZoneId
 
 @Composable
@@ -342,7 +342,7 @@ fun SourceOverviewCard(
                     }
 
                     val lastTimeText = if (lastReading != null && lastReading.timestamp.isValid()) {
-                        time(lastReading.timestamp)
+                        smartTime(lastReading.timestamp)
                     } else {
                         notAvailableText
                     }
@@ -390,7 +390,7 @@ fun SourceOverviewCard(
                             if (uiState.hasNextPrediction) {
                                 val nextPred = uiState.nextPredictedTimestamp
                                 val nextTimeText = if (nextPred != null && nextPred.isValid()) {
-                                    time(nextPred)
+                                    smartTime(nextPred)
                                 } else {
                                     notAvailableText
                                 }
