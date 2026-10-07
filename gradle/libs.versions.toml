@@ -29,6 +29,7 @@ material3AdaptiveNav3 = "1.3.0"
 vico = "3.3.1"
 
 [libraries]
+androidx-compose-runtime = { module = "androidx.compose.runtime:runtime" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-annotation = { group = "androidx.annotation", name = "annotation", version.ref = "androidxAnnotation" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
