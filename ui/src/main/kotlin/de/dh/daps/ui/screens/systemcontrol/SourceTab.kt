@@ -406,7 +406,7 @@ fun SourceOverviewCard(
                                     icon = Icon_Next
                                 ) {
                                     GlucoseFragments(
-                                        value = notAvailableText,
+                                        value = "",
                                         time = nextTimeText,
                                         extra = nextRelativeTime,
                                         stackVertical = true
@@ -429,32 +429,32 @@ fun GlucoseFragments(
     extra: String?,
     stackVertical: Boolean = false
 ) {
+    val formattedExtra = if (extra != null) {
+        if (extra.startsWith("(")) extra else "($extra)"
+    } else null
+
+    val notAvailableText = stringResource(R.string.system_control_value_not_available)
+    val hasValidValue = value.isNotEmpty() && value != "--" && value != notAvailableText
+
     if (stackVertical) {
         Column {
-            FlowRow(
-                verticalArrangement = Arrangement.Center,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
+            Text(
+                text = time,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            if (formattedExtra != null) {
                 Text(
-                    text = time,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier.align(Alignment.CenterVertically),
+                    text = formattedExtra,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-                if (extra != null) {
-                    Text(
-                        text = "($extra)",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.align(Alignment.CenterVertically),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
             }
-            if (value.isNotEmpty() && value != "--") {
+            if (hasValidValue) {
                 Text(
                     text = value,
                     style = MaterialTheme.typography.titleMedium,
@@ -470,7 +470,7 @@ fun GlucoseFragments(
             verticalArrangement = Arrangement.Center,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            if (value.isNotEmpty() && value != "--") {
+            if (hasValidValue) {
                 Text(
                     text = value,
                     style = MaterialTheme.typography.bodyLarge,
@@ -483,15 +483,16 @@ fun GlucoseFragments(
             Text(
                 text = time,
                 style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
                 modifier = Modifier.align(Alignment.CenterVertically),
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
-            if (extra != null) {
+            if (formattedExtra != null) {
                 Text(
-                    text = "($extra)",
+                    text = formattedExtra,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.secondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.align(Alignment.CenterVertically),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
