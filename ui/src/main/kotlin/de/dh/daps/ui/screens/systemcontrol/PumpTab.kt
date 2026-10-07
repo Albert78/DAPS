@@ -41,17 +41,24 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.model.Expiration
+import de.dh.daps.common.model.ExpirationDate
 import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.ReplaceableComponentType
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.icons.PumpReservoir
 import de.dh.daps.ui.common.insulinValue
+import de.dh.daps.ui.common.longDate
+import de.dh.daps.ui.common.longDateTime
 import de.dh.daps.ui.common.shortRelativeTimeAgo
+import de.dh.daps.ui.common.shortRelativeTimeUntil
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.daps.ui.common.time
+import java.time.ZoneId
 
 @Composable
 fun PumpTabContent(
@@ -109,6 +116,15 @@ fun PumpTabContent(
         )
 
         if (uiState is PumpTabUiState.Content) {
+            if (uiState.expirations.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                SectionHeader(
+                    title = stringResource(R.string.system_control_pump_expirations_title)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                PumpExpirationsCard(expirations = uiState.expirations)
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
             SectionHeader(
                 title = stringResource(R.string.system_control_pump_technical_status)
@@ -370,6 +386,94 @@ fun PumpOverviewCard(
 }
 
 @Composable
+fun PumpExpirationsCard(
+    expirations: List<Expiration>,
+    modifier: Modifier = Modifier
+) {
+    if (expirations.isEmpty()) return
+
+    FramedCard(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+        ) {
+            expirations.forEachIndexed { index, exp ->
+                if (index > 0) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 12.dp),
+                        thickness = 0.5.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant
+                    )
+                }
+
+                val typeLabel = when (exp.type) {
+                    ReplaceableComponentType.Cannula -> stringResource(R.string.overview_pump_next_cannula_change_label)
+                    ReplaceableComponentType.Patch -> stringResource(R.string.overview_pump_next_patch_change_label)
+                    ReplaceableComponentType.Sensor -> stringResource(R.string.overview_pump_next_sensor_change_label)
+                }
+
+                val expDateDisplay = when (val expDate = exp.date) {
+                    is ExpirationDate.Hard -> {
+                        val dt = longDateTime(expDate.dateTime)
+                        val rel = shortRelativeTimeUntil(expDate.dateTime)
+                        if (rel.isNotEmpty()) "$dt ($rel)" else dt
+                    }
+                    is ExpirationDate.Approximate -> {
+                        val d = longDate(expDate.date)
+                        val targetMs = expDate.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                        val rel = shortRelativeTimeUntil(targetMs - System.currentTimeMillis())
+                        if (rel.isNotEmpty()) "$d ($rel)" else d
+                    }
+                }
+
+                ControlDetailRow(
+                    label = typeLabel,
+                    reserveIconSpace = true
+                ) {
+                    Text(
+                        text = expDateDisplay,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                val graceUntil = exp.graceUntil
+                if (graceUntil != null && graceUntil.isValid()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    val graceTimeDisplay = longDateTime(graceUntil)
+                    val graceRelativeText = shortRelativeTimeUntil(graceUntil)
+                    val fullGraceDisplay = if (graceRelativeText.isNotEmpty()) {
+                        "$graceTimeDisplay ($graceRelativeText)"
+                    } else {
+                        graceTimeDisplay
+                    }
+                    ControlDetailRow(
+                        label = stringResource(R.string.system_control_expiration_grace_until_label),
+                        reserveIconSpace = true
+                    ) {
+                        Text(
+                            text = fullGraceDisplay,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.tertiary,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun PumpActionsCard(
     @Suppress("UNUSED_PARAMETER") uiState: PumpTabUiState.Content,
     modifier: Modifier = Modifier,
@@ -519,6 +623,13 @@ internal fun samplePumpTabUiState(): PumpTabUiState = PumpTabUiState.Content(
     manufacturer = "DAPS",
     pumpModel = "Simulator",
     serialNumber = "SIM-001",
+    expirations = listOf(
+        Expiration(
+            type = ReplaceableComponentType.Cannula,
+            date = ExpirationDate.Hard(Timestamp(System.currentTimeMillis() + 172_800_000)),
+            graceUntil = Timestamp(System.currentTimeMillis() + 180_000_000)
+        )
+    ),
     pendingJobs = listOf(
         PumpJobItem(
             id = "job_1",

@@ -460,6 +460,30 @@ fun GlucoseSourcePluginExampleCard(
                 )
             }
 
+            val graceUntil = expiration?.graceUntil
+            if (graceUntil != null && graceUntil.isValid()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                val graceTimeDisplay = longDateTime(graceUntil)
+                val graceRelativeText = shortRelativeTimeUntil(graceUntil)
+                val fullGraceDisplay = if (graceRelativeText.isNotEmpty()) {
+                    "$graceTimeDisplay ($graceRelativeText)"
+                } else {
+                    graceTimeDisplay
+                }
+                ControlDetailRow(
+                    label = stringResource(R.string.system_control_expiration_grace_until_label)
+                ) {
+                    Text(
+                        text = fullGraceDisplay,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.tertiary,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(20.dp))
 
             Button(

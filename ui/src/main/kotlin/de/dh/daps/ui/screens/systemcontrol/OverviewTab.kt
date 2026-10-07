@@ -34,9 +34,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.ApsMode
+import de.dh.daps.common.model.Expiration
 import de.dh.daps.common.model.ExpirationDate
 import de.dh.daps.common.model.GlucoseSourceStatus
 import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.ReplaceableComponentType
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
@@ -447,9 +449,19 @@ private fun OverviewPumpCard(
                             }
                         }
                         Column(modifier = Modifier.weight(1f)) {
-                            ControlDetailRow(label = stringResource(id = R.string.overview_pump_next_cannula_change_label)) {
+                            val nextExp = state.nextExpiration.value
+                            val label = when (nextExp?.type) {
+                                ReplaceableComponentType.Cannula -> stringResource(id = R.string.overview_pump_next_cannula_change_label)
+                                ReplaceableComponentType.Patch -> stringResource(id = R.string.overview_pump_next_patch_change_label)
+                                ReplaceableComponentType.Sensor -> stringResource(id = R.string.overview_pump_next_sensor_change_label)
+                                null -> stringResource(id = R.string.overview_pump_next_expiration_label)
+                            }
+                            ControlDetailRow(label = label) {
                                 StatusMetricText(
-                                    metric = state.nextCannulaChange,
+                                    metric = StatusMetric(
+                                        value = nextExp?.date,
+                                        status = state.nextExpiration.status
+                                    ),
                                     isDateTime = true
                                 )
                             }
@@ -651,7 +663,13 @@ internal fun sampleOverviewTabUiState(): OverviewTabUiState = OverviewTabUiState
         battery = StatusMetric(85, status = ValueStatus.GOOD),
         reservoir = StatusMetric(InsulinAmount(140.0), status = ValueStatus.GOOD),
         lastConnection = StatusMetric(Timestamp(System.currentTimeMillis() - 60_000), status = ValueStatus.GOOD),
-        nextCannulaChange = StatusMetric(ExpirationDate.Hard(Timestamp(System.currentTimeMillis() + 172_800_000)), status = ValueStatus.GOOD)
+        nextExpiration = StatusMetric(
+            value = Expiration(
+                type = ReplaceableComponentType.Cannula,
+                date = ExpirationDate.Hard(Timestamp(System.currentTimeMillis() + 172_800_000))
+            ),
+            status = ValueStatus.GOOD
+        )
     )
 )
 

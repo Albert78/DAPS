@@ -110,7 +110,7 @@ sealed interface OverviewPumpUiState {
         val battery: StatusMetric<Int>,
         val reservoir: StatusMetric<InsulinAmount>,
         val lastConnection: StatusMetric<Timestamp>,
-        val nextCannulaChange: StatusMetric<ExpirationDate>
+        val nextExpiration: StatusMetric<Expiration>
     ) : OverviewPumpUiState
 }
 
@@ -485,18 +485,17 @@ class SystemControlViewModel(
                 pInfo.lastConnection < Timestamp.now().minusMinutes(CONNECTION_WARNING_THRESHOLD_MINUTES) -> ValueStatus.WARNING
                 else -> ValueStatus.GOOD
             }
-            val nextCannulaChangeExpiration = pInfo.expirations
-                .map { it.date }
-                .minByOrNull { expDate ->
-                    when (expDate) {
+            val nextExpirationItem = pInfo.expirations
+                .minByOrNull { exp ->
+                    when (val expDate = exp.date) {
                         is ExpirationDate.Hard -> expDate.dateTime.ms
                         is ExpirationDate.Approximate -> expDate.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
                     }
                 }
-            val nextCannulaChangeStatus = when (nextCannulaChangeExpiration) {
+            val nextExpirationStatus = when (val expDate = nextExpirationItem?.date) {
                 null -> ValueStatus.GOOD
                 is ExpirationDate.Hard -> {
-                    val ts = nextCannulaChangeExpiration.dateTime
+                    val ts = expDate.dateTime
                     when {
                         ts.isInvalid() -> ValueStatus.GOOD
                         ts <= Timestamp.now() -> ValueStatus.BAD
@@ -505,7 +504,7 @@ class SystemControlViewModel(
                     }
                 }
                 is ExpirationDate.Approximate -> {
-                    val date = nextCannulaChangeExpiration.date
+                    val date = expDate.date
                     val today = LocalDate.now()
                     when {
                         date <= today -> ValueStatus.BAD
@@ -541,9 +540,9 @@ class SystemControlViewModel(
                     value = pInfo.lastConnection,
                     status = lastConnectionStatus
                 ),
-                nextCannulaChange = StatusMetric(
-                    value = nextCannulaChangeExpiration,
-                    status = nextCannulaChangeStatus
+                nextExpiration = StatusMetric(
+                    value = nextExpirationItem,
+                    status = nextExpirationStatus
                 )
             )
         }

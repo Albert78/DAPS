@@ -447,6 +447,7 @@
     <string name="system_control_source_transmitter_sn_label">Transmitter-Seriennummer</string>
     <string name="system_control_source_expiration_label">Ablaufdatum</string>
     <string name="system_control_source_estimated_expiration_label">Geschätztes Ablaufdatum</string>
+    <string name="system_control_expiration_grace_until_label">Nachfrist bis</string>
     <string name="system_control_source_action_stop_sensor">Sensor stoppen</string>
     <string name="system_control_cgm_value_at_time">%1$s um %2$s</string>
     <string name="system_control_cgm_at_time">%1$s</string>
@@ -481,6 +482,7 @@
     <string name="system_control_pump_action_maintainance_disconnect">Zur Wartung trennen</string>
     <string name="system_control_pump_technical_status">Technischer Status</string>
     <string name="system_control_pump_actions">Aktionen</string>
+    <string name="system_control_pump_expirations_title">Ablaufdaten &amp; Wechsel</string>
     <string name="system_control_pump_jobs_title">Ausstehende Pumpenjobs</string>
     <string name="system_control_pump_jobs_empty">Keine ausstehenden Jobs</string>
     <string name="system_control_pump_job_cancel">Job abbrechen</string>
@@ -560,6 +562,9 @@
     <string name="overview_pump_none_configured">Keine Insulinpumpe konfiguriert</string>
     <string name="overview_pump_cd_refresh_status">Pumpenstatus aktualisieren</string>
     <string name="overview_pump_next_cannula_change_label">Nächster Kanülenwechsel</string>
+    <string name="overview_pump_next_patch_change_label">Nächster Patch-Wechsel</string>
+    <string name="overview_pump_next_sensor_change_label">Nächster Sensor-Wechsel</string>
+    <string name="overview_pump_next_expiration_label">Nächster Wechsel</string>
     <string name="overview_pump_battery_label">Batteriestatus</string>
     <string name="overview_pump_reservoir_label">Reservoir-Füllstand</string>
     <string name="overview_pump_last_bolus_label">Letzter Bolus</string>
