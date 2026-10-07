@@ -24,10 +24,16 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.key
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.seconds
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -86,6 +92,14 @@ fun SystemControlContent(
     onRefreshPumpStatus: () -> Unit = {}
 ) {
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(initialTab) }
+
+    var timeTicker by remember { mutableLongStateOf(0L) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(10.seconds)
+            timeTicker++
+        }
+    }
 
     val tabs = listOf(
         stringResource(id = R.string.system_control_tab_overview),
@@ -156,24 +170,26 @@ fun SystemControlContent(
                 }
                 is SystemControlUiState.Content -> {
                     item {
-                        when (selectedTabIndex) {
-                            SYSTEM_CONTROL_TAB_OVERVIEW -> OverviewTabContent(
-                                uiState = uiState.overviewUiState,
-                                onRefreshPumpStatus = onRefreshPumpStatus,
-                                onNavigateToCoreDecisions = onNavigateToCoreDecisions
-                            )
-                            SYSTEM_CONTROL_TAB_GLUCOSE_SOURCE -> SourceTabContent(
-                                uiState = uiState.sourceTabUiState,
-                                onChangeGlucoseSource = onNavigateToGlucoseSourceSetup,
-                                onStopSensor = onStopGlucoseSource
-                            )
-                            SYSTEM_CONTROL_TAB_PUMP -> PumpTabContent(
-                                uiState = uiState.pumpTabUiState,
-                                onChangePumpDriver = onNavigateToPumpSetup,
-                                onRefreshPumpStatus = onRefreshPumpStatus,
-                                onDisconnectForMaintenance = onDisconnectForMaintenance,
-                                onCancelPumpJob = onCancelPumpJob
-                            )
+                        key(selectedTabIndex, timeTicker) {
+                            when (selectedTabIndex) {
+                                SYSTEM_CONTROL_TAB_OVERVIEW -> OverviewTabContent(
+                                    uiState = uiState.overviewUiState,
+                                    onRefreshPumpStatus = onRefreshPumpStatus,
+                                    onNavigateToCoreDecisions = onNavigateToCoreDecisions
+                                )
+                                SYSTEM_CONTROL_TAB_GLUCOSE_SOURCE -> SourceTabContent(
+                                    uiState = uiState.sourceTabUiState,
+                                    onChangeGlucoseSource = onNavigateToGlucoseSourceSetup,
+                                    onStopSensor = onStopGlucoseSource
+                                )
+                                SYSTEM_CONTROL_TAB_PUMP -> PumpTabContent(
+                                    uiState = uiState.pumpTabUiState,
+                                    onChangePumpDriver = onNavigateToPumpSetup,
+                                    onRefreshPumpStatus = onRefreshPumpStatus,
+                                    onDisconnectForMaintenance = onDisconnectForMaintenance,
+                                    onCancelPumpJob = onCancelPumpJob
+                                )
+                            }
                         }
                     }
                 }
