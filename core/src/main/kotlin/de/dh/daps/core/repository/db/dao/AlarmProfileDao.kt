@@ -35,7 +35,7 @@ interface AlarmProfileDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAlarmProfiles(profiles: List<AlarmProfileEntity>)
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAlarmProfile(profile: AlarmProfileEntity): Long
 
     @Update

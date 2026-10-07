@@ -6,6 +6,7 @@ import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgSampleKind
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.model.data.max
 import de.dh.daps.common.service.SystemWakeService
 import de.dh.daps.common.service.WakeupHandler
 import kotlinx.coroutines.CoroutineScope
@@ -30,6 +31,7 @@ class SimBodyHeartbeat(
 
     private val scope = CoroutineScope(Dispatchers.Main)
     private var started = false
+    private var lastStepTimestamp: Timestamp = Timestamp.INVALID
 
     init {
         wakeService.registerHandler(WAKE_TAG, this)
@@ -50,19 +52,16 @@ class SimBodyHeartbeat(
             Log.d(TAG, "SimBody Heartbeat starting (model loaded)")
 
             val now = Timestamp.now()
-            val lastSimulation = bodyModel.lastSimulationTimestamp
-            val intervalMs = SIMULATION_INTERVAL_MINUTES * 60 * 1000L
+            val nextEmission = bodyModel.lastSimulationTimestamp.plusMinutes(SIMULATION_INTERVAL_MINUTES)
 
-            val nextEmissionMs = lastSimulation.ms + intervalMs
-
-            if (now.ms >= nextEmissionMs) {
+            if (now >= nextEmission) {
                 // We are past the next expected emission, or it's the first run
                 performSimulationStep()
                 scheduleNext()
             } else {
                 // It's not time yet, wait for the next regular turnus
-                Log.d(TAG, "Resuming rhythm, next emission at ${Timestamp(nextEmissionMs)}")
-                scheduleNext(Timestamp(nextEmissionMs))
+                Log.d(TAG, "Resuming rhythm, next emission at $nextEmission")
+                scheduleNext(nextEmission)
             }
         }
     }
@@ -104,6 +103,15 @@ class SimBodyHeartbeat(
 
     private suspend fun performSimulationStep() {
         val now = Timestamp.now()
+        val lastExecuted = max(lastStepTimestamp, bodyModel.lastSimulationTimestamp)
+        val minNextAllowed = lastExecuted.plusMinutes(MIN_STEP_INTERVAL_MINUTES)
+
+        if (now < minNextAllowed) {
+            Log.d(TAG, "SimBody Heartbeat Simulation Step debounced ($now < $minNextAllowed)")
+            return
+        }
+
+        lastStepTimestamp = now
         Log.d(TAG, "SimBody Heartbeat Simulation Step at $now")
 
         // Ensure the system stays awake during emission
@@ -150,14 +158,13 @@ class SimBodyHeartbeat(
             targetTime
         } else {
             val now = Timestamp.now()
-            val lastSimulation = bodyModel.lastSimulationTimestamp
-            val intervalMs = SIMULATION_INTERVAL_MINUTES * 60 * 1000L
+            var next = bodyModel.lastSimulationTimestamp.plusMinutes(SIMULATION_INTERVAL_MINUTES)
+            val bufferTime = now.plusSeconds(5)
 
-            var next = lastSimulation.ms + intervalMs
-            while (next <= now.ms + 5000) { // 5s buffer
-                next += intervalMs
+            while (next <= bufferTime) { // 5s buffer
+                next = next.plusMinutes(SIMULATION_INTERVAL_MINUTES)
             }
-            Timestamp(next)
+            next
         }
 
         Log.d(TAG, "Scheduling next simulation step at $nextStep")
@@ -174,5 +181,6 @@ class SimBodyHeartbeat(
 
         private val WAKEUP_ID_SIMULATION = 1u
         private const val SIMULATION_INTERVAL_MINUTES = 5
+        private const val MIN_STEP_INTERVAL_MINUTES = 1
     }
 }

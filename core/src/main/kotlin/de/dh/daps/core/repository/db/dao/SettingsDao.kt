@@ -16,7 +16,7 @@ interface SettingsDao {
     @Query("SELECT * FROM current_settings LIMIT 1")
     fun observeCurrentSettings(): Flow<CurrentSettingsEntity?>
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCurrentSettings(data: CurrentSettingsEntity): Long
 
     @Update

@@ -18,7 +18,7 @@ interface ProviderDao {
     @Query("SELECT * FROM sensor_type where name = :name")
     suspend fun getSensorTypeByName(name: String): SensorTypeEntity?
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSensorType(value: SensorTypeEntity): Long
 
     @Query("SELECT * FROM data_provider ORDER BY name ASC")
@@ -27,7 +27,7 @@ interface ProviderDao {
     @Query("SELECT * FROM data_provider where name = :name")
     suspend fun getDataProviderByName(name: String): DataProviderEntity?
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDataProvider(value: DataProviderEntity): Long
 
     @Query("SELECT * FROM glucose_reading where timestamp > :timestamp ORDER BY timestamp ASC")
@@ -39,7 +39,7 @@ interface ProviderDao {
     @Query("SELECT * FROM glucose_reading ORDER BY timestamp ASC")
     fun observeAllReadings(): Flow<List<GlucoseReadingEntity>>
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertGlucoseReading(reading: GlucoseReadingEntity): Long
 
     @Query("DELETE FROM glucose_reading")

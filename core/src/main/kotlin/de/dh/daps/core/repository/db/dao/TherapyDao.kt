@@ -23,7 +23,7 @@ interface TherapyDao {
     @Query("SELECT * FROM insulin_profiles WHERE id = :id")
     suspend fun getInsulinProfileById(id: Long): InsulinProfileEntity?
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertInsulinProfile(profile: InsulinProfileEntity): Long
 
     @Update
@@ -51,7 +51,7 @@ interface TherapyDao {
     @Query("SELECT * FROM current_therapy_settings LIMIT 1")
     fun observeCurrentTherapySettings(): Flow<CurrentTherapySettingsEntity?>
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCurrentTherapySettings(data: CurrentTherapySettingsEntity): Long
 
     @Update
@@ -73,7 +73,7 @@ interface TherapyDao {
     @Query("SELECT * FROM scheduled_therapy_adjustments WHERE id = :id")
     suspend fun getScheduledTherapyAdjustmentById(id: Long): ScheduledTherapyAdjustmentEntity?
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertScheduledTherapyAdjustment(data: ScheduledTherapyAdjustmentEntity): Long
 
     @Update
@@ -98,7 +98,7 @@ interface TherapyDao {
     @Query("SELECT * FROM therapy_adjustments WHERE id = :id")
     suspend fun getTherapyAdjustmentById(id: Long): TherapyAdjustmentEntity?
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTherapyAdjustment(data: TherapyAdjustmentEntity): Long
 
     @Update

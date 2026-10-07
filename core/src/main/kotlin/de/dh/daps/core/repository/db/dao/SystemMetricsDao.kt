@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SystemMetricsDao {
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(insight: CoreInsightEntity): Long
 
     @Query("SELECT * FROM core_insights ORDER BY timestamp DESC")
@@ -32,10 +32,10 @@ interface SystemMetricsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCoreInsights(items: List<CoreInsightEntity>)
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertWakeupMetric(metric: WakeupMetricEntity): Long
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTickMetric(metric: TickMetricEntity): Long
 
     @Query("DELETE FROM wakeup_metrics WHERE scheduledTime < :timestamp")

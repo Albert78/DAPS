@@ -55,7 +55,7 @@ interface MetabolicEventsDao {
     @Query("SELECT * FROM meal WHERE id = :id")
     suspend fun getMealById(id: Long): MealEntity?
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMeal(meal: MealEntity): Long
 
     @Update
@@ -120,10 +120,10 @@ interface MetabolicEventsDao {
     @Query("SELECT * FROM insulin WHERE timestamp >= :since ORDER BY timestamp ASC")
     suspend fun getInsulinApplicationsSince(since: Long): List<InsulinEntity>
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertInsulinApplication(insulin: InsulinEntity): Long
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertInsulinApplications(insulin: List<InsulinEntity>): List<Long>
 
     @Update
@@ -154,7 +154,7 @@ interface MetabolicEventsDao {
     @Query("SELECT * FROM deferred_bolus ORDER BY timestamp ASC")
     suspend fun getAllDeferredBoluses(): List<DeferredBolusEntity>
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDeferredBolus(deferredBolus: DeferredBolusEntity): Long
 
     @Update
