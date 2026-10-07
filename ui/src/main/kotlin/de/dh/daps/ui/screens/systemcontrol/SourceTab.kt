@@ -51,12 +51,10 @@ import de.dh.daps.ui.common.icons.Icon_Previous
 import de.dh.daps.ui.common.readingsInterval
 import de.dh.daps.ui.common.shortDate
 import de.dh.daps.ui.common.shortDateTime
-import de.dh.daps.ui.common.shortRelativeTimeAgo
-import de.dh.daps.ui.common.shortRelativeTimeUntil
+import de.dh.daps.ui.common.shortRelativeTime
 import de.dh.daps.ui.common.smartTime
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.ExtendedTheme
-import java.time.ZoneId
 
 @Composable
 fun SourceTabContent(
@@ -233,7 +231,7 @@ fun SourceOverviewCard(
                         notAvailableText
                     }
                     val startDateRel = if (uiState.startDate != null && uiState.startDate.isValid()) {
-                        val rel = shortRelativeTimeAgo(uiState.startDate)
+                        val rel = shortRelativeTime(uiState.startDate)
                         if (rel.isNotEmpty()) "($rel)" else null
                     } else {
                         null
@@ -241,24 +239,12 @@ fun SourceOverviewCard(
 
                     val (expDateText, expDateRel) = when (val expDate = uiState.expiration?.date) {
                         is ExpirationDate.Hard -> {
-                            val dt = shortDateTime(expDate.dateTime)
-                            val rel = if (expDate.dateTime.ms < System.currentTimeMillis()) {
-                                shortRelativeTimeAgo(expDate.dateTime)
-                            } else {
-                                shortRelativeTimeUntil(expDate.dateTime)
-                            }
-                            dt to (if (rel.isNotEmpty()) "($rel)" else null)
+                            val rel = shortRelativeTime(expDate)
+                            shortDateTime(expDate.dateTime) to (if (rel.isNotEmpty()) "($rel)" else null)
                         }
                         is ExpirationDate.Approximate -> {
-                            val d = shortDate(expDate.date)
-                            val targetMs = expDate.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                            val diffMs = targetMs - System.currentTimeMillis()
-                            val rel = if (diffMs < 0) {
-                                shortRelativeTimeAgo(-diffMs)
-                            } else {
-                                shortRelativeTimeUntil(diffMs)
-                            }
-                            d to (if (rel.isNotEmpty()) "($rel)" else null)
+                            val rel = shortRelativeTime(expDate)
+                            shortDate(expDate.date) to (if (rel.isNotEmpty()) "($rel)" else null)
                         }
                         null -> notAvailableText to null
                     }
@@ -348,7 +334,7 @@ fun SourceOverviewCard(
                     }
 
                     val lastRelativeTime = if (lastReading != null && lastReading.timestamp.isValid()) {
-                        shortRelativeTimeAgo(lastReading.timestamp)
+                        shortRelativeTime(lastReading.timestamp)
                     } else {
                         null
                     }
@@ -396,7 +382,7 @@ fun SourceOverviewCard(
                                 }
 
                                 val nextRelativeTime = if (nextPred != null && nextPred.isValid()) {
-                                    shortRelativeTimeUntil(nextPred)
+                                    shortRelativeTime(nextPred)
                                 } else {
                                     null
                                 }

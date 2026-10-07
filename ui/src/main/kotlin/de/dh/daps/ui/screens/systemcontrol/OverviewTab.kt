@@ -50,12 +50,10 @@ import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.pluralStringResourceZero
 import de.dh.daps.ui.common.shortDate
 import de.dh.daps.ui.common.shortDateTime
-import de.dh.daps.ui.common.shortRelativeTimeAgo
-import de.dh.daps.ui.common.shortRelativeTimeUntil
+import de.dh.daps.ui.common.shortRelativeTime
 import de.dh.daps.ui.common.smartTime
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.ExtendedTheme
-import java.time.ZoneId
 
 @Composable
 fun OverviewTabContent(
@@ -564,36 +562,12 @@ private fun <T> StatusMetricText(
     }
     val relativeTime = when (val v = metric.value) {
         is Timestamp -> if (v.isValid()) {
-            val rel = if (isDateTime) {
-                if (v.ms < System.currentTimeMillis()) {
-                    shortRelativeTimeAgo(v)
-                } else {
-                    shortRelativeTimeUntil(v)
-                }
-            } else {
-                shortRelativeTimeAgo(v)
-            }
+            val rel = shortRelativeTime(v)
             if (rel.isNotEmpty()) "($rel)" else null
         } else null
-        is ExpirationDate -> when (v) {
-            is ExpirationDate.Hard -> {
-                val rel = if (v.dateTime.ms < System.currentTimeMillis()) {
-                    shortRelativeTimeAgo(v.dateTime)
-                } else {
-                    shortRelativeTimeUntil(v.dateTime)
-                }
-                if (rel.isNotEmpty()) "($rel)" else null
-            }
-            is ExpirationDate.Approximate -> {
-                val targetMs = v.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                val diffMs = targetMs - System.currentTimeMillis()
-                val rel = if (diffMs < 0) {
-                    shortRelativeTimeAgo(-diffMs)
-                } else {
-                    shortRelativeTimeUntil(diffMs)
-                }
-                if (rel.isNotEmpty()) "($rel)" else null
-            }
+        is ExpirationDate -> {
+            val rel = shortRelativeTime(v)
+            if (rel.isNotEmpty()) "($rel)" else null
         }
         else -> null
     }

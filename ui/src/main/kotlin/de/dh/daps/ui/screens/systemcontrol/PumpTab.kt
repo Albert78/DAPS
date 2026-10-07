@@ -51,12 +51,10 @@ import de.dh.daps.ui.common.icons.PumpReservoir
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.shortDate
 import de.dh.daps.ui.common.shortDateTime
-import de.dh.daps.ui.common.shortRelativeTimeAgo
-import de.dh.daps.ui.common.shortRelativeTimeUntil
+import de.dh.daps.ui.common.shortRelativeTime
 import de.dh.daps.ui.common.smartTime
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.ExtendedTheme
-import java.time.ZoneId
 
 @Composable
 fun PumpTabContent(
@@ -265,7 +263,7 @@ fun PumpOverviewCard(
                     }
 
                     val lastConnRelativeText = if (lastConnTimestamp.isValid()) {
-                        val rel = shortRelativeTimeAgo(lastConnTimestamp)
+                        val rel = shortRelativeTime(lastConnTimestamp)
                         if (rel.isNotEmpty()) "($rel)" else null
                     } else {
                         null
@@ -409,24 +407,12 @@ fun PumpExpirationsCard(
 
                 val (expDateText, expDateRel) = when (val expDate = exp.date) {
                     is ExpirationDate.Hard -> {
-                        val dt = shortDateTime(expDate.dateTime)
-                        val rel = if (expDate.dateTime.ms < System.currentTimeMillis()) {
-                            shortRelativeTimeAgo(expDate.dateTime)
-                        } else {
-                            shortRelativeTimeUntil(expDate.dateTime)
-                        }
-                        dt to (if (rel.isNotEmpty()) "($rel)" else null)
+                        val rel = shortRelativeTime(expDate)
+                        shortDateTime(expDate.dateTime) to (if (rel.isNotEmpty()) "($rel)" else null)
                     }
                     is ExpirationDate.Approximate -> {
-                        val d = shortDate(expDate.date)
-                        val targetMs = expDate.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                        val diffMs = targetMs - System.currentTimeMillis()
-                        val rel = if (diffMs < 0) {
-                            shortRelativeTimeAgo(-diffMs)
-                        } else {
-                            shortRelativeTimeUntil(diffMs)
-                        }
-                        d to (if (rel.isNotEmpty()) "($rel)" else null)
+                        val rel = shortRelativeTime(expDate)
+                        shortDate(expDate.date) to (if (rel.isNotEmpty()) "($rel)" else null)
                     }
                 }
 
@@ -463,11 +449,7 @@ fun PumpExpirationsCard(
                         val graceUntil = exp.graceUntil
                         if (graceUntil != null && graceUntil.isValid()) {
                             val graceText = shortDateTime(graceUntil)
-                            val graceRel = if (graceUntil.ms < System.currentTimeMillis()) {
-                                shortRelativeTimeAgo(graceUntil)
-                            } else {
-                                shortRelativeTimeUntil(graceUntil)
-                            }
+                            val graceRel = shortRelativeTime(graceUntil)
                             val formattedGraceRel = if (graceRel.isNotEmpty()) "($graceRel)" else null
 
                             ControlDetailRow(

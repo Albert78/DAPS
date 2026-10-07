@@ -8,6 +8,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.stringResource
+import de.dh.daps.common.model.ExpirationDate
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.data.BgDelta
 import de.dh.daps.common.model.data.BgReadingsInterval
@@ -393,6 +394,45 @@ fun shortRelativeTimeUntil(diffMs: Long): String {
 fun shortRelativeTimeUntil(timestamp: Timestamp): String {
     val diffMs = timestamp.ms - System.currentTimeMillis()
     return shortRelativeTimeUntil(diffMs)
+}
+
+/**
+ * Composable UI function.
+ * Formats a [Timestamp] into a relative time description (past or future automatically).
+ *
+ * @example shortRelativeTime(pastTimestamp) -> "vor 5 Min." / "5 min ago"
+ * @example shortRelativeTime(futureTimestamp) -> "in 5 Min." / "in 5 min"
+ */
+@Composable
+fun shortRelativeTime(timestamp: Timestamp): String {
+    val now = System.currentTimeMillis()
+    return if (timestamp.ms < now) {
+        shortRelativeTimeAgo(timestamp)
+    } else {
+        shortRelativeTimeUntil(timestamp)
+    }
+}
+
+/**
+ * Composable UI function.
+ * Formats an [ExpirationDate] into a relative time description (past or future automatically).
+ *
+ * @example shortRelativeTime(expirationDate) -> "vor 2 Std." / "in 3 Tagen"
+ */
+@Composable
+fun shortRelativeTime(expirationDate: ExpirationDate): String {
+    return when (expirationDate) {
+        is ExpirationDate.Hard -> shortRelativeTime(expirationDate.dateTime)
+        is ExpirationDate.Approximate -> {
+            val targetMs = expirationDate.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            val diffMs = targetMs - System.currentTimeMillis()
+            if (diffMs < 0) {
+                shortRelativeTimeAgo(-diffMs)
+            } else {
+                shortRelativeTimeUntil(diffMs)
+            }
+        }
+    }
 }
 
 /**
