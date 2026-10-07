@@ -36,6 +36,3 @@ include(":pump-dana-i-driver")
 include(":pump-omnipod-protocol")
 include(":pump-omnipod-dash")
 include(":app")
-
-include(":omnipod:common")
-include(":omnipod:dash")
