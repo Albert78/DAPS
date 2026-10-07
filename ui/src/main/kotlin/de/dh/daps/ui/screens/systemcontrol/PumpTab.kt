@@ -250,10 +250,12 @@ fun PumpOverviewCard(
                     )
 
                     val statusText = when {
+                        uiState.isExpired -> stringResource(R.string.overview_glucose_source_status_expired)
                         uiState.isSuspended -> stringResource(R.string.system_control_pump_state_suspended)
                         else -> stringResource(R.string.system_control_pump_state_active)
                     }
                     val statusColor = when {
+                        uiState.isExpired -> MaterialTheme.colorScheme.error
                         uiState.isSuspended -> ExtendedTheme.semanticColors.warning
                         else -> ExtendedTheme.semanticColors.good
                     }
@@ -756,6 +758,7 @@ internal fun samplePumpTabExpiredUiState(): PumpTabUiState = PumpTabUiState.Cont
     manufacturer = "DAPS",
     pumpModel = "Simulator",
     serialNumber = "SIM-001",
+    isExpired = true,
     expirations = listOf(
         Expiration(
             type = ReplaceableComponentType.Catheter,

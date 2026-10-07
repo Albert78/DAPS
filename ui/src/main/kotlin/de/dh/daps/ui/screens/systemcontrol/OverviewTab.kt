@@ -536,6 +536,7 @@ private fun <T> StatusMetricText(
                 OverviewPumpState.ACTIVE -> stringResource(id = R.string.label_active)
                 OverviewPumpState.SUSPENDED -> stringResource(id = R.string.overview_pump_state_suspended)
                 OverviewPumpState.ERROR -> stringResource(id = R.string.overview_pump_state_error)
+                OverviewPumpState.EXPIRED -> stringResource(id = R.string.overview_glucose_source_status_expired)
             }
             is GlucoseSourceStatus -> when (v) {
                 GlucoseSourceStatus.Ok -> stringResource(id = R.string.overview_glucose_source_status_ok)

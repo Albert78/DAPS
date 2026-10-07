@@ -61,7 +61,8 @@ enum class ValueStatus {
 enum class OverviewPumpState {
     ACTIVE,
     SUSPENDED,
-    ERROR
+    ERROR,
+    EXPIRED
 }
 
 data class StatusMetric<T>(
@@ -138,6 +139,7 @@ sealed interface SourceTabUiState {
         val nextPredictedTimestamp: Timestamp? = null,
         val hasNextPrediction: Boolean = false,
         val expiration: Expiration? = null,
+        val isExpired: Boolean = false,
         val glucoseSourcePluginSection: (@Composable () -> Unit)? = null
     ) : SourceTabUiState
 }
@@ -162,6 +164,7 @@ sealed interface PumpTabUiState {
         val serialNumber: String? = null,
         val pumpConnected: Boolean = false,
         val isSuspended: Boolean = false,
+        val isExpired: Boolean = false,
         val startDate: Timestamp? = null,
         val expirations: List<Expiration> = emptyList(),
         val pendingJobs: List<PumpJobItem> = emptyList(),
@@ -195,6 +198,7 @@ class SystemControlViewModel(
         val nextPredictedTimestamp: Timestamp? = null,
         val hasNextPrediction: Boolean = false,
         val expiration: Expiration? = null,
+        val isExpired: Boolean = false,
         val pluginUiProvider: GlucoseSourcePluginUiProvider? = null
     )
 
@@ -210,6 +214,7 @@ class SystemControlViewModel(
         val expirations: List<Expiration> = emptyList(),
         val jobs: List<PumpJob> = emptyList(),
         val isSuspended: Boolean = false,
+        val isExpired: Boolean = false,
         val hasError: Boolean = false,
         val pluginUiProvider: PumpPluginUiProvider? = null
     )
@@ -296,25 +301,22 @@ class SystemControlViewModel(
                 val endDate = array[6] as Expiration?
                 val isExpired = array[7] as Boolean
 
-                if (isExpired) {
-                    null
-                } else {
-                    GlucoseUiData(
-                        sourceName = sourceName,
-                        readingsInterval = interval,
-                        status = status,
-                        manufacturer = hardware?.manufacturer,
-                        model = hardware?.model,
-                        serialNumber = hardware?.serialNumber,
-                        startDate = startDate,
-                        lastConnection = lastConn,
-                        lastBgReading = currentBg,
-                        nextPredictedTimestamp = if (hasPrediction) nextPredicted else null,
-                        hasNextPrediction = hasPrediction,
-                        expiration = endDate,
-                        pluginUiProvider = provider
-                    )
-                }
+                GlucoseUiData(
+                    sourceName = sourceName,
+                    readingsInterval = interval,
+                    status = status,
+                    manufacturer = hardware?.manufacturer,
+                    model = hardware?.model,
+                    serialNumber = hardware?.serialNumber,
+                    startDate = startDate,
+                    lastConnection = lastConn,
+                    lastBgReading = currentBg,
+                    nextPredictedTimestamp = if (hasPrediction) nextPredicted else null,
+                    hasNextPrediction = hasPrediction,
+                    expiration = endDate,
+                    isExpired = isExpired,
+                    pluginUiProvider = provider
+                )
             }
         }
     }
@@ -350,25 +352,22 @@ class SystemControlViewModel(
                 @Suppress("UNCHECKED_CAST")
                 val expirations = array[7] as List<Expiration>
 
-                if (isExpired) {
-                    null
-                } else {
-                    PumpUiData(
-                        connected = connected,
-                        pumpName = pumpName,
-                        model = hardware?.model,
-                        manufacturer = hardware?.manufacturer,
-                        serialNumber = hardware?.serialNumber,
-                        status = status,
-                        lastConnection = lastConn,
-                        startDate = startDate,
-                        expirations = expirations,
-                        jobs = jobs,
-                        isSuspended = status.pumpSuspended,
-                        hasError = jobs.any { it.lastError != null },
-                        pluginUiProvider = pump as? PumpPluginUiProvider
-                    )
-                }
+                PumpUiData(
+                    connected = connected,
+                    pumpName = pumpName,
+                    model = hardware?.model,
+                    manufacturer = hardware?.manufacturer,
+                    serialNumber = hardware?.serialNumber,
+                    status = status,
+                    lastConnection = lastConn,
+                    startDate = startDate,
+                    expirations = expirations,
+                    jobs = jobs,
+                    isSuspended = status.pumpSuspended,
+                    isExpired = isExpired,
+                    hasError = jobs.any { it.lastError != null },
+                    pluginUiProvider = pump as? PumpPluginUiProvider
+                )
             }
         }
     }
@@ -413,10 +412,11 @@ class SystemControlViewModel(
         val overviewGlucoseSource: OverviewGlucoseSourceUiState = if (gInfo == null) {
             OverviewGlucoseSourceUiState.NoneConfigured
         } else {
-            val (glucoseSourceStatus, glucoseValueStatus) = when (gInfo.status) {
-                GlucoseSourceStatus.Ok -> gInfo.status to ValueStatus.GOOD
-                GlucoseSourceStatus.Expired -> gInfo.status to ValueStatus.WARNING
-                GlucoseSourceStatus.Error -> gInfo.status to ValueStatus.BAD
+            val (glucoseSourceStatus, glucoseValueStatus) = when {
+                gInfo.isExpired -> GlucoseSourceStatus.Expired to ValueStatus.BAD
+                gInfo.status == GlucoseSourceStatus.Error -> GlucoseSourceStatus.Error to ValueStatus.BAD
+                gInfo.status == GlucoseSourceStatus.Expired -> GlucoseSourceStatus.Expired to ValueStatus.WARNING
+                else -> GlucoseSourceStatus.Ok to ValueStatus.GOOD
             }
             val lastConnectionStatus = when {
                 gInfo.lastConnection == null || gInfo.lastConnection.isInvalid() || gInfo.lastConnection < Timestamp.now().minusMinutes(CONNECTION_BAD_THRESHOLD_MINUTES) -> ValueStatus.BAD
@@ -476,6 +476,7 @@ class SystemControlViewModel(
             OverviewPumpUiState.NoneConfigured
         } else {
             val (pumpOverviewState, pumpValueStatus) = when {
+                pInfo.isExpired -> OverviewPumpState.EXPIRED to ValueStatus.BAD
                 pInfo.hasError -> OverviewPumpState.ERROR to ValueStatus.BAD
                 pInfo.isSuspended -> OverviewPumpState.SUSPENDED to ValueStatus.WARNING
                 else -> OverviewPumpState.ACTIVE to ValueStatus.GOOD
@@ -569,6 +570,7 @@ class SystemControlViewModel(
                 nextPredictedTimestamp = gInfo.nextPredictedTimestamp,
                 hasNextPrediction = gInfo.hasNextPrediction,
                 expiration = gInfo.expiration,
+                isExpired = gInfo.isExpired,
                 glucoseSourcePluginSection = gInfo.pluginUiProvider?.let { provider -> { provider.GlucoseSourceControlSection() } }
             )
         }
@@ -622,6 +624,7 @@ class SystemControlViewModel(
                 serialNumber = pInfo.serialNumber,
                 pumpConnected = pInfo.connected,
                 isSuspended = pInfo.isSuspended,
+                isExpired = pInfo.isExpired,
                 startDate = pInfo.startDate,
                 expirations = pInfo.expirations,
                 pendingJobs = pumpJobsList,

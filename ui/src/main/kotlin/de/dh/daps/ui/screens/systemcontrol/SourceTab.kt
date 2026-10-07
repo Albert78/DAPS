@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.Button
@@ -53,6 +54,7 @@ import de.dh.daps.ui.common.readingsInterval
 import de.dh.daps.ui.common.shortRelativeTimeAgo
 import de.dh.daps.ui.common.shortRelativeTimeUntil
 import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.daps.ui.common.time
 import java.time.ZoneId
 
@@ -223,11 +225,84 @@ fun SourceOverviewCard(
                         }
                     }
 
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    val startDateText = if (uiState.startDate != null && uiState.startDate.isValid()) {
+                        longDateTime(uiState.startDate)
+                    } else {
+                        notAvailableText
+                    }
+
+                    val expDateText = when (val expDate = uiState.expiration?.date) {
+                        is ExpirationDate.Hard -> {
+                            val dt = longDateTime(expDate.dateTime)
+                            val rel = if (expDate.dateTime.ms < System.currentTimeMillis()) {
+                                shortRelativeTimeAgo(expDate.dateTime)
+                            } else {
+                                shortRelativeTimeUntil(expDate.dateTime)
+                            }
+                            if (rel.isNotEmpty()) "$dt ($rel)" else dt
+                        }
+                        is ExpirationDate.Approximate -> {
+                            val d = longDate(expDate.date)
+                            val targetMs = expDate.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                            val diffMs = targetMs - System.currentTimeMillis()
+                            val rel = if (diffMs < 0) {
+                                shortRelativeTimeAgo(-diffMs)
+                            } else {
+                                shortRelativeTimeUntil(diffMs)
+                            }
+                            if (rel.isNotEmpty()) "$d ($rel)" else d
+                        }
+                        null -> notAvailableText
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(24.dp)
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            ControlDetailRow(
+                                label = stringResource(R.string.system_control_source_start_time_label),
+                                reserveIconSpace = true
+                            ) {
+                                Text(
+                                    text = startDateText,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            ControlDetailRow(
+                                label = stringResource(R.string.system_control_source_expiration_label),
+                                reserveIconSpace = true
+                            ) {
+                                Text(
+                                    text = expDateText,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+                    }
+
                     HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 20.dp),
+                        modifier = Modifier.padding(vertical = 12.dp),
                         thickness = 0.5.dp,
                         color = MaterialTheme.colorScheme.outlineVariant
                     )
+
+                    val statusText = when {
+                        uiState.isExpired -> stringResource(R.string.overview_glucose_source_status_expired)
+                        else -> stringResource(R.string.label_active)
+                    }
+                    val statusColor = when {
+                        uiState.isExpired -> MaterialTheme.colorScheme.error
+                        else -> ExtendedTheme.semanticColors.good
+                    }
 
                     val lastReading = uiState.lastBgReading
                     val bgValueText = if (lastReading != null) {
@@ -248,16 +323,38 @@ fun SourceOverviewCard(
                         null
                     }
 
-                    ControlDetailRow(
-                        label = stringResource(R.string.system_control_source_last_reading_label),
-                        icon = Icon_Previous
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        GlucoseFragments(
-                            value = bgValueText,
-                            time = lastTimeText,
-                            extra = lastRelativeTime,
-                            stackVertical = true
-                        )
+                        Column(modifier = Modifier.weight(1f)) {
+                            ControlDetailRow(
+                                label = stringResource(R.string.overview_status_label),
+                                icon = Icons.Default.Settings
+                            ) {
+                                Text(
+                                    text = statusText,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = statusColor,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            ControlDetailRow(
+                                label = stringResource(R.string.system_control_source_last_reading_label),
+                                icon = Icon_Previous
+                            ) {
+                                GlucoseFragments(
+                                    value = bgValueText,
+                                    time = lastTimeText,
+                                    extra = lastRelativeTime,
+                                    stackVertical = true
+                                )
+                            }
+                        }
                     }
 
                     if (uiState.hasNextPrediction) {
@@ -604,6 +701,7 @@ internal fun sampleSourceTabExpiredUiState(): SourceTabUiState = SourceTabUiStat
         date = ExpirationDate.Hard(Timestamp(System.currentTimeMillis() - 7_200_000L)),
         graceUntil = Timestamp(System.currentTimeMillis() - 1_800_000L)
     ),
+    isExpired = true,
     glucoseSourcePluginSection = {
         GlucoseSourcePluginExampleCard(
             sensorCode = "8132",
