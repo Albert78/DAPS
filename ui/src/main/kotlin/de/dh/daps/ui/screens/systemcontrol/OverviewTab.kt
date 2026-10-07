@@ -564,21 +564,34 @@ private fun <T> StatusMetricText(
     }
     val relativeTime = when (val v = metric.value) {
         is Timestamp -> if (v.isValid()) {
-            if (isDateTime) {
-                val rel = shortRelativeTimeUntil(v)
-                if (rel.isNotEmpty()) "($rel)" else null
+            val rel = if (isDateTime) {
+                if (v.ms < System.currentTimeMillis()) {
+                    shortRelativeTimeAgo(v)
+                } else {
+                    shortRelativeTimeUntil(v)
+                }
             } else {
                 shortRelativeTimeAgo(v)
             }
+            if (rel.isNotEmpty()) "($rel)" else null
         } else null
         is ExpirationDate -> when (v) {
             is ExpirationDate.Hard -> {
-                val rel = shortRelativeTimeUntil(v.dateTime)
+                val rel = if (v.dateTime.ms < System.currentTimeMillis()) {
+                    shortRelativeTimeAgo(v.dateTime)
+                } else {
+                    shortRelativeTimeUntil(v.dateTime)
+                }
                 if (rel.isNotEmpty()) "($rel)" else null
             }
             is ExpirationDate.Approximate -> {
                 val targetMs = v.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                val rel = shortRelativeTimeUntil(targetMs - System.currentTimeMillis())
+                val diffMs = targetMs - System.currentTimeMillis()
+                val rel = if (diffMs < 0) {
+                    shortRelativeTimeAgo(-diffMs)
+                } else {
+                    shortRelativeTimeUntil(diffMs)
+                }
                 if (rel.isNotEmpty()) "($rel)" else null
             }
         }
@@ -689,6 +702,56 @@ fun OverviewTabPreview() {
         Surface {
             OverviewTabContent(
                 uiState = sampleOverviewTabUiState(),
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
+}
+
+internal fun sampleOverviewTabExpiredUiState(): OverviewTabUiState = OverviewTabUiState.Content(
+    androidSystem = OverviewAndroidSystemUiState.Content(
+        bluetoothStatus = StatusMetric(true, status = ValueStatus.GOOD),
+        phoneBattery = StatusMetric(82, status = ValueStatus.GOOD),
+        permissionsStatus = StatusMetric(0, status = ValueStatus.GOOD),
+        dapsServiceStatus = StatusMetric(true, status = ValueStatus.GOOD)
+    ),
+    apsSystem = OverviewApsSystemUiState.Content(
+        mode = StatusMetric(ApsMode.AutoCorrection, status = ValueStatus.WARNING),
+        lastCalculation = StatusMetric(Timestamp(System.currentTimeMillis() - 120_000), status = ValueStatus.GOOD),
+        status = StatusMetric(1, status = ValueStatus.WARNING)
+    ),
+    glucoseSource = OverviewGlucoseSourceUiState.Content(
+        sensorName = UiText.DynamicString("SimBody Virtueller Glukosesensor"),
+        status = StatusMetric(GlucoseSourceStatus.Expired, status = ValueStatus.BAD),
+        lastConnection = StatusMetric(Timestamp(System.currentTimeMillis() - 60_000), status = ValueStatus.GOOD),
+        lastReading = StatusMetric(Timestamp(System.currentTimeMillis() - 900_000), status = ValueStatus.WARNING),
+        sensorExpiration = StatusMetric(ExpirationDate.Hard(Timestamp(System.currentTimeMillis() - 7_200_000)), status = ValueStatus.BAD)
+    ),
+    insulinPump = OverviewPumpUiState.Content(
+        pumpName = UiText.DynamicString("SimBody Virtuelle Insulinpumpe"),
+        state = StatusMetric(OverviewPumpState.EXPIRED, status = ValueStatus.BAD),
+        lastBolus = StatusMetric(Timestamp(System.currentTimeMillis() - 600_000), status = ValueStatus.GOOD),
+        battery = StatusMetric(45, status = ValueStatus.GOOD),
+        reservoir = StatusMetric(InsulinAmount(15.0), status = ValueStatus.WARNING),
+        lastConnection = StatusMetric(Timestamp(System.currentTimeMillis() - 60_000), status = ValueStatus.GOOD),
+        nextExpiration = StatusMetric(
+            value = Expiration(
+                type = ReplaceableComponentType.Catheter,
+                date = ExpirationDate.Hard(Timestamp(System.currentTimeMillis() - 7_200_000))
+            ),
+            status = ValueStatus.BAD
+        )
+    )
+)
+
+@Preview(showBackground = true, heightDp = 1200, name = "Overview Tab - Expired Mode")
+@Preview(showBackground = true, heightDp = 1200, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Overview Tab - Expired Mode - Dark")
+@Composable
+fun OverviewTabExpiredPreview() {
+    AppTheme {
+        Surface {
+            OverviewTabContent(
+                uiState = sampleOverviewTabExpiredUiState(),
                 modifier = Modifier.padding(16.dp)
             )
         }

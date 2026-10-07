@@ -4,8 +4,6 @@ import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -51,13 +49,12 @@ import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.icons.PumpReservoir
 import de.dh.daps.ui.common.insulinValue
-import de.dh.daps.ui.common.longDate
-import de.dh.daps.ui.common.longDateTime
+import de.dh.daps.ui.common.shortDate
+import de.dh.daps.ui.common.shortDateTime
 import de.dh.daps.ui.common.shortRelativeTimeAgo
 import de.dh.daps.ui.common.shortRelativeTimeUntil
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.ExtendedTheme
-import de.dh.daps.ui.common.time
 import java.time.ZoneId
 
 @Composable
@@ -160,7 +157,6 @@ fun PumpTabContent(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PumpOverviewCard(
     uiState: PumpTabUiState,
@@ -262,13 +258,14 @@ fun PumpOverviewCard(
 
                     val lastConnTimestamp = uiState.lastConnectionTimestamp
                     val lastConnTimeText = if (lastConnTimestamp.isValid()) {
-                        time(lastConnTimestamp)
+                        shortDateTime(lastConnTimestamp)
                     } else {
                         notAvailableText
                     }
 
                     val lastConnRelativeText = if (lastConnTimestamp.isValid()) {
-                        shortRelativeTimeAgo(lastConnTimestamp)
+                        val rel = shortRelativeTimeAgo(lastConnTimestamp)
+                        if (rel.isNotEmpty()) "($rel)" else null
                     } else {
                         null
                     }
@@ -312,29 +309,19 @@ fun PumpOverviewCard(
                                     label = stringResource(R.string.system_control_pump_last_conn_label),
                                     icon = Icons.Outlined.Link
                                 ) {
-                                    FlowRow(
-                                        verticalArrangement = Arrangement.Center,
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                    ) {
+                                    Column {
                                         Text(
                                             text = lastConnTimeText,
                                             style = MaterialTheme.typography.bodyMedium,
-                                            fontWeight = FontWeight.Medium,
-                                            modifier = Modifier.align(Alignment.CenterVertically),
+                                            fontWeight = FontWeight.Bold,
                                             maxLines = 2,
                                             overflow = TextOverflow.Ellipsis
                                         )
-                                        if (!lastConnRelativeText.isNullOrEmpty()) {
-                                            val formattedRelative = if (lastConnRelativeText.startsWith("(") && lastConnRelativeText.endsWith(")")) {
-                                                lastConnRelativeText
-                                            } else {
-                                                "($lastConnRelativeText)"
-                                            }
+                                        if (lastConnRelativeText != null) {
                                             Text(
-                                                text = formattedRelative,
+                                                text = lastConnRelativeText,
                                                 style = MaterialTheme.typography.bodySmall,
-                                                color = MaterialTheme.colorScheme.secondary,
-                                                modifier = Modifier.align(Alignment.CenterVertically),
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                 maxLines = 2,
                                                 overflow = TextOverflow.Ellipsis
                                             )
@@ -419,18 +406,18 @@ fun PumpExpirationsCard(
                     ReplaceableComponentType.Sensor -> stringResource(R.string.overview_pump_next_sensor_change_label)
                 }
 
-                val expDateDisplay = when (val expDate = exp.date) {
+                val (expDateText, expDateRel) = when (val expDate = exp.date) {
                     is ExpirationDate.Hard -> {
-                        val dt = longDateTime(expDate.dateTime)
+                        val dt = shortDateTime(expDate.dateTime)
                         val rel = if (expDate.dateTime.ms < System.currentTimeMillis()) {
                             shortRelativeTimeAgo(expDate.dateTime)
                         } else {
                             shortRelativeTimeUntil(expDate.dateTime)
                         }
-                        if (rel.isNotEmpty()) "$dt ($rel)" else dt
+                        dt to (if (rel.isNotEmpty()) "($rel)" else null)
                     }
                     is ExpirationDate.Approximate -> {
-                        val d = longDate(expDate.date)
+                        val d = shortDate(expDate.date)
                         val targetMs = expDate.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
                         val diffMs = targetMs - System.currentTimeMillis()
                         val rel = if (diffMs < 0) {
@@ -438,49 +425,75 @@ fun PumpExpirationsCard(
                         } else {
                             shortRelativeTimeUntil(diffMs)
                         }
-                        if (rel.isNotEmpty()) "$d ($rel)" else d
+                        d to (if (rel.isNotEmpty()) "($rel)" else null)
                     }
                 }
 
-                ControlDetailRow(
-                    label = typeLabel,
-                    reserveIconSpace = true
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
-                    Text(
-                        text = expDateDisplay,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
+                    Column(modifier = Modifier.weight(1f)) {
+                        ControlDetailRow(
+                            label = typeLabel,
+                            reserveIconSpace = true
+                        ) {
+                            Column {
+                                Text(
+                                    text = expDateText,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                if (expDateRel != null) {
+                                    Text(
+                                        text = expDateRel,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        val graceUntil = exp.graceUntil
+                        if (graceUntil != null && graceUntil.isValid()) {
+                            val graceText = shortDateTime(graceUntil)
+                            val graceRel = if (graceUntil.ms < System.currentTimeMillis()) {
+                                shortRelativeTimeAgo(graceUntil)
+                            } else {
+                                shortRelativeTimeUntil(graceUntil)
+                            }
+                            val formattedGraceRel = if (graceRel.isNotEmpty()) "($graceRel)" else null
 
-                val graceUntil = exp.graceUntil
-                if (graceUntil != null && graceUntil.isValid()) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    val graceTimeDisplay = longDateTime(graceUntil)
-                    val graceRelativeText = if (graceUntil.ms < System.currentTimeMillis()) {
-                        shortRelativeTimeAgo(graceUntil)
-                    } else {
-                        shortRelativeTimeUntil(graceUntil)
-                    }
-                    val fullGraceDisplay = if (graceRelativeText.isNotEmpty()) {
-                        "$graceTimeDisplay ($graceRelativeText)"
-                    } else {
-                        graceTimeDisplay
-                    }
-                    ControlDetailRow(
-                        label = stringResource(R.string.system_control_expiration_grace_until_label),
-                        reserveIconSpace = true
-                    ) {
-                        Text(
-                            text = fullGraceDisplay,
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.tertiary,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                            ControlDetailRow(
+                                label = stringResource(R.string.system_control_expiration_grace_until_label),
+                                reserveIconSpace = true
+                            ) {
+                                Column {
+                                    Text(
+                                        text = graceText,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.tertiary,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    if (formattedGraceRel != null) {
+                                        Text(
+                                            text = formattedGraceRel,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            maxLines = 2,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
