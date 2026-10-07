@@ -7,6 +7,7 @@ import de.dh.pump.PumpCommandException
 import de.dh.pump.PumpConnectionException
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import java.time.LocalDate
 
 /**
  * Manufacturer and hardware information about a pump.
@@ -150,6 +151,28 @@ sealed interface BolusEvent {
     ) : BolusEvent
 }
 
+sealed interface ReplaceableComponentType {
+    data object Sensor : ReplaceableComponentType
+    data object Cannula : ReplaceableComponentType
+    data object Patch : ReplaceableComponentType
+}
+
+sealed interface ExpirationDate {
+    data class Approximate(
+        val date: LocalDate
+    ) : ExpirationDate
+
+    data class Hard(
+        val dateTime: Timestamp
+    ) : ExpirationDate
+}
+
+data class Expiration(
+    val type: ReplaceableComponentType,
+    val date: ExpirationDate,
+    val graceUntil: Timestamp? = null
+)
+
 /**
  * Generic interface for an insulin pump.
  * To support pump specific commands to the user, this object can implement [PumpPluginUiProvider].
@@ -165,6 +188,21 @@ interface InsulinPump {
      * Human-readable display name of the insulin pump.
      */
     val insulinPumpDisplayName: UiText
+
+    /**
+     * Optional start date / activation timestamp of the current pump component or pod.
+     */
+    val startDate: StateFlow<Timestamp?>
+
+    /**
+     * Flag indicating whether the pump or patch is completely expired and no longer operating.
+     */
+    val isExpired: StateFlow<Boolean>
+
+    /**
+     * List of expiration dates for various replaceable components (e.g. Cannula, Patch).
+     */
+    val expirations: StateFlow<List<Expiration>>
 
     /**
      * Pump hardware information. Null if not yet retrieved.

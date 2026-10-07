@@ -49,7 +49,22 @@ interface GlucoseSource {
     val readingsTimeDelay: Minutes
 
     val status: StateFlow<GlucoseSourceStatus>
-    val expirationDate: StateFlow<Timestamp?>
+
+    /**
+     * Activation / insertion start timestamp of the glucose source, or null if unknown or not applicable.
+     */
+    val startDate: StateFlow<Timestamp?>
+
+    /**
+     * Scheduled expiration / replacement end timestamp of the glucose source, or null if unknown or not applicable.
+     */
+    val endDate: StateFlow<Timestamp?>
+
+    /**
+     * Flag indicating whether the glucose source is completely expired and no longer functioning.
+     */
+    val isExpired: StateFlow<Boolean>
+
     val lastConnection: StateFlow<Timestamp?>
 
     /**

@@ -4,6 +4,7 @@ import de.dh.daps.common.model.BasalStatus
 import de.dh.daps.common.model.BolusDeliveryState
 import de.dh.daps.common.model.BolusEvent
 import de.dh.daps.common.model.BolusStatus
+import de.dh.daps.common.model.Expiration
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinHistory
@@ -45,6 +46,15 @@ class OmnipodDashPump(
     override val insulinPumpId: String = PUMP_ID
     override val insulinPumpDisplayName: UiText = UiText.StringResource(R.string.omnipod_dash_pump_display_name)
     override var insulinConcentration: InsulinConcentration = InsulinConcentration.U100
+
+    private val _startDate = MutableStateFlow<Timestamp?>(null)
+    override val startDate: StateFlow<Timestamp?> = _startDate.asStateFlow()
+
+    private val _isExpired = MutableStateFlow(false)
+    override val isExpired: StateFlow<Boolean> = _isExpired.asStateFlow()
+
+    private val _expirations = MutableStateFlow<List<Expiration>>(emptyList())
+    override val expirations: StateFlow<List<Expiration>> = _expirations.asStateFlow()
 
     private val _hardwareInformation = MutableStateFlow<PumpHardwareInformation?>(
         PumpHardwareInformation(

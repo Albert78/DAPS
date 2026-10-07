@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.ApsMode
+import de.dh.daps.common.model.ExpirationDate
 import de.dh.daps.common.model.GlucoseSourceStatus
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.data.BgReading
@@ -45,12 +46,14 @@ import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.pluralStringResourceZero
+import de.dh.daps.ui.common.shortDate
 import de.dh.daps.ui.common.shortDateTime
 import de.dh.daps.ui.common.shortRelativeTimeAgo
 import de.dh.daps.ui.common.shortRelativeTimeUntil
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.daps.ui.common.time
+import java.time.ZoneId
 
 @Composable
 fun OverviewTabContent(
@@ -502,7 +505,8 @@ private fun <T> StatusMetricText(
     formatValue: @Composable ((T) -> String)? = null
 ) {
     val glucoseUnit = LocalGlucoseUnit.current
-    val timestamp = metric.value as? Timestamp
+    val expDate = metric.value as? ExpirationDate
+    val timestamp = metric.value as? Timestamp ?: (expDate as? ExpirationDate.Hard)?.dateTime
 
     val isSet = metric.value != null && (timestamp == null || timestamp.isValid())
 
@@ -536,19 +540,37 @@ private fun <T> StatusMetricText(
                     time(v)
                 }
             } else stringResource(id = R.string.system_control_value_not_available)
+            is ExpirationDate -> when (v) {
+                is ExpirationDate.Hard -> shortDateTime(v.dateTime)
+                is ExpirationDate.Approximate -> shortDate(v.date)
+            }
             is String -> v
             null -> stringResource(id = R.string.system_control_value_not_available)
             else -> v.toString()
         }
     }
-    val relativeTime = if (timestamp != null && timestamp.isValid()) {
-        if (isDateTime) {
-            val rel = shortRelativeTimeUntil(timestamp)
-            if (rel.isNotEmpty()) "($rel)" else null
-        } else {
-            shortRelativeTimeAgo(timestamp)
+    val relativeTime = when (val v = metric.value) {
+        is Timestamp -> if (v.isValid()) {
+            if (isDateTime) {
+                val rel = shortRelativeTimeUntil(v)
+                if (rel.isNotEmpty()) "($rel)" else null
+            } else {
+                shortRelativeTimeAgo(v)
+            }
+        } else null
+        is ExpirationDate -> when (v) {
+            is ExpirationDate.Hard -> {
+                val rel = shortRelativeTimeUntil(v.dateTime)
+                if (rel.isNotEmpty()) "($rel)" else null
+            }
+            is ExpirationDate.Approximate -> {
+                val targetMs = v.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                val rel = shortRelativeTimeUntil(targetMs - System.currentTimeMillis())
+                if (rel.isNotEmpty()) "($rel)" else null
+            }
         }
-    } else null
+        else -> null
+    }
 
     StatusValueText(
         value = formattedValue,
@@ -629,7 +651,7 @@ internal fun sampleOverviewTabUiState(): OverviewTabUiState = OverviewTabUiState
         battery = StatusMetric(85, status = ValueStatus.GOOD),
         reservoir = StatusMetric(InsulinAmount(140.0), status = ValueStatus.GOOD),
         lastConnection = StatusMetric(Timestamp(System.currentTimeMillis() - 60_000), status = ValueStatus.GOOD),
-        nextCannulaChange = StatusMetric(Timestamp(System.currentTimeMillis() + 172_800_000), status = ValueStatus.GOOD)
+        nextCannulaChange = StatusMetric(ExpirationDate.Hard(Timestamp(System.currentTimeMillis() + 172_800_000)), status = ValueStatus.GOOD)
     )
 )
 

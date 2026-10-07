@@ -38,7 +38,9 @@ class SampleGlucoseSource : GlucoseSource, GlucoseSourcePluginUiProvider {
         get() = BgReadingsInterval.OneMinute
     override val readingsTimeDelay = Minutes(5)
     override val status: StateFlow<GlucoseSourceStatus> = MutableStateFlow(GlucoseSourceStatus.Ok)
-    override val expirationDate: StateFlow<Timestamp?> = MutableStateFlow(null)
+    override val startDate: StateFlow<Timestamp?> = MutableStateFlow(null)
+    override val endDate: StateFlow<Timestamp?> = MutableStateFlow(null)
+    override val isExpired: StateFlow<Boolean> = MutableStateFlow(false)
     override val lastConnection: StateFlow<Timestamp?> = MutableStateFlow(null)
     override val sensorType: StateFlow<String> = MutableStateFlow("Dexcom-G6")
     override val hardwareInformation: StateFlow<SourceHardwareInformation?> = MutableStateFlow(

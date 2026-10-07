@@ -20,6 +20,8 @@ import de.dh.daps.common.PUMP_RESERVOIR_LOW_THRESHOLD
 import de.dh.daps.common.PUMP_RESERVOIR_WARNING_THRESHOLD
 import de.dh.daps.common.SENSOR_EXPIRATION_WARNING_THRESHOLD_HOURS
 import de.dh.daps.common.model.ApsMode
+import de.dh.daps.common.model.Expiration
+import de.dh.daps.common.model.ExpirationDate
 import de.dh.daps.common.model.GlucoseSourcePluginUiProvider
 import de.dh.daps.common.model.GlucoseSourceStatus
 import de.dh.daps.common.model.InsulinAmount
@@ -27,8 +29,10 @@ import de.dh.daps.common.model.InsulinPumpStatus
 import de.dh.daps.common.model.InsulinStatus
 import de.dh.daps.common.model.PumpHardwareInformation
 import de.dh.daps.common.model.PumpPluginUiProvider
-import de.dh.daps.common.model.ReplaceableComponent
+import de.dh.daps.common.model.SourceHardwareInformation
 import de.dh.daps.common.model.ToDo
+import java.time.LocalDate
+import java.time.ZoneId
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.Timestamp
@@ -106,7 +110,7 @@ sealed interface OverviewPumpUiState {
         val battery: StatusMetric<Int>,
         val reservoir: StatusMetric<InsulinAmount>,
         val lastConnection: StatusMetric<Timestamp>,
-        val nextCannulaChange: StatusMetric<Timestamp>
+        val nextCannulaChange: StatusMetric<ExpirationDate>
     ) : OverviewPumpUiState
 }
 
@@ -129,6 +133,7 @@ sealed interface SourceTabUiState {
         val manufacturer: String? = null,
         val model: String? = null,
         val serialNumber: String? = null,
+        val startDate: Timestamp? = null,
         val lastBgReading: BgReading? = null,
         val nextPredictedTimestamp: Timestamp? = null,
         val hasNextPrediction: Boolean = false,
@@ -157,6 +162,8 @@ sealed interface PumpTabUiState {
         val serialNumber: String? = null,
         val pumpConnected: Boolean = false,
         val isSuspended: Boolean = false,
+        val startDate: Timestamp? = null,
+        val expirations: List<Expiration> = emptyList(),
         val pendingJobs: List<PumpJobItem> = emptyList(),
         val pumpPluginSection: (@Composable () -> Unit)? = null
     ) : PumpTabUiState
@@ -182,6 +189,7 @@ class SystemControlViewModel(
         val manufacturer: String? = null,
         val model: String? = null,
         val serialNumber: String? = null,
+        val startDate: Timestamp? = null,
         val lastConnection: Timestamp? = null,
         val lastBgReading: BgReading? = null,
         val nextPredictedTimestamp: Timestamp? = null,
@@ -198,7 +206,8 @@ class SystemControlViewModel(
         val serialNumber: String? = null,
         val status: InsulinPumpStatus,
         val lastConnection: Timestamp = Timestamp.INVALID,
-        val nextCannulaChange: Timestamp? = null,
+        val startDate: Timestamp? = null,
+        val expirations: List<Expiration> = emptyList(),
         val jobs: List<PumpJob> = emptyList(),
         val isSuspended: Boolean = false,
         val hasError: Boolean = false,
@@ -267,9 +276,6 @@ class SystemControlViewModel(
             val nextPredicted = glucoseSourceManager.predictNextValueTimestamp()
             val hasPrediction = nextPredicted.isValid()
 
-            val replaceable = source as? ReplaceableComponent
-            val expTimestamp = replaceable?.endDate
-
             val provider = source as? GlucoseSourcePluginUiProvider
 
             combine(
@@ -277,22 +283,38 @@ class SystemControlViewModel(
                 source.sensorType,
                 source.hardwareInformation,
                 glucoseRepository.currentBg,
-                source.lastConnection
-            ) { status, sensorType, hardware, currentBg, lastConn ->
-                GlucoseUiData(
-                    sourceName = sourceName,
-                    readingsInterval = interval,
-                    status = status,
-                    manufacturer = hardware?.manufacturer,
-                    model = hardware?.model,
-                    serialNumber = hardware?.serialNumber,
-                    lastConnection = lastConn,
-                    lastBgReading = currentBg,
-                    nextPredictedTimestamp = if (hasPrediction) nextPredicted else null,
-                    hasNextPrediction = hasPrediction,
-                    estimatedExpirationTimestamp = expTimestamp,
-                    pluginUiProvider = provider
-                )
+                source.lastConnection,
+                source.startDate,
+                source.endDate,
+                source.isExpired
+            ) { array ->
+                val status = array[0] as GlucoseSourceStatus
+                val hardware = array[2] as SourceHardwareInformation?
+                val currentBg = array[3] as BgReading?
+                val lastConn = array[4] as Timestamp?
+                val startDate = array[5] as Timestamp?
+                val endDate = array[6] as Timestamp?
+                val isExpired = array[7] as Boolean
+
+                if (isExpired) {
+                    null
+                } else {
+                    GlucoseUiData(
+                        sourceName = sourceName,
+                        readingsInterval = interval,
+                        status = status,
+                        manufacturer = hardware?.manufacturer,
+                        model = hardware?.model,
+                        serialNumber = hardware?.serialNumber,
+                        startDate = startDate,
+                        lastConnection = lastConn,
+                        lastBgReading = currentBg,
+                        nextPredictedTimestamp = if (hasPrediction) nextPredicted else null,
+                        hasNextPrediction = hasPrediction,
+                        estimatedExpirationTimestamp = endDate,
+                        pluginUiProvider = provider
+                    )
+                }
             }
         }
     }
@@ -302,7 +324,6 @@ class SystemControlViewModel(
             flowOf(null)
         } else {
             val pumpName = pump.insulinPumpDisplayName
-            val nextCannulaChange = (pump as? ReplaceableComponent)?.endDate
 
             val coordinator = pumpManager.pumpCoordinator
             val jobsFlow = coordinator?.pendingJobs ?: flowOf(emptyList())
@@ -313,22 +334,41 @@ class SystemControlViewModel(
                 pump.hardwareInformation,
                 pump.pumpStatus,
                 jobsFlow,
-                lastConnFlow
-            ) { connected: Boolean, hardware: PumpHardwareInformation?, status: InsulinPumpStatus, jobs: List<PumpJob>, lastConn: Timestamp ->
-                PumpUiData(
-                    connected = connected,
-                    pumpName = pumpName,
-                    model = hardware?.model,
-                    manufacturer = hardware?.manufacturer,
-                    serialNumber = hardware?.serialNumber,
-                    status = status,
-                    lastConnection = lastConn,
-                    nextCannulaChange = nextCannulaChange,
-                    jobs = jobs,
-                    isSuspended = status.pumpSuspended,
-                    hasError = jobs.any { it.lastError != null },
-                    pluginUiProvider = pump as? PumpPluginUiProvider
-                )
+                lastConnFlow,
+                pump.startDate,
+                pump.isExpired,
+                pump.expirations
+            ) { array ->
+                val connected = array[0] as Boolean
+                val hardware = array[1] as PumpHardwareInformation?
+                val status = array[2] as InsulinPumpStatus
+                @Suppress("UNCHECKED_CAST")
+                val jobs = array[3] as List<PumpJob>
+                val lastConn = array[4] as Timestamp
+                val startDate = array[5] as Timestamp?
+                val isExpired = array[6] as Boolean
+                @Suppress("UNCHECKED_CAST")
+                val expirations = array[7] as List<Expiration>
+
+                if (isExpired) {
+                    null
+                } else {
+                    PumpUiData(
+                        connected = connected,
+                        pumpName = pumpName,
+                        model = hardware?.model,
+                        manufacturer = hardware?.manufacturer,
+                        serialNumber = hardware?.serialNumber,
+                        status = status,
+                        lastConnection = lastConn,
+                        startDate = startDate,
+                        expirations = expirations,
+                        jobs = jobs,
+                        isSuspended = status.pumpSuspended,
+                        hasError = jobs.any { it.lastError != null },
+                        pluginUiProvider = pump as? PumpPluginUiProvider
+                    )
+                }
             }
         }
     }
@@ -430,11 +470,34 @@ class SystemControlViewModel(
                 pInfo.lastConnection < Timestamp.now().minusMinutes(CONNECTION_WARNING_THRESHOLD_MINUTES) -> ValueStatus.WARNING
                 else -> ValueStatus.GOOD
             }
-            val nextCannulaChangeStatus = when {
-                pInfo.nextCannulaChange == null || pInfo.nextCannulaChange.isInvalid() -> ValueStatus.GOOD
-                pInfo.nextCannulaChange <= Timestamp.now() -> ValueStatus.BAD
-                pInfo.nextCannulaChange < Timestamp.now().plusHours(CANNULA_CHANGE_WARNING_THRESHOLD_HOURS) -> ValueStatus.WARNING
-                else -> ValueStatus.GOOD
+            val nextCannulaChangeExpiration = pInfo.expirations
+                .map { it.date }
+                .minByOrNull { expDate ->
+                    when (expDate) {
+                        is ExpirationDate.Hard -> expDate.dateTime.ms
+                        is ExpirationDate.Approximate -> expDate.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                    }
+                }
+            val nextCannulaChangeStatus = when (nextCannulaChangeExpiration) {
+                null -> ValueStatus.GOOD
+                is ExpirationDate.Hard -> {
+                    val ts = nextCannulaChangeExpiration.dateTime
+                    when {
+                        ts.isInvalid() -> ValueStatus.GOOD
+                        ts <= Timestamp.now() -> ValueStatus.BAD
+                        ts < Timestamp.now().plusHours(CANNULA_CHANGE_WARNING_THRESHOLD_HOURS) -> ValueStatus.WARNING
+                        else -> ValueStatus.GOOD
+                    }
+                }
+                is ExpirationDate.Approximate -> {
+                    val date = nextCannulaChangeExpiration.date
+                    val today = LocalDate.now()
+                    when {
+                        date <= today -> ValueStatus.BAD
+                        date <= today.plusDays(1) -> ValueStatus.WARNING
+                        else -> ValueStatus.GOOD
+                    }
+                }
             }
             OverviewPumpUiState.Content(
                 pumpName = pInfo.pumpName,
@@ -464,7 +527,7 @@ class SystemControlViewModel(
                     status = lastConnectionStatus
                 ),
                 nextCannulaChange = StatusMetric(
-                    value = pInfo.nextCannulaChange,
+                    value = nextCannulaChangeExpiration,
                     status = nextCannulaChangeStatus
                 )
             )
@@ -487,6 +550,7 @@ class SystemControlViewModel(
                 model = gInfo.model,
                 serialNumber = gInfo.serialNumber,
                 readingsInterval = gInfo.readingsInterval,
+                startDate = gInfo.startDate,
                 lastBgReading = gInfo.lastBgReading,
                 nextPredictedTimestamp = gInfo.nextPredictedTimestamp,
                 hasNextPrediction = gInfo.hasNextPrediction,
@@ -544,6 +608,8 @@ class SystemControlViewModel(
                 serialNumber = pInfo.serialNumber,
                 pumpConnected = pInfo.connected,
                 isSuspended = pInfo.isSuspended,
+                startDate = pInfo.startDate,
+                expirations = pInfo.expirations,
                 pendingJobs = pumpJobsList,
                 pumpPluginSection = pInfo.pluginUiProvider?.let { provider -> { provider.PumpControlSection() } }
             )

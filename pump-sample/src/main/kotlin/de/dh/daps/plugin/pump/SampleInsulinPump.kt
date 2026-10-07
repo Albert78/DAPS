@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.BasalStatus
 import de.dh.daps.common.model.BolusEvent
 import de.dh.daps.common.model.BolusStatus
+import de.dh.daps.common.model.Expiration
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinHistory
@@ -36,6 +37,10 @@ class SampleInsulinPump : InsulinPump, PumpPluginUiProvider {
 
     override val insulinPumpId: String = SampleInsulinPumpDriver.DRIVER_ID
     override val insulinPumpDisplayName: UiText = UiText.StringResource(R.string.sample_pump_device_display_name)
+
+    override val startDate: StateFlow<Timestamp?> = MutableStateFlow(null)
+    override val isExpired: StateFlow<Boolean> = MutableStateFlow(false)
+    override val expirations: StateFlow<List<Expiration>> = MutableStateFlow(emptyList())
 
     override var insulinConcentration: InsulinConcentration = InsulinConcentration.U100
 

@@ -24,7 +24,9 @@ class SimBodyGlucoseSource(
         get() = BgReadingsInterval.FiveMinutes
     override val readingsTimeDelay = DEFAULT_READINGS_DELAY
     override val status: StateFlow<GlucoseSourceStatus> = MutableStateFlow(GlucoseSourceStatus.Ok)
-    override val expirationDate: StateFlow<Timestamp?> = MutableStateFlow(null)
+    override val startDate: StateFlow<Timestamp?> = MutableStateFlow(null)
+    override val endDate: StateFlow<Timestamp?> = MutableStateFlow(null)
+    override val isExpired: StateFlow<Boolean> = MutableStateFlow(false)
 
     private val _lastConnection = MutableStateFlow<Timestamp?>(null)
     override val lastConnection: StateFlow<Timestamp?> = _lastConnection.asStateFlow()
