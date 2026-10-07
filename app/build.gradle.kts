@@ -58,6 +58,7 @@ dependencies {
     "prodImplementation"(project(":source-glucose-receiver"))
     "prodImplementation"(project(":pump-sample"))
     "prodImplementation"(project(":pump-dana-i-driver"))
+    "prodImplementation"(project(":pump-omnipod-dash"))
 
     // The sample modules are meant as copy template for real source and pump modules
 //    implementation(project(":source-cgm-sample"))
