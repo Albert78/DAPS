@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.PumpConnectionDescriptor
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.pump.danai.R
 import de.dh.pump.danai.core.connection.DanaScanResult
 
@@ -217,7 +218,7 @@ fun DanaISetupContent(
 @Preview(showBackground = true)
 @Composable
 private fun DanaISetupContentPreview() {
-    MaterialTheme {
+    AppPreview {
         DanaISetupContent(
             scanResults = listOf(
                 DanaScanResult.Fake(name = "DANA-i-123", address = "00:11:22:33:44:55"),
@@ -236,7 +237,7 @@ private fun DanaISetupContentPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun DanaISetupContentScanningPreview() {
-    MaterialTheme {
+    AppPreview {
         DanaISetupContent(
             scanResults = listOf(
                 DanaScanResult.Fake(name = "DANA-i-123", address = "00:11:22:33:44:55")
@@ -254,7 +255,7 @@ private fun DanaISetupContentScanningPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun DanaISetupContentEmptyPreview() {
-    MaterialTheme {
+    AppPreview {
         DanaISetupContent(
             scanResults = emptyList(),
             isScanning = false,
@@ -270,7 +271,7 @@ private fun DanaISetupContentEmptyPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun DanaISetupContentErrorPreview() {
-    MaterialTheme {
+    AppPreview {
         DanaISetupContent(
             scanResults = emptyList(),
             isScanning = false,

@@ -25,6 +25,7 @@ dependencyResolutionManagement {
 rootProject.name = "DAPS"
 include(":common")
 include(":core")
+include(":ui-common")
 include(":ui")
 include(":sim-body")
 include(":pump-sample")

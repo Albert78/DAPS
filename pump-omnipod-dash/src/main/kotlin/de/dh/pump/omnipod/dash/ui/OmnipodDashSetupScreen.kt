@@ -27,6 +27,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.ui.UiText
+import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.pump.omnipod.dash.OmnipodDashInsulinPumpDriver
 import de.dh.pump.omnipod.dash.R
 
@@ -185,7 +186,7 @@ fun OmnipodDashSetupContent(
 @Preview(showBackground = true)
 @Composable
 private fun OmnipodDashSetupContentStep1Preview() {
-    MaterialTheme {
+    AppPreview {
         OmnipodDashSetupContent(
             currentStepIndex = 0,
             isActivating = false,
@@ -200,7 +201,7 @@ private fun OmnipodDashSetupContentStep1Preview() {
 @Preview(showBackground = true)
 @Composable
 private fun OmnipodDashSetupContentStep2Preview() {
-    MaterialTheme {
+    AppPreview {
         OmnipodDashSetupContent(
             currentStepIndex = 1,
             isActivating = false,
@@ -215,7 +216,7 @@ private fun OmnipodDashSetupContentStep2Preview() {
 @Preview(showBackground = true)
 @Composable
 private fun OmnipodDashSetupContentStep3Preview() {
-    MaterialTheme {
+    AppPreview {
         OmnipodDashSetupContent(
             currentStepIndex = 2,
             isActivating = false,
@@ -230,7 +231,7 @@ private fun OmnipodDashSetupContentStep3Preview() {
 @Preview(showBackground = true)
 @Composable
 private fun OmnipodDashSetupContentActivatingPreview() {
-    MaterialTheme {
+    AppPreview {
         OmnipodDashSetupContent(
             currentStepIndex = 2,
             isActivating = true,
@@ -245,7 +246,7 @@ private fun OmnipodDashSetupContentActivatingPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun OmnipodDashSetupContentErrorPreview() {
-    MaterialTheme {
+    AppPreview {
         OmnipodDashSetupContent(
             currentStepIndex = 2,
             isActivating = false,

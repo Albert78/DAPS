@@ -22,6 +22,7 @@ android {
 dependencies {
     api(project(":common"))
     api(project(":pump-common"))
+    implementation(project(":ui-common"))
 
     implementation(project(":pump-dana-protocol"))
 
