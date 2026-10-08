@@ -238,6 +238,9 @@ interface InsulinPump {
      * - **Query Guidance:** During [syncHistory], the driver SHOULD read this timestamp to determine
      *   how far back in time it needs to retrieve or assemble history records.
      * - **Initial Value:** Initialized by default to [DEFAULT_REQUESTED_HISTORY_HOURS] hours prior to the current system time.
+     * - **Monotonicity:** The driver can assume that this timestamp is never reset to an older value.
+     *   Therefore, history prepared for a read [requestedHistoryStart] value remains valid even if
+     *   DAPS updates [requestedHistoryStart] to a later timestamp in the meantime.
      */
     var requestedHistoryStart: Timestamp
         get() = Timestamp.now().minusHours(DEFAULT_REQUESTED_HISTORY_HOURS)
