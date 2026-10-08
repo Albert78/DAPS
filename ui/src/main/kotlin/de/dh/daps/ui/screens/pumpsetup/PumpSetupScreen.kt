@@ -34,6 +34,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import de.dh.daps.ui.common.composables.LoadingOverlayCard
+import de.dh.daps.ui.common.composables.ScopedDriverSetupContainer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -135,18 +136,20 @@ fun PumpSetupContent(
                         .fillMaxSize()
                         .padding(16.dp)
                 ) {
-                    selectedDriver.SetupScreen(
-                        onConnected = { _, descriptor ->
-                            onConnectPump(descriptor)
-                        },
-                        onCancel = {
-                            if (uiState.availableDrivers.size > 1) {
-                                onSelectDriver(null)
-                            } else {
-                                onNavigateUp()
+                    ScopedDriverSetupContainer(driverId = selectedDriver.driverId) {
+                        selectedDriver.SetupScreen(
+                            onConnected = { _, descriptor ->
+                                onConnectPump(descriptor)
+                            },
+                            onCancel = {
+                                if (uiState.availableDrivers.size > 1) {
+                                    onSelectDriver(null)
+                                } else {
+                                    onNavigateUp()
+                                }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             } else {
                 PumpDriverSelectionContent(

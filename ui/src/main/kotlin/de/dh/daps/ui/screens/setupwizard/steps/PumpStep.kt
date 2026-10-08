@@ -44,6 +44,7 @@ import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.LoadingOverlayCard
+import de.dh.daps.ui.common.composables.ScopedDriverSetupContainer
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.screens.pumpsetup.PumpSetupUiState
 import de.dh.daps.ui.screens.setupwizard.components.SetupStepScaffold
@@ -112,12 +113,14 @@ fun PumpStep(
                         .fillMaxSize()
                         .padding(16.dp)
                 ) {
-                    selectedDriver.SetupScreen(
-                        onConnected = { _, descriptor ->
-                            onConnectPump(descriptor) { onNext() }
-                        },
-                        onCancel = { onSelectDriver(null) }
-                    )
+                    ScopedDriverSetupContainer(driverId = selectedDriver.driverId) {
+                        selectedDriver.SetupScreen(
+                            onConnected = { _, descriptor ->
+                                onConnectPump(descriptor) { onNext() }
+                            },
+                            onCancel = { onSelectDriver(null) }
+                        )
+                    }
                 }
             } else {
                 PumpDriverSelectionContent(
