@@ -58,6 +58,7 @@ class SimBodyInsulinPump(
     override val expirations: StateFlow<List<Expiration>> = MutableStateFlow(emptyList())
 
     override var insulinConcentration: InsulinConcentration = InsulinConcentration.U100
+    override var requestedHistoryStart: Timestamp = Timestamp.now().minusHours(InsulinPump.DEFAULT_REQUESTED_HISTORY_HOURS)
 
     companion object {
         const val SIM_PUMP_MIN_BASAL_RATE = 0.0
@@ -259,20 +260,25 @@ class SimBodyInsulinPump(
 
     override suspend fun syncHistory() {
         if (!_isConnected.value) return
-        val points = device.getHistory().map { point ->
-            object : InsulinHistoryPoint {
-                override val timestamp: Timestamp = point.timestamp
-                override val amount: InsulinAmount = point.amount
-                override val category: InsulinCategory = point.category
-                override val pumpId: String? = point.id
+        val cutoff = requestedHistoryStart
+        val points = device.getHistory()
+            .filter { it.timestamp >= cutoff }
+            .map { point ->
+                object : InsulinHistoryPoint {
+                    override val timestamp: Timestamp = point.timestamp
+                    override val amount: InsulinAmount = point.amount
+                    override val category: InsulinCategory = point.category
+                    override val pumpId: String? = point.id
+                }
             }
-        }
         if (points.isNotEmpty()) {
             _history.value = InsulinHistory(
                 from = points.minOf { it.timestamp },
                 to = points.maxOf { it.timestamp },
                 points = points
             )
+        } else {
+            _history.value = null
         }
     }
 

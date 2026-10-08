@@ -8,6 +8,7 @@ import de.dh.daps.common.model.InsulinCategory
 import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinHistory
 import de.dh.daps.common.model.InsulinHistoryPoint
+import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpStatus
 import de.dh.daps.common.model.PumpAlerts
 import de.dh.daps.common.model.PumpCapabilities
@@ -149,6 +150,8 @@ class DanaIPump {
 
     private var currentBasalPoints = emptyList<InsulinHistoryPoint>()
     private var currentBolusPoints = emptyList<InsulinHistoryPoint>()
+
+    var requestedHistoryStart: Timestamp = Timestamp.now().minusHours(InsulinPump.DEFAULT_REQUESTED_HISTORY_HOURS)
 
     private val _history = MutableStateFlow<InsulinHistory?>(null)
 
@@ -333,10 +336,10 @@ class DanaIPump {
     }
 
     /**
-     * Updates the basal history with new points and prunes records older than 24 hours.
+     * Updates the basal history with new points and prunes records older than requested history start.
      */
     internal fun updateBasalHistory(newPoints: List<InsulinHistoryPoint>) {
-        val cutoff = Timestamp.now().minusHours(24)
+        val cutoff = requestedHistoryStart
         val sorted = (currentBasalPoints + newPoints)
             .distinctBy { it.pumpId ?: it.timestamp }
             .sortedBy { it.timestamp }
@@ -349,10 +352,10 @@ class DanaIPump {
     }
 
     /**
-     * Updates the bolus history with new points and prunes records older than 24 hours.
+     * Updates the bolus history with new points and prunes records older than requested history start.
      */
     internal fun updateBolusHistory(newPoints: List<InsulinHistoryPoint>) {
-        val cutoff = Timestamp.now().minusHours(24)
+        val cutoff = requestedHistoryStart
         val sorted = (currentBolusPoints + newPoints)
             .distinctBy { it.pumpId ?: it.timestamp }
             .sortedBy { it.timestamp }

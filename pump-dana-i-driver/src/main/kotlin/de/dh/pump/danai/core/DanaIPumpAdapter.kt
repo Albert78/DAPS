@@ -47,6 +47,13 @@ class DanaIPumpAdapter(
         set(value) {
             pump.insulinConcentration = value
         }
+
+    override var requestedHistoryStart: Timestamp
+        get() = pump.requestedHistoryStart
+        set(value) {
+            pump.requestedHistoryStart = value
+        }
+
     override val hardwareInformation: StateFlow<PumpHardwareInformation?> = pump.hardware.map { hi ->
         hi?.let {
             PumpHardwareInformation(

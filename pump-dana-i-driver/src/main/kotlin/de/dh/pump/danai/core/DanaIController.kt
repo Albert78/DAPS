@@ -398,7 +398,8 @@ class DanaIController(
         logger.log("Syncing basal history...")
 
         try {
-            val queryPumpTime = PumpTimestamp.fromSystemTimestamp(lastBasalHistoryTimestamp, pump.pumpTimeOffsetMs)
+            val startTimestamp = minOf(lastBasalHistoryTimestamp, pump.requestedHistoryStart)
+            val queryPumpTime = PumpTimestamp.fromSystemTimestamp(startTimestamp, pump.pumpTimeOffsetMs)
             val history = client.executeStream(commands.historyBasal(queryPumpTime))
             val points = mapBasalRecordsToHistoryPoints(
                 records = history.records,
@@ -484,7 +485,8 @@ class DanaIController(
         logger.log("Syncing bolus history...")
 
         try {
-            val queryPumpTime = PumpTimestamp.fromSystemTimestamp(lastBolusHistoryTimestamp, pump.pumpTimeOffsetMs)
+            val startTimestamp = minOf(lastBolusHistoryTimestamp, pump.requestedHistoryStart)
+            val queryPumpTime = PumpTimestamp.fromSystemTimestamp(startTimestamp, pump.pumpTimeOffsetMs)
             val history = client.executeStream(commands.historyBolus(queryPumpTime))
             val points = history.records.map { record ->
                 DanaInsulinHistoryPoint(
