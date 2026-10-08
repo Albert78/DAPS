@@ -74,7 +74,7 @@ class OmnipodDashPump(
         PumpHardwareInformation(
             manufacturer = "Insulet",
             model = "Omnipod Dash",
-            serialNumber = podStateManager.lotNumber?.toString() ?: "Unknown"
+            serialNumber = podStateManager.lotNumber?.toString() ?: "-"
         )
     )
     override val hardwareInformation: StateFlow<PumpHardwareInformation?> = _hardwareInformation.asStateFlow()
@@ -317,6 +317,7 @@ class OmnipodDashPump(
     }
 
     private suspend fun logEvent(eventType: DashHistoryEventType, detailText: String, units: Double) {
+        cleanupOldEvents()
         db?.historyDao()?.insertEvent(
             DashHistoryEntity(
                 timestampMs = System.currentTimeMillis(),
@@ -327,9 +328,15 @@ class OmnipodDashPump(
         )
     }
 
+    private suspend fun cleanupOldEvents() {
+        val cutoffMs = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(HISTORY_CLEANUP_DAYS)
+        db?.historyDao()?.deleteEventsOlderThan(cutoffMs)
+    }
+
     companion object {
         const val PUMP_ID = "de.dh.daps.plugin.omnipod.dash"
         private const val POD_DURATION_HOURS = 72L
         private const val POD_GRACE_HOURS = 8L
+        private const val HISTORY_CLEANUP_DAYS = 3L
     }
 }
