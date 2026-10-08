@@ -31,8 +31,7 @@ data class PumpCapabilities(
 //    val supportsTempBasal: Boolean,
 //    val supportsExtendedBolus: Boolean,
 //    val audibleTempBasalReminder: Boolean,
-//    val deliversBasalWhileBolusing: Boolean,
-//    val internalTimeManagement: Boolean
+//    val deliversBasalWhileBolusing: Boolean
 )
 
 /**
@@ -221,9 +220,28 @@ interface InsulinPump {
     val bolusEvents: SharedFlow<BolusEvent>
 
     /**
-     * Current status of active or recent bolus delivery.
+     * StateFlow exposing the history of actual insulin deliveries (Basal and Bolus) from the pump.
+     *
+     * ### Driver Implementation Requirements:
+     * - **Coverage Expectation:** The DAPS system assumes that the delivered [InsulinHistory] spans a time
+     *   range extending into the past AT LEAST up to [requestedHistoryStart].
+     * - **Updating:** The driver MUST update this StateFlow during or after [syncHistory] completes.
      */
     val history: StateFlow<InsulinHistory?>
+
+    /**
+     * The earliest timestamp in the past from which the DAPS system requests history events during [syncHistory].
+     *
+     * ### Driver Implementation Requirements:
+     * - **Managed by DAPS:** This property is owned and managed exclusively by the DAPS system.
+     *   The pump driver MUST NOT modify this value itself.
+     * - **Query Guidance:** During [syncHistory], the driver SHOULD read this timestamp to determine
+     *   how far back in time it needs to retrieve or assemble history records.
+     * - **Initial Value:** Initialized by default to [DEFAULT_REQUESTED_HISTORY_HOURS] hours prior to the current system time.
+     */
+    var requestedHistoryStart: Timestamp
+        get() = Timestamp.now().minusHours(DEFAULT_REQUESTED_HISTORY_HOURS)
+        set(_) {}
 
     /**
      * Concentration of the insulin loaded in the pump. Default is [InsulinConcentration.U100].
@@ -299,4 +317,8 @@ interface InsulinPump {
      * Stops this insulin pump connection.
      */
     fun stop()
+
+    companion object {
+        const val DEFAULT_REQUESTED_HISTORY_HOURS = 24
+    }
 }

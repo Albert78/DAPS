@@ -120,8 +120,10 @@ class TreatmentRepository(
     /**
      * Merges a range of insulin history from the pump.
      * Updates matching entries, inserts new entries, and cancels unconfirmed scheduled entries.
+     *
+     * @return The recommended [Timestamp] to set on [InsulinPump.requestedHistoryStart] for subsequent syncs, or `null` if no entries.
      */
-    suspend fun mergeInsulinHistory(history: InsulinHistory, insulinType: InsulinType) = mutex.withLock {
+    suspend fun mergeInsulinHistory(history: InsulinHistory, insulinType: InsulinType): Timestamp? = mutex.withLock {
         val from = history.from
         val to = history.to
         val historyStart = historyStart()
@@ -173,6 +175,12 @@ class TreatmentRepository(
 
             if (match != null) {
                 matchedExistingIds.add(match.id)
+
+                // Skip DB update if already confirmed with matching dose
+                if (match.status == InsulinStatus.Confirmed && match.amount.isAlmostEqual(point.amount)) {
+                    return@forEach
+                }
+
                 val newStatus = if (match.status == InsulinStatus.Invalidated || match.status == InsulinStatus.Cancelled) {
                     match.status
                 } else {
@@ -230,6 +238,13 @@ class TreatmentRepository(
             insulinHistory.addAll(cancelledApplications.filter { it.timestamp >= historyStart })
             insulinHistory.sortBy { it.timestamp }
         }
+
+        // 6. Calculate next requested history start timestamp for pump
+        val oldestScheduledTimestamp = insulinHistory
+            .filter { it.status == InsulinStatus.Scheduled }
+            .minOfOrNull { it.timestamp }
+
+        return@withLock oldestScheduledTimestamp?.minusMinutes(15)
     }
 
     /**

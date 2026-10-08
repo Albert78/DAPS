@@ -441,7 +441,10 @@ class TherapyManager(
      */
     suspend fun updatePumpHistory(history: InsulinHistory) {
         val cts = getCurrentTherapySettings()
-        treatmentRepository.mergeInsulinHistory(history, cts.insulinProfile.insulinType)
+        val nextRequestedStart = treatmentRepository.mergeInsulinHistory(history, cts.insulinProfile.insulinType)
+        if (nextRequestedStart != null) {
+            pumpManager.insulinPump?.requestedHistoryStart = nextRequestedStart
+        }
     }
 
     /**
