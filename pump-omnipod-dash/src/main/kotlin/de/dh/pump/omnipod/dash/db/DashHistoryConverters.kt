@@ -10,7 +10,7 @@ class DashHistoryConverters {
     fun toEventType(value: String): DashHistoryEventType {
         return try {
             DashHistoryEventType.valueOf(value)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             DashHistoryEventType.STATUS_UPDATE
         }
     }

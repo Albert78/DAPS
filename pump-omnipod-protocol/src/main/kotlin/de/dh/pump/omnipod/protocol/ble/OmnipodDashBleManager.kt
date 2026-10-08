@@ -1,7 +1,6 @@
 package de.dh.pump.omnipod.protocol.ble
 
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
@@ -92,7 +91,12 @@ class OmnipodDashBleManager(
                     return@withContext Result.failure(IllegalArgumentException("Device not found: $deviceAddress"))
                 }
             podStateManager.bluetoothAddress = deviceAddress
-            bluetoothGatt = device.connectGatt(context, false, gattCallback, BluetoothDevice.TRANSPORT_LE)
+            bluetoothGatt = device.connectGatt(
+                context,
+                false,
+                gattCallback,
+                BluetoothDevice.TRANSPORT_LE
+            )
             Result.success(Unit)
         } catch (e: Exception) {
             _connectionState.value = PodBleConnectionState.FAILED
@@ -115,9 +119,13 @@ class OmnipodDashBleManager(
                 }
             } else {
                 val characteristic = cmdCharacteristic
-                if (characteristic != null && bluetoothGatt != null) {
-                    characteristic.value = payload
-                    bluetoothGatt?.writeCharacteristic(characteristic)
+                val gatt = bluetoothGatt
+                if (characteristic != null && gatt != null) {
+                    gatt.writeCharacteristic(
+                        characteristic,
+                        payload,
+                        characteristic.writeType
+                    )
                 }
             }
             Result.success(payload)
@@ -131,8 +139,7 @@ class OmnipodDashBleManager(
         gatt.setCharacteristicNotification(characteristic, true)
         val descriptor = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG_UUID)
         if (descriptor != null) {
-            descriptor.value = BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
-            gatt.writeDescriptor(descriptor)
+            gatt.writeDescriptor(descriptor, BluetoothGattDescriptor.ENABLE_INDICATION_VALUE)
         }
     }
 
