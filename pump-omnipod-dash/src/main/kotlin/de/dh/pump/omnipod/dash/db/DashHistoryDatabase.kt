@@ -4,8 +4,10 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 
 @Database(entities = [DashHistoryEntity::class], version = 1, exportSchema = false)
+@TypeConverters(DashHistoryConverters::class)
 abstract class DashHistoryDatabase : RoomDatabase() {
     abstract fun historyDao(): DashHistoryDao
 

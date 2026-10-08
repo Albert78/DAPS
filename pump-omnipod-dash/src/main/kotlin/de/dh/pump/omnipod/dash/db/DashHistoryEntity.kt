@@ -8,7 +8,7 @@ data class DashHistoryEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val timestampMs: Long,
-    val eventType: String,
+    val eventType: DashHistoryEventType,
     val detailText: String,
     val unitsDelivered: Double
 )

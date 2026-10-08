@@ -21,6 +21,7 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import de.dh.pump.omnipod.dash.db.DashHistoryDatabase
 import de.dh.pump.omnipod.dash.db.DashHistoryEntity
+import de.dh.pump.omnipod.dash.db.DashHistoryEventType
 import de.dh.pump.omnipod.protocol.ble.OmnipodDashBleManager
 import de.dh.pump.omnipod.protocol.command.GetStatusCommand
 import de.dh.pump.omnipod.protocol.command.ProgramBolusCommand
@@ -171,7 +172,7 @@ class OmnipodDashPump(
                 timestamp = now
             )
         )
-        logEvent("BOLUS", "Programmed bolus of ${amount.iu} U", amount.iu)
+        logEvent(DashHistoryEventType.BOLUS, "Programmed bolus of ${amount.iu} U", amount.iu)
     }
 
     override suspend fun stopBolus() {
@@ -196,7 +197,7 @@ class OmnipodDashPump(
                 timestamp = now
             )
         )
-        logEvent("STOP_BOLUS", "Stopped running bolus", 0.0)
+        logEvent(DashHistoryEventType.STOP_BOLUS, "Stopped running bolus", 0.0)
     }
 
     override suspend fun tempBasal(percent: Int, durationHours: Int) {
@@ -217,7 +218,7 @@ class OmnipodDashPump(
             tempBasalPercent = percent,
             isSuspended = false
         )
-        logEvent("TEMP_BASAL", "Started temp basal $percent% for $durationHours h", 0.0)
+        logEvent(DashHistoryEventType.TEMP_BASAL, "Started temp basal $percent% for $durationHours h", 0.0)
     }
 
     override suspend fun cancelTempBasal() {
@@ -231,7 +232,7 @@ class OmnipodDashPump(
         )
         bleManager.sendCommand(cmd).getOrThrow()
         _basalStatus.value = BasalStatus(isTempBasal = false)
-        logEvent("CANCEL_TEMP_BASAL", "Cancelled active temp basal", 0.0)
+        logEvent(DashHistoryEventType.CANCEL_TEMP_BASAL, "Cancelled active temp basal", 0.0)
     }
 
     override suspend fun setSuspend(suspended: Boolean) {
@@ -246,7 +247,11 @@ class OmnipodDashPump(
         bleManager.sendCommand(cmd).getOrThrow()
         _basalStatus.value = _basalStatus.value.copy(isSuspended = suspended)
         _pumpStatus.value = OmnipodDashStatusData(pumpSuspended = suspended)
-        logEvent("SUSPEND", "Delivery suspended: $suspended", 0.0)
+        logEvent(
+            if (suspended) DashHistoryEventType.SUSPEND else DashHistoryEventType.RESUME,
+            "Delivery suspended: $suspended",
+            0.0
+        )
     }
 
     override suspend fun setProfile(profile: InsulinProfile) {
@@ -257,14 +262,14 @@ class OmnipodDashPump(
             isTempBasal = false,
             isSuspended = false
         )
-        logEvent("PROFILE", "Set active basal profile: ${profile.name} (${schedulePulses.size} segments)", 0.0)
+        logEvent(DashHistoryEventType.PROFILE, "Set active basal profile: ${profile.name} (${schedulePulses.size} segments)", 0.0)
     }
 
     override suspend fun syncHistory() {
         refreshStatus()
         db?.let {
             val events = it.historyDao().getRecentEvents(50)
-            // Log history
+            // Sync history
         }
     }
 
@@ -284,7 +289,7 @@ class OmnipodDashPump(
         bleManager.disconnect()
     }
 
-    private suspend fun logEvent(eventType: String, detailText: String, units: Double) {
+    private suspend fun logEvent(eventType: DashHistoryEventType, detailText: String, units: Double) {
         db?.historyDao()?.insertEvent(
             DashHistoryEntity(
                 timestampMs = System.currentTimeMillis(),
