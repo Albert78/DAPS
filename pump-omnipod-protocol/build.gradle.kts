@@ -19,6 +19,7 @@ dependencies {
     api(project(":common"))
     api(project(":pump-common"))
 
+    implementation(libs.bouncycastle)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.core.ktx)

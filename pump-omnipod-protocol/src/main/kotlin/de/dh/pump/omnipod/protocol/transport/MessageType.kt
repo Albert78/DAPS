@@ -1,0 +1,15 @@
+package de.dh.pump.omnipod.protocol.transport
+
+enum class MessageType(val value: Byte) {
+    CLEAR(0),
+    ENCRYPTED(1),
+    SESSION_ESTABLISHMENT(2),
+    PAIRING(3);
+
+    companion object {
+
+        fun byValue(value: Byte): MessageType =
+            entries.firstOrNull { it.value == value }
+                ?: throw IllegalArgumentException("Unknown MessageType: $value")
+    }
+}

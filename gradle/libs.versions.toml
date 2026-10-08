@@ -17,6 +17,7 @@ datastorePreferences = "1.2.1"
 activityCompose = "1.13.0"
 kotlinxCoroutines = "1.10.1"
 androidxAnnotation = "1.9.1"
+bouncycastle = "1.80"
 
 # Core Navigation 3
 nav3Core = "1.1.7"
@@ -38,6 +39,7 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastorePreferences" }
+bouncycastle = { group = "org.bouncycastle", name = "bcprov-jdk18on", version.ref = "bouncycastle" }
 
 # Compose
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }

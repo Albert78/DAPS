@@ -10,10 +10,7 @@ import de.dh.pump.omnipod.protocol.definition.PodStatus
 import de.dh.pump.omnipod.protocol.response.DefaultStatusResponse
 import de.dh.pump.omnipod.protocol.response.SetUniqueIdResponse
 import de.dh.pump.omnipod.protocol.response.VersionResponse
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import java.io.Serializable
-import java.time.ZonedDateTime
 import java.util.EnumSet
 
 interface OmnipodDashPodStateManager {
@@ -28,6 +25,8 @@ interface OmnipodDashPodStateManager {
     var podSequenceNumber: Long?
     var bluetoothAddress: String?
     var ltk: ByteArray?
+    var activatedAtTimestampMs: Long?
+    var lastNonce: Int?
 
     val pulsesDelivered: Short?
     val reservoirPulsesRemaining: Short?
@@ -72,6 +71,8 @@ class OmnipodDashPodStateManagerImpl(
     override var podSequenceNumber: Long? = null
     override var bluetoothAddress: String? = null
     override var ltk: ByteArray? = null
+    override var activatedAtTimestampMs: Long? = null
+    override var lastNonce: Int? = null
 
     override var pulsesDelivered: Short? = null
     override var reservoirPulsesRemaining: Short? = null
@@ -113,6 +114,8 @@ class OmnipodDashPodStateManagerImpl(
         podSequenceNumber = null
         bluetoothAddress = null
         ltk = null
+        activatedAtTimestampMs = null
+        lastNonce = null
         pulsesDelivered = null
         reservoirPulsesRemaining = null
         podStatus = null
