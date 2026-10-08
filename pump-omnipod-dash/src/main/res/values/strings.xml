@@ -2,4 +2,15 @@
 <resources>
     <string name="omnipod_dash_driver_display_name">Insulet Omnipod Dash</string>
     <string name="omnipod_dash_pump_display_name">Omnipod Dash Pod</string>
+    <string name="omnipod_dash_setup_step1_title">Schritt 1: Pod befüllen &amp; füllen</string>
+    <string name="omnipod_dash_setup_step1_description">Befülle den Pod mit mindestens 85 Einheiten U-100-Insulin, bis du 2 Pieptöne hörst. Platziere den Pod neben deinem Gerät und tippe auf \'Pod füllen\'.</string>
+    <string name="omnipod_dash_setup_step2_title">Schritt 2: Pod anbringen &amp; Kanüle einführen</string>
+    <string name="omnipod_dash_setup_step2_description">Entferne die transparente Nadelkappe. Bringe das Pod-Pflaster auf sauberer, trockener Haut an. Tippe auf \'Kanüle einführen\', um sie automatisch einzuführen.</string>
+    <string name="omnipod_dash_setup_step3_title">Schritt 3: Bestätigen &amp; Aktivieren</string>
+    <string name="omnipod_dash_setup_step3_description">Überprüfe das Einführen der Kanüle durch das transparente Sichtfenster. Tippe auf \'Pod aktivieren\', um die Basalratenabgabe zu starten.</string>
+    <string name="omnipod_dash_setup_btn_back">Zurück</string>
+    <string name="omnipod_dash_setup_btn_prime_pod">Pod füllen</string>
+    <string name="omnipod_dash_setup_btn_insert_cannula">Kanüle einführen</string>
+    <string name="omnipod_dash_setup_btn_activate_pod">Pod aktivieren</string>
+    <string name="omnipod_dash_setup_btn_cancel">Einrichtung abbrechen</string>
 </resources>

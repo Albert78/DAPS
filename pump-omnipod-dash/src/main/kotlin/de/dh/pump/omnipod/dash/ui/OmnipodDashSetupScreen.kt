@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.PumpConnectionDescriptor
+import de.dh.daps.common.ui.UiText
 import de.dh.pump.omnipod.dash.OmnipodDashInsulinPumpDriver
 import de.dh.pump.omnipod.dash.OmnipodDashPump
 import de.dh.pump.omnipod.dash.R
@@ -32,18 +33,25 @@ import de.dh.pump.omnipod.protocol.definition.ActivationProgress
 import de.dh.pump.omnipod.protocol.state.OmnipodDashPodStateManagerImpl
 import kotlinx.coroutines.launch
 
-enum class ActivationStep(val title: String, val description: String) {
+enum class ActivationStep(
+    val title: UiText,
+    val description: UiText,
+    val actionButtonText: UiText
+) {
     FILL_AND_PRIME(
-        "Step 1: Fill Pod & Prime",
-        "Fill the Pod with at least 85 Units of U-100 insulin until you hear 2 beeps. Place the Pod next to your device and tap 'Prime'."
+        UiText.StringResource(R.string.omnipod_dash_setup_step1_title),
+        UiText.StringResource(R.string.omnipod_dash_setup_step1_description),
+        UiText.StringResource(R.string.omnipod_dash_setup_btn_prime_pod)
     ),
     APPLY_AND_INSERT(
-        "Step 2: Apply & Insert Cannula",
-        "Remove the clear needle cap. Apply the Pod adhesive to clean, dry skin. Tap 'Insert Cannula' to insert automatically."
+        UiText.StringResource(R.string.omnipod_dash_setup_step2_title),
+        UiText.StringResource(R.string.omnipod_dash_setup_step2_description),
+        UiText.StringResource(R.string.omnipod_dash_setup_btn_insert_cannula)
     ),
     CONFIRM_AND_ACTIVATE(
-        "Step 3: Confirm & Activate",
-        "Verify cannula insertion through the transparent window. Tap 'Activate' to start basal insulin delivery."
+        UiText.StringResource(R.string.omnipod_dash_setup_step3_title),
+        UiText.StringResource(R.string.omnipod_dash_setup_step3_description),
+        UiText.StringResource(R.string.omnipod_dash_setup_btn_activate_pod)
     )
 }
 
@@ -78,13 +86,13 @@ fun OmnipodDashSetupScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = currentStep.title,
+                text = currentStep.title.asString(),
                 style = MaterialTheme.typography.titleMedium
             )
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = currentStep.description,
+                text = currentStep.description.asString(),
                 style = MaterialTheme.typography.bodyMedium
             )
             Spacer(modifier = Modifier.height(24.dp))
@@ -95,7 +103,7 @@ fun OmnipodDashSetupScreen(
                         onClick = { currentStepIndex-- },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Back")
+                        Text(stringResource(R.string.omnipod_dash_setup_btn_back))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                 }
@@ -135,13 +143,7 @@ fun OmnipodDashSetupScreen(
                     },
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text(
-                        when (currentStep) {
-                            ActivationStep.FILL_AND_PRIME -> "Prime Pod"
-                            ActivationStep.APPLY_AND_INSERT -> "Insert Cannula"
-                            ActivationStep.CONFIRM_AND_ACTIVATE -> "Activate Pod"
-                        }
-                    )
+                    Text(currentStep.actionButtonText.asString())
                 }
             }
 
@@ -150,7 +152,7 @@ fun OmnipodDashSetupScreen(
                 onClick = onCancel,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Cancel Setup")
+                Text(stringResource(R.string.omnipod_dash_setup_btn_cancel))
             }
         }
     }
