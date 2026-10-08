@@ -11,6 +11,8 @@ import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
 import android.content.Context
 import de.dh.pump.omnipod.protocol.command.Command
+import de.dh.pump.omnipod.protocol.security.CommandSendSuccess
+import de.dh.pump.omnipod.protocol.security.Session
 import de.dh.pump.omnipod.protocol.state.OmnipodDashPodStateManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +30,8 @@ class OmnipodDashBleManager(
 ) {
     private val _connectionState = MutableStateFlow(PodBleConnectionState.DISCONNECTED)
     val connectionState: StateFlow<PodBleConnectionState> = _connectionState
+
+    var session: Session? = null
 
     private var bluetoothGatt: BluetoothGatt? = null
     private var cmdCharacteristic: BluetoothGattCharacteristic? = null
@@ -70,7 +74,7 @@ class OmnipodDashBleManager(
             characteristic: BluetoothGattCharacteristic,
             value: ByteArray
         ) {
-            // Received indication payload
+            // Indication payload processing
         }
     }
 
@@ -96,12 +100,26 @@ class OmnipodDashBleManager(
         }
     }
 
+    @SuppressLint("MissingPermission")
     suspend fun sendCommand(command: Command): Result<ByteArray> = withContext(Dispatchers.IO) {
         if (_connectionState.value != PodBleConnectionState.CONNECTED) {
             return@withContext Result.failure(IllegalStateException("BLE Not Connected"))
         }
         try {
             val payload = command.encoded
+            val activeSession = session
+            if (activeSession != null) {
+                val sendResult = activeSession.sendCommand(payload)
+                if (sendResult != CommandSendSuccess) {
+                    return@withContext Result.failure(IllegalStateException("Session command send failed: $sendResult"))
+                }
+            } else {
+                val characteristic = cmdCharacteristic
+                if (characteristic != null && bluetoothGatt != null) {
+                    characteristic.value = payload
+                    bluetoothGatt?.writeCharacteristic(characteristic)
+                }
+            }
             Result.success(payload)
         } catch (e: Exception) {
             Result.failure(e)
@@ -131,6 +149,7 @@ class OmnipodDashBleManager(
         bluetoothGatt = null
         cmdCharacteristic = null
         dataCharacteristic = null
+        session = null
     }
 
     companion object {

@@ -28,6 +28,7 @@ import de.dh.pump.omnipod.protocol.command.ProgramTempBasalCommand
 import de.dh.pump.omnipod.protocol.command.StopDeliveryCommand
 import de.dh.pump.omnipod.protocol.state.OmnipodDashPodStateManager
 import de.dh.pump.omnipod.protocol.util.PodPulseCalculator
+import de.dh.pump.omnipod.protocol.util.ProfileToBasalScheduleConverter
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -249,7 +250,14 @@ class OmnipodDashPump(
     }
 
     override suspend fun setProfile(profile: InsulinProfile) {
-        logEvent("PROFILE", "Set active basal profile: ${profile.name}", 0.0)
+        val schedulePulses = ProfileToBasalScheduleConverter.convertProfileToHalfHourPulses(profile)
+        val currentRate = profile.basalBlocks.firstOrNull()?.amount ?: 0.0
+        _basalStatus.value = _basalStatus.value.copy(
+            activeRate = InsulinAmount(currentRate),
+            isTempBasal = false,
+            isSuspended = false
+        )
+        logEvent("PROFILE", "Set active basal profile: ${profile.name} (${schedulePulses.size} segments)", 0.0)
     }
 
     override suspend fun syncHistory() {

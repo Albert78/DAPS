@@ -42,6 +42,7 @@ interface OmnipodDashPodStateManager {
     fun updateFromDefaultStatusResponse(response: DefaultStatusResponse)
     fun updateFromVersionResponse(response: VersionResponse)
     fun updateFromSetUniqueIdResponse(response: SetUniqueIdResponse)
+    suspend fun saveToPreferences()
     fun reset()
 
     data class TempBasal(val startTime: Long, val rate: Double, val durationInMinutes: Short) : Serializable
@@ -107,6 +108,19 @@ class OmnipodDashPodStateManagerImpl(
         activationProgress = ActivationProgress.SET_UNIQUE_ID
     }
 
+    override suspend fun saveToPreferences() {
+        preferences?.apply {
+            putInt(KEY_UNIQUE_ID, uniqueId ?: 0)
+            putLong(KEY_LOT_NUMBER, lotNumber ?: 0L)
+            putLong(KEY_POD_SEQ_NUMBER, podSequenceNumber ?: 0L)
+            putString(KEY_BLE_ADDRESS, bluetoothAddress)
+            putString(KEY_LTK, ltk?.joinToString("") { "%02x".format(it) })
+            putLong(KEY_ACTIVATED_AT, activatedAtTimestampMs ?: 0L)
+            putInt(KEY_LAST_NONCE, lastNonce ?: 0)
+            putString(KEY_ACTIVATION_PROGRESS, activationProgress.name)
+        }
+    }
+
     override fun reset() {
         activationProgress = ActivationProgress.NOT_STARTED
         uniqueId = null
@@ -125,5 +139,16 @@ class OmnipodDashPodStateManagerImpl(
         tempBasal = null
         basalProgram = null
         lastBolus = null
+    }
+
+    companion object {
+        private const val KEY_UNIQUE_ID = "omnipod_dash_unique_id"
+        private const val KEY_LOT_NUMBER = "omnipod_dash_lot_number"
+        private const val KEY_POD_SEQ_NUMBER = "omnipod_dash_pod_seq_number"
+        private const val KEY_BLE_ADDRESS = "omnipod_dash_ble_address"
+        private const val KEY_LTK = "omnipod_dash_ltk"
+        private const val KEY_ACTIVATED_AT = "omnipod_dash_activated_at"
+        private const val KEY_LAST_NONCE = "omnipod_dash_last_nonce"
+        private const val KEY_ACTIVATION_PROGRESS = "omnipod_dash_activation_progress"
     }
 }

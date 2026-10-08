@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -27,7 +28,9 @@ import de.dh.pump.omnipod.dash.OmnipodDashInsulinPumpDriver
 import de.dh.pump.omnipod.dash.OmnipodDashPump
 import de.dh.pump.omnipod.dash.R
 import de.dh.pump.omnipod.protocol.ble.OmnipodDashBleManager
+import de.dh.pump.omnipod.protocol.definition.ActivationProgress
 import de.dh.pump.omnipod.protocol.state.OmnipodDashPodStateManagerImpl
+import kotlinx.coroutines.launch
 
 enum class ActivationStep(val title: String, val description: String) {
     FILL_AND_PRIME(
@@ -54,6 +57,7 @@ fun OmnipodDashSetupScreen(
     var currentStepIndex by remember { mutableIntStateOf(0) }
     val steps = ActivationStep.entries
     val currentStep = steps[currentStepIndex]
+    val scope = rememberCoroutineScope()
 
     Card(
         modifier = modifier
@@ -98,21 +102,34 @@ fun OmnipodDashSetupScreen(
 
                 Button(
                     onClick = {
-                        if (currentStepIndex < steps.size - 1) {
-                            currentStepIndex++
-                        } else {
-                            val context = driver.getContext()?.appContext
-                            if (context != null) {
-                                val podStateManager = OmnipodDashPodStateManagerImpl(driver.getContext()?.preferences)
-                                podStateManager.activatedAtTimestampMs = System.currentTimeMillis()
-                                val bleManager = OmnipodDashBleManager(context, podStateManager)
-                                val pump = OmnipodDashPump(podStateManager, bleManager, context)
-                                val descriptor = PumpConnectionDescriptor(
-                                    driverId = OmnipodDashInsulinPumpDriver.DRIVER_ID,
-                                    deviceId = podStateManager.bluetoothAddress ?: "POD-DASH-ACTIVE",
-                                    displayName = "Omnipod Dash Pod"
-                                )
-                                onConnected(pump, descriptor)
+                        val preferences = driver.getContext()?.preferences
+                        val podStateManager = OmnipodDashPodStateManagerImpl(preferences)
+                        when (currentStep) {
+                            ActivationStep.FILL_AND_PRIME -> {
+                                podStateManager.activationProgress = ActivationProgress.PRIME_COMPLETED
+                                currentStepIndex++
+                            }
+                            ActivationStep.APPLY_AND_INSERT -> {
+                                podStateManager.activationProgress = ActivationProgress.CANNULA_INSERTED
+                                currentStepIndex++
+                            }
+                            ActivationStep.CONFIRM_AND_ACTIVATE -> {
+                                val context = driver.getContext()?.appContext
+                                if (context != null) {
+                                    podStateManager.activatedAtTimestampMs = System.currentTimeMillis()
+                                    podStateManager.activationProgress = ActivationProgress.COMPLETED
+                                    scope.launch {
+                                        podStateManager.saveToPreferences()
+                                    }
+                                    val bleManager = OmnipodDashBleManager(context, podStateManager)
+                                    val pump = OmnipodDashPump(podStateManager, bleManager, context)
+                                    val descriptor = PumpConnectionDescriptor(
+                                        driverId = OmnipodDashInsulinPumpDriver.DRIVER_ID,
+                                        deviceId = podStateManager.bluetoothAddress ?: "POD-DASH-ACTIVE",
+                                        displayName = "Omnipod Dash Pod"
+                                    )
+                                    onConnected(pump, descriptor)
+                                }
                             }
                         }
                     },
