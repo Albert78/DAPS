@@ -6,32 +6,29 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.ui.UiText
 import de.dh.pump.omnipod.dash.OmnipodDashInsulinPumpDriver
-import de.dh.pump.omnipod.dash.OmnipodDashPump
 import de.dh.pump.omnipod.dash.R
-import de.dh.pump.omnipod.protocol.ble.OmnipodDashBleManager
-import de.dh.pump.omnipod.protocol.definition.ActivationProgress
-import de.dh.pump.omnipod.protocol.state.OmnipodDashPodStateManagerImpl
-import kotlinx.coroutines.launch
 
 enum class ActivationStep(
     val title: UiText,
@@ -55,17 +52,47 @@ enum class ActivationStep(
     )
 }
 
+/**
+ * Stateful container for the Omnipod Dash setup screen.
+ */
 @Composable
 fun OmnipodDashSetupScreen(
     driver: OmnipodDashInsulinPumpDriver,
     onConnected: (InsulinPump, PumpConnectionDescriptor) -> Unit,
     onCancel: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: OmnipodDashSetupViewModel = viewModel()
+) {
+    val currentStepIndex by viewModel.currentStepIndex.collectAsStateWithLifecycle()
+    val isActivating by viewModel.isActivating.collectAsStateWithLifecycle()
+    val activationError by viewModel.activationError.collectAsStateWithLifecycle()
+
+    OmnipodDashSetupContent(
+        currentStepIndex = currentStepIndex,
+        isActivating = isActivating,
+        activationError = activationError,
+        onNextStep = { viewModel.nextStep(driver, onConnected) },
+        onPreviousStep = { viewModel.previousStep() },
+        onCancel = onCancel,
+        modifier = modifier
+    )
+}
+
+/**
+ * Stateless presentation composable for the Omnipod Dash setup screen.
+ */
+@Composable
+fun OmnipodDashSetupContent(
+    currentStepIndex: Int,
+    isActivating: Boolean,
+    activationError: String?,
+    onNextStep: () -> Unit,
+    onPreviousStep: () -> Unit,
+    onCancel: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var currentStepIndex by remember { mutableIntStateOf(0) }
     val steps = ActivationStep.entries
-    val currentStep = steps[currentStepIndex]
-    val scope = rememberCoroutineScope()
+    val currentStep = steps.getOrElse(currentStepIndex) { steps[0] }
 
     Card(
         modifier = modifier
@@ -81,9 +108,26 @@ fun OmnipodDashSetupScreen(
 
             LinearProgressIndicator(
                 progress = { (currentStepIndex + 1).toFloat() / steps.size },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(16.dp))
+
+            if (activationError != null) {
+                Surface(
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    shape = MaterialTheme.shapes.small,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
+                ) {
+                    Text(
+                        text = activationError,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(12.dp)
+                    )
+                }
+            }
 
             Text(
                 text = currentStep.title.asString(),
@@ -100,7 +144,8 @@ fun OmnipodDashSetupScreen(
             Row(modifier = Modifier.fillMaxWidth()) {
                 if (currentStepIndex > 0) {
                     OutlinedButton(
-                        onClick = { currentStepIndex-- },
+                        onClick = onPreviousStep,
+                        enabled = !isActivating,
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(stringResource(R.string.omnipod_dash_setup_btn_back))
@@ -109,51 +154,105 @@ fun OmnipodDashSetupScreen(
                 }
 
                 Button(
-                    onClick = {
-                        val preferences = driver.getContext()?.preferences
-                        val podStateManager = OmnipodDashPodStateManagerImpl(preferences)
-                        when (currentStep) {
-                            ActivationStep.FILL_AND_PRIME -> {
-                                podStateManager.activationProgress = ActivationProgress.PRIME_COMPLETED
-                                currentStepIndex++
-                            }
-                            ActivationStep.APPLY_AND_INSERT -> {
-                                podStateManager.activationProgress = ActivationProgress.CANNULA_INSERTED
-                                currentStepIndex++
-                            }
-                            ActivationStep.CONFIRM_AND_ACTIVATE -> {
-                                val context = driver.getContext()?.appContext
-                                if (context != null) {
-                                    podStateManager.activatedAtTimestampMs = System.currentTimeMillis()
-                                    podStateManager.activationProgress = ActivationProgress.COMPLETED
-                                    scope.launch {
-                                        podStateManager.saveToPreferences()
-                                    }
-                                    val bleManager = OmnipodDashBleManager(context, podStateManager)
-                                    val pump = OmnipodDashPump(podStateManager, bleManager, context)
-                                    val descriptor = PumpConnectionDescriptor(
-                                        driverId = OmnipodDashInsulinPumpDriver.DRIVER_ID,
-                                        deviceId = podStateManager.bluetoothAddress ?: "POD-DASH-ACTIVE",
-                                        displayName = "Omnipod Dash Pod"
-                                    )
-                                    onConnected(pump, descriptor)
-                                }
-                            }
-                        }
-                    },
+                    onClick = onNextStep,
+                    enabled = !isActivating,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text(currentStep.actionButtonText.asString())
+                    if (isActivating) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(currentStep.actionButtonText.asString())
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedButton(
                 onClick = onCancel,
+                enabled = !isActivating,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.omnipod_dash_setup_btn_cancel))
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun OmnipodDashSetupContentStep1Preview() {
+    MaterialTheme {
+        OmnipodDashSetupContent(
+            currentStepIndex = 0,
+            isActivating = false,
+            activationError = null,
+            onNextStep = {},
+            onPreviousStep = {},
+            onCancel = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun OmnipodDashSetupContentStep2Preview() {
+    MaterialTheme {
+        OmnipodDashSetupContent(
+            currentStepIndex = 1,
+            isActivating = false,
+            activationError = null,
+            onNextStep = {},
+            onPreviousStep = {},
+            onCancel = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun OmnipodDashSetupContentStep3Preview() {
+    MaterialTheme {
+        OmnipodDashSetupContent(
+            currentStepIndex = 2,
+            isActivating = false,
+            activationError = null,
+            onNextStep = {},
+            onPreviousStep = {},
+            onCancel = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun OmnipodDashSetupContentActivatingPreview() {
+    MaterialTheme {
+        OmnipodDashSetupContent(
+            currentStepIndex = 2,
+            isActivating = true,
+            activationError = null,
+            onNextStep = {},
+            onPreviousStep = {},
+            onCancel = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun OmnipodDashSetupContentErrorPreview() {
+    MaterialTheme {
+        OmnipodDashSetupContent(
+            currentStepIndex = 2,
+            isActivating = false,
+            activationError = "Aktivierung fehlgeschlagen. Bitte erneut versuchen.",
+            onNextStep = {},
+            onPreviousStep = {},
+            onCancel = {}
+        )
     }
 }

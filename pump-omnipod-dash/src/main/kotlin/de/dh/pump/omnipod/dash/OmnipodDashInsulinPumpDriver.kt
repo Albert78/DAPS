@@ -59,7 +59,7 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
         return try {
             val podStateManager = OmnipodDashPodStateManagerImpl(pluginContext?.preferences)
             val bleManager = OmnipodDashBleManager(appContext, podStateManager)
-            val pump = OmnipodDashPump(podStateManager, bleManager)
+            val pump = OmnipodDashPump(podStateManager, bleManager, appContext)
             Result.success(pump)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to connect to Omnipod Dash pod", e)

@@ -1,0 +1,87 @@
+package de.dh.pump.omnipod.dash.ui
+
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import de.dh.daps.common.model.InsulinPump
+import de.dh.daps.common.model.PumpConnectionDescriptor
+import de.dh.pump.omnipod.dash.OmnipodDashInsulinPumpDriver
+import de.dh.pump.omnipod.dash.OmnipodDashPump
+import de.dh.pump.omnipod.dash.R
+import de.dh.pump.omnipod.protocol.ble.OmnipodDashBleManager
+import de.dh.pump.omnipod.protocol.definition.ActivationProgress
+import de.dh.pump.omnipod.protocol.state.OmnipodDashPodStateManagerImpl
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+
+/**
+ * ViewModel managing the pod setup and activation wizard for Omnipod Dash.
+ */
+class OmnipodDashSetupViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val _currentStepIndex = MutableStateFlow(0)
+    val currentStepIndex: StateFlow<Int> = _currentStepIndex.asStateFlow()
+
+    private val _isActivating = MutableStateFlow(false)
+    val isActivating: StateFlow<Boolean> = _isActivating.asStateFlow()
+
+    private val _activationError = MutableStateFlow<String?>(null)
+    val activationError: StateFlow<String?> = _activationError.asStateFlow()
+
+    fun previousStep() {
+        if (_currentStepIndex.value > 0) {
+            _currentStepIndex.value -= 1
+        }
+    }
+
+    fun nextStep(
+        driver: OmnipodDashInsulinPumpDriver,
+        onConnected: (InsulinPump, PumpConnectionDescriptor) -> Unit
+    ) {
+        val steps = ActivationStep.entries
+        val currentIndex = _currentStepIndex.value
+        if (currentIndex !in steps.indices) return
+
+        val preferences = driver.getContext()?.preferences
+        val podStateManager = OmnipodDashPodStateManagerImpl(preferences)
+
+        when (steps[currentIndex]) {
+            ActivationStep.FILL_AND_PRIME -> {
+                podStateManager.activationProgress = ActivationProgress.PRIME_COMPLETED
+                _currentStepIndex.value = currentIndex + 1
+            }
+            ActivationStep.APPLY_AND_INSERT -> {
+                podStateManager.activationProgress = ActivationProgress.CANNULA_INSERTED
+                _currentStepIndex.value = currentIndex + 1
+            }
+            ActivationStep.CONFIRM_AND_ACTIVATE -> {
+                val context = driver.getContext()?.appContext ?: getApplication()
+                viewModelScope.launch {
+                    _isActivating.value = true
+                    _activationError.value = null
+                    try {
+                        podStateManager.activatedAtTimestampMs = System.currentTimeMillis()
+                        podStateManager.activationProgress = ActivationProgress.COMPLETED
+                        podStateManager.saveToPreferences()
+
+                        val bleManager = OmnipodDashBleManager(context, podStateManager)
+                        val pump = OmnipodDashPump(podStateManager, bleManager, context)
+                        val descriptor = PumpConnectionDescriptor(
+                            driverId = OmnipodDashInsulinPumpDriver.DRIVER_ID,
+                            deviceId = podStateManager.bluetoothAddress ?: "POD-DASH-ACTIVE",
+                            displayName = "Omnipod Dash Pod"
+                        )
+                        _isActivating.value = false
+                        onConnected(pump, descriptor)
+                    } catch (e: Exception) {
+                        _isActivating.value = false
+                        _activationError.value = e.message
+                            ?: getApplication<Application>().getString(R.string.omnipod_dash_setup_activate_failed)
+                    }
+                }
+            }
+        }
+    }
+}
