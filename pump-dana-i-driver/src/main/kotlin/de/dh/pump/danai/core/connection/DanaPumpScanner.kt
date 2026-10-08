@@ -19,13 +19,29 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * Discovered Dana pump during Bluetooth scanning.
+ * Discovered Dana pump during Bluetooth scanning or UI previews.
  */
-data class DanaScanResult(
-    val name: String,
-    val address: String,
-    val device: BluetoothDevice,
-)
+sealed interface DanaScanResult {
+    val name: String
+    val address: String
+
+    /**
+     * Real Bluetooth Low Energy scan result containing a non-nullable [BluetoothDevice].
+     */
+    data class Real(
+        override val name: String,
+        override val address: String,
+        val device: BluetoothDevice,
+    ) : DanaScanResult
+
+    /**
+     * Fake scan result used for previews or tests without requiring an Android [BluetoothDevice].
+     */
+    data class Fake(
+        override val name: String,
+        override val address: String,
+    ) : DanaScanResult
+}
 
 /**
  * Handles Bluetooth Low Energy (BLE) scanning specifically for Dana insulin pumps.
@@ -116,7 +132,7 @@ class DanaPumpScanner(
             // Dana pumps always have a 10-character serial number as their name
             if (name.length != 10) return
 
-            val item = DanaScanResult(
+            val item = DanaScanResult.Real(
                 name = name,
                 address = device.address,
                 device = device,

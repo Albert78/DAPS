@@ -30,14 +30,19 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.pump.danai.R
+import de.dh.pump.danai.core.connection.DanaScanResult
 
 /**
- * Setup and pairing screen for Sooil Dana-i insulin pumps.
+ * Stateful setup container for Sooil Dana-i insulin pumps.
+ *
+ * Manages [DanaISetupViewModel] state and lifecycle, then delegates UI rendering
+ * to the stateless [DanaISetupContent] component.
  */
 @Composable
 fun DanaISetupScreen(
@@ -52,13 +57,49 @@ fun DanaISetupScreen(
     val isConnecting by viewModel.isConnecting.collectAsState()
     val connectError by viewModel.connectError.collectAsState()
 
-    val pluginContext = driver.getContext()
-
     // Automatically start BLE scan when screen opens
     LaunchedEffect(Unit) {
         viewModel.startDiscovery()
     }
 
+    DanaISetupContent(
+        scanResults = scanResults,
+        isScanning = isScanning,
+        isConnecting = isConnecting,
+        connectError = connectError,
+        onStartDiscovery = { viewModel.startDiscovery() },
+        onPairClick = { scanResult ->
+            val prefs = driver.getContext()?.preferences
+            if (prefs != null) {
+                viewModel.connectAndPair(
+                    driver = driver,
+                    scanResult = scanResult,
+                    preferences = prefs,
+                    onConnected = onConnected
+                )
+            }
+        },
+        onCancel = onCancel,
+        modifier = modifier
+    )
+}
+
+/**
+ * Pure presentation composable for the Dana-i setup screen.
+ *
+ * Fully decoupled from ViewModel and driver logic for easy previewing and UI testing.
+ */
+@Composable
+fun DanaISetupContent(
+    scanResults: List<DanaScanResult>,
+    isScanning: Boolean,
+    isConnecting: Boolean,
+    connectError: String?,
+    onStartDiscovery: () -> Unit,
+    onPairClick: (DanaScanResult) -> Unit,
+    onCancel: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Column(
         modifier = modifier.fillMaxSize()
     ) {
@@ -87,7 +128,10 @@ fun DanaISetupScreen(
             }
         }
 
-        Text(stringResource(R.string.danai_pump_setup_available_pumps), style = MaterialTheme.typography.titleLarge)
+        Text(
+            text = stringResource(R.string.danai_pump_setup_available_pumps),
+            style = MaterialTheme.typography.titleLarge
+        )
         Spacer(Modifier.height(8.dp))
 
         if (scanResults.isEmpty() && !isScanning) {
@@ -112,17 +156,7 @@ fun DanaISetupScreen(
                         trailingContent = {
                             Button(
                                 enabled = !isConnecting,
-                                onClick = {
-                                    val prefs = pluginContext?.preferences
-                                    if (prefs != null) {
-                                        viewModel.connectAndPair(
-                                            driver = driver,
-                                            scanResult = pump,
-                                            preferences = prefs,
-                                            onConnected = onConnected
-                                        )
-                                    }
-                                }
+                                onClick = { onPairClick(pump) }
                             ) {
                                 if (isConnecting) {
                                     CircularProgressIndicator(
@@ -160,7 +194,7 @@ fun DanaISetupScreen(
             Spacer(Modifier.width(8.dp))
 
             Button(
-                onClick = { viewModel.startDiscovery() },
+                onClick = onStartDiscovery,
                 modifier = Modifier.weight(1f),
                 enabled = !isScanning && !isConnecting
             ) {
@@ -177,5 +211,74 @@ fun DanaISetupScreen(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DanaISetupContentPreview() {
+    MaterialTheme {
+        DanaISetupContent(
+            scanResults = listOf(
+                DanaScanResult.Fake(name = "DANA-i-123", address = "00:11:22:33:44:55"),
+                DanaScanResult.Fake(name = "DANA-i-456", address = "AA:BB:CC:DD:EE:FF")
+            ),
+            isScanning = false,
+            isConnecting = false,
+            connectError = null,
+            onStartDiscovery = {},
+            onPairClick = {},
+            onCancel = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DanaISetupContentScanningPreview() {
+    MaterialTheme {
+        DanaISetupContent(
+            scanResults = listOf(
+                DanaScanResult.Fake(name = "DANA-i-123", address = "00:11:22:33:44:55")
+            ),
+            isScanning = true,
+            isConnecting = false,
+            connectError = null,
+            onStartDiscovery = {},
+            onPairClick = {},
+            onCancel = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DanaISetupContentEmptyPreview() {
+    MaterialTheme {
+        DanaISetupContent(
+            scanResults = emptyList(),
+            isScanning = false,
+            isConnecting = false,
+            connectError = null,
+            onStartDiscovery = {},
+            onPairClick = {},
+            onCancel = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DanaISetupContentErrorPreview() {
+    MaterialTheme {
+        DanaISetupContent(
+            scanResults = emptyList(),
+            isScanning = false,
+            isConnecting = false,
+            connectError = "Bluetooth pairing failed. Please try again.",
+            onStartDiscovery = {},
+            onPairClick = {},
+            onCancel = {}
+        )
     }
 }
