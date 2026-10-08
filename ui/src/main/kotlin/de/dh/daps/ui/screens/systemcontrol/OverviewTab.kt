@@ -736,8 +736,8 @@ fun OverviewTabExpiredPreview() {
     }
 }
 
-@Preview(showBackground = true, heightDp = 600, name = "Overview Tab - Loading Mode")
-@Preview(showBackground = true, heightDp = 600, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Overview Tab - Loading Mode - Dark")
+@Preview(showBackground = true, heightDp = 300, name = "Overview Tab - Loading Mode")
+@Preview(showBackground = true, heightDp = 300, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Overview Tab - Loading Mode - Dark")
 @Composable
 fun OverviewTabLoadingPreview() {
     AppTheme {
@@ -750,13 +750,43 @@ fun OverviewTabLoadingPreview() {
     }
 }
 
-@Preview(showBackground = true, heightDp = 1200, name = "Overview Tab - Cards Loading Mode")
+@Preview(showBackground = true, heightDp = 750, name = "Overview Tab - Cards Loading Mode")
 @Composable
 fun OverviewTabCardsLoadingPreview() {
     AppTheme {
         Surface {
             OverviewTabContent(
                 uiState = sampleOverviewTabLoadingUiState(),
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
+}
+
+internal fun sampleOverviewTabNotConfiguredUiState(): OverviewTabUiState = OverviewTabUiState.Content(
+    androidSystem = OverviewAndroidSystemUiState.Content(
+        bluetoothStatus = StatusMetric(true, status = ValueStatus.GOOD),
+        phoneBattery = StatusMetric(82, status = ValueStatus.GOOD),
+        permissionsStatus = StatusMetric(0, status = ValueStatus.GOOD),
+        dapsServiceStatus = StatusMetric(true, status = ValueStatus.GOOD)
+    ),
+    apsSystem = OverviewApsSystemUiState.Content(
+        mode = StatusMetric(ApsMode.AutoCorrection, status = ValueStatus.GOOD),
+        lastCalculation = StatusMetric(Timestamp(System.currentTimeMillis() - 120_000), status = ValueStatus.GOOD),
+        status = StatusMetric(0, status = ValueStatus.GOOD)
+    ),
+    glucoseSource = OverviewGlucoseSourceUiState.NoneConfigured,
+    insulinPump = OverviewPumpUiState.NoneConfigured
+)
+
+@Preview(showBackground = true, heightDp = 800, name = "Overview Tab - Not Configured Mode")
+@Preview(showBackground = true, heightDp = 800, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Overview Tab - Not Configured Mode - Dark")
+@Composable
+fun OverviewTabNotConfiguredPreview() {
+    AppTheme {
+        Surface {
+            OverviewTabContent(
+                uiState = sampleOverviewTabNotConfiguredUiState(),
                 modifier = Modifier.padding(16.dp)
             )
         }
