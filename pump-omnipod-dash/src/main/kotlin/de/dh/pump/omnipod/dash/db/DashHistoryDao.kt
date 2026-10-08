@@ -17,6 +17,9 @@ interface DashHistoryDao {
     @Query("SELECT * FROM omnipod_dash_history ORDER BY timestampMs DESC LIMIT :limit")
     suspend fun getRecentEvents(limit: Int): List<DashHistoryEntity>
 
+    @Query("SELECT * FROM omnipod_dash_history WHERE timestampMs >= :sinceMs ORDER BY timestampMs ASC")
+    suspend fun getEventsSince(sinceMs: Long): List<DashHistoryEntity>
+
     @Query("DELETE FROM omnipod_dash_history")
     suspend fun clearAll()
 }

@@ -8,6 +8,7 @@ import de.dh.daps.common.model.BolusStatus
 import de.dh.daps.common.model.Expiration
 import de.dh.daps.common.model.ExpirationDate
 import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.InsulinCategory
 import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinHistory
 import de.dh.daps.common.model.InsulinPump
@@ -22,6 +23,7 @@ import de.dh.daps.common.ui.UiText
 import de.dh.pump.omnipod.dash.db.DashHistoryDatabase
 import de.dh.pump.omnipod.dash.db.DashHistoryEntity
 import de.dh.pump.omnipod.dash.db.DashHistoryEventType
+import de.dh.pump.omnipod.dash.model.OmnipodInsulinHistoryPoint
 import de.dh.pump.omnipod.protocol.ble.OmnipodDashBleManager
 import de.dh.pump.omnipod.protocol.command.GetStatusCommand
 import de.dh.pump.omnipod.protocol.command.ProgramBolusCommand
@@ -56,6 +58,7 @@ class OmnipodDashPump(
     override var insulinConcentration: InsulinConcentration = InsulinConcentration.U100
 
     private var sequenceNumber: Short = 1
+    private var lastSyncTimestamp: Timestamp = Timestamp.now().minusHours(24)
 
     private val _startDate = MutableStateFlow<Timestamp?>(null)
     override val startDate: StateFlow<Timestamp?> = _startDate.asStateFlow()
@@ -267,9 +270,32 @@ class OmnipodDashPump(
 
     override suspend fun syncHistory() {
         refreshStatus()
-        db?.let {
-            val events = it.historyDao().getRecentEvents(50)
-            // Sync history
+        db?.let { historyDb ->
+            val cutoff = Timestamp.now().minusHours(24)
+            val entities = historyDb.historyDao().getEventsSince(cutoff.ms)
+
+            val points = entities.map { entity ->
+                OmnipodInsulinHistoryPoint(
+                    timestamp = Timestamp(entity.timestampMs),
+                    amount = InsulinAmount(entity.unitsDelivered),
+                    category = when (entity.eventType) {
+                        DashHistoryEventType.BOLUS -> InsulinCategory.Bolus
+                        else -> InsulinCategory.Basal
+                    },
+                    pumpId = entity.id.toString()
+                )
+            }.sortedBy { it.timestamp }
+
+            if (points.isNotEmpty()) {
+                _history.value = InsulinHistory(
+                    from = points.first().timestamp,
+                    to = points.last().timestamp,
+                    points = points
+                )
+                lastSyncTimestamp = Timestamp.now()
+            } else {
+                _history.value = null
+            }
         }
     }
 
