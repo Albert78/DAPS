@@ -386,7 +386,7 @@ private class PreviewPumpDriver(
         setupScreenContent()
     }
 
-    override suspend fun connect(): Result<InsulinPump> {
+    override suspend fun attach(): Result<InsulinPump> {
         return Result.failure(UnsupportedOperationException())
     }
 }

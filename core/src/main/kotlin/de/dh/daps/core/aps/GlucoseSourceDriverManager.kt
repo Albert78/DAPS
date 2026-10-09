@@ -20,11 +20,11 @@ class GlucoseSourceDriverManager(
     /**
      * Re-establishes a glucose source connection for the specified [driverId].
      */
-    suspend fun connect(driverId: String): Result<GlucoseSource> {
+    suspend fun attachToGlucoseSource(driverId: String): Result<GlucoseSource> {
         val driver = getDriver(driverId)
             ?: return Result.failure(
                 IllegalArgumentException("No glucose source driver found matching driver ID '$driverId'.")
             )
-        return driver.connect()
+        return driver.attach()
     }
 }

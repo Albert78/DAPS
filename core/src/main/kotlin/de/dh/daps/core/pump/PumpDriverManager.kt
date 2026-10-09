@@ -20,11 +20,11 @@ class PumpDriverManager(
     /**
      * Re-establishes a pump connection for the specified [driverId].
      */
-    suspend fun connect(driverId: String): Result<InsulinPump> {
+    suspend fun attachToPump(driverId: String): Result<InsulinPump> {
         val driver = getDriver(driverId)
             ?: return Result.failure(
                 IllegalArgumentException("No pump driver found matching driver ID '$driverId'.")
             )
-        return driver.connect()
+        return driver.attach()
     }
 }

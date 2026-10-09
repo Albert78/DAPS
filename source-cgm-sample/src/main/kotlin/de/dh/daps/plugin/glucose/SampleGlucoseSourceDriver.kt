@@ -110,7 +110,7 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
     /**
      * Re-connects to a sample glucose source using stored driver settings.
      */
-    override suspend fun connect(): Result<GlucoseSource> {
+    override suspend fun attach(): Result<GlucoseSource> {
         val pc = pluginContext
             ?: return Result.failure(IllegalStateException("PluginContext not initialized"))
         val prefs = pc.preferences

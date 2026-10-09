@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
  *
  * Drivers must persist their connected device information in their [PluginPreferences]
  * (provided via [PluginContext]) and must be able to restore their [DeviceLifecycleState] and their
- * state to re-establish the connection when [connect] is invoked.
+ * state to re-establish the connection when [attach] is invoked.
  */
 interface InsulinPumpDriver {
     /**
@@ -42,5 +42,5 @@ interface InsulinPumpDriver {
      * Re-establishes a connection with a previously configured pump using stored driver settings.
      * Invoked upon application launch or when loading a configured pump.
      */
-    suspend fun connect(): Result<InsulinPump>
+    suspend fun attach(): Result<InsulinPump>
 }

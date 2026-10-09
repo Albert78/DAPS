@@ -60,7 +60,7 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
     }
 
     @SuppressLint("MissingPermission")
-    override suspend fun connect(): Result<InsulinPump> {
+    override suspend fun attach(): Result<InsulinPump> {
         val appContext = pluginContext?.appContext
             ?: return Result.failure(IllegalStateException("PluginContext not initialized. Call setup/initialize first."))
 

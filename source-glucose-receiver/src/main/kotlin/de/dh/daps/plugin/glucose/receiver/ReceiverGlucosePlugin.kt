@@ -225,7 +225,7 @@ class ReceiverGlucosePlugin(
     /**
      * Re-connects to an external BroadcastReceiver glucose source using stored driver settings.
      */
-    override suspend fun connect(): Result<GlucoseSource> {
+    override suspend fun attach(): Result<GlucoseSource> {
         val pc = pluginContext
             ?: return Result.failure(IllegalStateException("PluginContext not initialized"))
         refreshLifecycleState(pc.preferences)

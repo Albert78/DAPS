@@ -45,7 +45,7 @@ class DeviceConnectionManager(
                 Log.d(TAG, "Active glucose source driver '$activeGlucoseDriverId' state: $state")
                 when (state) {
                     is DeviceLifecycleState.DeviceBound -> {
-                        glucoseSourceDriverManager.connect(activeGlucoseDriverId).onSuccess { glucoseSource ->
+                        glucoseSourceDriverManager.attachToGlucoseSource(activeGlucoseDriverId).onSuccess { glucoseSource ->
                             glucoseSourceManager.glucoseSource = glucoseSource
                         }.onFailure { error ->
                             Log.e(TAG, "Failed to reconnect glucose source driver '$activeGlucoseDriverId': ${error.message}", error)
@@ -78,7 +78,7 @@ class DeviceConnectionManager(
                 Log.d(TAG, "Active pump driver '$activePumpDriverId' state: $state")
                 when (state) {
                     is DeviceLifecycleState.DeviceBound -> {
-                        pumpDriverManager.connect(activePumpDriverId).onSuccess { insulinPump ->
+                        pumpDriverManager.attachToPump(activePumpDriverId).onSuccess { insulinPump ->
                             pumpManager.insulinPump = insulinPump
                         }.onFailure { error ->
                             Log.e(TAG, "Failed to reconnect insulin pump driver '$activePumpDriverId': ${error.message}", error)
@@ -114,7 +114,7 @@ class DeviceConnectionManager(
      */
     suspend fun connectGlucoseSource(driverId: String): Result<GlucoseSource> {
         Log.d(TAG, "Connecting to glucose source driver: $driverId")
-        return glucoseSourceDriverManager.connect(driverId).onSuccess { glucoseSource ->
+        return glucoseSourceDriverManager.attachToGlucoseSource(driverId).onSuccess { glucoseSource ->
             setConnectedGlucoseSource(driverId, glucoseSource)
         }
     }
@@ -134,7 +134,7 @@ class DeviceConnectionManager(
      */
     suspend fun connectPump(driverId: String): Result<InsulinPump> {
         Log.d(TAG, "Connecting to insulin pump driver: $driverId")
-        return pumpDriverManager.connect(driverId).onSuccess { insulinPump ->
+        return pumpDriverManager.attachToPump(driverId).onSuccess { insulinPump ->
             setConnectedPump(driverId, insulinPump)
         }
     }

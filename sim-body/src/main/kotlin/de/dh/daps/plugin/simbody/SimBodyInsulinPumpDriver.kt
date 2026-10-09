@@ -124,7 +124,7 @@ class SimBodyInsulinPumpDriver(
     /**
      * Re-connects to the virtual human body simulation pump using stored driver settings.
      */
-    override suspend fun connect(): Result<InsulinPump> {
+    override suspend fun attach(): Result<InsulinPump> {
         val pc = pluginContext
             ?: return Result.failure(IllegalStateException("PluginContext not initialized"))
         val deviceId = pc.preferences.getString(KEY_DEVICE_ID).first()

@@ -124,7 +124,7 @@ class SimBodyGlucoseSourceDriver(
     /**
      * Re-connects to the virtual human body simulation CGM using stored driver settings.
      */
-    override suspend fun connect(): Result<GlucoseSource> {
+    override suspend fun attach(): Result<GlucoseSource> {
         val pc = pluginContext
             ?: return Result.failure(IllegalStateException("PluginContext not initialized"))
         val deviceId = pc.preferences.getString(KEY_DEVICE_ID).first()

@@ -110,7 +110,7 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
     /**
      * Re-connects to a sample pump using stored driver settings.
      */
-    override suspend fun connect(): Result<InsulinPump> {
+    override suspend fun attach(): Result<InsulinPump> {
         val pc = pluginContext
             ?: return Result.failure(IllegalStateException("PluginContext not initialized"))
         val prefs = pc.preferences

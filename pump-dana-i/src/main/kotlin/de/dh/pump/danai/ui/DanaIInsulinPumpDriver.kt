@@ -121,7 +121,7 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
      * Re-establishes a connection with a previously paired Dana-i pump using stored preferences.
      */
     @SuppressLint("MissingPermission")
-    override suspend fun connect(): Result<InsulinPump> {
+    override suspend fun attach(): Result<InsulinPump> {
         val pc = pluginContext
             ?: return Result.failure(IllegalStateException("PluginContext not initialized"))
         val context = pc.appContext

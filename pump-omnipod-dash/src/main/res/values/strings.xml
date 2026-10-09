@@ -5,7 +5,7 @@
     <string name="omnipod_dash_setup_step1_title">Schritt 1: Pod befüllen &amp; primen/entlüften</string>
     <string name="omnipod_dash_setup_step1_description">Befülle den Pod mit mindestens 85 Einheiten Insulin, bis du 2 Pieptöne hörst. Platziere den Pod neben deinem DAPS-Gerät und tippe auf \'Pod primen\'.</string>
     <string name="omnipod_dash_setup_step2_title">Schritt 2: Pod anbringen &amp; Kanüle einführen</string>
-    <string name="omnipod_dash_setup_step2_description">Entferne die transparente Nadelkappe. Bringe das Pod-Pflaster auf sauberer, trockener Haut an. Tippe auf \'Kanüle einführen\', um sie automatisch einzuführen.</string>
+    <string name="omnipod_dash_setup_step2_description">Entferne die Nadelkappe. Bringe das Pod-Pflaster auf sauberer, trockener Haut an. Tippe auf \'Kanüle einführen\', um sie automatisch einzuführen.</string>
     <string name="omnipod_dash_setup_step3_title">Schritt 3: Bestätigen &amp; Aktivieren</string>
     <string name="omnipod_dash_setup_step3_description">Überprüfe das Einführen der Kanüle durch das transparente Sichtfenster. Tippe auf \'Pod aktivieren\', um die Basalratenabgabe zu starten.</string>
     <string name="omnipod_dash_setup_btn_back">Zurück</string>

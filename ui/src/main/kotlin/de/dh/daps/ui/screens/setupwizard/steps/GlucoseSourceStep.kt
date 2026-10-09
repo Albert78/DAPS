@@ -365,7 +365,7 @@ private class PreviewGlucoseSourceDriver(
         setupScreenContent()
     }
 
-    override suspend fun connect(): Result<GlucoseSource> {
+    override suspend fun attach(): Result<GlucoseSource> {
         return Result.failure(UnsupportedOperationException())
     }
 }
