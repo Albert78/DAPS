@@ -49,6 +49,34 @@ suspend fun AppPreferencesRepository.setCarbsUnit(value: CarbsUnit) {
     }
 }
 
+val Preferences?.activeGlucoseSourceDriverId: String?
+    get() = this?.get(ACTIVE_GLUCOSE_SOURCE_DRIVER_ID_KEY) ?: this?.glucoseSourceDescriptor?.driverId
+
+suspend fun AppPreferencesRepository.setActiveGlucoseSourceDriverId(driverId: String?) {
+    editPreferences { mutablePreferences ->
+        if (driverId != null) {
+            mutablePreferences[ACTIVE_GLUCOSE_SOURCE_DRIVER_ID_KEY] = driverId
+        } else {
+            mutablePreferences.remove(ACTIVE_GLUCOSE_SOURCE_DRIVER_ID_KEY)
+            mutablePreferences.remove(GLUCOSE_SOURCE_DESCRIPTOR_KEY)
+        }
+    }
+}
+
+val Preferences?.activePumpDriverId: String?
+    get() = this?.get(ACTIVE_PUMP_DRIVER_ID_KEY) ?: this?.pumpDescriptor?.driverId
+
+suspend fun AppPreferencesRepository.setActivePumpDriverId(driverId: String?) {
+    editPreferences { mutablePreferences ->
+        if (driverId != null) {
+            mutablePreferences[ACTIVE_PUMP_DRIVER_ID_KEY] = driverId
+        } else {
+            mutablePreferences.remove(ACTIVE_PUMP_DRIVER_ID_KEY)
+            mutablePreferences.remove(PUMP_DESCRIPTOR_KEY)
+        }
+    }
+}
+
 val Preferences?.glucoseSourceDescriptor: GlucoseSourceConnectionDescriptor?
     get() = this?.get(GLUCOSE_SOURCE_DESCRIPTOR_KEY)?.let { jsonStr ->
         runCatching { Json.decodeFromString<GlucoseSourceConnectionDescriptor>(jsonStr) }.getOrNull()
@@ -58,8 +86,10 @@ suspend fun AppPreferencesRepository.setGlucoseSourceDescriptor(descriptor: Gluc
     editPreferences { mutablePreferences ->
         if (descriptor != null) {
             mutablePreferences[GLUCOSE_SOURCE_DESCRIPTOR_KEY] = Json.encodeToString(descriptor)
+            mutablePreferences[ACTIVE_GLUCOSE_SOURCE_DRIVER_ID_KEY] = descriptor.driverId
         } else {
             mutablePreferences.remove(GLUCOSE_SOURCE_DESCRIPTOR_KEY)
+            mutablePreferences.remove(ACTIVE_GLUCOSE_SOURCE_DRIVER_ID_KEY)
         }
     }
 }
@@ -73,8 +103,10 @@ suspend fun AppPreferencesRepository.setPumpDescriptor(descriptor: PumpConnectio
     editPreferences { mutablePreferences ->
         if (descriptor != null) {
             mutablePreferences[PUMP_DESCRIPTOR_KEY] = Json.encodeToString(descriptor)
+            mutablePreferences[ACTIVE_PUMP_DRIVER_ID_KEY] = descriptor.driverId
         } else {
             mutablePreferences.remove(PUMP_DESCRIPTOR_KEY)
+            mutablePreferences.remove(ACTIVE_PUMP_DRIVER_ID_KEY)
         }
     }
 }
@@ -95,6 +127,8 @@ suspend fun AppPreferencesRepository.setBackupDirectoryUri(uriString: String?) {
 val USER_DECLINED_PERMISSIONS_KEY = booleanPreferencesKey("user_declined_permissions")
 val GLUCOSE_UNIT_KEY = stringPreferencesKey("glucose_unit")
 val CARBS_UNIT_KEY = stringPreferencesKey("carbs_unit")
+val ACTIVE_GLUCOSE_SOURCE_DRIVER_ID_KEY = stringPreferencesKey("active_glucose_source_driver_id")
+val ACTIVE_PUMP_DRIVER_ID_KEY = stringPreferencesKey("active_pump_driver_id")
 val GLUCOSE_SOURCE_DESCRIPTOR_KEY = stringPreferencesKey("glucose_source_descriptor")
 val PUMP_DESCRIPTOR_KEY = stringPreferencesKey("pump_descriptor")
 val BACKUP_DIRECTORY_URI_KEY = stringPreferencesKey("backup_directory_uri")
@@ -128,6 +162,22 @@ class AppPreferencesRepository(private val context: Context, private val scope: 
             scope = scope,
             started = SharingStarted.Eagerly,
             initialValue = CarbsUnit.GRAMS
+        )
+
+    val activeGlucoseSourceDriverId: StateFlow<String?> = cachedPreferences
+        .map { it.activeGlucoseSourceDriverId }
+        .stateIn(
+            scope = scope,
+            started = SharingStarted.Eagerly,
+            initialValue = null
+        )
+
+    val activePumpDriverId: StateFlow<String?> = cachedPreferences
+        .map { it.activePumpDriverId }
+        .stateIn(
+            scope = scope,
+            started = SharingStarted.Eagerly,
+            initialValue = null
         )
 
     val backupDirectoryUri: StateFlow<String?> = cachedPreferences

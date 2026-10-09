@@ -2,6 +2,7 @@ package de.dh.daps.common.model
 
 import androidx.compose.runtime.Composable
 import de.dh.daps.common.ui.UiText
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Driver interface for insulin pump plugins.
@@ -17,6 +18,11 @@ interface InsulinPumpDriver {
      * Human-readable display name of the pump type or manufacturer (e.g. "Sooil Dana-i").
      */
     val displayName: UiText
+
+    /**
+     * Current setup and lifecycle state reported by this driver.
+     */
+    val lifecycleState: StateFlow<DeviceLifecycleState>
 
     /**
      * Renders the driver's custom UI workflow for initial setup, device scanning, and pairing.

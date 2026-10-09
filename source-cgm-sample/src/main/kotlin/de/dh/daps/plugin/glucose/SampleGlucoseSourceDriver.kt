@@ -6,18 +6,22 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import de.dh.daps.ui.common.composables.FramedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.PluginContext
 import de.dh.daps.common.ui.UiText
+import de.dh.daps.ui.common.composables.FramedCard
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * Lightweight sample implementation of [GlucoseSourceDriver].
@@ -28,6 +32,9 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
     override val displayName: UiText = UiText.StringResource(R.string.sample_cgm_driver_display_name)
     override val pluginId: String = DRIVER_ID
     override val neededPermissions: Collection<String> = emptyList()
+
+    private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.Unconfigured)
+    override val lifecycleState: StateFlow<DeviceLifecycleState> = _lifecycleState.asStateFlow()
 
     override fun initialize(context: PluginContext) {
         // Driver initialization sketch: Register background services or sensor listeners here
@@ -65,6 +72,10 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
                             sourceId = "sample-cgm-sensor-01",
                             displayName = "Sample Glucose Sensor 01",
                         )
+                        _lifecycleState.value = DeviceLifecycleState.Configured(
+                            deviceId = descriptor.sourceId,
+                            displayName = descriptor.displayName,
+                        )
                         onConnected(source, descriptor)
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -83,6 +94,11 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
         if (descriptor.driverId != DRIVER_ID) {
             return Result.failure(IllegalArgumentException("Invalid driver ID for Sample Glucose Source Driver: ${descriptor.driverId}"))
         }
+        _lifecycleState.value = DeviceLifecycleState.Configured(
+            deviceId = descriptor.sourceId,
+            displayName = descriptor.displayName,
+            connectionParameters = descriptor.connectionParameters,
+        )
         return Result.success(SampleGlucoseSource())
     }
 

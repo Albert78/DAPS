@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.runtime.Composable
+import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.Plugin
@@ -13,6 +14,9 @@ import de.dh.daps.common.ui.UiText
 import de.dh.pump.omnipod.dash.ui.OmnipodDashSetupScreen
 import de.dh.pump.omnipod.protocol.ble.OmnipodDashBleManager
 import de.dh.pump.omnipod.protocol.state.OmnipodDashPodStateManagerImpl
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
     override val driverId: String = DRIVER_ID
@@ -23,6 +27,9 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
         Manifest.permission.BLUETOOTH_CONNECT,
         Manifest.permission.ACCESS_FINE_LOCATION
     )
+
+    private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.Unconfigured)
+    override val lifecycleState: StateFlow<DeviceLifecycleState> = _lifecycleState.asStateFlow()
 
     private var pluginContext: PluginContext? = null
 
@@ -41,7 +48,14 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
     ) {
         OmnipodDashSetupScreen(
             driver = this,
-            onConnected = onConnected,
+            onConnected = { pump, descriptor ->
+                _lifecycleState.value = DeviceLifecycleState.Configured(
+                    deviceId = descriptor.deviceId,
+                    displayName = descriptor.displayName,
+                    connectionParameters = descriptor.connectionParameters,
+                )
+                onConnected(pump, descriptor)
+            },
             onCancel = onCancel
         )
     }
@@ -60,11 +74,20 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
             val podStateManager = OmnipodDashPodStateManagerImpl(pluginContext?.preferences)
             val bleManager = OmnipodDashBleManager(appContext, podStateManager)
             val pump = OmnipodDashPump(podStateManager, bleManager, appContext)
+            _lifecycleState.value = DeviceLifecycleState.Configured(
+                deviceId = descriptor.deviceId,
+                displayName = descriptor.displayName,
+                connectionParameters = descriptor.connectionParameters,
+            )
             Result.success(pump)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to connect to Omnipod Dash pod", e)
             Result.failure(e)
         }
+    }
+
+    fun updateLifecycleState(state: DeviceLifecycleState) {
+        _lifecycleState.value = state
     }
 
     fun getContext(): PluginContext? = pluginContext

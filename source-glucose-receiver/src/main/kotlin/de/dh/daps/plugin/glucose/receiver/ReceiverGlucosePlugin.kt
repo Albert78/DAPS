@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.Expiration
 import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
@@ -55,6 +56,9 @@ class ReceiverGlucosePlugin(
     override val sourceDisplayName: UiText = UiText.StringResource(R.string.glucose_broadcast_receiver_display_name)
     override val pluginId: String = DRIVER_ID
     override val neededPermissions: Collection<String> = emptyList()
+
+    private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.Unconfigured)
+    override val lifecycleState: StateFlow<DeviceLifecycleState> = _lifecycleState.asStateFlow()
 
     override val readingsInterval: BgReadingsInterval
         get() = externalSourceType.readingsInterval
@@ -168,6 +172,11 @@ class ReceiverGlucosePlugin(
                                 displayName = "xDrip+ Broadcast Receiver (5 Min)",
                                 connectionParameters = mapOf("sourceType" to "xDrip5Min"),
                             )
+                            _lifecycleState.value = DeviceLifecycleState.Configured(
+                                deviceId = descriptor.sourceId,
+                                displayName = descriptor.displayName,
+                                connectionParameters = descriptor.connectionParameters,
+                            )
                             onConnected(this@ReceiverGlucosePlugin, descriptor)
                         },
                         modifier = Modifier.weight(1f),
@@ -193,6 +202,11 @@ class ReceiverGlucosePlugin(
             "xDrip1Min" -> ExternalSourceType.xDrip1Min
             else -> ExternalSourceType.xDrip5Min
         }
+        _lifecycleState.value = DeviceLifecycleState.Configured(
+            deviceId = descriptor.sourceId,
+            displayName = descriptor.displayName,
+            connectionParameters = descriptor.connectionParameters,
+        )
         return Result.success(this)
     }
 

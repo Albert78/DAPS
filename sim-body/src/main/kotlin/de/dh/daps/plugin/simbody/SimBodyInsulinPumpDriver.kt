@@ -16,11 +16,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.ui.UiText
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * Driver implementation for the SimBody virtual insulin pump simulation.
@@ -33,6 +37,9 @@ class SimBodyInsulinPumpDriver(
     override val displayName: UiText = UiText.StringResource(R.string.sim_body_pump_driver_display_name)
     override val pluginId: String = DRIVER_ID
     override val neededPermissions: Collection<String> = emptyList()
+
+    private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.Unconfigured)
+    override val lifecycleState: StateFlow<DeviceLifecycleState> = _lifecycleState.asStateFlow()
 
     /**
      * Renders the setup screen for connecting to the virtual human body simulation pump.
@@ -78,6 +85,11 @@ class SimBodyInsulinPumpDriver(
                                 displayName = pumpDisplayName,
                                 connectionParameters = mapOf("simulated" to "true"),
                             )
+                            _lifecycleState.value = DeviceLifecycleState.Configured(
+                                deviceId = descriptor.deviceId,
+                                displayName = descriptor.displayName,
+                                connectionParameters = descriptor.connectionParameters,
+                            )
                             onConnected(pump, descriptor)
                         },
                         modifier = Modifier.weight(1f),
@@ -98,6 +110,11 @@ class SimBodyInsulinPumpDriver(
                 IllegalArgumentException("Invalid driver ID for SimBody driver: ${descriptor.driverId}")
             )
         }
+        _lifecycleState.value = DeviceLifecycleState.Configured(
+            deviceId = descriptor.deviceId,
+            displayName = descriptor.displayName,
+            connectionParameters = descriptor.connectionParameters,
+        )
         return Result.success(simBodyPlugin.getInsulinPump())
     }
 

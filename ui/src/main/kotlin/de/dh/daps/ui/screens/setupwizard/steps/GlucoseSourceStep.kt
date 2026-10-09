@@ -34,6 +34,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.GlucoseSource
 import androidx.activity.compose.BackHandler
 import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
@@ -47,6 +48,8 @@ import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.screens.glucosesourcesetup.ExternalReceiverSetupPreviewContent
 import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupUiState
 import de.dh.daps.ui.screens.setupwizard.components.SetupStepScaffold
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun GlucoseSourceStep(
@@ -341,6 +344,9 @@ private class PreviewGlucoseSourceDriver(
     override val displayName: UiText,
     private val setupScreenContent: @Composable () -> Unit = {}
 ) : GlucoseSourceDriver {
+    override val lifecycleState: StateFlow<DeviceLifecycleState> =
+        MutableStateFlow(DeviceLifecycleState.Unconfigured)
+
     @Composable
     override fun SetupScreen(
         onConnected: (GlucoseSource, GlucoseSourceConnectionDescriptor) -> Unit,

@@ -2,6 +2,7 @@ package de.dh.daps.common.model
 
 import androidx.compose.runtime.Composable
 import de.dh.daps.common.ui.UiText
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Driver interface for CGM / blood glucose source plugins.
@@ -17,6 +18,11 @@ interface GlucoseSourceDriver {
      * Human-readable display name of the glucose source type or manufacturer (e.g. "xDrip+ Receiver").
      */
     val displayName: UiText
+
+    /**
+     * Current setup and lifecycle state reported by this driver.
+     */
+    val lifecycleState: StateFlow<DeviceLifecycleState>
 
     /**
      * Renders the driver's custom UI workflow for initial setup, transmitter pairing, or configuration.

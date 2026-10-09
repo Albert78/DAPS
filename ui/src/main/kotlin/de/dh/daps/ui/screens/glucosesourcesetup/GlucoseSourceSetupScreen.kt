@@ -44,6 +44,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.GlucoseSourceDriver
@@ -56,6 +57,8 @@ import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.ScopedDriverSetupContainer
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppTheme
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import de.dh.daps.common.R as CommonR
 
 @Composable
@@ -374,6 +377,9 @@ private class PreviewGlucoseSourceDriver(
     override val displayName: UiText,
     private val setupScreenContent: @Composable () -> Unit = {}
 ) : GlucoseSourceDriver {
+    override val lifecycleState: StateFlow<DeviceLifecycleState> =
+        MutableStateFlow(DeviceLifecycleState.Unconfigured)
+
     @Composable
     override fun SetupScreen(
         onConnected: (GlucoseSource, GlucoseSourceConnectionDescriptor) -> Unit,

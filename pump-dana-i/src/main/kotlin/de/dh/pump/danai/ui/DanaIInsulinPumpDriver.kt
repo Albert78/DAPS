@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.Composable
+import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.Plugin
@@ -20,6 +21,9 @@ import de.dh.pump.danai.core.connection.DanaILink
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 import de.dh.pump.danai.R
 
@@ -36,6 +40,9 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
         Manifest.permission.BLUETOOTH_CONNECT,
         Manifest.permission.ACCESS_FINE_LOCATION,
     )
+
+    private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.Unconfigured)
+    override val lifecycleState: StateFlow<DeviceLifecycleState> = _lifecycleState.asStateFlow()
 
     private var pluginContext: PluginContext? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -105,6 +112,12 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
             val pumpAdapter = DanaIPumpAdapter.create(link, defaultLogger, scope)
             pumpAdapter.controller.connect()
 
+            _lifecycleState.value = DeviceLifecycleState.Configured(
+                deviceId = address,
+                displayName = name,
+                connectionParameters = descriptor.connectionParameters,
+            )
+
             Result.success(pumpAdapter)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to connect to Dana-i pump", e)
@@ -144,6 +157,12 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
             deviceId = deviceAddress,
             displayName = deviceName,
             connectionParameters = mapOf("name" to deviceName)
+        )
+
+        _lifecycleState.value = DeviceLifecycleState.Configured(
+            deviceId = deviceAddress,
+            displayName = deviceName,
+            connectionParameters = descriptor.connectionParameters,
         )
 
         return Pair(pumpAdapter, descriptor)

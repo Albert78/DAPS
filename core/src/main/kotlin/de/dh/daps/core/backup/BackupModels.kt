@@ -53,7 +53,9 @@ data class AppPreferencesDto(
     val glucoseUnit: String,
     val carbsUnit: String,
     val glucoseSourceDescriptorJson: String? = null,
-    val pumpDescriptorJson: String? = null
+    val pumpDescriptorJson: String? = null,
+    val activeGlucoseSourceDriverId: String? = null,
+    val activePumpDriverId: String? = null
 )
 
 @Serializable

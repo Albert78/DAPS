@@ -1,6 +1,7 @@
 package de.dh.daps.ui.screens.setupwizard.steps
 
 import android.content.res.Configuration
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,28 +29,27 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.InsulinPump
-import androidx.activity.compose.BackHandler
 import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.LoadingOverlayCard
-import de.dh.daps.ui.common.composables.NormalTextButton
-import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.ScopedDriverSetupContainer
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.screens.pumpsetup.OmnipodDashStep1PreviewContent
 import de.dh.daps.ui.screens.pumpsetup.PumpSetupUiState
 import de.dh.daps.ui.screens.setupwizard.components.SetupStepScaffold
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun PumpStep(
@@ -344,6 +344,9 @@ private class PreviewPumpDriver(
     override val displayName: UiText,
     private val setupScreenContent: @Composable () -> Unit = {}
 ) : InsulinPumpDriver {
+    override val lifecycleState: StateFlow<DeviceLifecycleState> =
+        MutableStateFlow(DeviceLifecycleState.Unconfigured)
+
     @Composable
     override fun SetupScreen(
         onConnected: (InsulinPump, PumpConnectionDescriptor) -> Unit,

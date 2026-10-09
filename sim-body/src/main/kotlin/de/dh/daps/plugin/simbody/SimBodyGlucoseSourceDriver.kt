@@ -16,15 +16,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.ui.UiText
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 /**
- * Driver implementation for the SimBody virtual glucose source simulation.
- * Manages virtual glucose sensor connection setup and reconnection for the simulated human body.
+ * Driver implementation for the SimBody virtual CGM glucose source.
+ * Connects the app to the simulated metabolic engine's blood glucose output.
  */
 class SimBodyGlucoseSourceDriver(
     private val simBodyPlugin: SimBodyPlugin,
@@ -32,10 +36,12 @@ class SimBodyGlucoseSourceDriver(
     override val driverId: String = DRIVER_ID
     override val displayName: UiText = UiText.StringResource(R.string.sim_body_cgm_driver_display_name)
     override val pluginId: String = DRIVER_ID
-    override val neededPermissions: Collection<String> = emptyList()
+
+    private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.Unconfigured)
+    override val lifecycleState: StateFlow<DeviceLifecycleState> = _lifecycleState.asStateFlow()
 
     /**
-     * Renders the setup screen for connecting to the virtual human body simulation glucose source.
+     * Renders the setup screen for connecting to the virtual human body simulation CGM.
      */
     @Composable
     override fun SetupScreen(
@@ -78,6 +84,11 @@ class SimBodyGlucoseSourceDriver(
                                 displayName = sensorDisplayName,
                                 connectionParameters = mapOf("simulated" to "true"),
                             )
+                            _lifecycleState.value = DeviceLifecycleState.Configured(
+                                deviceId = descriptor.sourceId,
+                                displayName = descriptor.displayName,
+                                connectionParameters = descriptor.connectionParameters,
+                            )
                             onConnected(source, descriptor)
                         },
                         modifier = Modifier.weight(1f),
@@ -90,14 +101,19 @@ class SimBodyGlucoseSourceDriver(
     }
 
     /**
-     * Re-connects to the virtual human body simulation glucose source using a stored connection descriptor.
+     * Re-connects to the virtual human body simulation CGM using a stored connection descriptor.
      */
     override suspend fun connect(descriptor: GlucoseSourceConnectionDescriptor): Result<GlucoseSource> {
         if (descriptor.driverId != DRIVER_ID) {
             return Result.failure(
-                IllegalArgumentException("Invalid driver ID for SimBody Glucose Source driver: ${descriptor.driverId}"),
+                IllegalArgumentException("Invalid driver ID for SimBody glucose driver: ${descriptor.driverId}")
             )
         }
+        _lifecycleState.value = DeviceLifecycleState.Configured(
+            deviceId = descriptor.sourceId,
+            displayName = descriptor.displayName,
+            connectionParameters = descriptor.connectionParameters,
+        )
         return Result.success(simBodyPlugin.getGlucoseSource())
     }
 
