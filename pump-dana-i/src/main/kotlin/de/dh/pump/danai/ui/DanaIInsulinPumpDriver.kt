@@ -24,6 +24,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 /**
  * Insulin pump driver plugin for Sooil Dana-i pumps.
@@ -52,6 +53,24 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
 
     override fun initialize(context: PluginContext) {
         this.pluginContext = context
+        scope.launch {
+            refreshLifecycleState(context.preferences)
+        }
+    }
+
+    private suspend fun refreshLifecycleState(preferences: PluginPreferences) {
+        val danaPrefs = DanaPumpPreferences(preferences)
+        val address = danaPrefs.getLastAddress()
+        val name = danaPrefs.getLastName().ifEmpty { "Dana-i" }
+
+        if (address.isNotEmpty()) {
+            _lifecycleState.value = DeviceLifecycleState.Configured(
+                deviceId = address,
+                displayName = UiText.DynamicString(name),
+            )
+        } else {
+            _lifecycleState.value = DeviceLifecycleState.Unconfigured
+        }
     }
 
     /**
@@ -108,13 +127,15 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
         val context = pc.appContext
         val prefs = pc.preferences
 
+        refreshLifecycleState(prefs)
+
+        if (_lifecycleState.value !is DeviceLifecycleState.Configured) {
+            return Result.failure(IllegalStateException("No saved Bluetooth address found for Dana-i pump"))
+        }
+
         val danaPrefs = DanaPumpPreferences(prefs)
         val address = danaPrefs.getLastAddress()
         val name = danaPrefs.getLastName().ifEmpty { "Dana-i" }
-
-        if (address.isEmpty()) {
-            return Result.failure(IllegalStateException("No saved Bluetooth address found for Dana-i pump"))
-        }
 
         return try {
             Result.success(doConnectPump(name, address, context, prefs))
@@ -135,6 +156,7 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
     ): InsulinPump {
         val pump = doConnectPump(deviceName, deviceAddress, context, preferences)
         DanaPumpPreferences(preferences).savePumpAddress(deviceName, deviceAddress)
+        refreshLifecycleState(preferences)
         return pump
     }
 

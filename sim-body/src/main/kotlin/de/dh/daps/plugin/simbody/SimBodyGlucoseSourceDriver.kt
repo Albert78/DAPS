@@ -19,11 +19,17 @@ import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.common.model.Plugin
+import de.dh.daps.common.model.PluginContext
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.common.composables.FramedCard
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 /**
  * Driver implementation for the SimBody virtual CGM glucose source.
@@ -37,8 +43,26 @@ class SimBodyGlucoseSourceDriver(
     override val pluginId: String = DRIVER_ID
     override val neededPermissions: Collection<String> = emptyList()
 
+    private var pluginContext: PluginContext? = null
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
     private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.Unconfigured)
     override val lifecycleState: StateFlow<DeviceLifecycleState> = _lifecycleState.asStateFlow()
+
+    override fun initialize(context: PluginContext) {
+        this.pluginContext = context
+        scope.launch {
+            val deviceId = context.preferences.getString(KEY_DEVICE_ID).first()
+            if (!deviceId.isNullOrEmpty()) {
+                _lifecycleState.value = DeviceLifecycleState.Configured(
+                    deviceId = deviceId,
+                    displayName = UiText.StringResource(R.string.sim_body_cgm_sensor_display_name)
+                )
+            } else {
+                _lifecycleState.value = DeviceLifecycleState.Unconfigured
+            }
+        }
+    }
 
     /**
      * Renders the setup screen for connecting to the virtual human body simulation CGM.
@@ -76,8 +100,14 @@ class SimBodyGlucoseSourceDriver(
                     Button(
                         onClick = {
                             val source = simBodyPlugin.getGlucoseSource()
+                            val deviceId = "simbody-virtual-cgm-01"
+                            pluginContext?.preferences?.let { prefs ->
+                                scope.launch {
+                                    prefs.putString(KEY_DEVICE_ID, deviceId)
+                                }
+                            }
                             _lifecycleState.value = DeviceLifecycleState.Configured(
-                                deviceId = "simbody-virtual-cgm-01",
+                                deviceId = deviceId,
                                 displayName = UiText.StringResource(R.string.sim_body_cgm_sensor_display_name)
                             )
                             onConnected(source)
@@ -95,8 +125,17 @@ class SimBodyGlucoseSourceDriver(
      * Re-connects to the virtual human body simulation CGM using stored driver settings.
      */
     override suspend fun connect(): Result<GlucoseSource> {
+        val pc = pluginContext
+            ?: return Result.failure(IllegalStateException("PluginContext not initialized"))
+        val deviceId = pc.preferences.getString(KEY_DEVICE_ID).first()
+
+        if (deviceId.isNullOrEmpty()) {
+            _lifecycleState.value = DeviceLifecycleState.Unconfigured
+            return Result.failure(IllegalStateException("No saved device configuration found for SimBody CGM"))
+        }
+
         _lifecycleState.value = DeviceLifecycleState.Configured(
-            deviceId = "simbody-virtual-cgm-01",
+            deviceId = deviceId,
             displayName = UiText.StringResource(R.string.sim_body_cgm_sensor_display_name)
         )
         return Result.success(simBodyPlugin.getGlucoseSource())
@@ -104,5 +143,6 @@ class SimBodyGlucoseSourceDriver(
 
     companion object {
         const val DRIVER_ID = "de.dh.daps.plugin.simbody.cgm"
+        private const val KEY_DEVICE_ID = "device_id"
     }
 }

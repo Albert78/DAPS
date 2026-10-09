@@ -7,6 +7,10 @@ import kotlinx.coroutines.flow.StateFlow
 /**
  * Driver interface for CGM / blood glucose source plugins.
  * Encapsulates driver-specific scanning, transmitter setup, and connection workflows.
+ *
+ * Drivers must persist their connected device information in their [PluginPreferences]
+ * (provided via [PluginContext]) and must be able to restore their [DeviceLifecycleState] and their
+ * state to re-establish the connection when [connect] is invoked.
  */
 interface GlucoseSourceDriver {
     /**

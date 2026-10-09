@@ -15,11 +15,17 @@ import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.Plugin
+import de.dh.daps.common.model.PluginContext
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.common.composables.FramedCard
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 /**
  * Lightweight sample implementation of [InsulinPumpDriver].
@@ -31,8 +37,27 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
     override val pluginId: String = DRIVER_ID
     override val neededPermissions: Collection<String> = emptyList()
 
+    private var pluginContext: PluginContext? = null
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
     private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.Unconfigured)
     override val lifecycleState: StateFlow<DeviceLifecycleState> = _lifecycleState.asStateFlow()
+
+    override fun initialize(context: PluginContext) {
+        this.pluginContext = context
+        scope.launch {
+            val deviceId = context.preferences.getString(KEY_DEVICE_ID).first()
+            val deviceName = context.preferences.getString(KEY_DEVICE_NAME).first() ?: "Sample Pump 01"
+            if (!deviceId.isNullOrEmpty()) {
+                _lifecycleState.value = DeviceLifecycleState.Configured(
+                    deviceId = deviceId,
+                    displayName = UiText.DynamicString(deviceName)
+                )
+            } else {
+                _lifecycleState.value = DeviceLifecycleState.Unconfigured
+            }
+        }
+    }
 
     /**
      * Renders a basic setup screen allowing the user to confirm pairing with the sample pump.
@@ -59,11 +84,18 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = {
-                        // Sketch: In a real driver, perform scanning, pairing & key exchange here
                         val pump = SampleInsulinPump()
+                        val deviceId = "sample-pump-device-01"
+                        val deviceName = "Sample Pump 01"
+                        pluginContext?.preferences?.let { prefs ->
+                            scope.launch {
+                                prefs.putString(KEY_DEVICE_ID, deviceId)
+                                prefs.putString(KEY_DEVICE_NAME, deviceName)
+                            }
+                        }
                         _lifecycleState.value = DeviceLifecycleState.Configured(
-                            deviceId = "sample-pump-device-01",
-                            displayName = UiText.DynamicString("Sample Pump 01"),
+                            deviceId = deviceId,
+                            displayName = UiText.DynamicString(deviceName),
                         )
                         onConnected(pump)
                     },
@@ -79,14 +111,27 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
      * Re-connects to a sample pump using stored driver settings.
      */
     override suspend fun connect(): Result<InsulinPump> {
+        val pc = pluginContext
+            ?: return Result.failure(IllegalStateException("PluginContext not initialized"))
+        val prefs = pc.preferences
+        val deviceId = prefs.getString(KEY_DEVICE_ID).first()
+        val deviceName = prefs.getString(KEY_DEVICE_NAME).first() ?: "Sample Pump 01"
+
+        if (deviceId.isNullOrEmpty()) {
+            _lifecycleState.value = DeviceLifecycleState.Unconfigured
+            return Result.failure(IllegalStateException("No saved device configuration found for sample pump"))
+        }
+
         _lifecycleState.value = DeviceLifecycleState.Configured(
-            deviceId = "sample-pump-device-01",
-            displayName = UiText.DynamicString("Sample Pump 01"),
+            deviceId = deviceId,
+            displayName = UiText.DynamicString(deviceName),
         )
         return Result.success(SampleInsulinPump())
     }
 
     companion object {
         const val DRIVER_ID = "de.dh.daps.plugin.pump.sample"
+        private const val KEY_DEVICE_ID = "device_id"
+        private const val KEY_DEVICE_NAME = "device_name"
     }
 }

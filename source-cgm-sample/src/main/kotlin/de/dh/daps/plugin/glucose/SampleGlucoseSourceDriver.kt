@@ -18,9 +18,14 @@ import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.PluginContext
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.common.composables.FramedCard
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 /**
  * Lightweight sample implementation of [GlucoseSourceDriver].
@@ -32,11 +37,26 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
     override val pluginId: String = DRIVER_ID
     override val neededPermissions: Collection<String> = emptyList()
 
+    private var pluginContext: PluginContext? = null
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
     private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.Unconfigured)
     override val lifecycleState: StateFlow<DeviceLifecycleState> = _lifecycleState.asStateFlow()
 
     override fun initialize(context: PluginContext) {
-        // Driver initialization sketch: Register background services or sensor listeners here
+        this.pluginContext = context
+        scope.launch {
+            val deviceId = context.preferences.getString(KEY_DEVICE_ID).first()
+            val deviceName = context.preferences.getString(KEY_DEVICE_NAME).first() ?: "Sample Glucose Sensor 01"
+            if (!deviceId.isNullOrEmpty()) {
+                _lifecycleState.value = DeviceLifecycleState.Configured(
+                    deviceId = deviceId,
+                    displayName = UiText.DynamicString(deviceName)
+                )
+            } else {
+                _lifecycleState.value = DeviceLifecycleState.Unconfigured
+            }
+        }
     }
 
     /**
@@ -64,11 +84,18 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = {
-                        // Sketch: In a real driver, perform transmitter scanning & pairing here
                         val source = SampleGlucoseSource()
+                        val deviceId = "sample-cgm-sensor-01"
+                        val deviceName = "Sample Glucose Sensor 01"
+                        pluginContext?.preferences?.let { prefs ->
+                            scope.launch {
+                                prefs.putString(KEY_DEVICE_ID, deviceId)
+                                prefs.putString(KEY_DEVICE_NAME, deviceName)
+                            }
+                        }
                         _lifecycleState.value = DeviceLifecycleState.Configured(
-                            deviceId = "sample-cgm-sensor-01",
-                            displayName = UiText.DynamicString("Sample Glucose Sensor 01")
+                            deviceId = deviceId,
+                            displayName = UiText.DynamicString(deviceName)
                         )
                         onConnected(source)
                     },
@@ -84,14 +111,27 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
      * Re-connects to a sample glucose source using stored driver settings.
      */
     override suspend fun connect(): Result<GlucoseSource> {
+        val pc = pluginContext
+            ?: return Result.failure(IllegalStateException("PluginContext not initialized"))
+        val prefs = pc.preferences
+        val deviceId = prefs.getString(KEY_DEVICE_ID).first()
+        val deviceName = prefs.getString(KEY_DEVICE_NAME).first() ?: "Sample Glucose Sensor 01"
+
+        if (deviceId.isNullOrEmpty()) {
+            _lifecycleState.value = DeviceLifecycleState.Unconfigured
+            return Result.failure(IllegalStateException("No saved device configuration found for sample glucose source"))
+        }
+
         _lifecycleState.value = DeviceLifecycleState.Configured(
-            deviceId = "sample-cgm-sensor-01",
-            displayName = UiText.DynamicString("Sample Glucose Sensor 01")
+            deviceId = deviceId,
+            displayName = UiText.DynamicString(deviceName)
         )
         return Result.success(SampleGlucoseSource())
     }
 
     companion object {
         const val DRIVER_ID = "de.dh.daps.plugin.cgm.sample"
+        private const val KEY_DEVICE_ID = "device_id"
+        private const val KEY_DEVICE_NAME = "device_name"
     }
 }

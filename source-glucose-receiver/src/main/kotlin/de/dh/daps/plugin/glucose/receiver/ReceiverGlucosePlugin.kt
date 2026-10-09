@@ -24,6 +24,8 @@ import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.common.model.GlucoseSourceStatus
 import de.dh.daps.common.model.Plugin
+import de.dh.daps.common.model.PluginContext
+import de.dh.daps.common.model.PluginPreferences
 import de.dh.daps.common.model.SourceHardwareInformation
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
@@ -31,6 +33,9 @@ import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.common.composables.FramedCard
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -38,7 +43,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 /**
  * Glucose plugin which receives glucose values from other Android apps via a BroadcastReceiver.
@@ -56,8 +63,18 @@ class ReceiverGlucosePlugin(
     override val pluginId: String = DRIVER_ID
     override val neededPermissions: Collection<String> = emptyList()
 
+    private var pluginContext: PluginContext? = null
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
     private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.Unconfigured)
     override val lifecycleState: StateFlow<DeviceLifecycleState> = _lifecycleState.asStateFlow()
+
+    override fun initialize(context: PluginContext) {
+        this.pluginContext = context
+        scope.launch {
+            refreshLifecycleState(context.preferences)
+        }
+    }
 
     override val readingsInterval: BgReadingsInterval
         get() = externalSourceType.readingsInterval
@@ -165,6 +182,11 @@ class ReceiverGlucosePlugin(
                     Button(
                         onClick = {
                             externalSourceType = ExternalSourceType.xDrip5Min
+                            pluginContext?.preferences?.let { prefs ->
+                                scope.launch {
+                                    prefs.putString(KEY_SOURCE_TYPE, externalSourceType.name)
+                                }
+                            }
                             _lifecycleState.value = DeviceLifecycleState.Configured(
                                 deviceId = null,
                                 displayName = UiText.StringResource(R.string.glucose_broadcast_receiver_display_name)
@@ -180,20 +202,45 @@ class ReceiverGlucosePlugin(
         }
     }
 
+    private suspend fun refreshLifecycleState(preferences: PluginPreferences) {
+        val sourceTypeStr = preferences.getString(KEY_SOURCE_TYPE, null).first()
+        val parsedSourceType = sourceTypeStr?.let {
+            try {
+                ExternalSourceType.valueOf(it)
+            } catch (_: Exception) {
+                null
+            }
+        }
+        if (parsedSourceType != null) {
+            externalSourceType = parsedSourceType
+            _lifecycleState.value = DeviceLifecycleState.Configured(
+                deviceId = null,
+                displayName = UiText.StringResource(R.string.glucose_broadcast_receiver_display_name)
+            )
+        } else {
+            _lifecycleState.value = DeviceLifecycleState.Unconfigured
+        }
+    }
+
     /**
      * Re-connects to an external BroadcastReceiver glucose source using stored driver settings.
      */
     override suspend fun connect(): Result<GlucoseSource> {
-        _lifecycleState.value = DeviceLifecycleState.Configured(
-            deviceId = null,
-            displayName = UiText.StringResource(R.string.glucose_broadcast_receiver_display_name)
-        )
+        val pc = pluginContext
+            ?: return Result.failure(IllegalStateException("PluginContext not initialized"))
+        refreshLifecycleState(pc.preferences)
+
+        if (_lifecycleState.value !is DeviceLifecycleState.Configured) {
+            return Result.failure(IllegalStateException("No saved source type configuration found for Receiver Glucose Plugin"))
+        }
+
         return Result.success(this)
     }
 
     companion object {
         const val DRIVER_ID = "de.dh.daps.plugin.glucose.receiver"
         const val SOURCE_ID = "receiver-glucose-source"
+        private const val KEY_SOURCE_TYPE = "source_type"
         val TAG = ReceiverGlucosePlugin::class.simpleName
         var instance: ReceiverGlucosePlugin? = null
     }
