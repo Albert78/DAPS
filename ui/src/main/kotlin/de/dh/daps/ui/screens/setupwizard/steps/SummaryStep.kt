@@ -46,8 +46,6 @@ import de.dh.daps.ui.screens.setupwizard.components.SetupStepScaffold
 @Composable
 fun SummaryStep(
     uiState: SetupWizardUiState,
-    cgmDisplayName: String?,
-    pumpDisplayName: String?,
     onComplete: () -> Unit,
     onBack: () -> Unit,
     snackbarHostState: SnackbarHostState,
@@ -128,21 +126,6 @@ fun SummaryStep(
                             )
                         )
                     }
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-                    Text(
-                        stringResource(
-                            R.string.setup_wizard_summary_cgm_format,
-                            cgmDisplayName ?: stringResource(R.string.setup_wizard_summary_not_connected)
-                        )
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        stringResource(
-                            R.string.setup_wizard_summary_pump_format,
-                            pumpDisplayName ?: stringResource(R.string.setup_wizard_summary_not_connected)
-                        )
-                    )
                 }
             }
         }
@@ -183,12 +166,10 @@ private fun SummaryStepPreview() {
                 primaryInsulinTypeId = previewInsulinType.id,
                 insulinProfile = previewInsulinProfile
             ),
-            cgmDisplayName = "SimBody Virtual Glucose Sensor",
-            pumpDisplayName = "SimBody Virtual Insulin Pump",
             onComplete = {},
             onBack = {},
             snackbarHostState = remember { SnackbarHostState() },
-            stepProgress = Pair(7, 7)
+            stepProgress = Pair(5, 5)
         )
     }
 }

@@ -750,7 +750,7 @@
     <string name="setup_wizard_mode_demo_desc">Befüllt das System mit vordefinierten Standard-Profilen, Insulintypen und Alarmeinstellungen, um direkt starten zu können.</string>
     <string name="setup_wizard_mode_demo_btn">Demo-Daten laden</string>
     <string name="setup_wizard_mode_manual_title">Manuelle Einrichtung</string>
-    <string name="setup_wizard_mode_manual_desc">Gehe Schritt für Schritt durch die Konfiguration deiner Maßeinheiten, Insulintypen, Therapieparameter und Hardware-Anbindung.</string>
+    <string name="setup_wizard_mode_manual_desc">Gehe Schritt für Schritt durch die Konfiguration deiner Maßeinheiten, Insulintypen und Therapieparameter.</string>
     <string name="setup_wizard_mode_manual_btn">Manuell einrichten</string>
     <string name="setup_wizard_mode_import_title">Daten importieren</string>
     <string name="setup_wizard_mode_import_desc">Stelle eine früher gesicherte Backup-Datei (JSON/ZIP) wieder her.</string>
@@ -770,17 +770,12 @@
 
     <string name="setup_wizard_profile_title">Insulinprofil (Basal, ISF, CR)</string>
     <string name="setup_wizard_bg_targets_title">Blutzucker-Zielwerte &amp; Hypo-Schwellen</string>
-    <string name="setup_wizard_glucose_source_title">BZ-Quelle / Sensor verbinden</string>
-    <string name="setup_wizard_pump_title">Insulinpumpe verbinden</string>
 
     <string name="setup_wizard_summary_title">Zusammenfassung</string>
     <string name="setup_wizard_summary_card_title">Konfigurierte Parameter</string>
     <string name="setup_wizard_summary_units_format">• Maßeinheiten: BZ: %1$s, KH: %2$s</string>
     <string name="setup_wizard_summary_insulin_type_format">• Insulintyp: %1$s (DIA: %2$d min, Peak: %3$d min)</string>
     <string name="setup_wizard_summary_profile_format">• Profilname: %1$s</string>
-    <string name="setup_wizard_summary_cgm_format">• BZ-Quelle: %1$s</string>
-    <string name="setup_wizard_summary_pump_format">• Insulinpumpe: %1$s</string>
-    <string name="setup_wizard_summary_not_connected">Keine verbunden (kann später eingerichtet werden)</string>
     <string name="setup_wizard_complete_btn">Einrichtung abschließen</string>
 
     <string name="setup_wizard_error_load_demo_data">Fehler beim Laden der Demo-Daten</string>

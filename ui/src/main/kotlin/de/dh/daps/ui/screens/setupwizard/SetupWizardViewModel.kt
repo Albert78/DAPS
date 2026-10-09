@@ -41,8 +41,6 @@ enum class SetupWizardStep {
     MANUAL_INSULIN_TYPE,
     MANUAL_INSULIN_PROFILE,
     MANUAL_BG_TARGETS,
-    MANUAL_GLUCOSE_SOURCE,
-    MANUAL_PUMP,
     MANUAL_SUMMARY;
 
     val manualStepIndex: Int?
@@ -335,9 +333,7 @@ class SetupWizardViewModel(
                 SetupWizardStep.MANUAL_UNITS -> SetupWizardStep.MANUAL_INSULIN_TYPE
                 SetupWizardStep.MANUAL_INSULIN_TYPE -> SetupWizardStep.MANUAL_INSULIN_PROFILE
                 SetupWizardStep.MANUAL_INSULIN_PROFILE -> SetupWizardStep.MANUAL_BG_TARGETS
-                SetupWizardStep.MANUAL_BG_TARGETS -> SetupWizardStep.MANUAL_GLUCOSE_SOURCE
-                SetupWizardStep.MANUAL_GLUCOSE_SOURCE -> SetupWizardStep.MANUAL_PUMP
-                SetupWizardStep.MANUAL_PUMP -> SetupWizardStep.MANUAL_SUMMARY
+                SetupWizardStep.MANUAL_BG_TARGETS -> SetupWizardStep.MANUAL_SUMMARY
                 SetupWizardStep.MANUAL_SUMMARY -> SetupWizardStep.MANUAL_SUMMARY
             }
             state.copy(currentStep = nextStep)
@@ -352,9 +348,7 @@ class SetupWizardViewModel(
                 SetupWizardStep.MANUAL_INSULIN_TYPE -> SetupWizardStep.MANUAL_UNITS
                 SetupWizardStep.MANUAL_INSULIN_PROFILE -> SetupWizardStep.MANUAL_INSULIN_TYPE
                 SetupWizardStep.MANUAL_BG_TARGETS -> SetupWizardStep.MANUAL_INSULIN_PROFILE
-                SetupWizardStep.MANUAL_GLUCOSE_SOURCE -> SetupWizardStep.MANUAL_BG_TARGETS
-                SetupWizardStep.MANUAL_PUMP -> SetupWizardStep.MANUAL_GLUCOSE_SOURCE
-                SetupWizardStep.MANUAL_SUMMARY -> SetupWizardStep.MANUAL_PUMP
+                SetupWizardStep.MANUAL_SUMMARY -> SetupWizardStep.MANUAL_BG_TARGETS
             }
             state.copy(currentStep = prevStep)
         }

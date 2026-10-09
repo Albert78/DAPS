@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
@@ -22,11 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import de.dh.daps.common.model.GlucoseSource
-import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.common.model.InsulinConcentration
-import de.dh.daps.common.model.InsulinPump
-import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.data.BgBlock
 import de.dh.daps.common.model.data.BgValue
@@ -40,41 +37,22 @@ import de.dh.daps.ui.common.LocalCarbsUnit
 import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.LoadingScreen
 import de.dh.daps.ui.common.theme.AppPreview
-import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupUiState
-import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupViewModel
 import de.dh.daps.ui.screens.insulintypes.InsulinTypeEditorUiState
-import de.dh.daps.ui.screens.pumpsetup.PumpSetupUiState
-import de.dh.daps.ui.screens.pumpsetup.PumpSetupViewModel
 import de.dh.daps.ui.screens.setupwizard.steps.BgTargetsStep
-import de.dh.daps.ui.screens.setupwizard.steps.GlucoseSourceStep
 import de.dh.daps.ui.screens.setupwizard.steps.InsulinProfileStep
 import de.dh.daps.ui.screens.setupwizard.steps.InsulinTypeStep
 import de.dh.daps.ui.screens.setupwizard.steps.ModeSelectionStep
-import de.dh.daps.ui.screens.setupwizard.steps.PumpStep
 import de.dh.daps.ui.screens.setupwizard.steps.SummaryStep
 import de.dh.daps.ui.screens.setupwizard.steps.UnitsStep
 
 @Composable
 fun SetupWizardScreen(
-    viewModel: SetupWizardViewModel,
-    glucoseSourceSetupViewModel: GlucoseSourceSetupViewModel,
-    pumpSetupViewModel: PumpSetupViewModel
+    viewModel: SetupWizardViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val cgmState by glucoseSourceSetupViewModel.uiState.collectAsState()
-    val pumpState by pumpSetupViewModel.uiState.collectAsState()
-    val cgmDriverId by viewModel.activeGlucoseSourceDriverId.collectAsState()
-    val pumpDriverId by viewModel.activePumpDriverId.collectAsState()
-
-    val cgmDriver = cgmState.availableDrivers.find { it.driverId == cgmDriverId }
-    val pumpDriver = pumpState.availableDrivers.find { it.driverId == pumpDriverId }
 
     SetupWizardContent(
         uiState = uiState,
-        cgmUiState = cgmState,
-        pumpUiState = pumpState,
-        cgmDisplayName = cgmDriver?.displayName?.asString(),
-        pumpDisplayName = pumpDriver?.displayName?.asString(),
         onSelectDemo = viewModel::selectDemoData,
         onStartManual = viewModel::startManualSetup,
         onImportBackup = viewModel::importBackup,
@@ -92,16 +70,6 @@ fun SetupWizardScreen(
         onSaveEditedInsulinType = viewModel::saveEditedInsulinType,
         onSetInsulinProfile = viewModel::setInsulinProfile,
         onSetBgBlocks = viewModel::setBgBlocks,
-        onSelectCgmDriver = glucoseSourceSetupViewModel::selectDriver,
-        onConnectGlucoseSource = { driverId, source, onSuccess ->
-            glucoseSourceSetupViewModel.onGlucoseSourceConnected(driverId, source, onSuccess)
-        },
-        onClearCgmError = glucoseSourceSetupViewModel::clearError,
-        onSelectPumpDriver = pumpSetupViewModel::selectDriver,
-        onConnectPump = { driverId, pump, onSuccess ->
-            pumpSetupViewModel.onPumpConnected(driverId, pump, onSuccess)
-        },
-        onClearPumpError = pumpSetupViewModel::clearError,
         onGoToNextStep = viewModel::goToNextStep,
         onGoToPreviousStep = viewModel::goToPreviousStep,
         onCompleteManualSetup = viewModel::completeManualSetup
@@ -111,10 +79,6 @@ fun SetupWizardScreen(
 @Composable
 fun SetupWizardContent(
     uiState: SetupWizardUiState,
-    cgmUiState: GlucoseSourceSetupUiState = GlucoseSourceSetupUiState(),
-    pumpUiState: PumpSetupUiState = PumpSetupUiState(),
-    cgmDisplayName: String? = null,
-    pumpDisplayName: String? = null,
     onSelectDemo: () -> Unit = {},
     onStartManual: () -> Unit = {},
     onImportBackup: (Uri) -> Unit = {},
@@ -132,12 +96,6 @@ fun SetupWizardContent(
     onSaveEditedInsulinType: () -> Unit = {},
     onSetInsulinProfile: (InsulinProfile) -> Unit = {},
     onSetBgBlocks: (List<BgBlock>) -> Unit = {},
-    onSelectCgmDriver: (GlucoseSourceDriver?) -> Unit = {},
-    onConnectGlucoseSource: (driverId: String, source: GlucoseSource, onSuccess: () -> Unit) -> Unit = { _, _, _ -> },
-    onClearCgmError: () -> Unit = {},
-    onSelectPumpDriver: (InsulinPumpDriver?) -> Unit = {},
-    onConnectPump: (driverId: String, pump: InsulinPump, onSuccess: () -> Unit) -> Unit = { _, _, _ -> },
-    onClearPumpError: () -> Unit = {},
     onGoToNextStep: () -> Unit = {},
     onGoToPreviousStep: () -> Unit = {},
     onCompleteManualSetup: () -> Unit = {}
@@ -259,37 +217,9 @@ fun SetupWizardContent(
                         )
                     }
 
-                    SetupWizardStep.MANUAL_GLUCOSE_SOURCE -> {
-                        GlucoseSourceStep(
-                            uiState = cgmUiState,
-                            onSelectDriver = onSelectCgmDriver,
-                            onConnectGlucoseSource = onConnectGlucoseSource,
-                            onClearError = onClearCgmError,
-                            onNext = onGoToNextStep,
-                            onBack = onGoToPreviousStep,
-                            snackbarHostState = snackbarHostState,
-                            stepProgress = step.progress
-                        )
-                    }
-
-                    SetupWizardStep.MANUAL_PUMP -> {
-                        PumpStep(
-                            uiState = pumpUiState,
-                            onSelectDriver = onSelectPumpDriver,
-                            onConnectPump = onConnectPump,
-                            onClearError = onClearPumpError,
-                            onNext = onGoToNextStep,
-                            onBack = onGoToPreviousStep,
-                            snackbarHostState = snackbarHostState,
-                            stepProgress = step.progress
-                        )
-                    }
-
                     SetupWizardStep.MANUAL_SUMMARY -> {
                         SummaryStep(
                             uiState = uiState,
-                            cgmDisplayName = cgmDisplayName,
-                            pumpDisplayName = pumpDisplayName,
                             onComplete = onCompleteManualSetup,
                             onBack = onGoToPreviousStep,
                             snackbarHostState = snackbarHostState,
@@ -421,30 +351,6 @@ fun SetupWizardBgTargetsStepPreview() {
     }
 }
 
-@Preview(showBackground = true, name = "Glucose Source")
-@Composable
-fun SetupWizardGlucoseSourceStepPreview() {
-    AppPreview {
-        SetupWizardContent(
-            uiState = SetupWizardUiState(
-                currentStep = SetupWizardStep.MANUAL_GLUCOSE_SOURCE
-            )
-        )
-    }
-}
-
-@Preview(showBackground = true, name = "Pump")
-@Composable
-fun SetupWizardPumpStepPreview() {
-    AppPreview {
-        SetupWizardContent(
-            uiState = SetupWizardUiState(
-                currentStep = SetupWizardStep.MANUAL_PUMP
-            )
-        )
-    }
-}
-
 @Preview(showBackground = true, name = "Summary")
 @Composable
 fun SetupWizardSummaryStepPreview() {
@@ -458,9 +364,7 @@ fun SetupWizardSummaryStepPreview() {
                 primaryInsulinTypeId = previewInsulinType.id,
                 insulinProfile = previewInsulinProfile,
                 bgBlocks = previewBgBlocks
-            ),
-            cgmDisplayName = "SimBody Virtual CGM",
-            pumpDisplayName = "SimBody Virtual Insulin Pump"
+            )
         )
     }
 }

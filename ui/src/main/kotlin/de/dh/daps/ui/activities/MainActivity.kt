@@ -81,8 +81,6 @@ import de.dh.daps.ui.GlobalViewModel
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.EdgeToEdgeHandler
 import de.dh.daps.ui.common.composables.LoadingScreen
-import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupViewModel
-import de.dh.daps.ui.screens.pumpsetup.PumpSetupViewModel
 import de.dh.daps.ui.screens.setupwizard.SetupWizardScreen
 import de.dh.daps.ui.screens.setupwizard.SetupWizardViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -151,16 +149,8 @@ class MainActivity : ComponentActivity() {
                             val setupViewModel: SetupWizardViewModel = viewModel(
                                 factory = SetupWizardViewModel.Factory(registry)
                             )
-                            val glucoseSourceSetupViewModel: GlucoseSourceSetupViewModel = viewModel(
-                                factory = GlucoseSourceSetupViewModel.Companion.Factory(registry)
-                            )
-                            val pumpSetupViewModel: PumpSetupViewModel = viewModel(
-                                factory = PumpSetupViewModel.Companion.Factory(registry)
-                            )
                             SetupWizardScreen(
-                                viewModel = setupViewModel,
-                                glucoseSourceSetupViewModel = glucoseSourceSetupViewModel,
-                                pumpSetupViewModel = pumpSetupViewModel
+                                viewModel = setupViewModel
                             )
                         }
                         InitializationState.INITIALIZING -> {
