@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.CheckCircle
@@ -22,6 +23,7 @@ import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.SnackbarHostState
@@ -31,6 +33,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -43,9 +46,13 @@ import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.LoadingOverlayCard
+import de.dh.daps.ui.common.composables.NormalTextButton
+import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.ScopedDriverSetupContainer
 import de.dh.daps.ui.common.theme.AppPreview
+import de.dh.daps.ui.screens.pumpsetup.OmnipodDashStep1PreviewContent
 import de.dh.daps.ui.screens.pumpsetup.PumpSetupUiState
 import de.dh.daps.ui.screens.setupwizard.components.SetupStepScaffold
 
@@ -355,13 +362,15 @@ private fun DriverCard(
 
 private class PreviewPumpDriver(
     override val driverId: String,
-    override val displayName: UiText
+    override val displayName: UiText,
+    private val setupScreenContent: @Composable () -> Unit = {}
 ) : InsulinPumpDriver {
     @Composable
     override fun SetupScreen(
         onConnected: (InsulinPump, PumpConnectionDescriptor) -> Unit,
         onCancel: () -> Unit
     ) {
+        setupScreenContent()
     }
 
     override suspend fun connect(descriptor: PumpConnectionDescriptor): Result<InsulinPump> {
@@ -407,6 +416,32 @@ private fun PumpStepActivePreview() {
                     deviceId = "simbody-virtual-pump-01",
                     displayName = "SimBody Virtual Insulin Pump"
                 )
+            ),
+            onSelectDriver = {},
+            onConnectPump = { _, _ -> },
+            onClearError = {},
+            onNext = {},
+            onBack = {},
+            snackbarHostState = remember { SnackbarHostState() },
+            stepProgress = Pair(6, 7)
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Driver Setup Step 1 (Omnipod Dash) - Light")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Driver Setup Step 1 (Omnipod Dash) - Dark")
+@Composable
+private fun PumpStepDriverSetupOmnipodDashPreview() {
+    val omnipodDriver = PreviewPumpDriver(
+        driverId = "de.dh.pump.omnipod.dash",
+        displayName = UiText.DynamicString("Insulet Omnipod Dash"),
+        setupScreenContent = { OmnipodDashStep1PreviewContent() }
+    )
+    AppPreview {
+        PumpStep(
+            uiState = PumpSetupUiState(
+                availableDrivers = listOf(omnipodDriver),
+                selectedDriver = omnipodDriver
             ),
             onSelectDriver = {},
             onConnectPump = { _, _ -> },

@@ -2,6 +2,7 @@ package de.dh.daps.ui.screens.pumpsetup
 
 import androidx.activity.compose.BackHandler
 import android.content.res.Configuration
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -26,6 +28,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
@@ -33,14 +36,13 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import de.dh.daps.ui.common.composables.LoadingOverlayCard
-import de.dh.daps.ui.common.composables.ScopedDriverSetupContainer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -53,6 +55,11 @@ import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.FramedCard
+import de.dh.daps.ui.common.composables.LoadingOverlayCard
+import de.dh.daps.ui.common.composables.NormalTextButton
+import de.dh.daps.ui.common.composables.PrimaryButton
+import de.dh.daps.ui.common.composables.ScopedDriverSetupContainer
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.common.R as CommonR
@@ -384,17 +391,111 @@ private fun DriverCard(
 
 private class PreviewPumpDriver(
     override val driverId: String,
-    override val displayName: UiText
+    override val displayName: UiText,
+    private val setupScreenContent: @Composable () -> Unit = {}
 ) : InsulinPumpDriver {
     @Composable
     override fun SetupScreen(
         onConnected: (InsulinPump, PumpConnectionDescriptor) -> Unit,
         onCancel: () -> Unit
     ) {
+        setupScreenContent()
     }
 
     override suspend fun connect(descriptor: PumpConnectionDescriptor): Result<InsulinPump> {
         return Result.failure(UnsupportedOperationException())
+    }
+}
+
+@Composable
+internal fun OmnipodDashStep1PreviewContent() {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        FramedCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "Insulet Omnipod Dash",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Schritt 1 von 3",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+
+                LinearProgressIndicator(
+                    progress = { 1f / 3f },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                )
+            }
+        }
+
+        FramedCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "Schritt 1: Pod befüllen & primen/entlüften",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    text = "Befülle den Pod mit mindestens 85 Einheiten Insulin, bis du 2 Pieptöne hörst. Platziere den Pod neben deinem DAPS-Gerät und tippe auf 'Pod primen'.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                PrimaryButton(
+                    onClick = {},
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Pod primen")
+                }
+            }
+
+            NormalTextButton(
+                onClick = {},
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Einrichtung abbrechen")
+            }
+        }
     }
 }
 
@@ -476,6 +577,29 @@ fun PumpSetupNoActivePumpNoDriversPreview() {
             uiState = PumpSetupUiState(
                 availableDrivers = emptyList(),
                 activePumpDescriptor = null
+            ),
+            onNavigateUp = {},
+            onSelectDriver = {},
+            onConnectPump = {},
+            onClearError = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Treiber-Einrichtung Schritt 1 (Omnipod Dash) - Light")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Treiber-Einrichtung Schritt 1 (Omnipod Dash) - Dark")
+@Composable
+fun PumpSetupDriverSetupOmnipodDashPreview() {
+    val omnipodDriver = PreviewPumpDriver(
+        driverId = "de.dh.pump.omnipod.dash",
+        displayName = UiText.DynamicString("Insulet Omnipod Dash"),
+        setupScreenContent = { OmnipodDashStep1PreviewContent() }
+    )
+    AppTheme {
+        PumpSetupContent(
+            uiState = PumpSetupUiState(
+                availableDrivers = listOf(omnipodDriver),
+                selectedDriver = omnipodDriver
             ),
             onNavigateUp = {},
             onSelectDriver = {},
