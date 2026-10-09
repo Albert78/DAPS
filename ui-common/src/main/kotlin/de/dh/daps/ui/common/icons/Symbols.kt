@@ -57,7 +57,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.ui.common.theme.AppTheme
-import de.dh.daps.ui.screens.mealtypes.BadgedStarIcon
 
 // Meal Type Icons
 val Icon_Meal_Fast = Icons.Outlined.Bolt
