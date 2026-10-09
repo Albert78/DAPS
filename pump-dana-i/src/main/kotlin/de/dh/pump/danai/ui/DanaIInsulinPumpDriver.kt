@@ -69,58 +69,7 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
         )
     }
 
-    /**
-     * Re-establishes a connection with a previously paired Dana-i pump using stored preferences.
-     */
-    @SuppressLint("MissingPermission")
-    override suspend fun connect(): Result<InsulinPump> {
-        val context = pluginContext?.appContext
-            ?: return Result.failure(IllegalStateException("PluginContext not initialized. Call setup/initialize first."))
-        val prefs = pluginContext?.preferences
-            ?: return Result.failure(IllegalStateException("PluginPreferences not initialized."))
-
-        val danaPrefs = DanaPumpPreferences(prefs)
-        val address = danaPrefs.getLastAddress()
-        val name = danaPrefs.getLastName().ifEmpty { "Dana-i" }
-
-        if (address.isEmpty()) {
-            return Result.failure(IllegalStateException("No saved Bluetooth address found for Dana-i pump."))
-        }
-
-        return try {
-            val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
-                ?: return Result.failure(IllegalStateException("BluetoothManager unavailable."))
-            val adapter = bluetoothManager.adapter
-                ?: return Result.failure(IllegalStateException("BluetoothAdapter unavailable."))
-
-            val device = adapter.getRemoteDevice(address)
-            val link = DanaILink(
-                device = device,
-                deviceName = name,
-                preferences = prefs,
-                logger = defaultLogger,
-                context = context
-            )
-
-            val pumpAdapter = DanaIPumpAdapter.create(link, defaultLogger, scope)
-            pumpAdapter.controller.connect()
-
-            _lifecycleState.value = DeviceLifecycleState.Configured(
-                deviceId = address,
-                displayName = name,
-            )
-
-            Result.success(pumpAdapter)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to connect to Dana-i pump", e)
-            Result.failure(e)
-        }
-    }
-
-    /**
-     * Creates a new connection link to a Dana-i pump during device pairing.
-     */
-    suspend fun createAndConnectPump(
+    private suspend fun doConnectPump(
         deviceName: String,
         deviceAddress: String,
         context: Context,
@@ -129,9 +78,6 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
         val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         val adapter = bluetoothManager.adapter ?: throw IllegalStateException("Bluetooth adapter unavailable.")
         val device = adapter.getRemoteDevice(deviceAddress)
-
-        // Save pump address in preferences
-        DanaPumpPreferences(preferences).savePumpAddress(deviceName, deviceAddress)
 
         val link = DanaILink(
             device = device,
@@ -150,6 +96,46 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
         )
 
         return pumpAdapter
+    }
+
+    /**
+     * Re-establishes a connection with a previously paired Dana-i pump using stored preferences.
+     */
+    @SuppressLint("MissingPermission")
+    override suspend fun connect(): Result<InsulinPump> {
+        val pc = pluginContext
+            ?: return Result.failure(IllegalStateException("PluginContext not initialized"))
+        val context = pc.appContext
+        val prefs = pc.preferences
+
+        val danaPrefs = DanaPumpPreferences(prefs)
+        val address = danaPrefs.getLastAddress()
+        val name = danaPrefs.getLastName().ifEmpty { "Dana-i" }
+
+        if (address.isEmpty()) {
+            return Result.failure(IllegalStateException("No saved Bluetooth address found for Dana-i pump"))
+        }
+
+        return try {
+            Result.success(doConnectPump(name, address, context, prefs))
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to connect to Dana-i pump", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Creates a new connection link to a Dana-i pump during device pairing.
+     */
+    suspend fun createAndConnectPump(
+        deviceName: String,
+        deviceAddress: String,
+        context: Context,
+        preferences: PluginPreferences,
+    ): InsulinPump {
+        val pump = doConnectPump(deviceName, deviceAddress, context, preferences)
+        DanaPumpPreferences(preferences).savePumpAddress(deviceName, deviceAddress)
+        return pump
     }
 
     internal fun getContext(): PluginContext? = pluginContext
