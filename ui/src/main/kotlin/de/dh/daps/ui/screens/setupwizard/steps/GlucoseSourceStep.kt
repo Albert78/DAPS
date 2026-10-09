@@ -19,11 +19,8 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material3.Badge
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,6 +40,7 @@ import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.LoadingOverlayCard
 import de.dh.daps.ui.common.composables.ScopedDriverSetupContainer
 import de.dh.daps.ui.common.theme.AppPreview
@@ -169,13 +167,10 @@ private fun GlucoseSourceDriverSelectionContent(
 
         if (uiState.availableDrivers.isEmpty()) {
             item {
-                Card(
+                FramedCard(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
+                        .padding(vertical = 8.dp)
                 ) {
                     Row(
                         modifier = Modifier.padding(16.dp),
@@ -230,11 +225,9 @@ private fun GlucoseSourceDriverSelectionContent(
 
 @Composable
 private fun ActiveGlucoseSourceCard(activeDesc: GlucoseSourceConnectionDescriptor) {
-    OutlinedCard(
+    FramedCard(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-        )
+        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -284,14 +277,11 @@ private fun GlucoseSourceDriverCard(
     isActive: Boolean,
     onClick: () -> Unit
 ) {
-    Card(
+    FramedCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp),
-        onClick = onClick,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+        onClick = onClick
     ) {
         Row(
             modifier = Modifier

@@ -22,13 +22,10 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material3.Badge
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -203,13 +200,10 @@ private fun GlucoseSourceDriverSelectionContent(
 
         if (uiState.availableDrivers.isEmpty()) {
             item {
-                Card(
+                FramedCard(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
+                        .padding(vertical = 8.dp)
                 ) {
                     Row(
                         modifier = Modifier.padding(16.dp),
@@ -264,11 +258,9 @@ private fun GlucoseSourceDriverSelectionContent(
 
 @Composable
 private fun ActiveGlucoseSourceCard(activeDesc: GlucoseSourceConnectionDescriptor) {
-    OutlinedCard(
+    FramedCard(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-        )
+        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -318,14 +310,11 @@ private fun GlucoseSourceDriverCard(
     isActive: Boolean,
     onClick: () -> Unit
 ) {
-    Card(
+    FramedCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp),
-        onClick = onClick,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+        onClick = onClick
     ) {
         Row(
             modifier = Modifier

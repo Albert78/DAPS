@@ -13,19 +13,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Router
 import androidx.compose.material3.Badge
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -175,13 +170,10 @@ private fun PumpDriverSelectionContent(
 
         if (uiState.availableDrivers.isEmpty()) {
             item {
-                Card(
+                FramedCard(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
+                        .padding(vertical = 8.dp)
                 ) {
                     Row(
                         modifier = Modifier.padding(16.dp),
@@ -236,11 +228,9 @@ private fun PumpDriverSelectionContent(
 
 @Composable
 private fun ActivePumpCard(activeDesc: PumpConnectionDescriptor) {
-    OutlinedCard(
+    FramedCard(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-        )
+        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -290,14 +280,11 @@ private fun DriverCard(
     isActive: Boolean,
     onClick: () -> Unit
 ) {
-    Card(
+    FramedCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp),
-        onClick = onClick,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+        onClick = onClick
     ) {
         Row(
             modifier = Modifier
