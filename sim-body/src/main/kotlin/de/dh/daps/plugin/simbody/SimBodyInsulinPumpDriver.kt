@@ -48,8 +48,6 @@ class SimBodyInsulinPumpDriver(
         onConnected: (InsulinPump) -> Unit,
         onCancel: () -> Unit,
     ) {
-        val pumpDisplayName = stringResource(R.string.sim_body_pump_device_display_name)
-
         FramedCard(
             modifier = Modifier
                 .fillMaxWidth()
@@ -80,7 +78,7 @@ class SimBodyInsulinPumpDriver(
                             val pump = simBodyPlugin.getInsulinPump()
                             _lifecycleState.value = DeviceLifecycleState.Configured(
                                 deviceId = "simbody-virtual-pump-01",
-                                displayName = pumpDisplayName
+                                displayName = UiText.StringResource(R.string.sim_body_pump_device_display_name)
                             )
                             onConnected(pump)
                         },
@@ -99,7 +97,7 @@ class SimBodyInsulinPumpDriver(
     override suspend fun connect(): Result<InsulinPump> {
         _lifecycleState.value = DeviceLifecycleState.Configured(
             deviceId = "simbody-virtual-pump-01",
-            displayName = "SimBody Virtual Pump"
+            displayName = UiText.StringResource(R.string.sim_body_pump_device_display_name)
         )
         return Result.success(simBodyPlugin.getInsulinPump())
     }

@@ -92,7 +92,7 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
 
         _lifecycleState.value = DeviceLifecycleState.Configured(
             deviceId = deviceAddress,
-            displayName = deviceName,
+            displayName = UiText.DynamicString(deviceName),
         )
 
         return pumpAdapter

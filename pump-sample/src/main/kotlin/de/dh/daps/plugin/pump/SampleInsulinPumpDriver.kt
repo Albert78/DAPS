@@ -63,7 +63,7 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
                         val pump = SampleInsulinPump()
                         _lifecycleState.value = DeviceLifecycleState.Configured(
                             deviceId = "sample-pump-device-01",
-                            displayName = "Sample Pump 01",
+                            displayName = UiText.DynamicString("Sample Pump 01"),
                         )
                         onConnected(pump)
                     },
@@ -81,7 +81,7 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
     override suspend fun connect(): Result<InsulinPump> {
         _lifecycleState.value = DeviceLifecycleState.Configured(
             deviceId = "sample-pump-device-01",
-            displayName = "Sample Pump 01",
+            displayName = UiText.DynamicString("Sample Pump 01"),
         )
         return Result.success(SampleInsulinPump())
     }

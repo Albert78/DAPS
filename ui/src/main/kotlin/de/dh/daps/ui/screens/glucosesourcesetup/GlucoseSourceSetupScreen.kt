@@ -1,7 +1,7 @@
 package de.dh.daps.ui.screens.glucosesourcesetup
 
-import androidx.activity.compose.BackHandler
 import android.content.res.Configuration
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -261,7 +261,7 @@ private fun ActiveGlucoseSourceCard(driver: GlucoseSourceDriver) {
     val lifecycleState by driver.lifecycleState.collectAsStateWithLifecycle()
     val (displayName, deviceId) = when (val state = lifecycleState) {
         is DeviceLifecycleState.Configured -> Pair(state.displayName, state.deviceId)
-        else -> Pair(driver.displayName.asString(), "")
+        else -> Pair(driver.displayName, null)
     }
 
     FramedCard(
@@ -286,13 +286,13 @@ private fun ActiveGlucoseSourceCard(driver: GlucoseSourceDriver) {
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = displayName,
+                    text = displayName.asString(),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-                if (deviceId.isNotEmpty()) {
+                if (!deviceId.isNullOrEmpty()) {
                     Text(
                         text = deviceId,
                         style = MaterialTheme.typography.bodySmall,
@@ -411,7 +411,7 @@ fun GlucoseSourceSetupMultipleDriversPreview() {
     val simBodyDriver = PreviewGlucoseDriver(
         "de.dh.daps.plugin.simbody.cgm",
         UiText.DynamicString("SimBody Virtual CGM Driver"),
-        DeviceLifecycleState.Configured("simbody-virtual-cgm-01", "SimBody Virtual CGM")
+        DeviceLifecycleState.Configured("simbody-virtual-cgm-01", UiText.DynamicString("SimBody Virtual CGM"))
     )
     AppTheme {
         GlucoseSourceSetupContent(

@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
-import de.dh.daps.ui.common.composables.FramedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -31,6 +30,7 @@ import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
+import de.dh.daps.ui.common.composables.FramedCard
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -166,8 +166,8 @@ class ReceiverGlucosePlugin(
                         onClick = {
                             externalSourceType = ExternalSourceType.xDrip5Min
                             _lifecycleState.value = DeviceLifecycleState.Configured(
-                                deviceId = "xdrip-5min-receiver",
-                                displayName = "xDrip+ Broadcast Receiver (5 Min)",
+                                deviceId = null,
+                                displayName = UiText.StringResource(R.string.glucose_broadcast_receiver_display_name)
                             )
                             onConnected(this@ReceiverGlucosePlugin)
                         },
@@ -185,8 +185,8 @@ class ReceiverGlucosePlugin(
      */
     override suspend fun connect(): Result<GlucoseSource> {
         _lifecycleState.value = DeviceLifecycleState.Configured(
-            deviceId = "xdrip-5min-receiver",
-            displayName = "xDrip+ Broadcast Receiver (5 Min)",
+            deviceId = null,
+            displayName = UiText.StringResource(R.string.glucose_broadcast_receiver_display_name)
         )
         return Result.success(this)
     }

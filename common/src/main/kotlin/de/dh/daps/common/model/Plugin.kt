@@ -43,7 +43,8 @@ interface Plugin {
     fun setup(context: PluginContext) {}
 
     /**
-     * Called after all core system services, managers, and repositories are fully initialized.
+     * Called after all core system services, managers, and repositories are fully initialized and
+     * have been started.
      * Allows plugins to start active background processes or execute post-initialization tasks.
      */
     fun initialize(context: PluginContext) {}

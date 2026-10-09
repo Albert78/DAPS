@@ -267,7 +267,7 @@ private fun ActivePumpCard(driver: InsulinPumpDriver) {
     val lifecycleState by driver.lifecycleState.collectAsStateWithLifecycle()
     val (displayName, deviceId) = when (val state = lifecycleState) {
         is DeviceLifecycleState.Configured -> Pair(state.displayName, state.deviceId)
-        else -> Pair(driver.displayName.asString(), "")
+        else -> Pair(driver.displayName, null)
     }
 
     FramedCard(
@@ -292,13 +292,13 @@ private fun ActivePumpCard(driver: InsulinPumpDriver) {
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = displayName,
+                    text = displayName.asString(),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-                if (deviceId.isNotEmpty()) {
+                if (!deviceId.isNullOrEmpty()) {
                     Text(
                         text = deviceId,
                         style = MaterialTheme.typography.bodySmall,
@@ -511,7 +511,7 @@ fun PumpSetupMultipleDriversPreview() {
     val simBodyDriver = PreviewPumpDriver(
         "de.dh.daps.plugin.simbody",
         UiText.DynamicString("SimBody Virtual Pump Driver"),
-        DeviceLifecycleState.Configured("simbody-virtual-pump-01", "SimBody Virtual Insulin Pump")
+        DeviceLifecycleState.Configured("simbody-virtual-pump-01", UiText.DynamicString("SimBody Virtual Insulin Pump"))
     )
     AppTheme {
         PumpSetupContent(

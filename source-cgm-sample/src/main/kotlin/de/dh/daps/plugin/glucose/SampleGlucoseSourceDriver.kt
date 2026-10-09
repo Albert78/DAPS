@@ -68,7 +68,7 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
                         val source = SampleGlucoseSource()
                         _lifecycleState.value = DeviceLifecycleState.Configured(
                             deviceId = "sample-cgm-sensor-01",
-                            displayName = "Sample Glucose Sensor 01",
+                            displayName = UiText.DynamicString("Sample Glucose Sensor 01")
                         )
                         onConnected(source)
                     },
@@ -86,7 +86,7 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
     override suspend fun connect(): Result<GlucoseSource> {
         _lifecycleState.value = DeviceLifecycleState.Configured(
             deviceId = "sample-cgm-sensor-01",
-            displayName = "Sample Glucose Sensor 01",
+            displayName = UiText.DynamicString("Sample Glucose Sensor 01")
         )
         return Result.success(SampleGlucoseSource())
     }

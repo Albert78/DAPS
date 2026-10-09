@@ -48,8 +48,6 @@ class SimBodyGlucoseSourceDriver(
         onConnected: (GlucoseSource) -> Unit,
         onCancel: () -> Unit,
     ) {
-        val sensorDisplayName = stringResource(R.string.sim_body_cgm_sensor_display_name)
-
         FramedCard(
             modifier = Modifier
                 .fillMaxWidth()
@@ -80,7 +78,7 @@ class SimBodyGlucoseSourceDriver(
                             val source = simBodyPlugin.getGlucoseSource()
                             _lifecycleState.value = DeviceLifecycleState.Configured(
                                 deviceId = "simbody-virtual-cgm-01",
-                                displayName = sensorDisplayName
+                                displayName = UiText.StringResource(R.string.sim_body_cgm_sensor_display_name)
                             )
                             onConnected(source)
                         },
@@ -99,7 +97,7 @@ class SimBodyGlucoseSourceDriver(
     override suspend fun connect(): Result<GlucoseSource> {
         _lifecycleState.value = DeviceLifecycleState.Configured(
             deviceId = "simbody-virtual-cgm-01",
-            displayName = "SimBody Virtual CGM"
+            displayName = UiText.StringResource(R.string.sim_body_cgm_sensor_display_name)
         )
         return Result.success(simBodyPlugin.getGlucoseSource())
     }

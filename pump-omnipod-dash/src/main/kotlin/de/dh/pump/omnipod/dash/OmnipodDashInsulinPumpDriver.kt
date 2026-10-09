@@ -51,7 +51,7 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
                 val podStateManager = OmnipodDashPodStateManagerImpl(pluginContext?.preferences)
                 _lifecycleState.value = DeviceLifecycleState.Configured(
                     deviceId = podStateManager.bluetoothAddress ?: "POD-DASH-ACTIVE",
-                    displayName = "Omnipod Dash Pod",
+                    displayName = UiText.StringResource(R.string.omnipod_dash_pump_display_name),
                 )
                 onConnected(pump)
             },
@@ -70,7 +70,7 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
             val pump = OmnipodDashPump(podStateManager, bleManager, appContext)
             _lifecycleState.value = DeviceLifecycleState.Configured(
                 deviceId = podStateManager.bluetoothAddress ?: "POD-DASH-ACTIVE",
-                displayName = "Omnipod Dash Pod",
+                displayName = UiText.StringResource(R.string.omnipod_dash_pump_display_name),
             )
             Result.success(pump)
         } catch (e: Exception) {
