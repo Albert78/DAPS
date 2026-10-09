@@ -20,11 +20,8 @@ import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.screens.setupwizard.components.SetupStepScaffold
@@ -71,10 +69,8 @@ fun ModeSelectionStep(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
+            FramedCard(
+                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
@@ -89,7 +85,7 @@ fun ModeSelectionStep(
                 }
             }
 
-            OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+            FramedCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
@@ -118,7 +114,7 @@ fun ModeSelectionStep(
                 }
             }
 
-            OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+            FramedCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
@@ -147,7 +143,7 @@ fun ModeSelectionStep(
                 }
             }
 
-            OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+            FramedCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(

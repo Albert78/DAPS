@@ -16,13 +16,11 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -135,7 +133,7 @@ fun InsulinTypeStep(
                         val isSelected = type.id in selectedTypeIds
                         val isPrimary = type.id == primaryTypeId
 
-                        OutlinedCard(
+                        FramedCard(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .selectable(
@@ -143,11 +141,11 @@ fun InsulinTypeStep(
                                     onClick = { onToggleTypeSelection(type) },
                                     role = Role.Checkbox
                                 ),
-                            colors = if (isSelected) {
-                                CardDefaults.outlinedCardColors(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
-                                )
-                            } else CardDefaults.outlinedCardColors()
+                            containerColor = if (isSelected) {
+                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
+                            } else {
+                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                            }
                         ) {
                             Row(
                                 modifier = Modifier

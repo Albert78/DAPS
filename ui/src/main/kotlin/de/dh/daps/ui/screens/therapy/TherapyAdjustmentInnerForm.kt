@@ -1,7 +1,6 @@
 package de.dh.daps.ui.screens.therapy
 
 import android.content.res.Configuration
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -24,13 +23,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -61,6 +58,7 @@ import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
 import de.dh.daps.ui.common.ModuloSteppingStrategy
 import de.dh.daps.ui.common.composables.EditableValueStepper
+import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.StepperDefaults
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.glucoseValue
@@ -365,10 +363,11 @@ private fun AdjustmentSection(
                 val borderColor = if (isActive) accentColor else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
                 val borderWidth = if (isActive) 2.dp else 1.dp
 
-                OutlinedCard(
+                FramedCard(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.outlinedCardColors(containerColor = containerColor),
-                    border = BorderStroke(borderWidth, borderColor)
+                    containerColor = containerColor,
+                    borderColor = borderColor,
+                    borderWidth = borderWidth
                 ) {
                     Box(
                         modifier = Modifier
@@ -402,17 +401,12 @@ private fun AdjustmentTile(
     val contentColor = if (active) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
     val iconTint = if (active) accentColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
 
-    OutlinedCard(
-        modifier = modifier.clickable(
-            interactionSource = remember { MutableInteractionSource() },
-            indication = null
-        ) {
-            onActiveChange(!active)
-        },
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = containerColor,
-        ),
-        border = BorderStroke(borderWidth, borderColor)
+    FramedCard(
+        modifier = modifier,
+        onClick = { onActiveChange(!active) },
+        containerColor = containerColor,
+        borderColor = borderColor,
+        borderWidth = borderWidth
     ) {
         Column(
             modifier = Modifier

@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -35,6 +34,7 @@ import de.dh.daps.plugin.simbody.R
 import de.dh.daps.plugin.simbody.model.BodyProfile
 import de.dh.daps.ui.common.carbsUnitLabel
 import de.dh.daps.ui.common.carbsValue
+import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.crValue
@@ -59,7 +59,7 @@ fun SimBodyDashboardCard(
 
     var showEditDialog by remember { mutableStateOf<String?>(null) }
 
-    Card(
+    FramedCard(
         modifier = Modifier
             .fillMaxWidth()
     ) {

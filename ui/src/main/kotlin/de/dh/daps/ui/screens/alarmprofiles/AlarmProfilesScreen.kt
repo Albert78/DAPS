@@ -1,7 +1,6 @@
 package de.dh.daps.ui.screens.alarmprofiles
 
 import android.content.res.Configuration
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,8 +21,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -49,6 +46,7 @@ import de.dh.daps.common.model.data.AlertDisplayMode
 import de.dh.daps.common.model.data.SoundConfig
 import de.dh.daps.common.model.data.VibrationMode
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
@@ -180,19 +178,16 @@ fun AlarmProfileCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onEdit),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isActive) {
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
-            } else if (isDefault) {
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
-            } else {
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-            }
-        )
+    FramedCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onEdit,
+        containerColor = if (isActive) {
+            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+        } else if (isDefault) {
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
+        } else {
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        }
     ) {
         Column(
             modifier = Modifier.padding(16.dp)

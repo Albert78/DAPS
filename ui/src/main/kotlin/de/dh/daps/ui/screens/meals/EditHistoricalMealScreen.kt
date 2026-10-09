@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
@@ -22,8 +21,6 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -220,12 +217,9 @@ fun EditHistoricalMealContent(
             } else if (!uiState.isAddMode && uiState.meal == null) {
                 Text(text = stringResource(R.string.meal_not_found))
             } else {
-                Card(
+                FramedCard(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
-                    )
+                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
                 ) {
                     Row(
                         modifier = Modifier.padding(12.dp),
@@ -409,12 +403,9 @@ fun EditMealCard(
             HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f))
 
             if (administeredInsulinAmount > InsulinAmount.ZERO) {
-                Card(
+                FramedCard(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
-                    )
+                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
                 ) {
                     Row(
                         modifier = Modifier.padding(12.dp),

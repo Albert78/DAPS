@@ -1,7 +1,6 @@
 package de.dh.daps.ui.screens.therapy
 
 import android.content.res.Configuration
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,8 +26,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.VerticalAlignBottom
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -965,15 +962,12 @@ private fun ScheduledAdjustmentCard(
     val endTimeStr = timeFormat.format(scheduledAdjustment.endTime.ms)
     val hint = scheduledAdjustment.adjustmentHint ?: stringResource(R.string.scheduled_therapy_adjustment_card_title)
 
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f)
-        )
+    FramedCard(
+        modifier = modifier.fillMaxWidth(),
+        onClick = onClick,
+        borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+        borderWidth = 1.5.dp,
+        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),

@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import de.dh.daps.ui.common.composables.FramedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,7 +41,7 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
         onConnected: (GlucoseSource, GlucoseSourceConnectionDescriptor) -> Unit,
         onCancel: () -> Unit,
     ) {
-        Card(
+        FramedCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),

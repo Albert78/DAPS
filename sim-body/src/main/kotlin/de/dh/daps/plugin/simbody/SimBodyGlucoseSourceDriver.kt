@@ -8,8 +8,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import de.dh.daps.ui.common.composables.FramedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -45,13 +44,11 @@ class SimBodyGlucoseSourceDriver(
     ) {
         val sensorDisplayName = stringResource(R.string.sim_body_cgm_sensor_display_name)
 
-        Card(
+        FramedCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            ),
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(

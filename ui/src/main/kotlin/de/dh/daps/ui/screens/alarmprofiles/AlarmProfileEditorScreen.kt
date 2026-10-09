@@ -22,8 +22,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -55,6 +53,7 @@ import de.dh.daps.common.model.data.AlertDisplayMode
 import de.dh.daps.common.model.data.SoundConfig
 import de.dh.daps.common.model.data.VibrationMode
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
@@ -219,11 +218,9 @@ fun AlarmProfileEditorContent(
 
             // Default Profile Switch
             item {
-                Card(
+                FramedCard(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                    )
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                 ) {
                     Row(
                         modifier = Modifier
@@ -356,11 +353,9 @@ fun SeverityEditorSectionCard(
         else -> Icon_Sound_Off to R.string.cd_alarm_sound_and_vibration_off
     }
 
-    Card(
+    FramedCard(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        )
+        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),

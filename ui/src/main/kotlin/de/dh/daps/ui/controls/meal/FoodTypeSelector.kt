@@ -1,7 +1,6 @@
 package de.dh.daps.ui.controls.meal
 
 import android.content.res.Configuration
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -14,8 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -41,6 +38,7 @@ import de.dh.daps.common.model.getDefaultFastMealType
 import de.dh.daps.common.model.getDefaultSlowMealType
 import de.dh.daps.common.model.getDefaultStandardMealType
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.screens.mealtypes.MealTypeIcon
 import de.dh.daps.common.R as CommonR
@@ -58,18 +56,14 @@ fun FoodTypeSelector(
 
     val isError = isMandatory && selectedType == null
 
-    Card(
+    FramedCard(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
-        border = BorderStroke(
-            1.dp,
-            if (isError) MaterialTheme.colorScheme.error.copy(alpha = 0.5f)
-            else MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
-        ),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isError) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)
+        borderColor = if (isError) MaterialTheme.colorScheme.error.copy(alpha = 0.5f)
+            else MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f),
+        borderWidth = 1.dp,
+        containerColor = if (isError) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)
             else MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f)
-        )
     ) {
         Column(
             modifier = Modifier

@@ -18,8 +18,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -43,6 +41,7 @@ import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.icons.Icon_Basal
@@ -73,13 +72,11 @@ fun ManualControlPumpControlsSection(
         )
 
         // Card 1: Bolus (Primary Color Scheme - Cool Blue tone)
-        Card(
+        FramedCard(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
-            ),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f))
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
+            borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
+            borderWidth = 1.dp
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Row(
@@ -194,13 +191,11 @@ fun ManualControlPumpControlsSection(
         }
 
         // Card 2: Basal
-        Card(
+        FramedCard(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
-            ),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f))
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
+            borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
+            borderWidth = 1.dp
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 val activeBasal = pump.basalStatus

@@ -16,7 +16,6 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -33,6 +32,7 @@ import de.dh.daps.common.model.data.CarbsUnit
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.carbsUnitLabel
+import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.icons.Icon_Carbs_Unit
@@ -76,7 +76,7 @@ fun UnitsStep(
                 style = MaterialTheme.typography.bodyMedium
             )
 
-            OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+            FramedCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
@@ -122,7 +122,7 @@ fun UnitsStep(
                 }
             }
 
-            OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+            FramedCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(

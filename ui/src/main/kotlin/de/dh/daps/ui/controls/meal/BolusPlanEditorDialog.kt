@@ -1,6 +1,5 @@
 package de.dh.daps.ui.controls.meal
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,13 +13,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -48,6 +44,7 @@ import de.dh.daps.common.BOLUS_MIN
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.InsulinAmountStepper
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.StepperDefaults
@@ -178,12 +175,9 @@ fun BolusPlanEditorContent(
         }
 
         if (administeredInsulinAmount > InsulinAmount.ZERO) {
-            Card(
+            FramedCard(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(10.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
-                )
+                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
             ) {
                 Row(
                     modifier = Modifier.padding(12.dp),
@@ -303,13 +297,11 @@ private fun BolusPlanItemCard(
         else -> stringResource(R.string.bolus_plan_editor_at_meal)
     }
 
-    Card(
+    FramedCard(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(1.dp, ExtendedTheme.semanticColors.border),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
-        )
+        borderColor = ExtendedTheme.semanticColors.border,
+        borderWidth = 1.dp,
+        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
     ) {
         Column(
             modifier = Modifier

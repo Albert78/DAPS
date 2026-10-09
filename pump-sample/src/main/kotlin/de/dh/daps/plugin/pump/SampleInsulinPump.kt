@@ -3,8 +3,7 @@ package de.dh.daps.plugin.pump
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import de.dh.daps.ui.common.composables.FramedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -115,11 +114,9 @@ class SampleInsulinPump : InsulinPump, PumpPluginUiProvider {
 
     @Composable
     override fun PumpControlSection() {
-        Card(
+        FramedCard(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            )
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(

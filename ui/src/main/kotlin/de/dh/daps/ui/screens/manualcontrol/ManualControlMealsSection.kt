@@ -1,7 +1,6 @@
 package de.dh.daps.ui.screens.manualcontrol
 
 import android.content.res.Configuration
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -14,10 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -35,6 +32,7 @@ import de.dh.daps.common.model.getDefaultSlowMealType
 import de.dh.daps.common.model.getDefaultStandardMealType
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.carbsValue
+import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.timeWithUnit
 import de.dh.daps.ui.screens.mealtypes.MealTypeIcon
@@ -95,14 +93,12 @@ fun CompactMealInfoCard(
     hasReminder: Boolean = false,
     onClick: (() -> Unit)? = null
 ) {
-    OutlinedCard(
-        onClick = { onClick?.invoke() },
-        enabled = mealEntry != null && onClick != null,
+    FramedCard(
+        onClick = if (mealEntry != null && onClick != null) { { onClick() } } else null,
         modifier = modifier,
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-        ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        borderWidth = 1.dp
     ) {
         Column(
             modifier = Modifier

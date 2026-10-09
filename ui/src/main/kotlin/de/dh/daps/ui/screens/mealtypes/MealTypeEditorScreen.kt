@@ -25,13 +25,11 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -59,6 +57,7 @@ import de.dh.daps.common.model.CarbCurveComponentData
 import de.dh.daps.common.model.MealType
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
@@ -199,7 +198,7 @@ fun MealTypeEditorContent(
             }
 
             item {
-                OutlinedCard(
+                FramedCard(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
@@ -383,7 +382,7 @@ fun ComponentItem(
     onUpdate: (CarbCurveComponentData) -> Unit,
     onDelete: () -> Unit
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    FramedCard(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
                 .padding(8.dp)

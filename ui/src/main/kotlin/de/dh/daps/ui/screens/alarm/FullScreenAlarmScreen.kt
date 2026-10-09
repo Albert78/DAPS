@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -30,6 +28,7 @@ import de.dh.daps.common.model.data.AlarmType
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.theme.AppPreview
 
@@ -89,15 +88,12 @@ fun FullScreenAlarmScreen(
             }
 
             // Central Data Card (Glucose value or status)
-            Card(
+            FramedCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 16.dp),
                 shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
-                elevation = CardDefaults.cardElevation(8.dp)
+                containerColor = MaterialTheme.colorScheme.surface
             ) {
                 Column(
                     modifier = Modifier

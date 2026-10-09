@@ -22,6 +22,7 @@ android {
 dependencies {
     implementation(project(":common"))
     implementation(project(":core"))
+    implementation(project(":ui-common"))
     implementation(libs.androidx.core.ktx)
 
     implementation(platform(libs.androidx.compose.bom))

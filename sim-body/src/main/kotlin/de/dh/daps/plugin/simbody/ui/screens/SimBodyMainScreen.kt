@@ -19,7 +19,6 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -47,6 +46,7 @@ import de.dh.daps.plugin.simbody.BodyModel
 import de.dh.daps.plugin.simbody.R
 import de.dh.daps.plugin.simbody.ui.components.SimBodyEatMealDialog
 import de.dh.daps.ui.common.carbsValue
+import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.glucoseUnitLabel
@@ -103,7 +103,7 @@ fun SimBodyMainScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Status Summary Card
-            Card(
+            FramedCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
@@ -165,7 +165,7 @@ fun SimBodyMainScreen(
             }
 
             // Sensor Configuration Section
-            Card(
+            FramedCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
