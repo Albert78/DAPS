@@ -2,6 +2,7 @@ package de.dh.daps.ui.screens.glucosesourcesetup
 
 import androidx.activity.compose.BackHandler
 import android.content.res.Configuration
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,8 +34,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import de.dh.daps.ui.common.composables.LoadingOverlayCard
-import de.dh.daps.ui.common.composables.ScopedDriverSetupContainer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -53,6 +52,11 @@ import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.FramedCard
+import de.dh.daps.ui.common.composables.LoadingOverlayCard
+import de.dh.daps.ui.common.composables.NormalTextButton
+import de.dh.daps.ui.common.composables.PrimaryButton
+import de.dh.daps.ui.common.composables.ScopedDriverSetupContainer
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.common.R as CommonR
@@ -98,7 +102,7 @@ fun GlucoseSourceSetupContent(
     val titleText = selectedDriver?.displayName?.asString() ?: stringResource(id = R.string.glucose_source_setup_screen_title)
 
     BackHandler(enabled = selectedDriver != null) {
-        onSelectDriver(null)
+        // Intercept back gesture so driver setup workflow cannot be exited via back gesture
     }
 
     Scaffold(
@@ -106,19 +110,13 @@ fun GlucoseSourceSetupContent(
             TopAppBar(
                 title = screenTitle(titleText),
                 navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            if (selectedDriver != null) {
-                                onSelectDriver(null)
-                            } else {
-                                onNavigateUp()
-                            }
+                    if (selectedDriver == null) {
+                        IconButton(onClick = onNavigateUp) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(id = CommonR.string.cd_navigate_up)
+                            )
                         }
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(id = CommonR.string.cd_navigate_up)
-                        )
                     }
                 }
             )
@@ -384,17 +382,73 @@ private fun GlucoseSourceDriverCard(
 
 private class PreviewGlucoseSourceDriver(
     override val driverId: String,
-    override val displayName: UiText
+    override val displayName: UiText,
+    private val setupScreenContent: @Composable () -> Unit = {}
 ) : GlucoseSourceDriver {
     @Composable
     override fun SetupScreen(
         onConnected: (GlucoseSource, GlucoseSourceConnectionDescriptor) -> Unit,
         onCancel: () -> Unit
     ) {
+        setupScreenContent()
     }
 
     override suspend fun connect(descriptor: GlucoseSourceConnectionDescriptor): Result<GlucoseSource> {
         return Result.failure(UnsupportedOperationException())
+    }
+}
+
+@Composable
+internal fun ExternalReceiverSetupPreviewContent() {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        FramedCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "xDrip+ Broadcast Receiver",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    text = "Empfange Glukosewerte, die von externen Apps wie xDrip+ oder Juggluco auf diesem Gerät gesendet werden.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                PrimaryButton(
+                    onClick = {},
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Verbinden")
+                }
+            }
+
+            NormalTextButton(
+                onClick = {},
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Einrichtung abbrechen")
+            }
+        }
     }
 }
 
@@ -476,6 +530,29 @@ fun GlucoseSourceSetupNoActiveSourceNoDriversPreview() {
             uiState = GlucoseSourceSetupUiState(
                 availableDrivers = emptyList(),
                 activeSourceDescriptor = null
+            ),
+            onNavigateUp = {},
+            onSelectDriver = {},
+            onConnectGlucoseSource = {},
+            onClearError = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Treiber-Einrichtung (External Receiver) - Light")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Treiber-Einrichtung (External Receiver) - Dark")
+@Composable
+fun GlucoseSourceSetupDriverSetupReceiverPreview() {
+    val receiverDriver = PreviewGlucoseSourceDriver(
+        driverId = "de.dh.daps.plugin.glucose.receiver",
+        displayName = UiText.DynamicString("xDrip+ Broadcast Receiver"),
+        setupScreenContent = { ExternalReceiverSetupPreviewContent() }
+    )
+    AppTheme {
+        GlucoseSourceSetupContent(
+            uiState = GlucoseSourceSetupUiState(
+                availableDrivers = listOf(receiverDriver),
+                selectedDriver = receiverDriver
             ),
             onNavigateUp = {},
             onSelectDriver = {},

@@ -46,6 +46,7 @@ import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.LoadingOverlayCard
 import de.dh.daps.ui.common.composables.ScopedDriverSetupContainer
 import de.dh.daps.ui.common.theme.AppPreview
+import de.dh.daps.ui.screens.glucosesourcesetup.ExternalReceiverSetupPreviewContent
 import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupUiState
 import de.dh.daps.ui.screens.setupwizard.components.SetupStepScaffold
 
@@ -73,19 +74,12 @@ fun GlucoseSourceStep(
         ?: stringResource(id = R.string.setup_wizard_glucose_source_title)
 
     BackHandler(enabled = selectedDriver != null) {
-        onSelectDriver(null)
+        // Intercept back gesture so driver setup workflow cannot be exited via back gesture
     }
 
-    val showTopBack = selectedDriver != null
-    val onTopBackClick: () -> Unit = {
-        if (selectedDriver != null) {
-            onSelectDriver(null)
-        } else {
-            onBack()
-        }
-    }
-
-    val nextButtonText = if (uiState.activeSourceDescriptor != null) {
+    val nextButtonText = if (selectedDriver != null) {
+        null
+    } else if (uiState.activeSourceDescriptor != null) {
         stringResource(R.string.setup_wizard_btn_next)
     } else {
         stringResource(R.string.setup_wizard_btn_skip)
@@ -94,12 +88,11 @@ fun GlucoseSourceStep(
     SetupStepScaffold(
         title = titleText,
         stepProgress = stepProgress,
-        showTopBackButton = showTopBack,
-        onTopBack = onTopBackClick,
-        showBottomBackButton = true,
+        showTopBackButton = false,
+        showBottomBackButton = selectedDriver == null,
         onBack = onBack,
         nextButtonText = nextButtonText,
-        onNext = onNext,
+        onNext = if (selectedDriver != null) null else onNext,
         snackbarHostState = snackbarHostState
     ) { innerPadding ->
         Box(
@@ -355,13 +348,15 @@ private fun GlucoseSourceDriverCard(
 
 private class PreviewGlucoseSourceDriver(
     override val driverId: String,
-    override val displayName: UiText
+    override val displayName: UiText,
+    private val setupScreenContent: @Composable () -> Unit = {}
 ) : GlucoseSourceDriver {
     @Composable
     override fun SetupScreen(
         onConnected: (GlucoseSource, GlucoseSourceConnectionDescriptor) -> Unit,
         onCancel: () -> Unit
     ) {
+        setupScreenContent()
     }
 
     override suspend fun connect(descriptor: GlucoseSourceConnectionDescriptor): Result<GlucoseSource> {
@@ -407,6 +402,32 @@ private fun GlucoseSourceStepActivePreview() {
                     sourceId = "simbody-sensor-01",
                     displayName = "SimBody Virtual Glucose Sensor"
                 )
+            ),
+            onSelectDriver = {},
+            onConnectGlucoseSource = { _, _ -> },
+            onClearError = {},
+            onNext = {},
+            onBack = {},
+            snackbarHostState = remember { SnackbarHostState() },
+            stepProgress = Pair(5, 7)
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Driver Setup (External Receiver) - Light")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Driver Setup (External Receiver) - Dark")
+@Composable
+private fun GlucoseSourceStepDriverSetupReceiverPreview() {
+    val receiverDriver = PreviewGlucoseSourceDriver(
+        driverId = "de.dh.daps.plugin.glucose.receiver",
+        displayName = UiText.DynamicString("xDrip+ Broadcast Receiver"),
+        setupScreenContent = { ExternalReceiverSetupPreviewContent() }
+    )
+    AppPreview {
+        GlucoseSourceStep(
+            uiState = GlucoseSourceSetupUiState(
+                availableDrivers = listOf(receiverDriver),
+                selectedDriver = receiverDriver
             ),
             onSelectDriver = {},
             onConnectGlucoseSource = { _, _ -> },
