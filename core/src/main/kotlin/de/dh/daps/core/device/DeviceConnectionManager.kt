@@ -44,7 +44,7 @@ class DeviceConnectionManager(
                 val state = driver.lifecycleState.value
                 Log.d(TAG, "Active glucose source driver '$activeGlucoseDriverId' state: $state")
                 when (state) {
-                    is DeviceLifecycleState.Configured -> {
+                    is DeviceLifecycleState.DeviceBound -> {
                         glucoseSourceDriverManager.connect(activeGlucoseDriverId).onSuccess { glucoseSource ->
                             glucoseSourceManager.glucoseSource = glucoseSource
                         }.onFailure { error ->
@@ -55,7 +55,7 @@ class DeviceConnectionManager(
                         Log.i(TAG, "Glucose source setup in progress for driver '$activeGlucoseDriverId'. Skipping auto-connect until setup finishes.")
                         null
                     }
-                    is DeviceLifecycleState.Unconfigured -> {
+                    is DeviceLifecycleState.NoDevice -> {
                         Log.d(TAG, "Glucose source driver '$activeGlucoseDriverId' is unconfigured.")
                         null
                     }
@@ -77,7 +77,7 @@ class DeviceConnectionManager(
                 val state = driver.lifecycleState.value
                 Log.d(TAG, "Active pump driver '$activePumpDriverId' state: $state")
                 when (state) {
-                    is DeviceLifecycleState.Configured -> {
+                    is DeviceLifecycleState.DeviceBound -> {
                         pumpDriverManager.connect(activePumpDriverId).onSuccess { insulinPump ->
                             pumpManager.insulinPump = insulinPump
                         }.onFailure { error ->
@@ -88,7 +88,7 @@ class DeviceConnectionManager(
                         Log.i(TAG, "Pump setup in progress for driver '$activePumpDriverId'. Skipping auto-connect until setup finishes.")
                         null
                     }
-                    is DeviceLifecycleState.Unconfigured -> {
+                    is DeviceLifecycleState.NoDevice -> {
                         Log.d(TAG, "Pump driver '$activePumpDriverId' is unconfigured.")
                         null
                     }

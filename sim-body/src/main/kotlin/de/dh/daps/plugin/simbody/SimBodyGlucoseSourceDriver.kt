@@ -46,7 +46,7 @@ class SimBodyGlucoseSourceDriver(
     private var pluginContext: PluginContext? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.Unconfigured)
+    private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.NoDevice)
     override val lifecycleState: StateFlow<DeviceLifecycleState> = _lifecycleState.asStateFlow()
 
     override fun initialize(context: PluginContext) {
@@ -54,12 +54,12 @@ class SimBodyGlucoseSourceDriver(
         scope.launch {
             val deviceId = context.preferences.getString(KEY_DEVICE_ID).first()
             if (!deviceId.isNullOrEmpty()) {
-                _lifecycleState.value = DeviceLifecycleState.Configured(
+                _lifecycleState.value = DeviceLifecycleState.DeviceBound(
                     deviceId = deviceId,
                     displayName = UiText.StringResource(R.string.sim_body_cgm_sensor_display_name)
                 )
             } else {
-                _lifecycleState.value = DeviceLifecycleState.Unconfigured
+                _lifecycleState.value = DeviceLifecycleState.NoDevice
             }
         }
     }
@@ -106,7 +106,7 @@ class SimBodyGlucoseSourceDriver(
                                     prefs.putString(KEY_DEVICE_ID, deviceId)
                                 }
                             }
-                            _lifecycleState.value = DeviceLifecycleState.Configured(
+                            _lifecycleState.value = DeviceLifecycleState.DeviceBound(
                                 deviceId = deviceId,
                                 displayName = UiText.StringResource(R.string.sim_body_cgm_sensor_display_name)
                             )
@@ -130,11 +130,11 @@ class SimBodyGlucoseSourceDriver(
         val deviceId = pc.preferences.getString(KEY_DEVICE_ID).first()
 
         if (deviceId.isNullOrEmpty()) {
-            _lifecycleState.value = DeviceLifecycleState.Unconfigured
+            _lifecycleState.value = DeviceLifecycleState.NoDevice
             return Result.failure(IllegalStateException("No saved device configuration found for SimBody CGM"))
         }
 
-        _lifecycleState.value = DeviceLifecycleState.Configured(
+        _lifecycleState.value = DeviceLifecycleState.DeviceBound(
             deviceId = deviceId,
             displayName = UiText.StringResource(R.string.sim_body_cgm_sensor_display_name)
         )

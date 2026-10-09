@@ -231,7 +231,7 @@ private fun GlucoseSourceDriverSelectionContent(
 private fun ActiveGlucoseSourceCard(driver: GlucoseSourceDriver) {
     val lifecycleState by driver.lifecycleState.collectAsStateWithLifecycle()
     val (displayName, deviceId) = when (val state = lifecycleState) {
-        is DeviceLifecycleState.Configured -> Pair(state.displayName, state.deviceId)
+        is DeviceLifecycleState.DeviceBound -> Pair(state.displayName, state.deviceId)
         else -> Pair(driver.displayName, null)
     }
 
@@ -351,7 +351,7 @@ private fun GlucoseSourceDriverCard(
 private class PreviewGlucoseSourceDriver(
     override val driverId: String,
     override val displayName: UiText,
-    initialState: DeviceLifecycleState = DeviceLifecycleState.Unconfigured,
+    initialState: DeviceLifecycleState = DeviceLifecycleState.NoDevice,
     private val setupScreenContent: @Composable () -> Unit = {}
 ) : GlucoseSourceDriver {
     override val lifecycleState: StateFlow<DeviceLifecycleState> =
@@ -399,7 +399,7 @@ private fun GlucoseSourceStepActivePreview() {
     val simBodyDriver = PreviewGlucoseSourceDriver(
         "de.dh.daps.plugin.simbody",
         UiText.DynamicString("SimBody Virtual Glucose Source"),
-        DeviceLifecycleState.Configured("simbody-sensor-01", UiText.DynamicString("SimBody Virtual Glucose Sensor"))
+        DeviceLifecycleState.DeviceBound("simbody-sensor-01", UiText.DynamicString("SimBody Virtual Glucose Sensor"))
     )
     AppPreview {
         GlucoseSourceStep(

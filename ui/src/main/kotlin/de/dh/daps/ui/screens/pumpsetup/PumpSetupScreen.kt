@@ -1,7 +1,7 @@
 package de.dh.daps.ui.screens.pumpsetup
 
-import androidx.activity.compose.BackHandler
 import android.content.res.Configuration
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -266,7 +266,7 @@ private fun PumpDriverSelectionContent(
 private fun ActivePumpCard(driver: InsulinPumpDriver) {
     val lifecycleState by driver.lifecycleState.collectAsStateWithLifecycle()
     val (displayName, deviceId) = when (val state = lifecycleState) {
-        is DeviceLifecycleState.Configured -> Pair(state.displayName, state.deviceId)
+        is DeviceLifecycleState.DeviceBound -> Pair(state.displayName, state.deviceId)
         else -> Pair(driver.displayName, null)
     }
 
@@ -372,7 +372,7 @@ private fun DriverCard(
 private class PreviewPumpDriver(
     override val driverId: String,
     override val displayName: UiText,
-    initialState: DeviceLifecycleState = DeviceLifecycleState.Unconfigured,
+    initialState: DeviceLifecycleState = DeviceLifecycleState.NoDevice,
     private val setupScreenContent: @Composable () -> Unit = {}
 ) : InsulinPumpDriver {
     override val lifecycleState: StateFlow<DeviceLifecycleState> =
@@ -511,7 +511,7 @@ fun PumpSetupMultipleDriversPreview() {
     val simBodyDriver = PreviewPumpDriver(
         "de.dh.daps.plugin.simbody",
         UiText.DynamicString("SimBody Virtual Pump Driver"),
-        DeviceLifecycleState.Configured("simbody-virtual-pump-01", UiText.DynamicString("SimBody Virtual Insulin Pump"))
+        DeviceLifecycleState.DeviceBound("simbody-virtual-pump-01", UiText.DynamicString("SimBody Virtual Insulin Pump"))
     )
     AppTheme {
         PumpSetupContent(

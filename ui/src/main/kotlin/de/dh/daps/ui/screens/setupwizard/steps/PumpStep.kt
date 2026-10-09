@@ -232,7 +232,7 @@ private fun PumpDriverSelectionContent(
 private fun ActivePumpCard(driver: InsulinPumpDriver) {
     val lifecycleState by driver.lifecycleState.collectAsStateWithLifecycle()
     val (displayName, deviceId) = when (val state = lifecycleState) {
-        is DeviceLifecycleState.Configured -> Pair(state.displayName, state.deviceId)
+        is DeviceLifecycleState.DeviceBound -> Pair(state.displayName, state.deviceId)
         else -> Pair(driver.displayName, null)
     }
 
@@ -352,7 +352,7 @@ private fun PumpDriverCard(
 private class PreviewPumpDriver(
     override val driverId: String,
     override val displayName: UiText,
-    initialState: DeviceLifecycleState = DeviceLifecycleState.Unconfigured,
+    initialState: DeviceLifecycleState = DeviceLifecycleState.NoDevice,
     private val setupScreenContent: @Composable () -> Unit = {}
 ) : InsulinPumpDriver {
     override val lifecycleState: StateFlow<DeviceLifecycleState> =
@@ -400,7 +400,7 @@ private fun PumpStepActivePreview() {
     val simBodyDriver = PreviewPumpDriver(
         "de.dh.daps.plugin.simbody",
         UiText.DynamicString("SimBody Virtual Pump Driver"),
-        DeviceLifecycleState.Configured("simbody-pump-01", UiText.DynamicString("SimBody Virtual Insulin Pump"))
+        DeviceLifecycleState.DeviceBound("simbody-pump-01", UiText.DynamicString("SimBody Virtual Insulin Pump"))
     )
     AppPreview {
         PumpStep(

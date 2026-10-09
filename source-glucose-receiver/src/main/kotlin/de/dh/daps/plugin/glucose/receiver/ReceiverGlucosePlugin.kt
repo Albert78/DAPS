@@ -66,7 +66,7 @@ class ReceiverGlucosePlugin(
     private var pluginContext: PluginContext? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.Unconfigured)
+    private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.NoDevice)
     override val lifecycleState: StateFlow<DeviceLifecycleState> = _lifecycleState.asStateFlow()
 
     override fun initialize(context: PluginContext) {
@@ -187,7 +187,7 @@ class ReceiverGlucosePlugin(
                                     prefs.putString(KEY_SOURCE_TYPE, externalSourceType.name)
                                 }
                             }
-                            _lifecycleState.value = DeviceLifecycleState.Configured(
+                            _lifecycleState.value = DeviceLifecycleState.DeviceBound(
                                 deviceId = null,
                                 displayName = UiText.StringResource(R.string.glucose_broadcast_receiver_display_name)
                             )
@@ -213,12 +213,12 @@ class ReceiverGlucosePlugin(
         }
         if (parsedSourceType != null) {
             externalSourceType = parsedSourceType
-            _lifecycleState.value = DeviceLifecycleState.Configured(
+            _lifecycleState.value = DeviceLifecycleState.DeviceBound(
                 deviceId = null,
                 displayName = UiText.StringResource(R.string.glucose_broadcast_receiver_display_name)
             )
         } else {
-            _lifecycleState.value = DeviceLifecycleState.Unconfigured
+            _lifecycleState.value = DeviceLifecycleState.NoDevice
         }
     }
 
@@ -230,7 +230,7 @@ class ReceiverGlucosePlugin(
             ?: return Result.failure(IllegalStateException("PluginContext not initialized"))
         refreshLifecycleState(pc.preferences)
 
-        if (_lifecycleState.value !is DeviceLifecycleState.Configured) {
+        if (_lifecycleState.value !is DeviceLifecycleState.DeviceBound) {
             return Result.failure(IllegalStateException("No saved source type configuration found for Receiver Glucose Plugin"))
         }
 

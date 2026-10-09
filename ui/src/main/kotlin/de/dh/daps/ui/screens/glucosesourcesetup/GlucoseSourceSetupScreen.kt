@@ -260,7 +260,7 @@ private fun GlucoseSourceDriverSelectionContent(
 private fun ActiveGlucoseSourceCard(driver: GlucoseSourceDriver) {
     val lifecycleState by driver.lifecycleState.collectAsStateWithLifecycle()
     val (displayName, deviceId) = when (val state = lifecycleState) {
-        is DeviceLifecycleState.Configured -> Pair(state.displayName, state.deviceId)
+        is DeviceLifecycleState.DeviceBound -> Pair(state.displayName, state.deviceId)
         else -> Pair(driver.displayName, null)
     }
 
@@ -366,7 +366,7 @@ private fun DriverCard(
 private class PreviewGlucoseDriver(
     override val driverId: String,
     override val displayName: UiText,
-    initialState: DeviceLifecycleState = DeviceLifecycleState.Unconfigured,
+    initialState: DeviceLifecycleState = DeviceLifecycleState.NoDevice,
 ) : GlucoseSourceDriver {
     override val lifecycleState: StateFlow<DeviceLifecycleState> =
         MutableStateFlow(initialState)
@@ -411,7 +411,7 @@ fun GlucoseSourceSetupMultipleDriversPreview() {
     val simBodyDriver = PreviewGlucoseDriver(
         "de.dh.daps.plugin.simbody.cgm",
         UiText.DynamicString("SimBody Virtual CGM Driver"),
-        DeviceLifecycleState.Configured("simbody-virtual-cgm-01", UiText.DynamicString("SimBody Virtual CGM"))
+        DeviceLifecycleState.DeviceBound("simbody-virtual-cgm-01", UiText.DynamicString("SimBody Virtual CGM"))
     )
     AppTheme {
         GlucoseSourceSetupContent(

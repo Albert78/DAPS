@@ -9,7 +9,7 @@ sealed class DeviceLifecycleState {
     /**
      * No device setup or configuration has been initiated for this driver.
      */
-    data object Unconfigured : DeviceLifecycleState()
+    data object NoDevice : DeviceLifecycleState()
 
     /**
      * Setup flow has been started or interrupted, but is not yet fully completed.
@@ -19,7 +19,7 @@ sealed class DeviceLifecycleState {
     /**
      * Device setup is completed and ready for operational connection.
      */
-    data class Configured(
+    data class DeviceBound(
         /**
          * Optional device id to be shown in the UI.
          */

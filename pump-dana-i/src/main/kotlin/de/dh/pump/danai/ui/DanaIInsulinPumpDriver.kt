@@ -48,7 +48,7 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
         }
     }
 
-    private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.Unconfigured)
+    private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.NoDevice)
     override val lifecycleState: StateFlow<DeviceLifecycleState> = _lifecycleState.asStateFlow()
 
     override fun initialize(context: PluginContext) {
@@ -64,12 +64,12 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
         val name = danaPrefs.getLastName().ifEmpty { "Dana-i" }
 
         if (address.isNotEmpty()) {
-            _lifecycleState.value = DeviceLifecycleState.Configured(
+            _lifecycleState.value = DeviceLifecycleState.DeviceBound(
                 deviceId = address,
                 displayName = UiText.DynamicString(name),
             )
         } else {
-            _lifecycleState.value = DeviceLifecycleState.Unconfigured
+            _lifecycleState.value = DeviceLifecycleState.NoDevice
         }
     }
 
@@ -109,7 +109,7 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
         val pumpAdapter = DanaIPumpAdapter.create(link, defaultLogger, scope)
         pumpAdapter.controller.connect()
 
-        _lifecycleState.value = DeviceLifecycleState.Configured(
+        _lifecycleState.value = DeviceLifecycleState.DeviceBound(
             deviceId = deviceAddress,
             displayName = UiText.DynamicString(deviceName),
         )
@@ -129,7 +129,7 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
 
         refreshLifecycleState(prefs)
 
-        if (_lifecycleState.value !is DeviceLifecycleState.Configured) {
+        if (_lifecycleState.value !is DeviceLifecycleState.DeviceBound) {
             return Result.failure(IllegalStateException("No saved Bluetooth address found for Dana-i pump"))
         }
 

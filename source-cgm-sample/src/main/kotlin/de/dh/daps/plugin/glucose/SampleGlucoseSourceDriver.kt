@@ -40,7 +40,7 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
     private var pluginContext: PluginContext? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.Unconfigured)
+    private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.NoDevice)
     override val lifecycleState: StateFlow<DeviceLifecycleState> = _lifecycleState.asStateFlow()
 
     override fun initialize(context: PluginContext) {
@@ -49,12 +49,12 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
             val deviceId = context.preferences.getString(KEY_DEVICE_ID).first()
             val deviceName = context.preferences.getString(KEY_DEVICE_NAME).first() ?: "Sample Glucose Sensor 01"
             if (!deviceId.isNullOrEmpty()) {
-                _lifecycleState.value = DeviceLifecycleState.Configured(
+                _lifecycleState.value = DeviceLifecycleState.DeviceBound(
                     deviceId = deviceId,
                     displayName = UiText.DynamicString(deviceName)
                 )
             } else {
-                _lifecycleState.value = DeviceLifecycleState.Unconfigured
+                _lifecycleState.value = DeviceLifecycleState.NoDevice
             }
         }
     }
@@ -93,7 +93,7 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
                                 prefs.putString(KEY_DEVICE_NAME, deviceName)
                             }
                         }
-                        _lifecycleState.value = DeviceLifecycleState.Configured(
+                        _lifecycleState.value = DeviceLifecycleState.DeviceBound(
                             deviceId = deviceId,
                             displayName = UiText.DynamicString(deviceName)
                         )
@@ -118,11 +118,11 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
         val deviceName = prefs.getString(KEY_DEVICE_NAME).first() ?: "Sample Glucose Sensor 01"
 
         if (deviceId.isNullOrEmpty()) {
-            _lifecycleState.value = DeviceLifecycleState.Unconfigured
+            _lifecycleState.value = DeviceLifecycleState.NoDevice
             return Result.failure(IllegalStateException("No saved device configuration found for sample glucose source"))
         }
 
-        _lifecycleState.value = DeviceLifecycleState.Configured(
+        _lifecycleState.value = DeviceLifecycleState.DeviceBound(
             deviceId = deviceId,
             displayName = UiText.DynamicString(deviceName)
         )

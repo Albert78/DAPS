@@ -27,7 +27,7 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
         Manifest.permission.ACCESS_FINE_LOCATION
     )
 
-    private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.Unconfigured)
+    private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.NoDevice)
     override val lifecycleState: StateFlow<DeviceLifecycleState> = _lifecycleState.asStateFlow()
 
     private var pluginContext: PluginContext? = null
@@ -49,7 +49,7 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
             driver = this,
             onConnected = { pump ->
                 val podStateManager = OmnipodDashPodStateManagerImpl(pluginContext?.preferences)
-                _lifecycleState.value = DeviceLifecycleState.Configured(
+                _lifecycleState.value = DeviceLifecycleState.DeviceBound(
                     deviceId = podStateManager.bluetoothAddress ?: "POD-DASH-ACTIVE",
                     displayName = UiText.StringResource(R.string.omnipod_dash_pump_display_name),
                 )
@@ -68,7 +68,7 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
             val podStateManager = OmnipodDashPodStateManagerImpl(pluginContext?.preferences)
             val bleManager = OmnipodDashBleManager(appContext, podStateManager)
             val pump = OmnipodDashPump(podStateManager, bleManager, appContext)
-            _lifecycleState.value = DeviceLifecycleState.Configured(
+            _lifecycleState.value = DeviceLifecycleState.DeviceBound(
                 deviceId = podStateManager.bluetoothAddress ?: "POD-DASH-ACTIVE",
                 displayName = UiText.StringResource(R.string.omnipod_dash_pump_display_name),
             )
