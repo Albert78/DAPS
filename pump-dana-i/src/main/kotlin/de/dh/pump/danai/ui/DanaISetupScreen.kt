@@ -32,7 +32,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.dh.daps.common.model.InsulinPump
-import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
@@ -51,7 +50,7 @@ import de.dh.pump.danai.core.connection.DanaScanResult
 @Composable
 fun DanaISetupScreen(
     driver: DanaIInsulinPumpDriver,
-    onConnected: (InsulinPump, PumpConnectionDescriptor) -> Unit,
+    onConnected: (InsulinPump) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DanaISetupViewModel = viewModel(

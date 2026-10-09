@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.PluginPreferences
-import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.pump.danai.core.connection.DanaPumpScanner
 import de.dh.pump.danai.core.connection.DanaScanResult
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,7 +43,7 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
         driver: DanaIInsulinPumpDriver,
         scanResult: DanaScanResult,
         preferences: PluginPreferences,
-        onConnected: (InsulinPump, PumpConnectionDescriptor) -> Unit
+        onConnected: (InsulinPump) -> Unit
     ) {
         viewModelScope.launch {
             _isConnecting.value = true
@@ -52,14 +51,14 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
             scanner.stopScan()
 
             try {
-                val (pump, descriptor) = driver.createAndConnectPump(
+                val pump = driver.createAndConnectPump(
                     deviceName = scanResult.name,
                     deviceAddress = scanResult.address,
                     context = getApplication(),
                     preferences = preferences
                 )
                 _isConnecting.value = false
-                onConnected(pump, descriptor)
+                onConnected(pump)
             } catch (e: Exception) {
                 _isConnecting.value = false
                 _connectError.value = e.message ?: getApplication<Application>().getString(R.string.danai_pump_setup_connect_failed)

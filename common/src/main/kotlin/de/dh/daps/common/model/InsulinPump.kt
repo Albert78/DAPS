@@ -155,7 +155,7 @@ sealed interface BolusEvent {
  */
 interface InsulinPump {
     /**
-     * Gets a stable, technical name for the insulin pump provider (e.g. "de.dh.daps.plugin.ypso").
+     * Gets a stable, technical name for the insulin pump provider (e.g. "de.dh.daps.plugin.dana").
      * This is used to identify the insulin pump provider in the system/database.
      */
     val insulinPumpId: String

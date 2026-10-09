@@ -9,7 +9,6 @@ import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.PluginContext
-import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.ui.UiText
 import de.dh.pump.omnipod.dash.ui.OmnipodDashSetupScreen
 import de.dh.pump.omnipod.protocol.ble.OmnipodDashBleManager
@@ -43,30 +42,25 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
 
     @Composable
     override fun SetupScreen(
-        onConnected: (InsulinPump, PumpConnectionDescriptor) -> Unit,
+        onConnected: (InsulinPump) -> Unit,
         onCancel: () -> Unit
     ) {
         OmnipodDashSetupScreen(
             driver = this,
-            onConnected = { pump, descriptor ->
+            onConnected = { pump ->
+                val podStateManager = OmnipodDashPodStateManagerImpl(pluginContext?.preferences)
                 _lifecycleState.value = DeviceLifecycleState.Configured(
-                    deviceId = descriptor.deviceId,
-                    displayName = descriptor.displayName,
-                    connectionParameters = descriptor.connectionParameters,
+                    deviceId = podStateManager.bluetoothAddress ?: "POD-DASH-ACTIVE",
+                    displayName = "Omnipod Dash Pod",
                 )
-                onConnected(pump, descriptor)
+                onConnected(pump)
             },
             onCancel = onCancel
         )
     }
 
     @SuppressLint("MissingPermission")
-    override suspend fun connect(descriptor: PumpConnectionDescriptor): Result<InsulinPump> {
-        if (descriptor.driverId != DRIVER_ID) {
-            return Result.failure(
-                IllegalArgumentException("Invalid driver ID for Omnipod Dash driver: ${descriptor.driverId}")
-            )
-        }
+    override suspend fun connect(): Result<InsulinPump> {
         val appContext = pluginContext?.appContext
             ?: return Result.failure(IllegalStateException("PluginContext not initialized. Call setup/initialize first."))
 
@@ -75,9 +69,8 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
             val bleManager = OmnipodDashBleManager(appContext, podStateManager)
             val pump = OmnipodDashPump(podStateManager, bleManager, appContext)
             _lifecycleState.value = DeviceLifecycleState.Configured(
-                deviceId = descriptor.deviceId,
-                displayName = descriptor.displayName,
-                connectionParameters = descriptor.connectionParameters,
+                deviceId = podStateManager.bluetoothAddress ?: "POD-DASH-ACTIVE",
+                displayName = "Omnipod Dash Pod",
             )
             Result.success(pump)
         } catch (e: Exception) {

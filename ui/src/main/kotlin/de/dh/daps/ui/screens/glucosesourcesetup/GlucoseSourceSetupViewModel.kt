@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
+import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 data class GlucoseSourceSetupUiState(
     val availableDrivers: List<GlucoseSourceDriver> = emptyList(),
     val selectedDriver: GlucoseSourceDriver? = null,
-    val activeSourceDescriptor: GlucoseSourceConnectionDescriptor? = null,
+    val activeDriverId: String? = null,
     val isConnecting: Boolean = false,
     val errorMessage: String? = null
 )
@@ -35,14 +35,14 @@ class GlucoseSourceSetupViewModel(
 
     val uiState: StateFlow<GlucoseSourceSetupUiState> = combine(
         selectedDriverState,
-        registry.deviceManagementRepository.glucoseSourceDescriptor,
+        registry.deviceManagementRepository.activeGlucoseSourceDriverId,
         isConnectingState,
         errorMessageState
-    ) { selectedDriver, activeDescriptor, isConnecting, errorMessage ->
+    ) { selectedDriver, activeDriverId, isConnecting, errorMessage ->
         GlucoseSourceSetupUiState(
             availableDrivers = registry.glucoseSourceDriverManager.drivers,
             selectedDriver = selectedDriver,
-            activeSourceDescriptor = activeDescriptor,
+            activeDriverId = activeDriverId,
             isConnecting = isConnecting,
             errorMessage = errorMessage
         )
@@ -60,23 +60,18 @@ class GlucoseSourceSetupViewModel(
         errorMessageState.value = null
     }
 
-    fun connectGlucoseSource(
-        descriptor: GlucoseSourceConnectionDescriptor,
+    fun onGlucoseSourceConnected(
+        driverId: String,
+        glucoseSource: GlucoseSource,
         onSuccess: () -> Unit
     ) {
         viewModelScope.launch {
             isConnectingState.value = true
             errorMessageState.value = null
 
-            registry.deviceConnectionManager.connectGlucoseSource(descriptor)
-                .onSuccess {
-                    isConnectingState.value = false
-                    onSuccess()
-                }
-                .onFailure { error ->
-                    isConnectingState.value = false
-                    errorMessageState.value = error.localizedMessage ?: "Verbindung zur Glukose-Quelle fehlgeschlagen."
-                }
+            registry.deviceConnectionManager.setConnectedGlucoseSource(driverId, glucoseSource)
+            isConnectingState.value = false
+            onSuccess()
         }
     }
 

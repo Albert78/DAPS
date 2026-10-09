@@ -6,9 +6,7 @@ import de.dh.daps.AppPreferencesRepository
 import de.dh.daps.activeGlucoseSourceDriverId
 import de.dh.daps.activePumpDriverId
 import de.dh.daps.carbsUnit
-import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.PluginManager
-import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.model.data.CarbsUnit
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.core.repository.AlarmRepository
@@ -18,15 +16,11 @@ import de.dh.daps.core.repository.SettingsRepository
 import de.dh.daps.core.repository.TherapyRepository
 import de.dh.daps.core.repository.TreatmentRepository
 import de.dh.daps.core.repository.db.AppDatabase
-import de.dh.daps.glucoseSourceDescriptor
 import de.dh.daps.glucoseUnit
-import de.dh.daps.pumpDescriptor
 import de.dh.daps.setActiveGlucoseSourceDriverId
 import de.dh.daps.setActivePumpDriverId
 import de.dh.daps.setCarbsUnit
-import de.dh.daps.setGlucoseSourceDescriptor
 import de.dh.daps.setGlucoseUnit
-import de.dh.daps.setPumpDescriptor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -79,14 +73,8 @@ class AppDataManagementRepositoryImpl(
             val preferencesDto = AppPreferencesDto(
                 glucoseUnit = preferences.glucoseUnit.name,
                 carbsUnit = preferences.carbsUnit.name,
-                activeGlucoseSourceDriverId = preferences.activeGlucoseSourceDriverId,
-                activePumpDriverId = preferences.activePumpDriverId,
-                glucoseSourceDescriptorJson = if (options.includeDescriptors) {
-                    preferences.glucoseSourceDescriptor?.let { json.encodeToString(it) }
-                } else null,
-                pumpDescriptorJson = if (options.includeDescriptors) {
-                    preferences.pumpDescriptor?.let { json.encodeToString(it) }
-                } else null
+                activeGlucoseSourceDriverId = if (options.includeDescriptors) preferences.activeGlucoseSourceDriverId else null,
+                activePumpDriverId = if (options.includeDescriptors) preferences.activePumpDriverId else null
             )
 
             // 2. Fetch Therapy Configuration
@@ -263,18 +251,6 @@ class AppDataManagementRepositoryImpl(
                     }
                     prefs.activePumpDriverId?.let { driverId ->
                         preferencesRepository.setActivePumpDriverId(driverId)
-                    }
-                    prefs.glucoseSourceDescriptorJson?.let { descriptorJson ->
-                        val descriptor = runCatching {
-                            json.decodeFromString<GlucoseSourceConnectionDescriptor>(descriptorJson)
-                        }.getOrNull()
-                        preferencesRepository.setGlucoseSourceDescriptor(descriptor)
-                    }
-                    prefs.pumpDescriptorJson?.let { descriptorJson ->
-                        val descriptor = runCatching {
-                            json.decodeFromString<PumpConnectionDescriptor>(descriptorJson)
-                        }.getOrNull()
-                        preferencesRepository.setPumpDescriptor(descriptor)
                     }
                 }
             }

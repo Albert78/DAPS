@@ -26,18 +26,17 @@ interface GlucoseSourceDriver {
 
     /**
      * Renders the driver's custom UI workflow for initial setup, transmitter pairing, or configuration.
-     * When setup succeeds, [onConnected] is invoked with the active [GlucoseSource] instance
-     * and its persistable [GlucoseSourceConnectionDescriptor].
+     * When setup succeeds, [onConnected] is invoked with the active [GlucoseSource] instance.
      */
     @Composable
     fun SetupScreen(
-        onConnected: (GlucoseSource, GlucoseSourceConnectionDescriptor) -> Unit,
+        onConnected: (GlucoseSource) -> Unit,
         onCancel: () -> Unit,
     )
 
     /**
-     * Re-establishes a connection with a previously configured glucose source using its stored [descriptor].
+     * Re-establishes a connection with a previously configured glucose source using stored driver settings.
      * Invoked upon application launch or when loading a configured glucose source.
      */
-    suspend fun connect(descriptor: GlucoseSourceConnectionDescriptor): Result<GlucoseSource>
+    suspend fun connect(): Result<GlucoseSource>
 }

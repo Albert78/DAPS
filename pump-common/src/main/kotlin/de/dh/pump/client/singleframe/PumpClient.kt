@@ -20,7 +20,7 @@ import kotlin.time.Duration.Companion.seconds
 
 /**
  * Executes typed pump commands over a byte-oriented BLE transport for synchronous single-frame
- * request-response pumps (e.g. Sooil Dana-i or Ypsomed YpsoPump).
+ * request-response pumps (e.g. Sooil Dana-i or Insulet Omnipod Dash).
  *
  * This client is designed for pump protocols that exchange one request frame per response frame over a
  * single transport channel.

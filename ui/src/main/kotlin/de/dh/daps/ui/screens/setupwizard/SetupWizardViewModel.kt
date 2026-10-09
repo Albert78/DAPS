@@ -8,10 +8,8 @@ import de.dh.daps.common.DEFAULT_BG_LOW_THRESHOLD_MGDL
 import de.dh.daps.common.DEFAULT_BG_TARGET_MGDL
 import de.dh.daps.common.DEFAULT_DIA_MINUTES
 import de.dh.daps.common.DEFAULT_PEAK_MINUTES
-import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinType
-import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.model.data.BgBlock
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.CarbsUnit
@@ -86,11 +84,11 @@ data class SetupWizardUiState(
 class SetupWizardViewModel(
     val registry: SystemRegistry
 ) : ViewModel() {
-    val activeGlucoseSourceDescriptor: StateFlow<GlucoseSourceConnectionDescriptor?> =
-        registry.deviceManagementRepository.glucoseSourceDescriptor
+    val activeGlucoseSourceDriverId: StateFlow<String?> =
+        registry.deviceManagementRepository.activeGlucoseSourceDriverId
 
-    val activePumpDescriptor: StateFlow<PumpConnectionDescriptor?> =
-        registry.deviceManagementRepository.pumpDescriptor
+    val activePumpDriverId: StateFlow<String?> =
+        registry.deviceManagementRepository.activePumpDriverId
 
     private val _uiState = MutableStateFlow(SetupWizardUiState())
     val uiState: StateFlow<SetupWizardUiState> = _uiState.asStateFlow()

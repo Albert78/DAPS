@@ -1,6 +1,7 @@
 package de.dh.daps.ui.screens.setupwizard.steps
 
 import android.content.res.Configuration
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,6 +26,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,10 +36,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.GlucoseSource
-import androidx.activity.compose.BackHandler
-import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
@@ -45,7 +46,6 @@ import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.LoadingOverlayCard
 import de.dh.daps.ui.common.composables.ScopedDriverSetupContainer
 import de.dh.daps.ui.common.theme.AppPreview
-import de.dh.daps.ui.screens.glucosesourcesetup.ExternalReceiverSetupPreviewContent
 import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupUiState
 import de.dh.daps.ui.screens.setupwizard.components.SetupStepScaffold
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -55,7 +55,7 @@ import kotlinx.coroutines.flow.StateFlow
 fun GlucoseSourceStep(
     uiState: GlucoseSourceSetupUiState,
     onSelectDriver: (GlucoseSourceDriver?) -> Unit,
-    onConnectGlucoseSource: (GlucoseSourceConnectionDescriptor, onSuccess: () -> Unit) -> Unit,
+    onConnectGlucoseSource: (driverId: String, source: GlucoseSource, onSuccess: () -> Unit) -> Unit,
     onClearError: () -> Unit,
     onNext: () -> Unit,
     onBack: () -> Unit,
@@ -80,7 +80,7 @@ fun GlucoseSourceStep(
 
     val nextButtonText = if (selectedDriver != null) {
         null
-    } else if (uiState.activeSourceDescriptor != null) {
+    } else if (uiState.activeDriverId != null) {
         stringResource(R.string.setup_wizard_btn_next)
     } else {
         stringResource(R.string.setup_wizard_btn_skip)
@@ -109,8 +109,8 @@ fun GlucoseSourceStep(
                 ) {
                     ScopedDriverSetupContainer(driverId = selectedDriver.driverId) {
                         selectedDriver.SetupScreen(
-                            onConnected = { _, descriptor ->
-                                onConnectGlucoseSource(descriptor) { onNext() }
+                            onConnected = { source ->
+                                onConnectGlucoseSource(selectedDriver.driverId, source) { onNext() }
                             },
                             onCancel = { onSelectDriver(null) }
                         )
@@ -152,9 +152,10 @@ private fun GlucoseSourceDriverSelectionContent(
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        uiState.activeSourceDescriptor?.let { activeDesc ->
+        val activeDriver = uiState.availableDrivers.find { it.driverId == uiState.activeDriverId }
+        activeDriver?.let { driver ->
             item {
-                ActiveGlucoseSourceCard(activeDesc = activeDesc)
+                ActiveGlucoseSourceCard(driver = driver)
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }
@@ -202,7 +203,7 @@ private fun GlucoseSourceDriverSelectionContent(
             }
         } else {
             items(uiState.availableDrivers, key = { it.driverId }) { driver ->
-                val isActive = uiState.activeSourceDescriptor?.driverId == driver.driverId
+                val isActive = uiState.activeDriverId == driver.driverId
                 GlucoseSourceDriverCard(
                     driver = driver,
                     isActive = isActive,
@@ -227,7 +228,13 @@ private fun GlucoseSourceDriverSelectionContent(
 }
 
 @Composable
-private fun ActiveGlucoseSourceCard(activeDesc: GlucoseSourceConnectionDescriptor) {
+private fun ActiveGlucoseSourceCard(driver: GlucoseSourceDriver) {
+    val lifecycleState by driver.lifecycleState.collectAsStateWithLifecycle()
+    val (displayName, deviceId) = when (val state = lifecycleState) {
+        is DeviceLifecycleState.Configured -> Pair(state.displayName, state.deviceId)
+        else -> Pair(driver.displayName.asString(), "")
+    }
+
     FramedCard(
         modifier = Modifier.fillMaxWidth(),
         containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
@@ -250,19 +257,21 @@ private fun ActiveGlucoseSourceCard(activeDesc: GlucoseSourceConnectionDescripto
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = activeDesc.displayName,
+                    text = displayName,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-                Text(
-                    text = activeDesc.sourceId,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
+                if (deviceId.isNotEmpty()) {
+                    Text(
+                        text = deviceId,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
             Icon(
                 imageVector = Icons.Default.CheckCircle,
@@ -342,20 +351,21 @@ private fun GlucoseSourceDriverCard(
 private class PreviewGlucoseSourceDriver(
     override val driverId: String,
     override val displayName: UiText,
+    initialState: DeviceLifecycleState = DeviceLifecycleState.Unconfigured,
     private val setupScreenContent: @Composable () -> Unit = {}
 ) : GlucoseSourceDriver {
     override val lifecycleState: StateFlow<DeviceLifecycleState> =
-        MutableStateFlow(DeviceLifecycleState.Unconfigured)
+        MutableStateFlow(initialState)
 
     @Composable
     override fun SetupScreen(
-        onConnected: (GlucoseSource, GlucoseSourceConnectionDescriptor) -> Unit,
+        onConnected: (GlucoseSource) -> Unit,
         onCancel: () -> Unit
     ) {
         setupScreenContent()
     }
 
-    override suspend fun connect(descriptor: GlucoseSourceConnectionDescriptor): Result<GlucoseSource> {
+    override suspend fun connect(): Result<GlucoseSource> {
         return Result.failure(UnsupportedOperationException())
     }
 }
@@ -373,7 +383,7 @@ private fun GlucoseSourceStepPreview() {
                 )
             ),
             onSelectDriver = {},
-            onConnectGlucoseSource = { _, _ -> },
+            onConnectGlucoseSource = { _, _, _ -> },
             onClearError = {},
             onNext = {},
             onBack = {},
@@ -386,21 +396,22 @@ private fun GlucoseSourceStepPreview() {
 @Preview(showBackground = true, name = "Active Source - Light")
 @Composable
 private fun GlucoseSourceStepActivePreview() {
+    val simBodyDriver = PreviewGlucoseSourceDriver(
+        "de.dh.daps.plugin.simbody",
+        UiText.DynamicString("SimBody Virtual Glucose Source"),
+        DeviceLifecycleState.Configured("simbody-sensor-01", "SimBody Virtual Glucose Sensor")
+    )
     AppPreview {
         GlucoseSourceStep(
             uiState = GlucoseSourceSetupUiState(
                 availableDrivers = listOf(
                     PreviewGlucoseSourceDriver("de.dh.daps.plugin.glucose.receiver", UiText.DynamicString("xDrip+ Broadcast Receiver")),
-                    PreviewGlucoseSourceDriver("de.dh.daps.plugin.simbody", UiText.DynamicString("SimBody Virtual Glucose Source"))
+                    simBodyDriver
                 ),
-                activeSourceDescriptor = GlucoseSourceConnectionDescriptor(
-                    driverId = "de.dh.daps.plugin.simbody",
-                    sourceId = "simbody-sensor-01",
-                    displayName = "SimBody Virtual Glucose Sensor"
-                )
+                activeDriverId = "de.dh.daps.plugin.simbody"
             ),
             onSelectDriver = {},
-            onConnectGlucoseSource = { _, _ -> },
+            onConnectGlucoseSource = { _, _, _ -> },
             onClearError = {},
             onNext = {},
             onBack = {},
@@ -417,7 +428,11 @@ private fun GlucoseSourceStepDriverSetupReceiverPreview() {
     val receiverDriver = PreviewGlucoseSourceDriver(
         driverId = "de.dh.daps.plugin.glucose.receiver",
         displayName = UiText.DynamicString("xDrip+ Broadcast Receiver"),
-        setupScreenContent = { ExternalReceiverSetupPreviewContent() }
+        setupScreenContent = {
+            FramedCard(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                Text(text = "External Receiver Setup", modifier = Modifier.padding(16.dp))
+            }
+        }
     )
     AppPreview {
         GlucoseSourceStep(
@@ -426,7 +441,7 @@ private fun GlucoseSourceStepDriverSetupReceiverPreview() {
                 selectedDriver = receiverDriver
             ),
             onSelectDriver = {},
-            onConnectGlucoseSource = { _, _ -> },
+            onConnectGlucoseSource = { _, _, _ -> },
             onClearError = {},
             onNext = {},
             onBack = {},

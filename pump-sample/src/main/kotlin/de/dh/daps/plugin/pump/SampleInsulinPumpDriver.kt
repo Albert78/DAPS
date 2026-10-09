@@ -15,7 +15,6 @@ import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.Plugin
-import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.common.composables.FramedCard
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,7 +39,7 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
      */
     @Composable
     override fun SetupScreen(
-        onConnected: (InsulinPump, PumpConnectionDescriptor) -> Unit,
+        onConnected: (InsulinPump) -> Unit,
         onCancel: () -> Unit,
     ) {
         FramedCard(
@@ -62,16 +61,11 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
                     onClick = {
                         // Sketch: In a real driver, perform scanning, pairing & key exchange here
                         val pump = SampleInsulinPump()
-                        val descriptor = PumpConnectionDescriptor(
-                            driverId = DRIVER_ID,
+                        _lifecycleState.value = DeviceLifecycleState.Configured(
                             deviceId = "sample-pump-device-01",
                             displayName = "Sample Pump 01",
                         )
-                        _lifecycleState.value = DeviceLifecycleState.Configured(
-                            deviceId = descriptor.deviceId,
-                            displayName = descriptor.displayName,
-                        )
-                        onConnected(pump, descriptor)
+                        onConnected(pump)
                     },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
@@ -82,17 +76,12 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
     }
 
     /**
-     * Re-connects to a sample pump using a stored connection descriptor.
+     * Re-connects to a sample pump using stored driver settings.
      */
-    override suspend fun connect(descriptor: PumpConnectionDescriptor): Result<InsulinPump> {
-        // Sketch: Validate descriptor parameters and establish connection with hardware
-        if (descriptor.driverId != DRIVER_ID) {
-            return Result.failure(IllegalArgumentException("Invalid driver ID for Sample Pump Driver: ${descriptor.driverId}"))
-        }
+    override suspend fun connect(): Result<InsulinPump> {
         _lifecycleState.value = DeviceLifecycleState.Configured(
-            deviceId = descriptor.deviceId,
-            displayName = descriptor.displayName,
-            connectionParameters = descriptor.connectionParameters,
+            deviceId = "sample-pump-device-01",
+            displayName = "Sample Pump 01",
         )
         return Result.success(SampleInsulinPump())
     }

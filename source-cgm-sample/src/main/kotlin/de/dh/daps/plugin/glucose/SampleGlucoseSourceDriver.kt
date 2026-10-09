@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.GlucoseSource
-import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.PluginContext
@@ -45,7 +44,7 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
      */
     @Composable
     override fun SetupScreen(
-        onConnected: (GlucoseSource, GlucoseSourceConnectionDescriptor) -> Unit,
+        onConnected: (GlucoseSource) -> Unit,
         onCancel: () -> Unit,
     ) {
         FramedCard(
@@ -67,16 +66,11 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
                     onClick = {
                         // Sketch: In a real driver, perform transmitter scanning & pairing here
                         val source = SampleGlucoseSource()
-                        val descriptor = GlucoseSourceConnectionDescriptor(
-                            driverId = DRIVER_ID,
-                            sourceId = "sample-cgm-sensor-01",
+                        _lifecycleState.value = DeviceLifecycleState.Configured(
+                            deviceId = "sample-cgm-sensor-01",
                             displayName = "Sample Glucose Sensor 01",
                         )
-                        _lifecycleState.value = DeviceLifecycleState.Configured(
-                            deviceId = descriptor.sourceId,
-                            displayName = descriptor.displayName,
-                        )
-                        onConnected(source, descriptor)
+                        onConnected(source)
                     },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
@@ -87,17 +81,12 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
     }
 
     /**
-     * Re-connects to a sample glucose source using a stored connection descriptor.
+     * Re-connects to a sample glucose source using stored driver settings.
      */
-    override suspend fun connect(descriptor: GlucoseSourceConnectionDescriptor): Result<GlucoseSource> {
-        // Sketch: Validate descriptor parameters and establish connection with sensor
-        if (descriptor.driverId != DRIVER_ID) {
-            return Result.failure(IllegalArgumentException("Invalid driver ID for Sample Glucose Source Driver: ${descriptor.driverId}"))
-        }
+    override suspend fun connect(): Result<GlucoseSource> {
         _lifecycleState.value = DeviceLifecycleState.Configured(
-            deviceId = descriptor.sourceId,
-            displayName = descriptor.displayName,
-            connectionParameters = descriptor.connectionParameters,
+            deviceId = "sample-cgm-sensor-01",
+            displayName = "Sample Glucose Sensor 01",
         )
         return Result.success(SampleGlucoseSource())
     }

@@ -22,12 +22,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
+import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.common.model.InsulinConcentration
+import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.InsulinType
-import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.model.data.BgBlock
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Block
@@ -63,15 +63,18 @@ fun SetupWizardScreen(
     val uiState by viewModel.uiState.collectAsState()
     val cgmState by glucoseSourceSetupViewModel.uiState.collectAsState()
     val pumpState by pumpSetupViewModel.uiState.collectAsState()
-    val cgmDescriptor by viewModel.activeGlucoseSourceDescriptor.collectAsState()
-    val pumpDescriptor by viewModel.activePumpDescriptor.collectAsState()
+    val cgmDriverId by viewModel.activeGlucoseSourceDriverId.collectAsState()
+    val pumpDriverId by viewModel.activePumpDriverId.collectAsState()
+
+    val cgmDriver = cgmState.availableDrivers.find { it.driverId == cgmDriverId }
+    val pumpDriver = pumpState.availableDrivers.find { it.driverId == pumpDriverId }
 
     SetupWizardContent(
         uiState = uiState,
         cgmUiState = cgmState,
         pumpUiState = pumpState,
-        cgmDescriptor = cgmDescriptor,
-        pumpDescriptor = pumpDescriptor,
+        cgmDisplayName = cgmDriver?.displayName?.asString(),
+        pumpDisplayName = pumpDriver?.displayName?.asString(),
         onSelectDemo = viewModel::selectDemoData,
         onStartManual = viewModel::startManualSetup,
         onImportBackup = viewModel::importBackup,
@@ -90,13 +93,13 @@ fun SetupWizardScreen(
         onSetInsulinProfile = viewModel::setInsulinProfile,
         onSetBgBlocks = viewModel::setBgBlocks,
         onSelectCgmDriver = glucoseSourceSetupViewModel::selectDriver,
-        onConnectGlucoseSource = { descriptor, onSuccess ->
-            glucoseSourceSetupViewModel.connectGlucoseSource(descriptor, onSuccess)
+        onConnectGlucoseSource = { driverId, source, onSuccess ->
+            glucoseSourceSetupViewModel.onGlucoseSourceConnected(driverId, source, onSuccess)
         },
         onClearCgmError = glucoseSourceSetupViewModel::clearError,
         onSelectPumpDriver = pumpSetupViewModel::selectDriver,
-        onConnectPump = { descriptor, onSuccess ->
-            pumpSetupViewModel.connectPump(descriptor, onSuccess)
+        onConnectPump = { driverId, pump, onSuccess ->
+            pumpSetupViewModel.onPumpConnected(driverId, pump, onSuccess)
         },
         onClearPumpError = pumpSetupViewModel::clearError,
         onGoToNextStep = viewModel::goToNextStep,
@@ -110,8 +113,8 @@ fun SetupWizardContent(
     uiState: SetupWizardUiState,
     cgmUiState: GlucoseSourceSetupUiState = GlucoseSourceSetupUiState(),
     pumpUiState: PumpSetupUiState = PumpSetupUiState(),
-    cgmDescriptor: GlucoseSourceConnectionDescriptor? = null,
-    pumpDescriptor: PumpConnectionDescriptor? = null,
+    cgmDisplayName: String? = null,
+    pumpDisplayName: String? = null,
     onSelectDemo: () -> Unit = {},
     onStartManual: () -> Unit = {},
     onImportBackup: (Uri) -> Unit = {},
@@ -130,10 +133,10 @@ fun SetupWizardContent(
     onSetInsulinProfile: (InsulinProfile) -> Unit = {},
     onSetBgBlocks: (List<BgBlock>) -> Unit = {},
     onSelectCgmDriver: (GlucoseSourceDriver?) -> Unit = {},
-    onConnectGlucoseSource: (GlucoseSourceConnectionDescriptor, onSuccess: () -> Unit) -> Unit = { _, _ -> },
+    onConnectGlucoseSource: (driverId: String, source: GlucoseSource, onSuccess: () -> Unit) -> Unit = { _, _, _ -> },
     onClearCgmError: () -> Unit = {},
     onSelectPumpDriver: (InsulinPumpDriver?) -> Unit = {},
-    onConnectPump: (PumpConnectionDescriptor, onSuccess: () -> Unit) -> Unit = { _, _ -> },
+    onConnectPump: (driverId: String, pump: InsulinPump, onSuccess: () -> Unit) -> Unit = { _, _, _ -> },
     onClearPumpError: () -> Unit = {},
     onGoToNextStep: () -> Unit = {},
     onGoToPreviousStep: () -> Unit = {},
@@ -285,8 +288,8 @@ fun SetupWizardContent(
                     SetupWizardStep.MANUAL_SUMMARY -> {
                         SummaryStep(
                             uiState = uiState,
-                            cgmDisplayName = cgmDescriptor?.displayName,
-                            pumpDisplayName = pumpDescriptor?.displayName,
+                            cgmDisplayName = cgmDisplayName,
+                            pumpDisplayName = pumpDisplayName,
                             onComplete = onCompleteManualSetup,
                             onBack = onGoToPreviousStep,
                             snackbarHostState = snackbarHostState,
@@ -455,7 +458,9 @@ fun SetupWizardSummaryStepPreview() {
                 primaryInsulinTypeId = previewInsulinType.id,
                 insulinProfile = previewInsulinProfile,
                 bgBlocks = previewBgBlocks
-            )
+            ),
+            cgmDisplayName = "SimBody Virtual CGM",
+            pumpDisplayName = "SimBody Virtual Insulin Pump"
         )
     }
 }

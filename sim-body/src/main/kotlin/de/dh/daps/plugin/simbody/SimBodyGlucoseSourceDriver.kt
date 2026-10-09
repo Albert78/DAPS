@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
-import de.dh.daps.ui.common.composables.FramedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -18,10 +17,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.GlucoseSource
-import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.ui.UiText
+import de.dh.daps.ui.common.composables.FramedCard
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,6 +35,7 @@ class SimBodyGlucoseSourceDriver(
     override val driverId: String = DRIVER_ID
     override val displayName: UiText = UiText.StringResource(R.string.sim_body_cgm_driver_display_name)
     override val pluginId: String = DRIVER_ID
+    override val neededPermissions: Collection<String> = emptyList()
 
     private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.Unconfigured)
     override val lifecycleState: StateFlow<DeviceLifecycleState> = _lifecycleState.asStateFlow()
@@ -45,7 +45,7 @@ class SimBodyGlucoseSourceDriver(
      */
     @Composable
     override fun SetupScreen(
-        onConnected: (GlucoseSource, GlucoseSourceConnectionDescriptor) -> Unit,
+        onConnected: (GlucoseSource) -> Unit,
         onCancel: () -> Unit,
     ) {
         val sensorDisplayName = stringResource(R.string.sim_body_cgm_sensor_display_name)
@@ -78,18 +78,11 @@ class SimBodyGlucoseSourceDriver(
                     Button(
                         onClick = {
                             val source = simBodyPlugin.getGlucoseSource()
-                            val descriptor = GlucoseSourceConnectionDescriptor(
-                                driverId = DRIVER_ID,
-                                sourceId = "simbody-virtual-cgm-01",
-                                displayName = sensorDisplayName,
-                                connectionParameters = mapOf("simulated" to "true"),
-                            )
                             _lifecycleState.value = DeviceLifecycleState.Configured(
-                                deviceId = descriptor.sourceId,
-                                displayName = descriptor.displayName,
-                                connectionParameters = descriptor.connectionParameters,
+                                deviceId = "simbody-virtual-cgm-01",
+                                displayName = sensorDisplayName
                             )
-                            onConnected(source, descriptor)
+                            onConnected(source)
                         },
                         modifier = Modifier.weight(1f),
                     ) {
@@ -101,18 +94,12 @@ class SimBodyGlucoseSourceDriver(
     }
 
     /**
-     * Re-connects to the virtual human body simulation CGM using a stored connection descriptor.
+     * Re-connects to the virtual human body simulation CGM using stored driver settings.
      */
-    override suspend fun connect(descriptor: GlucoseSourceConnectionDescriptor): Result<GlucoseSource> {
-        if (descriptor.driverId != DRIVER_ID) {
-            return Result.failure(
-                IllegalArgumentException("Invalid driver ID for SimBody glucose driver: ${descriptor.driverId}")
-            )
-        }
+    override suspend fun connect(): Result<GlucoseSource> {
         _lifecycleState.value = DeviceLifecycleState.Configured(
-            deviceId = descriptor.sourceId,
-            displayName = descriptor.displayName,
-            connectionParameters = descriptor.connectionParameters,
+            deviceId = "simbody-virtual-cgm-01",
+            displayName = "SimBody Virtual CGM"
         )
         return Result.success(simBodyPlugin.getGlucoseSource())
     }

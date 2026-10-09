@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
-import de.dh.daps.ui.common.composables.FramedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -20,8 +19,8 @@ import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.Plugin
-import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.ui.UiText
+import de.dh.daps.ui.common.composables.FramedCard
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -46,7 +45,7 @@ class SimBodyInsulinPumpDriver(
      */
     @Composable
     override fun SetupScreen(
-        onConnected: (InsulinPump, PumpConnectionDescriptor) -> Unit,
+        onConnected: (InsulinPump) -> Unit,
         onCancel: () -> Unit,
     ) {
         val pumpDisplayName = stringResource(R.string.sim_body_pump_device_display_name)
@@ -79,18 +78,11 @@ class SimBodyInsulinPumpDriver(
                     Button(
                         onClick = {
                             val pump = simBodyPlugin.getInsulinPump()
-                            val descriptor = PumpConnectionDescriptor(
-                                driverId = DRIVER_ID,
-                                deviceId = "simbody-virtual-pump-01",
-                                displayName = pumpDisplayName,
-                                connectionParameters = mapOf("simulated" to "true"),
-                            )
                             _lifecycleState.value = DeviceLifecycleState.Configured(
-                                deviceId = descriptor.deviceId,
-                                displayName = descriptor.displayName,
-                                connectionParameters = descriptor.connectionParameters,
+                                deviceId = "simbody-virtual-pump-01",
+                                displayName = pumpDisplayName
                             )
-                            onConnected(pump, descriptor)
+                            onConnected(pump)
                         },
                         modifier = Modifier.weight(1f),
                     ) {
@@ -102,18 +94,12 @@ class SimBodyInsulinPumpDriver(
     }
 
     /**
-     * Re-connects to the virtual human body simulation pump using a stored connection descriptor.
+     * Re-connects to the virtual human body simulation pump using stored driver settings.
      */
-    override suspend fun connect(descriptor: PumpConnectionDescriptor): Result<InsulinPump> {
-        if (descriptor.driverId != DRIVER_ID) {
-            return Result.failure(
-                IllegalArgumentException("Invalid driver ID for SimBody driver: ${descriptor.driverId}")
-            )
-        }
+    override suspend fun connect(): Result<InsulinPump> {
         _lifecycleState.value = DeviceLifecycleState.Configured(
-            deviceId = descriptor.deviceId,
-            displayName = descriptor.displayName,
-            connectionParameters = descriptor.connectionParameters,
+            deviceId = "simbody-virtual-pump-01",
+            displayName = "SimBody Virtual Pump"
         )
         return Result.success(simBodyPlugin.getInsulinPump())
     }

@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.Expiration
 import de.dh.daps.common.model.GlucoseSource
-import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.common.model.GlucoseSourceStatus
 import de.dh.daps.common.model.Plugin
@@ -135,7 +134,7 @@ class ReceiverGlucosePlugin(
      */
     @Composable
     override fun SetupScreen(
-        onConnected: (GlucoseSource, GlucoseSourceConnectionDescriptor) -> Unit,
+        onConnected: (GlucoseSource) -> Unit,
         onCancel: () -> Unit,
     ) {
         FramedCard(
@@ -166,18 +165,11 @@ class ReceiverGlucosePlugin(
                     Button(
                         onClick = {
                             externalSourceType = ExternalSourceType.xDrip5Min
-                            val descriptor = GlucoseSourceConnectionDescriptor(
-                                driverId = DRIVER_ID,
-                                sourceId = "xdrip-5min-receiver",
-                                displayName = "xDrip+ Broadcast Receiver (5 Min)",
-                                connectionParameters = mapOf("sourceType" to "xDrip5Min"),
-                            )
                             _lifecycleState.value = DeviceLifecycleState.Configured(
-                                deviceId = descriptor.sourceId,
-                                displayName = descriptor.displayName,
-                                connectionParameters = descriptor.connectionParameters,
+                                deviceId = "xdrip-5min-receiver",
+                                displayName = "xDrip+ Broadcast Receiver (5 Min)",
                             )
-                            onConnected(this@ReceiverGlucosePlugin, descriptor)
+                            onConnected(this@ReceiverGlucosePlugin)
                         },
                         modifier = Modifier.weight(1f),
                     ) {
@@ -189,23 +181,12 @@ class ReceiverGlucosePlugin(
     }
 
     /**
-     * Re-connects to an external BroadcastReceiver glucose source using a stored connection descriptor.
+     * Re-connects to an external BroadcastReceiver glucose source using stored driver settings.
      */
-    override suspend fun connect(descriptor: GlucoseSourceConnectionDescriptor): Result<GlucoseSource> {
-        if (descriptor.driverId != DRIVER_ID) {
-            return Result.failure(
-                IllegalArgumentException("Invalid driver ID for Receiver Glucose Driver: ${descriptor.driverId}"),
-            )
-        }
-        val sourceType = descriptor.connectionParameters["sourceType"]
-        externalSourceType = when (sourceType) {
-            "xDrip1Min" -> ExternalSourceType.xDrip1Min
-            else -> ExternalSourceType.xDrip5Min
-        }
+    override suspend fun connect(): Result<GlucoseSource> {
         _lifecycleState.value = DeviceLifecycleState.Configured(
-            deviceId = descriptor.sourceId,
-            displayName = descriptor.displayName,
-            connectionParameters = descriptor.connectionParameters,
+            deviceId = "xdrip-5min-receiver",
+            displayName = "xDrip+ Broadcast Receiver (5 Min)",
         )
         return Result.success(this)
     }

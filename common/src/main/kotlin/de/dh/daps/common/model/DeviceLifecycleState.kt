@@ -27,7 +27,6 @@ sealed class DeviceLifecycleState {
     @Serializable
     data class Configured(
         val deviceId: String,
-        val displayName: String,
-        val connectionParameters: Map<String, String> = emptyMap()
+        val displayName: String
     ) : DeviceLifecycleState()
 }

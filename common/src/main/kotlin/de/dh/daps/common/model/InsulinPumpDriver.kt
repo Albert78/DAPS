@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
  */
 interface InsulinPumpDriver {
     /**
-     * Unique identifier for this driver plugin (e.g. "de.dh.daps.plugin.ypso").
+     * Unique identifier for this driver plugin (e.g. "de.dh.daps.plugin.dana").
      */
     val driverId: String
 
@@ -26,18 +26,17 @@ interface InsulinPumpDriver {
 
     /**
      * Renders the driver's custom UI workflow for initial setup, device scanning, and pairing.
-     * When pairing succeeds, [onConnected] is invoked with the active [InsulinPump] instance
-     * and its persistable [PumpConnectionDescriptor].
+     * When pairing succeeds, [onConnected] is invoked with the active [InsulinPump] instance.
      */
     @Composable
     fun SetupScreen(
-        onConnected: (InsulinPump, PumpConnectionDescriptor) -> Unit,
+        onConnected: (InsulinPump) -> Unit,
         onCancel: () -> Unit,
     )
 
     /**
-     * Re-establishes a connection with a previously paired pump using its stored [descriptor].
+     * Re-establishes a connection with a previously configured pump using stored driver settings.
      * Invoked upon application launch or when loading a configured pump.
      */
-    suspend fun connect(descriptor: PumpConnectionDescriptor): Result<InsulinPump>
+    suspend fun connect(): Result<InsulinPump>
 }

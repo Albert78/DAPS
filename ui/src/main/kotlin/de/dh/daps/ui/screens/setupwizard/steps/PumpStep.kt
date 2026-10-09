@@ -26,6 +26,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,10 +36,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpDriver
-import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
@@ -55,7 +56,7 @@ import kotlinx.coroutines.flow.StateFlow
 fun PumpStep(
     uiState: PumpSetupUiState,
     onSelectDriver: (InsulinPumpDriver?) -> Unit,
-    onConnectPump: (PumpConnectionDescriptor, onSuccess: () -> Unit) -> Unit,
+    onConnectPump: (driverId: String, pump: InsulinPump, onSuccess: () -> Unit) -> Unit,
     onClearError: () -> Unit,
     onNext: () -> Unit,
     onBack: () -> Unit,
@@ -80,7 +81,7 @@ fun PumpStep(
 
     val nextButtonText = if (selectedDriver != null) {
         null
-    } else if (uiState.activePumpDescriptor != null) {
+    } else if (uiState.activeDriverId != null) {
         stringResource(R.string.setup_wizard_btn_next)
     } else {
         stringResource(R.string.setup_wizard_btn_skip)
@@ -109,8 +110,8 @@ fun PumpStep(
                 ) {
                     ScopedDriverSetupContainer(driverId = selectedDriver.driverId) {
                         selectedDriver.SetupScreen(
-                            onConnected = { _, descriptor ->
-                                onConnectPump(descriptor) { onNext() }
+                            onConnected = { pump ->
+                                onConnectPump(selectedDriver.driverId, pump) { onNext() }
                             },
                             onCancel = { onSelectDriver(null) }
                         )
@@ -152,9 +153,10 @@ private fun PumpDriverSelectionContent(
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        uiState.activePumpDescriptor?.let { activeDesc ->
+        val activeDriver = uiState.availableDrivers.find { it.driverId == uiState.activeDriverId }
+        activeDriver?.let { driver ->
             item {
-                ActivePumpCard(activeDesc = activeDesc)
+                ActivePumpCard(driver = driver)
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }
@@ -202,8 +204,8 @@ private fun PumpDriverSelectionContent(
             }
         } else {
             items(uiState.availableDrivers, key = { it.driverId }) { driver ->
-                val isActive = uiState.activePumpDescriptor?.driverId == driver.driverId
-                DriverCard(
+                val isActive = uiState.activeDriverId == driver.driverId
+                PumpDriverCard(
                     driver = driver,
                     isActive = isActive,
                     onClick = { onSelectDriver(driver) }
@@ -227,7 +229,13 @@ private fun PumpDriverSelectionContent(
 }
 
 @Composable
-private fun ActivePumpCard(activeDesc: PumpConnectionDescriptor) {
+private fun ActivePumpCard(driver: InsulinPumpDriver) {
+    val lifecycleState by driver.lifecycleState.collectAsStateWithLifecycle()
+    val (displayName, deviceId) = when (val state = lifecycleState) {
+        is DeviceLifecycleState.Configured -> Pair(state.displayName, state.deviceId)
+        else -> Pair(driver.displayName.asString(), "")
+    }
+
     FramedCard(
         modifier = Modifier.fillMaxWidth(),
         containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
@@ -250,19 +258,21 @@ private fun ActivePumpCard(activeDesc: PumpConnectionDescriptor) {
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = activeDesc.displayName,
+                    text = displayName,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-                Text(
-                    text = activeDesc.deviceId,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
+                if (deviceId.isNotEmpty()) {
+                    Text(
+                        text = deviceId,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
             Icon(
                 imageVector = Icons.Default.CheckCircle,
@@ -275,7 +285,7 @@ private fun ActivePumpCard(activeDesc: PumpConnectionDescriptor) {
 }
 
 @Composable
-private fun DriverCard(
+private fun PumpDriverCard(
     driver: InsulinPumpDriver,
     isActive: Boolean,
     onClick: () -> Unit
@@ -342,20 +352,21 @@ private fun DriverCard(
 private class PreviewPumpDriver(
     override val driverId: String,
     override val displayName: UiText,
+    initialState: DeviceLifecycleState = DeviceLifecycleState.Unconfigured,
     private val setupScreenContent: @Composable () -> Unit = {}
 ) : InsulinPumpDriver {
     override val lifecycleState: StateFlow<DeviceLifecycleState> =
-        MutableStateFlow(DeviceLifecycleState.Unconfigured)
+        MutableStateFlow(initialState)
 
     @Composable
     override fun SetupScreen(
-        onConnected: (InsulinPump, PumpConnectionDescriptor) -> Unit,
+        onConnected: (InsulinPump) -> Unit,
         onCancel: () -> Unit
     ) {
         setupScreenContent()
     }
 
-    override suspend fun connect(descriptor: PumpConnectionDescriptor): Result<InsulinPump> {
+    override suspend fun connect(): Result<InsulinPump> {
         return Result.failure(UnsupportedOperationException())
     }
 }
@@ -373,7 +384,7 @@ private fun PumpStepPreview() {
                 )
             ),
             onSelectDriver = {},
-            onConnectPump = { _, _ -> },
+            onConnectPump = { _, _, _ -> },
             onClearError = {},
             onNext = {},
             onBack = {},
@@ -386,21 +397,22 @@ private fun PumpStepPreview() {
 @Preview(showBackground = true, name = "Active Pump - Light")
 @Composable
 private fun PumpStepActivePreview() {
+    val simBodyDriver = PreviewPumpDriver(
+        "de.dh.daps.plugin.simbody",
+        UiText.DynamicString("SimBody Virtual Pump Driver"),
+        DeviceLifecycleState.Configured("simbody-pump-01", "SimBody Virtual Insulin Pump")
+    )
     AppPreview {
         PumpStep(
             uiState = PumpSetupUiState(
                 availableDrivers = listOf(
                     PreviewPumpDriver("de.dh.daps.plugin.sample", UiText.DynamicString("Sample Pump Driver")),
-                    PreviewPumpDriver("de.dh.daps.plugin.simbody", UiText.DynamicString("SimBody Virtual Pump Driver"))
+                    simBodyDriver
                 ),
-                activePumpDescriptor = PumpConnectionDescriptor(
-                    driverId = "de.dh.daps.plugin.simbody",
-                    deviceId = "simbody-virtual-pump-01",
-                    displayName = "SimBody Virtual Insulin Pump"
-                )
+                activeDriverId = "de.dh.daps.plugin.simbody"
             ),
             onSelectDriver = {},
-            onConnectPump = { _, _ -> },
+            onConnectPump = { _, _, _ -> },
             onClearError = {},
             onNext = {},
             onBack = {},
@@ -410,8 +422,8 @@ private fun PumpStepActivePreview() {
     }
 }
 
-@Preview(showBackground = true, name = "Driver Setup Step 1 (Omnipod Dash) - Light")
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Driver Setup Step 1 (Omnipod Dash) - Dark")
+@Preview(showBackground = true, name = "Driver Setup (Omnipod Dash) - Light")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Driver Setup (Omnipod Dash) - Dark")
 @Composable
 private fun PumpStepDriverSetupOmnipodDashPreview() {
     val omnipodDriver = PreviewPumpDriver(
@@ -426,7 +438,7 @@ private fun PumpStepDriverSetupOmnipodDashPreview() {
                 selectedDriver = omnipodDriver
             ),
             onSelectDriver = {},
-            onConnectPump = { _, _ -> },
+            onConnectPump = { _, _, _ -> },
             onClearError = {},
             onNext = {},
             onBack = {},

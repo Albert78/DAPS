@@ -12,8 +12,8 @@ import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.PluginContext
 import de.dh.daps.common.model.PluginPreferences
-import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.ui.UiText
+import de.dh.pump.danai.R
 import de.dh.pump.danai.core.DanaILogger
 import de.dh.pump.danai.core.DanaIPumpAdapter
 import de.dh.pump.danai.core.DanaPumpPreferences
@@ -25,11 +25,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-import de.dh.pump.danai.R
-
 /**
- * Driver implementation for the Sooil Dana-i insulin pump.
- * Implements [InsulinPumpDriver] and [Plugin] to integrate the Dana-i pump into DAPS.
+ * Insulin pump driver plugin for Sooil Dana-i pumps.
+ * Provides user UI scanning workflows and reconnect capability via BLE.
  */
 class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
     override val driverId: String = DRIVER_ID
@@ -41,21 +39,16 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
         Manifest.permission.ACCESS_FINE_LOCATION,
     )
 
-    private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.Unconfigured)
-    override val lifecycleState: StateFlow<DeviceLifecycleState> = _lifecycleState.asStateFlow()
-
     private var pluginContext: PluginContext? = null
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val defaultLogger = object : DanaILogger {
         override fun log(message: String) {
             Log.d(TAG, message)
         }
     }
 
-    override fun setup(context: PluginContext) {
-        this.pluginContext = context
-    }
+    private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.Unconfigured)
+    override val lifecycleState: StateFlow<DeviceLifecycleState> = _lifecycleState.asStateFlow()
 
     override fun initialize(context: PluginContext) {
         this.pluginContext = context
@@ -66,7 +59,7 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
      */
     @Composable
     override fun SetupScreen(
-        onConnected: (InsulinPump, PumpConnectionDescriptor) -> Unit,
+        onConnected: (InsulinPump) -> Unit,
         onCancel: () -> Unit,
     ) {
         DanaISetupScreen(
@@ -77,24 +70,24 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
     }
 
     /**
-     * Re-establishes a connection with a previously paired Dana-i pump using its stored [descriptor].
+     * Re-establishes a connection with a previously paired Dana-i pump using stored preferences.
      */
     @SuppressLint("MissingPermission")
-    override suspend fun connect(descriptor: PumpConnectionDescriptor): Result<InsulinPump> {
-        if (descriptor.driverId != DRIVER_ID) {
-            return Result.failure(
-                IllegalArgumentException("Invalid driver ID for Dana-i driver: ${descriptor.driverId}")
-            )
-        }
+    override suspend fun connect(): Result<InsulinPump> {
         val context = pluginContext?.appContext
             ?: return Result.failure(IllegalStateException("PluginContext not initialized. Call setup/initialize first."))
         val prefs = pluginContext?.preferences
             ?: return Result.failure(IllegalStateException("PluginPreferences not initialized."))
 
-        return try {
-            val address = descriptor.deviceId
-            val name = descriptor.connectionParameters["name"] ?: descriptor.displayName
+        val danaPrefs = DanaPumpPreferences(prefs)
+        val address = danaPrefs.getLastAddress()
+        val name = danaPrefs.getLastName().ifEmpty { "Dana-i" }
 
+        if (address.isEmpty()) {
+            return Result.failure(IllegalStateException("No saved Bluetooth address found for Dana-i pump."))
+        }
+
+        return try {
             val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
                 ?: return Result.failure(IllegalStateException("BluetoothManager unavailable."))
             val adapter = bluetoothManager.adapter
@@ -115,7 +108,6 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
             _lifecycleState.value = DeviceLifecycleState.Configured(
                 deviceId = address,
                 displayName = name,
-                connectionParameters = descriptor.connectionParameters,
             )
 
             Result.success(pumpAdapter)
@@ -133,7 +125,7 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
         deviceAddress: String,
         context: Context,
         preferences: PluginPreferences,
-    ): Pair<InsulinPump, PumpConnectionDescriptor> {
+    ): InsulinPump {
         val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         val adapter = bluetoothManager.adapter ?: throw IllegalStateException("Bluetooth adapter unavailable.")
         val device = adapter.getRemoteDevice(deviceAddress)
@@ -152,20 +144,12 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
         val pumpAdapter = DanaIPumpAdapter.create(link, defaultLogger, scope)
         pumpAdapter.controller.connect()
 
-        val descriptor = PumpConnectionDescriptor(
-            driverId = DRIVER_ID,
-            deviceId = deviceAddress,
-            displayName = deviceName,
-            connectionParameters = mapOf("name" to deviceName)
-        )
-
         _lifecycleState.value = DeviceLifecycleState.Configured(
             deviceId = deviceAddress,
             displayName = deviceName,
-            connectionParameters = descriptor.connectionParameters,
         )
 
-        return Pair(pumpAdapter, descriptor)
+        return pumpAdapter
     }
 
     internal fun getContext(): PluginContext? = pluginContext

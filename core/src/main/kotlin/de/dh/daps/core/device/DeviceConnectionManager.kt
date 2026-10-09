@@ -3,9 +3,7 @@ package de.dh.daps.core.device
 import android.util.Log
 import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.GlucoseSource
-import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.InsulinPump
-import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.core.aps.GlucoseSourceDriverManager
 import de.dh.daps.core.aps.GlucoseSourceManager
 import de.dh.daps.core.pump.PumpDriverManager
@@ -39,39 +37,31 @@ class DeviceConnectionManager(
         Log.d(TAG, "Restoring saved device connections...")
 
         val activeGlucoseDriverId = deviceManagementRepository.getActiveGlucoseSourceDriverId()
-        val glucoseSourceDescriptor = deviceManagementRepository.getGlucoseSourceDescriptor()
-        val glucoseDriverId = activeGlucoseDriverId ?: glucoseSourceDescriptor?.driverId
 
-        val glucoseSourceResult = if (glucoseDriverId != null) {
-            val driver = glucoseSourceDriverManager.getDriver(glucoseDriverId)
+        val glucoseSourceResult = if (activeGlucoseDriverId != null) {
+            val driver = glucoseSourceDriverManager.getDriver(activeGlucoseDriverId)
             if (driver != null) {
                 val state = driver.lifecycleState.value
-                Log.d(TAG, "Active glucose source driver '$glucoseDriverId' state: $state")
+                Log.d(TAG, "Active glucose source driver '$activeGlucoseDriverId' state: $state")
                 when (state) {
                     is DeviceLifecycleState.Configured -> {
-                        val descriptorToUse = glucoseSourceDescriptor ?: GlucoseSourceConnectionDescriptor(
-                            driverId = driver.driverId,
-                            sourceId = state.deviceId,
-                            displayName = state.displayName,
-                            connectionParameters = state.connectionParameters
-                        )
-                        glucoseSourceDriverManager.connect(descriptorToUse).onSuccess { glucoseSource ->
+                        glucoseSourceDriverManager.connect(activeGlucoseDriverId).onSuccess { glucoseSource ->
                             glucoseSourceManager.glucoseSource = glucoseSource
                         }.onFailure { error ->
-                            Log.e(TAG, "Failed to reconnect glucose source '${descriptorToUse.displayName}': ${error.message}", error)
+                            Log.e(TAG, "Failed to reconnect glucose source driver '$activeGlucoseDriverId': ${error.message}", error)
                         }
                     }
                     is DeviceLifecycleState.SetupInProgress -> {
-                        Log.i(TAG, "Glucose source setup in progress for driver '$glucoseDriverId'. Skipping auto-connect until setup finishes.")
+                        Log.i(TAG, "Glucose source setup in progress for driver '$activeGlucoseDriverId'. Skipping auto-connect until setup finishes.")
                         null
                     }
                     is DeviceLifecycleState.Unconfigured -> {
-                        Log.d(TAG, "Glucose source driver '$glucoseDriverId' is unconfigured.")
+                        Log.d(TAG, "Glucose source driver '$activeGlucoseDriverId' is unconfigured.")
                         null
                     }
                 }
             } else {
-                Log.w(TAG, "No driver registered for active glucose driver ID '$glucoseDriverId'")
+                Log.w(TAG, "No driver registered for active glucose driver ID '$activeGlucoseDriverId'")
                 null
             }
         } else {
@@ -80,39 +70,31 @@ class DeviceConnectionManager(
         }
 
         val activePumpDriverId = deviceManagementRepository.getActivePumpDriverId()
-        val pumpDescriptor = deviceManagementRepository.getPumpDescriptor()
-        val pumpDriverId = activePumpDriverId ?: pumpDescriptor?.driverId
 
-        val pumpResult = if (pumpDriverId != null) {
-            val driver = pumpDriverManager.getDriver(pumpDriverId)
+        val pumpResult = if (activePumpDriverId != null) {
+            val driver = pumpDriverManager.getDriver(activePumpDriverId)
             if (driver != null) {
                 val state = driver.lifecycleState.value
-                Log.d(TAG, "Active pump driver '$pumpDriverId' state: $state")
+                Log.d(TAG, "Active pump driver '$activePumpDriverId' state: $state")
                 when (state) {
                     is DeviceLifecycleState.Configured -> {
-                        val descriptorToUse = pumpDescriptor ?: PumpConnectionDescriptor(
-                            driverId = driver.driverId,
-                            deviceId = state.deviceId,
-                            displayName = state.displayName,
-                            connectionParameters = state.connectionParameters
-                        )
-                        pumpDriverManager.connect(descriptorToUse).onSuccess { insulinPump ->
+                        pumpDriverManager.connect(activePumpDriverId).onSuccess { insulinPump ->
                             pumpManager.insulinPump = insulinPump
                         }.onFailure { error ->
-                            Log.e(TAG, "Failed to reconnect insulin pump '${descriptorToUse.displayName}': ${error.message}", error)
+                            Log.e(TAG, "Failed to reconnect insulin pump driver '$activePumpDriverId': ${error.message}", error)
                         }
                     }
                     is DeviceLifecycleState.SetupInProgress -> {
-                        Log.i(TAG, "Pump setup in progress for driver '$pumpDriverId'. Skipping auto-connect until setup finishes.")
+                        Log.i(TAG, "Pump setup in progress for driver '$activePumpDriverId'. Skipping auto-connect until setup finishes.")
                         null
                     }
                     is DeviceLifecycleState.Unconfigured -> {
-                        Log.d(TAG, "Pump driver '$pumpDriverId' is unconfigured.")
+                        Log.d(TAG, "Pump driver '$activePumpDriverId' is unconfigured.")
                         null
                     }
                 }
             } else {
-                Log.w(TAG, "No driver registered for active pump driver ID '$pumpDriverId'")
+                Log.w(TAG, "No driver registered for active pump driver ID '$activePumpDriverId'")
                 null
             }
         } else {
@@ -127,49 +109,61 @@ class DeviceConnectionManager(
     }
 
     /**
-     * Connects to a glucose source using the provided [descriptor], updates the active [GlucoseSourceManager],
-     * and persists the active driver ID and descriptor upon successful connection.
+     * Connects to a glucose source using [driverId], updates [GlucoseSourceManager],
+     * and persists the active driver ID upon successful connection.
      */
-    suspend fun connectGlucoseSource(descriptor: GlucoseSourceConnectionDescriptor): Result<GlucoseSource> {
-        Log.d(TAG, "Connecting to glucose source: ${descriptor.displayName}")
-        return glucoseSourceDriverManager.connect(descriptor).onSuccess { glucoseSource ->
-            glucoseSourceManager.glucoseSource = glucoseSource
-            deviceManagementRepository.setActiveGlucoseSourceDriverId(descriptor.driverId)
-            deviceManagementRepository.saveGlucoseSourceDescriptor(descriptor)
+    suspend fun connectGlucoseSource(driverId: String): Result<GlucoseSource> {
+        Log.d(TAG, "Connecting to glucose source driver: $driverId")
+        return glucoseSourceDriverManager.connect(driverId).onSuccess { glucoseSource ->
+            setConnectedGlucoseSource(driverId, glucoseSource)
         }
     }
 
     /**
-     * Connects to an insulin pump using the provided [descriptor], updates the active [PumpManager],
-     * and persists the active driver ID and descriptor upon successful connection.
+     * Updates the active [GlucoseSourceManager] with a connected [glucoseSource]
+     * and persists the active driver ID.
      */
-    suspend fun connectPump(descriptor: PumpConnectionDescriptor): Result<InsulinPump> {
-        Log.d(TAG, "Connecting to insulin pump: ${descriptor.displayName}")
-        return pumpDriverManager.connect(descriptor).onSuccess { insulinPump ->
-            pumpManager.insulinPump = insulinPump
-            deviceManagementRepository.setActivePumpDriverId(descriptor.driverId)
-            deviceManagementRepository.savePumpDescriptor(descriptor)
+    suspend fun setConnectedGlucoseSource(driverId: String, glucoseSource: GlucoseSource) {
+        glucoseSourceManager.glucoseSource = glucoseSource
+        deviceManagementRepository.setActiveGlucoseSourceDriverId(driverId)
+    }
+
+    /**
+     * Connects to an insulin pump using [driverId], updates [PumpManager],
+     * and persists the active driver ID upon successful connection.
+     */
+    suspend fun connectPump(driverId: String): Result<InsulinPump> {
+        Log.d(TAG, "Connecting to insulin pump driver: $driverId")
+        return pumpDriverManager.connect(driverId).onSuccess { insulinPump ->
+            setConnectedPump(driverId, insulinPump)
         }
     }
 
     /**
-     * Disconnects the active glucose source and clears the persisted driver ID and descriptor.
+     * Updates the active [PumpManager] with a connected [insulinPump]
+     * and persists the active driver ID.
+     */
+    suspend fun setConnectedPump(driverId: String, insulinPump: InsulinPump) {
+        pumpManager.insulinPump = insulinPump
+        deviceManagementRepository.setActivePumpDriverId(driverId)
+    }
+
+    /**
+     * Disconnects the active glucose source and clears the persisted driver ID.
      */
     suspend fun disconnectGlucoseSource() {
         Log.d(TAG, "Disconnecting active glucose source")
         glucoseSourceManager.glucoseSource = null
         deviceManagementRepository.setActiveGlucoseSourceDriverId(null)
-        deviceManagementRepository.saveGlucoseSourceDescriptor(null)
     }
 
     /**
-     * Disconnects the active insulin pump and clears the persisted driver ID and descriptor.
+     * Disconnects the active insulin pump and clears the persisted driver ID.
      */
     suspend fun disconnectPump() {
         Log.d(TAG, "Disconnecting active insulin pump")
         pumpManager.insulinPump = null
         deviceManagementRepository.setActivePumpDriverId(null)
-        deviceManagementRepository.savePumpDescriptor(null)
     }
 
     companion object {

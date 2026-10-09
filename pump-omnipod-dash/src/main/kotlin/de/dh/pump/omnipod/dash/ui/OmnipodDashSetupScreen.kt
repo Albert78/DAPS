@@ -1,7 +1,6 @@
 package de.dh.pump.omnipod.dash.ui
 
 import android.app.Application
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,13 +28,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.dh.daps.common.model.InsulinPump
-import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
-import de.dh.daps.ui.common.composables.SecondaryButton
 import de.dh.daps.ui.common.composables.WarningBanner
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.pump.omnipod.dash.OmnipodDashInsulinPumpDriver
@@ -68,7 +66,7 @@ enum class ActivationStep(
 @Composable
 fun OmnipodDashSetupScreen(
     driver: OmnipodDashInsulinPumpDriver,
-    onConnected: (InsulinPump, PumpConnectionDescriptor) -> Unit,
+    onConnected: (InsulinPump) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: OmnipodDashSetupViewModel = viewModel(

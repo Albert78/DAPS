@@ -1,12 +1,11 @@
 package de.dh.daps.core.aps
 
 import de.dh.daps.common.model.GlucoseSource
-import de.dh.daps.common.model.GlucoseSourceConnectionDescriptor
 import de.dh.daps.common.model.GlucoseSourceDriver
 
 /**
  * Central registry and manager for registered [GlucoseSourceDriver] plugins.
- * Facilitates retrieving available drivers and reconnecting using a stored [GlucoseSourceConnectionDescriptor].
+ * Facilitates retrieving available drivers and reconnecting active drivers.
  */
 class GlucoseSourceDriverManager(
     val drivers: List<GlucoseSourceDriver> = emptyList(),
@@ -19,13 +18,13 @@ class GlucoseSourceDriverManager(
     }
 
     /**
-     * Re-establishes a glucose source connection using the provided [descriptor].
+     * Re-establishes a glucose source connection for the specified [driverId].
      */
-    suspend fun connect(descriptor: GlucoseSourceConnectionDescriptor): Result<GlucoseSource> {
-        val driver = getDriver(descriptor.driverId)
+    suspend fun connect(driverId: String): Result<GlucoseSource> {
+        val driver = getDriver(driverId)
             ?: return Result.failure(
-                IllegalArgumentException("No glucose source driver found matching driver ID '${descriptor.driverId}'.")
+                IllegalArgumentException("No glucose source driver found matching driver ID '$driverId'.")
             )
-        return driver.connect(descriptor)
+        return driver.connect()
     }
 }
