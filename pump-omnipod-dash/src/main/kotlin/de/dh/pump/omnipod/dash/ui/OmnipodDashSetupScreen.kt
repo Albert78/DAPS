@@ -1,25 +1,26 @@
 package de.dh.pump.omnipod.dash.ui
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -27,6 +28,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.PumpConnectionDescriptor
 import de.dh.daps.common.ui.UiText
+import de.dh.daps.ui.common.composables.FramedCard
+import de.dh.daps.ui.common.composables.NormalButton
+import de.dh.daps.ui.common.composables.NormalTextButton
+import de.dh.daps.ui.common.composables.PrimaryButton
+import de.dh.daps.ui.common.composables.SecondaryButton
+import de.dh.daps.ui.common.composables.WarningBanner
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.pump.omnipod.dash.OmnipodDashInsulinPumpDriver
 import de.dh.pump.omnipod.dash.R
@@ -94,74 +101,111 @@ fun OmnipodDashSetupContent(
 ) {
     val steps = ActivationStep.entries
     val currentStep = steps.getOrElse(currentStepIndex) { steps[0] }
+    val scrollState = rememberScrollState()
 
-    Card(
+    Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .verticalScroll(scrollState),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = stringResource(R.string.omnipod_dash_driver_display_name),
-                style = MaterialTheme.typography.titleLarge
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+        // Driver header & progress info
+        FramedCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.omnipod_dash_driver_display_name),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
 
-            LinearProgressIndicator(
-                progress = { (currentStepIndex + 1).toFloat() / steps.size },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            if (activationError != null) {
-                Surface(
-                    color = MaterialTheme.colorScheme.errorContainer,
-                    shape = MaterialTheme.shapes.small,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = activationError,
-                        color = MaterialTheme.colorScheme.onErrorContainer,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(12.dp)
+                        text = "Schritt ${currentStepIndex + 1} von ${steps.size}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
+
+                LinearProgressIndicator(
+                    progress = { (currentStepIndex + 1).toFloat() / steps.size },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                )
             }
+        }
 
-            Text(
-                text = currentStep.title.asString(),
-                style = MaterialTheme.typography.titleMedium
+        if (activationError != null) {
+            WarningBanner(
+                warningText = activationError,
+                onActionClick = {}
             )
-            Spacer(modifier = Modifier.height(8.dp))
+        }
 
-            Text(
-                text = currentStep.description.asString(),
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Spacer(modifier = Modifier.height(24.dp))
+        // Active Step Details Card
+        FramedCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = currentStep.title.asString(),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
 
-            Row(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = currentStep.description.asString(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        // Navigation Action Buttons
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 if (currentStepIndex > 0) {
-                    OutlinedButton(
+                    NormalButton(
                         onClick = onPreviousStep,
                         enabled = !isActivating,
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(stringResource(R.string.omnipod_dash_setup_btn_back))
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
                 }
 
-                Button(
+                PrimaryButton(
                     onClick = onNextStep,
                     enabled = !isActivating,
                     modifier = Modifier.weight(1f)
                 ) {
                     if (isActivating) {
                         CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
+                            modifier = Modifier.size(18.dp),
                             color = MaterialTheme.colorScheme.onPrimary,
                             strokeWidth = 2.dp
                         )
@@ -171,8 +215,7 @@ fun OmnipodDashSetupContent(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedButton(
+            NormalTextButton(
                 onClick = onCancel,
                 enabled = !isActivating,
                 modifier = Modifier.fillMaxWidth()
