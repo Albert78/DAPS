@@ -84,4 +84,13 @@ class OmnipodDashSetupViewModel(application: Application) : AndroidViewModel(app
             }
         }
     }
+
+    companion object {
+        class Factory(private val application: Application) : androidx.lifecycle.ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                return OmnipodDashSetupViewModel(application) as T
+            }
+        }
+    }
 }

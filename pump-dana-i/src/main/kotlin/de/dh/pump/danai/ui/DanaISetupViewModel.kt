@@ -2,6 +2,8 @@ package de.dh.pump.danai.ui
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.PluginPreferences
@@ -68,5 +70,14 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
     override fun onCleared() {
         super.onCleared()
         scanner.stopScan()
+    }
+
+    companion object {
+        class Factory(private val application: Application) : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return DanaISetupViewModel(application) as T
+            }
+        }
     }
 }

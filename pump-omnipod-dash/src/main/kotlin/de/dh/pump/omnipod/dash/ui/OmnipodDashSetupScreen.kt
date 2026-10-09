@@ -1,5 +1,7 @@
 package de.dh.pump.omnipod.dash.ui
 
+import android.app.Application
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -69,7 +71,11 @@ fun OmnipodDashSetupScreen(
     onConnected: (InsulinPump, PumpConnectionDescriptor) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: OmnipodDashSetupViewModel = viewModel()
+    viewModel: OmnipodDashSetupViewModel = viewModel(
+        factory = OmnipodDashSetupViewModel.Companion.Factory(
+            LocalContext.current.applicationContext as Application
+        )
+    )
 ) {
     val currentStepIndex by viewModel.currentStepIndex.collectAsStateWithLifecycle()
     val isActivating by viewModel.isActivating.collectAsStateWithLifecycle()

@@ -17,6 +17,8 @@ import androidx.compose.material.icons.filled.Router
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import android.app.Application
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -52,7 +54,11 @@ fun DanaISetupScreen(
     onConnected: (InsulinPump, PumpConnectionDescriptor) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: DanaISetupViewModel = viewModel()
+    viewModel: DanaISetupViewModel = viewModel(
+        factory = DanaISetupViewModel.Companion.Factory(
+            LocalContext.current.applicationContext as Application
+        )
+    )
 ) {
     val scanResults by viewModel.scanResults.collectAsState()
     val isScanning by viewModel.isScanning.collectAsState()
