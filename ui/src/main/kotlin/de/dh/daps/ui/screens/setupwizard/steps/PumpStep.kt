@@ -80,19 +80,12 @@ fun PumpStep(
         ?: stringResource(id = R.string.setup_wizard_pump_title)
 
     BackHandler(enabled = selectedDriver != null) {
-        onSelectDriver(null)
+        // Intercept back gesture so driver setup workflow cannot be exited via back gesture
     }
 
-    val showTopBack = selectedDriver != null
-    val onTopBackClick: () -> Unit = {
-        if (selectedDriver != null) {
-            onSelectDriver(null)
-        } else {
-            onBack()
-        }
-    }
-
-    val nextButtonText = if (uiState.activePumpDescriptor != null) {
+    val nextButtonText = if (selectedDriver != null) {
+        null
+    } else if (uiState.activePumpDescriptor != null) {
         stringResource(R.string.setup_wizard_btn_next)
     } else {
         stringResource(R.string.setup_wizard_btn_skip)
@@ -101,12 +94,11 @@ fun PumpStep(
     SetupStepScaffold(
         title = titleText,
         stepProgress = stepProgress,
-        showTopBackButton = showTopBack,
-        onTopBack = onTopBackClick,
-        showBottomBackButton = true,
+        showTopBackButton = false,
+        showBottomBackButton = selectedDriver == null,
         onBack = onBack,
         nextButtonText = nextButtonText,
-        onNext = onNext,
+        onNext = if (selectedDriver != null) null else onNext,
         snackbarHostState = snackbarHostState
     ) { innerPadding ->
         Box(

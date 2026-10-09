@@ -105,7 +105,7 @@ fun PumpSetupContent(
     val titleText = selectedDriver?.displayName?.asString() ?: stringResource(id = R.string.pump_setup_screen_title)
 
     BackHandler(enabled = selectedDriver != null) {
-        onSelectDriver(null)
+        // Intercept back gesture so driver setup workflow cannot be exited via back gesture
     }
 
     Scaffold(
@@ -113,19 +113,13 @@ fun PumpSetupContent(
             TopAppBar(
                 title = screenTitle(titleText),
                 navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            if (selectedDriver != null) {
-                                onSelectDriver(null)
-                            } else {
-                                onNavigateUp()
-                            }
+                    if (selectedDriver == null) {
+                        IconButton(onClick = onNavigateUp) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(id = CommonR.string.cd_navigate_up)
+                            )
                         }
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(id = CommonR.string.cd_navigate_up)
-                        )
                     }
                 }
             )
