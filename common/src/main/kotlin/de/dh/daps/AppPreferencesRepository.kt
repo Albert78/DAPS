@@ -46,32 +46,6 @@ suspend fun AppPreferencesRepository.setCarbsUnit(value: CarbsUnit) {
     }
 }
 
-val Preferences?.activeGlucoseSourceDriverId: String?
-    get() = this?.get(ACTIVE_GLUCOSE_SOURCE_DRIVER_ID_KEY)
-
-suspend fun AppPreferencesRepository.setActiveGlucoseSourceDriverId(driverId: String?) {
-    editPreferences { mutablePreferences ->
-        if (driverId != null) {
-            mutablePreferences[ACTIVE_GLUCOSE_SOURCE_DRIVER_ID_KEY] = driverId
-        } else {
-            mutablePreferences.remove(ACTIVE_GLUCOSE_SOURCE_DRIVER_ID_KEY)
-        }
-    }
-}
-
-val Preferences?.activePumpDriverId: String?
-    get() = this?.get(ACTIVE_PUMP_DRIVER_ID_KEY)
-
-suspend fun AppPreferencesRepository.setActivePumpDriverId(driverId: String?) {
-    editPreferences { mutablePreferences ->
-        if (driverId != null) {
-            mutablePreferences[ACTIVE_PUMP_DRIVER_ID_KEY] = driverId
-        } else {
-            mutablePreferences.remove(ACTIVE_PUMP_DRIVER_ID_KEY)
-        }
-    }
-}
-
 val Preferences?.backupDirectoryUri: String?
     get() = this?.get(BACKUP_DIRECTORY_URI_KEY)
 
@@ -88,8 +62,6 @@ suspend fun AppPreferencesRepository.setBackupDirectoryUri(uriString: String?) {
 val USER_DECLINED_PERMISSIONS_KEY = booleanPreferencesKey("user_declined_permissions")
 val GLUCOSE_UNIT_KEY = stringPreferencesKey("glucose_unit")
 val CARBS_UNIT_KEY = stringPreferencesKey("carbs_unit")
-val ACTIVE_GLUCOSE_SOURCE_DRIVER_ID_KEY = stringPreferencesKey("active_glucose_source_driver_id")
-val ACTIVE_PUMP_DRIVER_ID_KEY = stringPreferencesKey("active_pump_driver_id")
 val BACKUP_DIRECTORY_URI_KEY = stringPreferencesKey("backup_directory_uri")
 
 class AppPreferencesRepository(private val context: Context, private val scope: CoroutineScope) {
@@ -121,22 +93,6 @@ class AppPreferencesRepository(private val context: Context, private val scope: 
             scope = scope,
             started = SharingStarted.Eagerly,
             initialValue = CarbsUnit.GRAMS
-        )
-
-    val activeGlucoseSourceDriverId: StateFlow<String?> = cachedPreferences
-        .map { it.activeGlucoseSourceDriverId }
-        .stateIn(
-            scope = scope,
-            started = SharingStarted.Eagerly,
-            initialValue = null
-        )
-
-    val activePumpDriverId: StateFlow<String?> = cachedPreferences
-        .map { it.activePumpDriverId }
-        .stateIn(
-            scope = scope,
-            started = SharingStarted.Eagerly,
-            initialValue = null
         )
 
     val backupDirectoryUri: StateFlow<String?> = cachedPreferences

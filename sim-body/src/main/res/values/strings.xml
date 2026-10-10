@@ -25,16 +25,16 @@
     <string name="btn_physiological_impacts">Physiologische Einflüsse</string>
     <string name="btn_input_history">Eingabe-Historie</string>
     <string name="btn_clear_history">Historie löschen</string>
-    <string name="btn_connect">Verbinden</string>
+    <string name="btn_connect">Einrichten</string>
 
     <!-- Glucose & Pump Driver Setup -->
     <string name="sim_body_cgm_driver_display_name">SimBody Virtueller Glukosesensor</string>
     <string name="sim_body_cgm_setup_title">SimBody Virtueller Glukosesensor Setup</string>
-    <string name="sim_body_cgm_setup_description">Verbinden mit dem simulierten Glukosesensor des virtuellen menschlichen Körpermodells.</string>
+    <string name="sim_body_cgm_setup_description">Einrichten des simulierten Glukosesensors des virtuellen menschlichen Körpermodells.</string>
     <string name="sim_body_cgm_sensor_display_name">SimBody Virtueller Glukosesensor</string>
     <string name="sim_body_pump_driver_display_name">SimBody Virtuelle Insulinpumpe</string>
     <string name="sim_body_pump_setup_title">SimBody Virtuelle Insulinpumpe Setup</string>
-    <string name="sim_body_pump_setup_description">Verbinden mit der simulierten Insulinpumpe des virtuellen menschlichen Körpermodells.</string>
+    <string name="sim_body_pump_setup_description">Einrichten der simulierten Insulinpumpe des virtuellen menschlichen Körpermodells.</string>
     <string name="sim_body_pump_device_display_name">SimBody Virtuelle Insulinpumpe</string>
 
     <!-- Dialogs -->

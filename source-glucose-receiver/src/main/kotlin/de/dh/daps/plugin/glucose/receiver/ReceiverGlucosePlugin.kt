@@ -151,7 +151,7 @@ class ReceiverGlucosePlugin(
      */
     @Composable
     override fun SetupScreen(
-        onConnected: (GlucoseSource) -> Unit,
+        onBound: (GlucoseSource) -> Unit,
         onCancel: () -> Unit,
     ) {
         FramedCard(
@@ -191,11 +191,11 @@ class ReceiverGlucosePlugin(
                                 deviceId = null,
                                 displayName = UiText.StringResource(R.string.glucose_broadcast_receiver_display_name)
                             )
-                            onConnected(this@ReceiverGlucosePlugin)
+                            onBound(this@ReceiverGlucosePlugin)
                         },
                         modifier = Modifier.weight(1f),
                     ) {
-                        Text("Connect")
+                        Text("Bind")
                     }
                 }
             }

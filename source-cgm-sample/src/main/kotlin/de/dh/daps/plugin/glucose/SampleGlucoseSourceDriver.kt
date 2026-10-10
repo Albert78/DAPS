@@ -64,7 +64,7 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
      */
     @Composable
     override fun SetupScreen(
-        onConnected: (GlucoseSource) -> Unit,
+        onBound: (GlucoseSource) -> Unit,
         onCancel: () -> Unit,
     ) {
         FramedCard(
@@ -78,7 +78,7 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
                     style = MaterialTheme.typography.titleMedium,
                 )
                 Text(
-                    text = "Confirm connection to the simulated sample glucose sensor.",
+                    text = "Confirm setup for the simulated sample glucose sensor.",
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -97,11 +97,11 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
                             deviceId = deviceId,
                             displayName = UiText.DynamicString(deviceName)
                         )
-                        onConnected(source)
+                        onBound(source)
                     },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text("Confirm Connection")
+                    Text("Confirm Setup")
                 }
             }
         }

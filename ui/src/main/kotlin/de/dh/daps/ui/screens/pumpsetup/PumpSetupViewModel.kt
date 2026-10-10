@@ -18,7 +18,7 @@ data class PumpSetupUiState(
     val availableDrivers: List<InsulinPumpDriver> = emptyList(),
     val selectedDriver: InsulinPumpDriver? = null,
     val activeDriverId: String? = null,
-    val isConnecting: Boolean = false,
+    val isBinding: Boolean = false,
     val errorMessage: String? = null
 )
 
@@ -29,20 +29,20 @@ class PumpSetupViewModel(
     private val selectedDriverState = MutableStateFlow<InsulinPumpDriver?>(
         registry.pumpDriverManager.getActiveDriver()
     )
-    private val isConnectingState = MutableStateFlow(false)
+    private val isBindingState = MutableStateFlow(false)
     private val errorMessageState = MutableStateFlow<String?>(null)
 
     val uiState: StateFlow<PumpSetupUiState> = combine(
         selectedDriverState,
-        registry.deviceManagementRepository.activePumpDriverId,
-        isConnectingState,
+        registry.pumpDriverManager.activeDriverId,
+        isBindingState,
         errorMessageState
-    ) { selectedDriver, activeDriverId, isConnecting, errorMessage ->
+    ) { selectedDriver, activeDriverId, isBinding, errorMessage ->
         PumpSetupUiState(
             availableDrivers = registry.pumpDriverManager.drivers,
             selectedDriver = selectedDriver,
             activeDriverId = activeDriverId,
-            isConnecting = isConnecting,
+            isBinding = isBinding,
             errorMessage = errorMessage
         )
     }.stateIn(
@@ -59,17 +59,16 @@ class PumpSetupViewModel(
         errorMessageState.value = null
     }
 
-    fun onPumpConnected(
-        driverId: String,
+    fun onPumpBound(
         insulinPump: InsulinPump,
         onSuccess: () -> Unit
     ) {
         viewModelScope.launch {
-            isConnectingState.value = true
+            isBindingState.value = true
             errorMessageState.value = null
 
-            registry.deviceConnectionManager.setConnectedPump(driverId, insulinPump)
-            isConnectingState.value = false
+            registry.deviceConnectionManager.onPumpBound(insulinPump)
+            isBindingState.value = false
             onSuccess()
         }
     }

@@ -18,7 +18,7 @@ data class GlucoseSourceSetupUiState(
     val availableDrivers: List<GlucoseSourceDriver> = emptyList(),
     val selectedDriver: GlucoseSourceDriver? = null,
     val activeDriverId: String? = null,
-    val isConnecting: Boolean = false,
+    val isBinding: Boolean = false,
     val errorMessage: String? = null
 )
 
@@ -29,20 +29,20 @@ class GlucoseSourceSetupViewModel(
     private val selectedDriverState = MutableStateFlow<GlucoseSourceDriver?>(
         registry.glucoseSourceDriverManager.getActiveDriver()
     )
-    private val isConnectingState = MutableStateFlow(false)
+    private val isBindingState = MutableStateFlow(false)
     private val errorMessageState = MutableStateFlow<String?>(null)
 
     val uiState: StateFlow<GlucoseSourceSetupUiState> = combine(
         selectedDriverState,
-        registry.deviceManagementRepository.activeGlucoseSourceDriverId,
-        isConnectingState,
+        registry.glucoseSourceDriverManager.activeDriverId,
+        isBindingState,
         errorMessageState
-    ) { selectedDriver, activeDriverId, isConnecting, errorMessage ->
+    ) { selectedDriver, activeDriverId, isBinding, errorMessage ->
         GlucoseSourceSetupUiState(
             availableDrivers = registry.glucoseSourceDriverManager.drivers,
             selectedDriver = selectedDriver,
             activeDriverId = activeDriverId,
-            isConnecting = isConnecting,
+            isBinding = isBinding,
             errorMessage = errorMessage
         )
     }.stateIn(
@@ -59,17 +59,16 @@ class GlucoseSourceSetupViewModel(
         errorMessageState.value = null
     }
 
-    fun onGlucoseSourceConnected(
-        driverId: String,
+    fun onGlucoseSourceBound(
         glucoseSource: GlucoseSource,
         onSuccess: () -> Unit
     ) {
         viewModelScope.launch {
-            isConnectingState.value = true
+            isBindingState.value = true
             errorMessageState.value = null
 
-            registry.deviceConnectionManager.setConnectedGlucoseSource(driverId, glucoseSource)
-            isConnectingState.value = false
+            registry.deviceConnectionManager.onGlucoseSourceBound(glucoseSource)
+            isBindingState.value = false
             onSuccess()
         }
     }

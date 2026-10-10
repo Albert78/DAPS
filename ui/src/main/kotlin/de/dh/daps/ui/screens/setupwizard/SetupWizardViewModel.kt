@@ -83,10 +83,10 @@ class SetupWizardViewModel(
     val registry: SystemRegistry
 ) : ViewModel() {
     val activeGlucoseSourceDriverId: StateFlow<String?> =
-        registry.deviceManagementRepository.activeGlucoseSourceDriverId
+        registry.glucoseSourceDriverManager.activeDriverId
 
     val activePumpDriverId: StateFlow<String?> =
-        registry.deviceManagementRepository.activePumpDriverId
+        registry.pumpDriverManager.activeDriverId
 
     private val _uiState = MutableStateFlow(SetupWizardUiState())
     val uiState: StateFlow<SetupWizardUiState> = _uiState.asStateFlow()

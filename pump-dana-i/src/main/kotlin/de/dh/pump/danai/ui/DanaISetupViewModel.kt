@@ -43,7 +43,7 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
         driver: DanaIInsulinPumpDriver,
         scanResult: DanaScanResult,
         preferences: PluginPreferences,
-        onConnected: (InsulinPump) -> Unit
+        onBound: (InsulinPump) -> Unit
     ) {
         viewModelScope.launch {
             _isConnecting.value = true
@@ -58,7 +58,7 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
                     preferences = preferences
                 )
                 _isConnecting.value = false
-                onConnected(pump)
+                onBound(pump)
             } catch (e: Exception) {
                 _isConnecting.value = false
                 _connectError.value = e.message ?: getApplication<Application>().getString(R.string.danai_pump_setup_connect_failed)

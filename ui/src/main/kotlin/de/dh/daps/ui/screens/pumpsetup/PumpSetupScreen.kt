@@ -74,8 +74,8 @@ fun PumpSetupScreen(
         uiState = uiState,
         onNavigateUp = onNavigateUp,
         onSelectDriver = viewModel::selectDriver,
-        onConnectPump = { driverId, pump ->
-            viewModel.onPumpConnected(driverId, pump, onSuccess = onNavigateUp)
+        onBindPump = { _, pump ->
+            viewModel.onPumpBound(pump, onSuccess = onNavigateUp)
         },
         onClearError = viewModel::clearError
     )
@@ -87,7 +87,7 @@ fun PumpSetupContent(
     uiState: PumpSetupUiState,
     onNavigateUp: () -> Unit,
     onSelectDriver: (InsulinPumpDriver?) -> Unit,
-    onConnectPump: (String, InsulinPump) -> Unit,
+    onBindPump: (String, InsulinPump) -> Unit,
     onClearError: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -138,8 +138,8 @@ fun PumpSetupContent(
                 ) {
                     ScopedDriverSetupContainer(driverId = selectedDriver.driverId) {
                         selectedDriver.SetupScreen(
-                            onConnected = { pump ->
-                                onConnectPump(selectedDriver.driverId, pump)
+                            onBound = { pump ->
+                                onBindPump(selectedDriver.driverId, pump)
                             },
                             onCancel = {
                                 if (uiState.availableDrivers.size > 1) {
@@ -158,7 +158,7 @@ fun PumpSetupContent(
                 )
             }
 
-            if (uiState.isConnecting) {
+            if (uiState.isBinding) {
                 LoadingOverlayCard(
                     message = stringResource(id = R.string.pump_setup_connecting)
                 )
@@ -380,7 +380,7 @@ private class PreviewPumpDriver(
 
     @Composable
     override fun SetupScreen(
-        onConnected: (InsulinPump) -> Unit,
+        onBound: (InsulinPump) -> Unit,
         onCancel: () -> Unit
     ) {
         setupScreenContent()
@@ -498,7 +498,7 @@ fun PumpSetupNoActivePumpPreview() {
             ),
             onNavigateUp = {},
             onSelectDriver = {},
-            onConnectPump = { _, _ -> },
+            onBindPump = { _, _ -> },
             onClearError = {}
         )
     }
@@ -525,7 +525,7 @@ fun PumpSetupMultipleDriversPreview() {
             ),
             onNavigateUp = {},
             onSelectDriver = {},
-            onConnectPump = { _, _ -> },
+            onBindPump = { _, _ -> },
             onClearError = {}
         )
     }
@@ -543,7 +543,7 @@ fun PumpSetupActivePumpNoDriversPreview() {
             ),
             onNavigateUp = {},
             onSelectDriver = {},
-            onConnectPump = { _, _ -> },
+            onBindPump = { _, _ -> },
             onClearError = {}
         )
     }
@@ -561,7 +561,7 @@ fun PumpSetupNoActivePumpNoDriversPreview() {
             ),
             onNavigateUp = {},
             onSelectDriver = {},
-            onConnectPump = { _, _ -> },
+            onBindPump = { _, _ -> },
             onClearError = {}
         )
     }
@@ -584,7 +584,7 @@ fun PumpSetupDriverSetupOmnipodDashPreview() {
             ),
             onNavigateUp = {},
             onSelectDriver = {},
-            onConnectPump = { _, _ -> },
+            onBindPump = { _, _ -> },
             onClearError = {}
         )
     }

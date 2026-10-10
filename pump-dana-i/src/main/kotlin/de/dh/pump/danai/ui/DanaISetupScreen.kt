@@ -50,7 +50,7 @@ import de.dh.pump.danai.core.connection.DanaScanResult
 @Composable
 fun DanaISetupScreen(
     driver: DanaIInsulinPumpDriver,
-    onConnected: (InsulinPump) -> Unit,
+    onBound: (InsulinPump) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DanaISetupViewModel = viewModel(
@@ -82,7 +82,7 @@ fun DanaISetupScreen(
                     driver = driver,
                     scanResult = scanResult,
                     preferences = prefs,
-                    onConnected = onConnected
+                    onBound = onBound
                 )
             }
         },

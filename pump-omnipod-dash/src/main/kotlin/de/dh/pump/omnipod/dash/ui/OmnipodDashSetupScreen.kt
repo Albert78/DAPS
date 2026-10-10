@@ -66,7 +66,7 @@ enum class ActivationStep(
 @Composable
 fun OmnipodDashSetupScreen(
     driver: OmnipodDashInsulinPumpDriver,
-    onConnected: (InsulinPump) -> Unit,
+    onBound: (InsulinPump) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: OmnipodDashSetupViewModel = viewModel(
@@ -83,7 +83,7 @@ fun OmnipodDashSetupScreen(
         currentStepIndex = currentStepIndex,
         isActivating = isActivating,
         activationError = activationError,
-        onNextStep = { viewModel.nextStep(driver, onConnected) },
+        onNextStep = { viewModel.nextStep(driver, onBound) },
         onPreviousStep = { viewModel.previousStep() },
         onCancel = onCancel,
         modifier = modifier

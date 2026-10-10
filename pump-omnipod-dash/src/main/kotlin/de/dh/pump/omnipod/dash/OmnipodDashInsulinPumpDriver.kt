@@ -42,18 +42,18 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
 
     @Composable
     override fun SetupScreen(
-        onConnected: (InsulinPump) -> Unit,
+        onBound: (InsulinPump) -> Unit,
         onCancel: () -> Unit
     ) {
         OmnipodDashSetupScreen(
             driver = this,
-            onConnected = { pump ->
+            onBound = { pump ->
                 val podStateManager = OmnipodDashPodStateManagerImpl(pluginContext?.preferences)
                 _lifecycleState.value = DeviceLifecycleState.DeviceBound(
                     deviceId = podStateManager.bluetoothAddress ?: "POD-DASH-ACTIVE",
                     displayName = UiText.StringResource(R.string.omnipod_dash_pump_display_name),
                 )
-                onConnected(pump)
+                onBound(pump)
             },
             onCancel = onCancel
         )

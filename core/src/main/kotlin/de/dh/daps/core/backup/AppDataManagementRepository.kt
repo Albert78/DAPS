@@ -3,8 +3,6 @@ package de.dh.daps.core.backup
 import android.content.Context
 import androidx.room.withTransaction
 import de.dh.daps.AppPreferencesRepository
-import de.dh.daps.activeGlucoseSourceDriverId
-import de.dh.daps.activePumpDriverId
 import de.dh.daps.carbsUnit
 import de.dh.daps.common.model.PluginManager
 import de.dh.daps.common.model.data.CarbsUnit
@@ -17,8 +15,6 @@ import de.dh.daps.core.repository.TherapyRepository
 import de.dh.daps.core.repository.TreatmentRepository
 import de.dh.daps.core.repository.db.AppDatabase
 import de.dh.daps.glucoseUnit
-import de.dh.daps.setActiveGlucoseSourceDriverId
-import de.dh.daps.setActivePumpDriverId
 import de.dh.daps.setCarbsUnit
 import de.dh.daps.setGlucoseUnit
 import kotlinx.coroutines.Dispatchers
@@ -72,9 +68,7 @@ class AppDataManagementRepositoryImpl(
             val preferences = preferencesRepository.getPreferences()
             val preferencesDto = AppPreferencesDto(
                 glucoseUnit = preferences.glucoseUnit.name,
-                carbsUnit = preferences.carbsUnit.name,
-                activeGlucoseSourceDriverId = if (options.includeDescriptors) preferences.activeGlucoseSourceDriverId else null,
-                activePumpDriverId = if (options.includeDescriptors) preferences.activePumpDriverId else null
+                carbsUnit = preferences.carbsUnit.name
             )
 
             // 2. Fetch Therapy Configuration
@@ -244,14 +238,6 @@ class AppDataManagementRepositoryImpl(
                 }
                 runCatching {
                     preferencesRepository.setCarbsUnit(CarbsUnit.valueOf(prefs.carbsUnit))
-                }
-                if (options.includeDescriptors) {
-                    prefs.activeGlucoseSourceDriverId?.let { driverId ->
-                        preferencesRepository.setActiveGlucoseSourceDriverId(driverId)
-                    }
-                    prefs.activePumpDriverId?.let { driverId ->
-                        preferencesRepository.setActivePumpDriverId(driverId)
-                    }
                 }
             }
 

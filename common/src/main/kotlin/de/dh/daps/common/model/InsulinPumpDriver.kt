@@ -6,9 +6,9 @@ import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Driver interface for insulin pump plugins.
- * Encapsulates driver-specific scanning, pairing, and connection workflows.
+ * Encapsulates driver-specific scanning, pairing, and binding workflows.
  *
- * Drivers must persist their connected device information in their [PluginPreferences]
+ * Drivers must persist their bound device information in their [PluginPreferences]
  * (provided via [PluginContext]) and must be able to restore their [DeviceLifecycleState] and their
  * state to re-establish the connection when [attach] is invoked.
  */
@@ -30,11 +30,11 @@ interface InsulinPumpDriver {
 
     /**
      * Renders the driver's custom UI workflow for initial setup, device scanning, and pairing.
-     * When pairing succeeds, [onConnected] is invoked with the active [InsulinPump] instance.
+     * When pairing succeeds, [onBound] is invoked with the active [InsulinPump] instance.
      */
     @Composable
     fun SetupScreen(
-        onConnected: (InsulinPump) -> Unit,
+        onBound: (InsulinPump) -> Unit,
         onCancel: () -> Unit,
     )
 

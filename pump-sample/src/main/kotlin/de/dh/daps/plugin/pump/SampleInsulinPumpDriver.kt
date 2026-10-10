@@ -64,7 +64,7 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
      */
     @Composable
     override fun SetupScreen(
-        onConnected: (InsulinPump) -> Unit,
+        onBound: (InsulinPump) -> Unit,
         onCancel: () -> Unit,
     ) {
         FramedCard(
@@ -78,7 +78,7 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
                     style = MaterialTheme.typography.titleMedium,
                 )
                 Text(
-                    text = "Confirm connection to the simulated sample pump.",
+                    text = "Confirm setup for the simulated sample pump.",
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -97,11 +97,11 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
                             deviceId = deviceId,
                             displayName = UiText.DynamicString(deviceName),
                         )
-                        onConnected(pump)
+                        onBound(pump)
                     },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text("Confirm Connection")
+                    Text("Confirm Setup")
                 }
             }
         }

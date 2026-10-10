@@ -68,8 +68,8 @@ fun GlucoseSourceSetupScreen(
         uiState = uiState,
         onNavigateUp = onNavigateUp,
         onSelectDriver = viewModel::selectDriver,
-        onConnectGlucoseSource = { driverId, source ->
-            viewModel.onGlucoseSourceConnected(driverId, source, onSuccess = onNavigateUp)
+        onBindGlucoseSource = { _, source ->
+            viewModel.onGlucoseSourceBound(source, onSuccess = onNavigateUp)
         },
         onClearError = viewModel::clearError
     )
@@ -81,7 +81,7 @@ fun GlucoseSourceSetupContent(
     uiState: GlucoseSourceSetupUiState,
     onNavigateUp: () -> Unit,
     onSelectDriver: (GlucoseSourceDriver?) -> Unit,
-    onConnectGlucoseSource: (String, GlucoseSource) -> Unit,
+    onBindGlucoseSource: (String, GlucoseSource) -> Unit,
     onClearError: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -132,8 +132,8 @@ fun GlucoseSourceSetupContent(
                 ) {
                     ScopedDriverSetupContainer(driverId = selectedDriver.driverId) {
                         selectedDriver.SetupScreen(
-                            onConnected = { source ->
-                                onConnectGlucoseSource(selectedDriver.driverId, source)
+                            onBound = { source ->
+                                onBindGlucoseSource(selectedDriver.driverId, source)
                             },
                             onCancel = {
                                 if (uiState.availableDrivers.size > 1) {
@@ -152,7 +152,7 @@ fun GlucoseSourceSetupContent(
                 )
             }
 
-            if (uiState.isConnecting) {
+            if (uiState.isBinding) {
                 LoadingOverlayCard(
                     message = stringResource(id = R.string.glucose_source_setup_connecting)
                 )
@@ -373,7 +373,7 @@ private class PreviewGlucoseDriver(
 
     @Composable
     override fun SetupScreen(
-        onConnected: (GlucoseSource) -> Unit,
+        onBound: (GlucoseSource) -> Unit,
         onCancel: () -> Unit
     ) {
     }
@@ -398,7 +398,7 @@ fun GlucoseSourceSetupNoActiveSourcePreview() {
             ),
             onNavigateUp = {},
             onSelectDriver = {},
-            onConnectGlucoseSource = { _, _ -> },
+            onBindGlucoseSource = { _, _ -> },
             onClearError = {}
         )
     }
@@ -424,7 +424,7 @@ fun GlucoseSourceSetupMultipleDriversPreview() {
             ),
             onNavigateUp = {},
             onSelectDriver = {},
-            onConnectGlucoseSource = { _, _ -> },
+            onBindGlucoseSource = { _, _ -> },
             onClearError = {}
         )
     }

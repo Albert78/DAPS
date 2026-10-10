@@ -69,7 +69,7 @@ class SimBodyGlucoseSourceDriver(
      */
     @Composable
     override fun SetupScreen(
-        onConnected: (GlucoseSource) -> Unit,
+        onBound: (GlucoseSource) -> Unit,
         onCancel: () -> Unit,
     ) {
         FramedCard(
@@ -110,7 +110,7 @@ class SimBodyGlucoseSourceDriver(
                                 deviceId = deviceId,
                                 displayName = UiText.StringResource(R.string.sim_body_cgm_sensor_display_name)
                             )
-                            onConnected(source)
+                            onBound(source)
                         },
                         modifier = Modifier.weight(1f),
                     ) {

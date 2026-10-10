@@ -36,7 +36,6 @@ import de.dh.daps.core.pump.PumpManagerImpl
 import de.dh.daps.core.repository.AlarmRepository
 import de.dh.daps.core.repository.AlarmRepositoryImpl
 import de.dh.daps.core.repository.DatabaseInitializer
-import de.dh.daps.core.repository.DeviceManagementRepository
 import de.dh.daps.core.repository.DeviceStatusRepository
 import de.dh.daps.core.repository.FoodRepository
 import de.dh.daps.core.repository.GlucoseRepository
@@ -72,7 +71,6 @@ class SystemRegistryImpl(
     override val alarmEvaluator: AlarmEvaluator,
     override val treatmentRepository: TreatmentRepository,
     override val foodRepository: FoodRepository,
-    override val deviceManagementRepository: DeviceManagementRepository,
     override val settingsRepository: SettingsRepository,
     override val systemMetricsRepository: SystemMetricsRepository,
     override val deviceStatusRepository: DeviceStatusRepository,
@@ -185,9 +183,9 @@ class SystemRegistryImpl(
         withContext(Dispatchers.Default) {
             _initializationState.value = InitializationState.INITIALIZING
             runCatching {
-                // 1. Stop background engines and disconnect active devices
-                deviceConnectionManager.disconnectGlucoseSource()
-                deviceConnectionManager.disconnectPump()
+                // 1. Stop background engines and unbind active devices
+                deviceConnectionManager.unbindGlucoseSource()
+                deviceConnectionManager.unbindPump()
                 glucoseSourceManager.stop()
                 pumpManager.stop()
                 therapyManager.stop()
@@ -266,11 +264,6 @@ class SystemRegistryImpl(
                 appDatabase = appDatabase
             )
             val foodRepository = FoodRepository(appDatabase)
-            val deviceManagementRepository = DeviceManagementRepository(
-                appDatabase = appDatabase,
-                appPreferencesRepository = appPreferencesRepository,
-                scope = scope
-            )
             val settingsRepository = SettingsRepository(appDatabase)
             val systemMetricsRepository = SystemMetricsRepository(appDatabase)
             val deviceStatusRepository = DeviceStatusRepository(application)
@@ -289,23 +282,23 @@ class SystemRegistryImpl(
             )
             val pumpManager = PumpManagerImpl(scope = scope, wakeService = wakeService)
             val pumpDriverManager = PumpDriverManager(
-                drivers = pluginManager.getPlugins().filterIsInstance<InsulinPumpDriver>()
+                drivers = pluginManager.getPlugins().filterIsInstance<InsulinPumpDriver>(),
+                scope = scope
             )
 
             val glucoseSourceManager = GlucoseSourceManager(
                 glucoseRepository = glucoseRepository
             )
             val glucoseSourceDriverManager = GlucoseSourceDriverManager(
-                drivers = pluginManager.getPlugins().filterIsInstance<GlucoseSourceDriver>()
+                drivers = pluginManager.getPlugins().filterIsInstance<GlucoseSourceDriver>(),
+                scope = scope
             )
 
             val deviceConnectionManager = DeviceConnectionManager(
-                deviceManagementRepository = deviceManagementRepository,
                 glucoseSourceDriverManager = glucoseSourceDriverManager,
                 pumpDriverManager = pumpDriverManager,
                 glucoseSourceManager = glucoseSourceManager,
-                pumpManager = pumpManager,
-                scope = scope
+                pumpManager = pumpManager
             )
 
             val recommendationManager = RecommendationManager(
@@ -373,7 +366,6 @@ class SystemRegistryImpl(
                 alarmEvaluator = alarmEvaluator,
                 treatmentRepository = treatmentRepository,
                 foodRepository = foodRepository,
-                deviceManagementRepository = deviceManagementRepository,
                 settingsRepository = settingsRepository,
                 systemMetricsRepository = systemMetricsRepository,
                 deviceStatusRepository = deviceStatusRepository,

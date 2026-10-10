@@ -69,7 +69,7 @@ class SimBodyInsulinPumpDriver(
      */
     @Composable
     override fun SetupScreen(
-        onConnected: (InsulinPump) -> Unit,
+        onBound: (InsulinPump) -> Unit,
         onCancel: () -> Unit,
     ) {
         FramedCard(
@@ -110,7 +110,7 @@ class SimBodyInsulinPumpDriver(
                                 deviceId = deviceId,
                                 displayName = UiText.StringResource(R.string.sim_body_pump_device_display_name)
                             )
-                            onConnected(pump)
+                            onBound(pump)
                         },
                         modifier = Modifier.weight(1f),
                     ) {

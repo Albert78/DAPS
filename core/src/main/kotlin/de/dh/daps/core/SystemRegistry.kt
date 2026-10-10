@@ -20,7 +20,6 @@ import de.dh.daps.core.device.DeviceConnectionManager
 import de.dh.daps.core.pump.PumpDriverManager
 import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.repository.AlarmRepository
-import de.dh.daps.core.repository.DeviceManagementRepository
 import de.dh.daps.core.repository.DeviceStatusRepository
 import de.dh.daps.core.repository.FoodRepository
 import de.dh.daps.core.repository.GlucoseRepository
@@ -118,11 +117,6 @@ interface SystemRegistry {
      * Repository for managing known food items and nutritional data.
      */
     val foodRepository: FoodRepository
-
-    /**
-     * Repository for tracking device-related events, such as catheter or reservoir changes.
-     */
-    val deviceManagementRepository: DeviceManagementRepository
 
     /**
      * Repository for general system and application settings.
