@@ -2,6 +2,7 @@ package de.dh.daps.ui.screens.glucosesourcesetup
 
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -46,6 +47,8 @@ import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
+import de.dh.daps.ui.common.composables.NormalTextButton
+import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.ScopedDriverSetupContainer
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppTheme
@@ -267,6 +270,7 @@ private class PreviewGlucoseDriver(
     override val driverId: String,
     override val displayName: UiText,
     initialState: DeviceLifecycleState = DeviceLifecycleState.NoDevice,
+    private val setupScreenContent: @Composable () -> Unit = {}
 ) : GlucoseSourceDriver {
     override val lifecycleState: StateFlow<DeviceLifecycleState> =
         MutableStateFlow(initialState)
@@ -280,21 +284,76 @@ private class PreviewGlucoseDriver(
     override fun SetupScreen(
         onNavigateUp: () -> Unit
     ) {
+        setupScreenContent()
     }
 }
 
-@Preview(showBackground = true, name = "Keine Quelle verbunden - Light")
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Keine Quelle verbunden - Dark")
 @Composable
-fun GlucoseSourceSetupNoActiveSourcePreview() {
+internal fun GlucoseSourceSamplePreviewContent() {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        FramedCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "Dexcom G6 CGM",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    text = "Verbindung mit dem Sensor herstellen",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                Text(
+                    text = "Gib die Transmitterseriennummer deines Dexcom G6 Transmitters ein, um die Bluetooth-Verkopplung zu starten.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            PrimaryButton(
+                onClick = {},
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Sensor verbinden")
+            }
+
+            NormalTextButton(
+                onClick = {},
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Einrichtung abbrechen")
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Treiber-Auswahlliste - Light")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Treiber-Auswahlliste - Dark")
+@Composable
+fun GlucoseSourceSetupDriverSelectionPreview() {
     AppTheme {
         GlucoseSourceSetupContent(
             uiState = GlucoseSourceSetupUiState(
                 availableDrivers = listOf(
                     PreviewGlucoseDriver("de.dh.daps.plugin.glucose.sample", UiText.DynamicString("Sample CGM Driver")),
                     PreviewGlucoseDriver("de.dh.daps.plugin.simbody.cgm", UiText.DynamicString("SimBody Virtual CGM Driver"))
-                ),
-                activeDriverId = null
+                )
             ),
             onNavigateUp = {},
             onSelectDriver = {},
@@ -303,23 +362,36 @@ fun GlucoseSourceSetupNoActiveSourcePreview() {
     }
 }
 
-@Preview(showBackground = true, name = "Mehrere Treiber verfügbar - Light")
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Mehrere Treiber verfügbar - Dark")
+@Preview(showBackground = true, name = "Keine Treiber verfügbar - Light")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Keine Treiber verfügbar - Dark")
 @Composable
-fun GlucoseSourceSetupMultipleDriversPreview() {
-    val simBodyDriver = PreviewGlucoseDriver(
-        "de.dh.daps.plugin.simbody.cgm",
-        UiText.DynamicString("SimBody Virtual CGM Driver"),
-        DeviceLifecycleState.DeviceBound("simbody-virtual-cgm-01", UiText.DynamicString("SimBody Virtual CGM"))
+fun GlucoseSourceSetupNoDriversPreview() {
+    AppTheme {
+        GlucoseSourceSetupContent(
+            uiState = GlucoseSourceSetupUiState(
+                availableDrivers = emptyList()
+            ),
+            onNavigateUp = {},
+            onSelectDriver = {},
+            onClearError = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Treiber-Einrichtung (Dexcom G6) - Light")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Treiber-Einrichtung (Dexcom G6) - Dark")
+@Composable
+fun GlucoseSourceSetupDriverSetupPreview() {
+    val sampleDriver = PreviewGlucoseDriver(
+        driverId = "de.dh.daps.plugin.glucose.dexcom",
+        displayName = UiText.DynamicString("Dexcom G6 CGM"),
+        setupScreenContent = { GlucoseSourceSamplePreviewContent() }
     )
     AppTheme {
         GlucoseSourceSetupContent(
             uiState = GlucoseSourceSetupUiState(
-                availableDrivers = listOf(
-                    simBodyDriver,
-                    PreviewGlucoseDriver("de.dh.daps.plugin.glucose.sample", UiText.DynamicString("Sample CGM Driver"))
-                ),
-                activeDriverId = "de.dh.daps.plugin.simbody.cgm"
+                availableDrivers = listOf(sampleDriver),
+                selectedDriver = sampleDriver
             ),
             onNavigateUp = {},
             onSelectDriver = {},

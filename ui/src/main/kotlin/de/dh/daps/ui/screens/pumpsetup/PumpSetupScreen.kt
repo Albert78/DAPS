@@ -383,44 +383,18 @@ internal fun OmnipodDashStep1PreviewContent() {
     }
 }
 
-@Preview(showBackground = true, name = "Keine Pumpe verbunden - Light")
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Keine Pumpe verbunden - Dark")
+@Preview(showBackground = true, name = "Treiber-Auswahlliste - Light")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Treiber-Auswahlliste - Dark")
 @Composable
-fun PumpSetupNoActivePumpPreview() {
+fun PumpSetupDriverSelectionPreview() {
     AppTheme {
         PumpSetupContent(
             uiState = PumpSetupUiState(
                 availableDrivers = listOf(
                     PreviewPumpDriver("de.dh.daps.plugin.sample", UiText.DynamicString("Sample Pump Driver")),
-                    PreviewPumpDriver("de.dh.daps.plugin.simbody", UiText.DynamicString("SimBody Virtual Pump Driver"))
-                ),
-                activeDriverId = null
-            ),
-            onNavigateUp = {},
-            onSelectDriver = {},
-            onClearError = {}
-        )
-    }
-}
-
-@Preview(showBackground = true, name = "Mehrere Treiber verfügbar - Light")
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Mehrere Treiber verfügbar - Dark")
-@Composable
-fun PumpSetupMultipleDriversPreview() {
-    val simBodyDriver = PreviewPumpDriver(
-        "de.dh.daps.plugin.simbody",
-        UiText.DynamicString("SimBody Virtual Pump Driver"),
-        DeviceLifecycleState.DeviceBound("simbody-virtual-pump-01", UiText.DynamicString("SimBody Virtual Insulin Pump"))
-    )
-    AppTheme {
-        PumpSetupContent(
-            uiState = PumpSetupUiState(
-                availableDrivers = listOf(
-                    simBodyDriver,
-                    PreviewPumpDriver("de.dh.daps.plugin.sample", UiText.DynamicString("Sample Pump Driver")),
+                    PreviewPumpDriver("de.dh.daps.plugin.simbody", UiText.DynamicString("SimBody Virtual Pump Driver")),
                     PreviewPumpDriver("de.dh.daps.plugin.danai", UiText.DynamicString("Sooil Dana-i Driver mit langem Namen für automatischen Zeilenumbruch"))
-                ),
-                activeDriverId = "de.dh.daps.plugin.simbody"
+                )
             ),
             onNavigateUp = {},
             onSelectDriver = {},
@@ -429,32 +403,14 @@ fun PumpSetupMultipleDriversPreview() {
     }
 }
 
-@Preview(showBackground = true, name = "Pumpe verbunden, keine Treiber - Light")
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Pumpe verbunden, keine Treiber - Dark")
+@Preview(showBackground = true, name = "Keine Treiber verfügbar - Light")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Keine Treiber verfügbar - Dark")
 @Composable
-fun PumpSetupActivePumpNoDriversPreview() {
+fun PumpSetupNoDriversPreview() {
     AppTheme {
         PumpSetupContent(
             uiState = PumpSetupUiState(
-                availableDrivers = emptyList(),
-                activeDriverId = "de.dh.daps.plugin.simbody"
-            ),
-            onNavigateUp = {},
-            onSelectDriver = {},
-            onClearError = {}
-        )
-    }
-}
-
-@Preview(showBackground = true, name = "Keine Pumpe, keine Treiber - Light")
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Keine Pumpe, keine Treiber - Dark")
-@Composable
-fun PumpSetupNoActivePumpNoDriversPreview() {
-    AppTheme {
-        PumpSetupContent(
-            uiState = PumpSetupUiState(
-                availableDrivers = emptyList(),
-                activeDriverId = null
+                availableDrivers = emptyList()
             ),
             onNavigateUp = {},
             onSelectDriver = {},
