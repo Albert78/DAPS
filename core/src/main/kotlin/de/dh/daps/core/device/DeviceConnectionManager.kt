@@ -9,6 +9,8 @@ import de.dh.daps.core.aps.GlucoseSourceManager
 import de.dh.daps.core.pump.PumpDriverManager
 import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.repository.DeviceManagementRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 /**
  * Container holding the connection results when restoring device connections on application startup.
@@ -27,8 +29,54 @@ class DeviceConnectionManager(
     private val glucoseSourceDriverManager: GlucoseSourceDriverManager,
     private val pumpDriverManager: PumpDriverManager,
     private val glucoseSourceManager: GlucoseSourceManager,
-    private val pumpManager: PumpManager
+    private val pumpManager: PumpManager,
+    private val scope: CoroutineScope
 ) {
+    init {
+        scope.launch {
+            pumpDriverManager.drivers.forEach { driver ->
+                launch {
+                    driver.lifecycleState.collect { state ->
+                        when (state) {
+                            is DeviceLifecycleState.DeviceBound,
+                            is DeviceLifecycleState.SetupInProgress -> {
+                                if (deviceManagementRepository.getActivePumpDriverId() != driver.driverId) {
+                                    deviceManagementRepository.setActivePumpDriverId(driver.driverId)
+                                }
+                            }
+                            is DeviceLifecycleState.NoDevice -> {
+                                if (deviceManagementRepository.getActivePumpDriverId() == driver.driverId) {
+                                    deviceManagementRepository.setActivePumpDriverId(null)
+                                    pumpManager.insulinPump = null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            glucoseSourceDriverManager.drivers.forEach { driver ->
+                launch {
+                    driver.lifecycleState.collect { state ->
+                        when (state) {
+                            is DeviceLifecycleState.DeviceBound,
+                            is DeviceLifecycleState.SetupInProgress -> {
+                                if (deviceManagementRepository.getActiveGlucoseSourceDriverId() != driver.driverId) {
+                                    deviceManagementRepository.setActiveGlucoseSourceDriverId(driver.driverId)
+                                }
+                            }
+                            is DeviceLifecycleState.NoDevice -> {
+                                if (deviceManagementRepository.getActiveGlucoseSourceDriverId() == driver.driverId) {
+                                    deviceManagementRepository.setActiveGlucoseSourceDriverId(null)
+                                    glucoseSourceManager.glucoseSource = null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Attempts to re-establish connections to the active glucose source and insulin pump.
      * Should be called during application startup.
@@ -56,17 +104,35 @@ class DeviceConnectionManager(
                         null
                     }
                     is DeviceLifecycleState.NoDevice -> {
-                        Log.d(TAG, "Glucose source driver '$activeGlucoseDriverId' is unconfigured.")
+                        Log.d(TAG, "Glucose source driver '$activeGlucoseDriverId' is unconfigured (NoDevice). Clearing active driver repo.")
+                        deviceManagementRepository.setActiveGlucoseSourceDriverId(null)
                         null
                     }
                 }
             } else {
-                Log.w(TAG, "No driver registered for active glucose driver ID '$activeGlucoseDriverId'")
+                Log.w(TAG, "No driver registered for active glucose driver ID '$activeGlucoseDriverId'. Clearing active driver repo.")
+                deviceManagementRepository.setActiveGlucoseSourceDriverId(null)
                 null
             }
         } else {
-            Log.d(TAG, "No active glucose source driver ID found.")
-            null
+            val activeDriver = glucoseSourceDriverManager.getActiveDriver()
+            if (activeDriver != null) {
+                Log.d(TAG, "Found active glucose source driver from driver list: ${activeDriver.driverId}")
+                deviceManagementRepository.setActiveGlucoseSourceDriverId(activeDriver.driverId)
+                val state = activeDriver.lifecycleState.value
+                if (state is DeviceLifecycleState.DeviceBound) {
+                    glucoseSourceDriverManager.attachToGlucoseSource(activeDriver.driverId).onSuccess { glucoseSource ->
+                        glucoseSourceManager.glucoseSource = glucoseSource
+                    }.onFailure { error ->
+                        Log.e(TAG, "Failed to reconnect glucose source driver '${activeDriver.driverId}': ${error.message}", error)
+                    }
+                } else {
+                    null
+                }
+            } else {
+                Log.d(TAG, "No active glucose source driver found.")
+                null
+            }
         }
 
         val activePumpDriverId = deviceManagementRepository.getActivePumpDriverId()
@@ -89,17 +155,35 @@ class DeviceConnectionManager(
                         null
                     }
                     is DeviceLifecycleState.NoDevice -> {
-                        Log.d(TAG, "Pump driver '$activePumpDriverId' is unconfigured.")
+                        Log.d(TAG, "Pump driver '$activePumpDriverId' is unconfigured (NoDevice). Clearing active driver repo.")
+                        deviceManagementRepository.setActivePumpDriverId(null)
                         null
                     }
                 }
             } else {
-                Log.w(TAG, "No driver registered for active pump driver ID '$activePumpDriverId'")
+                Log.w(TAG, "No driver registered for active pump driver ID '$activePumpDriverId'. Clearing active driver repo.")
+                deviceManagementRepository.setActivePumpDriverId(null)
                 null
             }
         } else {
-            Log.d(TAG, "No active pump driver ID found.")
-            null
+            val activeDriver = pumpDriverManager.getActiveDriver()
+            if (activeDriver != null) {
+                Log.d(TAG, "Found active pump driver from driver list: ${activeDriver.driverId}")
+                deviceManagementRepository.setActivePumpDriverId(activeDriver.driverId)
+                val state = activeDriver.lifecycleState.value
+                if (state is DeviceLifecycleState.DeviceBound) {
+                    pumpDriverManager.attachToPump(activeDriver.driverId).onSuccess { insulinPump ->
+                        pumpManager.insulinPump = insulinPump
+                    }.onFailure { error ->
+                        Log.e(TAG, "Failed to reconnect insulin pump driver '${activeDriver.driverId}': ${error.message}", error)
+                    }
+                } else {
+                    null
+                }
+            } else {
+                Log.d(TAG, "No active pump driver found.")
+                null
+            }
         }
 
         return DeviceConnectionResult(

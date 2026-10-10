@@ -1,5 +1,6 @@
 package de.dh.daps.core.pump
 
+import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpDriver
 
@@ -15,6 +16,13 @@ class PumpDriverManager(
      */
     fun getDriver(driverId: String): InsulinPumpDriver? {
         return drivers.find { it.driverId == driverId }
+    }
+
+    /**
+     * Retrieves the currently active insulin pump driver (the first driver whose lifecycle state is not NoDevice).
+     */
+    fun getActiveDriver(): InsulinPumpDriver? {
+        return drivers.firstOrNull { it.lifecycleState.value !is DeviceLifecycleState.NoDevice }
     }
 
     /**

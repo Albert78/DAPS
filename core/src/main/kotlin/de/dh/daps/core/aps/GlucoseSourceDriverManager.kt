@@ -1,5 +1,6 @@
 package de.dh.daps.core.aps
 
+import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.GlucoseSourceDriver
 
@@ -15,6 +16,13 @@ class GlucoseSourceDriverManager(
      */
     fun getDriver(driverId: String): GlucoseSourceDriver? {
         return drivers.find { it.driverId == driverId }
+    }
+
+    /**
+     * Retrieves the currently active glucose source driver (the first driver whose lifecycle state is not NoDevice).
+     */
+    fun getActiveDriver(): GlucoseSourceDriver? {
+        return drivers.firstOrNull { it.lifecycleState.value !is DeviceLifecycleState.NoDevice }
     }
 
     /**
