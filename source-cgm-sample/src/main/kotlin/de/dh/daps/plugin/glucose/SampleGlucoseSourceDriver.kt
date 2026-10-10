@@ -45,17 +45,19 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
 
     override fun initialize(context: PluginContext) {
         this.pluginContext = context
-        scope.launch {
-            val deviceId = context.preferences.getString(KEY_DEVICE_ID).first()
-            val deviceName = context.preferences.getString(KEY_DEVICE_NAME).first() ?: "Sample Glucose Sensor 01"
-            if (!deviceId.isNullOrEmpty()) {
-                _lifecycleState.value = DeviceLifecycleState.DeviceBound(
-                    deviceId = deviceId,
-                    displayName = UiText.DynamicString(deviceName)
-                )
-            } else {
-                _lifecycleState.value = DeviceLifecycleState.NoDevice
-            }
+    }
+
+    override suspend fun initState() {
+        val pc = pluginContext ?: return
+        val deviceId = pc.preferences.getString(KEY_DEVICE_ID).first()
+        val deviceName = pc.preferences.getString(KEY_DEVICE_NAME).first() ?: "Sample Glucose Sensor 01"
+        if (!deviceId.isNullOrEmpty()) {
+            _lifecycleState.value = DeviceLifecycleState.DeviceBound(
+                deviceId = deviceId,
+                displayName = UiText.DynamicString(deviceName)
+            )
+        } else {
+            _lifecycleState.value = DeviceLifecycleState.NoDevice
         }
     }
 

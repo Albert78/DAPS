@@ -24,7 +24,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 
 /**
  * Insulin pump driver plugin for Sooil Dana-i pumps.
@@ -53,9 +52,11 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
 
     override fun initialize(context: PluginContext) {
         this.pluginContext = context
-        scope.launch {
-            refreshLifecycleState(context.preferences)
-        }
+    }
+
+    override suspend fun initState() {
+        val pc = pluginContext ?: return
+        refreshLifecycleState(pc.preferences)
     }
 
     private suspend fun refreshLifecycleState(preferences: PluginPreferences) {

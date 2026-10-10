@@ -364,6 +364,8 @@ private class PreviewPumpDriver(
     override val lifecycleState: StateFlow<DeviceLifecycleState> =
         MutableStateFlow(initialState)
 
+    override suspend fun initState() {}
+
     @Composable
     override fun SetupScreen(
         onNavigateUp: () -> Unit

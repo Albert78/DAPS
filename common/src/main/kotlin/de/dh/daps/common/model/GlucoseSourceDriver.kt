@@ -29,6 +29,12 @@ interface GlucoseSourceDriver {
     val lifecycleState: StateFlow<DeviceLifecycleState>
 
     /**
+     * Restores the internal lifecycle state of the driver (e.g. checking persisted preferences
+     * and updating [lifecycleState] to [DeviceLifecycleState.DeviceBound] if a device is configured).
+     */
+    suspend fun initState()
+
+    /**
      * Renders the driver's custom UI workflow for initial setup, transmitter pairing, or configuration.
      * When setup finishes or is cancelled, [onNavigateUp] is invoked to return to the parent screen.
      */

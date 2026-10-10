@@ -71,9 +71,11 @@ class ReceiverGlucosePlugin(
 
     override fun initialize(context: PluginContext) {
         this.pluginContext = context
-        scope.launch {
-            refreshLifecycleState(context.preferences)
-        }
+    }
+
+    override suspend fun initState() {
+        val pc = pluginContext ?: return
+        refreshLifecycleState(pc.preferences)
     }
 
     override val readingsInterval: BgReadingsInterval

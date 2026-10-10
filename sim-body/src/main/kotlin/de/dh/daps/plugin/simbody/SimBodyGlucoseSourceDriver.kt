@@ -51,16 +51,18 @@ class SimBodyGlucoseSourceDriver(
 
     override fun initialize(context: PluginContext) {
         this.pluginContext = context
-        scope.launch {
-            val deviceId = context.preferences.getString(KEY_DEVICE_ID).first()
-            if (!deviceId.isNullOrEmpty()) {
-                _lifecycleState.value = DeviceLifecycleState.DeviceBound(
-                    deviceId = deviceId,
-                    displayName = UiText.StringResource(R.string.sim_body_cgm_sensor_display_name)
-                )
-            } else {
-                _lifecycleState.value = DeviceLifecycleState.NoDevice
-            }
+    }
+
+    override suspend fun initState() {
+        val pc = pluginContext ?: return
+        val deviceId = pc.preferences.getString(KEY_DEVICE_ID).first()
+        if (!deviceId.isNullOrEmpty()) {
+            _lifecycleState.value = DeviceLifecycleState.DeviceBound(
+                deviceId = deviceId,
+                displayName = UiText.StringResource(R.string.sim_body_cgm_sensor_display_name)
+            )
+        } else {
+            _lifecycleState.value = DeviceLifecycleState.NoDevice
         }
     }
 

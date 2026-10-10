@@ -29,6 +29,12 @@ interface InsulinPumpDriver {
     val lifecycleState: StateFlow<DeviceLifecycleState>
 
     /**
+     * Restores the internal lifecycle state of the driver (e.g. checking persisted preferences
+     * and updating [lifecycleState] to [DeviceLifecycleState.DeviceBound] if a device is configured).
+     */
+    suspend fun initState()
+
+    /**
      * Renders the driver's custom UI workflow for initial setup, device scanning, and pairing.
      * When pairing finishes or is cancelled, [onNavigateUp] is invoked to return to the parent screen.
      */

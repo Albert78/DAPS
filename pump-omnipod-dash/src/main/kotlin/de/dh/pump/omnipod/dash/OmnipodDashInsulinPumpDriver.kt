@@ -40,6 +40,19 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
         this.pluginContext = context
     }
 
+    override suspend fun initState() {
+        val prefs = pluginContext?.preferences ?: return
+        val podStateManager = OmnipodDashPodStateManagerImpl(prefs)
+        if (podStateManager.isActivationCompleted || !podStateManager.bluetoothAddress.isNullOrEmpty()) {
+            _lifecycleState.value = DeviceLifecycleState.DeviceBound(
+                deviceId = podStateManager.bluetoothAddress ?: "POD-DASH-ACTIVE",
+                displayName = UiText.StringResource(R.string.omnipod_dash_pump_display_name),
+            )
+        } else {
+            _lifecycleState.value = DeviceLifecycleState.NoDevice
+        }
+    }
+
     @Composable
     override fun SetupScreen(
         onNavigateUp: () -> Unit
