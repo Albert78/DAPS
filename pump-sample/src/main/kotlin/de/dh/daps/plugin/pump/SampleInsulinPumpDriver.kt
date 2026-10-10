@@ -34,6 +34,9 @@ import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.PluginContext
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.common.composables.FramedCard
+import de.dh.daps.ui.common.composables.NormalButton
+import de.dh.daps.ui.common.composables.NormalTextButton
+import de.dh.daps.ui.common.composables.PrimaryButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -156,7 +159,7 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        OutlinedButton(
+                        NormalButton(
                             onClick = { showUnbindDialog = true },
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.outlinedButtonColors(
@@ -190,7 +193,7 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
                             style = MaterialTheme.typography.bodyMedium,
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Button(
+                        PrimaryButton(
                             onClick = {
                                 val deviceId = "sample-pump-device-01"
                                 val deviceName = "Sample Pump 01"
@@ -218,7 +221,7 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
                 title = { Text(stringResource(R.string.sample_pump_unbind_dialog_title)) },
                 text = { Text(stringResource(R.string.sample_pump_unbind_dialog_message)) },
                 confirmButton = {
-                    Button(
+                    PrimaryButton(
                         onClick = {
                             showUnbindDialog = false
                             scope.launch { unbindDevice() }
@@ -232,7 +235,7 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
                     }
                 },
                 dismissButton = {
-                    OutlinedButton(onClick = { showUnbindDialog = false }) {
+                    NormalTextButton(onClick = { showUnbindDialog = false }) {
                         Text(stringResource(de.dh.daps.common.R.string.action_cancel))
                     }
                 }

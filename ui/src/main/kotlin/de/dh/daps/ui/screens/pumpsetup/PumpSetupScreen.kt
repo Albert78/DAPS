@@ -55,7 +55,7 @@ import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.ScopedDriverSetupContainer
 import de.dh.daps.ui.common.composables.screenTitle
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import de.dh.daps.common.R as CommonR
@@ -395,7 +395,7 @@ internal fun OmnipodDashStep1PreviewContent() {
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Treiber-Auswahlliste - Dark")
 @Composable
 fun PumpSetupDriverSelectionPreview() {
-    AppTheme {
+    AppPreview {
         PumpSetupContent(
             uiState = PumpSetupUiState(
                 availableDrivers = listOf(
@@ -415,7 +415,7 @@ fun PumpSetupDriverSelectionPreview() {
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Keine Treiber verfügbar - Dark")
 @Composable
 fun PumpSetupNoDriversPreview() {
-    AppTheme {
+    AppPreview {
         PumpSetupContent(
             uiState = PumpSetupUiState(
                 availableDrivers = emptyList()
@@ -436,7 +436,7 @@ fun PumpSetupDriverSetupOmnipodDashPreview() {
         displayName = UiText.DynamicString("Insulet Omnipod Dash"),
         setupScreenContent = { OmnipodDashStep1PreviewContent() }
     )
-    AppTheme {
+    AppPreview {
         PumpSetupContent(
             uiState = PumpSetupUiState(
                 availableDrivers = listOf(omnipodDriver),

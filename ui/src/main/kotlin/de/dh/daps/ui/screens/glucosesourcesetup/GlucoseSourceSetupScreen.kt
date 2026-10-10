@@ -52,7 +52,7 @@ import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.ScopedDriverSetupContainer
 import de.dh.daps.ui.common.composables.screenTitle
-import de.dh.daps.ui.common.theme.AppTheme
+import de.dh.daps.ui.common.theme.AppPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import de.dh.daps.common.R as CommonR
@@ -355,7 +355,7 @@ internal fun GlucoseSourceSamplePreviewContent() {
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Treiber-Auswahlliste - Dark")
 @Composable
 fun GlucoseSourceSetupDriverSelectionPreview() {
-    AppTheme {
+    AppPreview {
         GlucoseSourceSetupContent(
             uiState = GlucoseSourceSetupUiState(
                 availableDrivers = listOf(
@@ -374,7 +374,7 @@ fun GlucoseSourceSetupDriverSelectionPreview() {
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Keine Treiber verfügbar - Dark")
 @Composable
 fun GlucoseSourceSetupNoDriversPreview() {
-    AppTheme {
+    AppPreview {
         GlucoseSourceSetupContent(
             uiState = GlucoseSourceSetupUiState(
                 availableDrivers = emptyList()
@@ -395,7 +395,7 @@ fun GlucoseSourceSetupDriverSetupPreview() {
         displayName = UiText.DynamicString("Dexcom G6 CGM"),
         setupScreenContent = { GlucoseSourceSamplePreviewContent() }
     )
-    AppTheme {
+    AppPreview {
         GlucoseSourceSetupContent(
             uiState = GlucoseSourceSetupUiState(
                 availableDrivers = listOf(sampleDriver),

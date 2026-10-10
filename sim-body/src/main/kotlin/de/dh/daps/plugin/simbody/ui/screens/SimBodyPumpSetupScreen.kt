@@ -33,6 +33,10 @@ import de.dh.daps.common.ui.UiText
 import de.dh.daps.plugin.simbody.R
 import de.dh.daps.plugin.simbody.SimBodyInsulinPumpDriver
 import de.dh.daps.ui.common.composables.FramedCard
+import de.dh.daps.ui.common.composables.NormalButton
+import de.dh.daps.ui.common.composables.NormalTextButton
+import de.dh.daps.ui.common.composables.PrimaryButton
+import de.dh.daps.ui.common.theme.AppPreview
 
 @Composable
 fun SimBodyPumpSetupScreen(
@@ -112,7 +116,7 @@ fun SimBodyPumpSetupContent(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    OutlinedButton(
+                    NormalButton(
                         onClick = { showUnbindDialog = true },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.outlinedButtonColors(
@@ -145,7 +149,7 @@ fun SimBodyPumpSetupContent(
                         style = MaterialTheme.typography.bodyMedium,
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Button(
+                    PrimaryButton(
                         onClick = onBind,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
@@ -162,7 +166,7 @@ fun SimBodyPumpSetupContent(
             title = { Text(stringResource(R.string.sim_body_pump_unbind_dialog_title)) },
             text = { Text(stringResource(R.string.sim_body_pump_unbind_dialog_message)) },
             confirmButton = {
-                Button(
+                PrimaryButton(
                     onClick = {
                         showUnbindDialog = false
                         onUnbind()
@@ -176,7 +180,7 @@ fun SimBodyPumpSetupContent(
                 }
             },
             dismissButton = {
-                OutlinedButton(onClick = { showUnbindDialog = false }) {
+                NormalTextButton(onClick = { showUnbindDialog = false }) {
                     Text(stringResource(R.string.btn_cancel))
                 }
             },
@@ -187,7 +191,7 @@ fun SimBodyPumpSetupContent(
 @Preview
 @Composable
 private fun SimBodyPumpSetupContentNoDevicePreview() {
-    MaterialTheme {
+    AppPreview {
         SimBodyPumpSetupContent(
             lifecycleState = DeviceLifecycleState.NoDevice,
             onBind = {},
@@ -199,7 +203,7 @@ private fun SimBodyPumpSetupContentNoDevicePreview() {
 @Preview
 @Composable
 private fun SimBodyPumpSetupContentBoundPreview() {
-    MaterialTheme {
+    AppPreview {
         SimBodyPumpSetupContent(
             lifecycleState = DeviceLifecycleState.DeviceBound(
                 deviceId = "simbody-virtual-pump-01",

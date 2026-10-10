@@ -48,6 +48,10 @@ import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.ui.common.composables.FramedCard
+import de.dh.daps.ui.common.composables.NormalButton
+import de.dh.daps.ui.common.composables.NormalTextButton
+import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.common.composables.FramedCard
 import kotlinx.coroutines.CoroutineScope
@@ -243,7 +247,7 @@ class ReceiverGlucosePlugin(
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        OutlinedButton(
+                        NormalButton(
                             onClick = { showUnbindDialog = true },
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.outlinedButtonColors(
@@ -315,7 +319,7 @@ class ReceiverGlucosePlugin(
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(
+                        PrimaryButton(
                             onClick = {
                                 pluginContext?.preferences?.let { prefs ->
                                     scope.launch {
@@ -340,7 +344,7 @@ class ReceiverGlucosePlugin(
                 title = { Text(stringResource(R.string.receiver_unbind_dialog_title)) },
                 text = { Text(stringResource(R.string.receiver_unbind_dialog_message)) },
                 confirmButton = {
-                    Button(
+                    PrimaryButton(
                         onClick = {
                             showUnbindDialog = false
                             scope.launch { unbindDevice() }
@@ -354,7 +358,7 @@ class ReceiverGlucosePlugin(
                     }
                 },
                 dismissButton = {
-                    OutlinedButton(onClick = { showUnbindDialog = false }) {
+                    NormalTextButton(onClick = { showUnbindDialog = false }) {
                         Text(stringResource(de.dh.daps.common.R.string.action_cancel))
                     }
                 }
