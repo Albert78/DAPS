@@ -5,7 +5,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import de.dh.daps.common.model.PluginPreferences
 import de.dh.pump.danai.R
 import de.dh.pump.danai.core.connection.DanaPumpScanner
 import de.dh.pump.danai.core.connection.DanaScanResult
@@ -37,10 +36,9 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
         scanner.stopScan()
     }
 
-    fun connectAndPair(
+    fun pairAndBind(
         driver: DanaIInsulinPumpDriver,
         scanResult: DanaScanResult,
-        preferences: PluginPreferences,
         onSuccess: () -> Unit
     ) {
         viewModelScope.launch {
@@ -49,11 +47,9 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
             scanner.stopScan()
 
             try {
-                driver.createAndConnectPump(
+                driver.bindPumpDevice(
                     deviceName = scanResult.name,
                     deviceAddress = scanResult.address,
-                    context = getApplication(),
-                    preferences = preferences
                 )
                 _isConnecting.value = false
                 onSuccess()

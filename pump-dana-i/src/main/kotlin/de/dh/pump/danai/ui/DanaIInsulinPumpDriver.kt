@@ -10,7 +10,6 @@ import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.PluginContext
-import de.dh.daps.common.model.PluginPreferences
 import de.dh.daps.common.ui.UiText
 import de.dh.pump.danai.R
 import de.dh.pump.danai.core.DanaILogger
@@ -63,15 +62,10 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
         val name = danaPrefs.getLastName().ifEmpty { "Dana-i" }
 
         if (address.isNotEmpty()) {
-            _lifecycleState.value = DeviceLifecycleState.DeviceBound(
-                deviceId = address,
-                displayName = UiText.DynamicString(name),
-            )
             try {
-                val pump = doConnectPump(name, address, pc.appContext, pc.preferences)
-                _activePump.value = pump
+                bindPump(name, address)
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to connect to Dana-i pump during initState", e)
+                Log.e(TAG, "Failed to bind Dana-i pump during initState", e)
             }
         } else {
             _lifecycleState.value = DeviceLifecycleState.NoDevice
@@ -92,22 +86,21 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
         )
     }
 
-    private suspend fun doConnectPump(
+    private suspend fun bindPump(
         deviceName: String,
         deviceAddress: String,
-        context: Context,
-        preferences: PluginPreferences,
     ): InsulinPump {
-        val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        val pc = pluginContext ?: throw IllegalStateException("PluginContext not initialized")
+        val bluetoothManager = pc.appContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         val adapter = bluetoothManager.adapter ?: throw IllegalStateException("Bluetooth adapter unavailable.")
         val device = adapter.getRemoteDevice(deviceAddress)
 
         val link = DanaILink(
             device = device,
             deviceName = deviceName,
-            preferences = preferences,
+            preferences = pc.preferences,
             logger = defaultLogger,
-            context = context
+            context = pc.appContext
         )
 
         val pumpAdapter = DanaIPumpAdapter.create(link, defaultLogger, scope)
@@ -117,23 +110,21 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
             deviceId = deviceAddress,
             displayName = UiText.DynamicString(deviceName),
         )
+        _activePump.value = pumpAdapter
 
         return pumpAdapter
     }
 
     /**
-     * Creates a new connection link to a Dana-i pump during device pairing.
+     * Binds a Dana-i pump during device pairing and saves the configuration preferences.
      */
-    suspend fun createAndConnectPump(
+    suspend fun bindPumpDevice(
         deviceName: String,
         deviceAddress: String,
-        context: Context,
-        preferences: PluginPreferences,
     ): InsulinPump {
-        val pump = doConnectPump(deviceName, deviceAddress, context, preferences)
-        DanaPumpPreferences(preferences).savePumpAddress(deviceName, deviceAddress)
-        _activePump.value = pump
-        return pump
+        val pc = pluginContext ?: throw IllegalStateException("PluginContext not initialized")
+        DanaPumpPreferences(pc.preferences).savePumpAddress(deviceName, deviceAddress)
+        return bindPump(deviceName, deviceAddress)
     }
 
     internal fun getContext(): PluginContext? = pluginContext

@@ -74,15 +74,11 @@ fun DanaISetupScreen(
         connectError = connectError,
         onStartDiscovery = { viewModel.startDiscovery() },
         onPairClick = { scanResult ->
-            val prefs = driver.getContext()?.preferences
-            if (prefs != null) {
-                viewModel.connectAndPair(
-                    driver = driver,
-                    scanResult = scanResult,
-                    preferences = prefs,
-                    onSuccess = onNavigateUp
-                )
-            }
+            viewModel.pairAndBind(
+                driver = driver,
+                scanResult = scanResult,
+                onSuccess = onNavigateUp
+            )
         },
         onCancel = onNavigateUp,
         modifier = modifier

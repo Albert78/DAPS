@@ -50,16 +50,20 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
         this.pluginContext = context
     }
 
+    private fun bindDevice(deviceId: String, deviceName: String) {
+        _lifecycleState.value = DeviceLifecycleState.DeviceBound(
+            deviceId = deviceId,
+            displayName = UiText.DynamicString(deviceName),
+        )
+        _activePump.value = SampleInsulinPump()
+    }
+
     override suspend fun initState() {
         val pc = pluginContext ?: return
         val deviceId = pc.preferences.getString(KEY_DEVICE_ID).first()
         val deviceName = pc.preferences.getString(KEY_DEVICE_NAME).first() ?: "Sample Pump 01"
         if (!deviceId.isNullOrEmpty()) {
-            _lifecycleState.value = DeviceLifecycleState.DeviceBound(
-                deviceId = deviceId,
-                displayName = UiText.DynamicString(deviceName)
-            )
-            _activePump.value = SampleInsulinPump()
+            bindDevice(deviceId, deviceName)
         } else {
             _lifecycleState.value = DeviceLifecycleState.NoDevice
             _activePump.value = null
@@ -98,11 +102,7 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
                                 prefs.putString(KEY_DEVICE_NAME, deviceName)
                             }
                         }
-                        _lifecycleState.value = DeviceLifecycleState.DeviceBound(
-                            deviceId = deviceId,
-                            displayName = UiText.DynamicString(deviceName),
-                        )
-                        _activePump.value = SampleInsulinPump()
+                        bindDevice(deviceId, deviceName)
                         onNavigateUp()
                     },
                     modifier = Modifier.fillMaxWidth(),

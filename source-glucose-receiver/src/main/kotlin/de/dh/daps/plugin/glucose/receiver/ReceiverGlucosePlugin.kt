@@ -151,6 +151,15 @@ class ReceiverGlucosePlugin(
         }
     }
 
+    private fun bindSource(sourceType: ExternalSourceType) {
+        externalSourceType = sourceType
+        _lifecycleState.value = DeviceLifecycleState.DeviceBound(
+            deviceId = null,
+            displayName = UiText.StringResource(R.string.glucose_broadcast_receiver_display_name),
+        )
+        _activeGlucoseSource.value = this
+    }
+
     /**
      * Renders the setup screen for configuring the external BroadcastReceiver glucose source.
      */
@@ -185,17 +194,14 @@ class ReceiverGlucosePlugin(
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = {
-                            externalSourceType = ExternalSourceType.xDrip5Min
+                            // TODO: Make configurable in screen
+                            val sourceType = ExternalSourceType.xDrip5Min
                             pluginContext?.preferences?.let { prefs ->
                                 scope.launch {
-                                    prefs.putString(KEY_SOURCE_TYPE, externalSourceType.name)
+                                    prefs.putString(KEY_SOURCE_TYPE, sourceType.name)
                                 }
                             }
-                            _lifecycleState.value = DeviceLifecycleState.DeviceBound(
-                                deviceId = null,
-                                displayName = UiText.StringResource(R.string.glucose_broadcast_receiver_display_name)
-                            )
-                            _activeGlucoseSource.value = this@ReceiverGlucosePlugin
+                            bindSource(sourceType)
                             onNavigateUp()
                         },
                         modifier = Modifier.weight(1f),
@@ -217,12 +223,7 @@ class ReceiverGlucosePlugin(
             }
         }
         if (parsedSourceType != null) {
-            externalSourceType = parsedSourceType
-            _lifecycleState.value = DeviceLifecycleState.DeviceBound(
-                deviceId = null,
-                displayName = UiText.StringResource(R.string.glucose_broadcast_receiver_display_name)
-            )
-            _activeGlucoseSource.value = this
+            bindSource(parsedSourceType)
         } else {
             _lifecycleState.value = DeviceLifecycleState.NoDevice
             _activeGlucoseSource.value = null

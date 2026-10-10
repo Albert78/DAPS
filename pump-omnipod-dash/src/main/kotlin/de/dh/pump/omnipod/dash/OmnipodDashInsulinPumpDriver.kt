@@ -55,14 +55,8 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
         podStateManager.loadFromPreferences()
         when {
             podStateManager.isActivationCompleted -> {
-                _lifecycleState.value = DeviceLifecycleState.DeviceBound(
-                    deviceId = podStateManager.bluetoothAddress ?: "POD-DASH-ACTIVE",
-                    displayName = UiText.StringResource(R.string.omnipod_dash_pump_display_name),
-                )
                 try {
-                    val bleManager = OmnipodDashBleManager(pc.appContext, podStateManager)
-                    val pump = OmnipodDashPump(podStateManager, bleManager, pc.appContext)
-                    _activePump.value = pump
+                    bindPod(podStateManager)
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to connect to Omnipod Dash pod in initState", e)
                 }
@@ -107,17 +101,25 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
     }
 
     /**
-     * Completes pod activation and instantiates the active [OmnipodDashPump].
+     * Instantiates the pump hardware stack and updates driver lifecycle and active pump state.
      */
-    fun completeActivation(podStateManager: OmnipodDashPodStateManagerImpl) {
+    private fun bindPod(podStateManager: OmnipodDashPodStateManagerImpl): OmnipodDashPump {
         val pc = pluginContext ?: throw IllegalStateException("PluginContext not initialized")
         val bleManager = OmnipodDashBleManager(pc.appContext, podStateManager)
         val pump = OmnipodDashPump(podStateManager, bleManager, pc.appContext)
-        _activePump.value = pump
         _lifecycleState.value = DeviceLifecycleState.DeviceBound(
             deviceId = podStateManager.bluetoothAddress ?: "POD-DASH-ACTIVE",
             displayName = UiText.StringResource(R.string.omnipod_dash_pump_display_name),
         )
+        _activePump.value = pump
+        return pump
+    }
+
+    /**
+     * Completes pod activation and instantiates the active [OmnipodDashPump].
+     */
+    fun completeActivation(podStateManager: OmnipodDashPodStateManagerImpl) {
+        bindPod(podStateManager)
     }
 
     fun getContext(): PluginContext? = pluginContext

@@ -56,15 +56,19 @@ class SimBodyGlucoseSourceDriver(
         this.pluginContext = context
     }
 
+    private fun bindDevice(deviceId: String) {
+        _lifecycleState.value = DeviceLifecycleState.DeviceBound(
+            deviceId = deviceId,
+            displayName = UiText.StringResource(R.string.sim_body_cgm_sensor_display_name),
+        )
+        _activeGlucoseSource.value = simBodyPlugin.getGlucoseSource()
+    }
+
     override suspend fun initState() {
         val pc = pluginContext ?: return
         val deviceId = pc.preferences.getString(KEY_DEVICE_ID).first()
         if (!deviceId.isNullOrEmpty()) {
-            _lifecycleState.value = DeviceLifecycleState.DeviceBound(
-                deviceId = deviceId,
-                displayName = UiText.StringResource(R.string.sim_body_cgm_sensor_display_name)
-            )
-            _activeGlucoseSource.value = simBodyPlugin.getGlucoseSource()
+            bindDevice(deviceId)
         } else {
             _lifecycleState.value = DeviceLifecycleState.NoDevice
             _activeGlucoseSource.value = null
@@ -111,11 +115,7 @@ class SimBodyGlucoseSourceDriver(
                                     prefs.putString(KEY_DEVICE_ID, deviceId)
                                 }
                             }
-                            _lifecycleState.value = DeviceLifecycleState.DeviceBound(
-                                deviceId = deviceId,
-                                displayName = UiText.StringResource(R.string.sim_body_cgm_sensor_display_name)
-                            )
-                            _activeGlucoseSource.value = simBodyPlugin.getGlucoseSource()
+                            bindDevice(deviceId)
                             onNavigateUp()
                         },
                         modifier = Modifier.weight(1f),
