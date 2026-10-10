@@ -17,10 +17,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Sensors
-import androidx.compose.material3.Badge
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,7 +37,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -128,11 +125,7 @@ fun GlucoseSourceSetupContent(
                     ScopedDriverSetupContainer(driverId = selectedDriver.driverId) {
                         selectedDriver.SetupScreen(
                             onNavigateUp = {
-                                if (uiState.availableDrivers.size > 1) {
-                                    onSelectDriver(null)
-                                } else {
-                                    onNavigateUp()
-                                }
+                                onSelectDriver(null)
                             }
                         )
                     }
@@ -165,14 +158,6 @@ private fun GlucoseSourceDriverSelectionContent(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        val activeDriver = uiState.availableDrivers.find { it.driverId == uiState.activeDriverId }
-        activeDriver?.let { driver ->
-            item {
-                ActiveGlucoseSourceCard(driver = driver)
-                Spacer(modifier = Modifier.height(16.dp))
-            }
         }
 
         item {
@@ -218,10 +203,8 @@ private fun GlucoseSourceDriverSelectionContent(
             }
         } else {
             items(uiState.availableDrivers, key = { it.driverId }) { driver ->
-                val isActive = uiState.activeDriverId == driver.driverId
                 DriverCard(
                     driver = driver,
-                    isActive = isActive,
                     onClick = { onSelectDriver(driver) }
                 )
             }
@@ -243,65 +226,8 @@ private fun GlucoseSourceDriverSelectionContent(
 }
 
 @Composable
-private fun ActiveGlucoseSourceCard(driver: GlucoseSourceDriver) {
-    val lifecycleState by driver.lifecycleState.collectAsStateWithLifecycle()
-    val (displayName, deviceId) = when (val state = lifecycleState) {
-        is DeviceLifecycleState.DeviceBound -> Pair(state.displayName, state.deviceId)
-        else -> Pair(driver.displayName, null)
-    }
-
-    FramedCard(
-        modifier = Modifier.fillMaxWidth(),
-        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.Sensors,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(32.dp)
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(id = R.string.glucose_source_setup_active_source_header),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = displayName.asString(),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                if (!deviceId.isNullOrEmpty()) {
-                    Text(
-                        text = deviceId,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
-            Icon(
-                imageVector = Icons.Default.CheckCircle,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
-            )
-        }
-    }
-}
-
-@Composable
 private fun DriverCard(
     driver: GlucoseSourceDriver,
-    isActive: Boolean,
     onClick: () -> Unit
 ) {
     FramedCard(
@@ -317,7 +243,7 @@ private fun DriverCard(
             Icon(
                 imageVector = Icons.Default.Sensors,
                 contentDescription = null,
-                tint = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(28.dp)
             )
             Spacer(modifier = Modifier.width(16.dp))
@@ -327,18 +253,6 @@ private fun DriverCard(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
-            }
-            if (isActive) {
-                Badge(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.glucose_source_setup_active_badge),
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(8.dp))
             }
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,

@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 data class GlucoseSourceSetupUiState(
     val availableDrivers: List<GlucoseSourceDriver> = emptyList(),
@@ -23,20 +24,31 @@ class GlucoseSourceSetupViewModel(
     registry: SystemRegistry
 ) : ViewModel() {
 
-    private val selectedDriverState = MutableStateFlow<GlucoseSourceDriver?>(
-        registry.glucoseSourceDriverManager.getActiveDriver()
-    )
+    private val selectedDriverState = MutableStateFlow<GlucoseSourceDriver?>(null)
     private val errorMessageState = MutableStateFlow<String?>(null)
+
+    init {
+        viewModelScope.launch {
+            var previousActiveDriver: GlucoseSourceDriver? = registry.glucoseSourceDriverManager.getActiveDriver()
+            registry.glucoseSourceDriverManager.activeDriver.collect { activeDriver ->
+                if (activeDriver == null && previousActiveDriver != null) {
+                    selectedDriverState.value = null
+                }
+                previousActiveDriver = activeDriver
+            }
+        }
+    }
 
     val uiState: StateFlow<GlucoseSourceSetupUiState> = combine(
         selectedDriverState,
-        registry.glucoseSourceDriverManager.activeDriverId,
+        registry.glucoseSourceDriverManager.activeDriver,
         errorMessageState
-    ) { selectedDriver, activeDriverId, errorMessage ->
+    ) { selectedDriver, activeDriver, errorMessage ->
+        val driverToShow = activeDriver ?: selectedDriver
         GlucoseSourceSetupUiState(
             availableDrivers = registry.glucoseSourceDriverManager.drivers,
-            selectedDriver = selectedDriver,
-            activeDriverId = activeDriverId,
+            selectedDriver = driverToShow,
+            activeDriverId = activeDriver?.driverId,
             errorMessage = errorMessage
         )
     }.stateIn(

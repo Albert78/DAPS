@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 data class PumpSetupUiState(
     val availableDrivers: List<InsulinPumpDriver> = emptyList(),
@@ -23,20 +24,31 @@ class PumpSetupViewModel(
     registry: SystemRegistry
 ) : ViewModel() {
 
-    private val selectedDriverState = MutableStateFlow<InsulinPumpDriver?>(
-        registry.pumpDriverManager.getActiveDriver()
-    )
+    private val selectedDriverState = MutableStateFlow<InsulinPumpDriver?>(null)
     private val errorMessageState = MutableStateFlow<String?>(null)
+
+    init {
+        viewModelScope.launch {
+            var previousActiveDriver: InsulinPumpDriver? = registry.pumpDriverManager.getActiveDriver()
+            registry.pumpDriverManager.activeDriver.collect { activeDriver ->
+                if (activeDriver == null && previousActiveDriver != null) {
+                    selectedDriverState.value = null
+                }
+                previousActiveDriver = activeDriver
+            }
+        }
+    }
 
     val uiState: StateFlow<PumpSetupUiState> = combine(
         selectedDriverState,
-        registry.pumpDriverManager.activeDriverId,
+        registry.pumpDriverManager.activeDriver,
         errorMessageState
-    ) { selectedDriver, activeDriverId, errorMessage ->
+    ) { selectedDriver, activeDriver, errorMessage ->
+        val driverToShow = activeDriver ?: selectedDriver
         PumpSetupUiState(
             availableDrivers = registry.pumpDriverManager.drivers,
-            selectedDriver = selectedDriver,
-            activeDriverId = activeDriverId,
+            selectedDriver = driverToShow,
+            activeDriverId = activeDriver?.driverId,
             errorMessage = errorMessage
         )
     }.stateIn(
