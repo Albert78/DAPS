@@ -79,6 +79,7 @@ fun OmnipodDashSetupScreen(
 
     LaunchedEffect(Unit) {
         driver.startSetup()
+        viewModel.loadSavedState(driver)
     }
 
     OmnipodDashSetupContent(

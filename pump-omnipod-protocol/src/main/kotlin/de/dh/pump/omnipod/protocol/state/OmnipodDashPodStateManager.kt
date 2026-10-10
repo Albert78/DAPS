@@ -10,6 +10,7 @@ import de.dh.pump.omnipod.protocol.definition.PodStatus
 import de.dh.pump.omnipod.protocol.response.DefaultStatusResponse
 import de.dh.pump.omnipod.protocol.response.SetUniqueIdResponse
 import de.dh.pump.omnipod.protocol.response.VersionResponse
+import kotlinx.coroutines.flow.first
 import java.io.Serializable
 import java.util.EnumSet
 
@@ -42,7 +43,9 @@ interface OmnipodDashPodStateManager {
     fun updateFromDefaultStatusResponse(response: DefaultStatusResponse)
     fun updateFromVersionResponse(response: VersionResponse)
     fun updateFromSetUniqueIdResponse(response: SetUniqueIdResponse)
+    fun recoverActivationFromPodStatus(status: PodStatus): ActivationProgress
     suspend fun saveToPreferences()
+    suspend fun loadFromPreferences()
     fun reset()
 
     data class TempBasal(val startTime: Long, val rate: Double, val durationInMinutes: Short) : Serializable
@@ -93,12 +96,14 @@ class OmnipodDashPodStateManagerImpl(
         reservoirPulsesRemaining = response.reservoirPulsesRemaining
         minutesSinceActivation = response.minutesSinceActivation
         activeAlerts = response.activeAlerts
+        recoverActivationFromPodStatus(response.podStatus)
     }
 
     override fun updateFromVersionResponse(response: VersionResponse) {
         podStatus = response.podStatus
         lotNumber = response.lotNumber
         podSequenceNumber = response.podSequenceNumber
+        recoverActivationFromPodStatus(response.podStatus)
     }
 
     override fun updateFromSetUniqueIdResponse(response: SetUniqueIdResponse) {
@@ -106,6 +111,22 @@ class OmnipodDashPodStateManagerImpl(
         lotNumber = response.lotNumber
         podSequenceNumber = response.podSequenceNumber
         activationProgress = ActivationProgress.SET_UNIQUE_ID
+        recoverActivationFromPodStatus(response.podStatus)
+    }
+
+    override fun recoverActivationFromPodStatus(status: PodStatus): ActivationProgress {
+        val recoveredProgress = when (status) {
+            PodStatus.UNINITIALIZED, PodStatus.MFG_TEST -> ActivationProgress.NOT_STARTED
+            PodStatus.FILLED, PodStatus.UID_SET -> ActivationProgress.SET_UNIQUE_ID
+            PodStatus.ENGAGING_CLUTCH_DRIVE, PodStatus.CLUTCH_DRIVE_ENGAGED, PodStatus.PRIMING -> ActivationProgress.PRIME_COMPLETED
+            PodStatus.BASAL_PROGRAM_SET -> ActivationProgress.CANNULA_INSERTED
+            PodStatus.RUNNING_ABOVE_MIN_VOLUME, PodStatus.RUNNING_BELOW_MIN_VOLUME -> ActivationProgress.COMPLETED
+            else -> activationProgress
+        }
+        if (recoveredProgress.isAtLeast(activationProgress)) {
+            activationProgress = recoveredProgress
+        }
+        return activationProgress
     }
 
     override suspend fun saveToPreferences() {
@@ -118,6 +139,34 @@ class OmnipodDashPodStateManagerImpl(
             putLong(KEY_ACTIVATED_AT, activatedAtTimestampMs ?: 0L)
             putInt(KEY_LAST_NONCE, lastNonce ?: 0)
             putString(KEY_ACTIVATION_PROGRESS, activationProgress.name)
+        }
+    }
+
+    override suspend fun loadFromPreferences() {
+        preferences?.let { prefs ->
+            uniqueId = prefs.getInt(KEY_UNIQUE_ID, 0).first().takeIf { it != 0 }
+            lotNumber = prefs.getLong(KEY_LOT_NUMBER, 0L).first().takeIf { it != 0L }
+            podSequenceNumber = prefs.getLong(KEY_POD_SEQ_NUMBER, 0L).first().takeIf { it != 0L }
+            bluetoothAddress = prefs.getString(KEY_BLE_ADDRESS).first()
+            ltk = prefs.getString(KEY_LTK).first()?.takeIf { it.isNotEmpty() }?.let { hex ->
+                try {
+                    hex.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
+                } catch (_: Exception) {
+                    null
+                }
+            }
+            activatedAtTimestampMs = prefs.getLong(KEY_ACTIVATED_AT, 0L).first().takeIf { it != 0L }
+            lastNonce = prefs.getInt(KEY_LAST_NONCE, 0).first().takeIf { it != 0 }
+            val progressName = prefs.getString(KEY_ACTIVATION_PROGRESS).first()
+            activationProgress = if (!progressName.isNullOrEmpty()) {
+                try {
+                    ActivationProgress.valueOf(progressName)
+                } catch (_: Exception) {
+                    ActivationProgress.NOT_STARTED
+                }
+            } else {
+                ActivationProgress.NOT_STARTED
+            }
         }
     }
 

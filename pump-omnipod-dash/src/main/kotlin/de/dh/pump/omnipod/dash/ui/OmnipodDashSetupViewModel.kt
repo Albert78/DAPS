@@ -25,6 +25,17 @@ class OmnipodDashSetupViewModel(application: Application) : AndroidViewModel(app
     private val _activationError = MutableStateFlow<String?>(null)
     val activationError: StateFlow<String?> = _activationError.asStateFlow()
 
+    fun loadSavedState(driver: OmnipodDashInsulinPumpDriver) {
+        viewModelScope.launch {
+            val preferences = driver.getContext()?.preferences
+            val podStateManager = OmnipodDashPodStateManagerImpl(preferences)
+            podStateManager.loadFromPreferences()
+
+            val stepIndex = stepIndexForProgress(podStateManager.activationProgress)
+            _currentStepIndex.value = stepIndex
+        }
+    }
+
     fun nextStep(
         driver: OmnipodDashInsulinPumpDriver,
         onSuccess: () -> Unit
@@ -36,17 +47,21 @@ class OmnipodDashSetupViewModel(application: Application) : AndroidViewModel(app
         val preferences = driver.getContext()?.preferences
         val podStateManager = OmnipodDashPodStateManagerImpl(preferences)
 
-        when (steps[currentIndex]) {
-            ActivationStep.FILL_AND_PRIME -> {
-                podStateManager.activationProgress = ActivationProgress.PRIME_COMPLETED
-                _currentStepIndex.value = currentIndex + 1
-            }
-            ActivationStep.APPLY_AND_INSERT -> {
-                podStateManager.activationProgress = ActivationProgress.CANNULA_INSERTED
-                _currentStepIndex.value = currentIndex + 1
-            }
-            ActivationStep.CONFIRM_AND_ACTIVATE -> {
-                viewModelScope.launch {
+        viewModelScope.launch {
+            podStateManager.loadFromPreferences()
+
+            when (steps[currentIndex]) {
+                ActivationStep.FILL_AND_PRIME -> {
+                    podStateManager.activationProgress = ActivationProgress.PRIME_COMPLETED
+                    podStateManager.saveToPreferences()
+                    _currentStepIndex.value = currentIndex + 1
+                }
+                ActivationStep.APPLY_AND_INSERT -> {
+                    podStateManager.activationProgress = ActivationProgress.CANNULA_INSERTED
+                    podStateManager.saveToPreferences()
+                    _currentStepIndex.value = currentIndex + 1
+                }
+                ActivationStep.CONFIRM_AND_ACTIVATE -> {
                     _isActivating.value = true
                     _activationError.value = null
                     try {
@@ -69,6 +84,14 @@ class OmnipodDashSetupViewModel(application: Application) : AndroidViewModel(app
     }
 
     companion object {
+        fun stepIndexForProgress(progress: ActivationProgress): Int {
+            return when {
+                progress.isAtLeast(ActivationProgress.CANNULA_INSERTED) -> 2
+                progress.isAtLeast(ActivationProgress.PRIME_COMPLETED) -> 1
+                else -> 0
+            }
+        }
+
         class Factory(private val application: Application) : androidx.lifecycle.ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
