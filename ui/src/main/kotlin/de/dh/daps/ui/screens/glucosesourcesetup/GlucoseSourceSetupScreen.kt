@@ -93,7 +93,7 @@ fun GlucoseSourceSetupContent(
     val titleText = selectedDriver?.displayName?.asString() ?: stringResource(id = R.string.glucose_source_setup_screen_title)
 
     BackHandler(enabled = selectedDriver != null) {
-        // Intercept back gesture so driver setup workflow cannot be exited via back gesture
+        onSelectDriver(null)
     }
 
     Scaffold(

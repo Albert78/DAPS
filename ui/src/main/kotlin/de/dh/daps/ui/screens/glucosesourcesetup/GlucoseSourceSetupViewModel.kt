@@ -28,6 +28,8 @@ class GlucoseSourceSetupViewModel(
     private val errorMessageState = MutableStateFlow<String?>(null)
 
     init {
+        selectedDriverState.value = registry.glucoseSourceDriverManager.getActiveDriver()
+
         viewModelScope.launch {
             var previousActiveDriver: GlucoseSourceDriver? = registry.glucoseSourceDriverManager.getActiveDriver()
             registry.glucoseSourceDriverManager.activeDriver.collect { activeDriver ->
@@ -44,10 +46,9 @@ class GlucoseSourceSetupViewModel(
         registry.glucoseSourceDriverManager.activeDriver,
         errorMessageState
     ) { selectedDriver, activeDriver, errorMessage ->
-        val driverToShow = activeDriver ?: selectedDriver
         GlucoseSourceSetupUiState(
             availableDrivers = registry.glucoseSourceDriverManager.drivers,
-            selectedDriver = driverToShow,
+            selectedDriver = selectedDriver,
             activeDriverId = activeDriver?.driverId,
             errorMessage = errorMessage
         )

@@ -28,6 +28,8 @@ class PumpSetupViewModel(
     private val errorMessageState = MutableStateFlow<String?>(null)
 
     init {
+        selectedDriverState.value = registry.pumpDriverManager.getActiveDriver()
+
         viewModelScope.launch {
             var previousActiveDriver: InsulinPumpDriver? = registry.pumpDriverManager.getActiveDriver()
             registry.pumpDriverManager.activeDriver.collect { activeDriver ->
@@ -44,10 +46,9 @@ class PumpSetupViewModel(
         registry.pumpDriverManager.activeDriver,
         errorMessageState
     ) { selectedDriver, activeDriver, errorMessage ->
-        val driverToShow = activeDriver ?: selectedDriver
         PumpSetupUiState(
             availableDrivers = registry.pumpDriverManager.drivers,
-            selectedDriver = driverToShow,
+            selectedDriver = selectedDriver,
             activeDriverId = activeDriver?.driverId,
             errorMessage = errorMessage
         )

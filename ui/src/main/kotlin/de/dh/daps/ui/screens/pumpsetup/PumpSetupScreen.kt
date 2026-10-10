@@ -96,7 +96,7 @@ fun PumpSetupContent(
     val titleText = selectedDriver?.displayName?.asString() ?: stringResource(id = R.string.pump_setup_screen_title)
 
     BackHandler(enabled = selectedDriver != null) {
-        // Intercept back gesture so driver setup workflow cannot be exited via back gesture
+        onSelectDriver(null)
     }
 
     Scaffold(
