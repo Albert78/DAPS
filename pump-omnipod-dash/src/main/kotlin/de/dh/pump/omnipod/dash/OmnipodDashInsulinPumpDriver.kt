@@ -122,6 +122,21 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
         bindPod(podStateManager)
     }
 
+    /**
+     * Unbinds the currently bound Omnipod Dash pod, clears pod state and preferences,
+     * and resets the driver lifecycle state to NoDevice.
+     */
+    suspend fun unbindDevice() {
+        val pc = pluginContext
+        if (pc != null) {
+            val podStateManager = OmnipodDashPodStateManagerImpl(pc.preferences)
+            podStateManager.reset()
+            pc.preferences.clear()
+        }
+        _activePump.value = null
+        _lifecycleState.value = DeviceLifecycleState.NoDevice
+    }
+
     fun getContext(): PluginContext? = pluginContext
 
     companion object {

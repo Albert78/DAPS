@@ -14,4 +14,12 @@
     <string name="omnipod_dash_setup_btn_activate_pod">Pod aktivieren</string>
     <string name="omnipod_dash_setup_btn_cancel">Einrichtung abbrechen</string>
     <string name="omnipod_dash_setup_activate_failed">Pod-Aktivierung fehlgeschlagen.</string>
+    <string name="omnipod_dash_bound_title">Omnipod Dash Pod gebunden</string>
+    <string name="omnipod_dash_bound_subtitle">Dein Omnipod Dash Pod ist derzeit aktiv mit der App gebunden.</string>
+    <string name="omnipod_dash_bound_badge">Pod Aktiv</string>
+    <string name="omnipod_dash_btn_unbind">Bindung verwerfen</string>
+    <string name="omnipod_dash_btn_done">Fertig</string>
+    <string name="omnipod_dash_unbind_dialog_title">Pod-Bindung verwerfen?</string>
+    <string name="omnipod_dash_unbind_dialog_message">Möchtest du die Bindung zu diesem Omnipod Dash Pod wirklich verwerfen? Alle gespeicherten Pod-Zustandsdaten werden gelöscht.</string>
+    <string name="omnipod_dash_unbind_dialog_confirm">Bindung verwerfen</string>
 </resources>

@@ -4,6 +4,8 @@ import android.app.Application
 import android.content.Context
 import android.content.IntentFilter
 import android.util.Log
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,13 +13,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Badge
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.Expiration
 import de.dh.daps.common.model.GlucoseSource
@@ -160,53 +169,144 @@ class ReceiverGlucosePlugin(
         _activeGlucoseSource.value = this
     }
 
+    suspend fun unbindDevice() {
+        pluginContext?.preferences?.let { prefs ->
+            prefs.remove(KEY_SOURCE_TYPE)
+        }
+        stop()
+        _activeGlucoseSource.value = null
+        _lifecycleState.value = DeviceLifecycleState.NoDevice
+    }
+
     /**
-     * Renders the setup screen for configuring the external BroadcastReceiver glucose source.
+     * Renders setup screen branching by [DeviceLifecycleState].
      */
     @Composable
     override fun SetupScreen(
         onNavigateUp: () -> Unit,
     ) {
-        FramedCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "External Receiver Setup",
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Receive blood glucose estimates broadcast from external apps like xDrip+ or Juggluco.",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    OutlinedButton(
-                        onClick = onNavigateUp,
-                        modifier = Modifier.weight(1f),
+        val currentState by lifecycleState.collectAsStateWithLifecycle()
+
+        when (val state = currentState) {
+            is DeviceLifecycleState.DeviceBound -> {
+                FramedCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text("Cancel")
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(
-                        onClick = {
-                            // TODO: Make configurable in screen
-                            val sourceType = ExternalSourceType.xDrip5Min
-                            pluginContext?.preferences?.let { prefs ->
-                                scope.launch {
-                                    prefs.putString(KEY_SOURCE_TYPE, sourceType.name)
-                                }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = state.displayName.asString(),
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = "Broadcast Empfänger (xDrip+ / Juggluco)",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
-                            bindSource(sourceType)
-                            onNavigateUp()
-                        },
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Text("Bind")
+                            Badge(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            ) {
+                                Text(
+                                    text = "Gebunden",
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+
+                        HorizontalDivider()
+
+                        Text(
+                            text = "Der Broadcast-Empfänger nimmt Glukosewerte von externen Apps entgegen.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OutlinedButton(
+                                onClick = {
+                                    scope.launch { unbindDevice() }
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = MaterialTheme.colorScheme.error,
+                                    containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.1f)
+                                ),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error)
+                            ) {
+                                Text("Bindung verwerfen")
+                            }
+
+                            Button(
+                                onClick = onNavigateUp,
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                Text("Fertig")
+                            }
+                        }
+                    }
+                }
+            }
+            else -> {
+                FramedCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "External Receiver Setup",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Empfange Blutzuckerwerte, die von externen Apps wie xDrip+ oder Juggluco gesendet werden.",
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            OutlinedButton(
+                                onClick = onNavigateUp,
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                Text("Abbrechen")
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Button(
+                                onClick = {
+                                    val sourceType = ExternalSourceType.xDrip5Min
+                                    pluginContext?.preferences?.let { prefs ->
+                                        scope.launch {
+                                            prefs.putString(KEY_SOURCE_TYPE, sourceType.name)
+                                        }
+                                    }
+                                    bindSource(sourceType)
+                                    onNavigateUp()
+                                },
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                Text("Einrichten")
+                            }
+                        }
                     }
                 }
             }

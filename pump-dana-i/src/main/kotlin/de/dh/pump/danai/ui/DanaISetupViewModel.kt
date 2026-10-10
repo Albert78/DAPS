@@ -60,6 +60,16 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
+    fun unbind(driver: DanaIInsulinPumpDriver) {
+        viewModelScope.launch {
+            try {
+                driver.unbindDevice()
+            } catch (e: Exception) {
+                _connectError.value = e.message
+            }
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         scanner.stopScan()

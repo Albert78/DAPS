@@ -83,6 +83,16 @@ class OmnipodDashSetupViewModel(application: Application) : AndroidViewModel(app
         }
     }
 
+    fun unbind(driver: OmnipodDashInsulinPumpDriver) {
+        viewModelScope.launch {
+            try {
+                driver.unbindDevice()
+            } catch (e: Exception) {
+                _activationError.value = e.message
+            }
+        }
+    }
+
     companion object {
         fun stepIndexForProgress(progress: ActivationProgress): Int {
             return when {

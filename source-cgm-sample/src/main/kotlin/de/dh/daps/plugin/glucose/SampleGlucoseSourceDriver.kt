@@ -1,16 +1,27 @@
 package de.dh.daps.plugin.glucose
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Badge
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.GlucoseSourceDriver
@@ -58,6 +69,15 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
         _activeGlucoseSource.value = SampleGlucoseSource()
     }
 
+    suspend fun unbindDevice() {
+        pluginContext?.preferences?.let { prefs ->
+            prefs.remove(KEY_DEVICE_ID)
+            prefs.remove(KEY_DEVICE_NAME)
+        }
+        _activeGlucoseSource.value = null
+        _lifecycleState.value = DeviceLifecycleState.NoDevice
+    }
+
     override suspend fun initState() {
         val pc = pluginContext ?: return
         val deviceId = pc.preferences.getString(KEY_DEVICE_ID).first()
@@ -71,43 +91,142 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
     }
 
     /**
-     * Renders a basic setup screen allowing the user to confirm pairing with the sample glucose source.
+     * Renders setup screen branching by [DeviceLifecycleState].
      */
     @Composable
     override fun SetupScreen(
         onNavigateUp: () -> Unit,
     ) {
-        FramedCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Sample Glucose Source Setup",
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                Text(
-                    text = "Confirm setup for the simulated sample glucose sensor.",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = {
-                        val deviceId = "sample-cgm-sensor-01"
-                        val deviceName = "Sample Glucose Sensor 01"
-                        pluginContext?.preferences?.let { prefs ->
-                            scope.launch {
-                                prefs.putString(KEY_DEVICE_ID, deviceId)
-                                prefs.putString(KEY_DEVICE_NAME, deviceName)
+        val currentState by lifecycleState.collectAsStateWithLifecycle()
+
+        when (val state = currentState) {
+            is DeviceLifecycleState.DeviceBound -> {
+                FramedCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = state.displayName.asString(),
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                state.deviceId?.let { id ->
+                                    Text(
+                                        text = id,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                            Badge(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            ) {
+                                Text(
+                                    text = "Gebunden",
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
                             }
                         }
-                        bindDevice(deviceId, deviceName)
-                        onNavigateUp()
-                    },
-                    modifier = Modifier.fillMaxWidth(),
+
+                        HorizontalDivider()
+
+                        Text(
+                            text = "Der Sample Glucose-Sensor ist zurzeit als aktive Glukosequelle eingerichtet.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OutlinedButton(
+                                onClick = {
+                                    scope.launch { unbindDevice() }
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = MaterialTheme.colorScheme.error,
+                                    containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.1f)
+                                ),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error)
+                            ) {
+                                Text("Bindung verwerfen")
+                            }
+
+                            Button(
+                                onClick = onNavigateUp,
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                Text("Fertig")
+                            }
+                        }
+                    }
+                }
+            }
+            else -> {
+                FramedCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                 ) {
-                    Text("Confirm Setup")
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = "Sample Glucose Source Setup",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Bestätige das Einrichten des simulierten Sample-Glukosesensors.",
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OutlinedButton(
+                                onClick = onNavigateUp,
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                Text("Abbrechen")
+                            }
+                            Button(
+                                onClick = {
+                                    val deviceId = "sample-cgm-sensor-01"
+                                    val deviceName = "Sample Glucose Sensor 01"
+                                    pluginContext?.preferences?.let { prefs ->
+                                        scope.launch {
+                                            prefs.putString(KEY_DEVICE_ID, deviceId)
+                                            prefs.putString(KEY_DEVICE_NAME, deviceName)
+                                        }
+                                    }
+                                    bindDevice(deviceId, deviceName)
+                                    onNavigateUp()
+                                },
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                Text("Einrichten")
+                            }
+                        }
+                    }
                 }
             }
         }

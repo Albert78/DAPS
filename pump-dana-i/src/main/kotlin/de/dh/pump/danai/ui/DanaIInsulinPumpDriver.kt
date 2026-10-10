@@ -127,6 +127,20 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
         return bindPump(deviceName, deviceAddress)
     }
 
+    /**
+     * Unbinds the currently bound Dana-i pump, clears stored preferences,
+     * disconnects active connection, and resets the driver lifecycle state to NoDevice.
+     */
+    suspend fun unbindDevice() {
+        val pc = pluginContext
+        if (pc != null) {
+            DanaPumpPreferences(pc.preferences).clear()
+        }
+        (_activePump.value as? DanaIPumpAdapter)?.controller?.disconnect()
+        _activePump.value = null
+        _lifecycleState.value = DeviceLifecycleState.NoDevice
+    }
+
     internal fun getContext(): PluginContext? = pluginContext
 
     companion object {
