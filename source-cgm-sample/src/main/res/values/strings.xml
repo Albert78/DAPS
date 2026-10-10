@@ -3,5 +3,4 @@
     <string name="sample_cgm_unbind_dialog_title">Bindung verwerfen?</string>
     <string name="sample_cgm_unbind_dialog_message">Möchtest du die Bindung zu diesem Beispiel-Glukosesensor wirklich verwerfen?</string>
     <string name="sample_cgm_unbind_dialog_confirm">Bindung verwerfen</string>
-    <string name="btn_cancel">Abbrechen</string>
 </resources>

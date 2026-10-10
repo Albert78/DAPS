@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.dh.daps.common.model.DeviceLifecycleState
+import de.dh.daps.common.R as CommonR
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalButton
@@ -101,7 +102,6 @@ fun OmnipodDashSetupScreen(
                 displayName = state.displayName.asString(),
                 deviceId = state.deviceId,
                 onUnbind = { viewModel.unbind(driver) },
-                onDone = onNavigateUp,
                 modifier = modifier
             )
         }
@@ -134,7 +134,6 @@ fun OmnipodDashBoundContent(
     displayName: String,
     deviceId: String?,
     onUnbind: () -> Unit,
-    onDone: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showUnbindDialog by remember { mutableStateOf(false) }
@@ -227,13 +226,6 @@ fun OmnipodDashBoundContent(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(stringResource(R.string.omnipod_dash_btn_unbind))
             }
-
-            PrimaryButton(
-                onClick = onDone,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.omnipod_dash_btn_done))
-            }
         }
     }
 
@@ -258,7 +250,7 @@ fun OmnipodDashBoundContent(
             },
             dismissButton = {
                 NormalTextButton(onClick = { showUnbindDialog = false }) {
-                    Text(stringResource(R.string.omnipod_dash_setup_btn_cancel))
+                    Text(stringResource(CommonR.string.action_cancel))
                 }
             }
         )
@@ -396,8 +388,7 @@ private fun OmnipodDashBoundContentPreview() {
         OmnipodDashBoundContent(
             displayName = "Omnipod Dash Pod",
             deviceId = "POD-DASH-1234",
-            onUnbind = {},
-            onDone = {}
+            onUnbind = {}
         )
     }
 }

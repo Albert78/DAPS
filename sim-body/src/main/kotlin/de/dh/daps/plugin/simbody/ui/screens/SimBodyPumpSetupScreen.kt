@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Button
@@ -51,7 +50,6 @@ fun SimBodyPumpSetupScreen(
         onUnbind = {
             driver.unbindDevice()
         },
-        onNavigateUp = onNavigateUp,
     )
 }
 
@@ -60,7 +58,6 @@ fun SimBodyPumpSetupContent(
     lifecycleState: DeviceLifecycleState,
     onBind: () -> Unit,
     onUnbind: () -> Unit,
-    onNavigateUp: () -> Unit,
 ) {
     var showUnbindDialog by remember { mutableStateOf(false) }
 
@@ -115,28 +112,16 @@ fun SimBodyPumpSetupContent(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Row(
+                    OutlinedButton(
+                        onClick = { showUnbindDialog = true },
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error,
+                            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.1f),
+                        ),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
                     ) {
-                        OutlinedButton(
-                            onClick = { showUnbindDialog = true },
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = MaterialTheme.colorScheme.error,
-                                containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.1f),
-                            ),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
-                        ) {
-                            Text("Bindung verwerfen")
-                        }
-
-                        Button(
-                            onClick = onNavigateUp,
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Text("Fertig")
-                        }
+                        Text("Bindung verwerfen")
                     }
                 }
             }
@@ -160,20 +145,11 @@ fun SimBodyPumpSetupContent(
                         style = MaterialTheme.typography.bodyMedium,
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        OutlinedButton(
-                            onClick = onNavigateUp,
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Text(stringResource(R.string.btn_cancel))
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Button(
-                            onClick = onBind,
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Text(stringResource(R.string.btn_connect))
-                        }
+                    Button(
+                        onClick = onBind,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(stringResource(R.string.btn_connect))
                     }
                 }
             }
@@ -216,7 +192,6 @@ private fun SimBodyPumpSetupContentNoDevicePreview() {
             lifecycleState = DeviceLifecycleState.NoDevice,
             onBind = {},
             onUnbind = {},
-            onNavigateUp = {},
         )
     }
 }
@@ -232,7 +207,6 @@ private fun SimBodyPumpSetupContentBoundPreview() {
             ),
             onBind = {},
             onUnbind = {},
-            onNavigateUp = {},
         )
     }
 }

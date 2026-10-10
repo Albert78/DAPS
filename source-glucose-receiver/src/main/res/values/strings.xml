@@ -3,7 +3,6 @@
     <string name="receiver_unbind_dialog_title">Bindung verwerfen?</string>
     <string name="receiver_unbind_dialog_message">Möchtest du die Bindung zu diesem Glukose-Broadcast-Empfänger wirklich verwerfen?</string>
     <string name="receiver_unbind_dialog_confirm">Bindung verwerfen</string>
-    <string name="btn_cancel">Abbrechen</string>
 
     <string name="source_type_label">Quelltyp / Intervall wählen</string>
     <string name="source_type_xdrip_1min">xDrip+ / Juggluco (1 Min Intervall)</string>

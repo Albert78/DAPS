@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.dh.daps.common.model.DeviceLifecycleState
+import de.dh.daps.common.R as CommonR
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.NormalTextButton
@@ -82,7 +83,6 @@ fun DanaISetupScreen(
                 displayName = state.displayName.asString(),
                 deviceId = state.deviceId,
                 onUnbind = { viewModel.unbind(driver) },
-                onDone = onNavigateUp,
                 modifier = modifier
             )
         }
@@ -105,7 +105,6 @@ fun DanaISetupScreen(
                         onSuccess = onNavigateUp
                     )
                 },
-                onCancel = onNavigateUp,
                 modifier = modifier
             )
         }
@@ -120,7 +119,6 @@ fun DanaIBoundContent(
     displayName: String,
     deviceId: String?,
     onUnbind: () -> Unit,
-    onDone: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showUnbindDialog by remember { mutableStateOf(false) }
@@ -213,13 +211,6 @@ fun DanaIBoundContent(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(stringResource(R.string.danai_pump_btn_unbind))
             }
-
-            PrimaryButton(
-                onClick = onDone,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.danai_pump_btn_done))
-            }
         }
     }
 
@@ -244,7 +235,7 @@ fun DanaIBoundContent(
             },
             dismissButton = {
                 NormalTextButton(onClick = { showUnbindDialog = false }) {
-                    Text(stringResource(R.string.danai_pump_setup_btn_cancel))
+                    Text(stringResource(CommonR.string.action_cancel))
                 }
             }
         )
@@ -264,7 +255,6 @@ fun DanaISetupContent(
     connectError: String?,
     onStartDiscovery: () -> Unit,
     onPairClick: (DanaScanResult) -> Unit,
-    onCancel: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -390,38 +380,26 @@ fun DanaISetupContent(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Row(
+            SecondaryButton(
+                onClick = onStartDiscovery,
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                enabled = !isScanning && !isConnecting
             ) {
-                SecondaryButton(
-                    onClick = onStartDiscovery,
-                    modifier = Modifier.weight(1f),
-                    enabled = !isScanning && !isConnecting
-                ) {
-                    if (isScanning) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
-                                strokeWidth = 2.dp,
-                                color = MaterialTheme.colorScheme.onSecondary
-                            )
-                            Text(stringResource(R.string.danai_pump_setup_btn_searching))
-                        }
-                    } else {
-                        Text(stringResource(R.string.danai_pump_setup_btn_search))
+                if (isScanning) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onSecondary
+                        )
+                        Text(stringResource(R.string.danai_pump_setup_btn_searching))
                     }
+                } else {
+                    Text(stringResource(R.string.danai_pump_setup_btn_search))
                 }
-            }
-
-            NormalTextButton(
-                onClick = onCancel,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.danai_pump_setup_btn_cancel))
             }
         }
     }
@@ -434,8 +412,7 @@ private fun DanaIBoundContentPreview() {
         DanaIBoundContent(
             displayName = "Dana-i (DANA-1234)",
             deviceId = "00:11:22:33:44:55",
-            onUnbind = {},
-            onDone = {}
+            onUnbind = {}
         )
     }
 }
@@ -453,8 +430,7 @@ private fun DanaISetupContentPreview() {
             isConnecting = false,
             connectError = null,
             onStartDiscovery = {},
-            onPairClick = {},
-            onCancel = {}
+            onPairClick = {}
         )
     }
 }

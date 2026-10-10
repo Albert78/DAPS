@@ -4,5 +4,4 @@
     <string name="sample_pump_unbind_dialog_title">Bindung verwerfen?</string>
     <string name="sample_pump_unbind_dialog_message">Möchtest du die Bindung zu dieser Beispiel-Insulinpumpe wirklich verwerfen?</string>
     <string name="sample_pump_unbind_dialog_confirm">Bindung verwerfen</string>
-    <string name="btn_cancel">Abbrechen</string>
 </resources>

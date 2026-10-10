@@ -8,7 +8,6 @@
     <string name="omnipod_dash_setup_step2_description">Entferne die Nadelkappe. Bringe das Pod-Pflaster auf sauberer, trockener Haut an. Tippe auf \'Kanüle einführen\', um sie automatisch einzuführen.</string>
     <string name="omnipod_dash_setup_step3_title">Schritt 3: Bestätigen &amp; Aktivieren</string>
     <string name="omnipod_dash_setup_step3_description">Überprüfe das Einführen der Kanüle durch das transparente Sichtfenster. Tippe auf \'Pod aktivieren\', um die Basalratenabgabe zu starten.</string>
-    <string name="omnipod_dash_setup_btn_back">Zurück</string>
     <string name="omnipod_dash_setup_btn_prime_pod">Pod primen</string>
     <string name="omnipod_dash_setup_btn_insert_cannula">Kanüle einführen</string>
     <string name="omnipod_dash_setup_btn_activate_pod">Pod aktivieren</string>
@@ -18,7 +17,6 @@
     <string name="omnipod_dash_bound_subtitle">Dein Omnipod Dash Pod ist derzeit aktiv mit der App gebunden.</string>
     <string name="omnipod_dash_bound_badge">Pod Aktiv</string>
     <string name="omnipod_dash_btn_unbind">Bindung verwerfen</string>
-    <string name="omnipod_dash_btn_done">Fertig</string>
     <string name="omnipod_dash_unbind_dialog_title">Pod-Bindung verwerfen?</string>
     <string name="omnipod_dash_unbind_dialog_message">Möchtest du die Bindung zu diesem Omnipod Dash Pod wirklich verwerfen? Alle gespeicherten Pod-Zustandsdaten werden gelöscht.</string>
     <string name="omnipod_dash_unbind_dialog_confirm">Bindung verwerfen</string>

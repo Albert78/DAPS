@@ -156,28 +156,16 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        Row(
+                        OutlinedButton(
+                            onClick = { showUnbindDialog = true },
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.error,
+                                containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.1f)
+                            ),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.error)
                         ) {
-                            OutlinedButton(
-                                onClick = { showUnbindDialog = true },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    contentColor = MaterialTheme.colorScheme.error,
-                                    containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.1f)
-                                ),
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error)
-                            ) {
-                                Text("Bindung verwerfen")
-                            }
-
-                            Button(
-                                onClick = onNavigateUp,
-                                modifier = Modifier.weight(1f),
-                            ) {
-                                Text("Fertig")
-                            }
+                            Text("Bindung verwerfen")
                         }
                     }
                 }
@@ -202,33 +190,22 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
                             style = MaterialTheme.typography.bodyMedium,
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            OutlinedButton(
-                                onClick = onNavigateUp,
-                                modifier = Modifier.weight(1f),
-                            ) {
-                                Text("Abbrechen")
-                            }
-                            Button(
-                                onClick = {
-                                    val deviceId = "sample-cgm-sensor-01"
-                                    val deviceName = "Sample Glucose Sensor 01"
-                                    pluginContext?.preferences?.let { prefs ->
-                                        scope.launch {
-                                            prefs.putString(KEY_DEVICE_ID, deviceId)
-                                            prefs.putString(KEY_DEVICE_NAME, deviceName)
-                                        }
+                        Button(
+                            onClick = {
+                                val deviceId = "sample-cgm-sensor-01"
+                                val deviceName = "Sample Glucose Sensor 01"
+                                pluginContext?.preferences?.let { prefs ->
+                                    scope.launch {
+                                        prefs.putString(KEY_DEVICE_ID, deviceId)
+                                        prefs.putString(KEY_DEVICE_NAME, deviceName)
                                     }
-                                    bindDevice(deviceId, deviceName)
-                                    onNavigateUp()
-                                },
-                                modifier = Modifier.weight(1f),
-                            ) {
-                                Text("Einrichten")
-                            }
+                                }
+                                bindDevice(deviceId, deviceName)
+                                onNavigateUp()
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text("Einrichten")
                         }
                     }
                 }
@@ -256,7 +233,7 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
                 },
                 dismissButton = {
                     OutlinedButton(onClick = { showUnbindDialog = false }) {
-                        Text(stringResource(R.string.btn_cancel))
+                        Text(stringResource(de.dh.daps.common.R.string.action_cancel))
                     }
                 }
             )

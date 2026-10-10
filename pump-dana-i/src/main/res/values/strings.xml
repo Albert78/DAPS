@@ -2,11 +2,9 @@
     <string name="danai_pump_driver_display_name">Sooil Dana-i</string>
     <string name="danai_pump_setup_title">Sooil Dana-i</string>
     <string name="danai_pump_setup_subtitle">Wähle und koppele deine Insulinpumpe</string>
-    <string name="danai_pump_setup_btn_cancel_desc">Abbrechen</string>
     <string name="danai_pump_setup_available_pumps">Verfügbare Pumpen</string>
     <string name="danai_pump_setup_no_pumps_found">Keine Dana-i-Pumpen in der Nähe gefunden. Stelle sicher, dass Bluetooth aktiviert ist und sich die Pumpe in Reichweite befindet.</string>
     <string name="danai_pump_setup_btn_pair">Koppeln</string>
-    <string name="danai_pump_setup_btn_cancel">Abbrechen</string>
     <string name="danai_pump_setup_btn_searching">Suche…</string>
     <string name="danai_pump_setup_btn_search">Nach Pumpen suchen</string>
     <string name="danai_pump_setup_connect_failed">Verbindung zur Dana-i-Pumpe fehlgeschlagen</string>
@@ -14,7 +12,6 @@
     <string name="danai_pump_bound_subtitle">Deine Dana-i Insulinpumpe ist derzeit aktiv mit der App gebunden.</string>
     <string name="danai_pump_bound_badge">Gebunden</string>
     <string name="danai_pump_btn_unbind">Bindung verwerfen</string>
-    <string name="danai_pump_btn_done">Fertig</string>
     <string name="danai_pump_unbind_dialog_title">Bindung verwerfen?</string>
     <string name="danai_pump_unbind_dialog_message">Möchtest du die Bindung zu dieser Dana-i-Pumpe wirklich verwerfen? Alle gespeicherten Verbindungsdaten werden gelöscht.</string>
     <string name="danai_pump_unbind_dialog_confirm">Bindung verwerfen</string>

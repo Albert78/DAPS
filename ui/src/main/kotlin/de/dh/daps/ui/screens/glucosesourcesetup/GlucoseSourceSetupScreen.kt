@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -106,6 +107,13 @@ fun GlucoseSourceSetupContent(
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = stringResource(id = CommonR.string.cd_navigate_up)
+                            )
+                        }
+                    } else {
+                        IconButton(onClick = { onSelectDriver(null) }) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = stringResource(id = CommonR.string.cd_close)
                             )
                         }
                     }
