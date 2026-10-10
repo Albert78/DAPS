@@ -193,34 +193,12 @@ class DeviceConnectionManager(
     }
 
     /**
-     * Connects to a glucose source using [driverId], updates [GlucoseSourceManager],
-     * and persists the active driver ID upon successful connection.
-     */
-    suspend fun connectGlucoseSource(driverId: String): Result<GlucoseSource> {
-        Log.d(TAG, "Connecting to glucose source driver: $driverId")
-        return glucoseSourceDriverManager.attachToGlucoseSource(driverId).onSuccess { glucoseSource ->
-            setConnectedGlucoseSource(driverId, glucoseSource)
-        }
-    }
-
-    /**
      * Updates the active [GlucoseSourceManager] with a connected [glucoseSource]
      * and persists the active driver ID.
      */
     suspend fun setConnectedGlucoseSource(driverId: String, glucoseSource: GlucoseSource) {
         glucoseSourceManager.glucoseSource = glucoseSource
         deviceManagementRepository.setActiveGlucoseSourceDriverId(driverId)
-    }
-
-    /**
-     * Connects to an insulin pump using [driverId], updates [PumpManager],
-     * and persists the active driver ID upon successful connection.
-     */
-    suspend fun connectPump(driverId: String): Result<InsulinPump> {
-        Log.d(TAG, "Connecting to insulin pump driver: $driverId")
-        return pumpDriverManager.attachToPump(driverId).onSuccess { insulinPump ->
-            setConnectedPump(driverId, insulinPump)
-        }
     }
 
     /**
