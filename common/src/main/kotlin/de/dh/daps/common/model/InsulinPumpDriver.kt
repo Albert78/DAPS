@@ -30,12 +30,11 @@ interface InsulinPumpDriver {
 
     /**
      * Renders the driver's custom UI workflow for initial setup, device scanning, and pairing.
-     * When pairing succeeds, [onBound] is invoked with the active [InsulinPump] instance.
+     * When pairing finishes or is cancelled, [onNavigateUp] is invoked to return to the parent screen.
      */
     @Composable
     fun SetupScreen(
-        onBound: (InsulinPump) -> Unit,
-        onCancel: () -> Unit,
+        onNavigateUp: () -> Unit,
     )
 
     /**

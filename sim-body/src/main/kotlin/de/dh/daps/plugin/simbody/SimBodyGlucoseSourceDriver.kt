@@ -69,8 +69,7 @@ class SimBodyGlucoseSourceDriver(
      */
     @Composable
     override fun SetupScreen(
-        onBound: (GlucoseSource) -> Unit,
-        onCancel: () -> Unit,
+        onNavigateUp: () -> Unit,
     ) {
         FramedCard(
             modifier = Modifier
@@ -91,7 +90,7 @@ class SimBodyGlucoseSourceDriver(
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(modifier = Modifier.fillMaxWidth()) {
                     OutlinedButton(
-                        onClick = onCancel,
+                        onClick = onNavigateUp,
                         modifier = Modifier.weight(1f),
                     ) {
                         Text(stringResource(R.string.btn_cancel))
@@ -99,7 +98,6 @@ class SimBodyGlucoseSourceDriver(
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = {
-                            val source = simBodyPlugin.getGlucoseSource()
                             val deviceId = "simbody-virtual-cgm-01"
                             pluginContext?.preferences?.let { prefs ->
                                 scope.launch {
@@ -110,7 +108,7 @@ class SimBodyGlucoseSourceDriver(
                                 deviceId = deviceId,
                                 displayName = UiText.StringResource(R.string.sim_body_cgm_sensor_display_name)
                             )
-                            onBound(source)
+                            onNavigateUp()
                         },
                         modifier = Modifier.weight(1f),
                     ) {

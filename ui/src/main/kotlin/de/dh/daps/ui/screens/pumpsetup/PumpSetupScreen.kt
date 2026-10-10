@@ -53,7 +53,6 @@ import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
-import de.dh.daps.ui.common.composables.LoadingOverlayCard
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.ScopedDriverSetupContainer
@@ -74,9 +73,6 @@ fun PumpSetupScreen(
         uiState = uiState,
         onNavigateUp = onNavigateUp,
         onSelectDriver = viewModel::selectDriver,
-        onBindPump = { _, pump ->
-            viewModel.onPumpBound(pump, onSuccess = onNavigateUp)
-        },
         onClearError = viewModel::clearError
     )
 }
@@ -87,7 +83,6 @@ fun PumpSetupContent(
     uiState: PumpSetupUiState,
     onNavigateUp: () -> Unit,
     onSelectDriver: (InsulinPumpDriver?) -> Unit,
-    onBindPump: (String, InsulinPump) -> Unit,
     onClearError: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -138,10 +133,7 @@ fun PumpSetupContent(
                 ) {
                     ScopedDriverSetupContainer(driverId = selectedDriver.driverId) {
                         selectedDriver.SetupScreen(
-                            onBound = { pump ->
-                                onBindPump(selectedDriver.driverId, pump)
-                            },
-                            onCancel = {
+                            onNavigateUp = {
                                 if (uiState.availableDrivers.size > 1) {
                                     onSelectDriver(null)
                                 } else {
@@ -155,12 +147,6 @@ fun PumpSetupContent(
                 PumpDriverSelectionContent(
                     uiState = uiState,
                     onSelectDriver = onSelectDriver
-                )
-            }
-
-            if (uiState.isBinding) {
-                LoadingOverlayCard(
-                    message = stringResource(id = R.string.pump_setup_connecting)
                 )
             }
         }
@@ -380,8 +366,7 @@ private class PreviewPumpDriver(
 
     @Composable
     override fun SetupScreen(
-        onBound: (InsulinPump) -> Unit,
-        onCancel: () -> Unit
+        onNavigateUp: () -> Unit
     ) {
         setupScreenContent()
     }
@@ -498,7 +483,6 @@ fun PumpSetupNoActivePumpPreview() {
             ),
             onNavigateUp = {},
             onSelectDriver = {},
-            onBindPump = { _, _ -> },
             onClearError = {}
         )
     }
@@ -525,7 +509,6 @@ fun PumpSetupMultipleDriversPreview() {
             ),
             onNavigateUp = {},
             onSelectDriver = {},
-            onBindPump = { _, _ -> },
             onClearError = {}
         )
     }
@@ -543,7 +526,6 @@ fun PumpSetupActivePumpNoDriversPreview() {
             ),
             onNavigateUp = {},
             onSelectDriver = {},
-            onBindPump = { _, _ -> },
             onClearError = {}
         )
     }
@@ -561,7 +543,6 @@ fun PumpSetupNoActivePumpNoDriversPreview() {
             ),
             onNavigateUp = {},
             onSelectDriver = {},
-            onBindPump = { _, _ -> },
             onClearError = {}
         )
     }
@@ -584,7 +565,6 @@ fun PumpSetupDriverSetupOmnipodDashPreview() {
             ),
             onNavigateUp = {},
             onSelectDriver = {},
-            onBindPump = { _, _ -> },
             onClearError = {}
         )
     }

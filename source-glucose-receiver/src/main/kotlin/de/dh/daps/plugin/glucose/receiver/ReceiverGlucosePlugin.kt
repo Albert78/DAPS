@@ -151,8 +151,7 @@ class ReceiverGlucosePlugin(
      */
     @Composable
     override fun SetupScreen(
-        onBound: (GlucoseSource) -> Unit,
-        onCancel: () -> Unit,
+        onNavigateUp: () -> Unit,
     ) {
         FramedCard(
             modifier = Modifier
@@ -173,7 +172,7 @@ class ReceiverGlucosePlugin(
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(modifier = Modifier.fillMaxWidth()) {
                     OutlinedButton(
-                        onClick = onCancel,
+                        onClick = onNavigateUp,
                         modifier = Modifier.weight(1f),
                     ) {
                         Text("Cancel")
@@ -191,7 +190,7 @@ class ReceiverGlucosePlugin(
                                 deviceId = null,
                                 displayName = UiText.StringResource(R.string.glucose_broadcast_receiver_display_name)
                             )
-                            onBound(this@ReceiverGlucosePlugin)
+                            onNavigateUp()
                         },
                         modifier = Modifier.weight(1f),
                     ) {

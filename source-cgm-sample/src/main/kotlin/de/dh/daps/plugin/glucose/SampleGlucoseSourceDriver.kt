@@ -64,8 +64,7 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
      */
     @Composable
     override fun SetupScreen(
-        onBound: (GlucoseSource) -> Unit,
-        onCancel: () -> Unit,
+        onNavigateUp: () -> Unit,
     ) {
         FramedCard(
             modifier = Modifier
@@ -84,7 +83,6 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = {
-                        val source = SampleGlucoseSource()
                         val deviceId = "sample-cgm-sensor-01"
                         val deviceName = "Sample Glucose Sensor 01"
                         pluginContext?.preferences?.let { prefs ->
@@ -97,7 +95,7 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
                             deviceId = deviceId,
                             displayName = UiText.DynamicString(deviceName)
                         )
-                        onBound(source)
+                        onNavigateUp()
                     },
                     modifier = Modifier.fillMaxWidth(),
                 ) {

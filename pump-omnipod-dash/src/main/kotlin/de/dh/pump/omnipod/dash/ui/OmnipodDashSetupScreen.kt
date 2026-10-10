@@ -27,7 +27,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalButton
@@ -66,8 +65,7 @@ enum class ActivationStep(
 @Composable
 fun OmnipodDashSetupScreen(
     driver: OmnipodDashInsulinPumpDriver,
-    onBound: (InsulinPump) -> Unit,
-    onCancel: () -> Unit,
+    onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: OmnipodDashSetupViewModel = viewModel(
         factory = OmnipodDashSetupViewModel.Companion.Factory(
@@ -83,9 +81,9 @@ fun OmnipodDashSetupScreen(
         currentStepIndex = currentStepIndex,
         isActivating = isActivating,
         activationError = activationError,
-        onNextStep = { viewModel.nextStep(driver, onBound) },
+        onNextStep = { viewModel.nextStep(driver, onNavigateUp) },
         onPreviousStep = { viewModel.previousStep() },
-        onCancel = onCancel,
+        onCancel = onNavigateUp,
         modifier = modifier
     )
 }

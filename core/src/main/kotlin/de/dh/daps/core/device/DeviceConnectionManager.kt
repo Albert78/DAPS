@@ -8,6 +8,11 @@ import de.dh.daps.core.aps.GlucoseSourceDriverManager
 import de.dh.daps.core.aps.GlucoseSourceManager
 import de.dh.daps.core.pump.PumpDriverManager
 import de.dh.daps.core.pump.PumpManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 
 /**
  * Container holding the connection results when restoring device connections on application startup.
@@ -21,12 +26,74 @@ data class DeviceConnectionResult(
  * Central manager responsible for connecting, disconnecting, and restoring saved hardware connections
  * (glucose source and insulin pump) using their respective driver managers and driver lifecycle states.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class DeviceConnectionManager(
     private val glucoseSourceDriverManager: GlucoseSourceDriverManager,
     private val pumpDriverManager: PumpDriverManager,
     private val glucoseSourceManager: GlucoseSourceManager,
     private val pumpManager: PumpManager,
+    private val scope: CoroutineScope,
 ) {
+    init {
+        observeDrivers()
+    }
+
+    private fun observeDrivers() {
+        scope.launch {
+            glucoseSourceDriverManager.activeDriver.flatMapLatest { driver ->
+                driver?.lifecycleState ?: flowOf(DeviceLifecycleState.NoDevice)
+            }.collect { state ->
+                when (state) {
+                    is DeviceLifecycleState.DeviceBound -> {
+                        val activeDriver = glucoseSourceDriverManager.getActiveDriver()
+                        if (activeDriver != null) {
+                            glucoseSourceDriverManager.attachToGlucoseSource(activeDriver.driverId)
+                                .onSuccess { glucoseSource ->
+                                    glucoseSourceManager.glucoseSource = glucoseSource
+                                }
+                                .onFailure { error ->
+                                    Log.e(TAG, "Failed to attach glucose source '${activeDriver.driverId}': ${error.message}", error)
+                                }
+                        }
+                    }
+                    is DeviceLifecycleState.NoDevice -> {
+                        glucoseSourceManager.glucoseSource = null
+                    }
+                    is DeviceLifecycleState.SetupInProgress -> {
+                        // Skip auto-connect until setup finishes
+                    }
+                }
+            }
+        }
+
+        scope.launch {
+            pumpDriverManager.activeDriver.flatMapLatest { driver ->
+                driver?.lifecycleState ?: flowOf(DeviceLifecycleState.NoDevice)
+            }.collect { state ->
+                when (state) {
+                    is DeviceLifecycleState.DeviceBound -> {
+                        val activeDriver = pumpDriverManager.getActiveDriver()
+                        if (activeDriver != null) {
+                            pumpDriverManager.attachToPump(activeDriver.driverId)
+                                .onSuccess { insulinPump ->
+                                    pumpManager.insulinPump = insulinPump
+                                }
+                                .onFailure { error ->
+                                    Log.e(TAG, "Failed to attach insulin pump '${activeDriver.driverId}': ${error.message}", error)
+                                }
+                        }
+                    }
+                    is DeviceLifecycleState.NoDevice -> {
+                        pumpManager.insulinPump = null
+                    }
+                    is DeviceLifecycleState.SetupInProgress -> {
+                        // Skip auto-connect until setup finishes
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Attempts to re-establish connections to the active glucose source and insulin pump.
      * Should be called during application startup.
@@ -84,20 +151,6 @@ class DeviceConnectionManager(
             glucoseSourceResult = glucoseSourceResult,
             pumpResult = pumpResult
         )
-    }
-
-    /**
-     * Updates the active [GlucoseSourceManager] with a bound [glucoseSource].
-     */
-    fun onGlucoseSourceBound(glucoseSource: GlucoseSource) {
-        glucoseSourceManager.glucoseSource = glucoseSource
-    }
-
-    /**
-     * Updates the active [PumpManager] with a bound [insulinPump].
-     */
-    fun onPumpBound(insulinPump: InsulinPump) {
-        pumpManager.insulinPump = insulinPump
     }
 
     /**

@@ -298,7 +298,8 @@ class SystemRegistryImpl(
                 glucoseSourceDriverManager = glucoseSourceDriverManager,
                 pumpDriverManager = pumpDriverManager,
                 glucoseSourceManager = glucoseSourceManager,
-                pumpManager = pumpManager
+                pumpManager = pumpManager,
+                scope = scope
             )
 
             val recommendationManager = RecommendationManager(

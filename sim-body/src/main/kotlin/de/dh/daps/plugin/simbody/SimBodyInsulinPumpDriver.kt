@@ -69,8 +69,7 @@ class SimBodyInsulinPumpDriver(
      */
     @Composable
     override fun SetupScreen(
-        onBound: (InsulinPump) -> Unit,
-        onCancel: () -> Unit,
+        onNavigateUp: () -> Unit,
     ) {
         FramedCard(
             modifier = Modifier
@@ -91,7 +90,7 @@ class SimBodyInsulinPumpDriver(
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(modifier = Modifier.fillMaxWidth()) {
                     OutlinedButton(
-                        onClick = onCancel,
+                        onClick = onNavigateUp,
                         modifier = Modifier.weight(1f),
                     ) {
                         Text(stringResource(R.string.btn_cancel))
@@ -99,7 +98,6 @@ class SimBodyInsulinPumpDriver(
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = {
-                            val pump = simBodyPlugin.getInsulinPump()
                             val deviceId = "simbody-virtual-pump-01"
                             pluginContext?.preferences?.let { prefs ->
                                 scope.launch {
@@ -110,7 +108,7 @@ class SimBodyInsulinPumpDriver(
                                 deviceId = deviceId,
                                 displayName = UiText.StringResource(R.string.sim_body_pump_device_display_name)
                             )
-                            onBound(pump)
+                            onNavigateUp()
                         },
                         modifier = Modifier.weight(1f),
                     ) {

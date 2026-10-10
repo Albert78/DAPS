@@ -3,11 +3,10 @@ package de.dh.pump.omnipod.dash.ui
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import de.dh.daps.common.model.InsulinPump
+import de.dh.daps.common.model.DeviceLifecycleState
+import de.dh.daps.common.ui.UiText
 import de.dh.pump.omnipod.dash.OmnipodDashInsulinPumpDriver
-import de.dh.pump.omnipod.dash.OmnipodDashPump
 import de.dh.pump.omnipod.dash.R
-import de.dh.pump.omnipod.protocol.ble.OmnipodDashBleManager
 import de.dh.pump.omnipod.protocol.definition.ActivationProgress
 import de.dh.pump.omnipod.protocol.state.OmnipodDashPodStateManagerImpl
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,7 +36,7 @@ class OmnipodDashSetupViewModel(application: Application) : AndroidViewModel(app
 
     fun nextStep(
         driver: OmnipodDashInsulinPumpDriver,
-        onBound: (InsulinPump) -> Unit
+        onSuccess: () -> Unit
     ) {
         val steps = ActivationStep.entries
         val currentIndex = _currentStepIndex.value
@@ -56,7 +55,6 @@ class OmnipodDashSetupViewModel(application: Application) : AndroidViewModel(app
                 _currentStepIndex.value = currentIndex + 1
             }
             ActivationStep.CONFIRM_AND_ACTIVATE -> {
-                val context = driver.getContext()?.appContext ?: getApplication()
                 viewModelScope.launch {
                     _isActivating.value = true
                     _activationError.value = null
@@ -65,10 +63,15 @@ class OmnipodDashSetupViewModel(application: Application) : AndroidViewModel(app
                         podStateManager.activationProgress = ActivationProgress.COMPLETED
                         podStateManager.saveToPreferences()
 
-                        val bleManager = OmnipodDashBleManager(context, podStateManager)
-                        val pump = OmnipodDashPump(podStateManager, bleManager, context)
+                        driver.updateLifecycleState(
+                            DeviceLifecycleState.DeviceBound(
+                                deviceId = podStateManager.bluetoothAddress ?: "POD-DASH-ACTIVE",
+                                displayName = UiText.StringResource(R.string.omnipod_dash_pump_display_name),
+                            )
+                        )
+
                         _isActivating.value = false
-                        onBound(pump)
+                        onSuccess()
                     } catch (e: Exception) {
                         _isActivating.value = false
                         _activationError.value = e.message

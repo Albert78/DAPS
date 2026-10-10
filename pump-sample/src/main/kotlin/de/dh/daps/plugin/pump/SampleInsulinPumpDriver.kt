@@ -64,8 +64,7 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
      */
     @Composable
     override fun SetupScreen(
-        onBound: (InsulinPump) -> Unit,
-        onCancel: () -> Unit,
+        onNavigateUp: () -> Unit,
     ) {
         FramedCard(
             modifier = Modifier
@@ -84,7 +83,6 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = {
-                        val pump = SampleInsulinPump()
                         val deviceId = "sample-pump-device-01"
                         val deviceName = "Sample Pump 01"
                         pluginContext?.preferences?.let { prefs ->
@@ -97,7 +95,7 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
                             deviceId = deviceId,
                             displayName = UiText.DynamicString(deviceName),
                         )
-                        onBound(pump)
+                        onNavigateUp()
                     },
                     modifier = Modifier.fillMaxWidth(),
                 ) {

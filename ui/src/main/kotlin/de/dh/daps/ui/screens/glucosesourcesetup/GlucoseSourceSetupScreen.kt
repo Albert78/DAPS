@@ -49,7 +49,6 @@ import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
-import de.dh.daps.ui.common.composables.LoadingOverlayCard
 import de.dh.daps.ui.common.composables.ScopedDriverSetupContainer
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppTheme
@@ -68,9 +67,6 @@ fun GlucoseSourceSetupScreen(
         uiState = uiState,
         onNavigateUp = onNavigateUp,
         onSelectDriver = viewModel::selectDriver,
-        onBindGlucoseSource = { _, source ->
-            viewModel.onGlucoseSourceBound(source, onSuccess = onNavigateUp)
-        },
         onClearError = viewModel::clearError
     )
 }
@@ -81,7 +77,6 @@ fun GlucoseSourceSetupContent(
     uiState: GlucoseSourceSetupUiState,
     onNavigateUp: () -> Unit,
     onSelectDriver: (GlucoseSourceDriver?) -> Unit,
-    onBindGlucoseSource: (String, GlucoseSource) -> Unit,
     onClearError: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -132,10 +127,7 @@ fun GlucoseSourceSetupContent(
                 ) {
                     ScopedDriverSetupContainer(driverId = selectedDriver.driverId) {
                         selectedDriver.SetupScreen(
-                            onBound = { source ->
-                                onBindGlucoseSource(selectedDriver.driverId, source)
-                            },
-                            onCancel = {
+                            onNavigateUp = {
                                 if (uiState.availableDrivers.size > 1) {
                                     onSelectDriver(null)
                                 } else {
@@ -149,12 +141,6 @@ fun GlucoseSourceSetupContent(
                 GlucoseSourceDriverSelectionContent(
                     uiState = uiState,
                     onSelectDriver = onSelectDriver
-                )
-            }
-
-            if (uiState.isBinding) {
-                LoadingOverlayCard(
-                    message = stringResource(id = R.string.glucose_source_setup_connecting)
                 )
             }
         }
@@ -373,8 +359,7 @@ private class PreviewGlucoseDriver(
 
     @Composable
     override fun SetupScreen(
-        onBound: (GlucoseSource) -> Unit,
-        onCancel: () -> Unit
+        onNavigateUp: () -> Unit
     ) {
     }
 
@@ -398,7 +383,6 @@ fun GlucoseSourceSetupNoActiveSourcePreview() {
             ),
             onNavigateUp = {},
             onSelectDriver = {},
-            onBindGlucoseSource = { _, _ -> },
             onClearError = {}
         )
     }
@@ -424,7 +408,6 @@ fun GlucoseSourceSetupMultipleDriversPreview() {
             ),
             onNavigateUp = {},
             onSelectDriver = {},
-            onBindGlucoseSource = { _, _ -> },
             onClearError = {}
         )
     }
