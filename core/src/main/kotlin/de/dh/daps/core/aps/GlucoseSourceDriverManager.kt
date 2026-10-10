@@ -5,17 +5,21 @@ import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.GlucoseSourceDriver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 /**
  * Central registry and manager for registered [GlucoseSourceDriver] plugins.
- * Facilitates retrieving available drivers and attaching bound drivers.
+ * Facilitates retrieving available drivers and streaming the active glucose source.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class GlucoseSourceDriverManager(
     val drivers: List<GlucoseSourceDriver> = emptyList(),
     scope: CoroutineScope = CoroutineScope(Dispatchers.Default)
@@ -48,6 +52,18 @@ class GlucoseSourceDriverManager(
         )
 
     /**
+     * Flow emitting the currently active [GlucoseSource] provided by the active driver,
+     * or null if no driver or device is active.
+     */
+    val activeGlucoseSource: StateFlow<GlucoseSource?> = activeDriver
+        .flatMapLatest { driver -> driver?.activeGlucoseSource ?: flowOf(null) }
+        .stateIn(
+            scope = scope,
+            started = SharingStarted.Eagerly,
+            initialValue = getActiveDriver()?.activeGlucoseSource?.value
+        )
+
+    /**
      * Retrieves a driver by its unique [driverId].
      */
     fun getDriver(driverId: String): GlucoseSourceDriver? {
@@ -59,16 +75,5 @@ class GlucoseSourceDriverManager(
      */
     fun getActiveDriver(): GlucoseSourceDriver? {
         return drivers.firstOrNull { it.lifecycleState.value !is DeviceLifecycleState.NoDevice }
-    }
-
-    /**
-     * Re-establishes a glucose source connection for the specified [driverId].
-     */
-    suspend fun attachToGlucoseSource(driverId: String): Result<GlucoseSource> {
-        val driver = getDriver(driverId)
-            ?: return Result.failure(
-                IllegalArgumentException("No glucose source driver found matching driver ID '$driverId'.")
-            )
-        return driver.attach()
     }
 }

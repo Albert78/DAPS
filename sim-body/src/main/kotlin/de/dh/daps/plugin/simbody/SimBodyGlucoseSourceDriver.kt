@@ -49,6 +49,9 @@ class SimBodyGlucoseSourceDriver(
     private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.NoDevice)
     override val lifecycleState: StateFlow<DeviceLifecycleState> = _lifecycleState.asStateFlow()
 
+    private val _activeGlucoseSource = MutableStateFlow<GlucoseSource?>(null)
+    override val activeGlucoseSource: StateFlow<GlucoseSource?> = _activeGlucoseSource.asStateFlow()
+
     override fun initialize(context: PluginContext) {
         this.pluginContext = context
     }
@@ -61,8 +64,10 @@ class SimBodyGlucoseSourceDriver(
                 deviceId = deviceId,
                 displayName = UiText.StringResource(R.string.sim_body_cgm_sensor_display_name)
             )
+            _activeGlucoseSource.value = simBodyPlugin.getGlucoseSource()
         } else {
             _lifecycleState.value = DeviceLifecycleState.NoDevice
+            _activeGlucoseSource.value = null
         }
     }
 
@@ -110,6 +115,7 @@ class SimBodyGlucoseSourceDriver(
                                 deviceId = deviceId,
                                 displayName = UiText.StringResource(R.string.sim_body_cgm_sensor_display_name)
                             )
+                            _activeGlucoseSource.value = simBodyPlugin.getGlucoseSource()
                             onNavigateUp()
                         },
                         modifier = Modifier.weight(1f),
@@ -119,26 +125,6 @@ class SimBodyGlucoseSourceDriver(
                 }
             }
         }
-    }
-
-    /**
-     * Re-connects to the virtual human body simulation CGM using stored driver settings.
-     */
-    override suspend fun attach(): Result<GlucoseSource> {
-        val pc = pluginContext
-            ?: return Result.failure(IllegalStateException("PluginContext not initialized"))
-        val deviceId = pc.preferences.getString(KEY_DEVICE_ID).first()
-
-        if (deviceId.isNullOrEmpty()) {
-            _lifecycleState.value = DeviceLifecycleState.NoDevice
-            return Result.failure(IllegalStateException("No saved device configuration found for SimBody CGM"))
-        }
-
-        _lifecycleState.value = DeviceLifecycleState.DeviceBound(
-            deviceId = deviceId,
-            displayName = UiText.StringResource(R.string.sim_body_cgm_sensor_display_name)
-        )
-        return Result.success(simBodyPlugin.getGlucoseSource())
     }
 
     companion object {

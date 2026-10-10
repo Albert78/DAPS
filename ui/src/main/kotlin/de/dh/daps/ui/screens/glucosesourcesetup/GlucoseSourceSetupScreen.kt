@@ -357,16 +357,15 @@ private class PreviewGlucoseDriver(
     override val lifecycleState: StateFlow<DeviceLifecycleState> =
         MutableStateFlow(initialState)
 
+    override val activeGlucoseSource: StateFlow<GlucoseSource?> =
+        MutableStateFlow(null)
+
     override suspend fun initState() {}
 
     @Composable
     override fun SetupScreen(
         onNavigateUp: () -> Unit
     ) {
-    }
-
-    override suspend fun attach(): Result<GlucoseSource> {
-        return Result.failure(UnsupportedOperationException())
     }
 }
 

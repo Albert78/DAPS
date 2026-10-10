@@ -18,7 +18,6 @@ import kotlinx.coroutines.launch
  * ViewModel managing the pod setup and activation wizard for Omnipod Dash.
  */
 class OmnipodDashSetupViewModel(application: Application) : AndroidViewModel(application) {
-
     private val _currentStepIndex = MutableStateFlow(0)
     val currentStepIndex: StateFlow<Int> = _currentStepIndex.asStateFlow()
 

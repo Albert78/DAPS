@@ -43,6 +43,9 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
     private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.NoDevice)
     override val lifecycleState: StateFlow<DeviceLifecycleState> = _lifecycleState.asStateFlow()
 
+    private val _activeGlucoseSource = MutableStateFlow<GlucoseSource?>(null)
+    override val activeGlucoseSource: StateFlow<GlucoseSource?> = _activeGlucoseSource.asStateFlow()
+
     override fun initialize(context: PluginContext) {
         this.pluginContext = context
     }
@@ -56,8 +59,10 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
                 deviceId = deviceId,
                 displayName = UiText.DynamicString(deviceName)
             )
+            _activeGlucoseSource.value = SampleGlucoseSource()
         } else {
             _lifecycleState.value = DeviceLifecycleState.NoDevice
+            _activeGlucoseSource.value = null
         }
     }
 
@@ -97,6 +102,7 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
                             deviceId = deviceId,
                             displayName = UiText.DynamicString(deviceName)
                         )
+                        _activeGlucoseSource.value = SampleGlucoseSource()
                         onNavigateUp()
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -105,28 +111,6 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
                 }
             }
         }
-    }
-
-    /**
-     * Re-connects to a sample glucose source using stored driver settings.
-     */
-    override suspend fun attach(): Result<GlucoseSource> {
-        val pc = pluginContext
-            ?: return Result.failure(IllegalStateException("PluginContext not initialized"))
-        val prefs = pc.preferences
-        val deviceId = prefs.getString(KEY_DEVICE_ID).first()
-        val deviceName = prefs.getString(KEY_DEVICE_NAME).first() ?: "Sample Glucose Sensor 01"
-
-        if (deviceId.isNullOrEmpty()) {
-            _lifecycleState.value = DeviceLifecycleState.NoDevice
-            return Result.failure(IllegalStateException("No saved device configuration found for sample glucose source"))
-        }
-
-        _lifecycleState.value = DeviceLifecycleState.DeviceBound(
-            deviceId = deviceId,
-            displayName = UiText.DynamicString(deviceName)
-        )
-        return Result.success(SampleGlucoseSource())
     }
 
     companion object {

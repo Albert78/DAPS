@@ -364,6 +364,9 @@ private class PreviewPumpDriver(
     override val lifecycleState: StateFlow<DeviceLifecycleState> =
         MutableStateFlow(initialState)
 
+    override val activePump: StateFlow<InsulinPump?> =
+        MutableStateFlow(null)
+
     override suspend fun initState() {}
 
     @Composable
@@ -371,10 +374,6 @@ private class PreviewPumpDriver(
         onNavigateUp: () -> Unit
     ) {
         setupScreenContent()
-    }
-
-    override suspend fun attach(): Result<InsulinPump> {
-        return Result.failure(UnsupportedOperationException())
     }
 }
 

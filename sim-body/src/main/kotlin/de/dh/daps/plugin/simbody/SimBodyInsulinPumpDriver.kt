@@ -49,6 +49,9 @@ class SimBodyInsulinPumpDriver(
     private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.NoDevice)
     override val lifecycleState: StateFlow<DeviceLifecycleState> = _lifecycleState.asStateFlow()
 
+    private val _activePump = MutableStateFlow<InsulinPump?>(null)
+    override val activePump: StateFlow<InsulinPump?> = _activePump.asStateFlow()
+
     override fun initialize(context: PluginContext) {
         this.pluginContext = context
     }
@@ -61,8 +64,10 @@ class SimBodyInsulinPumpDriver(
                 deviceId = deviceId,
                 displayName = UiText.StringResource(R.string.sim_body_pump_device_display_name)
             )
+            _activePump.value = simBodyPlugin.getInsulinPump()
         } else {
             _lifecycleState.value = DeviceLifecycleState.NoDevice
+            _activePump.value = null
         }
     }
 
@@ -110,6 +115,7 @@ class SimBodyInsulinPumpDriver(
                                 deviceId = deviceId,
                                 displayName = UiText.StringResource(R.string.sim_body_pump_device_display_name)
                             )
+                            _activePump.value = simBodyPlugin.getInsulinPump()
                             onNavigateUp()
                         },
                         modifier = Modifier.weight(1f),
@@ -119,26 +125,6 @@ class SimBodyInsulinPumpDriver(
                 }
             }
         }
-    }
-
-    /**
-     * Re-connects to the virtual human body simulation pump using stored driver settings.
-     */
-    override suspend fun attach(): Result<InsulinPump> {
-        val pc = pluginContext
-            ?: return Result.failure(IllegalStateException("PluginContext not initialized"))
-        val deviceId = pc.preferences.getString(KEY_DEVICE_ID).first()
-
-        if (deviceId.isNullOrEmpty()) {
-            _lifecycleState.value = DeviceLifecycleState.NoDevice
-            return Result.failure(IllegalStateException("No saved device configuration found for SimBody Pump"))
-        }
-
-        _lifecycleState.value = DeviceLifecycleState.DeviceBound(
-            deviceId = deviceId,
-            displayName = UiText.StringResource(R.string.sim_body_pump_device_display_name)
-        )
-        return Result.success(simBodyPlugin.getInsulinPump())
     }
 
     companion object {

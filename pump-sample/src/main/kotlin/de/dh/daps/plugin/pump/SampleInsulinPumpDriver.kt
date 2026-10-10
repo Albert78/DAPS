@@ -43,6 +43,9 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
     private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.NoDevice)
     override val lifecycleState: StateFlow<DeviceLifecycleState> = _lifecycleState.asStateFlow()
 
+    private val _activePump = MutableStateFlow<InsulinPump?>(null)
+    override val activePump: StateFlow<InsulinPump?> = _activePump.asStateFlow()
+
     override fun initialize(context: PluginContext) {
         this.pluginContext = context
     }
@@ -56,8 +59,10 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
                 deviceId = deviceId,
                 displayName = UiText.DynamicString(deviceName)
             )
+            _activePump.value = SampleInsulinPump()
         } else {
             _lifecycleState.value = DeviceLifecycleState.NoDevice
+            _activePump.value = null
         }
     }
 
@@ -97,6 +102,7 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
                             deviceId = deviceId,
                             displayName = UiText.DynamicString(deviceName),
                         )
+                        _activePump.value = SampleInsulinPump()
                         onNavigateUp()
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -105,28 +111,6 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
                 }
             }
         }
-    }
-
-    /**
-     * Re-connects to a sample pump using stored driver settings.
-     */
-    override suspend fun attach(): Result<InsulinPump> {
-        val pc = pluginContext
-            ?: return Result.failure(IllegalStateException("PluginContext not initialized"))
-        val prefs = pc.preferences
-        val deviceId = prefs.getString(KEY_DEVICE_ID).first()
-        val deviceName = prefs.getString(KEY_DEVICE_NAME).first() ?: "Sample Pump 01"
-
-        if (deviceId.isNullOrEmpty()) {
-            _lifecycleState.value = DeviceLifecycleState.NoDevice
-            return Result.failure(IllegalStateException("No saved device configuration found for sample pump"))
-        }
-
-        _lifecycleState.value = DeviceLifecycleState.DeviceBound(
-            deviceId = deviceId,
-            displayName = UiText.DynamicString(deviceName),
-        )
-        return Result.success(SampleInsulinPump())
     }
 
     companion object {

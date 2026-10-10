@@ -69,6 +69,9 @@ class ReceiverGlucosePlugin(
     private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.NoDevice)
     override val lifecycleState: StateFlow<DeviceLifecycleState> = _lifecycleState.asStateFlow()
 
+    private val _activeGlucoseSource = MutableStateFlow<GlucoseSource?>(null)
+    override val activeGlucoseSource: StateFlow<GlucoseSource?> = _activeGlucoseSource.asStateFlow()
+
     override fun initialize(context: PluginContext) {
         this.pluginContext = context
     }
@@ -192,6 +195,7 @@ class ReceiverGlucosePlugin(
                                 deviceId = null,
                                 displayName = UiText.StringResource(R.string.glucose_broadcast_receiver_display_name)
                             )
+                            _activeGlucoseSource.value = this@ReceiverGlucosePlugin
                             onNavigateUp()
                         },
                         modifier = Modifier.weight(1f),
@@ -218,24 +222,11 @@ class ReceiverGlucosePlugin(
                 deviceId = null,
                 displayName = UiText.StringResource(R.string.glucose_broadcast_receiver_display_name)
             )
+            _activeGlucoseSource.value = this
         } else {
             _lifecycleState.value = DeviceLifecycleState.NoDevice
+            _activeGlucoseSource.value = null
         }
-    }
-
-    /**
-     * Re-connects to an external BroadcastReceiver glucose source using stored driver settings.
-     */
-    override suspend fun attach(): Result<GlucoseSource> {
-        val pc = pluginContext
-            ?: return Result.failure(IllegalStateException("PluginContext not initialized"))
-        refreshLifecycleState(pc.preferences)
-
-        if (_lifecycleState.value !is DeviceLifecycleState.DeviceBound) {
-            return Result.failure(IllegalStateException("No saved source type configuration found for Receiver Glucose Plugin"))
-        }
-
-        return Result.success(this)
     }
 
     companion object {

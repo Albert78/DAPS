@@ -1,7 +1,6 @@
 package de.dh.pump.danai.ui
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.util.Log
@@ -50,17 +49,16 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
     private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.NoDevice)
     override val lifecycleState: StateFlow<DeviceLifecycleState> = _lifecycleState.asStateFlow()
 
+    private val _activePump = MutableStateFlow<InsulinPump?>(null)
+    override val activePump: StateFlow<InsulinPump?> = _activePump.asStateFlow()
+
     override fun initialize(context: PluginContext) {
         this.pluginContext = context
     }
 
     override suspend fun initState() {
         val pc = pluginContext ?: return
-        refreshLifecycleState(pc.preferences)
-    }
-
-    private suspend fun refreshLifecycleState(preferences: PluginPreferences) {
-        val danaPrefs = DanaPumpPreferences(preferences)
+        val danaPrefs = DanaPumpPreferences(pc.preferences)
         val address = danaPrefs.getLastAddress()
         val name = danaPrefs.getLastName().ifEmpty { "Dana-i" }
 
@@ -69,8 +67,15 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
                 deviceId = address,
                 displayName = UiText.DynamicString(name),
             )
+            try {
+                val pump = doConnectPump(name, address, pc.appContext, pc.preferences)
+                _activePump.value = pump
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to connect to Dana-i pump during initState", e)
+            }
         } else {
             _lifecycleState.value = DeviceLifecycleState.NoDevice
+            _activePump.value = null
         }
     }
 
@@ -117,34 +122,6 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
     }
 
     /**
-     * Re-establishes a connection with a previously paired Dana-i pump using stored preferences.
-     */
-    @SuppressLint("MissingPermission")
-    override suspend fun attach(): Result<InsulinPump> {
-        val pc = pluginContext
-            ?: return Result.failure(IllegalStateException("PluginContext not initialized"))
-        val context = pc.appContext
-        val prefs = pc.preferences
-
-        refreshLifecycleState(prefs)
-
-        if (_lifecycleState.value !is DeviceLifecycleState.DeviceBound) {
-            return Result.failure(IllegalStateException("No saved Bluetooth address found for Dana-i pump"))
-        }
-
-        val danaPrefs = DanaPumpPreferences(prefs)
-        val address = danaPrefs.getLastAddress()
-        val name = danaPrefs.getLastName().ifEmpty { "Dana-i" }
-
-        return try {
-            Result.success(doConnectPump(name, address, context, prefs))
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to connect to Dana-i pump", e)
-            Result.failure(e)
-        }
-    }
-
-    /**
      * Creates a new connection link to a Dana-i pump during device pairing.
      */
     suspend fun createAndConnectPump(
@@ -155,7 +132,7 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
     ): InsulinPump {
         val pump = doConnectPump(deviceName, deviceAddress, context, preferences)
         DanaPumpPreferences(preferences).savePumpAddress(deviceName, deviceAddress)
-        refreshLifecycleState(preferences)
+        _activePump.value = pump
         return pump
     }
 

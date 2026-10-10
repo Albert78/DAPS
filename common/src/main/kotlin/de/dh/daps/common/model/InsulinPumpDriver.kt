@@ -9,8 +9,8 @@ import kotlinx.coroutines.flow.StateFlow
  * Encapsulates driver-specific scanning, pairing, and binding workflows.
  *
  * Drivers must persist their bound device information in their [PluginPreferences]
- * (provided via [PluginContext]) and must be able to restore their [DeviceLifecycleState] and their
- * state to re-establish the connection when [attach] is invoked.
+ * (provided via [PluginContext]) and restore their [DeviceLifecycleState] and [activePump]
+ * when [initState] is invoked.
  */
 interface InsulinPumpDriver {
     /**
@@ -29,8 +29,14 @@ interface InsulinPumpDriver {
     val lifecycleState: StateFlow<DeviceLifecycleState>
 
     /**
-     * Restores the internal lifecycle state of the driver (e.g. checking persisted preferences
-     * and updating [lifecycleState] to [DeviceLifecycleState.DeviceBound] if a device is configured).
+     * Flow emitting the currently active [InsulinPump] instance provided by this driver,
+     * or null if no device is connected/bound.
+     */
+    val activePump: StateFlow<InsulinPump?>
+
+    /**
+     * Restores the internal lifecycle state of the driver (e.g. checking persisted preferences,
+     * restoring [lifecycleState] and instantiating [activePump] if a device is configured).
      */
     suspend fun initState()
 
@@ -42,10 +48,4 @@ interface InsulinPumpDriver {
     fun SetupScreen(
         onNavigateUp: () -> Unit,
     )
-
-    /**
-     * Re-establishes a connection with a previously configured pump using stored driver settings.
-     * Invoked upon application launch or when loading a configured pump.
-     */
-    suspend fun attach(): Result<InsulinPump>
 }

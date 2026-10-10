@@ -1,24 +1,21 @@
 package de.dh.daps.core.device
 
 import android.util.Log
-import de.dh.daps.common.model.DeviceLifecycleState
+import de.dh.daps.common.model.GlucoseSource
+import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.core.aps.GlucoseSourceDriverManager
 import de.dh.daps.core.aps.GlucoseSourceManager
 import de.dh.daps.core.pump.PumpDriverManager
 import de.dh.daps.core.pump.PumpManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
 /**
  * Central manager responsible for connecting, disconnecting, and restoring saved hardware connections
- * (glucose source and insulin pump) using their respective driver managers and driver lifecycle states.
+ * (glucose source and insulin pump) using their respective driver managers and active device flows.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 class DeviceConnectionManager(
     private val glucoseSourceDriverManager: GlucoseSourceDriverManager,
     private val pumpDriverManager: PumpDriverManager,
@@ -29,73 +26,23 @@ class DeviceConnectionManager(
     private var observeJob: Job? = null
 
     /**
-     * Synchronously attaches listeners to active glucose source and pump driver lifecycle flows.
-     * When a driver transitions to [DeviceLifecycleState.DeviceBound], it is automatically attached.
+     * Synchronously attaches listeners to active glucose source and pump flows.
+     * When an active driver emits a new [GlucoseSource] or [InsulinPump], it is automatically assigned to the manager.
      */
     fun startObserving() {
         if (observeJob != null) return
 
         observeJob = scope.launch(start = CoroutineStart.UNDISPATCHED) {
             launch(start = CoroutineStart.UNDISPATCHED) {
-                glucoseSourceDriverManager.activeDriver.flatMapLatest { driver ->
-                    driver?.lifecycleState ?: flowOf(DeviceLifecycleState.NoDevice)
-                }.collect { state ->
-                    handleGlucoseSourceState(state)
+                glucoseSourceDriverManager.activeGlucoseSource.collect { glucoseSource ->
+                    glucoseSourceManager.glucoseSource = glucoseSource
                 }
             }
 
             launch(start = CoroutineStart.UNDISPATCHED) {
-                pumpDriverManager.activeDriver.flatMapLatest { driver ->
-                    driver?.lifecycleState ?: flowOf(DeviceLifecycleState.NoDevice)
-                }.collect { state ->
-                    handlePumpState(state)
+                pumpDriverManager.activePump.collect { pump ->
+                    pumpManager.insulinPump = pump
                 }
-            }
-        }
-    }
-
-    private suspend fun handleGlucoseSourceState(state: DeviceLifecycleState) {
-        when (state) {
-            is DeviceLifecycleState.DeviceBound -> {
-                val activeDriver = glucoseSourceDriverManager.getActiveDriver()
-                if (activeDriver != null) {
-                    glucoseSourceDriverManager.attachToGlucoseSource(activeDriver.driverId)
-                        .onSuccess { glucoseSource ->
-                            glucoseSourceManager.glucoseSource = glucoseSource
-                        }
-                        .onFailure { error ->
-                            Log.e(TAG, "Failed to attach glucose source '${activeDriver.driverId}': ${error.message}", error)
-                        }
-                }
-            }
-            is DeviceLifecycleState.NoDevice -> {
-                glucoseSourceManager.glucoseSource = null
-            }
-            is DeviceLifecycleState.SetupInProgress -> {
-                // Skip auto-connect until setup finishes
-            }
-        }
-    }
-
-    private suspend fun handlePumpState(state: DeviceLifecycleState) {
-        when (state) {
-            is DeviceLifecycleState.DeviceBound -> {
-                val activeDriver = pumpDriverManager.getActiveDriver()
-                if (activeDriver != null) {
-                    pumpDriverManager.attachToPump(activeDriver.driverId)
-                        .onSuccess { insulinPump ->
-                            pumpManager.insulinPump = insulinPump
-                        }
-                        .onFailure { error ->
-                            Log.e(TAG, "Failed to attach insulin pump '${activeDriver.driverId}': ${error.message}", error)
-                        }
-                }
-            }
-            is DeviceLifecycleState.NoDevice -> {
-                pumpManager.insulinPump = null
-            }
-            is DeviceLifecycleState.SetupInProgress -> {
-                // Skip auto-connect until setup finishes
             }
         }
     }
