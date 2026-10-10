@@ -86,7 +86,7 @@ class ReceiverGlucosePlugin(
     private val _activeGlucoseSource = MutableStateFlow<GlucoseSource?>(null)
     override val activeGlucoseSource: StateFlow<GlucoseSource?> = _activeGlucoseSource.asStateFlow()
 
-    override fun initialize(context: PluginContext) {
+    override fun setup(context: PluginContext) {
         this.pluginContext = context
     }
 

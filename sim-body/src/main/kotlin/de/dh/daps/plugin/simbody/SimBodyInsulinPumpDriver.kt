@@ -38,7 +38,7 @@ class SimBodyInsulinPumpDriver(
     private val _activePump = MutableStateFlow<InsulinPump?>(null)
     override val activePump: StateFlow<InsulinPump?> = _activePump.asStateFlow()
 
-    override fun initialize(context: PluginContext) {
+    override fun setup(context: PluginContext) {
         this.pluginContext = context
     }
 
