@@ -3,8 +3,6 @@ package de.dh.pump.omnipod.dash.ui
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import de.dh.daps.common.model.DeviceLifecycleState
-import de.dh.daps.common.ui.UiText
 import de.dh.pump.omnipod.dash.OmnipodDashInsulinPumpDriver
 import de.dh.pump.omnipod.dash.R
 import de.dh.pump.omnipod.protocol.definition.ActivationProgress
@@ -26,12 +24,6 @@ class OmnipodDashSetupViewModel(application: Application) : AndroidViewModel(app
 
     private val _activationError = MutableStateFlow<String?>(null)
     val activationError: StateFlow<String?> = _activationError.asStateFlow()
-
-    fun previousStep() {
-        if (_currentStepIndex.value > 0) {
-            _currentStepIndex.value -= 1
-        }
-    }
 
     fun nextStep(
         driver: OmnipodDashInsulinPumpDriver,
@@ -62,12 +54,7 @@ class OmnipodDashSetupViewModel(application: Application) : AndroidViewModel(app
                         podStateManager.activationProgress = ActivationProgress.COMPLETED
                         podStateManager.saveToPreferences()
 
-                        driver.updateLifecycleState(
-                            DeviceLifecycleState.DeviceBound(
-                                deviceId = podStateManager.bluetoothAddress ?: "POD-DASH-ACTIVE",
-                                displayName = UiText.StringResource(R.string.omnipod_dash_pump_display_name),
-                            )
-                        )
+                        driver.completeActivation(podStateManager)
 
                         _isActivating.value = false
                         onSuccess()

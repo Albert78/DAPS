@@ -16,6 +16,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,7 +30,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.common.composables.FramedCard
-import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.WarningBanner
@@ -77,13 +77,19 @@ fun OmnipodDashSetupScreen(
     val isActivating by viewModel.isActivating.collectAsStateWithLifecycle()
     val activationError by viewModel.activationError.collectAsStateWithLifecycle()
 
+    LaunchedEffect(Unit) {
+        driver.startSetup()
+    }
+
     OmnipodDashSetupContent(
         currentStepIndex = currentStepIndex,
         isActivating = isActivating,
         activationError = activationError,
         onNextStep = { viewModel.nextStep(driver, onNavigateUp) },
-        onPreviousStep = { viewModel.previousStep() },
-        onCancel = onNavigateUp,
+        onCancel = {
+            driver.cancelSetup()
+            onNavigateUp()
+        },
         modifier = modifier
     )
 }
@@ -97,7 +103,6 @@ fun OmnipodDashSetupContent(
     isActivating: Boolean,
     activationError: String?,
     onNextStep: () -> Unit,
-    onPreviousStep: () -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -186,34 +191,19 @@ fun OmnipodDashSetupContent(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            PrimaryButton(
+                onClick = onNextStep,
+                enabled = !isActivating,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                if (currentStepIndex > 0) {
-                    NormalButton(
-                        onClick = onPreviousStep,
-                        enabled = !isActivating,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(stringResource(R.string.omnipod_dash_setup_btn_back))
-                    }
-                }
-
-                PrimaryButton(
-                    onClick = onNextStep,
-                    enabled = !isActivating,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    if (isActivating) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        Text(currentStep.actionButtonText.asString())
-                    }
+                if (isActivating) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(currentStep.actionButtonText.asString())
                 }
             }
 
@@ -237,7 +227,6 @@ private fun OmnipodDashSetupContentStep1Preview() {
             isActivating = false,
             activationError = null,
             onNextStep = {},
-            onPreviousStep = {},
             onCancel = {}
         )
     }
@@ -252,7 +241,6 @@ private fun OmnipodDashSetupContentStep2Preview() {
             isActivating = false,
             activationError = null,
             onNextStep = {},
-            onPreviousStep = {},
             onCancel = {}
         )
     }
@@ -267,7 +255,6 @@ private fun OmnipodDashSetupContentStep3Preview() {
             isActivating = false,
             activationError = null,
             onNextStep = {},
-            onPreviousStep = {},
             onCancel = {}
         )
     }
@@ -282,7 +269,6 @@ private fun OmnipodDashSetupContentActivatingPreview() {
             isActivating = true,
             activationError = null,
             onNextStep = {},
-            onPreviousStep = {},
             onCancel = {}
         )
     }
@@ -297,7 +283,6 @@ private fun OmnipodDashSetupContentErrorPreview() {
             isActivating = false,
             activationError = "Aktivierung fehlgeschlagen. Bitte erneut versuchen.",
             onNextStep = {},
-            onPreviousStep = {},
             onCancel = {}
         )
     }
