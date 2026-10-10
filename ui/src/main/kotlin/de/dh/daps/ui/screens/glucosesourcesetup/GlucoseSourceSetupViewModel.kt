@@ -23,12 +23,11 @@ data class GlucoseSourceSetupUiState(
 )
 
 class GlucoseSourceSetupViewModel(
-    private val registry: SystemRegistry,
-    initialDriverId: String? = null
+    private val registry: SystemRegistry
 ) : ViewModel() {
 
     private val selectedDriverState = MutableStateFlow<GlucoseSourceDriver?>(
-        initialDriverId?.let { registry.glucoseSourceDriverManager.getDriver(it) }
+        registry.glucoseSourceDriverManager.getActiveDriver()
     )
     private val isConnectingState = MutableStateFlow(false)
     private val errorMessageState = MutableStateFlow<String?>(null)
@@ -51,7 +50,7 @@ class GlucoseSourceSetupViewModel(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = GlucoseSourceSetupUiState(
             availableDrivers = registry.glucoseSourceDriverManager.drivers,
-            selectedDriver = initialDriverId?.let { registry.glucoseSourceDriverManager.getDriver(it) }
+            selectedDriver = registry.glucoseSourceDriverManager.getActiveDriver()
         )
     )
 
@@ -81,12 +80,11 @@ class GlucoseSourceSetupViewModel(
 
     companion object {
         class Factory(
-            private val registry: SystemRegistry,
-            private val initialDriverId: String? = null
+            private val registry: SystemRegistry
         ) : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
-                return GlucoseSourceSetupViewModel(registry, initialDriverId) as T
+                return GlucoseSourceSetupViewModel(registry) as T
             }
         }
     }

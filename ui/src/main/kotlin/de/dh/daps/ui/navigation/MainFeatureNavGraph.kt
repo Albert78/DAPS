@@ -157,8 +157,8 @@ class MainFeatureNavGraph(
                     onNavigateToManualControl = { initialDialog -> navViewModel.push(ManualControlRoute(initialDialog = initialDialog)) },
                     onAdjustmentClick = { navViewModel.push(TherapyAdjustmentRoute) },
                     onHistoryChartClick = { navViewModel.push(HistoryRoute) },
-                    onNavigateToGlucoseSourceSetup = { navViewModel.push(GlucoseSourceSetupRoute()) },
-                    onNavigateToPumpSetup = { navViewModel.push(PumpSetupRoute()) },
+                    onNavigateToGlucoseSourceSetup = { navViewModel.push(GlucoseSourceSetupRoute) },
+                    onNavigateToPumpSetup = { navViewModel.push(PumpSetupRoute) },
                     extraContent = extraDashboardContent
                 )
             }
@@ -427,14 +427,14 @@ class MainFeatureNavGraph(
                     initialTab = key.initialTab,
                     onNavigateUp = { navViewModel.pop() },
                     onNavigateToCoreDecisions = { navViewModel.push(CoreDecisionsRoute) },
-                    onNavigateToPumpSetup = { navViewModel.push(PumpSetupRoute()) },
-                    onNavigateToGlucoseSourceSetup = { navViewModel.push(GlucoseSourceSetupRoute()) }
+                    onNavigateToPumpSetup = { navViewModel.push(PumpSetupRoute) },
+                    onNavigateToGlucoseSourceSetup = { navViewModel.push(GlucoseSourceSetupRoute) }
                 )
             }
 
             is PumpSetupRoute -> NavEntry(key) {
                 val vm: PumpSetupViewModel = viewModel(
-                    factory = PumpSetupViewModel.Companion.Factory(registry, key.driverId)
+                    factory = PumpSetupViewModel.Companion.Factory(registry)
                 )
                 PumpSetupScreen(
                     viewModel = vm,
@@ -444,7 +444,7 @@ class MainFeatureNavGraph(
 
             is GlucoseSourceSetupRoute -> NavEntry(key) {
                 val vm: GlucoseSourceSetupViewModel = viewModel(
-                    factory = GlucoseSourceSetupViewModel.Companion.Factory(registry, key.driverId)
+                    factory = GlucoseSourceSetupViewModel.Companion.Factory(registry)
                 )
                 GlucoseSourceSetupScreen(
                     viewModel = vm,

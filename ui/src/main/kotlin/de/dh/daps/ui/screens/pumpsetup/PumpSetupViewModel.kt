@@ -23,12 +23,11 @@ data class PumpSetupUiState(
 )
 
 class PumpSetupViewModel(
-    private val registry: SystemRegistry,
-    private val initialDriverId: String? = null
+    private val registry: SystemRegistry
 ) : ViewModel() {
 
     private val selectedDriverState = MutableStateFlow<InsulinPumpDriver?>(
-        initialDriverId?.let { registry.pumpDriverManager.getDriver(it) }
+        registry.pumpDriverManager.getActiveDriver()
     )
     private val isConnectingState = MutableStateFlow(false)
     private val errorMessageState = MutableStateFlow<String?>(null)
@@ -51,7 +50,7 @@ class PumpSetupViewModel(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = PumpSetupUiState(
             availableDrivers = registry.pumpDriverManager.drivers,
-            selectedDriver = initialDriverId?.let { registry.pumpDriverManager.getDriver(it) }
+            selectedDriver = registry.pumpDriverManager.getActiveDriver()
         )
     )
 
@@ -81,12 +80,11 @@ class PumpSetupViewModel(
 
     companion object {
         class Factory(
-            private val registry: SystemRegistry,
-            private val initialDriverId: String? = null
+            private val registry: SystemRegistry
         ) : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
-                return PumpSetupViewModel(registry, initialDriverId) as T
+                return PumpSetupViewModel(registry) as T
             }
         }
     }
