@@ -415,3 +415,31 @@ private fun OmnipodDashSetupContentStep1Preview() {
         )
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun OmnipodDashSetupContentStep2Preview() {
+    AppPreview {
+        OmnipodDashSetupContent(
+            currentStepIndex = 1,
+            isActivating = false,
+            activationError = null,
+            onNextStep = {},
+            onCancel = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun OmnipodDashSetupContentStep3Preview() {
+    AppPreview {
+        OmnipodDashSetupContent(
+            currentStepIndex = 2,
+            isActivating = false,
+            activationError = null,
+            onNextStep = {},
+            onCancel = {}
+        )
+    }
+}
