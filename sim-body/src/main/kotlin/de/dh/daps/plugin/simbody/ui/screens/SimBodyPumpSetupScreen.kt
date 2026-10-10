@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -18,6 +19,9 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -58,6 +62,8 @@ fun SimBodyPumpSetupContent(
     onUnbind: () -> Unit,
     onNavigateUp: () -> Unit,
 ) {
+    var showUnbindDialog by remember { mutableStateOf(false) }
+
     when (lifecycleState) {
         is DeviceLifecycleState.DeviceBound -> {
             FramedCard(
@@ -114,7 +120,7 @@ fun SimBodyPumpSetupContent(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         OutlinedButton(
-                            onClick = onUnbind,
+                            onClick = { showUnbindDialog = true },
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.outlinedButtonColors(
                                 contentColor = MaterialTheme.colorScheme.error,
@@ -172,6 +178,33 @@ fun SimBodyPumpSetupContent(
                 }
             }
         }
+    }
+
+    if (showUnbindDialog) {
+        AlertDialog(
+            onDismissRequest = { showUnbindDialog = false },
+            title = { Text(stringResource(R.string.sim_body_pump_unbind_dialog_title)) },
+            text = { Text(stringResource(R.string.sim_body_pump_unbind_dialog_message)) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showUnbindDialog = false
+                        onUnbind()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError,
+                    ),
+                ) {
+                    Text(stringResource(R.string.btn_unbind_confirm))
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showUnbindDialog = false }) {
+                    Text(stringResource(R.string.btn_cancel))
+                }
+            },
+        )
     }
 }
 

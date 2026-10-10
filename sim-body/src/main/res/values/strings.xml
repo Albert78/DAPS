@@ -49,6 +49,11 @@
     <string name="dialog_title_edit_noise">Rauschfaktor (>= 0)</string>
     <string name="btn_ok">OK</string>
     <string name="btn_cancel">Abbrechen</string>
+    <string name="sim_body_pump_unbind_dialog_title">Bindung verwerfen?</string>
+    <string name="sim_body_pump_unbind_dialog_message">Möchtest du die Bindung zu dieser virtuellen SimBody-Insulinpumpe wirklich verwerfen?</string>
+    <string name="sim_body_cgm_unbind_dialog_title">Bindung verwerfen?</string>
+    <string name="sim_body_cgm_unbind_dialog_message">Möchtest du die Bindung zu diesem virtuellen SimBody-Glukosesensor wirklich verwerfen?</string>
+    <string name="btn_unbind_confirm">Bindung verwerfen</string>
 
     <!-- Sensor Configuration -->
     <string name="title_sensor_config">Sensor-Konfiguration</string>

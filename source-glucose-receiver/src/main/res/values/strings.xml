@@ -1,3 +1,7 @@
 <resources>
     <string name="glucose_broadcast_receiver_display_name">Glucose Broadcast Receiver</string>
+    <string name="receiver_unbind_dialog_title">Bindung verwerfen?</string>
+    <string name="receiver_unbind_dialog_message">Möchtest du die Bindung zu diesem Glukose-Broadcast-Empfänger wirklich verwerfen?</string>
+    <string name="receiver_unbind_dialog_confirm">Bindung verwerfen</string>
+    <string name="btn_cancel">Abbrechen</string>
 </resources>
