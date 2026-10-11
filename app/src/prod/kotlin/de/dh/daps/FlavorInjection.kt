@@ -6,6 +6,7 @@ import de.dh.daps.common.navigation.FeatureNavGraph
 import de.dh.daps.common.navigation.NavigationViewModel
 import de.dh.daps.plugin.glucose.receiver.ReceiverGlucosePlugin
 import de.dh.pump.danai.ui.DanaIInsulinPumpDriver
+import de.dh.pump.omnipod.dash.OmnipodDashInsulinPumpDriver
 
 /**
  * Registers all plugins and drivers available for the productive flavor with the [PluginManager].
@@ -13,6 +14,7 @@ import de.dh.pump.danai.ui.DanaIInsulinPumpDriver
 fun registerPlugins(pluginManager: PluginManager, application: Application) {
     pluginManager.addPlugin(ReceiverGlucosePlugin(application))
     pluginManager.addPlugin(DanaIInsulinPumpDriver())
+    pluginManager.addPlugin(OmnipodDashInsulinPumpDriver())
 }
 
 fun getExtraNavGraphs(
