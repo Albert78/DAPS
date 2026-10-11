@@ -350,7 +350,11 @@ fun OmnipodDashSetupContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Schritt ${currentStepIndex + 1} von ${steps.size}",
+                        text = stringResource(
+                            R.string.omnipod_dash_setup_step_progress,
+                            currentStepIndex + 1,
+                            steps.size
+                        ),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.SemiBold

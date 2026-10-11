@@ -2,6 +2,7 @@ package de.dh.pump.omnipod.dash.activation
 
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.pump.omnipod.protocol.ble.OmnipodDashBleManager
+import de.dh.pump.omnipod.protocol.ble.PodBleConnectionState
 import de.dh.pump.omnipod.protocol.command.GetStatusCommand
 import de.dh.pump.omnipod.protocol.command.ProgramAlertsCommand
 import de.dh.pump.omnipod.protocol.command.ProgramBasalCommand
@@ -21,6 +22,7 @@ import de.dh.pump.omnipod.protocol.util.PodPulseCalculator
 import de.dh.pump.omnipod.protocol.util.ProfileToBasalScheduleConverter
 import kotlinx.coroutines.delay
 import java.util.Date
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Manages the Pod activation lifecycle, executing BLE hardware commands
@@ -29,7 +31,7 @@ import java.util.Date
  */
 class OmnipodDashActivationManager(
     private val podStateManager: OmnipodDashPodStateManagerImpl,
-    private val bleManager: OmnipodDashBleManager?
+    private val bleManager: OmnipodDashBleManager
 ) {
     private var sequenceNumber: Short = 1
 
@@ -41,22 +43,30 @@ class OmnipodDashActivationManager(
 
     private fun getNonce(): Int = podStateManager.lastNonce ?: DEFAULT_NONCE
 
-    private suspend fun ensureBleConnected() {
+    private suspend fun ensureBleConnected(): OmnipodDashBleManager {
         val address = podStateManager.bluetoothAddress
-        if (!address.isNullOrEmpty() && bleManager != null) {
-            bleManager.connect(address)
+        if (address.isNullOrEmpty()) {
+            throw IllegalStateException("No Pod found: Please fill the Pod with at least 85 U of insulin and place it next to your device.")
         }
+        if (bleManager.connectionState.value != PodBleConnectionState.CONNECTED) {
+            val connectResult = bleManager.connect(address)
+            if (connectResult.isFailure) {
+                throw connectResult.exceptionOrNull()
+                    ?: IllegalStateException("Connection to Pod ($address) failed.")
+            }
+        }
+        return bleManager
     }
 
     /**
-     * Executes Part 1 of pod setup: Priming bolus (2.6 IU / 52 pulses), status polling
+     * Executes Part 1 of pod setup: Priming bolus, status polling
      * for PRIME_COMPLETED / CLUTCH_DRIVE_ENGAGED, and programming initial alarms.
      */
     suspend fun performFillAndPrime(): Result<Unit> {
         try {
-            ensureBleConnected()
+            val manager = ensureBleConnected()
 
-            // 2.1 Send Priming Bolus (2.6 U / 52 pulses)
+            // 2.1 Send Priming Bolus
             if (podStateManager.activationProgress.isBefore(ActivationProgress.PRIMING)) {
                 val uniqueId = podStateManager.uniqueId ?: 0
                 val primePulses = PodPulseCalculator.unitsToPulses(PRIMING_BOLUS_UNITS)
@@ -66,9 +76,7 @@ class OmnipodDashActivationManager(
                     nonce = getNonce(),
                     pulseCount = primePulses
                 )
-                if (bleManager != null && !podStateManager.bluetoothAddress.isNullOrEmpty()) {
-                    bleManager.sendCommand(cmd).getOrThrow()
-                }
+                manager.sendCommand(cmd).getOrThrow()
                 podStateManager.activationProgress = ActivationProgress.PRIMING
                 podStateManager.saveToPreferences()
             }
@@ -113,9 +121,7 @@ class OmnipodDashActivationManager(
                     nonce = getNonce(),
                     alertConfigurations = alerts
                 )
-                if (bleManager != null && !podStateManager.bluetoothAddress.isNullOrEmpty()) {
-                    bleManager.sendCommand(alertsCmd)
-                }
+                manager.sendCommand(alertsCmd).getOrThrow()
                 podStateManager.activationProgress = ActivationProgress.PROGRAMMED_LOW_RESERVOIR_ALERTS
                 podStateManager.saveToPreferences()
             }
@@ -127,14 +133,14 @@ class OmnipodDashActivationManager(
     }
 
     /**
-     * Executes Part 2 of pod setup: Cannula insertion bolus (0.5 IU / 10 pulses)
+     * Executes Part 2 of pod setup: Cannula insertion bolus
      * and status polling for CANNULA_INSERTED / BASAL_PROGRAM_SET.
      */
     suspend fun performApplyAndInsert(): Result<Unit> {
         try {
-            ensureBleConnected()
+            val manager = ensureBleConnected()
 
-            // 2.3 Send Cannula Insertion Bolus (0.5 U / 10 pulses)
+            // 2.3 Send Cannula Insertion Bolus
             if (podStateManager.activationProgress.isBefore(ActivationProgress.INSERTING_CANNULA)) {
                 val uniqueId = podStateManager.uniqueId ?: 0
                 val insertPulses = PodPulseCalculator.unitsToPulses(CANNULA_INSERTION_BOLUS_UNITS)
@@ -144,9 +150,7 @@ class OmnipodDashActivationManager(
                     nonce = getNonce(),
                     pulseCount = insertPulses
                 )
-                if (bleManager != null && !podStateManager.bluetoothAddress.isNullOrEmpty()) {
-                    bleManager.sendCommand(cmd).getOrThrow()
-                }
+                manager.sendCommand(cmd).getOrThrow()
                 podStateManager.activationProgress = ActivationProgress.INSERTING_CANNULA
                 podStateManager.saveToPreferences()
             }
@@ -172,7 +176,7 @@ class OmnipodDashActivationManager(
      */
     suspend fun performConfirmAndActivate(profile: InsulinProfile? = null): Result<Unit> {
         try {
-            ensureBleConnected()
+            val manager = ensureBleConnected()
 
             val uniqueId = podStateManager.uniqueId ?: 0
 
@@ -205,9 +209,7 @@ class OmnipodDashActivationManager(
                     alertConfigurations = alerts,
                     multiCommandFlag = true
                 )
-                if (bleManager != null && !podStateManager.bluetoothAddress.isNullOrEmpty()) {
-                    bleManager.sendCommand(alertCmd)
-                }
+                manager.sendCommand(alertCmd).getOrThrow()
                 podStateManager.activationProgress = ActivationProgress.UPDATED_EXPIRATION_ALERTS
                 podStateManager.saveToPreferences()
             }
@@ -222,9 +224,7 @@ class OmnipodDashActivationManager(
                     programReminder = ProgramReminder(atStart = false, atEnd = false, atInterval = 0),
                     currentTime = Date()
                 )
-                if (bleManager != null && !podStateManager.bluetoothAddress.isNullOrEmpty()) {
-                    bleManager.sendCommand(basalCmd)
-                }
+                manager.sendCommand(basalCmd).getOrThrow()
                 podStateManager.basalProgram = basalProgram
                 podStateManager.activationProgress = ActivationProgress.PROGRAMMED_BASAL
                 podStateManager.saveToPreferences()
@@ -245,7 +245,7 @@ class OmnipodDashActivationManager(
      * activation progress state using recoverActivationFromPodStatus.
      */
     suspend fun recoverActivationProgress(): ActivationProgress {
-        if (bleManager != null && !podStateManager.bluetoothAddress.isNullOrEmpty()) {
+        if (!podStateManager.bluetoothAddress.isNullOrEmpty()) {
             try {
                 ensureBleConnected()
                 val uniqueId = podStateManager.uniqueId ?: 0
@@ -274,7 +274,7 @@ class OmnipodDashActivationManager(
         delayMs: Long = 1000L,
         predicate: (PodStatus) -> Boolean
     ) {
-        if (bleManager == null || podStateManager.bluetoothAddress.isNullOrEmpty()) return
+        if (podStateManager.bluetoothAddress.isNullOrEmpty()) return
 
         val uniqueId = podStateManager.uniqueId ?: 0
         for (attempt in 1..maxAttempts) {
@@ -293,7 +293,7 @@ class OmnipodDashActivationManager(
                     }
                 }
             }
-            delay(delayMs)
+            delay(delayMs.milliseconds)
         }
     }
 

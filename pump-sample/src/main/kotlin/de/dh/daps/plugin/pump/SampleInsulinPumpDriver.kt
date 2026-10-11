@@ -143,7 +143,7 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
                                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                             ) {
                                 Text(
-                                    text = "Gebunden",
+                                    text = stringResource(R.string.sample_pump_bound_badge),
                                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                 )
                             }
@@ -152,7 +152,7 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
                         HorizontalDivider()
 
                         Text(
-                            text = "Die Sample-Pumpe ist zurzeit als aktive Insulinpumpe eingerichtet.",
+                            text = stringResource(R.string.sample_pump_bound_subtitle),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -168,7 +168,7 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
                             ),
                             border = BorderStroke(1.dp, MaterialTheme.colorScheme.error)
                         ) {
-                            Text("Bindung verwerfen")
+                            Text(stringResource(R.string.sample_pump_btn_unbind))
                         }
                     }
                 }
@@ -184,12 +184,12 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Text(
-                            text = "Sample Pump Setup",
+                            text = stringResource(R.string.sample_pump_setup_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Bestätige das Einrichten der simulierten Sample-Pumpe.",
+                            text = stringResource(R.string.sample_pump_setup_subtitle),
                             style = MaterialTheme.typography.bodyMedium,
                         )
                         Spacer(modifier = Modifier.height(8.dp))
@@ -207,7 +207,7 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
                             },
                             modifier = Modifier.fillMaxWidth(),
                         ) {
-                            Text("Einrichten")
+                            Text(stringResource(R.string.sample_pump_setup_btn_setup))
                         }
                     }
                 }

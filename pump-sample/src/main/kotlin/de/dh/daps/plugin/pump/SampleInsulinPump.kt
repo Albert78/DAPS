@@ -8,6 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.BasalStatus
 import de.dh.daps.common.model.BolusEvent
@@ -120,11 +121,11 @@ class SampleInsulinPump : InsulinPump, PumpPluginUiProvider {
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "This content is provided by the Sample Pump.",
+                    text = stringResource(R.string.sample_pump_control_section_content),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
-                    text = "Maintenance status: Optimal",
+                    text = stringResource(R.string.sample_pump_control_section_maintenance),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.secondary
                 )

@@ -31,12 +31,12 @@ class OmnipodDashSetupViewModel(application: Application) : AndroidViewModel(app
 
     fun loadSavedState(driver: OmnipodDashInsulinPumpDriver) {
         viewModelScope.launch {
-            val pc = driver.getContext()
-            val preferences = pc?.preferences
+            val pc = driver.getContext() ?: return@launch
+            val preferences = pc.preferences
             val podStateManager = OmnipodDashPodStateManagerImpl(preferences)
             podStateManager.loadFromPreferences()
 
-            val bleManager = pc?.appContext?.let { OmnipodDashBleManager(it, podStateManager) }
+            val bleManager = OmnipodDashBleManager(pc.appContext, podStateManager)
             val activationManager = OmnipodDashActivationManager(podStateManager, bleManager)
 
             val recoveredProgress = activationManager.recoverActivationProgress()
@@ -54,13 +54,17 @@ class OmnipodDashSetupViewModel(application: Application) : AndroidViewModel(app
         if (currentIndex !in steps.indices) return
 
         val pc = driver.getContext()
-        val preferences = pc?.preferences
+        if (pc == null) {
+            _activationError.value = getApplication<Application>().getString(R.string.omnipod_dash_setup_activate_failed)
+            return
+        }
+        val preferences = pc.preferences
         val podStateManager = OmnipodDashPodStateManagerImpl(preferences)
 
         viewModelScope.launch {
             podStateManager.loadFromPreferences()
 
-            val bleManager = pc?.appContext?.let { OmnipodDashBleManager(it, podStateManager) }
+            val bleManager = OmnipodDashBleManager(pc.appContext, podStateManager)
             val activationManager = OmnipodDashActivationManager(podStateManager, bleManager)
 
             _isActivating.value = true

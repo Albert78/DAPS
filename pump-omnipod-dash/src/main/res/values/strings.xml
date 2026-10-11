@@ -27,4 +27,5 @@
     <string name="omnipod_dash_cancel_dialog_message">Möchtest du die Einrichtung dieses Pods wirklich abbrechen?\n\n• Der Pod kann danach nicht mehr verwendet oder neu gestartet werden.\n• Bereits eingefülltes Insulin geht verloren.\n• Falls die Kanüle bereits gesetzt wurde, muss der Pod vom Körper entfernt werden.\n\nDer Pod muss entsorgt werden und für den nächsten Versuch muss ein neuer Pod verwendet werden.</string>
     <string name="omnipod_dash_cancel_dialog_confirm">Einrichtung abbrechen &amp; Pod verworfen</string>
     <string name="omnipod_dash_cancel_dialog_continue">Setup fortsetzen</string>
+    <string name="omnipod_dash_setup_step_progress">Schritt %1$d von %2$d</string>
 </resources>
