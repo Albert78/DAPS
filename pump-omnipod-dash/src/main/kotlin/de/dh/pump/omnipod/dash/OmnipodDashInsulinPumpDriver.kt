@@ -9,6 +9,7 @@ import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.PluginContext
 import de.dh.daps.common.ui.UiText
+import de.dh.pump.omnipod.dash.activation.OmnipodDashActivationManager
 import de.dh.pump.omnipod.dash.ui.OmnipodDashSetupScreen
 import de.dh.pump.omnipod.protocol.ble.OmnipodDashBleManager
 import de.dh.pump.omnipod.protocol.definition.ActivationProgress
@@ -40,6 +41,27 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
     override val activePump: StateFlow<InsulinPump?> = _activePump.asStateFlow()
 
     private var pluginContext: PluginContext? = null
+    private var podStateManager: OmnipodDashPodStateManagerImpl? = null
+    private var bleManager: OmnipodDashBleManager? = null
+
+    fun getPodStateManager(): OmnipodDashPodStateManagerImpl {
+        val pc = pluginContext ?: throw IllegalStateException("PluginContext not initialized")
+        return podStateManager ?: OmnipodDashPodStateManagerImpl(pc.preferences).also {
+            podStateManager = it
+        }
+    }
+
+    fun getBleManager(): OmnipodDashBleManager {
+        val stateManager = getPodStateManager()
+        val pc = pluginContext ?: throw IllegalStateException("PluginContext not initialized")
+        return bleManager ?: OmnipodDashBleManager(pc.appContext, stateManager).also {
+            bleManager = it
+        }
+    }
+
+    fun getActivationManager(): OmnipodDashActivationManager {
+        return OmnipodDashActivationManager(getPodStateManager(), getBleManager())
+    }
 
     override fun setup(context: PluginContext) {
         this.pluginContext = context
@@ -50,18 +72,18 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
     }
 
     override suspend fun initState() {
-        val pc = pluginContext ?: return
-        val podStateManager = OmnipodDashPodStateManagerImpl(pc.preferences)
-        podStateManager.loadFromPreferences()
+        if (pluginContext == null) return
+        val stateManager = getPodStateManager()
+        stateManager.loadFromPreferences()
         when {
-            podStateManager.isActivationCompleted -> {
+            stateManager.isActivationCompleted -> {
                 try {
-                    bindPod(podStateManager)
+                    bindPod()
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to connect to Omnipod Dash pod in initState", e)
                 }
             }
-            podStateManager.activationProgress != ActivationProgress.NOT_STARTED -> {
+            stateManager.activationProgress != ActivationProgress.NOT_STARTED -> {
                 _lifecycleState.value = DeviceLifecycleState.SetupInProgress
                 _activePump.value = null
             }
@@ -86,15 +108,7 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
      * and sets driver lifecycle state to NoDevice.
      */
     suspend fun cancelSetup() {
-        val pc = pluginContext
-        if (pc != null) {
-            val podStateManager = OmnipodDashPodStateManagerImpl(pc.preferences)
-            podStateManager.reset()
-            podStateManager.saveToPreferences()
-            pc.preferences.clear()
-        }
-        _activePump.value = null
-        _lifecycleState.value = DeviceLifecycleState.NoDevice
+        resetDriverState()
     }
 
     @Composable
@@ -110,12 +124,13 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
     /**
      * Instantiates the pump hardware stack and updates driver lifecycle and active pump state.
      */
-    private fun bindPod(podStateManager: OmnipodDashPodStateManagerImpl): OmnipodDashPump {
+    private fun bindPod(): OmnipodDashPump {
         val pc = pluginContext ?: throw IllegalStateException("PluginContext not initialized")
-        val bleManager = OmnipodDashBleManager(pc.appContext, podStateManager)
-        val pump = OmnipodDashPump(podStateManager, bleManager, pc.appContext)
+        val stateManager = getPodStateManager()
+        val ble = getBleManager()
+        val pump = OmnipodDashPump(stateManager, ble, pc.appContext)
         _lifecycleState.value = DeviceLifecycleState.DeviceBound(
-            deviceId = podStateManager.bluetoothAddress ?: "POD-DASH-ACTIVE",
+            deviceId = stateManager.bluetoothAddress ?: "POD-DASH-ACTIVE",
             displayName = UiText.StringResource(R.string.omnipod_dash_pump_display_name),
         )
         _activePump.value = pump
@@ -125,8 +140,8 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
     /**
      * Completes pod activation and instantiates the active [OmnipodDashPump].
      */
-    fun completeActivation(podStateManager: OmnipodDashPodStateManagerImpl) {
-        bindPod(podStateManager)
+    fun completeActivation() {
+        bindPod()
     }
 
     /**
@@ -134,12 +149,16 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
      * and resets the driver lifecycle state to NoDevice.
      */
     suspend fun unbindDevice() {
-        val pc = pluginContext
-        if (pc != null) {
-            val podStateManager = OmnipodDashPodStateManagerImpl(pc.preferences)
-            podStateManager.reset()
-            pc.preferences.clear()
-        }
+        resetDriverState()
+    }
+
+    private suspend fun resetDriverState() {
+        bleManager?.disconnect()
+        bleManager = null
+        podStateManager?.reset()
+        podStateManager?.saveToPreferences()
+        podStateManager = null
+        pluginContext?.preferences?.clear()
         _activePump.value = null
         _lifecycleState.value = DeviceLifecycleState.NoDevice
     }
