@@ -299,7 +299,7 @@ fun DanaISetupContent(
             fontWeight = FontWeight.Bold
         )
 
-        if (scanResults.isEmpty() && !isScanning) {
+        if (scanResults.isEmpty()) {
             FramedCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -308,16 +308,29 @@ fun DanaISetupContent(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = stringResource(R.string.danai_pump_setup_no_pumps_found),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    if (isScanning) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = stringResource(R.string.danai_pump_setup_searching_pumps),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = stringResource(R.string.danai_pump_setup_no_pumps_found),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
             Spacer(modifier = Modifier.weight(1f))
@@ -374,6 +387,31 @@ fun DanaISetupContent(
                         }
                     }
                 }
+
+                if (isScanning) {
+                    item {
+                        FramedCard(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    strokeWidth = 2.dp,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = stringResource(R.string.danai_pump_setup_searching_pumps),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -387,21 +425,7 @@ fun DanaISetupContent(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !isScanning && !isConnecting
             ) {
-                if (isScanning) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(16.dp),
-                            strokeWidth = 2.dp,
-                            color = MaterialTheme.colorScheme.onSecondary
-                        )
-                        Text(stringResource(R.string.danai_pump_setup_btn_searching))
-                    }
-                } else {
-                    Text(stringResource(R.string.danai_pump_setup_btn_search))
-                }
+                Text(stringResource(R.string.danai_pump_setup_btn_search))
             }
         }
     }
@@ -429,6 +453,21 @@ private fun DanaISetupContentPreview() {
                 DanaScanResult.Fake(name = "DANA-i-456", address = "AA:BB:CC:DD:EE:FF")
             ),
             isScanning = false,
+            isConnecting = false,
+            connectError = null,
+            onStartDiscovery = {},
+            onPairClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DanaISetupContentScanningPreview() {
+    AppPreview {
+        DanaISetupContent(
+            scanResults = emptyList(),
+            isScanning = true,
             isConnecting = false,
             connectError = null,
             onStartDiscovery = {},
