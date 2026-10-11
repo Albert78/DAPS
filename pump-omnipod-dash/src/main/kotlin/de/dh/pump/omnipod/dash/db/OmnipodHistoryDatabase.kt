@@ -6,21 +6,21 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
-@Database(entities = [DashHistoryEntity::class], version = 1, exportSchema = false)
-@TypeConverters(DashHistoryConverters::class)
-abstract class DashHistoryDatabase : RoomDatabase() {
-    abstract fun historyDao(): DashHistoryDao
+@Database(entities = [OmnipodHistoryEntity::class], version = 1, exportSchema = false)
+@TypeConverters(OmnipodHistoryConverters::class)
+abstract class OmnipodHistoryDatabase : RoomDatabase() {
+    abstract fun historyDao(): OmnipodHistoryDao
 
     companion object {
         @Volatile
-        private var INSTANCE: DashHistoryDatabase? = null
+        private var INSTANCE: OmnipodHistoryDatabase? = null
 
-        fun getInstance(context: Context): DashHistoryDatabase {
+        fun getInstance(context: Context): OmnipodHistoryDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
-                    DashHistoryDatabase::class.java,
-                    "omnipod_dash_history_db"
+                    OmnipodHistoryDatabase::class.java,
+                    "omnipod_history_db"
                 ).build()
                 INSTANCE = instance
                 instance

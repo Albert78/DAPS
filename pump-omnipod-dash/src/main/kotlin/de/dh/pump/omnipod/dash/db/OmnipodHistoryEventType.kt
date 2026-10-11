@@ -1,6 +1,6 @@
 package de.dh.pump.omnipod.dash.db
 
-enum class DashHistoryEventType {
+enum class OmnipodHistoryEventType {
     BOLUS,
     STOP_BOLUS,
     TEMP_BASAL,

@@ -22,9 +22,9 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import de.dh.pump.PumpCommandException
 import de.dh.pump.PumpStatus
-import de.dh.pump.omnipod.dash.db.DashHistoryDatabase
-import de.dh.pump.omnipod.dash.db.DashHistoryEntity
-import de.dh.pump.omnipod.dash.db.DashHistoryEventType
+import de.dh.pump.omnipod.dash.db.OmnipodHistoryDatabase
+import de.dh.pump.omnipod.dash.db.OmnipodHistoryEntity
+import de.dh.pump.omnipod.dash.db.OmnipodHistoryEventType
 import de.dh.pump.omnipod.dash.model.OmnipodInsulinHistoryPoint
 import de.dh.pump.omnipod.protocol.ble.OmnipodDashBleManager
 import de.dh.pump.omnipod.protocol.command.GetStatusCommand
@@ -138,8 +138,8 @@ class OmnipodDashPump(
     private val _history = MutableStateFlow<InsulinHistory?>(null)
     override val history: StateFlow<InsulinHistory?> = _history.asStateFlow()
 
-    private val db: DashHistoryDatabase? by lazy {
-        context?.let { DashHistoryDatabase.getInstance(it) }
+    private val db: OmnipodHistoryDatabase? by lazy {
+        context?.let { OmnipodHistoryDatabase.getInstance(it) }
     }
 
     init {
@@ -234,7 +234,7 @@ class OmnipodDashPump(
                     timestamp = now
                 )
             )
-            logEvent(DashHistoryEventType.BOLUS, "Programmed bolus of ${amount.iu} U", amount.iu)
+            logEvent(OmnipodHistoryEventType.BOLUS, "Programmed bolus of ${amount.iu} U", amount.iu)
 
             val initialTotalPulses = podStateManager.pulsesDelivered
             activeBolusJob = scope.launch {
@@ -302,7 +302,7 @@ class OmnipodDashPump(
                     timestamp = now
                 )
             )
-            logEvent(DashHistoryEventType.STOP_BOLUS, "Stopped running bolus at ${finalDelivered.iu} U of ${current.targetAmount.iu} U", finalDelivered.iu)
+            logEvent(OmnipodHistoryEventType.STOP_BOLUS, "Stopped running bolus at ${finalDelivered.iu} U of ${current.targetAmount.iu} U", finalDelivered.iu)
         } catch (e: Exception) {
             throw e
         }
@@ -345,7 +345,7 @@ class OmnipodDashPump(
                 tempBasalPercent = percent,
                 isSuspended = false
             )
-            logEvent(DashHistoryEventType.TEMP_BASAL, "Started temp basal $percent% for $durationHours h", 0.0)
+            logEvent(OmnipodHistoryEventType.TEMP_BASAL, "Started temp basal $percent% for $durationHours h", 0.0)
         } catch (e: Exception) {
             throw e
         }
@@ -375,7 +375,7 @@ class OmnipodDashPump(
             podStateManager.saveToPreferences()
 
             _basalStatus.value = BasalStatus(isTempBasal = false)
-            logEvent(DashHistoryEventType.CANCEL_TEMP_BASAL, "Cancelled active temp basal", 0.0)
+            logEvent(OmnipodHistoryEventType.CANCEL_TEMP_BASAL, "Cancelled active temp basal", 0.0)
         } catch (e: Exception) {
             throw e
         }
@@ -406,7 +406,7 @@ class OmnipodDashPump(
             _basalStatus.value = _basalStatus.value.copy(isSuspended = suspended)
             _pumpStatus.value = OmnipodDashStatusData(pumpSuspended = suspended)
             logEvent(
-                if (suspended) DashHistoryEventType.SUSPEND else DashHistoryEventType.RESUME,
+                if (suspended) OmnipodHistoryEventType.SUSPEND else OmnipodHistoryEventType.RESUME,
                 "Delivery suspended: $suspended",
                 0.0
             )
@@ -450,7 +450,7 @@ class OmnipodDashPump(
                 isTempBasal = false,
                 isSuspended = false
             )
-            logEvent(DashHistoryEventType.PROFILE, "Set active basal profile: ${profile.name} (${schedulePulses.size} segments)", 0.0)
+            logEvent(OmnipodHistoryEventType.PROFILE, "Set active basal profile: ${profile.name} (${schedulePulses.size} segments)", 0.0)
         } catch (e: Exception) {
             throw e
         }
@@ -486,7 +486,7 @@ class OmnipodDashPump(
             podStateManager.saveToPreferences()
 
             logEvent(
-                DashHistoryEventType.BOLUS,
+                OmnipodHistoryEventType.BOLUS,
                 "Delivered basal correction of 0.05 U (1 pulse)",
                 PodPulseCalculator.INSULIN_PER_PULSE_U
             )
@@ -512,7 +512,7 @@ class OmnipodDashPump(
                 currentTime = Date()
             )
             bleManager.sendCommand(cmd).getOrThrow()
-            logEvent(DashHistoryEventType.PROFILE, "Resynchronized basal profile for time change", 0.0)
+            logEvent(OmnipodHistoryEventType.PROFILE, "Resynchronized basal profile for time change", 0.0)
         }
         podStateManager.saveToPreferences()
         return true
@@ -529,7 +529,7 @@ class OmnipodDashPump(
                     timestamp = Timestamp(entity.timestampMs),
                     amount = InsulinAmount(entity.unitsDelivered),
                     category = when (entity.eventType) {
-                        DashHistoryEventType.BOLUS -> InsulinCategory.Bolus
+                        OmnipodHistoryEventType.BOLUS -> InsulinCategory.Bolus
                         else -> InsulinCategory.Basal
                     },
                     pumpId = entity.id.toString()
@@ -609,7 +609,7 @@ class OmnipodDashPump(
                 }
                 else -> {}
             }
-            logEvent(DashHistoryEventType.ALARM_OCCURRED, "Silenced active alerts: $alertTypes", 0.0)
+            logEvent(OmnipodHistoryEventType.ALARM_OCCURRED, "Silenced active alerts: $alertTypes", 0.0)
         } catch (e: Exception) {
             throw e
         }
@@ -629,7 +629,7 @@ class OmnipodDashPump(
 
         val pdmRef = alarmResponse?.pdmRef ?: podStateManager.lastPdmRef ?: "Fault Code: ${alarmType?.name ?: "Unknown"}"
         logEvent(
-            DashHistoryEventType.ALARM_OCCURRED,
+            OmnipodHistoryEventType.ALARM_OCCURRED,
             "Pod fault occurred: $pdmRef (Status: $podStatus)",
             0.0
         )
@@ -676,28 +676,28 @@ class OmnipodDashPump(
                 OmnipodDashPodStateManager.ActiveCommandType.BOLUS -> {
                     val deliveredUnits = PodPulseCalculator.pulsesToUnits(deliveredPulseDelta.toShort())
                     logEvent(
-                        DashHistoryEventType.BOLUS,
+                        OmnipodHistoryEventType.BOLUS,
                         "Recovered unconfirmed bolus execution ($deliveredUnits U delivered)",
                         deliveredUnits
                     )
                 }
                 OmnipodDashPodStateManager.ActiveCommandType.TEMP_BASAL -> {
                     logEvent(
-                        DashHistoryEventType.TEMP_BASAL,
+                        OmnipodHistoryEventType.TEMP_BASAL,
                         "Recovered unconfirmed temp basal execution",
                         0.0
                     )
                 }
                 OmnipodDashPodStateManager.ActiveCommandType.STOP_DELIVERY -> {
                     logEvent(
-                        DashHistoryEventType.SUSPEND,
+                        OmnipodHistoryEventType.SUSPEND,
                         "Recovered unconfirmed stop delivery execution",
                         0.0
                     )
                 }
                 OmnipodDashPodStateManager.ActiveCommandType.BASAL_SCHEDULE -> {
                     logEvent(
-                        DashHistoryEventType.PROFILE,
+                        OmnipodHistoryEventType.PROFILE,
                         "Recovered unconfirmed basal profile update execution",
                         0.0
                     )
@@ -827,7 +827,7 @@ class OmnipodDashPump(
             )
 
             logEvent(
-                DashHistoryEventType.BOLUS,
+                OmnipodHistoryEventType.BOLUS,
                 "Completed bolus delivery of ${finalDelivered.iu} U (target ${targetAmount.iu} U)",
                 finalDelivered.iu
             )
@@ -841,10 +841,10 @@ class OmnipodDashPump(
         bleManager.disconnect()
     }
 
-    private suspend fun logEvent(eventType: DashHistoryEventType, detailText: String, units: Double) {
+    private suspend fun logEvent(eventType: OmnipodHistoryEventType, detailText: String, units: Double) {
         cleanupOldEvents()
         db?.historyDao()?.insertEvent(
-            DashHistoryEntity(
+            OmnipodHistoryEntity(
                 timestampMs = System.currentTimeMillis(),
                 eventType = eventType,
                 detailText = detailText,
