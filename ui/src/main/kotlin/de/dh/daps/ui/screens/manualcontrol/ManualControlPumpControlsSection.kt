@@ -150,6 +150,7 @@ fun ManualControlPumpControlsSection(
                     Spacer(modifier = Modifier.height(12.dp))
                     NormalButton(
                         onClick = onCancelBolus,
+                        modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.outlinedButtonColors(
                             contentColor = SoftRed
                         ),
@@ -322,6 +323,7 @@ fun ManualControlPumpControlsSection(
                         Spacer(modifier = Modifier.height(12.dp))
                         NormalButton(
                             onClick = onCancelTempBasal,
+                            modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.outlinedButtonColors(
                                 contentColor = SoftRed
                             ),
