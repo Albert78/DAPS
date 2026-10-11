@@ -46,13 +46,13 @@ class OmnipodDashActivationManager(
     private suspend fun ensureBleConnected(): OmnipodDashBleManager {
         val address = podStateManager.bluetoothAddress
         if (address.isNullOrEmpty()) {
-            throw IllegalStateException("No Pod found: Please fill the Pod with at least 85 U of insulin and place it next to your device.")
+            throw IllegalStateException("No Pod Bluetooth address available")
         }
         if (bleManager.connectionState.value != PodBleConnectionState.CONNECTED) {
             val connectResult = bleManager.connect(address)
             if (connectResult.isFailure) {
                 throw connectResult.exceptionOrNull()
-                    ?: IllegalStateException("Connection to Pod ($address) failed.")
+                    ?: IllegalStateException("Connection to Pod ($address) failed")
             }
         }
         return bleManager

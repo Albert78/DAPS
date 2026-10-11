@@ -28,4 +28,7 @@
     <string name="omnipod_dash_cancel_dialog_confirm">Einrichtung abbrechen &amp; Pod verworfen</string>
     <string name="omnipod_dash_cancel_dialog_continue">Setup fortsetzen</string>
     <string name="omnipod_dash_setup_step_progress">Schritt %1$d von %2$d</string>
+    <string name="omnipod_dash_ble_status_connected">Pod über Bluetooth verbunden</string>
+    <string name="omnipod_dash_ble_status_connecting">Verbindung zum Pod wird hergestellt…</string>
+    <string name="omnipod_dash_ble_status_disconnected">Kein Pod in Reichweite oder Bluetooth getrennt</string>
 </resources>

@@ -9,6 +9,7 @@ import de.dh.pump.omnipod.dash.OmnipodDashInsulinPumpDriver
 import de.dh.pump.omnipod.dash.R
 import de.dh.pump.omnipod.dash.activation.OmnipodDashActivationManager
 import de.dh.pump.omnipod.protocol.ble.OmnipodDashBleManager
+import de.dh.pump.omnipod.protocol.ble.PodBleConnectionState
 import de.dh.pump.omnipod.protocol.definition.ActivationProgress
 import de.dh.pump.omnipod.protocol.state.OmnipodDashPodStateManagerImpl
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,6 +30,9 @@ class OmnipodDashSetupViewModel(application: Application) : AndroidViewModel(app
     private val _activationError = MutableStateFlow<String?>(null)
     val activationError: StateFlow<String?> = _activationError.asStateFlow()
 
+    private val _bleConnectionState = MutableStateFlow(PodBleConnectionState.DISCONNECTED)
+    val bleConnectionState: StateFlow<PodBleConnectionState> = _bleConnectionState.asStateFlow()
+
     fun loadSavedState(driver: OmnipodDashInsulinPumpDriver) {
         viewModelScope.launch {
             val pc = driver.getContext() ?: return@launch
@@ -37,6 +41,11 @@ class OmnipodDashSetupViewModel(application: Application) : AndroidViewModel(app
             podStateManager.loadFromPreferences()
 
             val bleManager = OmnipodDashBleManager(pc.appContext, podStateManager)
+            viewModelScope.launch {
+                bleManager.connectionState.collect { state ->
+                    _bleConnectionState.value = state
+                }
+            }
             val activationManager = OmnipodDashActivationManager(podStateManager, bleManager)
 
             val recoveredProgress = activationManager.recoverActivationProgress()

@@ -16,11 +16,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.BluetoothSearching
+import androidx.compose.material.icons.filled.BluetoothConnected
+import androidx.compose.material.icons.filled.BluetoothDisabled
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Router
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -52,8 +57,11 @@ import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.WarningBanner
 import de.dh.daps.ui.common.theme.AppPreview
+import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.pump.omnipod.dash.OmnipodDashInsulinPumpDriver
 import de.dh.pump.omnipod.dash.R
+
+import de.dh.pump.omnipod.protocol.ble.PodBleConnectionState
 
 enum class ActivationStep(
     val title: UiText,
@@ -93,6 +101,7 @@ fun OmnipodDashSetupScreen(
 ) {
     val lifecycleState by driver.lifecycleState.collectAsStateWithLifecycle()
     val currentStepIndex by viewModel.currentStepIndex.collectAsStateWithLifecycle()
+    val bleConnectionState by viewModel.bleConnectionState.collectAsStateWithLifecycle()
     val isActivating by viewModel.isActivating.collectAsStateWithLifecycle()
     val activationError by viewModel.activationError.collectAsStateWithLifecycle()
 
@@ -118,6 +127,7 @@ fun OmnipodDashSetupScreen(
 
             OmnipodDashSetupContent(
                 currentStepIndex = currentStepIndex,
+                bleConnectionState = bleConnectionState,
                 isActivating = isActivating,
                 activationError = activationError,
                 onNextStep = { viewModel.nextStep(driver) },
@@ -312,6 +322,7 @@ fun OmnipodDashBoundContent(
 @Composable
 fun OmnipodDashSetupContent(
     currentStepIndex: Int,
+    bleConnectionState: PodBleConnectionState = PodBleConnectionState.DISCONNECTED,
     isActivating: Boolean,
     activationError: String?,
     onNextStep: () -> Unit,
@@ -369,6 +380,10 @@ fun OmnipodDashSetupContent(
                         .clip(RoundedCornerShape(4.dp))
                 )
             }
+        }
+
+        if (currentStepIndex == 0) {
+            BleStatusBanner(bleConnectionState = bleConnectionState)
         }
 
         if (activationError != null) {
@@ -434,6 +449,87 @@ fun OmnipodDashSetupContent(
     }
 }
 
+@Composable
+fun BleStatusBanner(
+    bleConnectionState: PodBleConnectionState,
+    modifier: Modifier = Modifier
+) {
+    val (statusTextRes, containerColor, contentColor, icon) = when (bleConnectionState) {
+        PodBleConnectionState.CONNECTED -> Quadruple(
+            R.string.omnipod_dash_ble_status_connected,
+            ExtendedTheme.semanticColors.good.copy(alpha = 0.15f),
+            ExtendedTheme.semanticColors.good,
+            Icons.Default.BluetoothConnected
+        )
+        PodBleConnectionState.CONNECTING -> Quadruple(
+            R.string.omnipod_dash_ble_status_connecting,
+            MaterialTheme.colorScheme.primaryContainer,
+            MaterialTheme.colorScheme.onPrimaryContainer,
+            Icons.AutoMirrored.Filled.BluetoothSearching
+        )
+        PodBleConnectionState.DISCONNECTED, PodBleConnectionState.FAILED -> Quadruple(
+            R.string.omnipod_dash_ble_status_disconnected,
+            MaterialTheme.colorScheme.surfaceVariant,
+            MaterialTheme.colorScheme.onSurfaceVariant,
+            Icons.Default.BluetoothDisabled
+        )
+    }
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = containerColor),
+        shape = RoundedCornerShape(8.dp),
+        border = BorderStroke(1.dp, contentColor.copy(alpha = 0.3f))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = contentColor,
+                modifier = Modifier.size(24.dp)
+            )
+            Text(
+                text = stringResource(statusTextRes),
+                style = MaterialTheme.typography.bodyMedium,
+                color = contentColor,
+                fontWeight = FontWeight.Medium
+            )
+        }
+    }
+}
+
+private data class Quadruple<A, B, C, D>(val first: A, val second: B, val third: C, val fourth: D)
+
+@Preview(showBackground = true)
+@Composable
+private fun BleStatusBannerConnectedPreview() {
+    AppPreview {
+        BleStatusBanner(bleConnectionState = PodBleConnectionState.CONNECTED)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun BleStatusBannerConnectingPreview() {
+    AppPreview {
+        BleStatusBanner(bleConnectionState = PodBleConnectionState.CONNECTING)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun BleStatusBannerDisconnectedPreview() {
+    AppPreview {
+        BleStatusBanner(bleConnectionState = PodBleConnectionState.DISCONNECTED)
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun OmnipodDashBoundContentPreview() {
@@ -448,10 +544,26 @@ private fun OmnipodDashBoundContentPreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun OmnipodDashSetupContentStep1Preview() {
+private fun OmnipodDashSetupContentStep1DisconnectedPreview() {
     AppPreview {
         OmnipodDashSetupContent(
             currentStepIndex = 0,
+            bleConnectionState = PodBleConnectionState.DISCONNECTED,
+            isActivating = false,
+            activationError = null,
+            onNextStep = {},
+            onCancel = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun OmnipodDashSetupContentStep1ConnectedPreview() {
+    AppPreview {
+        OmnipodDashSetupContent(
+            currentStepIndex = 0,
+            bleConnectionState = PodBleConnectionState.CONNECTED,
             isActivating = false,
             activationError = null,
             onNextStep = {},
