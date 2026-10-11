@@ -76,18 +76,60 @@ enum class DeliveryStatus(override val value: Byte) : HasValue {
     PRIMING(0x04.toByte()),
     BOLUS_AND_BASAL_ACTIVE(0x05.toByte()),
     BOLUS_AND_TEMP_BASAL_ACTIVE(0x06.toByte()),
+    EXTENDED_BOLUS_ACTIVE(0x08.toByte()),
+    EXTENDED_BOLUS_AND_BASAL_ACTIVE(0x09.toByte()),
+    EXTENDED_BOLUS_AND_TEMP_BASAL_ACTIVE(0x0a.toByte()),
+    BOLUS_AND_EXTENDED_BOLUS_AND_BASAL_ACTIVE(0x0d.toByte()),
+    BOLUS_AND_EXTENDED_BOLUS_AND_TEMP_BASAL_ACTIVE(0x0e.toByte()),
     UNKNOWN(0xff.toByte());
 
     fun bolusDeliveringActive(): Boolean {
-        return value in arrayOf(BOLUS_AND_BASAL_ACTIVE.value, BOLUS_AND_TEMP_BASAL_ACTIVE.value)
+        return value in arrayOf(
+            BOLUS_AND_BASAL_ACTIVE.value,
+            BOLUS_AND_TEMP_BASAL_ACTIVE.value,
+            EXTENDED_BOLUS_ACTIVE.value,
+            EXTENDED_BOLUS_AND_BASAL_ACTIVE.value,
+            EXTENDED_BOLUS_AND_TEMP_BASAL_ACTIVE.value,
+            BOLUS_AND_EXTENDED_BOLUS_AND_BASAL_ACTIVE.value,
+            BOLUS_AND_EXTENDED_BOLUS_AND_TEMP_BASAL_ACTIVE.value
+        )
+    }
+
+    fun immediateBolusActive(): Boolean {
+        return value in arrayOf(
+            BOLUS_AND_BASAL_ACTIVE.value,
+            BOLUS_AND_TEMP_BASAL_ACTIVE.value,
+            BOLUS_AND_EXTENDED_BOLUS_AND_BASAL_ACTIVE.value,
+            BOLUS_AND_EXTENDED_BOLUS_AND_TEMP_BASAL_ACTIVE.value
+        )
+    }
+
+    fun extendedBolusActive(): Boolean {
+        return value in arrayOf(
+            EXTENDED_BOLUS_ACTIVE.value,
+            EXTENDED_BOLUS_AND_BASAL_ACTIVE.value,
+            EXTENDED_BOLUS_AND_TEMP_BASAL_ACTIVE.value,
+            BOLUS_AND_EXTENDED_BOLUS_AND_BASAL_ACTIVE.value,
+            BOLUS_AND_EXTENDED_BOLUS_AND_TEMP_BASAL_ACTIVE.value
+        )
     }
 
     fun basalActive(): Boolean {
-        return value in arrayOf(BOLUS_AND_BASAL_ACTIVE.value, BASAL_ACTIVE.value)
+        return value in arrayOf(
+            BOLUS_AND_BASAL_ACTIVE.value,
+            BASAL_ACTIVE.value,
+            EXTENDED_BOLUS_AND_BASAL_ACTIVE.value,
+            BOLUS_AND_EXTENDED_BOLUS_AND_BASAL_ACTIVE.value
+        )
     }
 
     fun tempBasalActive(): Boolean {
-        return value in arrayOf(BOLUS_AND_TEMP_BASAL_ACTIVE.value, TEMP_BASAL_ACTIVE.value)
+        return value in arrayOf(
+            BOLUS_AND_TEMP_BASAL_ACTIVE.value,
+            TEMP_BASAL_ACTIVE.value,
+            EXTENDED_BOLUS_AND_TEMP_BASAL_ACTIVE.value,
+            BOLUS_AND_EXTENDED_BOLUS_AND_TEMP_BASAL_ACTIVE.value
+        )
     }
 
     fun suspended(): Boolean {
@@ -135,7 +177,7 @@ enum class BeepRepetitionType(val value: Byte) {
 }
 
 enum class BolusType {
-    DEFAULT, SMB, BASAL_CORRECTION, PRIMING
+    DEFAULT, EXTENDED, COMBO, SMB, BASAL_CORRECTION, PRIMING
 }
 
 class AlertConfiguration(

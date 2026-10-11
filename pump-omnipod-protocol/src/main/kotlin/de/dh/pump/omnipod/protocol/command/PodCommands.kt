@@ -175,6 +175,60 @@ class StopDeliveryCommand(
             val header = encodeHeader(uniqueId, sequenceNumber, body.size.toShort(), multiCommandFlag)
             return appendCrc(header + body)
         }
+
+    companion object {
+        fun stopBolus(
+            uniqueId: Int,
+            sequenceNumber: Short,
+            nonce: Int
+        ) = StopDeliveryCommand(
+            uniqueId = uniqueId,
+            sequenceNumber = sequenceNumber,
+            nonce = nonce,
+            stopBasal = false,
+            stopBolus = true,
+            stopTempBasal = false
+        )
+
+        fun stopTempBasal(
+            uniqueId: Int,
+            sequenceNumber: Short,
+            nonce: Int
+        ) = StopDeliveryCommand(
+            uniqueId = uniqueId,
+            sequenceNumber = sequenceNumber,
+            nonce = nonce,
+            stopBasal = false,
+            stopBolus = false,
+            stopTempBasal = true
+        )
+
+        fun stopBasal(
+            uniqueId: Int,
+            sequenceNumber: Short,
+            nonce: Int
+        ) = StopDeliveryCommand(
+            uniqueId = uniqueId,
+            sequenceNumber = sequenceNumber,
+            nonce = nonce,
+            stopBasal = true,
+            stopBolus = false,
+            stopTempBasal = false
+        )
+
+        fun stopAll(
+            uniqueId: Int,
+            sequenceNumber: Short,
+            nonce: Int
+        ) = StopDeliveryCommand(
+            uniqueId = uniqueId,
+            sequenceNumber = sequenceNumber,
+            nonce = nonce,
+            stopBasal = true,
+            stopBolus = true,
+            stopTempBasal = true
+        )
+    }
 }
 
 class DeactivateCommand(
@@ -201,7 +255,9 @@ class ProgramBolusCommand(
     multiCommandFlag: Boolean,
     val programReminder: ProgramReminder,
     val numberOfTenthPulses: Short,
-    val delayUntilFirstTenthPulseInUsec: Int
+    val delayUntilFirstTenthPulseInUsec: Int,
+    val extendedTenthPulses: Short = 0,
+    val delayBetweenTenthExtendedPulsesInUsec: Int = 0
 ) : HeaderEnabledCommand(CommandType.PROGRAM_BOLUS, uniqueId, sequenceNumber, multiCommandFlag) {
     constructor(
         uniqueId: Int,
@@ -215,7 +271,9 @@ class ProgramBolusCommand(
         false,
         ProgramReminder(false, false, 0),
         (pulseCount * 10).toShort(),
-        25000
+        25000,
+        0,
+        0
     )
 
     override val encoded: ByteArray
@@ -226,8 +284,8 @@ class ProgramBolusCommand(
                 .put(programReminder.encoded)
                 .putShort(numberOfTenthPulses)
                 .putInt(delayUntilFirstTenthPulseInUsec)
-                .putShort(0.toShort()) // Extended bolus pulses
-                .putInt(0) // Delay between tenth extended pulses in usec
+                .putShort(extendedTenthPulses)
+                .putInt(delayBetweenTenthExtendedPulsesInUsec)
                 .array()
             val interlockBytes = interlockCommand.encoded
             val header: ByteArray = encodeHeader(
@@ -254,41 +312,17 @@ class ProgramBolusCommand(
             programReminder: ProgramReminder = ProgramReminder(false, false, 0),
             delayBetweenPulsesInEighthSeconds: Byte = 2,
             multiCommandFlag: Boolean = false
-        ): ProgramBolusCommand {
-            val numberOfPulses = (units * 20).roundToInt().toShort()
-            val byte10And11 = (numberOfPulses * delayBetweenPulsesInEighthSeconds).toShort()
-            val shortElement = BolusShortInsulinProgramElement(numberOfPulses)
-            val checksum = MessageUtil.calculateChecksum(
-                ByteBuffer.allocate(7)
-                    .put(0x01.toByte())
-                    .putShort(byte10And11)
-                    .putShort(numberOfPulses)
-                    .putShort(numberOfPulses)
-                    .array()
-            )
-            val interlockCommand = ProgramInsulinCommand(
-                uniqueId = uniqueId,
-                sequenceNumber = sequenceNumber,
-                multiCommandFlag = multiCommandFlag,
-                nonce = nonce,
-                insulinProgramElements = listOf(shortElement),
-                checksum = checksum,
-                byte9 = 0x01.toByte(),
-                byte10And11 = byte10And11,
-                byte12And13 = numberOfPulses,
-                deliveryType = ProgramInsulinCommand.DeliveryType.BOLUS
-            )
-            val delayUntilFirstTenthPulseInUsec = (delayBetweenPulsesInEighthSeconds.toInt() / 8.0 * 100000).toInt()
-            return ProgramBolusCommand(
-                interlockCommand = interlockCommand,
-                uniqueId = uniqueId,
-                sequenceNumber = sequenceNumber,
-                multiCommandFlag = multiCommandFlag,
-                programReminder = programReminder,
-                numberOfTenthPulses = (numberOfPulses * 10).toShort(),
-                delayUntilFirstTenthPulseInUsec = delayUntilFirstTenthPulseInUsec
-            )
-        }
+        ): ProgramBolusCommand = createCombo(
+            uniqueId = uniqueId,
+            sequenceNumber = sequenceNumber,
+            nonce = nonce,
+            immediateUnits = units,
+            extendedUnits = 0.0,
+            durationInMinutes = 0,
+            programReminder = programReminder,
+            delayBetweenPulsesInEighthSeconds = delayBetweenPulsesInEighthSeconds,
+            multiCommandFlag = multiCommandFlag
+        )
 
         fun createFromPulses(
             uniqueId: Int,
@@ -307,6 +341,122 @@ class ProgramBolusCommand(
             delayBetweenPulsesInEighthSeconds = delayBetweenPulsesInEighthSeconds,
             multiCommandFlag = multiCommandFlag
         )
+
+        fun createExtended(
+            uniqueId: Int,
+            sequenceNumber: Short,
+            nonce: Int,
+            extendedUnits: Double,
+            durationInMinutes: Int,
+            programReminder: ProgramReminder = ProgramReminder(false, false, 0),
+            multiCommandFlag: Boolean = false
+        ): ProgramBolusCommand = createCombo(
+            uniqueId = uniqueId,
+            sequenceNumber = sequenceNumber,
+            nonce = nonce,
+            immediateUnits = 0.0,
+            extendedUnits = extendedUnits,
+            durationInMinutes = durationInMinutes,
+            programReminder = programReminder,
+            multiCommandFlag = multiCommandFlag
+        )
+
+        fun createCombo(
+            uniqueId: Int,
+            sequenceNumber: Short,
+            nonce: Int,
+            immediateUnits: Double,
+            extendedUnits: Double,
+            durationInMinutes: Int,
+            programReminder: ProgramReminder = ProgramReminder(false, false, 0),
+            delayBetweenPulsesInEighthSeconds: Byte = 2,
+            multiCommandFlag: Boolean = false
+        ): ProgramBolusCommand {
+            require(immediateUnits >= 0.0) { "Immediate units must be >= 0" }
+            require(extendedUnits >= 0.0) { "Extended units must be >= 0" }
+            require(immediateUnits > 0.0 || extendedUnits > 0.0) { "Total bolus units must be > 0" }
+            if (extendedUnits > 0.0) {
+                require(durationInMinutes > 0) { "Duration in minutes must be > 0 when extended units > 0" }
+            }
+
+            val immediatePulses = (immediateUnits * 20).roundToInt().toShort()
+            val extendedPulses = (extendedUnits * 20).roundToInt().toShort()
+
+            val immediateTenthPulses = (immediatePulses * 10).toShort()
+            val extendedTenthPulses = (extendedPulses * 10).toShort()
+
+            val delayUntilFirstTenthPulseInUsec = if (immediatePulses > 0) {
+                (delayBetweenPulsesInEighthSeconds.toInt() / 8.0 * 100000).toInt()
+            } else 0
+
+            val delayBetweenTenthExtendedPulsesInUsec = if (extendedTenthPulses > 0) {
+                val totalDurationUsec = durationInMinutes.toLong() * 60L * 1_000_000L
+                (totalDurationUsec / extendedTenthPulses.toLong()).toInt()
+            } else 0
+
+            val programElements = mutableListOf<ShortInsulinProgramElement>()
+            if (immediatePulses > 0 || extendedPulses > 0) {
+                programElements.add(BolusShortInsulinProgramElement(immediatePulses))
+            }
+            if (extendedPulses > 0) {
+                programElements.add(BolusShortInsulinProgramElement(extendedPulses))
+            }
+
+            val byte10And11 = (immediatePulses * delayBetweenPulsesInEighthSeconds).toShort()
+            val checksum = calculateComboChecksum(immediatePulses, extendedPulses, byte10And11)
+
+            val interlockCommand = ProgramInsulinCommand(
+                uniqueId = uniqueId,
+                sequenceNumber = sequenceNumber,
+                multiCommandFlag = multiCommandFlag,
+                nonce = nonce,
+                insulinProgramElements = programElements,
+                checksum = checksum,
+                byte9 = programElements.size.toByte(),
+                byte10And11 = byte10And11,
+                byte12And13 = immediatePulses,
+                deliveryType = ProgramInsulinCommand.DeliveryType.BOLUS
+            )
+
+            return ProgramBolusCommand(
+                interlockCommand = interlockCommand,
+                uniqueId = uniqueId,
+                sequenceNumber = sequenceNumber,
+                multiCommandFlag = multiCommandFlag,
+                programReminder = programReminder,
+                numberOfTenthPulses = immediateTenthPulses,
+                delayUntilFirstTenthPulseInUsec = delayUntilFirstTenthPulseInUsec,
+                extendedTenthPulses = extendedTenthPulses,
+                delayBetweenTenthExtendedPulsesInUsec = delayBetweenTenthExtendedPulsesInUsec
+            )
+        }
+
+        private fun calculateComboChecksum(
+            immediatePulses: Short,
+            extendedPulses: Short,
+            byte10And11: Short
+        ): Short {
+            return if (extendedPulses > 0) {
+                MessageUtil.calculateChecksum(
+                    ByteBuffer.allocate(9)
+                        .put(0x02.toByte())
+                        .putShort(byte10And11)
+                        .putShort(immediatePulses)
+                        .putShort(immediatePulses)
+                        .putShort(extendedPulses)
+                        .array()
+                )
+            } else {
+                MessageUtil.calculateChecksum(
+                    ByteBuffer.allocate(7)
+                        .put(0x01.toByte())
+                        .putShort(byte10And11)
+                        .putShort(immediatePulses)
+                        .putShort(immediatePulses)
+                        .array()
+                )
+            }
+        }
     }
 }
 
