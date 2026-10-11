@@ -10,6 +10,9 @@ import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.PluginContext
 import de.dh.daps.common.ui.UiText
 import de.dh.pump.omnipod.dash.activation.OmnipodDashActivationManager
+import de.dh.pump.omnipod.dash.db.OmnipodHistoryDatabase
+import de.dh.pump.omnipod.dash.db.OmnipodHistoryEntity
+import de.dh.pump.omnipod.dash.db.OmnipodHistoryEventType
 import de.dh.pump.omnipod.dash.ui.OmnipodDashSetupScreen
 import de.dh.pump.omnipod.protocol.ble.OmnipodDashBleManager
 import de.dh.pump.omnipod.protocol.definition.ActivationProgress
@@ -60,7 +63,9 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
     }
 
     fun getActivationManager(): OmnipodDashActivationManager {
-        return OmnipodDashActivationManager(getPodStateManager(), getBleManager())
+        val pc = pluginContext ?: throw IllegalStateException("PluginContext not initialized")
+        val dao = OmnipodHistoryDatabase.getInstance(pc.appContext).historyDao()
+        return OmnipodDashActivationManager(getPodStateManager(), getBleManager(), dao)
     }
 
     override fun setup(context: PluginContext) {
@@ -153,6 +158,18 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
     }
 
     private suspend fun resetDriverState() {
+        pluginContext?.appContext?.let { ctx ->
+            try {
+                OmnipodHistoryDatabase.getInstance(ctx).historyDao().insertEvent(
+                    OmnipodHistoryEntity(
+                        timestampMs = System.currentTimeMillis(),
+                        eventType = OmnipodHistoryEventType.POD_DEACTIVATED,
+                        detailText = "Pod deactivated",
+                        unitsDelivered = 0.0
+                    )
+                )
+            } catch (_: Exception) {}
+        }
         bleManager?.disconnect()
         bleManager = null
         podStateManager?.reset()

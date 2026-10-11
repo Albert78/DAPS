@@ -1,6 +1,9 @@
 package de.dh.pump.omnipod.dash.activation
 
 import de.dh.daps.common.model.data.InsulinProfile
+import de.dh.pump.omnipod.dash.db.OmnipodHistoryDao
+import de.dh.pump.omnipod.dash.db.OmnipodHistoryEntity
+import de.dh.pump.omnipod.dash.db.OmnipodHistoryEventType
 import de.dh.pump.omnipod.protocol.ble.OmnipodDashBleManager
 import de.dh.pump.omnipod.protocol.ble.PodBleConnectionState
 import de.dh.pump.omnipod.protocol.command.GetStatusCommand
@@ -31,7 +34,8 @@ import kotlin.time.Duration.Companion.milliseconds
  */
 class OmnipodDashActivationManager(
     private val podStateManager: OmnipodDashPodStateManagerImpl,
-    private val bleManager: OmnipodDashBleManager
+    private val bleManager: OmnipodDashBleManager,
+    private val historyDao: OmnipodHistoryDao
 ) {
     private var sequenceNumber: Short = 1
 
@@ -42,6 +46,17 @@ class OmnipodDashActivationManager(
     }
 
     private fun getNonce(): Int = podStateManager.lastNonce ?: DEFAULT_NONCE
+
+    private suspend fun logEvent(eventType: OmnipodHistoryEventType, detailText: String, units: Double) {
+        historyDao.insertEvent(
+            OmnipodHistoryEntity(
+                timestampMs = System.currentTimeMillis(),
+                eventType = eventType,
+                detailText = detailText,
+                unitsDelivered = units
+            )
+        )
+    }
 
     private suspend fun ensureBleConnected(): OmnipodDashBleManager {
         val address = podStateManager.bluetoothAddress
@@ -79,6 +94,11 @@ class OmnipodDashActivationManager(
                 manager.sendCommand(cmd).getOrThrow()
                 podStateManager.activationProgress = ActivationProgress.PRIMING
                 podStateManager.saveToPreferences()
+                logEvent(
+                    OmnipodHistoryEventType.PRIMING,
+                    "Primed pod with $PRIMING_BOLUS_UNITS U ($primePulses pulses)",
+                    PRIMING_BOLUS_UNITS
+                )
             }
 
             // 2.2 Priming Verification via status polling
@@ -153,6 +173,11 @@ class OmnipodDashActivationManager(
                 manager.sendCommand(cmd).getOrThrow()
                 podStateManager.activationProgress = ActivationProgress.INSERTING_CANNULA
                 podStateManager.saveToPreferences()
+                logEvent(
+                    OmnipodHistoryEventType.CANNULA_INSERTION,
+                    "Inserted cannula with $CANNULA_INSERTION_BOLUS_UNITS U ($insertPulses pulses)",
+                    CANNULA_INSERTION_BOLUS_UNITS
+                )
             }
 
             // 2.4 Cannula Verification via status polling
@@ -233,6 +258,11 @@ class OmnipodDashActivationManager(
             podStateManager.activatedAtTimestampMs = System.currentTimeMillis()
             podStateManager.activationProgress = ActivationProgress.COMPLETED
             podStateManager.saveToPreferences()
+            logEvent(
+                OmnipodHistoryEventType.POD_ACTIVATED,
+                "Pod activated successfully",
+                0.0
+            )
 
             return Result.success(Unit)
         } catch (e: Exception) {

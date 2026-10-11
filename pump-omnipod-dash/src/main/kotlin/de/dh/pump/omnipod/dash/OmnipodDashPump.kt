@@ -302,7 +302,7 @@ class OmnipodDashPump(
                     timestamp = now
                 )
             )
-            logEvent(OmnipodHistoryEventType.STOP_BOLUS, "Stopped running bolus at ${finalDelivered.iu} U of ${current.targetAmount.iu} U", finalDelivered.iu)
+            logEvent(OmnipodHistoryEventType.CANCEL_BOLUS, "Cancelled running bolus at ${finalDelivered.iu} U of ${current.targetAmount.iu} U", finalDelivered.iu)
         } catch (e: Exception) {
             throw e
         }
@@ -529,7 +529,11 @@ class OmnipodDashPump(
                     timestamp = Timestamp(entity.timestampMs),
                     amount = InsulinAmount(entity.unitsDelivered),
                     category = when (entity.eventType) {
-                        OmnipodHistoryEventType.BOLUS -> InsulinCategory.Bolus
+                        OmnipodHistoryEventType.BOLUS,
+                        OmnipodHistoryEventType.CANCEL_BOLUS,
+                        OmnipodHistoryEventType.STOP_BOLUS,
+                        OmnipodHistoryEventType.PRIMING,
+                        OmnipodHistoryEventType.CANNULA_INSERTION -> InsulinCategory.Bolus
                         else -> InsulinCategory.Basal
                     },
                     pumpId = entity.id.toString()
@@ -609,7 +613,7 @@ class OmnipodDashPump(
                 }
                 else -> {}
             }
-            logEvent(OmnipodHistoryEventType.ALARM_OCCURRED, "Silenced active alerts: $alertTypes", 0.0)
+            logEvent(OmnipodHistoryEventType.ALARM_SILENCED, "Silenced active alerts: $alertTypes", 0.0)
         } catch (e: Exception) {
             throw e
         }
@@ -629,7 +633,7 @@ class OmnipodDashPump(
 
         val pdmRef = alarmResponse?.pdmRef ?: podStateManager.lastPdmRef ?: "Fault Code: ${alarmType?.name ?: "Unknown"}"
         logEvent(
-            OmnipodHistoryEventType.ALARM_OCCURRED,
+            OmnipodHistoryEventType.POD_FAULT,
             "Pod fault occurred: $pdmRef (Status: $podStatus)",
             0.0
         )
