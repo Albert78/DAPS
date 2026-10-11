@@ -1,13 +1,17 @@
 package de.dh.pump.omnipod.protocol.response
 
+import de.dh.pump.omnipod.protocol.definition.AlarmType
 import de.dh.pump.omnipod.protocol.definition.AlertType
 import de.dh.pump.omnipod.protocol.definition.DeliveryStatus
 import de.dh.pump.omnipod.protocol.definition.HasValue
+import de.dh.pump.omnipod.protocol.definition.NakErrorType
+import de.dh.pump.omnipod.protocol.definition.PodConstants
 import de.dh.pump.omnipod.protocol.definition.PodStatus
 import de.dh.pump.omnipod.protocol.definition.byValue
 import java.io.Serializable
 import java.nio.ByteBuffer
 import java.util.EnumSet
+import java.util.Locale
 import kotlin.experimental.and
 
 interface Response : Serializable {
@@ -113,4 +117,97 @@ class SetUniqueIdResponse(
     val lotNumber: Long = ByteBuffer.wrap(byteArrayOf(0, 0, 0, 0, encoded[17], encoded[18], encoded[19], encoded[20])).long
     val podSequenceNumber: Long = ByteBuffer.wrap(byteArrayOf(0, 0, 0, 0, encoded[21], encoded[22], encoded[23], encoded[24])).long
     val uniqueIdReceivedInCommand: Long = ByteBuffer.wrap(byteArrayOf(0, 0, 0, 0, encoded[25], encoded[26], encoded[27], encoded[28])).long
+}
+
+abstract class AdditionalStatusResponseBase(
+    val statusResponseType: ResponseType.StatusResponseType,
+    encoded: ByteArray
+) : ResponseBase(ResponseType.ADDITIONAL_STATUS_RESPONSE, encoded)
+
+class NakResponse(
+    encoded: ByteArray
+) : ResponseBase(ResponseType.NAK_RESPONSE, encoded) {
+
+    val messageType: Byte = encoded[0]
+    val messageLength: Short = encoded[1].toShort()
+    val nakErrorType: NakErrorType = byValue(encoded[2], NakErrorType.UNKNOWN)
+    var alarmType: AlarmType? = null
+        private set
+    var podStatus: PodStatus? = null
+        private set
+    var securityNakSyncCount: Short = 0
+        private set
+
+    init {
+        val byte3 = encoded[3]
+        val byte4 = encoded[4]
+        if (nakErrorType == NakErrorType.ILLEGAL_SECURITY_CODE) {
+            securityNakSyncCount = ((byte3.toInt() shl 8 or (byte4.toInt() and 0xff)).toShort())
+            alarmType = null
+            podStatus = null
+        } else {
+            securityNakSyncCount = 0
+            alarmType = byValue(byte3, AlarmType.UNKNOWN)
+            podStatus = byValue(byte4, PodStatus.UNKNOWN)
+        }
+    }
+}
+
+class AlarmStatusResponse(
+    encoded: ByteArray
+) : AdditionalStatusResponseBase(ResponseType.StatusResponseType.ALARM_STATUS, encoded) {
+
+    val messageType: Byte = encoded[0]
+    val messageLength: Short = (encoded[1].toInt() and 0xff).toShort()
+    val additionalStatusResponseType: Byte = encoded[2]
+    val podStatus: PodStatus = byValue((encoded[3] and 0x0f), PodStatus.UNKNOWN)
+    val deliveryStatus: DeliveryStatus = byValue((encoded[4] and 0x0f), DeliveryStatus.UNKNOWN)
+    val bolusPulsesRemaining: Short = (ByteBuffer.wrap(byteArrayOf(encoded[5], encoded[6])).short and 2047)
+    val sequenceNumberOfLastProgrammingCommand: Short = (encoded[7] and 0x0f).toShort()
+    val totalPulsesDelivered: Short = ByteBuffer.wrap(byteArrayOf(encoded[8], encoded[9])).short
+    val alarmType: AlarmType = byValue(encoded[10], AlarmType.UNKNOWN)
+    val alarmTime: Short = ByteBuffer.wrap(byteArrayOf(encoded[11], encoded[12])).short
+    val reservoirPulsesRemaining: Short = ByteBuffer.wrap(byteArrayOf(encoded[13], encoded[14])).short
+    val minutesSinceActivation: Short = ByteBuffer.wrap(byteArrayOf(encoded[15], encoded[16])).short
+    val activeAlerts: EnumSet<AlertType> = AlertUtil.decodeAlertSet(encoded[17])
+    val occlusionAlarm: Boolean
+    val pulseInfoInvalid: Boolean
+    val podStatusWhenAlarmOccurred: PodStatus
+    val immediateBolusWhenAlarmOccurred: Boolean
+    val occlusionType: Byte
+    val occurredWhenFetchingImmediateBolusActiveInformation: Boolean
+    val rssi: Short
+    val receiverLowerGain: Short
+    val podStatusWhenAlarmOccurred2: PodStatus
+    val returnAddressOfPodAlarmHandlerCaller: Short
+    val rawErrorEventByte: Byte = encoded[19]
+
+    init {
+        val alarmFlags = encoded[18]
+        occlusionAlarm = (alarmFlags.toInt() and 1) == 1
+        pulseInfoInvalid = (alarmFlags.toInt() shr 1 and 1) == 1
+        val byte19 = encoded[19]
+        val byte20 = encoded[20]
+        podStatusWhenAlarmOccurred = byValue((byte19 and 0x0f), PodStatus.UNKNOWN)
+        immediateBolusWhenAlarmOccurred = (byte19.toInt() shr 4 and 1) == 1
+        occlusionType = ((byte19.toInt() shr 5 and 3).toByte())
+        occurredWhenFetchingImmediateBolusActiveInformation = (byte19.toInt() shr 7 and 1) == 1
+        rssi = (byte20 and 0x3f).toShort()
+        receiverLowerGain = ((byte20.toInt() shr 6 and 0x03).toShort())
+        podStatusWhenAlarmOccurred2 = byValue((encoded[21] and 0x0f), PodStatus.UNKNOWN)
+        returnAddressOfPodAlarmHandlerCaller = ByteBuffer.wrap(byteArrayOf(encoded[22], encoded[23])).short
+    }
+
+    val pdmRef: String?
+        get() {
+            val tt = alarmType.pdmFaultCategory?.tt ?: return null
+            val vvv = rawErrorEventByte.toInt() and 0xff
+            val alarmMinutes = alarmTime.toInt() and 0xffff
+            val activeMinutes = minutesSinceActivation.toInt() and 0xffff
+            val hh = (if (alarmMinutes == 0 || alarmMinutes == 0xffff) activeMinutes else alarmMinutes) / 60
+            val iii = (totalPulsesDelivered.toInt() * PodConstants.POD_PULSE_BOLUS_UNITS).toInt()
+            val rr = (reservoirPulsesRemaining.toInt() * PodConstants.POD_PULSE_BOLUS_UNITS).toInt()
+            val fff = alarmType.value.toInt() and 0xff
+            return java.lang.String.format(Locale.ROOT, "%02d-%03d%02d-%03d%02d-%03d", tt, vvv, hh, iii, rr, fff)
+        }
 }
