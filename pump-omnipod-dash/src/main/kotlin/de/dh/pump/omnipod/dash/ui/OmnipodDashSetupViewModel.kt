@@ -92,6 +92,24 @@ class OmnipodDashSetupViewModel(application: Application) : AndroidViewModel(app
         }
     }
 
+    fun cancelSetup(
+        driver: OmnipodDashInsulinPumpDriver,
+        onCancelled: (() -> Unit)? = null
+    ) {
+        viewModelScope.launch {
+            try {
+                driver.cancelSetup()
+            } catch (e: Exception) {
+                _activationError.value = e.message
+            } finally {
+                _currentStepIndex.value = 0
+                _activationError.value = null
+                _isActivating.value = false
+                onCancelled?.invoke()
+            }
+        }
+    }
+
     fun unbind(driver: OmnipodDashInsulinPumpDriver) {
         viewModelScope.launch {
             try {

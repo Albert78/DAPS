@@ -109,6 +109,8 @@ fun OmnipodDashSetupScreen(
             )
         }
         else -> {
+            var showCancelDialog by remember { mutableStateOf(false) }
+
             LaunchedEffect(Unit) {
                 driver.startSetup()
                 viewModel.loadSavedState(driver)
@@ -120,11 +122,55 @@ fun OmnipodDashSetupScreen(
                 activationError = activationError,
                 onNextStep = { viewModel.nextStep(driver) },
                 onCancel = {
-                    driver.cancelSetup()
-                    onDriverReset()
+                    showCancelDialog = true
                 },
                 modifier = modifier
             )
+
+            if (showCancelDialog) {
+                val titleRes = if (currentStepIndex == 0) {
+                    R.string.omnipod_dash_cancel_dialog_step1_title
+                } else {
+                    R.string.omnipod_dash_cancel_dialog_title
+                }
+                val messageRes = if (currentStepIndex == 0) {
+                    R.string.omnipod_dash_cancel_dialog_step1_message
+                } else {
+                    R.string.omnipod_dash_cancel_dialog_message
+                }
+                val confirmRes = if (currentStepIndex == 0) {
+                    R.string.omnipod_dash_cancel_dialog_step1_confirm
+                } else {
+                    R.string.omnipod_dash_cancel_dialog_confirm
+                }
+
+                AlertDialog(
+                    onDismissRequest = { showCancelDialog = false },
+                    title = { Text(stringResource(titleRes)) },
+                    text = { Text(stringResource(messageRes)) },
+                    confirmButton = {
+                        PrimaryButton(
+                            onClick = {
+                                showCancelDialog = false
+                                viewModel.cancelSetup(driver) {
+                                    onDriverReset()
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error,
+                                contentColor = MaterialTheme.colorScheme.onError
+                            )
+                        ) {
+                            Text(stringResource(confirmRes))
+                        }
+                    },
+                    dismissButton = {
+                        NormalTextButton(onClick = { showCancelDialog = false }) {
+                            Text(stringResource(R.string.omnipod_dash_cancel_dialog_continue))
+                        }
+                    }
+                )
+            }
         }
     }
 }

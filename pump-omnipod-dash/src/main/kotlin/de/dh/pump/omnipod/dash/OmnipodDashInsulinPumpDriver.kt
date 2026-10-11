@@ -82,12 +82,19 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
     }
 
     /**
-     * Cancels the current setup flow and restores the driver's previous state.
+     * Cancels the current setup flow, resets internal pod state and preferences,
+     * and sets driver lifecycle state to NoDevice.
      */
-    fun cancelSetup() {
-        scope.launch {
-            initState()
+    suspend fun cancelSetup() {
+        val pc = pluginContext
+        if (pc != null) {
+            val podStateManager = OmnipodDashPodStateManagerImpl(pc.preferences)
+            podStateManager.reset()
+            podStateManager.saveToPreferences()
+            pc.preferences.clear()
         }
+        _activePump.value = null
+        _lifecycleState.value = DeviceLifecycleState.NoDevice
     }
 
     @Composable
