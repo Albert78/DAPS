@@ -2,9 +2,13 @@ package de.dh.pump.omnipod.dash.ui
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import de.dh.pump.omnipod.dash.OmnipodDashInsulinPumpDriver
 import de.dh.pump.omnipod.dash.R
+import de.dh.pump.omnipod.dash.activation.OmnipodDashActivationManager
+import de.dh.pump.omnipod.protocol.ble.OmnipodDashBleManager
 import de.dh.pump.omnipod.protocol.definition.ActivationProgress
 import de.dh.pump.omnipod.protocol.state.OmnipodDashPodStateManagerImpl
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,11 +31,16 @@ class OmnipodDashSetupViewModel(application: Application) : AndroidViewModel(app
 
     fun loadSavedState(driver: OmnipodDashInsulinPumpDriver) {
         viewModelScope.launch {
-            val preferences = driver.getContext()?.preferences
+            val pc = driver.getContext()
+            val preferences = pc?.preferences
             val podStateManager = OmnipodDashPodStateManagerImpl(preferences)
             podStateManager.loadFromPreferences()
 
-            val stepIndex = stepIndexForProgress(podStateManager.activationProgress)
+            val bleManager = pc?.appContext?.let { OmnipodDashBleManager(it, podStateManager) }
+            val activationManager = OmnipodDashActivationManager(podStateManager, bleManager)
+
+            val recoveredProgress = activationManager.recoverActivationProgress()
+            val stepIndex = stepIndexForProgress(recoveredProgress)
             _currentStepIndex.value = stepIndex
         }
     }
@@ -44,42 +53,42 @@ class OmnipodDashSetupViewModel(application: Application) : AndroidViewModel(app
         val currentIndex = _currentStepIndex.value
         if (currentIndex !in steps.indices) return
 
-        val preferences = driver.getContext()?.preferences
+        val pc = driver.getContext()
+        val preferences = pc?.preferences
         val podStateManager = OmnipodDashPodStateManagerImpl(preferences)
 
         viewModelScope.launch {
             podStateManager.loadFromPreferences()
 
-            when (steps[currentIndex]) {
-                ActivationStep.FILL_AND_PRIME -> {
-                    podStateManager.activationProgress = ActivationProgress.PRIME_COMPLETED
-                    podStateManager.saveToPreferences()
-                    _currentStepIndex.value = currentIndex + 1
-                }
-                ActivationStep.APPLY_AND_INSERT -> {
-                    podStateManager.activationProgress = ActivationProgress.CANNULA_INSERTED
-                    podStateManager.saveToPreferences()
-                    _currentStepIndex.value = currentIndex + 1
-                }
-                ActivationStep.CONFIRM_AND_ACTIVATE -> {
-                    _isActivating.value = true
-                    _activationError.value = null
-                    try {
-                        podStateManager.activatedAtTimestampMs = System.currentTimeMillis()
-                        podStateManager.activationProgress = ActivationProgress.COMPLETED
-                        podStateManager.saveToPreferences()
+            val bleManager = pc?.appContext?.let { OmnipodDashBleManager(it, podStateManager) }
+            val activationManager = OmnipodDashActivationManager(podStateManager, bleManager)
 
+            _isActivating.value = true
+            _activationError.value = null
+
+            val result = when (steps[currentIndex]) {
+                ActivationStep.FILL_AND_PRIME -> activationManager.performFillAndPrime()
+                ActivationStep.APPLY_AND_INSERT -> activationManager.performApplyAndInsert()
+                ActivationStep.CONFIRM_AND_ACTIVATE -> activationManager.performConfirmAndActivate()
+            }
+
+            result.fold(
+                onSuccess = {
+                    if (steps[currentIndex] == ActivationStep.CONFIRM_AND_ACTIVATE) {
                         driver.completeActivation(podStateManager)
-
                         _isActivating.value = false
                         onSuccess?.invoke()
-                    } catch (e: Exception) {
+                    } else {
                         _isActivating.value = false
-                        _activationError.value = e.message
-                            ?: getApplication<Application>().getString(R.string.omnipod_dash_setup_activate_failed)
+                        _currentStepIndex.value = currentIndex + 1
                     }
+                },
+                onFailure = { error ->
+                    _isActivating.value = false
+                    _activationError.value = error.message
+                        ?: getApplication<Application>().getString(R.string.omnipod_dash_setup_activate_failed)
                 }
-            }
+            )
         }
     }
 
@@ -102,9 +111,9 @@ class OmnipodDashSetupViewModel(application: Application) : AndroidViewModel(app
             }
         }
 
-        class Factory(private val application: Application) : androidx.lifecycle.ViewModelProvider.Factory {
+        class Factory(private val application: Application) : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
-            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return OmnipodDashSetupViewModel(application) as T
             }
         }
