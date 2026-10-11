@@ -20,6 +20,8 @@ import de.dh.daps.common.model.ReplaceableComponentType
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
+import de.dh.pump.PumpCommandException
+import de.dh.pump.PumpStatus
 import de.dh.pump.omnipod.dash.db.DashHistoryDatabase
 import de.dh.pump.omnipod.dash.db.DashHistoryEntity
 import de.dh.pump.omnipod.dash.db.DashHistoryEventType
@@ -36,12 +38,20 @@ import de.dh.pump.omnipod.protocol.response.DefaultStatusResponse
 import de.dh.pump.omnipod.protocol.state.OmnipodDashPodStateManager
 import de.dh.pump.omnipod.protocol.util.PodPulseCalculator
 import de.dh.pump.omnipod.protocol.util.ProfileToBasalScheduleConverter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import java.util.Date
 import java.util.concurrent.TimeUnit
 
@@ -65,6 +75,9 @@ class OmnipodDashPump(
 
     private var sequenceNumber: Short = 1
     private var lastSyncTimestamp: Timestamp = Timestamp.now().minusHours(24)
+
+    private var activeBolusJob: Job? = null
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private val _startDate = MutableStateFlow<Timestamp?>(null)
     override val startDate: StateFlow<Timestamp?> = _startDate.asStateFlow()
@@ -111,7 +124,7 @@ class OmnipodDashPump(
     private val _bolusStatus = MutableStateFlow(BolusStatus())
     override val bolusStatus: StateFlow<BolusStatus> = _bolusStatus.asStateFlow()
 
-    private val _bolusEvents = MutableSharedFlow<BolusEvent>()
+    private val _bolusEvents = MutableSharedFlow<BolusEvent>(extraBufferCapacity = 64)
     override val bolusEvents: SharedFlow<BolusEvent> = _bolusEvents.asSharedFlow()
 
     private val _history = MutableStateFlow<InsulinHistory?>(null)
@@ -157,6 +170,14 @@ class OmnipodDashPump(
     }
 
     override suspend fun bolus(amount: InsulinAmount, bolusId: String?) {
+        if (_bolusStatus.value.state == BolusDeliveryState.DELIVERING) {
+            throw PumpCommandException(
+                status = PumpStatus.REJECTED,
+                commandName = "bolus",
+                vendorMessage = "A bolus delivery is already in progress"
+            )
+        }
+
         val seq = nextSequenceNumber()
         val pulseCount = PodPulseCalculator.unitsToPulses(amount.iu)
 
@@ -180,6 +201,8 @@ class OmnipodDashPump(
             podStateManager.clearActiveCommand()
             podStateManager.saveToPreferences()
 
+            activeBolusJob?.cancel()
+
             val now = Timestamp.now()
             _bolusStatus.value = BolusStatus(
                 state = BolusDeliveryState.DELIVERING,
@@ -196,12 +219,20 @@ class OmnipodDashPump(
                 )
             )
             logEvent(DashHistoryEventType.BOLUS, "Programmed bolus of ${amount.iu} U", amount.iu)
+
+            val initialTotalPulses = podStateManager.pulsesDelivered
+            activeBolusJob = scope.launch {
+                pollBolusProgress(amount, bolusId, initialTotalPulses)
+            }
         } catch (e: Exception) {
             throw e
         }
     }
 
     override suspend fun stopBolus() {
+        activeBolusJob?.cancel()
+        activeBolusJob = null
+
         val seq = nextSequenceNumber()
         podStateManager.createActiveCommand(
             sequenceNumber = seq,
@@ -223,18 +254,39 @@ class OmnipodDashPump(
             podStateManager.clearActiveCommand()
             podStateManager.saveToPreferences()
 
+            var finalDelivered = _bolusStatus.value.deliveredAmount
             val current = _bolusStatus.value
+
+            try {
+                val statusCmd = GetStatusCommand(
+                    uniqueId = podStateManager.uniqueId ?: 0,
+                    sequenceNumber = nextSequenceNumber()
+                )
+                val responseBytes = bleManager.sendCommand(statusCmd).getOrNull()
+                if (responseBytes != null && responseBytes.size >= 10) {
+                    val statusResponse = DefaultStatusResponse(responseBytes)
+                    podStateManager.updateFromDefaultStatusResponse(statusResponse)
+                    val remainingPulses = statusResponse.bolusPulsesRemaining
+                    val targetPulses = PodPulseCalculator.unitsToPulses(current.targetAmount.iu)
+                    val deliveredPulses = (targetPulses - remainingPulses).coerceAtLeast(0).toShort()
+                    finalDelivered = InsulinAmount(PodPulseCalculator.pulsesToUnits(deliveredPulses))
+                }
+            } catch (_: Exception) {}
+
             val now = Timestamp.now()
-            _bolusStatus.value = current.copy(state = BolusDeliveryState.STOPPED)
+            _bolusStatus.value = current.copy(
+                state = BolusDeliveryState.STOPPED,
+                deliveredAmount = finalDelivered
+            )
             _bolusEvents.emit(
                 BolusEvent.Stopped(
                     bolusId = current.bolusId,
                     targetAmount = current.targetAmount,
-                    deliveredAmount = current.deliveredAmount,
+                    deliveredAmount = finalDelivered,
                     timestamp = now
                 )
             )
-            logEvent(DashHistoryEventType.STOP_BOLUS, "Stopped running bolus", 0.0)
+            logEvent(DashHistoryEventType.STOP_BOLUS, "Stopped running bolus at ${finalDelivered.iu} U of ${current.targetAmount.iu} U", finalDelivered.iu)
         } catch (e: Exception) {
             throw e
         }
@@ -492,8 +544,124 @@ class OmnipodDashPump(
         return de.dh.pump.omnipod.protocol.definition.BasalProgram(segments)
     }
 
+    private suspend fun pollBolusProgress(
+        targetAmount: InsulinAmount,
+        bolusId: String?,
+        initialTotalPulses: Short?
+    ) {
+        val targetPulses = PodPulseCalculator.unitsToPulses(targetAmount.iu)
+        var isDelivering = true
+        var noProgressCount = 0
+        val maxNoProgress = 60 // 60 * 2s = 120s timeout safeguard
+        var lastDeliveredPulses: Short = 0
+
+        while (isDelivering && scope.isActive) {
+            delay(BOLUS_POLL_INTERVAL_MS)
+
+            if (_bolusStatus.value.state != BolusDeliveryState.DELIVERING) {
+                break
+            }
+
+            try {
+                val statusCmd = GetStatusCommand(
+                    uniqueId = podStateManager.uniqueId ?: 0,
+                    sequenceNumber = nextSequenceNumber()
+                )
+                val responseBytes = bleManager.sendCommand(statusCmd).getOrNull()
+
+                if (responseBytes != null && responseBytes.size >= 10) {
+                    val statusResponse = DefaultStatusResponse(responseBytes)
+                    podStateManager.updateFromDefaultStatusResponse(statusResponse)
+
+                    val remainingPulses = statusResponse.bolusPulsesRemaining
+                    val activeBolus = statusResponse.deliveryStatus.bolusDeliveringActive()
+
+                    val deliveredPulses = if (initialTotalPulses != null && initialTotalPulses > 0) {
+                        (statusResponse.totalPulsesDelivered - initialTotalPulses).coerceAtLeast(0).toShort()
+                    } else {
+                        (targetPulses - remainingPulses).coerceAtLeast(0).toShort()
+                    }
+
+                    val deliveredUnits = PodPulseCalculator.pulsesToUnits(deliveredPulses)
+                    val deliveredAmount = InsulinAmount(deliveredUnits.coerceAtMost(targetAmount.iu))
+                    val now = Timestamp.now()
+
+                    if (deliveredPulses != lastDeliveredPulses) {
+                        lastDeliveredPulses = deliveredPulses
+                        noProgressCount = 0
+
+                        _bolusStatus.value = BolusStatus(
+                            state = BolusDeliveryState.DELIVERING,
+                            bolusId = bolusId,
+                            targetAmount = targetAmount,
+                            deliveredAmount = deliveredAmount,
+                            timestamp = now
+                        )
+
+                        _bolusEvents.emit(
+                            BolusEvent.Progress(
+                                bolusId = bolusId,
+                                targetAmount = targetAmount,
+                                deliveredAmount = deliveredAmount,
+                                timestamp = now
+                            )
+                        )
+                    } else {
+                        noProgressCount++
+                    }
+
+                    if (!activeBolus || remainingPulses <= 0) {
+                        isDelivering = false
+                    }
+                } else {
+                    noProgressCount++
+                }
+            } catch (_: Exception) {
+                noProgressCount++
+            }
+
+            if (noProgressCount >= maxNoProgress) {
+                isDelivering = false
+            }
+        }
+
+        if (_bolusStatus.value.state == BolusDeliveryState.DELIVERING) {
+            val finalDelivered = if (lastDeliveredPulses >= targetPulses) {
+                targetAmount
+            } else {
+                InsulinAmount(PodPulseCalculator.pulsesToUnits(lastDeliveredPulses))
+            }
+            val now = Timestamp.now()
+
+            _bolusStatus.value = BolusStatus(
+                state = BolusDeliveryState.COMPLETED,
+                bolusId = bolusId,
+                targetAmount = targetAmount,
+                deliveredAmount = finalDelivered,
+                timestamp = now
+            )
+
+            _bolusEvents.emit(
+                BolusEvent.Completed(
+                    bolusId = bolusId,
+                    targetAmount = targetAmount,
+                    deliveredAmount = finalDelivered,
+                    timestamp = now
+                )
+            )
+
+            logEvent(
+                DashHistoryEventType.BOLUS,
+                "Completed bolus delivery of ${finalDelivered.iu} U (target ${targetAmount.iu} U)",
+                finalDelivered.iu
+            )
+        }
+    }
+
     override fun stop() {
         _isConnected.value = false
+        activeBolusJob?.cancel()
+        scope.cancel()
         bleManager.disconnect()
     }
 
@@ -519,5 +687,6 @@ class OmnipodDashPump(
         private const val POD_DURATION_HOURS = 72L
         private const val POD_GRACE_HOURS = 8L
         private const val HISTORY_CLEANUP_DAYS = 3L
+        private const val BOLUS_POLL_INTERVAL_MS = 2000L
     }
 }

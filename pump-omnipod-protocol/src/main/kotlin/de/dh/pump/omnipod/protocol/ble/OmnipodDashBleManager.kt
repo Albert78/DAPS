@@ -33,6 +33,8 @@ import de.dh.pump.omnipod.protocol.transport.MessageIO
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.util.UUID
 import java.util.concurrent.LinkedBlockingQueue
@@ -46,6 +48,8 @@ class OmnipodDashBleManager(
     private val context: Context,
     private val podStateManager: OmnipodDashPodStateManager
 ) {
+    private val commandMutex = Mutex()
+
     private val _connectionState = MutableStateFlow(PodBleConnectionState.DISCONNECTED)
     val connectionState: StateFlow<PodBleConnectionState> = _connectionState
 
@@ -212,41 +216,43 @@ class OmnipodDashBleManager(
     }
 
     @SuppressLint("MissingPermission")
-    suspend fun sendCommand(command: Command): Result<ByteArray> = withContext(Dispatchers.IO) {
-        if (_connectionState.value != PodBleConnectionState.CONNECTED) {
-            return@withContext Result.failure(IllegalStateException("BLE Not Connected"))
-        }
-        try {
-            val payload = command.encoded
-            val activeSession = session
-            if (activeSession != null) {
-                val sendResult = activeSession.sendCommand(payload)
-                if (sendResult !is CommandSendSuccess) {
-                    return@withContext Result.failure(IllegalStateException("Session command send failed: $sendResult"))
-                }
-                when (val receiveResult = activeSession.readAndAckResponse()) {
-                    is CommandReceiveSuccess -> Result.success(receiveResult.payload)
-                    is CommandAckError -> Result.success(receiveResult.payload)
-                    is CommandReceiveError -> Result.failure(IllegalStateException("Failed to receive response: ${receiveResult.msg}"))
-                }
-            } else {
-                cmdQueue.clear()
-                val characteristic = cmdCharacteristic
-                val gatt = bluetoothGatt
-                if (characteristic != null && gatt != null) {
-                    val status = gatt.writeCharacteristic(characteristic, payload, characteristic.writeType)
-                    if (status != BluetoothStatusCodes.SUCCESS) {
-                        return@withContext Result.failure(IllegalStateException("Failed to write GATT characteristic, status: $status"))
-                    }
-                    val responseBytes = cmdQueue.poll(5000, TimeUnit.MILLISECONDS)
-                        ?: return@withContext Result.failure(IllegalStateException("Timeout waiting for response indication"))
-                    Result.success(responseBytes)
-                } else {
-                    Result.failure(IllegalStateException("Characteristics not initialized"))
-                }
+    suspend fun sendCommand(command: Command): Result<ByteArray> = commandMutex.withLock {
+        withContext(Dispatchers.IO) {
+            if (_connectionState.value != PodBleConnectionState.CONNECTED) {
+                return@withContext Result.failure(IllegalStateException("BLE Not Connected"))
             }
-        } catch (e: Exception) {
-            Result.failure(e)
+            try {
+                val payload = command.encoded
+                val activeSession = session
+                if (activeSession != null) {
+                    val sendResult = activeSession.sendCommand(payload)
+                    if (sendResult !is CommandSendSuccess) {
+                        return@withContext Result.failure(IllegalStateException("Session command send failed: $sendResult"))
+                    }
+                    when (val receiveResult = activeSession.readAndAckResponse()) {
+                        is CommandReceiveSuccess -> Result.success(receiveResult.payload)
+                        is CommandAckError -> Result.success(receiveResult.payload)
+                        is CommandReceiveError -> Result.failure(IllegalStateException("Failed to receive response: ${receiveResult.msg}"))
+                    }
+                } else {
+                    cmdQueue.clear()
+                    val characteristic = cmdCharacteristic
+                    val gatt = bluetoothGatt
+                    if (characteristic != null && gatt != null) {
+                        val status = gatt.writeCharacteristic(characteristic, payload, characteristic.writeType)
+                        if (status != BluetoothStatusCodes.SUCCESS) {
+                            return@withContext Result.failure(IllegalStateException("Failed to write GATT characteristic, status: $status"))
+                        }
+                        val responseBytes = cmdQueue.poll(5000, TimeUnit.MILLISECONDS)
+                            ?: return@withContext Result.failure(IllegalStateException("Timeout waiting for response indication"))
+                        Result.success(responseBytes)
+                    } else {
+                        Result.failure(IllegalStateException("Characteristics not initialized"))
+                    }
+                }
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
         }
     }
 
