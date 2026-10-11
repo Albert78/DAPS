@@ -11,7 +11,8 @@ import de.dh.pump.omnipod.protocol.response.DefaultStatusResponse
 import de.dh.pump.omnipod.protocol.response.SetUniqueIdResponse
 import de.dh.pump.omnipod.protocol.response.VersionResponse
 import kotlinx.coroutines.flow.first
-import java.io.Serializable
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import java.util.EnumSet
 
 interface OmnipodDashPodStateManager {
@@ -39,16 +40,45 @@ interface OmnipodDashPodStateManager {
     var tempBasal: TempBasal?
     var basalProgram: BasalProgram?
     var lastBolus: LastBolus?
+    var activeCommand: ActiveCommand?
 
     fun updateFromDefaultStatusResponse(response: DefaultStatusResponse)
     fun updateFromVersionResponse(response: VersionResponse)
     fun updateFromSetUniqueIdResponse(response: SetUniqueIdResponse)
     fun recoverActivationFromPodStatus(status: PodStatus): ActivationProgress
+    fun createActiveCommand(
+        sequenceNumber: Short,
+        commandType: ActiveCommandType,
+        requestedUnits: Double? = null,
+        pulseCount: Short? = null,
+        historyId: Long? = null
+    ): ActiveCommand
+    fun clearActiveCommand()
     suspend fun saveToPreferences()
     suspend fun loadFromPreferences()
     fun reset()
 
-    data class TempBasal(val startTime: Long, val rate: Double, val durationInMinutes: Short) : Serializable
+    @Serializable
+    enum class ActiveCommandType {
+        BOLUS,
+        TEMP_BASAL,
+        STOP_DELIVERY,
+        BASAL_SCHEDULE
+    }
+
+    @Serializable
+    data class ActiveCommand(
+        val sequenceNumber: Short,
+        val timestampMs: Long,
+        val commandType: ActiveCommandType,
+        val requestedUnits: Double? = null,
+        val pulseCount: Short? = null,
+        val historyId: Long? = null,
+        val pulsesDeliveredAtStart: Short? = null
+    )
+
+    @Serializable
+    data class TempBasal(val startTime: Long, val rate: Double, val durationInMinutes: Short)
 
     data class LastBolus(
         val startTime: Long,
@@ -88,6 +118,31 @@ class OmnipodDashPodStateManagerImpl(
     override var tempBasal: OmnipodDashPodStateManager.TempBasal? = null
     override var basalProgram: BasalProgram? = null
     override var lastBolus: OmnipodDashPodStateManager.LastBolus? = null
+    override var activeCommand: OmnipodDashPodStateManager.ActiveCommand? = null
+
+    override fun createActiveCommand(
+        sequenceNumber: Short,
+        commandType: OmnipodDashPodStateManager.ActiveCommandType,
+        requestedUnits: Double?,
+        pulseCount: Short?,
+        historyId: Long?
+    ): OmnipodDashPodStateManager.ActiveCommand {
+        val cmd = OmnipodDashPodStateManager.ActiveCommand(
+            sequenceNumber = sequenceNumber,
+            timestampMs = System.currentTimeMillis(),
+            commandType = commandType,
+            requestedUnits = requestedUnits,
+            pulseCount = pulseCount,
+            historyId = historyId,
+            pulsesDeliveredAtStart = pulsesDelivered
+        )
+        activeCommand = cmd
+        return cmd
+    }
+
+    override fun clearActiveCommand() {
+        activeCommand = null
+    }
 
     override fun updateFromDefaultStatusResponse(response: DefaultStatusResponse) {
         podStatus = response.podStatus
@@ -139,6 +194,7 @@ class OmnipodDashPodStateManagerImpl(
             putLong(KEY_ACTIVATED_AT, activatedAtTimestampMs ?: 0L)
             putInt(KEY_LAST_NONCE, lastNonce ?: 0)
             putString(KEY_ACTIVATION_PROGRESS, activationProgress.name)
+            activeCommand?.let { putString(KEY_ACTIVE_COMMAND, Json.encodeToString(it)) } ?: putString(KEY_ACTIVE_COMMAND, null)
         }
     }
 
@@ -167,6 +223,16 @@ class OmnipodDashPodStateManagerImpl(
             } else {
                 ActivationProgress.NOT_STARTED
             }
+            val activeCmdJson = prefs.getString(KEY_ACTIVE_COMMAND).first()
+            activeCommand = if (!activeCmdJson.isNullOrEmpty()) {
+                try {
+                    Json.decodeFromString<OmnipodDashPodStateManager.ActiveCommand>(activeCmdJson)
+                } catch (_: Exception) {
+                    null
+                }
+            } else {
+                null
+            }
         }
     }
 
@@ -188,6 +254,7 @@ class OmnipodDashPodStateManagerImpl(
         tempBasal = null
         basalProgram = null
         lastBolus = null
+        activeCommand = null
     }
 
     companion object {
@@ -199,5 +266,6 @@ class OmnipodDashPodStateManagerImpl(
         private const val KEY_ACTIVATED_AT = "omnipod_dash_activated_at"
         private const val KEY_LAST_NONCE = "omnipod_dash_last_nonce"
         private const val KEY_ACTIVATION_PROGRESS = "omnipod_dash_activation_progress"
+        private const val KEY_ACTIVE_COMMAND = "omnipod_dash_active_command"
     }
 }

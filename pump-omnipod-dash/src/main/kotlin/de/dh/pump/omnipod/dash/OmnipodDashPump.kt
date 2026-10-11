@@ -26,9 +26,13 @@ import de.dh.pump.omnipod.dash.db.DashHistoryEventType
 import de.dh.pump.omnipod.dash.model.OmnipodInsulinHistoryPoint
 import de.dh.pump.omnipod.protocol.ble.OmnipodDashBleManager
 import de.dh.pump.omnipod.protocol.command.GetStatusCommand
+import de.dh.pump.omnipod.protocol.command.ProgramBasalCommand
 import de.dh.pump.omnipod.protocol.command.ProgramBolusCommand
 import de.dh.pump.omnipod.protocol.command.ProgramTempBasalCommand
 import de.dh.pump.omnipod.protocol.command.StopDeliveryCommand
+import de.dh.pump.omnipod.protocol.definition.BasalProgram
+import de.dh.pump.omnipod.protocol.definition.ProgramReminder
+import de.dh.pump.omnipod.protocol.response.DefaultStatusResponse
 import de.dh.pump.omnipod.protocol.state.OmnipodDashPodStateManager
 import de.dh.pump.omnipod.protocol.util.PodPulseCalculator
 import de.dh.pump.omnipod.protocol.util.ProfileToBasalScheduleConverter
@@ -38,6 +42,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.util.Date
 import java.util.concurrent.TimeUnit
 
 data class OmnipodDashStatusData(
@@ -152,121 +157,225 @@ class OmnipodDashPump(
     }
 
     override suspend fun bolus(amount: InsulinAmount, bolusId: String?) {
+        val seq = nextSequenceNumber()
         val pulseCount = PodPulseCalculator.unitsToPulses(amount.iu)
+
+        podStateManager.createActiveCommand(
+            sequenceNumber = seq,
+            commandType = OmnipodDashPodStateManager.ActiveCommandType.BOLUS,
+            requestedUnits = amount.iu,
+            pulseCount = pulseCount
+        )
+        podStateManager.saveToPreferences()
+
         val cmd = ProgramBolusCommand(
             uniqueId = podStateManager.uniqueId ?: 0,
-            sequenceNumber = nextSequenceNumber(),
+            sequenceNumber = seq,
             nonce = getNonce(),
             pulseCount = pulseCount
         )
-        bleManager.sendCommand(cmd).getOrThrow()
 
-        val now = Timestamp.now()
-        _bolusStatus.value = BolusStatus(
-            state = BolusDeliveryState.DELIVERING,
-            bolusId = bolusId,
-            targetAmount = amount,
-            deliveredAmount = InsulinAmount.ZERO,
-            timestamp = now
-        )
-        _bolusEvents.emit(
-            BolusEvent.Started(
+        try {
+            bleManager.sendCommand(cmd).getOrThrow()
+            podStateManager.clearActiveCommand()
+            podStateManager.saveToPreferences()
+
+            val now = Timestamp.now()
+            _bolusStatus.value = BolusStatus(
+                state = BolusDeliveryState.DELIVERING,
                 bolusId = bolusId,
                 targetAmount = amount,
+                deliveredAmount = InsulinAmount.ZERO,
                 timestamp = now
             )
-        )
-        logEvent(DashHistoryEventType.BOLUS, "Programmed bolus of ${amount.iu} U", amount.iu)
+            _bolusEvents.emit(
+                BolusEvent.Started(
+                    bolusId = bolusId,
+                    targetAmount = amount,
+                    timestamp = now
+                )
+            )
+            logEvent(DashHistoryEventType.BOLUS, "Programmed bolus of ${amount.iu} U", amount.iu)
+        } catch (e: Exception) {
+            throw e
+        }
     }
 
     override suspend fun stopBolus() {
+        val seq = nextSequenceNumber()
+        podStateManager.createActiveCommand(
+            sequenceNumber = seq,
+            commandType = OmnipodDashPodStateManager.ActiveCommandType.STOP_DELIVERY
+        )
+        podStateManager.saveToPreferences()
+
         val cmd = StopDeliveryCommand(
             uniqueId = podStateManager.uniqueId ?: 0,
-            sequenceNumber = nextSequenceNumber(),
+            sequenceNumber = seq,
             nonce = getNonce(),
             stopBasal = false,
             stopBolus = true,
             stopTempBasal = false
         )
-        bleManager.sendCommand(cmd).getOrThrow()
 
-        val current = _bolusStatus.value
-        val now = Timestamp.now()
-        _bolusStatus.value = current.copy(state = BolusDeliveryState.STOPPED)
-        _bolusEvents.emit(
-            BolusEvent.Stopped(
-                bolusId = current.bolusId,
-                targetAmount = current.targetAmount,
-                deliveredAmount = current.deliveredAmount,
-                timestamp = now
+        try {
+            bleManager.sendCommand(cmd).getOrThrow()
+            podStateManager.clearActiveCommand()
+            podStateManager.saveToPreferences()
+
+            val current = _bolusStatus.value
+            val now = Timestamp.now()
+            _bolusStatus.value = current.copy(state = BolusDeliveryState.STOPPED)
+            _bolusEvents.emit(
+                BolusEvent.Stopped(
+                    bolusId = current.bolusId,
+                    targetAmount = current.targetAmount,
+                    deliveredAmount = current.deliveredAmount,
+                    timestamp = now
+                )
             )
-        )
-        logEvent(DashHistoryEventType.STOP_BOLUS, "Stopped running bolus", 0.0)
+            logEvent(DashHistoryEventType.STOP_BOLUS, "Stopped running bolus", 0.0)
+        } catch (e: Exception) {
+            throw e
+        }
     }
 
     override suspend fun tempBasal(percent: Int, durationHours: Int) {
+        val seq = nextSequenceNumber()
         val pulseCount = (percent * 1).toShort()
         val durationHalfHours = (durationHours * 2).toShort()
+
+        podStateManager.createActiveCommand(
+            sequenceNumber = seq,
+            commandType = OmnipodDashPodStateManager.ActiveCommandType.TEMP_BASAL,
+            requestedUnits = percent / 100.0,
+            pulseCount = pulseCount
+        )
+        podStateManager.saveToPreferences()
+
         val cmd = ProgramTempBasalCommand(
             uniqueId = podStateManager.uniqueId ?: 0,
-            sequenceNumber = nextSequenceNumber(),
+            sequenceNumber = seq,
             nonce = getNonce(),
             pulseCount = pulseCount,
             durationHalfHours = durationHalfHours
         )
-        bleManager.sendCommand(cmd).getOrThrow()
 
-        _basalStatus.value = BasalStatus(
-            activeRate = InsulinAmount(percent / 100.0),
-            isTempBasal = true,
-            tempBasalPercent = percent,
-            isSuspended = false
-        )
-        logEvent(DashHistoryEventType.TEMP_BASAL, "Started temp basal $percent% for $durationHours h", 0.0)
+        try {
+            bleManager.sendCommand(cmd).getOrThrow()
+            podStateManager.clearActiveCommand()
+            podStateManager.saveToPreferences()
+
+            _basalStatus.value = BasalStatus(
+                activeRate = InsulinAmount(percent / 100.0),
+                isTempBasal = true,
+                tempBasalPercent = percent,
+                isSuspended = false
+            )
+            logEvent(DashHistoryEventType.TEMP_BASAL, "Started temp basal $percent% for $durationHours h", 0.0)
+        } catch (e: Exception) {
+            throw e
+        }
     }
 
     override suspend fun cancelTempBasal() {
+        val seq = nextSequenceNumber()
+        podStateManager.createActiveCommand(
+            sequenceNumber = seq,
+            commandType = OmnipodDashPodStateManager.ActiveCommandType.STOP_DELIVERY
+        )
+        podStateManager.saveToPreferences()
+
         val cmd = StopDeliveryCommand(
             uniqueId = podStateManager.uniqueId ?: 0,
-            sequenceNumber = nextSequenceNumber(),
+            sequenceNumber = seq,
             nonce = getNonce(),
             stopBasal = false,
             stopBolus = false,
             stopTempBasal = true
         )
-        bleManager.sendCommand(cmd).getOrThrow()
-        _basalStatus.value = BasalStatus(isTempBasal = false)
-        logEvent(DashHistoryEventType.CANCEL_TEMP_BASAL, "Cancelled active temp basal", 0.0)
+
+        try {
+            bleManager.sendCommand(cmd).getOrThrow()
+            podStateManager.clearActiveCommand()
+            podStateManager.saveToPreferences()
+
+            _basalStatus.value = BasalStatus(isTempBasal = false)
+            logEvent(DashHistoryEventType.CANCEL_TEMP_BASAL, "Cancelled active temp basal", 0.0)
+        } catch (e: Exception) {
+            throw e
+        }
     }
 
     override suspend fun setSuspend(suspended: Boolean) {
+        val seq = nextSequenceNumber()
+        podStateManager.createActiveCommand(
+            sequenceNumber = seq,
+            commandType = OmnipodDashPodStateManager.ActiveCommandType.STOP_DELIVERY
+        )
+        podStateManager.saveToPreferences()
+
         val cmd = StopDeliveryCommand(
             uniqueId = podStateManager.uniqueId ?: 0,
-            sequenceNumber = nextSequenceNumber(),
+            sequenceNumber = seq,
             nonce = getNonce(),
             stopBasal = suspended,
             stopBolus = suspended,
             stopTempBasal = suspended
         )
-        bleManager.sendCommand(cmd).getOrThrow()
-        _basalStatus.value = _basalStatus.value.copy(isSuspended = suspended)
-        _pumpStatus.value = OmnipodDashStatusData(pumpSuspended = suspended)
-        logEvent(
-            if (suspended) DashHistoryEventType.SUSPEND else DashHistoryEventType.RESUME,
-            "Delivery suspended: $suspended",
-            0.0
-        )
+
+        try {
+            bleManager.sendCommand(cmd).getOrThrow()
+            podStateManager.clearActiveCommand()
+            podStateManager.saveToPreferences()
+
+            _basalStatus.value = _basalStatus.value.copy(isSuspended = suspended)
+            _pumpStatus.value = OmnipodDashStatusData(pumpSuspended = suspended)
+            logEvent(
+                if (suspended) DashHistoryEventType.SUSPEND else DashHistoryEventType.RESUME,
+                "Delivery suspended: $suspended",
+                0.0
+            )
+        } catch (e: Exception) {
+            throw e
+        }
     }
 
     override suspend fun setProfile(profile: InsulinProfile) {
+        val seq = nextSequenceNumber()
         val schedulePulses = ProfileToBasalScheduleConverter.convertProfileToHalfHourPulses(profile)
         val currentRate = profile.basalBlocks.firstOrNull()?.amount ?: 0.0
-        _basalStatus.value = _basalStatus.value.copy(
-            activeRate = InsulinAmount(currentRate),
-            isTempBasal = false,
-            isSuspended = false
+
+        podStateManager.createActiveCommand(
+            sequenceNumber = seq,
+            commandType = OmnipodDashPodStateManager.ActiveCommandType.BASAL_SCHEDULE
         )
-        logEvent(DashHistoryEventType.PROFILE, "Set active basal profile: ${profile.name} (${schedulePulses.size} segments)", 0.0)
+        podStateManager.saveToPreferences()
+
+        val basalProgram = createBasalProgramFromProfile(profile)
+        val cmd = ProgramBasalCommand.create(
+            uniqueId = podStateManager.uniqueId ?: 0,
+            sequenceNumber = seq,
+            nonce = getNonce(),
+            basalProgram = basalProgram,
+            programReminder = ProgramReminder(atStart = false, atEnd = false, atInterval = 0),
+            currentTime = Date()
+        )
+
+        try {
+            bleManager.sendCommand(cmd).getOrThrow()
+            podStateManager.clearActiveCommand()
+            podStateManager.saveToPreferences()
+
+            _basalStatus.value = _basalStatus.value.copy(
+                activeRate = InsulinAmount(currentRate),
+                isTempBasal = false,
+                isSuspended = false
+            )
+            logEvent(DashHistoryEventType.PROFILE, "Set active basal profile: ${profile.name} (${schedulePulses.size} segments)", 0.0)
+        } catch (e: Exception) {
+            throw e
+        }
     }
 
     override suspend fun syncHistory() {
@@ -305,10 +414,82 @@ class OmnipodDashPump(
             uniqueId = podStateManager.uniqueId ?: 0,
             sequenceNumber = nextSequenceNumber()
         )
-        bleManager.sendCommand(cmd).getOrThrow()
+        val sendResult = bleManager.sendCommand(cmd)
+        val responseBytes = sendResult.getOrThrow()
+
+        if (responseBytes.size >= 10) {
+            val statusResponse = DefaultStatusResponse(responseBytes)
+            podStateManager.updateFromDefaultStatusResponse(statusResponse)
+
+            val unconfirmedCmd = podStateManager.activeCommand
+            if (unconfirmedCmd != null) {
+                handleActiveCommandRecovery(unconfirmedCmd, statusResponse)
+            }
+        }
+
         _pumpStatus.value = OmnipodDashStatusData(
+            pumpSuspended = podStateManager.isSuspended,
             lastSyncTimestamp = Timestamp.now()
         )
+    }
+
+    private suspend fun handleActiveCommandRecovery(
+        cmd: OmnipodDashPodStateManager.ActiveCommand,
+        response: DefaultStatusResponse
+    ) {
+        val pulsesDeliveredAtStart = cmd.pulsesDeliveredAtStart ?: 0
+        val totalPulsesNow = response.totalPulsesDelivered
+        val deliveredPulseDelta = totalPulsesNow - pulsesDeliveredAtStart
+
+        val commandExecuted = deliveredPulseDelta > 0 || response.podStatus.isRunning()
+
+        if (commandExecuted) {
+            when (cmd.commandType) {
+                OmnipodDashPodStateManager.ActiveCommandType.BOLUS -> {
+                    val deliveredUnits = PodPulseCalculator.pulsesToUnits(deliveredPulseDelta.toShort())
+                    logEvent(
+                        DashHistoryEventType.BOLUS,
+                        "Recovered unconfirmed bolus execution ($deliveredUnits U delivered)",
+                        deliveredUnits
+                    )
+                }
+                OmnipodDashPodStateManager.ActiveCommandType.TEMP_BASAL -> {
+                    logEvent(
+                        DashHistoryEventType.TEMP_BASAL,
+                        "Recovered unconfirmed temp basal execution",
+                        0.0
+                    )
+                }
+                OmnipodDashPodStateManager.ActiveCommandType.STOP_DELIVERY -> {
+                    logEvent(
+                        DashHistoryEventType.SUSPEND,
+                        "Recovered unconfirmed stop delivery execution",
+                        0.0
+                    )
+                }
+                OmnipodDashPodStateManager.ActiveCommandType.BASAL_SCHEDULE -> {
+                    logEvent(
+                        DashHistoryEventType.PROFILE,
+                        "Recovered unconfirmed basal profile update execution",
+                        0.0
+                    )
+                }
+            }
+        }
+        podStateManager.clearActiveCommand()
+        podStateManager.saveToPreferences()
+    }
+
+    private fun createBasalProgramFromProfile(profile: InsulinProfile): BasalProgram {
+        val pulses = ProfileToBasalScheduleConverter.convertProfileToHalfHourPulses(profile)
+        val segments = pulses.mapIndexed { index, pulseCount ->
+            BasalProgram.Segment(
+                startSlotIndex = (index).toShort(),
+                endSlotIndex = (index + 1).toShort(),
+                basalRateInHundredthUnitsPerHour = ((pulseCount.toDouble() / 20.0) * 100).toInt()
+            )
+        }
+        return de.dh.pump.omnipod.protocol.definition.BasalProgram(segments)
     }
 
     override fun stop() {
