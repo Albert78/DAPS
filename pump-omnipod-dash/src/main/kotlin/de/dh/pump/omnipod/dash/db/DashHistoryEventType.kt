@@ -10,5 +10,6 @@ enum class DashHistoryEventType {
     PROFILE,
     STATUS_UPDATE,
     POD_ACTIVATED,
-    POD_DEACTIVATED
+    POD_DEACTIVATED,
+    ALARM_OCCURRED
 }

@@ -2,11 +2,13 @@ package de.dh.pump.omnipod.protocol.state
 
 import de.dh.daps.common.model.PluginPreferences
 import de.dh.pump.omnipod.protocol.definition.ActivationProgress
+import de.dh.pump.omnipod.protocol.definition.AlarmType
 import de.dh.pump.omnipod.protocol.definition.AlertType
 import de.dh.pump.omnipod.protocol.definition.BasalProgram
 import de.dh.pump.omnipod.protocol.definition.BolusType
 import de.dh.pump.omnipod.protocol.definition.DeliveryStatus
 import de.dh.pump.omnipod.protocol.definition.PodStatus
+import de.dh.pump.omnipod.protocol.response.AlarmStatusResponse
 import de.dh.pump.omnipod.protocol.response.DefaultStatusResponse
 import de.dh.pump.omnipod.protocol.response.SetUniqueIdResponse
 import de.dh.pump.omnipod.protocol.response.VersionResponse
@@ -40,6 +42,10 @@ interface OmnipodDashPodStateManager {
     val minutesSinceActivation: Short?
     val activeAlerts: EnumSet<AlertType>?
 
+    var lastAlarmType: AlarmType?
+    var lastPdmRef: String?
+    var lastFaultEventByte: Byte?
+
     var tempBasal: TempBasal?
     var basalProgram: BasalProgram?
     var lastBolus: LastBolus?
@@ -56,6 +62,7 @@ interface OmnipodDashPodStateManager {
     var basalCorrectionInProgress: Boolean
 
     fun updateFromDefaultStatusResponse(response: DefaultStatusResponse)
+    fun updateFromAlarmStatusResponse(response: AlarmStatusResponse)
     fun updateFromVersionResponse(response: VersionResponse)
     fun updateFromSetUniqueIdResponse(response: SetUniqueIdResponse)
     fun recoverActivationFromPodStatus(status: PodStatus): ActivationProgress
@@ -144,6 +151,10 @@ class OmnipodDashPodStateManagerImpl(
     override var deliveryStatus: DeliveryStatus? = null
     override var minutesSinceActivation: Short? = null
     override var activeAlerts: EnumSet<AlertType>? = null
+
+    override var lastAlarmType: AlarmType? = null
+    override var lastPdmRef: String? = null
+    override var lastFaultEventByte: Byte? = null
 
     override var tempBasal: OmnipodDashPodStateManager.TempBasal? = null
     override var basalProgram: BasalProgram? = null
@@ -364,6 +375,21 @@ class OmnipodDashPodStateManagerImpl(
         recoverActivationFromPodStatus(response.podStatus)
     }
 
+    override fun updateFromAlarmStatusResponse(response: AlarmStatusResponse) {
+        val now = System.currentTimeMillis()
+        podStatus = response.podStatus
+        deliveryStatus = response.deliveryStatus
+        pulsesDelivered = response.totalPulsesDelivered
+        reservoirPulsesRemaining = response.reservoirPulsesRemaining
+        minutesSinceActivation = response.minutesSinceActivation
+        activeAlerts = response.activeAlerts
+        lastAlarmType = response.alarmType
+        lastPdmRef = response.pdmRef
+        lastFaultEventByte = response.rawErrorEventByte
+        lastUpdatedSystem = now
+        recoverActivationFromPodStatus(response.podStatus)
+    }
+
     override fun updateFromVersionResponse(response: VersionResponse) {
         podStatus = response.podStatus
         lotNumber = response.lotNumber
@@ -502,6 +528,9 @@ class OmnipodDashPodStateManagerImpl(
         deliveryStatus = null
         minutesSinceActivation = null
         activeAlerts = null
+        lastAlarmType = null
+        lastPdmRef = null
+        lastFaultEventByte = null
         tempBasal = null
         basalProgram = null
         lastBolus = null

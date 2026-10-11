@@ -31,14 +31,21 @@ import de.dh.pump.omnipod.protocol.command.GetStatusCommand
 import de.dh.pump.omnipod.protocol.command.ProgramBasalCommand
 import de.dh.pump.omnipod.protocol.command.ProgramBolusCommand
 import de.dh.pump.omnipod.protocol.command.ProgramTempBasalCommand
+import de.dh.pump.omnipod.protocol.command.SilenceAlertsCommand
 import de.dh.pump.omnipod.protocol.command.StopDeliveryCommand
+import de.dh.pump.omnipod.protocol.definition.AlarmType
+import de.dh.pump.omnipod.protocol.definition.AlertType
 import de.dh.pump.omnipod.protocol.definition.BasalProgram
 import de.dh.pump.omnipod.protocol.definition.BolusType
+import de.dh.pump.omnipod.protocol.definition.PodStatus
 import de.dh.pump.omnipod.protocol.definition.ProgramReminder
+import de.dh.pump.omnipod.protocol.response.AlarmStatusResponse
 import de.dh.pump.omnipod.protocol.response.DefaultStatusResponse
+import de.dh.pump.omnipod.protocol.response.ResponseParser
 import de.dh.pump.omnipod.protocol.state.OmnipodDashPodStateManager
 import de.dh.pump.omnipod.protocol.util.PodPulseCalculator
 import de.dh.pump.omnipod.protocol.util.ProfileToBasalScheduleConverter
+import java.util.EnumSet
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -550,22 +557,106 @@ class OmnipodDashPump(
         val sendResult = bleManager.sendCommand(cmd)
         val responseBytes = sendResult.getOrThrow()
 
-        if (responseBytes.size >= 10) {
-            val statusResponse = DefaultStatusResponse(responseBytes)
-            podStateManager.updateFromDefaultStatusResponse(statusResponse)
+        try {
+            when (val response = ResponseParser.parseResponse(responseBytes)) {
+                is AlarmStatusResponse -> {
+                    podStateManager.updateFromAlarmStatusResponse(response)
+                    handlePodFault(response)
+                }
+                is DefaultStatusResponse -> {
+                    podStateManager.updateFromDefaultStatusResponse(response)
 
-            val unconfirmedCmd = podStateManager.activeCommand
-            if (unconfirmedCmd != null) {
-                handleActiveCommandRecovery(unconfirmedCmd, statusResponse)
-            }
+                    val unconfirmedCmd = podStateManager.activeCommand
+                    if (unconfirmedCmd != null) {
+                        handleActiveCommandRecovery(unconfirmedCmd, response)
+                    }
 
-            if (podStateManager.needsBasalCorrection()) {
-                deliverBasalCorrection()
+                    if (podStateManager.needsBasalCorrection()) {
+                        deliverBasalCorrection()
+                    }
+
+                    if (podStateManager.podStatus == PodStatus.ALARM || podStateManager.podStatus == PodStatus.LUMP_OF_COAL) {
+                        handlePodFault(null)
+                    }
+                }
+                else -> {}
             }
+        } catch (_: Exception) {
+            // Incomplete or unparseable response
+        }
+
+        updateAlertsAndPumpStatus()
+    }
+
+    suspend fun silenceAlerts(alertTypes: EnumSet<AlertType> = podStateManager.activeAlerts ?: EnumSet.noneOf(AlertType::class.java)) {
+        if (alertTypes.isEmpty()) return
+        val seq = nextSequenceNumber()
+        val cmd = SilenceAlertsCommand(
+            uniqueId = podStateManager.uniqueId ?: 0,
+            sequenceNumber = seq,
+            nonce = getNonce(),
+            alertTypes = alertTypes
+        )
+        try {
+            val responseBytes = bleManager.sendCommand(cmd).getOrThrow()
+            when (val response = ResponseParser.parseResponse(responseBytes)) {
+                is AlarmStatusResponse -> {
+                    podStateManager.updateFromAlarmStatusResponse(response)
+                    handlePodFault(response)
+                }
+                is DefaultStatusResponse -> {
+                    podStateManager.updateFromDefaultStatusResponse(response)
+                }
+                else -> {}
+            }
+            logEvent(DashHistoryEventType.ALARM_OCCURRED, "Silenced active alerts: $alertTypes", 0.0)
+        } catch (e: Exception) {
+            throw e
+        }
+    }
+
+    private suspend fun handlePodFault(alarmResponse: AlarmStatusResponse?) {
+        val podStatus = podStateManager.podStatus
+        val alarmType = alarmResponse?.alarmType ?: podStateManager.lastAlarmType
+        val isOcclusion = alarmResponse?.occlusionAlarm == true || alarmType == AlarmType.ALARM_OCCLUDED
+
+        _alerts.value = _alerts.value.copy(
+            occlusion = isOcclusion,
+            other = !isOcclusion
+        )
+
+        _isExpired.value = true
+
+        val pdmRef = alarmResponse?.pdmRef ?: podStateManager.lastPdmRef ?: "Fault Code: ${alarmType?.name ?: "Unknown"}"
+        logEvent(
+            DashHistoryEventType.ALARM_OCCURRED,
+            "Pod fault occurred: $pdmRef (Status: $podStatus)",
+            0.0
+        )
+    }
+
+    private fun updateAlertsAndPumpStatus() {
+        val isPodFault = podStateManager.podStatus == PodStatus.ALARM ||
+                podStateManager.podStatus == PodStatus.LUMP_OF_COAL ||
+                podStateManager.podStatus == PodStatus.DEACTIVATED
+
+        val hasOcclusion = podStateManager.lastAlarmType == AlarmType.ALARM_OCCLUDED
+        val resPulses = podStateManager.reservoirPulsesRemaining ?: 0
+        val hasLowReservoir = resPulses <= 20
+
+        _alerts.value = PumpAlerts(
+            reservoirLow = hasLowReservoir,
+            occlusion = hasOcclusion,
+            other = isPodFault && !hasOcclusion
+        )
+
+        if (isPodFault) {
+            _isExpired.value = true
         }
 
         _pumpStatus.value = OmnipodDashStatusData(
-            pumpSuspended = podStateManager.isSuspended,
+            pumpSuspended = podStateManager.isSuspended || isPodFault,
+            reservoirRemainingUnits = InsulinAmount(PodPulseCalculator.pulsesToUnits(resPulses)),
             lastSyncTimestamp = Timestamp.now()
         )
     }
