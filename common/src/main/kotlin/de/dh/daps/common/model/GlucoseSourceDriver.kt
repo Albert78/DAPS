@@ -42,10 +42,11 @@ interface GlucoseSourceDriver {
 
     /**
      * Renders the driver's custom UI workflow for initial setup, transmitter pairing, or configuration.
-     * When setup finishes or is cancelled, [onNavigateUp] is invoked to return to the parent screen.
+     * When the driver is explicitly reset, cancelled, or unbound by the user, [onDriverReset] is invoked
+     * to notify the host container to restore the driver selection list.
      */
     @Composable
     fun SetupScreen(
-        onNavigateUp: () -> Unit,
+        onDriverReset: () -> Unit,
     )
 }

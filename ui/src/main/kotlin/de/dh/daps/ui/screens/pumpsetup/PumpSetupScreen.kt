@@ -96,8 +96,21 @@ fun PumpSetupContent(
     val selectedDriver = uiState.selectedDriver
     val titleText = selectedDriver?.displayName?.asString() ?: stringResource(id = R.string.pump_setup_screen_title)
 
-    BackHandler(enabled = selectedDriver != null) {
-        onSelectDriver(null)
+    val selectedDriverState = selectedDriver?.lifecycleState?.collectAsStateWithLifecycle()
+    val driverLifecycleState = selectedDriverState?.value
+
+    val isNoDeviceState = selectedDriver != null && (driverLifecycleState is DeviceLifecycleState.NoDevice)
+
+    val handleBack = {
+        if (isNoDeviceState) {
+            onSelectDriver(null)
+        } else {
+            onNavigateUp()
+        }
+    }
+
+    BackHandler(enabled = true) {
+        handleBack()
     }
 
     Scaffold(
@@ -105,15 +118,15 @@ fun PumpSetupContent(
             TopAppBar(
                 title = screenTitle(titleText),
                 navigationIcon = {
-                    if (selectedDriver == null) {
-                        IconButton(onClick = onNavigateUp) {
+                    if (selectedDriver == null || isNoDeviceState) {
+                        IconButton(onClick = handleBack) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = stringResource(id = CommonR.string.cd_navigate_up)
                             )
                         }
                     } else {
-                        IconButton(onClick = { onSelectDriver(null) }) {
+                        IconButton(onClick = handleBack) {
                             Icon(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = stringResource(id = CommonR.string.cd_close)
@@ -138,7 +151,7 @@ fun PumpSetupContent(
                 ) {
                     ScopedDriverSetupContainer(driverId = selectedDriver.driverId) {
                         selectedDriver.SetupScreen(
-                            onNavigateUp = {
+                            onDriverReset = {
                                 onSelectDriver(null)
                             }
                         )
@@ -293,7 +306,7 @@ private class PreviewPumpDriver(
 
     @Composable
     override fun SetupScreen(
-        onNavigateUp: () -> Unit
+        onDriverReset: () -> Unit
     ) {
         setupScreenContent()
     }

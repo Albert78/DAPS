@@ -81,11 +81,11 @@ class SimBodyInsulinPumpDriver(
      */
     @Composable
     override fun SetupScreen(
-        onNavigateUp: () -> Unit,
+        onDriverReset: () -> Unit,
     ) {
         SimBodyPumpSetupScreen(
             driver = this,
-            onNavigateUp = onNavigateUp,
+            onDriverReset = onDriverReset,
         )
     }
 

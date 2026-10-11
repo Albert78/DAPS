@@ -92,11 +92,11 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
 
     @Composable
     override fun SetupScreen(
-        onNavigateUp: () -> Unit
+        onDriverReset: () -> Unit
     ) {
         OmnipodDashSetupScreen(
             driver = this,
-            onNavigateUp = onNavigateUp
+            onDriverReset = onDriverReset
         )
     }
 

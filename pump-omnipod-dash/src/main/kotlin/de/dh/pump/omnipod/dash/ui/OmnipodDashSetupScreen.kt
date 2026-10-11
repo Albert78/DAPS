@@ -83,7 +83,7 @@ enum class ActivationStep(
 @Composable
 fun OmnipodDashSetupScreen(
     driver: OmnipodDashInsulinPumpDriver,
-    onNavigateUp: () -> Unit,
+    onDriverReset: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: OmnipodDashSetupViewModel = viewModel(
         factory = OmnipodDashSetupViewModel.Companion.Factory(
@@ -101,7 +101,10 @@ fun OmnipodDashSetupScreen(
             OmnipodDashBoundContent(
                 displayName = state.displayName.asString(),
                 deviceId = state.deviceId,
-                onUnbind = { viewModel.unbind(driver) },
+                onUnbind = {
+                    viewModel.unbind(driver)
+                    onDriverReset()
+                },
                 modifier = modifier
             )
         }
@@ -115,10 +118,10 @@ fun OmnipodDashSetupScreen(
                 currentStepIndex = currentStepIndex,
                 isActivating = isActivating,
                 activationError = activationError,
-                onNextStep = { viewModel.nextStep(driver, onNavigateUp) },
+                onNextStep = { viewModel.nextStep(driver) },
                 onCancel = {
                     driver.cancelSetup()
-                    onNavigateUp()
+                    onDriverReset()
                 },
                 modifier = modifier
             )

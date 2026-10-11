@@ -78,11 +78,11 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
      */
     @Composable
     override fun SetupScreen(
-        onNavigateUp: () -> Unit,
+        onDriverReset: () -> Unit,
     ) {
         DanaISetupScreen(
             driver = this,
-            onNavigateUp = onNavigateUp,
+            onDriverReset = onDriverReset,
         )
     }
 

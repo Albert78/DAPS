@@ -63,7 +63,7 @@ import de.dh.pump.danai.core.connection.DanaScanResult
 @Composable
 fun DanaISetupScreen(
     driver: DanaIInsulinPumpDriver,
-    onNavigateUp: () -> Unit,
+    onDriverReset: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DanaISetupViewModel = viewModel(
         factory = DanaISetupViewModel.Companion.Factory(
@@ -82,7 +82,10 @@ fun DanaISetupScreen(
             DanaIBoundContent(
                 displayName = state.displayName.asString(),
                 deviceId = state.deviceId,
-                onUnbind = { viewModel.unbind(driver) },
+                onUnbind = {
+                    viewModel.unbind(driver)
+                    onDriverReset()
+                },
                 modifier = modifier
             )
         }
@@ -101,8 +104,7 @@ fun DanaISetupScreen(
                 onPairClick = { scanResult ->
                     viewModel.pairAndBind(
                         driver = driver,
-                        scanResult = scanResult,
-                        onSuccess = onNavigateUp
+                        scanResult = scanResult
                     )
                 },
                 modifier = modifier

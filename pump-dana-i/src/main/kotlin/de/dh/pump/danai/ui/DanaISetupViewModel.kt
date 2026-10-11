@@ -39,7 +39,7 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
     fun pairAndBind(
         driver: DanaIInsulinPumpDriver,
         scanResult: DanaScanResult,
-        onSuccess: () -> Unit
+        onSuccess: (() -> Unit)? = null
     ) {
         viewModelScope.launch {
             _isConnecting.value = true
@@ -52,7 +52,7 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
                     deviceAddress = scanResult.address,
                 )
                 _isConnecting.value = false
-                onSuccess()
+                onSuccess?.invoke()
             } catch (e: Exception) {
                 _isConnecting.value = false
                 _connectError.value = e.message ?: getApplication<Application>().getString(R.string.danai_pump_setup_connect_failed)

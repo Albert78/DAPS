@@ -81,11 +81,11 @@ class SimBodyGlucoseSourceDriver(
      */
     @Composable
     override fun SetupScreen(
-        onNavigateUp: () -> Unit,
+        onDriverReset: () -> Unit,
     ) {
         SimBodyCgmSetupScreen(
             driver = this,
-            onNavigateUp = onNavigateUp,
+            onDriverReset = onDriverReset,
         )
     }
 

@@ -103,7 +103,7 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
      */
     @Composable
     override fun SetupScreen(
-        onNavigateUp: () -> Unit,
+        onDriverReset: () -> Unit,
     ) {
         val currentState by lifecycleState.collectAsStateWithLifecycle()
         var showUnbindDialog by remember { mutableStateOf(false) }
@@ -204,7 +204,6 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
                                     }
                                 }
                                 bindDevice(deviceId, deviceName)
-                                onNavigateUp()
                             },
                             modifier = Modifier.fillMaxWidth(),
                         ) {

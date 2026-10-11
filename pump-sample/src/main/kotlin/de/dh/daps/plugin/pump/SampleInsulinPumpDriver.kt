@@ -204,7 +204,6 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
                                     }
                                 }
                                 bindDevice(deviceId, deviceName)
-                                onNavigateUp()
                             },
                             modifier = Modifier.fillMaxWidth(),
                         ) {

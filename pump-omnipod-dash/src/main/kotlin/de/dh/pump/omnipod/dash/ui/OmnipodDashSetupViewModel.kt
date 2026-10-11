@@ -38,7 +38,7 @@ class OmnipodDashSetupViewModel(application: Application) : AndroidViewModel(app
 
     fun nextStep(
         driver: OmnipodDashInsulinPumpDriver,
-        onSuccess: () -> Unit
+        onSuccess: (() -> Unit)? = null
     ) {
         val steps = ActivationStep.entries
         val currentIndex = _currentStepIndex.value
@@ -72,7 +72,7 @@ class OmnipodDashSetupViewModel(application: Application) : AndroidViewModel(app
                         driver.completeActivation(podStateManager)
 
                         _isActivating.value = false
-                        onSuccess()
+                        onSuccess?.invoke()
                     } catch (e: Exception) {
                         _isActivating.value = false
                         _activationError.value = e.message

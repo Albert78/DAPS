@@ -193,7 +193,7 @@ class ReceiverGlucosePlugin(
      */
     @Composable
     override fun SetupScreen(
-        onNavigateUp: () -> Unit,
+        onDriverReset: () -> Unit,
     ) {
         val currentState by lifecycleState.collectAsStateWithLifecycle()
         var showUnbindDialog by remember { mutableStateOf(false) }
@@ -327,7 +327,6 @@ class ReceiverGlucosePlugin(
                                     }
                                 }
                                 bindSource(selectedSourceType)
-                                onNavigateUp()
                             },
                             modifier = Modifier.fillMaxWidth(),
                         ) {
@@ -347,7 +346,10 @@ class ReceiverGlucosePlugin(
                     PrimaryButton(
                         onClick = {
                             showUnbindDialog = false
-                            scope.launch { unbindDevice() }
+                            scope.launch {
+                                unbindDevice()
+                                onDriverReset()
+                            }
                         },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.error,

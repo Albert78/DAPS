@@ -41,7 +41,7 @@ import de.dh.daps.ui.common.theme.AppPreview
 @Composable
 fun SimBodyCgmSetupScreen(
     driver: SimBodyGlucoseSourceDriver,
-    onNavigateUp: () -> Unit,
+    onDriverReset: () -> Unit,
 ) {
     val currentState by driver.lifecycleState.collectAsStateWithLifecycle()
 
@@ -49,10 +49,10 @@ fun SimBodyCgmSetupScreen(
         lifecycleState = currentState,
         onBind = {
             driver.bindDevice()
-            onNavigateUp()
         },
         onUnbind = {
             driver.unbindDevice()
+            onDriverReset()
         },
     )
 }
