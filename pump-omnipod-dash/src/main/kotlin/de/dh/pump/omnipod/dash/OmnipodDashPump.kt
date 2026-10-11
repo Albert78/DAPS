@@ -33,6 +33,7 @@ import de.dh.pump.omnipod.protocol.command.ProgramBolusCommand
 import de.dh.pump.omnipod.protocol.command.ProgramTempBasalCommand
 import de.dh.pump.omnipod.protocol.command.StopDeliveryCommand
 import de.dh.pump.omnipod.protocol.definition.BasalProgram
+import de.dh.pump.omnipod.protocol.definition.BolusType
 import de.dh.pump.omnipod.protocol.definition.ProgramReminder
 import de.dh.pump.omnipod.protocol.response.DefaultStatusResponse
 import de.dh.pump.omnipod.protocol.state.OmnipodDashPodStateManager
@@ -181,6 +182,14 @@ class OmnipodDashPump(
         val seq = nextSequenceNumber()
         val pulseCount = PodPulseCalculator.unitsToPulses(amount.iu)
 
+        podStateManager.lastBolus = OmnipodDashPodStateManager.LastBolus(
+            startTime = System.currentTimeMillis(),
+            requestedUnits = amount.iu,
+            bolusUnitsRemaining = amount.iu,
+            deliveryComplete = false,
+            bolusType = BolusType.DEFAULT
+        )
+
         podStateManager.createActiveCommand(
             sequenceNumber = seq,
             commandType = OmnipodDashPodStateManager.ActiveCommandType.BOLUS,
@@ -316,6 +325,11 @@ class OmnipodDashPump(
         try {
             bleManager.sendCommand(cmd).getOrThrow()
             podStateManager.clearActiveCommand()
+            podStateManager.tempBasal = OmnipodDashPodStateManager.TempBasal(
+                startTime = System.currentTimeMillis(),
+                rate = percent / 100.0,
+                durationInMinutes = (durationHours * 60).toShort()
+            )
             podStateManager.saveToPreferences()
 
             _basalStatus.value = BasalStatus(
@@ -350,6 +364,7 @@ class OmnipodDashPump(
         try {
             bleManager.sendCommand(cmd).getOrThrow()
             podStateManager.clearActiveCommand()
+            podStateManager.tempBasal = null
             podStateManager.saveToPreferences()
 
             _basalStatus.value = BasalStatus(isTempBasal = false)
@@ -417,6 +432,10 @@ class OmnipodDashPump(
         try {
             bleManager.sendCommand(cmd).getOrThrow()
             podStateManager.clearActiveCommand()
+            podStateManager.basalProgram = basalProgram
+            if (podStateManager.timeZoneOffset == null) {
+                podStateManager.updateTimeZone()
+            }
             podStateManager.saveToPreferences()
 
             _basalStatus.value = _basalStatus.value.copy(
@@ -428,6 +447,68 @@ class OmnipodDashPump(
         } catch (e: Exception) {
             throw e
         }
+    }
+
+    suspend fun deliverBasalCorrection(): Boolean {
+        if (!podStateManager.needsBasalCorrection()) return false
+
+        podStateManager.lastBasalCorrectionTime = System.currentTimeMillis()
+        podStateManager.basalCorrectionInProgress = true
+
+        val seq = nextSequenceNumber()
+        val pulseCount: Short = 1 // 1 pulse = 0.05 U
+
+        podStateManager.createActiveCommand(
+            sequenceNumber = seq,
+            commandType = OmnipodDashPodStateManager.ActiveCommandType.BOLUS,
+            requestedUnits = PodPulseCalculator.INSULIN_PER_PULSE_U,
+            pulseCount = pulseCount
+        )
+        podStateManager.saveToPreferences()
+
+        val cmd = ProgramBolusCommand(
+            uniqueId = podStateManager.uniqueId ?: 0,
+            sequenceNumber = seq,
+            nonce = getNonce(),
+            pulseCount = pulseCount
+        )
+
+        return try {
+            bleManager.sendCommand(cmd).getOrThrow()
+            podStateManager.clearActiveCommand()
+            podStateManager.saveToPreferences()
+
+            logEvent(
+                DashHistoryEventType.BOLUS,
+                "Delivered basal correction of 0.05 U (1 pulse)",
+                PodPulseCalculator.INSULIN_PER_PULSE_U
+            )
+            true
+        } catch (e: Exception) {
+            false
+        } finally {
+            podStateManager.basalCorrectionInProgress = false
+        }
+    }
+
+    suspend fun handleTimeChange(): Boolean {
+        podStateManager.updateTimeZone()
+        val currentProgram = podStateManager.basalProgram
+        if (currentProgram != null) {
+            val seq = nextSequenceNumber()
+            val cmd = ProgramBasalCommand.create(
+                uniqueId = podStateManager.uniqueId ?: 0,
+                sequenceNumber = seq,
+                nonce = getNonce(),
+                basalProgram = currentProgram,
+                programReminder = ProgramReminder(atStart = false, atEnd = false, atInterval = 0),
+                currentTime = Date()
+            )
+            bleManager.sendCommand(cmd).getOrThrow()
+            logEvent(DashHistoryEventType.PROFILE, "Resynchronized basal profile for time change", 0.0)
+        }
+        podStateManager.saveToPreferences()
+        return true
     }
 
     override suspend fun syncHistory() {
@@ -476,6 +557,10 @@ class OmnipodDashPump(
             val unconfirmedCmd = podStateManager.activeCommand
             if (unconfirmedCmd != null) {
                 handleActiveCommandRecovery(unconfirmedCmd, statusResponse)
+            }
+
+            if (podStateManager.needsBasalCorrection()) {
+                deliverBasalCorrection()
             }
         }
 
@@ -541,7 +626,7 @@ class OmnipodDashPump(
                 basalRateInHundredthUnitsPerHour = ((pulseCount.toDouble() / 20.0) * 100).toInt()
             )
         }
-        return de.dh.pump.omnipod.protocol.definition.BasalProgram(segments)
+        return BasalProgram(segments)
     }
 
     private suspend fun pollBolusProgress(

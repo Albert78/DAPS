@@ -10,10 +10,13 @@ import de.dh.pump.omnipod.protocol.definition.PodStatus
 import de.dh.pump.omnipod.protocol.response.DefaultStatusResponse
 import de.dh.pump.omnipod.protocol.response.SetUniqueIdResponse
 import de.dh.pump.omnipod.protocol.response.VersionResponse
+import de.dh.pump.omnipod.protocol.util.PodPulseCalculator
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.util.EnumSet
+import java.util.TimeZone
+import kotlin.math.roundToInt
 
 interface OmnipodDashPodStateManager {
     var activationProgress: ActivationProgress
@@ -42,6 +45,16 @@ interface OmnipodDashPodStateManager {
     var lastBolus: LastBolus?
     var activeCommand: ActiveCommand?
 
+    var timeZoneOffset: Int?
+    var lastUpdatedSystem: Long
+    var basalExpected: Double?
+    var bolusPulsesDelivered: Short?
+    val basalPulsesDelivered: Short?
+    val basalDelivered: Double
+    val basalDrift: Double
+    var lastBasalCorrectionTime: Long?
+    var basalCorrectionInProgress: Boolean
+
     fun updateFromDefaultStatusResponse(response: DefaultStatusResponse)
     fun updateFromVersionResponse(response: VersionResponse)
     fun updateFromSetUniqueIdResponse(response: SetUniqueIdResponse)
@@ -54,6 +67,23 @@ interface OmnipodDashPodStateManager {
         historyId: Long? = null
     ): ActiveCommand
     fun clearActiveCommand()
+
+    fun updateTimeZone()
+    fun integrateExpectedDelivery(
+        startTime: Long,
+        endTime: Long,
+        timeZoneOffset: Int?,
+        tempBasal: TempBasal?,
+        basalProgram: BasalProgram?
+    ): Double?
+    fun calculateBolusPulseIncrease(
+        previousTotalPulses: Short,
+        newTotalPulses: Short,
+        previousBolusPulsesRemaining: Short?,
+        newBolusPulsesRemaining: Short
+    ): Short
+    fun needsBasalCorrection(): Boolean
+
     suspend fun saveToPreferences()
     suspend fun loadFromPreferences()
     fun reset()
@@ -120,6 +150,138 @@ class OmnipodDashPodStateManagerImpl(
     override var lastBolus: OmnipodDashPodStateManager.LastBolus? = null
     override var activeCommand: OmnipodDashPodStateManager.ActiveCommand? = null
 
+    override var timeZoneOffset: Int? = null
+    override var lastUpdatedSystem: Long = System.currentTimeMillis()
+    override var basalExpected: Double? = null
+    override var bolusPulsesDelivered: Short? = null
+
+    override val basalPulsesDelivered: Short?
+        get() = pulsesDelivered?.let { total ->
+            bolusPulsesDelivered?.let { bolus ->
+                (total - bolus).coerceAtLeast(0).toShort()
+            }
+        }
+
+    override val basalDelivered: Double
+        get() = (basalPulsesDelivered?.toInt() ?: 0) * PodPulseCalculator.INSULIN_PER_PULSE_U
+
+    override val basalDrift: Double
+        get() = basalDelivered - (basalExpected ?: basalDelivered)
+
+    override var lastBasalCorrectionTime: Long? = null
+    override var basalCorrectionInProgress: Boolean = false
+
+    override fun updateTimeZone() {
+        val now = System.currentTimeMillis()
+        timeZoneOffset = TimeZone.getDefault().getOffset(now)
+    }
+
+    override fun integrateExpectedDelivery(
+        startTime: Long,
+        endTime: Long,
+        timeZoneOffset: Int?,
+        tempBasal: OmnipodDashPodStateManager.TempBasal?,
+        basalProgram: BasalProgram?
+    ): Double? {
+        if (timeZoneOffset == null) return null
+        if (startTime > endTime) return null
+        if (startTime == endTime) return 0.0
+
+        val boundaries = mutableSetOf(startTime, endTime)
+
+        tempBasal?.let { tb ->
+            val tempStart = tb.startTime
+            val tempEnd = tb.startTime + tb.durationInMinutes * 60_000L
+            if (tempStart in startTime until endTime) boundaries.add(tempStart)
+            if (tempEnd in startTime until endTime) boundaries.add(tempEnd)
+        }
+
+        basalProgram?.segments?.forEach { segment ->
+            val dayStartLocal = ((startTime + timeZoneOffset) / 86400_000L) * 86400_000L - timeZoneOffset
+            var segmentStart = dayStartLocal + segment.startSlotIndex.toLong() * 30 * 60_000L
+
+            if (segmentStart <= startTime) {
+                segmentStart += 86400_000L
+            }
+
+            while (segmentStart < endTime) {
+                boundaries.add(segmentStart)
+                segmentStart += 86400_000L
+            }
+        }
+
+        val deviceOffsetMs = TimeZone.getDefault().getOffset(startTime)
+        val podTimeAdjustmentMs = timeZoneOffset - deviceOffsetMs
+
+        val sortedBoundaries = boundaries.sorted()
+        var totalDelivery = 0.0
+
+        for (i in 0 until sortedBoundaries.size - 1) {
+            val boundaryStart = sortedBoundaries[i]
+            val boundaryEnd = sortedBoundaries[i + 1]
+            val segmentHours = (boundaryEnd - boundaryStart) / 3600_000.0
+            val segmentMid = (boundaryStart + boundaryEnd) / 2
+
+            val rate = tempBasal?.let { tb ->
+                val tempEnd = tb.startTime + tb.durationInMinutes * 60_000L
+                tb.rate.takeIf { segmentMid in tb.startTime until tempEnd }
+            } ?: basalProgram?.rateAt(segmentMid + podTimeAdjustmentMs) ?: return null
+
+            totalDelivery += rate * segmentHours
+        }
+
+        return totalDelivery
+    }
+
+    override fun calculateBolusPulseIncrease(
+        previousTotalPulses: Short,
+        newTotalPulses: Short,
+        previousBolusPulsesRemaining: Short?,
+        newBolusPulsesRemaining: Short
+    ): Short {
+        var increase = newTotalPulses - previousTotalPulses
+        if (previousBolusPulsesRemaining != null) {
+            val expectedIncrease = previousBolusPulsesRemaining - newBolusPulsesRemaining
+            if (increase > expectedIncrease) {
+                increase = expectedIncrease
+            }
+        }
+        return increase.coerceAtLeast(0).toShort()
+    }
+
+    override fun needsBasalCorrection(): Boolean {
+        val correctionThreshold = -PodPulseCalculator.INSULIN_PER_PULSE_U / 2.0 // -0.025 U
+
+        if (!isActivationCompleted) return false
+        if (isSuspended) return false
+        val status = podStatus
+        if (status == null || !status.isRunning()) return false
+
+        lastBasalCorrectionTime?.let {
+            if (System.currentTimeMillis() - it < 2 * 60 * 1000L) return false
+        }
+
+        val drift = basalDrift
+
+        if (drift >= PodPulseCalculator.INSULIN_PER_PULSE_U * 2 || drift <= -PodPulseCalculator.INSULIN_PER_PULSE_U * 2) {
+            basalExpected = basalDelivered
+            return false
+        }
+
+        if (drift > correctionThreshold) {
+            return false
+        }
+
+        if (tempBasal?.rate == 0.0) {
+            val timeSinceLastBolus = lastBolus?.startTime?.let { System.currentTimeMillis() - it }
+            if (timeSinceLastBolus == null || timeSinceLastBolus >= 5 * 60 * 1000L) {
+                return false
+            }
+        }
+
+        return true
+    }
+
     override fun createActiveCommand(
         sequenceNumber: Short,
         commandType: OmnipodDashPodStateManager.ActiveCommandType,
@@ -145,12 +307,60 @@ class OmnipodDashPodStateManagerImpl(
     }
 
     override fun updateFromDefaultStatusResponse(response: DefaultStatusResponse) {
+        val now = System.currentTimeMillis()
+        val previousTotalPulses = pulsesDelivered
+        val previousBolusRemaining = lastBolus?.let {
+            (it.bolusUnitsRemaining / PodPulseCalculator.INSULIN_PER_PULSE_U).roundToInt().toShort()
+        }
+
+        if (timeZoneOffset == null) {
+            updateTimeZone()
+        }
+
+        // 1. Update basal expected
+        basalExpected = basalExpected?.let { currentExp ->
+            integrateExpectedDelivery(
+                startTime = lastUpdatedSystem,
+                endTime = now,
+                timeZoneOffset = timeZoneOffset,
+                tempBasal = tempBasal,
+                basalProgram = basalProgram
+            )?.let { delta -> currentExp + delta }
+        } ?: basalDelivered.takeIf { isActivationCompleted }
+
+        // 2. Update bolus pulses delivered (exclude basal corrections)
+        val totalPulsesNow = response.totalPulsesDelivered
+        bolusPulsesDelivered = bolusPulsesDelivered?.let { currentBolusPulses ->
+            previousTotalPulses?.takeIf { lastBolus?.deliveryComplete == false && !basalCorrectionInProgress }?.let { prevTotal ->
+                (currentBolusPulses + calculateBolusPulseIncrease(
+                    prevTotal,
+                    totalPulsesNow,
+                    previousBolusRemaining,
+                    response.bolusPulsesRemaining
+                )).toShort()
+            } ?: currentBolusPulses
+        } ?: totalPulsesNow.takeIf { isActivationCompleted }
+
+        // 3. Update status fields
         podStatus = response.podStatus
         deliveryStatus = response.deliveryStatus
         pulsesDelivered = response.totalPulsesDelivered
         reservoirPulsesRemaining = response.reservoirPulsesRemaining
         minutesSinceActivation = response.minutesSinceActivation
         activeAlerts = response.activeAlerts
+        lastUpdatedSystem = now
+
+        // 4. Update last bolus status
+        lastBolus?.let { bolus ->
+            if (!bolus.deliveryComplete) {
+                val remainingUnits = PodPulseCalculator.pulsesToUnits(response.bolusPulsesRemaining)
+                bolus.bolusUnitsRemaining = remainingUnits
+                if (response.bolusPulsesRemaining <= 0 || !response.deliveryStatus.bolusDeliveringActive()) {
+                    bolus.deliveryComplete = true
+                }
+            }
+        }
+
         recoverActivationFromPodStatus(response.podStatus)
     }
 
@@ -195,6 +405,14 @@ class OmnipodDashPodStateManagerImpl(
             putInt(KEY_LAST_NONCE, lastNonce ?: 0)
             putString(KEY_ACTIVATION_PROGRESS, activationProgress.name)
             activeCommand?.let { putString(KEY_ACTIVE_COMMAND, Json.encodeToString(it)) } ?: putString(KEY_ACTIVE_COMMAND, null)
+
+            timeZoneOffset?.let { putInt(KEY_TIMEZONE_OFFSET, it) } ?: putInt(KEY_TIMEZONE_OFFSET, Int.MIN_VALUE)
+            putLong(KEY_LAST_UPDATED_SYSTEM, lastUpdatedSystem)
+            basalExpected?.let { putString(KEY_BASAL_EXPECTED, it.toString()) } ?: putString(KEY_BASAL_EXPECTED, null)
+            bolusPulsesDelivered?.let { putInt(KEY_BOLUS_PULSES_DELIVERED, it.toInt()) } ?: putInt(KEY_BOLUS_PULSES_DELIVERED, -1)
+            lastBasalCorrectionTime?.let { putLong(KEY_LAST_BASAL_CORRECTION_TIME, it) } ?: putLong(KEY_LAST_BASAL_CORRECTION_TIME, 0L)
+            tempBasal?.let { putString(KEY_TEMP_BASAL, Json.encodeToString(it)) } ?: putString(KEY_TEMP_BASAL, null)
+            basalProgram?.let { putString(KEY_BASAL_PROGRAM, Json.encodeToString(it)) } ?: putString(KEY_BASAL_PROGRAM, null)
         }
     }
 
@@ -233,6 +451,39 @@ class OmnipodDashPodStateManagerImpl(
             } else {
                 null
             }
+
+            val tzOff = prefs.getInt(KEY_TIMEZONE_OFFSET, Int.MIN_VALUE).first()
+            timeZoneOffset = if (tzOff != Int.MIN_VALUE) tzOff else null
+
+            val lastUpd = prefs.getLong(KEY_LAST_UPDATED_SYSTEM, 0L).first()
+            if (lastUpd > 0L) lastUpdatedSystem = lastUpd
+
+            val expStr = prefs.getString(KEY_BASAL_EXPECTED).first()
+            basalExpected = expStr?.toDoubleOrNull()
+
+            val bolusP = prefs.getInt(KEY_BOLUS_PULSES_DELIVERED, -1).first()
+            bolusPulsesDelivered = if (bolusP >= 0) bolusP.toShort() else null
+
+            val lastCorr = prefs.getLong(KEY_LAST_BASAL_CORRECTION_TIME, 0L).first()
+            lastBasalCorrectionTime = if (lastCorr > 0L) lastCorr else null
+
+            val tbJson = prefs.getString(KEY_TEMP_BASAL).first()
+            tempBasal = if (!tbJson.isNullOrEmpty()) {
+                try {
+                    Json.decodeFromString<OmnipodDashPodStateManager.TempBasal>(tbJson)
+                } catch (_: Exception) {
+                    null
+                }
+            } else null
+
+            val bpJson = prefs.getString(KEY_BASAL_PROGRAM).first()
+            basalProgram = if (!bpJson.isNullOrEmpty()) {
+                try {
+                    Json.decodeFromString<BasalProgram>(bpJson)
+                } catch (_: Exception) {
+                    null
+                }
+            } else null
         }
     }
 
@@ -255,6 +506,12 @@ class OmnipodDashPodStateManagerImpl(
         basalProgram = null
         lastBolus = null
         activeCommand = null
+        timeZoneOffset = null
+        lastUpdatedSystem = System.currentTimeMillis()
+        basalExpected = null
+        bolusPulsesDelivered = null
+        lastBasalCorrectionTime = null
+        basalCorrectionInProgress = false
     }
 
     companion object {
@@ -267,5 +524,12 @@ class OmnipodDashPodStateManagerImpl(
         private const val KEY_LAST_NONCE = "omnipod_dash_last_nonce"
         private const val KEY_ACTIVATION_PROGRESS = "omnipod_dash_activation_progress"
         private const val KEY_ACTIVE_COMMAND = "omnipod_dash_active_command"
+        private const val KEY_TIMEZONE_OFFSET = "omnipod_dash_timezone_offset"
+        private const val KEY_LAST_UPDATED_SYSTEM = "omnipod_dash_last_updated_system"
+        private const val KEY_BASAL_EXPECTED = "omnipod_dash_basal_expected"
+        private const val KEY_BOLUS_PULSES_DELIVERED = "omnipod_dash_bolus_pulses_delivered"
+        private const val KEY_LAST_BASAL_CORRECTION_TIME = "omnipod_dash_last_basal_correction_time"
+        private const val KEY_TEMP_BASAL = "omnipod_dash_temp_basal"
+        private const val KEY_BASAL_PROGRAM = "omnipod_dash_basal_program"
     }
 }

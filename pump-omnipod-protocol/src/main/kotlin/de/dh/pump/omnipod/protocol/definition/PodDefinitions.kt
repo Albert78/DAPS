@@ -1,6 +1,7 @@
 package de.dh.pump.omnipod.protocol.definition
 
-import java.io.Serializable
+import kotlinx.serialization.Serializable
+import java.io.Serializable as JavaSerializable
 import java.nio.ByteBuffer
 import java.time.Duration
 import java.util.Calendar
@@ -222,7 +223,7 @@ class ProgramReminder(
     val atStart: Boolean,
     val atEnd: Boolean,
     val atInterval: Byte
-) : Encodable, Serializable {
+) : Encodable, JavaSerializable {
 
     override val encoded: ByteArray
         get() = byteArrayOf(
@@ -234,14 +235,12 @@ class ProgramReminder(
         )
 }
 
+@Serializable
 class BasalProgram(
-    segments: List<Segment>
+    val segments: List<Segment>
 ) {
-    val segments: MutableList<Segment> = segments.toMutableList()
-        get() = Collections.unmodifiableList(field)
-
     fun addSegment(segment: Segment) {
-        segments.add(segment)
+        (segments as? MutableList<Segment>)?.add(segment)
     }
 
     fun hasZeroUnitSegments() = segments.any { it.basalRateInHundredthUnitsPerHour == 0 }
@@ -256,6 +255,7 @@ class BasalProgram(
         return (slot?.basalRateInHundredthUnitsPerHour ?: 0).toDouble() / 100
     }
 
+    @Serializable
     class Segment(
         val startSlotIndex: Short,
         val endSlotIndex: Short,
