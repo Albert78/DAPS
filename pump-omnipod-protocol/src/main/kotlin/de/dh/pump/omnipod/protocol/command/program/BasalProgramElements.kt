@@ -7,6 +7,13 @@ import kotlin.experimental.and
 
 interface ShortInsulinProgramElement : Encodable, Serializable
 
+class BolusShortInsulinProgramElement(
+    val numberOfPulses: Short
+) : ShortInsulinProgramElement {
+    override val encoded: ByteArray
+        get() = ByteBuffer.allocate(2).putShort(numberOfPulses).array()
+}
+
 class BasalShortInsulinProgramElement(
     val numberOfSlots: Byte,
     val pulsesPerSlot: Short,

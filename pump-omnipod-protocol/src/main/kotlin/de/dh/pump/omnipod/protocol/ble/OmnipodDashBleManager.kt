@@ -8,16 +8,35 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
+import android.bluetooth.BluetoothStatusCodes
 import android.content.Context
 import de.dh.pump.omnipod.protocol.command.Command
+import de.dh.pump.omnipod.protocol.security.CommandAckError
+import de.dh.pump.omnipod.protocol.security.CommandReceiveError
+import de.dh.pump.omnipod.protocol.security.CommandReceiveSuccess
 import de.dh.pump.omnipod.protocol.security.CommandSendSuccess
 import de.dh.pump.omnipod.protocol.security.Session
 import de.dh.pump.omnipod.protocol.state.OmnipodDashPodStateManager
+import de.dh.pump.omnipod.protocol.transport.BleCommand
+import de.dh.pump.omnipod.protocol.transport.BleCommandHello
+import de.dh.pump.omnipod.protocol.transport.BleCommandType
+import de.dh.pump.omnipod.protocol.transport.BleConfirmError
+import de.dh.pump.omnipod.protocol.transport.BleConfirmIncorrectData
+import de.dh.pump.omnipod.protocol.transport.BleConfirmResult
+import de.dh.pump.omnipod.protocol.transport.BleConfirmSuccess
+import de.dh.pump.omnipod.protocol.transport.BleSendErrorSending
+import de.dh.pump.omnipod.protocol.transport.BleSendResult
+import de.dh.pump.omnipod.protocol.transport.BleSendSuccess
+import de.dh.pump.omnipod.protocol.transport.CmdBleIO
+import de.dh.pump.omnipod.protocol.transport.DataBleIO
+import de.dh.pump.omnipod.protocol.transport.MessageIO
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
 import java.util.UUID
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.TimeUnit
 
 enum class PodBleConnectionState {
     DISCONNECTED, CONNECTING, CONNECTED, FAILED
@@ -35,6 +54,76 @@ class OmnipodDashBleManager(
     private var bluetoothGatt: BluetoothGatt? = null
     private var cmdCharacteristic: BluetoothGattCharacteristic? = null
     private var dataCharacteristic: BluetoothGattCharacteristic? = null
+
+    private val cmdQueue = LinkedBlockingQueue<ByteArray>()
+    private val dataQueue = LinkedBlockingQueue<ByteArray>()
+
+    val cmdBleIO: CmdBleIO = object : CmdBleIO {
+        override fun receivePacket(timeoutMs: Long): ByteArray? {
+            return try {
+                cmdQueue.poll(timeoutMs, TimeUnit.MILLISECONDS)
+            } catch (_: InterruptedException) {
+                null
+            }
+        }
+
+        @SuppressLint("MissingPermission")
+        override fun sendAndConfirmPacket(payload: ByteArray): BleSendResult {
+            val characteristic = cmdCharacteristic ?: return BleSendErrorSending("CMD characteristic null")
+            val gatt = bluetoothGatt ?: return BleSendErrorSending("GATT null")
+            val status = gatt.writeCharacteristic(characteristic, payload, characteristic.writeType)
+            val success = status == BluetoothStatusCodes.SUCCESS
+            return if (success) BleSendSuccess else BleSendErrorSending("writeCharacteristic failed: $status")
+        }
+
+        override fun flushIncomingQueue(): Boolean {
+            val foundRTS = cmdQueue.any { it.isNotEmpty() && it[0] == BleCommandType.RTS.value }
+            cmdQueue.clear()
+            return foundRTS
+        }
+
+        override fun readyToRead(): BleSendResult = BleSendSuccess
+
+        override fun peekCommand(): ByteArray? = cmdQueue.peek()
+
+        override fun hello(): BleSendResult = sendAndConfirmPacket(BleCommandHello(4242).data)
+
+        override fun expectCommandType(expected: BleCommand, timeoutMs: Long): BleConfirmResult {
+            val packet = receivePacket(timeoutMs) ?: return BleConfirmError("Timeout waiting for $expected")
+            if (packet.contentEquals(expected.data)) {
+                return BleConfirmSuccess
+            }
+            return BleConfirmIncorrectData(packet)
+        }
+    }
+
+    val dataBleIO: DataBleIO = object : DataBleIO {
+        override fun receivePacket(timeoutMs: Long): ByteArray? {
+            return try {
+                dataQueue.poll(timeoutMs, TimeUnit.MILLISECONDS)
+            } catch (_: InterruptedException) {
+                null
+            }
+        }
+
+        @SuppressLint("MissingPermission")
+        override fun sendAndConfirmPacket(payload: ByteArray): BleSendResult {
+            val characteristic = dataCharacteristic ?: return BleSendErrorSending("DATA characteristic null")
+            val gatt = bluetoothGatt ?: return BleSendErrorSending("GATT null")
+            val status = gatt.writeCharacteristic(characteristic, payload, characteristic.writeType)
+            val success = status == BluetoothStatusCodes.SUCCESS
+            return if (success) BleSendSuccess else BleSendErrorSending("writeCharacteristic failed: $status")
+        }
+
+        override fun flushIncomingQueue(): Boolean {
+            dataQueue.clear()
+            return false
+        }
+
+        override fun readyToRead(): BleSendResult = BleSendSuccess
+    }
+
+    val messageIO = MessageIO(cmdBleIO, dataBleIO)
 
     private val gattCallback = object : BluetoothGattCallback() {
         @SuppressLint("MissingPermission")
@@ -68,12 +157,30 @@ class OmnipodDashBleManager(
             _connectionState.value = PodBleConnectionState.FAILED
         }
 
+        @Deprecated("Deprecated in Java")
+        override fun onCharacteristicChanged(
+            gatt: BluetoothGatt,
+            characteristic: BluetoothGattCharacteristic
+        ) {
+            @Suppress("DEPRECATION")
+            val value = characteristic.value ?: return
+            handleCharacteristicChanged(characteristic.uuid, value)
+        }
+
         override fun onCharacteristicChanged(
             gatt: BluetoothGatt,
             characteristic: BluetoothGattCharacteristic,
             value: ByteArray
         ) {
-            // Indication payload processing
+            handleCharacteristicChanged(characteristic.uuid, value)
+        }
+
+        private fun handleCharacteristicChanged(uuid: UUID, value: ByteArray) {
+            val bytes = value.copyOf()
+            when (uuid) {
+                CharacteristicType.CMD.uuid -> cmdQueue.offer(bytes)
+                CharacteristicType.DATA.uuid -> dataQueue.offer(bytes)
+            }
         }
     }
 
@@ -114,21 +221,30 @@ class OmnipodDashBleManager(
             val activeSession = session
             if (activeSession != null) {
                 val sendResult = activeSession.sendCommand(payload)
-                if (sendResult != CommandSendSuccess) {
+                if (sendResult !is CommandSendSuccess) {
                     return@withContext Result.failure(IllegalStateException("Session command send failed: $sendResult"))
                 }
+                when (val receiveResult = activeSession.readAndAckResponse()) {
+                    is CommandReceiveSuccess -> Result.success(receiveResult.payload)
+                    is CommandAckError -> Result.success(receiveResult.payload)
+                    is CommandReceiveError -> Result.failure(IllegalStateException("Failed to receive response: ${receiveResult.msg}"))
+                }
             } else {
+                cmdQueue.clear()
                 val characteristic = cmdCharacteristic
                 val gatt = bluetoothGatt
                 if (characteristic != null && gatt != null) {
-                    gatt.writeCharacteristic(
-                        characteristic,
-                        payload,
-                        characteristic.writeType
-                    )
+                    val status = gatt.writeCharacteristic(characteristic, payload, characteristic.writeType)
+                    if (status != BluetoothStatusCodes.SUCCESS) {
+                        return@withContext Result.failure(IllegalStateException("Failed to write GATT characteristic, status: $status"))
+                    }
+                    val responseBytes = cmdQueue.poll(5000, TimeUnit.MILLISECONDS)
+                        ?: return@withContext Result.failure(IllegalStateException("Timeout waiting for response indication"))
+                    Result.success(responseBytes)
+                } else {
+                    Result.failure(IllegalStateException("Characteristics not initialized"))
                 }
             }
-            Result.success(payload)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -157,6 +273,8 @@ class OmnipodDashBleManager(
         cmdCharacteristic = null
         dataCharacteristic = null
         session = null
+        cmdQueue.clear()
+        dataQueue.clear()
     }
 
     companion object {

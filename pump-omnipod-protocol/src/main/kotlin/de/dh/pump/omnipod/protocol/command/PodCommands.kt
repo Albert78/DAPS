@@ -1,9 +1,9 @@
 package de.dh.pump.omnipod.protocol.command
 
 import de.dh.pump.omnipod.protocol.command.program.BasalInsulinProgramElement
-import de.dh.pump.omnipod.protocol.command.program.CurrentBasalInsulinProgramElement
-import de.dh.pump.omnipod.protocol.command.program.CurrentSlot
+import de.dh.pump.omnipod.protocol.command.program.BolusShortInsulinProgramElement
 import de.dh.pump.omnipod.protocol.command.program.ProgramBasalUtil
+import de.dh.pump.omnipod.protocol.command.program.ProgramTempBasalUtil
 import de.dh.pump.omnipod.protocol.command.program.ShortInsulinProgramElement
 import de.dh.pump.omnipod.protocol.definition.AlertConfiguration
 import de.dh.pump.omnipod.protocol.definition.AlertType
@@ -17,6 +17,7 @@ import java.util.Date
 import java.util.EnumSet
 import kotlin.experimental.and
 import kotlin.experimental.xor
+import kotlin.math.roundToInt
 
 enum class CommandType(val value: Byte) {
     SET_UNIQUE_ID(0x03.toByte()),
@@ -194,50 +195,239 @@ class DeactivateCommand(
 }
 
 class ProgramBolusCommand(
+    val interlockCommand: ProgramInsulinCommand,
     uniqueId: Int,
     sequenceNumber: Short,
-    nonce: Int,
-    val pulseCount: Short
-) : NonceEnabledCommand(CommandType.PROGRAM_BOLUS, uniqueId, sequenceNumber, false, nonce) {
+    multiCommandFlag: Boolean,
+    val programReminder: ProgramReminder,
+    val numberOfTenthPulses: Short,
+    val delayUntilFirstTenthPulseInUsec: Int
+) : HeaderEnabledCommand(CommandType.PROGRAM_BOLUS, uniqueId, sequenceNumber, multiCommandFlag) {
+    constructor(
+        uniqueId: Int,
+        sequenceNumber: Short,
+        nonce: Int,
+        pulseCount: Short
+    ) : this(
+        createFromPulses(uniqueId, sequenceNumber, nonce, pulseCount).interlockCommand,
+        uniqueId,
+        sequenceNumber,
+        false,
+        ProgramReminder(false, false, 0),
+        (pulseCount * 10).toShort(),
+        25000
+    )
+
     override val encoded: ByteArray
         get() {
-            val body = ByteBuffer.allocate(15)
+            val bolusCommand = ByteBuffer.allocate(15)
                 .put(commandType.value)
-                .put(13)
-                .putInt(nonce)
-                .put(0x01) // Bolus type
-                .putShort(pulseCount)
-                .putShort((pulseCount.toInt() * 10).toShort()) // Duration/half pulses
-                .putShort(0)
-                .putShort(pulseCount)
+                .put(13.toByte())
+                .put(programReminder.encoded)
+                .putShort(numberOfTenthPulses)
+                .putInt(delayUntilFirstTenthPulseInUsec)
+                .putShort(0.toShort()) // Extended bolus pulses
+                .putInt(0) // Delay between tenth extended pulses in usec
                 .array()
-            val header = encodeHeader(uniqueId, sequenceNumber, body.size.toShort(), multiCommandFlag)
-            return appendCrc(header + body)
+            val interlockBytes = interlockCommand.encoded
+            val header: ByteArray = encodeHeader(
+                uniqueId,
+                sequenceNumber,
+                (bolusCommand.size + interlockBytes.size).toShort(),
+                multiCommandFlag
+            )
+            return appendCrc(
+                ByteBuffer.allocate(header.size + interlockBytes.size + bolusCommand.size)
+                    .put(header)
+                    .put(interlockBytes)
+                    .put(bolusCommand)
+                    .array()
+            )
         }
+
+    companion object {
+        fun create(
+            uniqueId: Int,
+            sequenceNumber: Short,
+            nonce: Int,
+            units: Double,
+            programReminder: ProgramReminder = ProgramReminder(false, false, 0),
+            delayBetweenPulsesInEighthSeconds: Byte = 2,
+            multiCommandFlag: Boolean = false
+        ): ProgramBolusCommand {
+            val numberOfPulses = (units * 20).roundToInt().toShort()
+            val byte10And11 = (numberOfPulses * delayBetweenPulsesInEighthSeconds).toShort()
+            val shortElement = BolusShortInsulinProgramElement(numberOfPulses)
+            val checksum = MessageUtil.calculateChecksum(
+                ByteBuffer.allocate(7)
+                    .put(0x01.toByte())
+                    .putShort(byte10And11)
+                    .putShort(numberOfPulses)
+                    .putShort(numberOfPulses)
+                    .array()
+            )
+            val interlockCommand = ProgramInsulinCommand(
+                uniqueId = uniqueId,
+                sequenceNumber = sequenceNumber,
+                multiCommandFlag = multiCommandFlag,
+                nonce = nonce,
+                insulinProgramElements = listOf(shortElement),
+                checksum = checksum,
+                byte9 = 0x01.toByte(),
+                byte10And11 = byte10And11,
+                byte12And13 = numberOfPulses,
+                deliveryType = ProgramInsulinCommand.DeliveryType.BOLUS
+            )
+            val delayUntilFirstTenthPulseInUsec = (delayBetweenPulsesInEighthSeconds.toInt() / 8.0 * 100000).toInt()
+            return ProgramBolusCommand(
+                interlockCommand = interlockCommand,
+                uniqueId = uniqueId,
+                sequenceNumber = sequenceNumber,
+                multiCommandFlag = multiCommandFlag,
+                programReminder = programReminder,
+                numberOfTenthPulses = (numberOfPulses * 10).toShort(),
+                delayUntilFirstTenthPulseInUsec = delayUntilFirstTenthPulseInUsec
+            )
+        }
+
+        fun createFromPulses(
+            uniqueId: Int,
+            sequenceNumber: Short,
+            nonce: Int,
+            pulseCount: Short,
+            programReminder: ProgramReminder = ProgramReminder(false, false, 0),
+            delayBetweenPulsesInEighthSeconds: Byte = 2,
+            multiCommandFlag: Boolean = false
+        ): ProgramBolusCommand = create(
+            uniqueId = uniqueId,
+            sequenceNumber = sequenceNumber,
+            nonce = nonce,
+            units = pulseCount.toDouble() / 20.0,
+            programReminder = programReminder,
+            delayBetweenPulsesInEighthSeconds = delayBetweenPulsesInEighthSeconds,
+            multiCommandFlag = multiCommandFlag
+        )
+    }
 }
 
 class ProgramTempBasalCommand(
+    val interlockCommand: ProgramInsulinCommand,
     uniqueId: Int,
     sequenceNumber: Short,
-    nonce: Int,
-    val pulseCount: Short,
-    val durationHalfHours: Short
-) : NonceEnabledCommand(CommandType.PROGRAM_TEMP_BASAL, uniqueId, sequenceNumber, false, nonce) {
+    multiCommandFlag: Boolean,
+    val programReminder: ProgramReminder,
+    val insulinProgramElements: List<BasalInsulinProgramElement>
+) : HeaderEnabledCommand(CommandType.PROGRAM_TEMP_BASAL, uniqueId, sequenceNumber, multiCommandFlag) {
+    constructor(
+        uniqueId: Int,
+        sequenceNumber: Short,
+        nonce: Int,
+        pulseCount: Short,
+        durationHalfHours: Short
+    ) : this(
+        create(
+            uniqueId = uniqueId,
+            sequenceNumber = sequenceNumber,
+            nonce = nonce,
+            rateInUnitsPerHour = (pulseCount.toDouble() / 10.0) * 2.0,
+            durationInMinutes = (durationHalfHours * 30).toShort()
+        ).interlockCommand,
+        uniqueId,
+        sequenceNumber,
+        false,
+        ProgramReminder(false, false, 0),
+        create(
+            uniqueId = uniqueId,
+            sequenceNumber = sequenceNumber,
+            nonce = nonce,
+            rateInUnitsPerHour = (pulseCount.toDouble() / 10.0) * 2.0,
+            durationInMinutes = (durationHalfHours * 30).toShort()
+        ).insulinProgramElements
+    )
+
+    private fun getBodyLength(): Byte = (insulinProgramElements.size * 6 + 8).toByte()
+    private fun getLength(): Short = (getBodyLength() + 2).toShort()
+
     override val encoded: ByteArray
         get() {
-            val body = ByteBuffer.allocate(15)
+            val firstProgramElement = insulinProgramElements[0]
+            val remainingTenthPulsesInFirstElement: Short
+            val delayUntilNextTenthPulseInUsec: Int
+            if (firstProgramElement.totalTenthPulses.toInt() == 0) {
+                remainingTenthPulsesInFirstElement = firstProgramElement.numberOfSlots.toShort()
+                delayUntilNextTenthPulseInUsec =
+                    ProgramBasalUtil.MAX_DELAY_BETWEEN_TENTH_PULSES_IN_USEC_AND_USECS_IN_BASAL_SLOT
+            } else {
+                remainingTenthPulsesInFirstElement = firstProgramElement.totalTenthPulses
+                delayUntilNextTenthPulseInUsec =
+                    (firstProgramElement.numberOfSlots.toLong() * 1800.0 / remainingTenthPulsesInFirstElement * 1000000).toInt()
+            }
+            val buffer = ByteBuffer.allocate(getLength().toInt())
                 .put(commandType.value)
-                .put(13)
-                .putInt(nonce)
-                .put(0x02) // Temp basal type
-                .putShort(pulseCount)
-                .putShort(durationHalfHours)
-                .putShort(0)
-                .putShort(pulseCount)
-                .array()
-            val header = encodeHeader(uniqueId, sequenceNumber, body.size.toShort(), multiCommandFlag)
-            return appendCrc(header + body)
+                .put(getBodyLength())
+                .put(programReminder.encoded)
+                .put(0x00.toByte()) // Current slot index
+                .putShort(remainingTenthPulsesInFirstElement)
+                .putInt(delayUntilNextTenthPulseInUsec)
+            for (element in insulinProgramElements) {
+                buffer.put(element.encoded)
+            }
+            val tempBasalCommand = buffer.array()
+            val interlockBytes = interlockCommand.encoded
+            val header: ByteArray = encodeHeader(
+                uniqueId,
+                sequenceNumber,
+                (tempBasalCommand.size + interlockBytes.size).toShort(),
+                multiCommandFlag
+            )
+            return appendCrc(
+                ByteBuffer.allocate(header.size + interlockBytes.size + tempBasalCommand.size)
+                    .put(header)
+                    .put(interlockBytes)
+                    .put(tempBasalCommand)
+                    .array()
+            )
         }
+
+    companion object {
+        fun create(
+            uniqueId: Int,
+            sequenceNumber: Short,
+            nonce: Int,
+            rateInUnitsPerHour: Double,
+            durationInMinutes: Short,
+            programReminder: ProgramReminder = ProgramReminder(false, false, 0),
+            multiCommandFlag: Boolean = false
+        ): ProgramTempBasalCommand {
+            require(durationInMinutes % 30 == 0) { "durationInMinutes must be divisible by 30" }
+            val durationInSlots = (durationInMinutes / 30).toByte()
+            val pulsesPerSlot = ProgramTempBasalUtil.mapTempBasalToPulsesPerSlot(durationInSlots, rateInUnitsPerHour)
+            val tenthPulsesPerSlot = ProgramTempBasalUtil.mapTempBasalToTenthPulsesPerSlot(durationInSlots.toInt(), rateInUnitsPerHour)
+            val shortInsulinProgramElements = ProgramTempBasalUtil.mapPulsesPerSlotToShortInsulinProgramElements(pulsesPerSlot)
+            val insulinProgramElements = ProgramTempBasalUtil.mapTenthPulsesPerSlotToLongInsulinProgramElements(tenthPulsesPerSlot)
+            val checksum = ProgramTempBasalUtil.calculateChecksum(durationInSlots, pulsesPerSlot[0], pulsesPerSlot)
+            val interlockCommand = ProgramInsulinCommand(
+                uniqueId = uniqueId,
+                sequenceNumber = sequenceNumber,
+                multiCommandFlag = multiCommandFlag,
+                nonce = nonce,
+                insulinProgramElements = shortInsulinProgramElements,
+                checksum = checksum,
+                byte9 = durationInSlots,
+                byte10And11 = 0x3840.toShort(),
+                byte12And13 = pulsesPerSlot[0],
+                deliveryType = ProgramInsulinCommand.DeliveryType.TEMP_BASAL
+            )
+            return ProgramTempBasalCommand(
+                interlockCommand = interlockCommand,
+                uniqueId = uniqueId,
+                sequenceNumber = sequenceNumber,
+                multiCommandFlag = multiCommandFlag,
+                programReminder = programReminder,
+                insulinProgramElements = insulinProgramElements
+            )
+        }
+    }
 }
 
 class ProgramAlertsCommand(
