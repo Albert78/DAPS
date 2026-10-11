@@ -11,6 +11,9 @@ import android.bluetooth.BluetoothProfile
 import android.bluetooth.BluetoothStatusCodes
 import android.content.Context
 import de.dh.pump.omnipod.protocol.command.Command
+import de.dh.pump.omnipod.protocol.definition.NakErrorType
+import de.dh.pump.omnipod.protocol.response.NakResponse
+import de.dh.pump.omnipod.protocol.response.ResponseParser
 import de.dh.pump.omnipod.protocol.security.CommandAckError
 import de.dh.pump.omnipod.protocol.security.CommandReceiveError
 import de.dh.pump.omnipod.protocol.security.CommandReceiveSuccess
@@ -216,43 +219,82 @@ class OmnipodDashBleManager(
     }
 
     @SuppressLint("MissingPermission")
-    suspend fun sendCommand(command: Command): Result<ByteArray> = commandMutex.withLock {
+    suspend fun sendCommand(command: Command, maxRetries: Int = 1): Result<ByteArray> = commandMutex.withLock {
         withContext(Dispatchers.IO) {
-            if (_connectionState.value != PodBleConnectionState.CONNECTED) {
-                return@withContext Result.failure(IllegalStateException("BLE Not Connected"))
-            }
-            try {
-                val payload = command.encoded
-                val activeSession = session
-                if (activeSession != null) {
-                    val sendResult = activeSession.sendCommand(payload)
-                    if (sendResult !is CommandSendSuccess) {
-                        return@withContext Result.failure(IllegalStateException("Session command send failed: $sendResult"))
-                    }
-                    when (val receiveResult = activeSession.readAndAckResponse()) {
-                        is CommandReceiveSuccess -> Result.success(receiveResult.payload)
-                        is CommandAckError -> Result.success(receiveResult.payload)
-                        is CommandReceiveError -> Result.failure(IllegalStateException("Failed to receive response: ${receiveResult.msg}"))
-                    }
-                } else {
-                    cmdQueue.clear()
-                    val characteristic = cmdCharacteristic
-                    val gatt = bluetoothGatt
-                    if (characteristic != null && gatt != null) {
-                        val status = gatt.writeCharacteristic(characteristic, payload, characteristic.writeType)
-                        if (status != BluetoothStatusCodes.SUCCESS) {
-                            return@withContext Result.failure(IllegalStateException("Failed to write GATT characteristic, status: $status"))
-                        }
-                        val responseBytes = cmdQueue.poll(5000, TimeUnit.MILLISECONDS)
-                            ?: return@withContext Result.failure(IllegalStateException("Timeout waiting for response indication"))
-                        Result.success(responseBytes)
-                    } else {
-                        Result.failure(IllegalStateException("Characteristics not initialized"))
-                    }
+            var attempt = 0
+            var lastError: Throwable? = null
+
+            while (attempt <= maxRetries) {
+                if (_connectionState.value != PodBleConnectionState.CONNECTED) {
+                    return@withContext Result.failure(IllegalStateException("BLE Not Connected"))
                 }
-            } catch (e: Exception) {
-                Result.failure(e)
+                try {
+                    val payload = command.encoded
+                    val activeSession = session
+                    val responseBytes = if (activeSession != null) {
+                        val sendResult = activeSession.sendCommand(payload)
+                        if (sendResult !is CommandSendSuccess) {
+                            lastError = IllegalStateException("Session command send failed: $sendResult")
+                            attempt++
+                            continue
+                        }
+                        when (val receiveResult = activeSession.readAndAckResponse()) {
+                            is CommandReceiveSuccess -> receiveResult.payload
+                            is CommandAckError -> receiveResult.payload
+                            is CommandReceiveError -> {
+                                lastError = IllegalStateException("Failed to receive response: ${receiveResult.msg}")
+                                attempt++
+                                continue
+                            }
+                        }
+                    } else {
+                        cmdQueue.clear()
+                        val characteristic = cmdCharacteristic
+                        val gatt = bluetoothGatt
+                        if (characteristic != null && gatt != null) {
+                            val status = gatt.writeCharacteristic(characteristic, payload, characteristic.writeType)
+                            if (status != BluetoothStatusCodes.SUCCESS) {
+                                lastError = IllegalStateException("Failed to write GATT characteristic, status: $status")
+                                attempt++
+                                continue
+                            }
+                            val bytes = cmdQueue.poll(5000, TimeUnit.MILLISECONDS)
+                            if (bytes == null) {
+                                lastError = IllegalStateException("Timeout waiting for response indication")
+                                attempt++
+                                continue
+                            }
+                            bytes
+                        } else {
+                            return@withContext Result.failure(IllegalStateException("Characteristics not initialized"))
+                        }
+                    }
+
+                    try {
+                        val parsed = ResponseParser.parseResponse(responseBytes)
+                        if (parsed is NakResponse) {
+                            if (parsed.nakErrorType == NakErrorType.ILLEGAL_SECURITY_CODE) {
+                                podStateManager.resyncNonceFromNak(parsed)
+                                if (attempt < maxRetries) {
+                                    attempt++
+                                    continue
+                                }
+                            }
+                            return@withContext Result.failure(
+                                IllegalStateException("Command rejected with NAK: ${parsed.nakErrorType} (SyncCount: ${parsed.securityNakSyncCount})")
+                            )
+                        }
+                    } catch (_: Exception) {
+                        // Not a NAK response or unparseable, return raw bytes
+                    }
+
+                    return@withContext Result.success(responseBytes)
+                } catch (e: Exception) {
+                    lastError = e
+                    attempt++
+                }
             }
+            Result.failure(lastError ?: IllegalStateException("Command execution failed after $maxRetries retries"))
         }
     }
 

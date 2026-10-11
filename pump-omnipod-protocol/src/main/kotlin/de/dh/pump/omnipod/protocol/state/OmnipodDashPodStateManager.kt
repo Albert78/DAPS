@@ -10,6 +10,7 @@ import de.dh.pump.omnipod.protocol.definition.DeliveryStatus
 import de.dh.pump.omnipod.protocol.definition.PodStatus
 import de.dh.pump.omnipod.protocol.response.AlarmStatusResponse
 import de.dh.pump.omnipod.protocol.response.DefaultStatusResponse
+import de.dh.pump.omnipod.protocol.response.NakResponse
 import de.dh.pump.omnipod.protocol.response.SetUniqueIdResponse
 import de.dh.pump.omnipod.protocol.response.VersionResponse
 import de.dh.pump.omnipod.protocol.util.PodPulseCalculator
@@ -65,6 +66,7 @@ interface OmnipodDashPodStateManager {
     fun updateFromAlarmStatusResponse(response: AlarmStatusResponse)
     fun updateFromVersionResponse(response: VersionResponse)
     fun updateFromSetUniqueIdResponse(response: SetUniqueIdResponse)
+    fun resyncNonceFromNak(nakResponse: NakResponse)
     fun recoverActivationFromPodStatus(status: PodStatus): ActivationProgress
     fun createActiveCommand(
         sequenceNumber: Short,
@@ -403,6 +405,13 @@ class OmnipodDashPodStateManagerImpl(
         podSequenceNumber = response.podSequenceNumber
         activationProgress = ActivationProgress.SET_UNIQUE_ID
         recoverActivationFromPodStatus(response.podStatus)
+    }
+
+    override fun resyncNonceFromNak(nakResponse: NakResponse) {
+        val syncCount = nakResponse.securityNakSyncCount
+        if (syncCount > 0) {
+            lastNonce = syncCount.toInt()
+        }
     }
 
     override fun recoverActivationFromPodStatus(status: PodStatus): ActivationProgress {
