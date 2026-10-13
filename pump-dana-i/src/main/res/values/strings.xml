@@ -15,4 +15,9 @@
     <string name="danai_pump_unbind_dialog_title">Bindung verwerfen?</string>
     <string name="danai_pump_unbind_dialog_message">Möchtest du die Bindung zu dieser Dana-i-Pumpe wirklich verwerfen? Alle gespeicherten Verbindungsdaten werden gelöscht.</string>
     <string name="danai_pump_unbind_dialog_confirm">Bindung verwerfen</string>
+
+    <string name="danai_pump_control_title">Pumpensteuerung</string>
+    <string name="danai_pump_control_maintenance_subtitle">Trennt die Bluetooth-Verbindung temporär für Wartungsarbeiten (z.B. Batteriewechsel). Der Status wird als Gestoppt (Suspended) an das System gemeldet.</string>
+    <string name="danai_pump_control_btn_disconnect_maintenance">Zur Wartung trennen</string>
+    <string name="danai_pump_control_btn_reconnect_maintenance">Wartung beenden &amp; verbinden</string>
 </resources>

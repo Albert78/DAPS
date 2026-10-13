@@ -112,6 +112,13 @@ class DanaIPump {
      */
     var pumpCapabilities = _pumpCapabilities.asStateFlow()
 
+    private val _isMaintenanceMode = MutableStateFlow(false)
+
+    /**
+     * True if the pump is currently in maintenance mode (BLE disconnected, reported as suspended).
+     */
+    val isMaintenanceMode: StateFlow<Boolean> = _isMaintenanceMode.asStateFlow()
+
     private val _status = MutableStateFlow(DanaPumpStatusData())
 
     /**
@@ -187,6 +194,24 @@ class DanaIPump {
     internal var onRefreshStatus: (suspend () -> Unit)? = null
     internal var onExecute: (suspend (PumpCommand<*>) -> PumpResponse)? = null
     internal var onExecuteStream: (suspend (PumpStreamCommand<*, *>) -> Any)? = null
+    internal var onDisconnectForMaintenance: (() -> Unit)? = null
+    internal var onConnectFromMaintenance: (() -> Unit)? = null
+
+    /**
+     * Toggles maintenance mode. When active, BLE connection is disconnected and pump is reported as suspended.
+     */
+    fun setMaintenanceMode(active: Boolean) {
+        _isMaintenanceMode.value = active
+        if (active) {
+            _status.value = _status.value.copy(pumpSuspended = true)
+            _basalStatus.value = _basalStatus.value.copy(isSuspended = true)
+            onDisconnectForMaintenance?.invoke()
+        } else {
+            _status.value = _status.value.copy(pumpSuspended = false)
+            _basalStatus.value = _basalStatus.value.copy(isSuspended = false)
+            onConnectFromMaintenance?.invoke()
+        }
+    }
 
     /**
      * Initiates a bolus delivery with an optional tracking [bolusId].
@@ -302,7 +327,11 @@ class DanaIPump {
      * Updates the general status data.
      */
     internal fun updateStatus(data: DanaPumpStatusData) {
-        _status.value = data
+        if (_isMaintenanceMode.value) {
+            _status.value = data.copy(pumpSuspended = true)
+        } else {
+            _status.value = data
+        }
     }
 
     /**

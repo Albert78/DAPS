@@ -15,6 +15,7 @@ import de.dh.pump.danai.core.DanaILogger
 import de.dh.pump.danai.core.DanaIPumpAdapter
 import de.dh.pump.danai.core.DanaPumpPreferences
 import de.dh.pump.danai.core.connection.DanaILink
+import de.dh.pump.danai.ui.DanaIPumpControl
 import de.dh.pump.danai.ui.DanaISetupScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -84,6 +85,10 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
             driver = this,
             onDriverReset = onDriverReset,
         )
+    }
+
+    override fun getPumpControlSection(pump: InsulinPump): @Composable (() -> Unit) = {
+        DanaIPumpControl(pump = pump)
     }
 
     private suspend fun bindPump(

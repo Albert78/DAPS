@@ -156,6 +156,17 @@ class DanaIController(
         pump.onRefreshStatus = { executeRefreshStatus() }
         pump.onExecute = { command -> withConnection { it.execute(command) } }
         pump.onExecuteStream = { command -> withConnection { client -> client.executeStream(command) as Any } }
+        pump.onDisconnectForMaintenance = { scope.launch { disconnect() } }
+        pump.onConnectFromMaintenance = {
+            scope.launch {
+                try {
+                    connect()
+                    executeRefreshStatus()
+                } catch (e: Exception) {
+                    logger.log("Failed to reconnect after maintenance: ${e.message}")
+                }
+            }
+        }
 
         // Observe technical sessions to handle notifications and polling while connected
         scope.launch {
@@ -230,6 +241,9 @@ class DanaIController(
      * Helper that ensures an active technical connection and provides the client.
      */
     private suspend fun <T> withConnection(block: suspend (PumpClient) -> T): T = actionMutex.withLock {
+        if (pump.isMaintenanceMode.value) {
+            throw PumpConnectionException("Pump is in maintenance mode")
+        }
         link.connect()
         val state = link.sessionState.value
         if (state !is SessionState.Connected) throw PumpConnectionException("Failed to connect to pump device")

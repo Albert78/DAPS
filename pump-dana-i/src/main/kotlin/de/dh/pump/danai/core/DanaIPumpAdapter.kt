@@ -127,6 +127,13 @@ class DanaIPumpAdapter(
         pump.refreshStatus()
     }
 
+    val isMaintenanceMode: StateFlow<Boolean>
+        get() = pump.isMaintenanceMode
+
+    fun setMaintenanceMode(active: Boolean) {
+        pump.setMaintenanceMode(active)
+    }
+
     override fun stop() {
         controller.stop()
     }
