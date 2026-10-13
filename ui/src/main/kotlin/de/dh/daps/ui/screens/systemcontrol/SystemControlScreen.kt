@@ -71,7 +71,6 @@ fun SystemControlScreen(
         onNavigateToPumpSetup = onNavigateToPumpSetup,
         onNavigateToGlucoseSourceSetup = onNavigateToGlucoseSourceSetup,
         onStopGlucoseSource = viewModel::stopActiveGlucoseSource,
-        onDisconnectForMaintenance = viewModel::disconnectPumpForMaintenance,
         onCancelPumpJob = viewModel::cancelPumpJob,
         onRefreshPumpStatus = viewModel::refreshPumpStatus
     )
@@ -87,7 +86,6 @@ fun SystemControlContent(
     onNavigateToPumpSetup: () -> Unit = {},
     onNavigateToGlucoseSourceSetup: () -> Unit = {},
     onStopGlucoseSource: () -> Unit = {},
-    onDisconnectForMaintenance: () -> Unit = {},
     onCancelPumpJob: (String) -> Unit = {},
     onRefreshPumpStatus: () -> Unit = {}
 ) {
@@ -186,7 +184,6 @@ fun SystemControlContent(
                                     uiState = uiState.pumpTabUiState,
                                     onChangePumpDriver = onNavigateToPumpSetup,
                                     onRefreshPumpStatus = onRefreshPumpStatus,
-                                    onDisconnectForMaintenance = onDisconnectForMaintenance,
                                     onCancelPumpJob = onCancelPumpJob
                                 )
                             }
@@ -212,7 +209,6 @@ fun SystemControlOverviewPreview() {
             onNavigateUp = {},
             onNavigateToCoreDecisions = {},
             onStopGlucoseSource = {},
-            onDisconnectForMaintenance = {},
             onCancelPumpJob = {},
             onRefreshPumpStatus = {}
         )
@@ -230,7 +226,6 @@ fun SystemControlOverviewUnconfiguredPreview() {
             onNavigateUp = {},
             onNavigateToCoreDecisions = {},
             onStopGlucoseSource = {},
-            onDisconnectForMaintenance = {},
             onCancelPumpJob = {},
             onRefreshPumpStatus = {}
         )
@@ -248,7 +243,6 @@ fun SystemControlGlucosePreview() {
             onNavigateUp = {},
             onNavigateToCoreDecisions = {},
             onStopGlucoseSource = {},
-            onDisconnectForMaintenance = {},
             onCancelPumpJob = {},
             onRefreshPumpStatus = {}
         )
@@ -266,7 +260,6 @@ fun SystemControlPumpPreview() {
             onNavigateUp = {},
             onNavigateToCoreDecisions = {},
             onStopGlucoseSource = {},
-            onDisconnectForMaintenance = {},
             onCancelPumpJob = {},
             onRefreshPumpStatus = {}
         )
@@ -284,7 +277,6 @@ fun SystemControlScreenLoadingPreview() {
             onNavigateUp = {},
             onNavigateToCoreDecisions = {},
             onStopGlucoseSource = {},
-            onDisconnectForMaintenance = {},
             onCancelPumpJob = {},
             onRefreshPumpStatus = {}
         )

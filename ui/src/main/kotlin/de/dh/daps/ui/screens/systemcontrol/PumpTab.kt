@@ -1,6 +1,7 @@
 package de.dh.daps.ui.screens.systemcontrol
 
 import android.content.res.Configuration
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Battery5Bar
-import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
@@ -32,10 +32,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -62,7 +60,6 @@ fun PumpTabContent(
     uiState: PumpTabUiState = PumpTabUiState.Loading,
     onChangePumpDriver: () -> Unit = {},
     onRefreshPumpStatus: () -> Unit = {},
-    onDisconnectForMaintenance: () -> Unit = {},
     onCancelPumpJob: (String) -> Unit = {}
 ) {
     Column(modifier = modifier) {
@@ -108,7 +105,8 @@ fun PumpTabContent(
         Spacer(modifier = Modifier.height(8.dp))
 
         PumpOverviewCard(
-            uiState = uiState
+            uiState = uiState,
+            onRefreshPumpStatus = onRefreshPumpStatus
         )
 
         if (uiState is PumpTabUiState.Content) {
@@ -132,18 +130,6 @@ fun PumpTabContent(
                 onCancelJob = onCancelPumpJob
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-            SectionHeader(
-                title = stringResource(R.string.system_control_pump_actions)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            PumpActionsCard(
-                uiState = uiState,
-                onDisconnectForMaintenance = onDisconnectForMaintenance,
-                onRefreshPumpStatus = onRefreshPumpStatus
-            )
-
             if (uiState.pumpPluginSection != null) {
                 Spacer(modifier = Modifier.height(16.dp))
                 SectionHeader(
@@ -159,7 +145,8 @@ fun PumpTabContent(
 @Composable
 fun PumpOverviewCard(
     uiState: PumpTabUiState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onRefreshPumpStatus: () -> Unit = {}
 ) {
     FramedCard(
         modifier = modifier
@@ -226,16 +213,47 @@ fun PumpOverviewCard(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    ControlDetailRow(
-                        label = stringResource(R.string.system_control_pump_serial_number_label),
-                        reserveIconSpace = true
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        Text(
-                            text = uiState.serialNumber ?: notAvailableText,
-                            style = MaterialTheme.typography.bodyMedium,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                        Column(modifier = Modifier.weight(1f)) {
+                            ControlDetailRow(
+                                label = stringResource(R.string.system_control_pump_serial_number_label),
+                                reserveIconSpace = true
+                            ) {
+                                Text(
+                                    text = uiState.serialNumber ?: notAvailableText,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            ControlDetailRow(
+                                label = "",
+                                reserveIconSpace = true
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .clickable(onClick = onRefreshPumpStatus),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Refresh,
+                                        contentDescription = stringResource(R.string.system_control_pump_job_type_refresh_status),
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = "Aktualisieren",
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
+                                }
+                            }
+                        }
                     }
 
                     HorizontalDivider(
@@ -484,38 +502,7 @@ fun PumpExpirationsCard(
     }
 }
 
-@Composable
-fun PumpActionsCard(
-    @Suppress("UNUSED_PARAMETER") uiState: PumpTabUiState.Content,
-    modifier: Modifier = Modifier,
-    onDisconnectForMaintenance: () -> Unit = {},
-    onRefreshPumpStatus: () -> Unit = {}
-) {
-    FramedCard(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ActionButton(
-                icon = Icons.Default.Build,
-                label = stringResource(R.string.system_control_pump_action_maintainance_disconnect),
-                onClick = onDisconnectForMaintenance
-            )
-            ActionButton(
-                icon = Icons.Default.Refresh,
-                label = stringResource(R.string.system_control_pump_job_type_refresh_status),
-                onClick = onRefreshPumpStatus
-            )
-        }
-    }
-}
+
 
 @Composable
 fun PumpJobsCard(
@@ -594,37 +581,7 @@ fun PumpJobsCard(
     }
 }
 
-@Composable
-private fun ActionButton(
-    icon: ImageVector,
-    label: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.padding(4.dp)
-    ) {
-        IconButton(
-            onClick = onClick,
-            enabled = enabled,
-            modifier = Modifier.size(48.dp)
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                tint = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-            )
-        }
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            textAlign = TextAlign.Center,
-            color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-        )
-    }
-}
+
 
 internal fun samplePumpTabUiState(): PumpTabUiState = PumpTabUiState.Content(
     pumpName = UiText.DynamicString("SimBody Virtuelle Insulinpumpe"),

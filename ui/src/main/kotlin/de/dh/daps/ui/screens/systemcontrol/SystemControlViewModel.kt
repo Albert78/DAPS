@@ -30,9 +30,6 @@ import de.dh.daps.common.model.InsulinStatus
 import de.dh.daps.common.model.PumpHardwareInformation
 import de.dh.daps.common.model.PumpPluginUiProvider
 import de.dh.daps.common.model.SourceHardwareInformation
-import de.dh.daps.common.model.ToDo
-import java.time.LocalDate
-import java.time.ZoneId
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.Timestamp
@@ -51,6 +48,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import java.time.LocalDate
+import java.time.ZoneId
 
 enum class ValueStatus {
     GOOD,
@@ -646,10 +645,6 @@ class SystemControlViewModel(
     fun stopActiveGlucoseSource() {
         glucoseSourceManager.glucoseSource?.stop()
         glucoseSourceManager.glucoseSource = null
-    }
-
-    fun disconnectPumpForMaintenance() {
-        ToDo.toBeImplemented("disconnectPumpForMaintainance")
     }
 
     fun cancelPumpJob(jobId: String) {
