@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "de.dh.pump.dana"
-    compileSdk = 37
+    compileSdk = libs.versions.sdkCompile.get().toInt()
 
     defaultConfig {
         minSdk = 35

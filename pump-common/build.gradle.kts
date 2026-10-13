@@ -5,10 +5,10 @@ plugins {
 
 android {
     namespace = "de.dh.pump.common"
-    compileSdk = 37
+    compileSdk = libs.versions.sdkCompile.get().toInt()
 
     defaultConfig {
-        minSdk = 35
+        minSdk = libs.versions.sdkMin.get().toInt()
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
