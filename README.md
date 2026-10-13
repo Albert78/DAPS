@@ -44,6 +44,7 @@ DAPS does the "normal stuff" really well (blood glucose display, Manual Mode ("O
 ### 🔮 Planned for the future:
 - Improved support for visually impaired users
 - Simple mode / Kids mode
+- Food database, perhaps with KI support
 - Additional CGM and pump drivers
 
 ## ⚖️ Comparison with AAPS
@@ -148,6 +149,7 @@ Bolusrechner mit diversen Empfehlungen, die üblichen Insulin- und Profileinstel
 ### 🔮 Perspektivisch sind angedacht:
 - Verbesserte Unterstützung für Sehbehinderte
 - Einfacher Modus / Kindermodus
+- Nahrungsdatenbank
 - Weitere CGM- und Pumpentreiber
 
 ## ⚖️ Vergleich mit AAPS
