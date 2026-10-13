@@ -103,7 +103,7 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
      */
     @Composable
     override fun SetupScreen(
-        onNavigateUp: () -> Unit,
+        onDriverReset: () -> Unit,
     ) {
         val currentState by lifecycleState.collectAsStateWithLifecycle()
         var showUnbindDialog by remember { mutableStateOf(false) }
@@ -239,6 +239,25 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
                     }
                 }
             )
+        }
+    }
+
+    override fun getPumpControlSection(pump: InsulinPump): (@Composable () -> Unit) = {
+        FramedCard(
+            modifier = Modifier.fillMaxWidth(),
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = stringResource(R.string.sample_pump_control_section_content),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = stringResource(R.string.sample_pump_control_section_maintenance),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            }
         }
     }
 

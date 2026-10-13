@@ -49,4 +49,12 @@ interface GlucoseSourceDriver {
     fun SetupScreen(
         onDriverReset: () -> Unit,
     )
+
+    /**
+     * Returns optional Composable UI content to display in the Glucose Source tab of the System Control screen for [glucoseSource],
+     * or null if this driver provides no custom control section.
+     */
+    fun getGlucoseSourceControlSection(
+        glucoseSource: GlucoseSource,
+    ): (@Composable () -> Unit)? = null
 }

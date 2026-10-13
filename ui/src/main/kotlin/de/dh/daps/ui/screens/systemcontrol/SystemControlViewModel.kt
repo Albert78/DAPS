@@ -22,13 +22,15 @@ import de.dh.daps.common.SENSOR_EXPIRATION_WARNING_THRESHOLD_HOURS
 import de.dh.daps.common.model.ApsMode
 import de.dh.daps.common.model.Expiration
 import de.dh.daps.common.model.ExpirationDate
-import de.dh.daps.common.model.GlucoseSourcePluginUiProvider
+import de.dh.daps.common.model.GlucoseSource
+import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.common.model.GlucoseSourceStatus
 import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.InsulinPump
+import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.InsulinPumpStatus
 import de.dh.daps.common.model.InsulinStatus
 import de.dh.daps.common.model.PumpHardwareInformation
-import de.dh.daps.common.model.PumpPluginUiProvider
 import de.dh.daps.common.model.SourceHardwareInformation
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
@@ -198,7 +200,8 @@ class SystemControlViewModel(
         val hasNextPrediction: Boolean = false,
         val expiration: Expiration? = null,
         val isExpired: Boolean = false,
-        val pluginUiProvider: GlucoseSourcePluginUiProvider? = null
+        val source: GlucoseSource? = null,
+        val driver: GlucoseSourceDriver? = null
     )
 
     private data class PumpUiData(
@@ -215,13 +218,16 @@ class SystemControlViewModel(
         val isSuspended: Boolean = false,
         val isExpired: Boolean = false,
         val hasError: Boolean = false,
-        val pluginUiProvider: PumpPluginUiProvider? = null
+        val pump: InsulinPump? = null,
+        val driver: InsulinPumpDriver? = null
     )
 
     private val glucoseRepository = systemRegistry.glucoseRepository
     private val treatmentRepository = systemRegistry.treatmentRepository
     private val glucoseSourceManager = systemRegistry.glucoseSourceManager
+    private val glucoseSourceDriverManager = systemRegistry.glucoseSourceDriverManager
     private val pumpManager = systemRegistry.pumpManager
+    private val pumpDriverManager = systemRegistry.pumpDriverManager
     private val deviceStatusRepository = systemRegistry.deviceStatusRepository
     private val permissionRepository = systemRegistry.permissionRepository
     private val systemOrchestrator = systemRegistry.systemOrchestrator
@@ -280,8 +286,6 @@ class SystemControlViewModel(
             val nextPredicted = glucoseSourceManager.predictNextValueTimestamp()
             val hasPrediction = nextPredicted.isValid()
 
-            val provider = source as? GlucoseSourcePluginUiProvider
-
             combine(
                 source.status,
                 source.sensorType,
@@ -290,7 +294,8 @@ class SystemControlViewModel(
                 source.lastConnection,
                 source.startDate,
                 source.endDate,
-                source.isExpired
+                source.isExpired,
+                glucoseSourceDriverManager.activeDriver
             ) { array ->
                 val status = array[0] as GlucoseSourceStatus
                 val hardware = array[2] as SourceHardwareInformation?
@@ -299,6 +304,7 @@ class SystemControlViewModel(
                 val startDate = array[5] as Timestamp?
                 val endDate = array[6] as Expiration?
                 val isExpired = array[7] as Boolean
+                val activeDriver = array[8] as GlucoseSourceDriver?
 
                 GlucoseUiData(
                     sourceName = sourceName,
@@ -314,7 +320,8 @@ class SystemControlViewModel(
                     hasNextPrediction = hasPrediction,
                     expiration = endDate,
                     isExpired = isExpired,
-                    pluginUiProvider = provider
+                    source = source,
+                    driver = activeDriver
                 )
             }
         }
@@ -338,7 +345,8 @@ class SystemControlViewModel(
                 lastConnFlow,
                 pump.startDate,
                 pump.isExpired,
-                pump.expirations
+                pump.expirations,
+                pumpDriverManager.activeDriver
             ) { array ->
                 val connected = array[0] as Boolean
                 val hardware = array[1] as PumpHardwareInformation?
@@ -350,6 +358,7 @@ class SystemControlViewModel(
                 val isExpired = array[6] as Boolean
                 @Suppress("UNCHECKED_CAST")
                 val expirations = array[7] as List<Expiration>
+                val activeDriver = array[8] as InsulinPumpDriver?
 
                 PumpUiData(
                     connected = connected,
@@ -365,7 +374,8 @@ class SystemControlViewModel(
                     isSuspended = status.pumpSuspended,
                     isExpired = isExpired,
                     hasError = jobs.any { it.lastError != null },
-                    pluginUiProvider = pump as? PumpPluginUiProvider
+                    pump = pump,
+                    driver = activeDriver
                 )
             }
         }
@@ -558,6 +568,9 @@ class SystemControlViewModel(
         val sourceTabState: SourceTabUiState = if (gInfo == null) {
             SourceTabUiState.NoneConfigured
         } else {
+            val driver = gInfo.driver
+            val source = gInfo.source
+            val section = if (driver != null && source != null) driver.getGlucoseSourceControlSection(source) else null
             SourceTabUiState.Content(
                 glucoseSourceName = gInfo.sourceName,
                 manufacturer = gInfo.manufacturer,
@@ -570,7 +583,7 @@ class SystemControlViewModel(
                 hasNextPrediction = gInfo.hasNextPrediction,
                 expiration = gInfo.expiration,
                 isExpired = gInfo.isExpired,
-                glucoseSourcePluginSection = gInfo.pluginUiProvider?.let { provider -> { provider.GlucoseSourceControlSection() } }
+                glucoseSourcePluginSection = section
             )
         }
 
@@ -613,6 +626,10 @@ class SystemControlViewModel(
                 )
             }
 
+            val driver = pInfo.driver
+            val pump = pInfo.pump
+            val section = if (driver != null && pump != null) driver.getPumpControlSection(pump) else null
+
             PumpTabUiState.Content(
                 pumpName = pInfo.pumpName,
                 batteryPercent = pInfo.status.batteryRemainingPercent,
@@ -627,7 +644,7 @@ class SystemControlViewModel(
                 startDate = pInfo.startDate,
                 expirations = pInfo.expirations,
                 pendingJobs = pumpJobsList,
-                pumpPluginSection = pInfo.pluginUiProvider?.let { provider -> { provider.PumpControlSection() } }
+                pumpPluginSection = section
             )
         }
 

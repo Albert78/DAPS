@@ -1,17 +1,7 @@
 package de.dh.daps.plugin.glucose
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import de.dh.daps.ui.common.composables.FramedCard
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.Expiration
 import de.dh.daps.common.model.GlucoseSource
-import de.dh.daps.common.model.GlucoseSourcePluginUiProvider
 import de.dh.daps.common.model.GlucoseSourceStatus
 import de.dh.daps.common.model.SourceHardwareInformation
 import de.dh.daps.common.model.data.BgReading
@@ -31,7 +21,7 @@ import kotlinx.coroutines.flow.map
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 
-class SampleGlucoseSource : GlucoseSource, GlucoseSourcePluginUiProvider {
+class SampleGlucoseSource : GlucoseSource {
     override val glucoseSourceId: String = SOURCE_ID
     override val sourceDisplayName: UiText = UiText.StringResource(R.string.sample_cgm_driver_display_name)
     override val readingsInterval: BgReadingsInterval
@@ -57,26 +47,6 @@ class SampleGlucoseSource : GlucoseSource, GlucoseSourcePluginUiProvider {
 
     override fun stop() {
         // Nothing to do
-    }
-
-    @Composable
-    override fun GlucoseSourceControlSection() {
-        FramedCard(
-            modifier = Modifier.fillMaxWidth(),
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "This content is provided by the Sample Glucose Source.",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    text = "Version: 1.0.0-sample",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.secondary
-                )
-            }
-        }
     }
 
     fun getRawGlucoseReadings(): Flow<RawBg> = flow {

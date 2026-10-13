@@ -242,6 +242,25 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
         }
     }
 
+    override fun getGlucoseSourceControlSection(glucoseSource: GlucoseSource): (@Composable () -> Unit) = {
+        FramedCard(
+            modifier = Modifier.fillMaxWidth(),
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "This content is provided by the Sample Glucose Source.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = "Version: 1.0.0-sample",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            }
+        }
+    }
+
     companion object {
         const val DRIVER_ID = "de.dh.daps.plugin.cgm.sample"
         private const val KEY_DEVICE_ID = "device_id"

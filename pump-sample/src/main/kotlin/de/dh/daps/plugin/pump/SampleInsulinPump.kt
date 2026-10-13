@@ -1,15 +1,5 @@
 package de.dh.daps.plugin.pump
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import de.dh.daps.ui.common.composables.FramedCard
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.BasalStatus
 import de.dh.daps.common.model.BolusEvent
 import de.dh.daps.common.model.BolusStatus
@@ -25,13 +15,12 @@ import de.dh.daps.common.model.PumpHardwareInformation
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
-import de.dh.daps.common.model.PumpPluginUiProvider
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class SampleInsulinPump : InsulinPump, PumpPluginUiProvider {
+class SampleInsulinPump : InsulinPump {
 
     // *************************** Insulin pump members ********************************
 
@@ -111,25 +100,5 @@ class SampleInsulinPump : InsulinPump, PumpPluginUiProvider {
 
     override fun stop() {
         // TODO
-    }
-
-    @Composable
-    override fun PumpControlSection() {
-        FramedCard(
-            modifier = Modifier.fillMaxWidth(),
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = stringResource(R.string.sample_pump_control_section_content),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    text = stringResource(R.string.sample_pump_control_section_maintenance),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.secondary
-                )
-            }
-        }
     }
 }
