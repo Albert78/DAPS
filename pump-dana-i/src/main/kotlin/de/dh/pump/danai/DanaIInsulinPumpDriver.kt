@@ -1,4 +1,4 @@
-package de.dh.pump.danai.ui
+package de.dh.pump.danai
 
 import android.Manifest
 import android.bluetooth.BluetoothManager
@@ -11,11 +11,11 @@ import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.PluginContext
 import de.dh.daps.common.ui.UiText
-import de.dh.pump.danai.R
 import de.dh.pump.danai.core.DanaILogger
 import de.dh.pump.danai.core.DanaIPumpAdapter
 import de.dh.pump.danai.core.DanaPumpPreferences
 import de.dh.pump.danai.core.connection.DanaILink
+import de.dh.pump.danai.ui.DanaISetupScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

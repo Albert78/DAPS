@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import de.dh.pump.danai.DanaIInsulinPumpDriver
 import de.dh.pump.danai.R
 import de.dh.pump.danai.core.connection.DanaPumpScanner
 import de.dh.pump.danai.core.connection.DanaScanResult

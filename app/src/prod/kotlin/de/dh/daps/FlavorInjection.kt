@@ -5,7 +5,7 @@ import de.dh.daps.common.model.PluginManager
 import de.dh.daps.common.navigation.FeatureNavGraph
 import de.dh.daps.common.navigation.NavigationViewModel
 import de.dh.daps.plugin.glucose.receiver.ReceiverGlucosePlugin
-import de.dh.pump.danai.ui.DanaIInsulinPumpDriver
+import de.dh.pump.danai.DanaIInsulinPumpDriver
 import de.dh.pump.omnipod.dash.OmnipodDashInsulinPumpDriver
 
 /**
