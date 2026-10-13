@@ -12,7 +12,7 @@ Always verify medical decisions using your manufacturers' official devices as we
 ---
 
 ## 💡 DAPS – Daniel's APS
-DAPS is an AID system, i.e., an insulin pump controller. There are several of these, but DAPS is made for those who want full control over their insulin therapy. It is easy to use and self-explanatory, yet gives you all the information and intervention options that are missing in official systems.
+DAPS is an AID system, i.e., an insulin pump controller with CGM support. There are several of these, but DAPS is made for those who want full control over their insulin therapy. It is easy to use and self-explanatory, yet gives you all the information and intervention options that are missing in official systems.
 It is a system by a diabetic – for diabetics – for you. I believe that diabetes therapy can actually be fun if you have a tool at hand that accompanies you and offers key functions simply when you need them – instead of working against you.
 
 Some screenshots:
@@ -22,6 +22,7 @@ And in dark theme:
 ![Screenshots-Dark](docs/images/collage-dark.png)
 
 DAPS is right for you if:
+- If you know your way around diabetes and know what you're doing
 - You are annoyed that your AID system keeps beeping wildly even though you've long known you have low blood sugar, but the beeping can't be turned off
 - Your AID system only provides very limited options to temporarily adjust insulin dosage (e.g., during sports, illness, temperature fluctuations, or stress)
 - You repeatedly feel "I could have handled this situation better myself", but your AID system doesn't really let you
@@ -38,7 +39,7 @@ DAPS does the "normal stuff" really well (blood glucose display, Manual Mode ("O
 - Quickly switch target values, low thresholds, percentage insulin adjustment, alarm profiles, and insulin profiles, including timer-based switching
 - Set individual meal types with custom action curves including quick selection of meal types when logging a meal
 - Naturally supports mg/dL and mmol/L, KE (carb units) or grams of carbs, setting insulin concentration (U100, U200, ...), setting insulin duration and action curves, setting hourly basal rates and insulin factors throughout the day
-- Integration of native CGM and pump drivers. As of October 2026, xDrip as a glucose source and the Dana-i pump are already supported. More CGMs and pumps will follow.
+- Integration of native CGM and pump drivers. As of October 2026, xDrip as a glucose source and the Dana-i and Omnipod Dash pumps are already supported. More CGMs and pumps will follow.
 
 ### 🔮 Planned for the future:
 - Improved support for visually impaired users
@@ -113,7 +114,7 @@ offiziellen Dokumentationen.
 ---
 
 ## 💡 DAPS – Daniels APS
-DAPS ist ein AID-System, also ein Insulinpumpen-Controller. Davon gibt es einige, aber DAPS ist für diejenigen gemacht, die die volle Kontrolle über ihre Insulin-Therapie haben wollen. Es ist einfach zu verwenden und selbsterklärend und gibt einem doch alle Informationen und Eingriffmöglichkeiten, die man bei den offiziellen Systemen vermisst.
+DAPS ist ein AID-System, also ein Insulinpumpen-Controller mit Unterstützung eines CGM-Systems. Davon gibt es einige, aber DAPS ist für diejenigen gemacht, die die volle Kontrolle über ihre Insulin-Therapie haben wollen. Es ist einfach zu verwenden und selbsterklärend und gibt einem doch alle Informationen und Eingriffmöglichkeiten, die man bei den offiziellen Systemen vermisst.
 Es ist ein System von einem Diabetiker – für Diabetiker – für dich. Ich bin der Meinung, dass die Diabetes-Therapie auch Spaß machen kann, wenn du ein Tool zur Hand hast, das dich begleitet und dir die wichtigen Funktionen einfach anbietet, wenn du sie brauchst – statt gegen dich zu arbeiten.
 
 Einige Screenshots:
@@ -123,6 +124,7 @@ Und im dunklen Theme:
 ![Screenshots-Dark](docs/images/collage-dark.png)
 
 DAPS ist das richtige für dich, wenn
+- Du dich auskennst mit deinem Diabetes und weißt, was du tust
 - Dich auch nervt, dass dein AID-System wild rumpiept, obwohl du längst weißt, dass du im Niedrigbereich bist – das Piepen aber einfach nicht 
   stummgeschaltet werden kann
 - Dein AID-System nur sehr eingeschränkt die Insulindosis temporär anpassen kann (z.B. bei Sport, Krankheit, Temperaturschwankungen oder bei Stress)
@@ -141,7 +143,7 @@ Bolusrechner mit diversen Empfehlungen, die üblichen Insulin- und Profileinstel
 - Schnelles Umschalten von Zielwert, Niedrig-Schwellwert, prozentualer Insulin-Anpassung, Alarm-Profil und Insulin-Profil, auch zeitgesteuert
 - Einstellung individueller Mahlzeitentypen mit individuellen Wirkkurven incl. Schnellauswahl der Mahlzeittypen bei der Eingabe einer Mahlzeit
 - Natürlich geht Einstellung mg/dl und mmol/l, KE oder g Kohlenhydrate, Einstellung der Insulinkonzentration (U100, U200, ...), Einstellung der Insulin-Wirkkurve und -Dauer, Einstellung der stündlichen Basalraten und Insulinfaktoren über den Tag
-- Integration von nativen CGM- und Pumpentreibern. Stand Oktober 2026 werden schon xDrip als Blutzuckerwert-Quelle und die Dana-i-Pumpe unterstützt. Weitere CGMs und Pumpen werden folgen.
+- Integration von nativen CGM- und Pumpentreibern. Stand Oktober 2026 werden schon xDrip als Blutzuckerwert-Quelle und die Dana-i- und Omnipod Dash-Pumpen unterstützt. Weitere CGMs und Pumpen werden folgen.
 
 ### 🔮 Perspektivisch sind angedacht:
 - Verbesserte Unterstützung für Sehbehinderte
