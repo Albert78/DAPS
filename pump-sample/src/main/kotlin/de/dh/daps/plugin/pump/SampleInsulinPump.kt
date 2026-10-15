@@ -32,7 +32,6 @@ class SampleInsulinPump : InsulinPump {
     override val expirations: StateFlow<List<Expiration>> = MutableStateFlow(emptyList())
 
     override var insulinConcentration: InsulinConcentration = InsulinConcentration.U100
-    override var requestedHistoryStart: Timestamp = Timestamp.now().minusHours(InsulinPump.DEFAULT_REQUESTED_HISTORY_HOURS)
 
     override val hardwareInformation: StateFlow<PumpHardwareInformation?> = MutableStateFlow(
         PumpHardwareInformation(
@@ -90,7 +89,7 @@ class SampleInsulinPump : InsulinPump {
         // TODO: Set therapy profile
     }
 
-    override suspend fun syncHistory() {
+    override suspend fun syncHistory(start: Timestamp) {
         // TODO: Sync pump history
     }
 

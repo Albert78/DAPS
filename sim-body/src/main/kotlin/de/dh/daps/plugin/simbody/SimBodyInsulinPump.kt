@@ -58,7 +58,7 @@ class SimBodyInsulinPump(
     override val expirations: StateFlow<List<Expiration>> = MutableStateFlow(emptyList())
 
     override var insulinConcentration: InsulinConcentration = InsulinConcentration.U100
-    override var requestedHistoryStart: Timestamp = Timestamp.now().minusHours(InsulinPump.DEFAULT_REQUESTED_HISTORY_HOURS)
+    private var lastRequestedStart: Timestamp = Timestamp.now().minusHours(InsulinPump.DEFAULT_REQUESTED_HISTORY_HOURS)
 
     companion object {
         const val SIM_PUMP_MIN_BASAL_RATE = 0.0
@@ -206,7 +206,7 @@ class SimBodyInsulinPump(
                             timestamp = state.timestamp
                         )
                         _bolusEvents.emit(BolusEvent.Completed(state.bolusId, state.targetAmount, state.deliveredAmount, state.timestamp))
-                        syncHistory()
+                        syncHistory(lastRequestedStart)
                     }
                     is DeviceBolusState.Stopped -> {
                         _bolusStatus.value = BolusStatus(
@@ -217,7 +217,7 @@ class SimBodyInsulinPump(
                             timestamp = state.timestamp
                         )
                         _bolusEvents.emit(BolusEvent.Stopped(state.bolusId, state.targetAmount, state.deliveredAmount, state.timestamp))
-                        syncHistory()
+                        syncHistory(lastRequestedStart)
                     }
                 }
             }
@@ -258,9 +258,10 @@ class SimBodyInsulinPump(
         device.setProfile(profile)
     }
 
-    override suspend fun syncHistory() {
+    override suspend fun syncHistory(start: Timestamp) {
         if (!_isConnected.value) return
-        val cutoff = requestedHistoryStart
+        lastRequestedStart = start
+        val cutoff = start
         val points = device.getHistory()
             .filter { it.timestamp >= cutoff }
             .map { point ->
@@ -286,7 +287,7 @@ class SimBodyInsulinPump(
         if (!_isConnected.value) return
         // pumpStatus and alerts are already connected via flows in this simulator.
         // We also sync history on refresh in this sim to stay up-to-date.
-        syncHistory()
+        syncHistory(lastRequestedStart)
     }
 
     override fun stop() {

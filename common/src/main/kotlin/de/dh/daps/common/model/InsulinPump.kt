@@ -223,27 +223,10 @@ interface InsulinPump {
      *
      * ### Driver Implementation Requirements:
      * - **Coverage Expectation:** The DAPS system assumes that the delivered [InsulinHistory] spans a time
-     *   range extending into the past AT LEAST up to [requestedHistoryStart].
+     *   range extending into the past AT LEAST up to the start timestamp passed to [syncHistory].
      * - **Updating:** The driver MUST update this StateFlow during or after [syncHistory] completes.
      */
     val history: StateFlow<InsulinHistory?>
-
-    /**
-     * The earliest timestamp in the past from which the DAPS system requests history events during [syncHistory].
-     *
-     * ### Driver Implementation Requirements:
-     * - **Managed by DAPS:** This property is owned and managed exclusively by the DAPS system.
-     *   The pump driver MUST NOT modify this value itself.
-     * - **Query Guidance:** During [syncHistory], the driver SHOULD read this timestamp to determine
-     *   how far back in time it needs to retrieve or assemble history records.
-     * - **Initial Value:** Initialized by default to [DEFAULT_REQUESTED_HISTORY_HOURS] hours prior to the current system time.
-     * - **Monotonicity:** The driver can assume that this timestamp is never reset to an older value.
-     *   Therefore, history prepared for a read [requestedHistoryStart] value remains valid even if
-     *   DAPS updates [requestedHistoryStart] to a later timestamp in the meantime.
-     */
-    var requestedHistoryStart: Timestamp
-        get() = Timestamp.now().minusHours(DEFAULT_REQUESTED_HISTORY_HOURS)
-        set(_) {}
 
     /**
      * Concentration of the insulin loaded in the pump. Default is [InsulinConcentration.U100].
@@ -302,11 +285,12 @@ interface InsulinPump {
     suspend fun setProfile(profile: InsulinProfile)
 
     /**
-     * Performs a synchronization of the pump's history events.
+     * Performs a synchronization of the pump's history events from [start] timestamp onwards.
      *
+     * @param start The earliest timestamp in the past from which history events are requested.
      * @throws PumpConnectionException if the technical connection fails.
      */
-    suspend fun syncHistory()
+    suspend fun syncHistory(start: Timestamp)
 
     /**
      * Refreshes the last known data and status from the pump.

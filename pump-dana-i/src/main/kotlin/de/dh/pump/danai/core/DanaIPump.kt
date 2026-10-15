@@ -158,7 +158,7 @@ class DanaIPump {
     private var currentBasalPoints = emptyList<InsulinHistoryPoint>()
     private var currentBolusPoints = emptyList<InsulinHistoryPoint>()
 
-    var requestedHistoryStart: Timestamp = Timestamp.now().minusHours(InsulinPump.DEFAULT_REQUESTED_HISTORY_HOURS)
+    var lastRequestedStart: Timestamp = Timestamp.now().minusHours(InsulinPump.DEFAULT_REQUESTED_HISTORY_HOURS)
 
     private val _history = MutableStateFlow<InsulinHistory?>(null)
 
@@ -190,7 +190,7 @@ class DanaIPump {
     internal var onCancelTempBasal: (suspend () -> Unit)? = null
     internal var onSetSuspend: (suspend (Boolean) -> Unit)? = null
     internal var onSetProfile: (suspend (InsulinProfile) -> Unit)? = null
-    internal var onSyncHistory: (suspend () -> Unit)? = null
+    internal var onSyncHistory: (suspend (Timestamp) -> Unit)? = null
     internal var onRefreshStatus: (suspend () -> Unit)? = null
     internal var onExecute: (suspend (PumpCommand<*>) -> PumpResponse)? = null
     internal var onExecuteStream: (suspend (PumpStreamCommand<*, *>) -> Any)? = null
@@ -278,12 +278,14 @@ class DanaIPump {
     }
 
     /**
-     * Performs a synchronization of the pump's history events.
+     * Performs a synchronization of the pump's history events from [start] timestamp onwards.
      *
+     * @param start The earliest timestamp in the past from which history events are requested.
      * @throws Exception if the command cannot be sent or the pump connection fails.
      */
-    suspend fun syncHistory() {
-        onSyncHistory?.invoke()
+    suspend fun syncHistory(start: Timestamp) {
+        lastRequestedStart = start
+        onSyncHistory?.invoke(start)
     }
 
     /**
@@ -367,8 +369,7 @@ class DanaIPump {
     /**
      * Updates the basal history with new points and prunes records older than requested history start.
      */
-    internal fun updateBasalHistory(newPoints: List<InsulinHistoryPoint>) {
-        val cutoff = requestedHistoryStart
+    internal fun updateBasalHistory(newPoints: List<InsulinHistoryPoint>, cutoff: Timestamp = lastRequestedStart) {
         val sorted = (currentBasalPoints + newPoints)
             .distinctBy { it.pumpId ?: it.timestamp }
             .sortedBy { it.timestamp }
@@ -383,8 +384,7 @@ class DanaIPump {
     /**
      * Updates the bolus history with new points and prunes records older than requested history start.
      */
-    internal fun updateBolusHistory(newPoints: List<InsulinHistoryPoint>) {
-        val cutoff = requestedHistoryStart
+    internal fun updateBolusHistory(newPoints: List<InsulinHistoryPoint>, cutoff: Timestamp = lastRequestedStart) {
         val sorted = (currentBolusPoints + newPoints)
             .distinctBy { it.pumpId ?: it.timestamp }
             .sortedBy { it.timestamp }

@@ -48,12 +48,6 @@ class DanaIPumpAdapter(
             pump.insulinConcentration = value
         }
 
-    override var requestedHistoryStart: Timestamp
-        get() = pump.requestedHistoryStart
-        set(value) {
-            pump.requestedHistoryStart = value
-        }
-
     override val hardwareInformation: StateFlow<PumpHardwareInformation?> = pump.hardware.map { hi ->
         hi?.let {
             PumpHardwareInformation(
@@ -119,8 +113,8 @@ class DanaIPumpAdapter(
         pump.setProfile(profile)
     }
 
-    override suspend fun syncHistory() {
-        pump.syncHistory()
+    override suspend fun syncHistory(start: Timestamp) {
+        pump.syncHistory(start)
     }
 
     override suspend fun refreshStatus() {

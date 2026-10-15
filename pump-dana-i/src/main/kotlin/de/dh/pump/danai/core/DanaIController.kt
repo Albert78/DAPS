@@ -153,7 +153,7 @@ class DanaIController(
         pump.onCancelTempBasal = { executeCancelTempBasal() }
         pump.onSetSuspend = { suspended -> executeSetSuspend(suspended) }
         pump.onSetProfile = { profile -> executeSetProfile(profile) }
-        pump.onSyncHistory = { executeSyncHistory() }
+        pump.onSyncHistory = { start -> executeSyncHistory(start) }
         pump.onRefreshStatus = { executeRefreshStatus() }
         pump.onExecute = { command -> withConnection { it.execute(command) } }
         pump.onExecuteStream = { command -> withConnection { client -> client.executeStream(command) as Any } }
@@ -429,11 +429,11 @@ class DanaIController(
         }
     }
 
-    private suspend fun performBasalHistorySync(client: PumpClient) {
+    private suspend fun performBasalHistorySync(client: PumpClient, start: Timestamp = pump.lastRequestedStart) {
         logger.log("Syncing basal history...")
 
         try {
-            val startTimestamp = minOf(lastBasalHistoryTimestamp, pump.requestedHistoryStart)
+            val startTimestamp = maxOf(lastBasalHistoryTimestamp, start)
             val queryPumpTime = PumpTimestamp.fromSystemTimestamp(startTimestamp, pump.pumpTimeOffsetMs)
             val history = client.executeStream(commands.historyBasal(queryPumpTime))
             val points = mapBasalRecordsToHistoryPoints(
@@ -443,7 +443,7 @@ class DanaIController(
             )
 
             if (points.isNotEmpty()) {
-                pump.updateBasalHistory(points)
+                pump.updateBasalHistory(points, start)
                 val maxSystemTimestamp = history.records.maxOf { it.timestamp }.toSystemTimestamp(pump.pumpTimeOffsetMs)
                 lastBasalHistoryTimestamp = maxSystemTimestamp.plusMs(1)
             }
@@ -516,11 +516,11 @@ class DanaIController(
         return points
     }
 
-    private suspend fun performBolusHistorySync(client: PumpClient) {
+    private suspend fun performBolusHistorySync(client: PumpClient, start: Timestamp = pump.lastRequestedStart) {
         logger.log("Syncing bolus history...")
 
         try {
-            val startTimestamp = minOf(lastBolusHistoryTimestamp, pump.requestedHistoryStart)
+            val startTimestamp = maxOf(lastBolusHistoryTimestamp, start)
             val queryPumpTime = PumpTimestamp.fromSystemTimestamp(startTimestamp, pump.pumpTimeOffsetMs)
             val history = client.executeStream(commands.historyBolus(queryPumpTime))
             val points = history.records.map { record ->
@@ -532,7 +532,7 @@ class DanaIController(
                 )
             }
             if (points.isNotEmpty()) {
-                pump.updateBolusHistory(points)
+                pump.updateBolusHistory(points, start)
                 val maxSystemTimestamp = history.records.maxOf { it.timestamp }.toSystemTimestamp(pump.pumpTimeOffsetMs)
                 lastBolusHistoryTimestamp = maxSystemTimestamp.plusMs(1)
             }
@@ -762,10 +762,10 @@ class DanaIController(
         updatePumpStatus(client)
     }
 
-    private suspend fun executeSyncHistory() = withConnection { client ->
+    private suspend fun executeSyncHistory(start: Timestamp) = withConnection { client ->
         updateTimeOffset(client)
-        performBasalHistorySync(client)
-        performBolusHistorySync(client)
+        performBasalHistorySync(client, start)
+        performBolusHistorySync(client, start)
     }
 
     private suspend fun executeRefreshStatus() = withConnection { client ->

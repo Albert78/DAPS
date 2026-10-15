@@ -3,6 +3,7 @@ package de.dh.daps.core.pump
 import de.dh.daps.common.model.BolusStatus
 import de.dh.daps.common.model.InsulinHistory
 import de.dh.daps.common.model.InsulinPump
+import de.dh.daps.common.model.data.Timestamp
 import kotlinx.coroutines.flow.StateFlow
 
 import kotlin.time.Duration
@@ -35,6 +36,12 @@ interface PumpManager {
      * Note: Prefer using high-level methods of this manager.
      */
     val pumpCoordinator: PumpCoordinator?
+
+    /**
+     * The earliest timestamp in the past from which the DAPS system requests history events.
+     * Delegated to the active [PumpCoordinator] if available.
+     */
+    var requestedHistoryStart: Timestamp
 
     /**
      * Issues a command to the pump.

@@ -79,7 +79,6 @@ class OmnipodDashPump(
     override val insulinPumpId: String = PUMP_ID
     override val insulinPumpDisplayName: UiText = UiText.StringResource(R.string.omnipod_dash_pump_display_name)
     override var insulinConcentration: InsulinConcentration = InsulinConcentration.U100
-    override var requestedHistoryStart: Timestamp = Timestamp.now().minusHours(InsulinPump.DEFAULT_REQUESTED_HISTORY_HOURS)
 
     private var sequenceNumber: Short = 1
     private var lastSyncTimestamp: Timestamp = Timestamp.now().minusHours(24)
@@ -518,10 +517,10 @@ class OmnipodDashPump(
         return true
     }
 
-    override suspend fun syncHistory() {
+    override suspend fun syncHistory(start: Timestamp) {
         refreshStatus()
         db?.let { historyDb ->
-            val cutoff = requestedHistoryStart
+            val cutoff = start
             val entities = historyDb.historyDao().getEventsSince(cutoff.ms)
 
             val points = entities.map { entity ->

@@ -113,6 +113,8 @@ class PumpCoordinator(
     private val _lastConnectionTime = MutableStateFlow(Timestamp.INVALID)
     val lastConnectionTime: StateFlow<Timestamp> = _lastConnectionTime.asStateFlow()
 
+    var requestedHistoryStart: Timestamp = Timestamp.now().minusHours(InsulinPump.DEFAULT_REQUESTED_HISTORY_HOURS)
+
     init {
         setupPump()
         operate()
@@ -204,7 +206,7 @@ class PumpCoordinator(
             repeat(3) {
                 try {
                     pump.refreshStatus()
-                    pump.syncHistory()
+                    pump.syncHistory(requestedHistoryStart)
                     _lastConnectionTime.value = Timestamp.now()
                     return
                 } catch (_: Exception) {
@@ -339,7 +341,7 @@ class PumpCoordinator(
                 pump.refreshStatus()
             }
             is PumpCommand.SyncHistory -> {
-                pump.syncHistory()
+                pump.syncHistory(requestedHistoryStart)
             }
             is PumpCommand.DeliverBolus -> {
                 pump.bolus(command.amount, command.bolusId)
@@ -399,13 +401,23 @@ class PumpCoordinator(
         command: PumpCommand,
         expiresAt: Timestamp? = null
     ) {
-        val job = PumpJob(
-            command = command,
-            expiresAt = expiresAt
-        )
+        var added = false
 
-        _pendingJobs.update { it + job }
-        operate()
+        // Add job, but avoid adding multiple SyncHistory commands
+        _pendingJobs.update { pending ->
+            if (command is PumpCommand.SyncHistory && pending.lastOrNull()?.command is PumpCommand.SyncHistory) {
+                pending
+            } else {
+                added = true
+                pending + PumpJob(
+                    command = command,
+                    expiresAt = expiresAt
+                )
+            }
+        }
+        if (added) {
+            operate()
+        }
     }
 
     /**

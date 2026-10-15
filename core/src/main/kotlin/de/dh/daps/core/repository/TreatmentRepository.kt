@@ -121,7 +121,7 @@ class TreatmentRepository(
      * Merges a range of insulin history from the pump.
      * Updates matching entries, inserts new entries, and cancels unconfirmed scheduled entries.
      *
-     * @return The recommended [Timestamp] to set on [InsulinPump.requestedHistoryStart] for subsequent syncs, or `null` if no entries.
+     * @return The recommended [Timestamp] for subsequent syncs, or `null` if no entries.
      */
     suspend fun mergeInsulinHistory(history: InsulinHistory, insulinType: InsulinType): Timestamp? = mutex.withLock {
         val from = history.from

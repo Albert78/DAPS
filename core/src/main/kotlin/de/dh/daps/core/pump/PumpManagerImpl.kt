@@ -38,6 +38,15 @@ class PumpManagerImpl(
     override var pumpCoordinator: PumpCoordinator? = null
         private set
 
+    private var fallbackRequestedHistoryStart: Timestamp = Timestamp.now().minusHours(InsulinPump.DEFAULT_REQUESTED_HISTORY_HOURS)
+
+    override var requestedHistoryStart: Timestamp
+        get() = pumpCoordinator?.requestedHistoryStart ?: fallbackRequestedHistoryStart
+        set(value) {
+            fallbackRequestedHistoryStart = value
+            pumpCoordinator?.requestedHistoryStart = value
+        }
+
     private var pumpMonitorJob: Job? = null
     private var historyUpdateListener: (suspend (InsulinHistory) -> Unit)? = null
     private var bolusStatusUpdateListener: (suspend (BolusStatus) -> Unit)? = null
@@ -62,6 +71,7 @@ class PumpManagerImpl(
                     onJobError = { job, jobErrorCode -> handleJobError(job, jobErrorCode) },
                     scope = scope + SupervisorJob() + Dispatchers.Default
                 )
+                pc.requestedHistoryStart = fallbackRequestedHistoryStart
                 pumpMonitorJob = scope.launch {
                     launch {
                         pc.lastConnectionTime.collect { time ->
