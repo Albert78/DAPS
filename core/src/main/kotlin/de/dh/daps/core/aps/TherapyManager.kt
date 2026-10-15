@@ -31,7 +31,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -111,18 +110,10 @@ class TherapyManager(
 
         checkAndApplyTherapyAdjustmentTiming()
 
-        val currentSettings = runCatching { getCurrentTherapySettings() }.getOrNull()
-        if (currentSettings != null) {
-            pumpManager.issueCommand(
-                PumpCommand.SetProfile(currentSettings.effectiveInsulinProfile)
-            )
-        }
-
         currentScope.launch {
             currentTherapySettingsFlow
                 .map { it.effectiveInsulinProfile }
                 .distinctUntilChanged()
-                .drop(1)
                 .collect { effectiveProfile ->
                     pumpManager.issueCommand(
                         PumpCommand.SetProfile(effectiveProfile)
