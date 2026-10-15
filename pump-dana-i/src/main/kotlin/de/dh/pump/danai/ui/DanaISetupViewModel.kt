@@ -63,10 +63,14 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    fun unbind(driver: DanaIInsulinPumpDriver) {
+    fun unbind(
+        driver: DanaIInsulinPumpDriver,
+        onSuccess: (() -> Unit)? = null
+    ) {
         viewModelScope.launch {
             try {
                 driver.unbindDevice()
+                onSuccess?.invoke()
             } catch (e: Exception) {
                 _connectError.value = e.message
             }

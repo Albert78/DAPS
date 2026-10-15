@@ -19,10 +19,12 @@ import de.dh.pump.danai.ui.DanaIPumpControl
 import de.dh.pump.danai.ui.DanaISetupScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.withContext
 
 /**
  * Insulin pump driver plugin for Sooil Dana-i pumps.
@@ -105,7 +107,7 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
             deviceName = deviceName,
             preferences = pc.preferences,
             logger = defaultLogger,
-            context = pc.appContext
+            context = pc.appContext,
         )
 
         val pumpAdapter = DanaIPumpAdapter.create(link, defaultLogger, scope)
@@ -134,16 +136,48 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
 
     /**
      * Unbinds the currently bound Dana-i pump, clears stored preferences,
-     * disconnects active connection, and resets the driver lifecycle state to NoDevice.
+     * disconnects active connection, removes the Bluetooth bond, and resets the driver lifecycle state to NoDevice.
      */
-    suspend fun unbindDevice() {
+    suspend fun unbindDevice() = withContext(NonCancellable) {
         val pc = pluginContext
-        if (pc != null) {
-            DanaPumpPreferences(pc.preferences).clear()
+        val pumpAdapter = _activePump.value as? DanaIPumpAdapter
+        var deviceToUnbond = pumpAdapter?.controller?.device
+
+        if ((deviceToUnbond == null) && (pc != null)) {
+            val address = DanaPumpPreferences(pc.preferences).getLastAddress()
+            if (address.isNotEmpty()) {
+                val bluetoothManager = pc.appContext.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
+                deviceToUnbond = bluetoothManager?.adapter?.getRemoteDevice(address)
+            }
         }
-        (_activePump.value as? DanaIPumpAdapter)?.controller?.disconnect()
+
+        pc?.let {
+            DanaPumpPreferences(it.preferences).clear()
+        }
+
+        pumpAdapter?.controller?.disconnect()
+
+        deviceToUnbond?.let { device ->
+            removeBond(device)
+        }
+
         _activePump.value = null
         _lifecycleState.value = DeviceLifecycleState.NoDevice
+    }
+
+    @Suppress("MissingPermission")
+    private fun removeBond(device: android.bluetooth.BluetoothDevice) {
+        try {
+            if (device.bondState != android.bluetooth.BluetoothDevice.BOND_NONE) {
+                Log.d(TAG, "Removing Bluetooth bond for device ${device.address}")
+                val removeBondMethod = device.javaClass.getMethod("removeBond")
+                removeBondMethod.invoke(device)
+            }
+        } catch (e: SecurityException) {
+            Log.e(TAG, "SecurityException while removing Bluetooth bond for device ${device.address}", e)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to remove Bluetooth bond for device ${device.address}", e)
+        }
     }
 
     internal fun getContext(): PluginContext? = pluginContext

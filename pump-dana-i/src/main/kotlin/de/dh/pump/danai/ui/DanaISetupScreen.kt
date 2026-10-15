@@ -88,8 +88,9 @@ fun DanaISetupScreen(
                 displayName = state.displayName.asString(),
                 deviceId = state.deviceId,
                 onUnbind = {
-                    viewModel.unbind(driver)
-                    onDriverReset()
+                    viewModel.unbind(driver) {
+                        onDriverReset()
+                    }
                 },
                 modifier = modifier
             )
