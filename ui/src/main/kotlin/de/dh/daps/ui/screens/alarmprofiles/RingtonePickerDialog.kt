@@ -56,6 +56,7 @@ import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.theme.AppPreview
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 import de.dh.daps.common.R as CommonR
@@ -218,6 +219,19 @@ fun RingtonePickerDialogContent(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     val listState = rememberLazyListState()
+
+                    var previousSize by remember { mutableStateOf(ringtones.size) }
+
+                    LaunchedEffect(ringtones.size) {
+                        if (ringtones.size > previousSize) {
+                            listState.animateScrollToItem(ringtones.size - 1)
+                            delay(100)
+                            val targetIndex = (listState.layoutInfo.totalItemsCount - 1).coerceAtLeast(0)
+                            listState.animateScrollToItem(targetIndex)
+                        }
+                        previousSize = ringtones.size
+                    }
+
                     LazyColumn(
                         state = listState,
                         modifier = Modifier

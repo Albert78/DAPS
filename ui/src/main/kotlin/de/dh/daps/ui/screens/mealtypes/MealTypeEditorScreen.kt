@@ -36,11 +36,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -175,6 +178,17 @@ fun MealTypeEditorContent(
         }
     ) { innerPadding ->
         val listState = rememberLazyListState()
+
+        var previousComponentsSize by remember { mutableIntStateOf(uiState.components.size) }
+
+        LaunchedEffect(uiState.components.size) {
+            if (uiState.components.size > previousComponentsSize) {
+                delay(100)
+                val targetIndex = (listState.layoutInfo.totalItemsCount - 1).coerceAtLeast(0)
+                listState.animateScrollToItem(targetIndex)
+            }
+            previousComponentsSize = uiState.components.size
+        }
 
         LazyColumn(
             state = listState,

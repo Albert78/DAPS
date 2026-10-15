@@ -27,11 +27,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -117,6 +119,18 @@ fun TherapyAdjustmentsContent(
             }
         } else {
             val listState = rememberLazyListState()
+
+            var previousSize by remember { mutableStateOf(uiState.adjustments.size) }
+
+            LaunchedEffect(uiState.adjustments.size) {
+                if (uiState.adjustments.size > previousSize) {
+                    delay(100)
+                    val targetIndex = (listState.layoutInfo.totalItemsCount - 1).coerceAtLeast(0)
+                    listState.animateScrollToItem(targetIndex)
+                }
+                previousSize = uiState.adjustments.size
+            }
+
             LazyColumn(
                 state = listState,
                 modifier = Modifier

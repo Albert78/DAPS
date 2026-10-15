@@ -48,7 +48,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -515,6 +518,7 @@ fun TherapyBlockListEditor(
     var showHelpDialog by remember { mutableStateOf(false) }
 
     val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
 
     val startHours = remember(blocks) {
         var currentHour = 0
@@ -543,10 +547,20 @@ fun TherapyBlockListEditor(
         val splitBlock = blocks[splitIndex]
         val splitDuration = splitBlock.duration.value / 60
 
+        val isAddingAtEnd = (atIndex == blocks.size)
+
         val newBlocks = blocks.toMutableList()
         newBlocks[splitIndex] = splitBlock.copy(duration = Minutes.ofHours(1))
         newBlocks.add(atIndex, splitBlock.copy(duration = Minutes.ofHours(splitDuration - 1)))
         onBlocksChanged(newBlocks)
+
+        if (isAddingAtEnd) {
+            coroutineScope.launch {
+                delay(100)
+                val targetIndex = (listState.layoutInfo.totalItemsCount - 1).coerceAtLeast(0)
+                listState.animateScrollToItem(targetIndex)
+            }
+        }
     }
 
     fun removeBlock(index: Int) {
