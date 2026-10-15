@@ -315,6 +315,7 @@ class AndroidNotificationsImpl(
         AlarmType.PUMP_LOW_BATTERY -> context.getString(UiR.string.alarm_type_pump_low_battery)
         AlarmType.CGM_SIGNAL_LOSS -> context.getString(UiR.string.alarm_type_cgm_signal_loss)
         AlarmType.SYSTEM_BATTERY_LOW -> context.getString(UiR.string.alarm_type_system_battery_low)
+        AlarmType.SYSTEM_BLUETOOTH_OFF -> context.getString(UiR.string.alarm_type_system_bluetooth_off)
     }
 
     private fun getAlarmContentText(alarmType: AlarmType, bgValue: BgValue?, unit: GlucoseUnit): String = when (alarmType) {
@@ -331,6 +332,7 @@ class AndroidNotificationsImpl(
         AlarmType.PUMP_LOW_INSULIN -> context.getString(UiR.string.pump_issue_low_insulin)
         AlarmType.PUMP_LOW_BATTERY -> context.getString(UiR.string.pump_issue_low_battery)
         AlarmType.SYSTEM_BATTERY_LOW -> context.getString(UiR.string.alarm_type_system_battery_low)
+        AlarmType.SYSTEM_BLUETOOTH_OFF -> context.getString(UiR.string.alarm_type_system_bluetooth_off_desc)
     }
 
     override fun cancelAlarmNotification() {

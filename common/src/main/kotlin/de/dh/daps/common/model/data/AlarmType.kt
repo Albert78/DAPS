@@ -46,6 +46,10 @@ enum class AlarmType(
     SYSTEM_BATTERY_LOW(
         defaultSeverity = AlarmSeverity.INFO,
         category = AlarmCategory.SYSTEM
+    ),
+    SYSTEM_BLUETOOTH_OFF(
+        defaultSeverity = AlarmSeverity.WARNING,
+        category = AlarmCategory.SYSTEM
     );
 
     /**

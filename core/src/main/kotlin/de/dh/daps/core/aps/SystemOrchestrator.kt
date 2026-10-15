@@ -18,6 +18,8 @@ import de.dh.daps.common.service.TimeService
 import de.dh.daps.common.service.WakeupHandler
 import de.dh.daps.core.pump.PumpIssue
 import de.dh.daps.core.pump.PumpManager
+import de.dh.daps.core.repository.BluetoothStatus
+import de.dh.daps.core.repository.DeviceStatusRepository
 import de.dh.daps.core.repository.GlucoseRepository
 import de.dh.daps.core.repository.SettingsRepository
 import de.dh.daps.core.repository.SystemMetricsRepository
@@ -59,6 +61,11 @@ sealed interface ApsIssue {
      * Active pump issue preventing insulin delivery or pump operation.
      */
     data class Pump(val issue: PumpIssue) : ApsIssue
+
+    /**
+     * Bluetooth is turned off on the phone, preventing communications with pump and CGM.
+     */
+    data object BluetoothDisabled : ApsIssue
 
     /**
      * Any other issue that prevents the core from working.
@@ -167,6 +174,7 @@ class SystemOrchestratorImpl(
     private val settingsRepository: SettingsRepository,
     private val timeService: TimeService,
     private val androidNotifications: AndroidNotifications,
+    private val deviceStatusRepository: DeviceStatusRepository,
     private val scope: CoroutineScope
 ) : SystemOrchestrator {
     // Threading: Single background thread to avoid race conditions in the core logic
@@ -279,9 +287,13 @@ class SystemOrchestratorImpl(
             combine(
                 _isBgStale,
                 coreState,
-                pumpManager.pumpIssues
-            ) { stale, state, pIssues ->
+                pumpManager.pumpIssues,
+                deviceStatusRepository.observeBluetoothStatus()
+            ) { stale, state, pIssues, btStatus ->
                 val issues = mutableSetOf<ApsIssue>()
+                if (btStatus == BluetoothStatus.DISABLED || btStatus == BluetoothStatus.UNAVAILABLE) {
+                    issues.add(ApsIssue.BluetoothDisabled)
+                }
                 if (stale) {
                     issues.add(ApsIssue.StaleBG)
                 }

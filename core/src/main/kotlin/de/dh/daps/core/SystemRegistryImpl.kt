@@ -325,6 +325,7 @@ class SystemRegistryImpl(
                 settingsRepository = settingsRepository,
                 timeService = timeService,
                 androidNotifications = androidNotifications,
+                deviceStatusRepository = deviceStatusRepository,
                 scope = scope
             )
 

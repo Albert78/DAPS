@@ -129,6 +129,7 @@ class AlarmEvaluator(
 
         input.apsIssues.forEach { issue ->
             when (issue) {
+                is ApsIssue.BluetoothDisabled -> activeSet.add(AlarmType.SYSTEM_BLUETOOTH_OFF)
                 is ApsIssue.StaleBG -> activeSet.add(AlarmType.CGM_SIGNAL_LOSS)
                 is ApsIssue.Pump -> {
                     when (issue.issue) {
