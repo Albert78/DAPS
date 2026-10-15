@@ -71,6 +71,7 @@ class DanaIController(
     private var sessionHandlerJob: Job? = null
     private var lastBasalHistoryTimestamp: Timestamp = Timestamp.now().minusHours(24)
     private var lastBolusHistoryTimestamp: Timestamp = Timestamp.now().minusHours(24)
+    private var lastAppliedProfile: InsulinProfile? = null
 
     private data class ActiveBolusContext(
         val bolusId: String?,
@@ -162,6 +163,11 @@ class DanaIController(
                 try {
                     connect()
                     executeRefreshStatus()
+                    val profileToRestore = lastAppliedProfile
+                    if (profileToRestore != null) {
+                        logger.log("Restoring basal profile after maintenance mode...")
+                        executeSetProfile(profileToRestore)
+                    }
                 } catch (e: Exception) {
                     logger.log("Failed to reconnect after maintenance: ${e.message}")
                 }
@@ -215,6 +221,7 @@ class DanaIController(
             // Initial Status Update
             try {
                 updateHardwareStatus(client)
+                syncPumpTime(client)
                 updatePumpStatus(client)
             } catch (e: Exception) {
                 logger.log("Initial status update failed: ${e.message}")
@@ -269,6 +276,20 @@ class DanaIController(
                 shippingDate = shippingInfo.shippingDate,
             ),
         )
+    }
+
+    private suspend fun syncPumpTime(client: PumpClient) {
+        try {
+            val sysTime = System.currentTimeMillis()
+            val zoneOffsetSeconds = java.time.ZonedDateTime.now().offset.totalSeconds
+            val response = client.execute(commands.optionSetPumpUtcAndTimeZone(sysTime, zoneOffsetSeconds))
+            if (response.status == PumpStatus.OK) {
+                logger.log("Successfully synchronized pump time with system time.")
+            }
+            updateTimeOffset(client)
+        } catch (e: Exception) {
+            logger.log("Failed to sync pump time: ${e.message}")
+        }
     }
 
     private suspend fun updateTimeOffset(client: PumpClient) {
@@ -735,6 +756,8 @@ class DanaIController(
 
         val cmd = commands.basalSetProfileBasalRate(activeProfileNum, hourlyRates)
         client.execute(cmd).ensureOk(cmd.name)
+
+        lastAppliedProfile = profile
 
         updatePumpStatus(client)
     }
