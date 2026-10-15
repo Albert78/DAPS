@@ -79,8 +79,8 @@ fun DanaISetupScreen(
     val scanResults by viewModel.scanResults.collectAsState()
     val isScanning by viewModel.isScanning.collectAsState()
     val scanError by viewModel.scanError.collectAsState()
-    val isConnecting by viewModel.isConnecting.collectAsState()
-    val connectError by viewModel.connectError.collectAsState()
+    val pairingAddress by viewModel.pairingAddress.collectAsState()
+    val pairError by viewModel.pairError.collectAsState()
 
     when (val state = lifecycleState) {
         is DeviceLifecycleState.DeviceBound -> {
@@ -105,8 +105,8 @@ fun DanaISetupScreen(
                 scanResults = scanResults,
                 isScanning = isScanning,
                 scanError = scanError,
-                isConnecting = isConnecting,
-                connectError = connectError,
+                pairingAddress = pairingAddress,
+                pairError = pairError,
                 onStartDiscovery = { viewModel.startDiscovery() },
                 onPairClick = { scanResult ->
                     viewModel.pairAndBind(
@@ -261,13 +261,14 @@ fun DanaISetupContent(
     scanResults: List<DanaScanResult>,
     isScanning: Boolean,
     scanError: DanaScanError?,
-    isConnecting: Boolean,
-    connectError: String?,
+    pairingAddress: String?,
+    pairError: String?,
     onStartDiscovery: () -> Unit,
     onPairClick: (DanaScanResult) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val isPairingAnyPump = pairingAddress != null
 
     Column(
         modifier = modifier.fillMaxSize(),
@@ -322,7 +323,7 @@ fun DanaISetupContent(
             )
         }
 
-        connectError?.let { errorMsg ->
+        pairError?.let { errorMsg ->
             WarningBanner(
                 warningText = errorMsg,
                 onActionClick = {}
@@ -376,6 +377,8 @@ fun DanaISetupContent(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(scanResults, key = { it.address }) { pump ->
+                    val isPairingThisPump = pairingAddress == pump.address
+
                     FramedCard(
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -407,10 +410,10 @@ fun DanaISetupContent(
                             }
 
                             PrimaryButton(
-                                enabled = !isConnecting,
+                                enabled = !isPairingAnyPump,
                                 onClick = { onPairClick(pump) }
                             ) {
-                                if (isConnecting) {
+                                if (isPairingThisPump) {
                                     CircularProgressIndicator(
                                         modifier = Modifier.size(16.dp),
                                         strokeWidth = 2.dp,
@@ -459,7 +462,7 @@ fun DanaISetupContent(
             SecondaryButton(
                 onClick = onStartDiscovery,
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !isScanning && !isConnecting
+                enabled = !isScanning && !isPairingAnyPump
             ) {
                 Text(stringResource(R.string.danai_pump_setup_btn_search))
             }
@@ -490,8 +493,8 @@ private fun DanaISetupContentPreview() {
             ),
             isScanning = false,
             scanError = null,
-            isConnecting = false,
-            connectError = null,
+            pairingAddress = null,
+            pairError = null,
             onStartDiscovery = {},
             onPairClick = {}
         )
@@ -506,8 +509,8 @@ private fun DanaISetupContentScanningPreview() {
             scanResults = emptyList(),
             isScanning = true,
             scanError = null,
-            isConnecting = false,
-            connectError = null,
+            pairingAddress = null,
+            pairError = null,
             onStartDiscovery = {},
             onPairClick = {}
         )
@@ -522,8 +525,8 @@ private fun DanaISetupContentBluetoothDisabledPreview() {
             scanResults = emptyList(),
             isScanning = false,
             scanError = DanaScanError.BLUETOOTH_DISABLED,
-            isConnecting = false,
-            connectError = null,
+            pairingAddress = null,
+            pairError = null,
             onStartDiscovery = {},
             onPairClick = {}
         )

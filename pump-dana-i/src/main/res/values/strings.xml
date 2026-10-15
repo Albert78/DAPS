@@ -1,7 +1,7 @@
 <resources>
     <string name="danai_pump_driver_display_name">Sooil Dana-i</string>
     <string name="danai_pump_setup_title">Sooil Dana-i</string>
-    <string name="danai_pump_setup_subtitle">Wähle und koppele deine Insulinpumpe</string>
+    <string name="danai_pump_setup_subtitle">Wähle und kopple deine Insulinpumpe</string>
     <string name="danai_pump_setup_available_pumps">Verfügbare Pumpen</string>
     <string name="danai_pump_setup_no_pumps_found">Keine Dana-i-Pumpen in der Nähe gefunden. Stelle sicher, dass Bluetooth aktiviert ist und sich die Pumpe in Reichweite befindet. Die Pumpe darf mit keinem anderen Gerät gekoppelt sein. Du kannst die Suche erneut starten, es ist ganz normal, dass es ein paar Versuche braucht.</string>
     <string name="danai_pump_setup_searching_pumps">Suche nach Dana-i-Pumpen in der Nähe. Das kann eine Zeit lang dauern…</string>

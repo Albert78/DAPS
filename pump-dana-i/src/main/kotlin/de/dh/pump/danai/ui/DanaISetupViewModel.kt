@@ -25,11 +25,11 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
     val isScanning: StateFlow<Boolean> = scanner.isScanning
     val scanError: StateFlow<DanaScanError?> = scanner.scanError
 
-    private val _isConnecting = MutableStateFlow(false)
-    val isConnecting: StateFlow<Boolean> = _isConnecting.asStateFlow()
+    private val _pairingAddress = MutableStateFlow<String?>(null)
+    val pairingAddress: StateFlow<String?> = _pairingAddress.asStateFlow()
 
-    private val _connectError = MutableStateFlow<String?>(null)
-    val connectError: StateFlow<String?> = _connectError.asStateFlow()
+    private val _pairError = MutableStateFlow<String?>(null)
+    val pairError: StateFlow<String?> = _pairError.asStateFlow()
 
     fun startDiscovery() {
         scanner.startScan(viewModelScope, verifyCharacteristics = true)
@@ -45,8 +45,8 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
         onSuccess: (() -> Unit)? = null
     ) {
         viewModelScope.launch {
-            _isConnecting.value = true
-            _connectError.value = null
+            _pairingAddress.value = scanResult.address
+            _pairError.value = null
             scanner.stopScan()
 
             try {
@@ -54,11 +54,11 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
                     deviceName = scanResult.name,
                     deviceAddress = scanResult.address,
                 )
-                _isConnecting.value = false
+                _pairingAddress.value = null
                 onSuccess?.invoke()
             } catch (e: Exception) {
-                _isConnecting.value = false
-                _connectError.value = e.message ?: getApplication<Application>().getString(R.string.danai_pump_setup_connect_failed)
+                _pairingAddress.value = null
+                _pairError.value = e.message ?: getApplication<Application>().getString(R.string.danai_pump_setup_connect_failed)
             }
         }
     }
@@ -72,7 +72,7 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
                 driver.unbindDevice()
                 onSuccess?.invoke()
             } catch (e: Exception) {
-                _connectError.value = e.message
+                _pairError.value = e.message
             }
         }
     }
