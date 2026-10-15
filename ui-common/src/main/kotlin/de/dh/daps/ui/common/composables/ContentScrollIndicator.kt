@@ -16,6 +16,8 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import de.dh.daps.ui.common.icons.Icon_Scrollview_Arrow_Down
+import de.dh.daps.ui.common.icons.Icon_Scrollview_Arrow_Left
+import de.dh.daps.ui.common.icons.Icon_Scrollview_Arrow_Right
 import de.dh.daps.ui.common.icons.Icon_Scrollview_Arrow_Up
 
 /**
@@ -123,6 +125,121 @@ private fun Modifier.scrollIndicatorDrawModifier(
             translate(
                 left = (this@drawWithContent.size.width - iconSizePx) / 2f,
                 top = size.height - iconSizePx - bottomIconPaddingPx
+            ) {
+                draw(
+                    size = Size(iconSizePx, iconSizePx),
+                    colorFilter = ColorFilter.tint(iconTint)
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Modifier showing arrow left and right overlays over the scrollable content
+ * if the child is scrollable horizontally in the corresponding direction.
+ */
+@Composable
+fun Modifier.horizontalContentScrollIndicator(
+    scrollableState: ScrollableState,
+    indicatorWidth: Dp = 24.dp,
+    iconSize: Dp = 20.dp,
+    leftIconPadding: Dp = 2.dp,
+    rightIconPadding: Dp = 2.dp,
+    surfaceAlpha: Float = 0.8f,
+    showLeftGradient: Boolean = true,
+    showRightGradient: Boolean = true
+): Modifier {
+    val surfaceColor =
+        MaterialTheme.colorScheme.surface.copy(alpha = surfaceAlpha)
+    val iconTint =
+        MaterialTheme.colorScheme.onSurfaceVariant
+
+    val leftPainter = rememberVectorPainter(image = Icon_Scrollview_Arrow_Left)
+    val rightPainter = rememberVectorPainter(image = Icon_Scrollview_Arrow_Right)
+
+    return this.then(
+        Modifier.horizontalScrollIndicatorDrawModifier(
+            scrollableState = scrollableState,
+            surfaceColor = surfaceColor,
+            iconTint = iconTint,
+            leftPainter = leftPainter,
+            rightPainter = rightPainter,
+            indicatorWidth = indicatorWidth,
+            iconSize = iconSize,
+            leftIconPadding = leftIconPadding,
+            rightIconPadding = rightIconPadding,
+            showLeftGradient = showLeftGradient,
+            showRightGradient = showRightGradient
+        )
+    )
+}
+
+private fun Modifier.horizontalScrollIndicatorDrawModifier(
+    scrollableState: ScrollableState,
+    surfaceColor: Color,
+    iconTint: Color,
+    leftPainter: Painter,
+    rightPainter: Painter,
+    indicatorWidth: Dp,
+    iconSize: Dp,
+    leftIconPadding: Dp,
+    rightIconPadding: Dp,
+    showLeftGradient: Boolean,
+    showRightGradient: Boolean
+): Modifier = this.drawWithContent {
+    drawContent()
+
+    val canScrollLeft = scrollableState.canScrollBackward
+    val canScrollRight = scrollableState.canScrollForward
+
+    val indicatorWidthPx = indicatorWidth.toPx()
+    val iconSizePx = iconSize.toPx()
+    val leftIconPaddingPx = leftIconPadding.toPx()
+    val rightIconPaddingPx = rightIconPadding.toPx()
+
+    if (canScrollLeft) {
+        if (showLeftGradient) {
+            drawRect(
+                brush = Brush.horizontalGradient(
+                    colors = listOf(surfaceColor, Color.Transparent),
+                    startX = 0f,
+                    endX = indicatorWidthPx
+                ),
+                size = Size(indicatorWidthPx, size.height)
+            )
+        }
+
+        with(leftPainter) {
+            translate(
+                left = leftIconPaddingPx,
+                top = (size.height - iconSizePx) / 2f
+            ) {
+                draw(
+                    size = Size(iconSizePx, iconSizePx),
+                    colorFilter = ColorFilter.tint(iconTint)
+                )
+            }
+        }
+    }
+
+    if (canScrollRight) {
+        if (showRightGradient) {
+            drawRect(
+                brush = Brush.horizontalGradient(
+                    colors = listOf(Color.Transparent, surfaceColor),
+                    startX = size.width - indicatorWidthPx,
+                    endX = size.width
+                ),
+                topLeft = Offset(size.width - indicatorWidthPx, 0f),
+                size = Size(indicatorWidthPx, size.height)
+            )
+        }
+
+        with(rightPainter) {
+            translate(
+                left = size.width - iconSizePx - rightIconPaddingPx,
+                top = (size.height - iconSizePx) / 2f
             ) {
                 draw(
                     size = Size(iconSizePx, iconSizePx),

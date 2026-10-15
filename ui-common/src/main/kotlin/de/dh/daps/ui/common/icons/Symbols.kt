@@ -11,6 +11,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.Comment
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.automirrored.outlined.NavigateNext
 import androidx.compose.material.icons.filled.Adjust
@@ -119,6 +121,8 @@ val Icon_Alarm_Snooze = Icons.Outlined.Snooze
 val Icon_Theme_Light_Dark = Icons.Outlined.Theme_Light_Dark
 val Icon_Scrollview_Arrow_Up = Icons.Outlined.KeyboardArrowUp
 val Icon_Scrollview_Arrow_Down = Icons.Outlined.KeyboardArrowDown
+val Icon_Scrollview_Arrow_Left = Icons.AutoMirrored.Outlined.KeyboardArrowLeft
+val Icon_Scrollview_Arrow_Right = Icons.AutoMirrored.Outlined.KeyboardArrowRight
 val Icon_Navigate_Next = Icons.AutoMirrored.Outlined.NavigateNext
 val Icon_Ui = Icons.Outlined.Palette
 val Icon_Backup = Icons.Outlined.Backup
@@ -193,6 +197,8 @@ private val iconsForPreview = listOf(
     IconPreview("Theme_Light_Dark", Icon_Theme_Light_Dark),
     IconPreview("Scrollview_Arrow_Up", Icon_Scrollview_Arrow_Up),
     IconPreview("Scrollview_Arrow_Down", Icon_Scrollview_Arrow_Down),
+    IconPreview("Scrollview_Arrow_Left", Icon_Scrollview_Arrow_Left),
+    IconPreview("Scrollview_Arrow_Right", Icon_Scrollview_Arrow_Right),
     IconPreview("Chevron_Right", Icon_Navigate_Next),
     IconPreview("Ui", Icon_Ui),
     IconPreview("Backup", Icon_Backup),

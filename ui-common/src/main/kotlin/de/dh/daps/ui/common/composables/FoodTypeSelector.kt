@@ -1,19 +1,23 @@
 package de.dh.daps.ui.common.composables
 
 import android.content.res.Configuration
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,6 +34,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.CarbCurveComponentData
 import de.dh.daps.common.model.MealType
@@ -41,14 +46,14 @@ import de.dh.daps.ui.common.R
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.common.R as CommonR
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FoodTypeSelector(
     mealTypes: List<MealType>,
     selectedType: MealType?,
     onTypeSelected: (MealType) -> Unit,
     isMandatory: Boolean = false,
-    initialExpanded: Boolean = false
+    initialExpanded: Boolean = false,
+    maxExpandedHeight: Dp = 200.dp
 ) {
     var expanded by remember { mutableStateOf(initialExpanded) }
 
@@ -70,26 +75,37 @@ fun FoodTypeSelector(
         ) {
             if (!expanded) {
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Always show icons of all meal types, highlight selected
-                    mealTypes.forEach { type ->
-                        val isSelected = type == selectedType
-                        IconButton(
-                            onClick = { onTypeSelected(type) },
-                            modifier = Modifier.size(40.dp)
-                        ) {
-                            MealTypeIcon(
-                                mealType = type,
-                                modifier = Modifier.size(24.dp),
-                                tint = if (isSelected)
-                                    MaterialTheme.colorScheme.primary
-                                else if (isError)
-                                    MaterialTheme.colorScheme.error.copy(alpha = 0.6f)
-                                else
-                                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-                            )
+                    val scrollState = rememberScrollState()
+
+                    Row(
+                        modifier = Modifier
+                            .weight(1f)
+                            .horizontalContentScrollIndicator(scrollState)
+                            .horizontalScroll(scrollState),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        // Always show icons of all meal types, highlight selected
+                        mealTypes.forEach { type ->
+                            val isSelected = type == selectedType
+                            IconButton(
+                                onClick = { onTypeSelected(type) },
+                                modifier = Modifier.size(40.dp)
+                            ) {
+                                MealTypeIcon(
+                                    mealType = type,
+                                    modifier = Modifier.size(24.dp),
+                                    tint = if (isSelected)
+                                        MaterialTheme.colorScheme.primary
+                                    else if (isError)
+                                        MaterialTheme.colorScheme.error.copy(alpha = 0.6f)
+                                    else
+                                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                                )
+                            }
                         }
                     }
 
@@ -102,8 +118,6 @@ fun FoodTypeSelector(
                             modifier = Modifier.padding(horizontal = 4.dp)
                         )
                     }
-
-                    Spacer(modifier = Modifier.weight(1f))
 
                     IconButton(onClick = { expanded = true }) {
                         Icon(
@@ -137,31 +151,50 @@ fun FoodTypeSelector(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    mealTypes.forEach { type ->
-                        FilterChip(
-                            selected = (type == selectedType),
-                            onClick = {
-                                onTypeSelected(type)
-                                expanded = false
-                            },
-                            label = { Text(type.name) },
-                            leadingIcon = {
-                                MealTypeIcon(
-                                    mealType = type,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
+                val verticalScrollState = rememberScrollState()
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = maxExpandedHeight)
+                        .contentScrollIndicator(
+                            scrollableState = verticalScrollState,
+                            indicatorHeight = 24.dp,
+                            iconSize = 24.dp,
+                            topIconPadding = 2.dp,
+                            bottomIconPadding = 2.dp
                         )
+                        .verticalScroll(verticalScrollState)
+                        .padding(bottom = 8.dp)
+                ) {
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        mealTypes.forEach { type ->
+                            FilterChip(
+                                selected = (type == selectedType),
+                                onClick = {
+                                    onTypeSelected(type)
+                                    expanded = false
+                                },
+                                label = { Text(type.name) },
+                                leadingIcon = {
+                                    MealTypeIcon(
+                                        mealType = type,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            )
+                        }
                     }
                 }
             }
         }
     }
 }
+
+
 
 @Composable
 private fun getPreviewMealTypes(): List<MealType> {
@@ -208,11 +241,52 @@ private fun FoodTypeSelectorPreview() {
     }
 }
 
+@Preview(name = "Scrollable Meal Types", showBackground = true)
+@Composable
+private fun FoodTypeSelectorScrollablePreview() {
+    val sampleMealTypes = getPreviewMealTypes() + getPreviewMealTypes() + getPreviewMealTypes()
+    var selectedType by remember { mutableStateOf<MealType?>(sampleMealTypes[0]) }
+
+    AppPreview {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            FoodTypeSelector(
+                mealTypes = sampleMealTypes,
+                selectedType = selectedType,
+                onTypeSelected = { selectedType = it }
+            )
+        }
+    }
+}
+
 @Preview(name = "Expanded State", showBackground = true)
 @Composable
 private fun FoodTypeSelectorExpandedPreview() {
     val sampleMealTypes = getPreviewMealTypes()
     var selectedType by remember { mutableStateOf<MealType?>(sampleMealTypes[3]) }
+
+    AppPreview {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            FoodTypeSelector(
+                mealTypes = sampleMealTypes,
+                selectedType = selectedType,
+                onTypeSelected = { selectedType = it },
+                initialExpanded = true
+            )
+        }
+    }
+}
+
+@Preview(name = "Expanded Scrollable Meal Types", showBackground = true)
+@Composable
+private fun FoodTypeSelectorExpandedScrollablePreview() {
+    val sampleMealTypes = getPreviewMealTypes() + getPreviewMealTypes() + getPreviewMealTypes()
+    var selectedType by remember { mutableStateOf<MealType?>(sampleMealTypes[0]) }
 
     AppPreview {
         Column(
