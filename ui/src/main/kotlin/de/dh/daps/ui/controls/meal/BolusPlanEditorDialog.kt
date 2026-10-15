@@ -64,6 +64,7 @@ fun BolusPlanEditorDialog(
     administeredInsulinAmount: InsulinAmount = InsulinAmount.ZERO,
     plannedBoluses: List<PlannedBolusUiModel>,
     baseTime: Timestamp = Timestamp.now(),
+    confirmButtonText: String? = null,
     onUpdateBolusTime: (index: Int, newTimestamp: Timestamp) -> Unit,
     onUpdateBolusAmount: (index: Int, newAmount: InsulinAmount) -> Unit,
     onAddDeferredBolus: () -> Unit,
@@ -104,6 +105,7 @@ fun BolusPlanEditorDialog(
                         administeredInsulinAmount = administeredInsulinAmount,
                         plannedBoluses = plannedBoluses,
                         baseTime = baseTime,
+                        confirmButtonText = confirmButtonText,
                         onUpdateBolusTime = onUpdateBolusTime,
                         onUpdateBolusAmount = onUpdateBolusAmount,
                         onAddDeferredBolus = onAddDeferredBolus,
@@ -123,6 +125,7 @@ fun BolusPlanEditorSheet(
     administeredInsulinAmount: InsulinAmount = InsulinAmount.ZERO,
     plannedBoluses: List<PlannedBolusUiModel>,
     baseTime: Timestamp = Timestamp.now(),
+    confirmButtonText: String? = null,
     onUpdateBolusTime: (index: Int, newTimestamp: Timestamp) -> Unit,
     onUpdateBolusAmount: (index: Int, newAmount: InsulinAmount) -> Unit,
     onAddDeferredBolus: () -> Unit,
@@ -139,6 +142,7 @@ fun BolusPlanEditorSheet(
             administeredInsulinAmount = administeredInsulinAmount,
             plannedBoluses = plannedBoluses,
             baseTime = baseTime,
+            confirmButtonText = confirmButtonText,
             onUpdateBolusTime = onUpdateBolusTime,
             onUpdateBolusAmount = onUpdateBolusAmount,
             onAddDeferredBolus = onAddDeferredBolus,
@@ -154,6 +158,7 @@ fun BolusPlanEditorContent(
     administeredInsulinAmount: InsulinAmount = InsulinAmount.ZERO,
     plannedBoluses: List<PlannedBolusUiModel>,
     baseTime: Timestamp = Timestamp.now(),
+    confirmButtonText: String? = null,
     onUpdateBolusTime: (index: Int, newTimestamp: Timestamp) -> Unit,
     onUpdateBolusAmount: (index: Int, newAmount: InsulinAmount) -> Unit,
     onAddDeferredBolus: () -> Unit,
@@ -268,7 +273,7 @@ fun BolusPlanEditorContent(
             onClick = onConfirm,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = stringResource(R.string.bolus_plan_editor_done))
+            Text(text = confirmButtonText ?: stringResource(R.string.bolus_plan_editor_done))
         }
 
         Spacer(Modifier.height(16.dp))

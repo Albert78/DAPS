@@ -33,6 +33,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,12 +46,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.viewmodel.compose.viewModel
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.MealEntry
 import de.dh.daps.common.model.MealType
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.getDefaultMealTypes
+import de.dh.daps.core.aps.TherapyManager
+import de.dh.daps.core.aps.TreatmentLock
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.AbsoluteTimeStepper
 import de.dh.daps.ui.common.composables.CarbsValueStepper
@@ -61,6 +67,8 @@ import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.theme.AppPreview
+import de.dh.daps.ui.common.treatmentlock.TreatmentLockScreen
+import de.dh.daps.ui.common.treatmentlock.TreatmentLockViewModel
 import de.dh.daps.ui.controls.meal.BolusPlanEditorDialog
 import de.dh.daps.ui.controls.meal.PlannedBolusUiModel
 import de.dh.daps.common.R as CommonR
@@ -82,6 +90,10 @@ fun EditHistoricalMealScreen(
 
     EditHistoricalMealContent(
         uiState = uiState,
+        therapyManager = viewModel.therapyManager,
+        onSaveDeferredBoluses = { lock, onDone ->
+            viewModel.saveDeferredBoluses(lock, onDone)
+        },
         onNavigateUp = onNavigateUp,
         onDelete = { viewModel.deleteMeal(onNavigateUp) },
         onCarbsChange = { viewModel.onCarbsChange(it) },
@@ -102,6 +114,8 @@ fun EditHistoricalMealScreen(
 @Composable
 fun EditHistoricalMealContent(
     uiState: EditHistoricalMealUiState,
+    therapyManager: TherapyManager? = null,
+    onSaveDeferredBoluses: (TreatmentLock, () -> Unit) -> Unit = { _, onDone -> onDone() },
     onNavigateUp: () -> Unit,
     onDelete: () -> Unit,
     onCarbsChange: (Double) -> Unit,
@@ -264,6 +278,14 @@ fun EditHistoricalMealContent(
         }
 
         if (uiState.isBolusPlanSheetOpen) {
+            val initialSheetBoluses = remember(uiState.isBolusPlanSheetOpen) {
+                uiState.pendingDeferredBoluses
+            }
+            val hasBolusChanges = uiState.pendingDeferredBoluses != initialSheetBoluses
+            val confirmButtonText = stringResource(
+                id = if (hasBolusChanges) CommonR.string.action_save else R.string.bolus_plan_editor_done
+            )
+
             val dialogTitle = stringResource(
                 if (uiState.administeredInsulinAmount > InsulinAmount.ZERO || !uiState.isAddMode) {
                     R.string.bolus_plan_editor_title_pending
@@ -272,18 +294,66 @@ fun EditHistoricalMealContent(
                 }
             )
 
-            BolusPlanEditorDialog(
-                title = dialogTitle,
-                administeredInsulinAmount = uiState.administeredInsulinAmount,
-                plannedBoluses = uiState.pendingDeferredBoluses,
-                baseTime = uiState.editedTimestamp,
-                onUpdateBolusTime = onUpdateDeferredBolusTime,
-                onUpdateBolusAmount = onUpdateDeferredBolusAmount,
-                onAddDeferredBolus = onAddDeferredBolus,
-                onRemoveDeferredBolus = onRemoveDeferredBolus,
-                onDismissRequest = onCloseBolusPlanSheet,
-                onConfirm = onCloseBolusPlanSheet
-            )
+            if (therapyManager != null) {
+                val lockViewModel: TreatmentLockViewModel = viewModel(
+                    key = "EditHistoricalMealBolusPlanLockViewModel",
+                    factory = TreatmentLockViewModel.Companion.Factory(
+                        tag = "EditHistoricalMealBolusPlan",
+                        therapyManager = therapyManager
+                    )
+                )
+
+                // For the lifecycle management of the treatment lock, see also comments in
+                // MainFeatureNavGraph for MealCorrectionBolusRoute
+                LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
+                    lockViewModel.releaseLock()
+                    onCloseBolusPlanSheet()
+                }
+
+                DisposableEffect(Unit) {
+                    onDispose {
+                        lockViewModel.releaseLock()
+                    }
+                }
+
+                TreatmentLockScreen(
+                    viewModel = lockViewModel,
+                    title = dialogTitle,
+                    onNavigateUp = onCloseBolusPlanSheet
+                ) { treatmentLock ->
+                    BolusPlanEditorDialog(
+                        title = dialogTitle,
+                        administeredInsulinAmount = uiState.administeredInsulinAmount,
+                        plannedBoluses = uiState.pendingDeferredBoluses,
+                        baseTime = uiState.editedTimestamp,
+                        confirmButtonText = confirmButtonText,
+                        onUpdateBolusTime = onUpdateDeferredBolusTime,
+                        onUpdateBolusAmount = onUpdateDeferredBolusAmount,
+                        onAddDeferredBolus = onAddDeferredBolus,
+                        onRemoveDeferredBolus = onRemoveDeferredBolus,
+                        onDismissRequest = onCloseBolusPlanSheet,
+                        onConfirm = {
+                            onSaveDeferredBoluses(treatmentLock) {
+                                onCloseBolusPlanSheet()
+                            }
+                        }
+                    )
+                }
+            } else {
+                BolusPlanEditorDialog(
+                    title = dialogTitle,
+                    administeredInsulinAmount = uiState.administeredInsulinAmount,
+                    plannedBoluses = uiState.pendingDeferredBoluses,
+                    baseTime = uiState.editedTimestamp,
+                    confirmButtonText = confirmButtonText,
+                    onUpdateBolusTime = onUpdateDeferredBolusTime,
+                    onUpdateBolusAmount = onUpdateDeferredBolusAmount,
+                    onAddDeferredBolus = onAddDeferredBolus,
+                    onRemoveDeferredBolus = onRemoveDeferredBolus,
+                    onDismissRequest = onCloseBolusPlanSheet,
+                    onConfirm = onCloseBolusPlanSheet
+                )
+            }
         }
     }
 

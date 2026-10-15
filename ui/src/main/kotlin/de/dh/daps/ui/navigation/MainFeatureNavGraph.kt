@@ -238,7 +238,7 @@ class MainFeatureNavGraph(
                 val lockViewModel: TreatmentLockViewModel = viewModel(
                     factory = TreatmentLockViewModel.Companion.Factory(
                         tag = "MealCorrectionBolusScreen",
-                        registry = registry,
+                        therapyManager = registry.therapyManager,
                         requirePumpSync = true
                     )
                 )

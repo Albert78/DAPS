@@ -16,6 +16,7 @@ import de.dh.daps.common.model.MealType
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.SystemRegistry
+import de.dh.daps.core.aps.TreatmentLock
 import de.dh.daps.ui.controls.meal.PlannedBolusUiModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -41,13 +42,14 @@ data class EditHistoricalMealUiState(
 )
 
 class EditHistoricalMealViewModel(
-    private val registry: SystemRegistry,
+    registry: SystemRegistry,
     private val mealId: Long
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(EditHistoricalMealUiState())
     val uiState: StateFlow<EditHistoricalMealUiState> = _uiState.asStateFlow()
 
     private val treatmentRepository = registry.treatmentRepository
+    val therapyManager = registry.therapyManager
     private val recommendationManager = registry.recommendationManager
     private val isAddMode = mealId == ID_UNDEFINED
     private var originalDeferredBoluses: List<DeferredBolus> = emptyList()
@@ -198,6 +200,48 @@ class EditHistoricalMealViewModel(
         }
     }
 
+    fun saveDeferredBoluses(
+        treatmentLock: TreatmentLock,
+        onSuccess: () -> Unit
+    ) {
+        viewModelScope.launch {
+            val state = _uiState.value
+            val currentPending = state.pendingDeferredBoluses
+            val currentIds = currentPending.map { it.id }.filter { it != ID_UNDEFINED }.toSet()
+
+            // 1. Delete removed items via TherapyManager
+            val toDelete = originalDeferredBoluses.filter { it.id !in currentIds }
+            toDelete.forEach { deferred ->
+                therapyManager.removeDeferredBolus(treatmentLock, deferred)
+            }
+
+            // 2. Add or update items via TherapyManager
+            val savedMealId = state.meal?.id
+            currentPending.forEach { uiModel ->
+                val entity = DeferredBolus(
+                    id = uiModel.id,
+                    amount = uiModel.amount,
+                    timestamp = uiModel.timestamp,
+                    mealId = savedMealId
+                )
+                if (uiModel.id == ID_UNDEFINED) {
+                    therapyManager.addDeferredBolus(treatmentLock, entity)
+                } else {
+                    therapyManager.updateDeferredBolus(treatmentLock, entity)
+                }
+            }
+
+            val allDeferred = therapyManager.getDeferredBoluses()
+            originalDeferredBoluses = if (savedMealId != null) {
+                allDeferred.filter { it.mealId == savedMealId }
+            } else {
+                emptyList()
+            }
+
+            onSuccess()
+        }
+    }
+
     private fun validateForm() {
         _uiState.update {
             it.copy(isFormValid = it.editedCarbsGrams > 0.0 && it.editedMealType != null)
@@ -238,31 +282,6 @@ class EditHistoricalMealViewModel(
                     mealTimestamp = state.editedTimestamp,
                     mealId = savedMealId
                 )
-            }
-
-            // Synchronize deferred boluses
-            val currentPending = state.pendingDeferredBoluses
-            val currentIds = currentPending.map { it.id }.filter { it != ID_UNDEFINED }.toSet()
-
-            // 1. Delete removed items
-            val toDelete = originalDeferredBoluses.filter { it.id !in currentIds }
-            if (toDelete.isNotEmpty()) {
-                treatmentRepository.removeDeferredBoluses(toDelete)
-            }
-
-            // 2. Add or update items
-            currentPending.forEach { uiModel ->
-                val entity = DeferredBolus(
-                    id = uiModel.id,
-                    amount = uiModel.amount,
-                    timestamp = uiModel.timestamp,
-                    mealId = savedMealId
-                )
-                if (uiModel.id == ID_UNDEFINED) {
-                    treatmentRepository.addDeferredBolus(entity)
-                } else {
-                    treatmentRepository.updateDeferredBolus(entity)
-                }
             }
 
             _uiState.update {

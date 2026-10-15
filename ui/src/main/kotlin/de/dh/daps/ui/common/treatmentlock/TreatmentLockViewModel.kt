@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.aps.LockResult
+import de.dh.daps.core.aps.TherapyManager
 import de.dh.daps.core.aps.TreatmentLock
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
@@ -29,14 +29,12 @@ data class TreatmentLockUiState(
 
 class TreatmentLockViewModel(
     private val tag: String,
-    private val registry: SystemRegistry,
+    private val therapyManager: TherapyManager,
     private val requirePumpSync: Boolean = false
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TreatmentLockUiState())
     val uiState: StateFlow<TreatmentLockUiState> = _uiState.asStateFlow()
-
-    private val therapyManager = registry.therapyManager
 
     private var lockJob: Job? = null
 
@@ -103,12 +101,12 @@ class TreatmentLockViewModel(
     companion object {
         class Factory(
             private val tag: String,
-            private val registry: SystemRegistry,
+            private val therapyManager: TherapyManager,
             private val requirePumpSync: Boolean = false
         ) : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
-                return TreatmentLockViewModel(tag, registry, requirePumpSync) as T
+                return TreatmentLockViewModel(tag, therapyManager, requirePumpSync) as T
             }
         }
     }
