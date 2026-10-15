@@ -17,13 +17,18 @@ import de.dh.pump.omnipod.dash.ui.OmnipodDashSetupScreen
 import de.dh.pump.omnipod.protocol.ble.OmnipodDashBleManager
 import de.dh.pump.omnipod.protocol.definition.ActivationProgress
 import de.dh.pump.omnipod.protocol.state.OmnipodDashPodStateManagerImpl
+import android.bluetooth.BluetoothManager
+import android.content.Context
+import de.dh.pump.util.BluetoothBondUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
     override val driverId: String = DRIVER_ID
@@ -151,13 +156,14 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
 
     /**
      * Unbinds the currently bound Omnipod Dash pod, clears pod state and preferences,
-     * and resets the driver lifecycle state to NoDevice.
+     * removes the Bluetooth bond, and resets the driver lifecycle state to NoDevice.
      */
-    suspend fun unbindDevice() {
+    suspend fun unbindDevice() = withContext(NonCancellable) {
         resetDriverState()
     }
 
     private suspend fun resetDriverState() {
+        val address = podStateManager?.bluetoothAddress
         pluginContext?.appContext?.let { ctx ->
             try {
                 OmnipodHistoryDatabase.getInstance(ctx).historyDao().insertEvent(
@@ -169,6 +175,12 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
                     )
                 )
             } catch (_: Exception) {}
+
+            if (!address.isNullOrEmpty()) {
+                val bluetoothManager = ctx.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
+                val device = bluetoothManager?.adapter?.getRemoteDevice(address)
+                device?.let { BluetoothBondUtils.removeBond(it) }
+            }
         }
         bleManager?.disconnect()
         bleManager = null

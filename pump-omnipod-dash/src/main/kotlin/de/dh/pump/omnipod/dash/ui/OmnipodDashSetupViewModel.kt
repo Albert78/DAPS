@@ -116,10 +116,14 @@ class OmnipodDashSetupViewModel(application: Application) : AndroidViewModel(app
         }
     }
 
-    fun unbind(driver: OmnipodDashInsulinPumpDriver) {
+    fun unbind(
+        driver: OmnipodDashInsulinPumpDriver,
+        onSuccess: (() -> Unit)? = null
+    ) {
         viewModelScope.launch {
             try {
                 driver.unbindDevice()
+                onSuccess?.invoke()
             } catch (e: Exception) {
                 _activationError.value = e.message
             }
