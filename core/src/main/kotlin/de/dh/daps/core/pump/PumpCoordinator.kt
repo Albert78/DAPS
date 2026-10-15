@@ -84,7 +84,6 @@ sealed interface JobErrorCode {
  * it remains active as long as a connection with the pump exists. It abstracts from the
  * physical connection state of the pump and manages pending jobs.
  */
-// TODO: Multithreading/thread allocation
 // TODO: Notifications from pump
 @OptIn(ExperimentalCoroutinesApi::class)
 class PumpCoordinator(
@@ -123,21 +122,19 @@ class PumpCoordinator(
 
     private fun setupPump() {
         scope.launch {
-            launch {
-                pump.isConnected.collect { _ ->
-                    // Set last connection time on each change of isConnected -
-                    // If we're currently connected, lastConnectionTime is the time when the
-                    // connection was established, if we currently disconnected,
-                    // lastConnectionTime is the time when the connection was disconnected.
-                    _lastConnectionTime.value = Timestamp.now()
-                }
+            pump.isConnected.collect { _ ->
+                // Set last connection time on each change of isConnected -
+                // If we're currently connected, lastConnectionTime is the time when the
+                // connection was established, if we currently disconnected,
+                // lastConnectionTime is the time when the connection was disconnected.
+                _lastConnectionTime.value = Timestamp.now()
             }
-
-            pump.refreshStatus()
-            pump.syncHistory()
-            // Update more data, if necessary...
-            // Here, we have all data from the pump and we are operational.
         }
+
+        issueCommand(PumpCommand.RefreshStatus)
+        issueCommand(PumpCommand.SyncHistory)
+        // Update more data, if necessary...
+        // Here, we have all data from the pump and we are operational.
     }
 
     /**
@@ -391,9 +388,8 @@ class PumpCoordinator(
     fun getPendingJobsCount() = _pendingJobs.value.size
 
     fun clearPendingJobs() {
-        _pendingJobs.value = emptyList()
+        _pendingJobs.update { emptyList() }
     }
-
     /**
      * Puts a new command into our command queue and tries to send all commands to the pump,
      * if possible. If the pump is connected and if it accepts all commands, the command queue
