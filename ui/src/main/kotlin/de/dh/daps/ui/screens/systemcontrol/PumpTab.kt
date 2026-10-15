@@ -44,6 +44,7 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
+import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.icons.Icon_Pump_Device
 import de.dh.daps.ui.common.icons.PumpReservoir
 import de.dh.daps.ui.common.insulinValue
@@ -83,15 +84,12 @@ fun PumpTabContent(
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f)
             )
-            if (uiState !is PumpTabUiState.Loading) {
+            if (uiState is PumpTabUiState.Content) {
                 Spacer(modifier = Modifier.width(16.dp))
                 OutlinedIconButton(onClick = onChangePumpDriver) {
                     Icon(
                         imageVector = Icon_Pump_Device,
-                        contentDescription = stringResource(
-                            if (uiState is PumpTabUiState.NoneConfigured) R.string.cd_system_control_pump_setup
-                            else R.string.cd_system_control_pump_change
-                        )
+                        contentDescription = stringResource(R.string.cd_system_control_pump_change)
                     )
                 }
             }
@@ -99,15 +97,33 @@ fun PumpTabContent(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        SectionHeader(
-            title = stringResource(R.string.system_control_tab_overview)
-        )
-        Spacer(modifier = Modifier.height(8.dp))
+        if (uiState is PumpTabUiState.NoneConfigured) {
+            PrimaryButton(
+                onClick = onChangePumpDriver,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icon_Pump_Device,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(R.string.cd_system_control_pump_setup),
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        } else {
+            SectionHeader(
+                title = stringResource(R.string.system_control_tab_overview)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
 
-        PumpOverviewCard(
-            uiState = uiState,
-            onRefreshPumpStatus = onRefreshPumpStatus
-        )
+            PumpOverviewCard(
+                uiState = uiState,
+                onRefreshPumpStatus = onRefreshPumpStatus
+            )
+        }
 
         if (uiState is PumpTabUiState.Content) {
             if (uiState.expirations.isNotEmpty()) {
@@ -753,6 +769,19 @@ fun PumpTabExpiredPreview() {
     }
 }
 
+@Preview(showBackground = true, name = "Pump Tab - Not Configured")
+@Composable
+fun PumpTabNotConfiguredPreview() {
+    AppTheme {
+        Surface {
+            PumpTabContent(
+                uiState = PumpTabUiState.NoneConfigured,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
+}
+
 @Preview(showBackground = true, name = "Pump Tab - Loading")
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Pump Tab - Loading - Dark Mode")
 @Composable
@@ -761,19 +790,6 @@ fun PumpTabLoadingPreview() {
         Surface {
             PumpTabContent(
                 uiState = PumpTabUiState.Loading,
-                modifier = Modifier.padding(16.dp)
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Pump Tab - Disconnected")
-@Composable
-fun PumpTabDisconnectedPreview() {
-    AppTheme {
-        Surface {
-            PumpTabContent(
-                uiState = PumpTabUiState.NoneConfigured,
                 modifier = Modifier.padding(16.dp)
             )
         }

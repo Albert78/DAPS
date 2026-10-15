@@ -44,6 +44,7 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
+import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.glucoseValue
 import de.dh.daps.ui.common.icons.Icon_Cgm_Sensor
 import de.dh.daps.ui.common.icons.Icon_Next
@@ -84,15 +85,12 @@ fun SourceTabContent(
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f)
             )
-            if (uiState !is SourceTabUiState.Loading) {
+            if (uiState is SourceTabUiState.Content) {
                 Spacer(modifier = Modifier.width(16.dp))
                 OutlinedIconButton(onClick = onChangeGlucoseSource) {
                     Icon(
                         imageVector = Icon_Cgm_Sensor,
-                        contentDescription = stringResource(
-                            if (uiState is SourceTabUiState.NoneConfigured) R.string.cd_system_control_source_setup
-                            else R.string.cd_system_control_source_change
-                        )
+                        contentDescription = stringResource(R.string.cd_system_control_source_change)
                     )
                 }
             }
@@ -100,14 +98,32 @@ fun SourceTabContent(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        SectionHeader(
-            title = stringResource(R.string.system_control_tab_overview)
-        )
-        Spacer(modifier = Modifier.height(8.dp))
+        if (uiState is SourceTabUiState.NoneConfigured) {
+            PrimaryButton(
+                onClick = onChangeGlucoseSource,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icon_Cgm_Sensor,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(R.string.cd_system_control_source_setup),
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        } else {
+            SectionHeader(
+                title = stringResource(R.string.system_control_tab_overview)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
 
-        SourceOverviewCard(
-            uiState = uiState
-        )
+            SourceOverviewCard(
+                uiState = uiState
+            )
+        }
 
         if (uiState is SourceTabUiState.Content && uiState.glucoseSourcePluginSection != null) {
             Spacer(modifier = Modifier.height(8.dp))
@@ -659,6 +675,19 @@ fun SourceTabExpiredPreview() {
     }
 }
 
+@Preview(showBackground = true, name = "Source Tab - Not Configured")
+@Composable
+fun SourceTabNotConfiguredPreview() {
+    AppTheme {
+        Surface {
+            SourceTabContent(
+                uiState = SourceTabUiState.NoneConfigured,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
+}
+
 @Preview(showBackground = true, name = "Source Tab - Loading")
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Source Tab - Loading - Dark Mode")
 @Composable
@@ -667,19 +696,6 @@ fun SourceTabLoadingPreview() {
         Surface {
             SourceTabContent(
                 uiState = SourceTabUiState.Loading,
-                modifier = Modifier.padding(16.dp)
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Source Tab - Disconnected")
-@Composable
-fun SourceTabDisconnectedPreview() {
-    AppTheme {
-        Surface {
-            SourceTabContent(
-                uiState = SourceTabUiState.NoneConfigured,
                 modifier = Modifier.padding(16.dp)
             )
         }
