@@ -204,158 +204,15 @@ fun RingtonePickerDialogContent(
             )
         },
         text = {
-            if (isLoading) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            } else {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    val listState = rememberLazyListState()
-
-                    var previousSize by remember { mutableStateOf(ringtones.size) }
-
-                    LaunchedEffect(ringtones.size) {
-                        if (ringtones.size > previousSize) {
-                            listState.animateScrollToItem(ringtones.size - 1)
-                            delay(100)
-                            val targetIndex = (listState.layoutInfo.totalItemsCount - 1).coerceAtLeast(0)
-                            listState.animateScrollToItem(targetIndex)
-                        }
-                        previousSize = ringtones.size
-                    }
-
-                    LazyColumn(
-                        state = listState,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 280.dp)
-                            .contentScrollIndicator(listState),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        items(
-                            items = ringtones,
-                            key = { it.uri ?: "default_sound" }
-                        ) { item ->
-                            if (item.isCustomAction) {
-                                Surface(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 4.dp)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .clickable { onPickCustomFile() },
-                                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
-                                    border = BorderStroke(
-                                        1.dp,
-                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
-                                    ),
-                                    shape = RoundedCornerShape(12.dp)
-                                ) {
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Add,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.primary
-                                        )
-                                        Text(
-                                            text = item.title,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
-                                }
-                            } else {
-                                val isSelected = (item.uri == selectedUri)
-                                val containerColor = if (isSelected) {
-                                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
-                                } else {
-                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f)
-                                }
-
-                                Surface(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .clickable { onSelectUri(item.uri) },
-                                    color = containerColor,
-                                    shape = RoundedCornerShape(12.dp)
-                                ) {
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.weight(1f),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                        ) {
-                                            RadioButton(
-                                                selected = isSelected,
-                                                onClick = null
-                                            )
-                                            Text(
-                                                text = item.title,
-                                                style = MaterialTheme.typography.bodyMedium,
-                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                                color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                        }
-                                        if (isSelected) {
-                                            Icon(
-                                                imageVector = Icons.AutoMirrored.Filled.VolumeUp,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.primary,
-                                                modifier = Modifier.padding(end = 4.dp)
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                    // Live Volume Slider inside Dialog
-                    Column(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = stringResource(id = R.string.alarm_profile_volume_label, selectedVolume),
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-                        Slider(
-                            value = selectedVolume.toFloat(),
-                            onValueChange = { floatValue ->
-                                val roundedVol = ((floatValue / 5f).roundToInt() * 5).coerceIn(0, 100)
-                                onVolumeChanged(roundedVol)
-                            },
-                            valueRange = 0f..100f,
-                            steps = 19
-                        )
-                    }
-                }
-            }
+            RingtonePickerContent(
+                selectedUri = selectedUri,
+                selectedVolume = selectedVolume,
+                ringtones = ringtones,
+                isLoading = isLoading,
+                onSelectUri = onSelectUri,
+                onVolumeChanged = onVolumeChanged,
+                onPickCustomFile = onPickCustomFile
+            )
         },
         confirmButton = {
             NormalTextButton(onClick = onConfirm) {
@@ -371,6 +228,171 @@ fun RingtonePickerDialogContent(
             }
         }
     )
+}
+
+@Composable
+fun RingtonePickerContent(
+    selectedUri: String?,
+    selectedVolume: Int,
+    ringtones: List<RingtoneItem>,
+    isLoading: Boolean,
+    onSelectUri: (String?) -> Unit,
+    onVolumeChanged: (Int) -> Unit,
+    onPickCustomFile: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if (isLoading) {
+        Box(
+            modifier = modifier
+                .fillMaxWidth()
+                .height(180.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+    } else {
+        Column(
+            modifier = modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            val listState = rememberLazyListState()
+
+            var previousSize by remember { mutableStateOf(ringtones.size) }
+
+            LaunchedEffect(ringtones.size) {
+                if (ringtones.size > previousSize) {
+                    listState.animateScrollToItem(ringtones.size - 1)
+                    delay(100)
+                    val targetIndex = (listState.layoutInfo.totalItemsCount - 1).coerceAtLeast(0)
+                    listState.animateScrollToItem(targetIndex)
+                }
+                previousSize = ringtones.size
+            }
+
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 280.dp)
+                    .contentScrollIndicator(listState),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                items(
+                    items = ringtones,
+                    key = { it.uri ?: "default_sound" }
+                ) { item ->
+                    if (item.isCustomAction) {
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 4.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable { onPickCustomFile() },
+                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
+                            border = BorderStroke(
+                                1.dp,
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = item.title,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    } else {
+                        val isSelected = (item.uri == selectedUri)
+                        val containerColor = if (isSelected) {
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
+                        } else {
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f)
+                        }
+
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable { onSelectUri(item.uri) },
+                            color = containerColor,
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    modifier = Modifier.weight(1f),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    RadioButton(
+                                        selected = isSelected,
+                                        onClick = null
+                                    )
+                                    Text(
+                                        text = item.title,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                        color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                if (isSelected) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.padding(end = 4.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+            // Live Volume Slider inside Dialog
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.alarm_profile_volume_label, selectedVolume),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                Slider(
+                    value = selectedVolume.toFloat(),
+                    onValueChange = { floatValue ->
+                        val roundedVol = ((floatValue / 5f).roundToInt() * 5).coerceIn(0, 100)
+                        onVolumeChanged(roundedVol)
+                    },
+                    valueRange = 0f..100f,
+                    steps = 19
+                )
+            }
+        }
+    }
 }
 
 private fun getRingtoneTitle(context: Context, soundUriString: String?): String {
@@ -392,21 +414,57 @@ private fun getRingtoneTitle(context: Context, soundUriString: String?): String 
 @Composable
 fun RingtonePickerDialogPreview() {
     AppPreview {
-        RingtonePickerDialogContent(
-            selectedUri = "content://media/internal/audio/media/1",
-            selectedVolume = 80,
-            ringtones = listOf(
-                RingtoneItem("Standard System-Alarmton", null),
-                RingtoneItem("Sanftes Erwachen", "content://media/internal/audio/media/1"),
-                RingtoneItem("Digitaler Alarm", "content://media/internal/audio/media/2"),
-                RingtoneItem("Eigene Audio-Datei auswählen…", "ACTION_CUSTOM_FILE", isCustomAction = true)
-            ),
-            isLoading = false,
-            onSelectUri = {},
-            onVolumeChanged = {},
-            onPickCustomFile = {},
-            onConfirm = {},
-            onDismiss = {}
-        )
+        Surface(
+            modifier = Modifier.padding(16.dp),
+            shape = RoundedCornerShape(28.dp),
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 6.dp
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = stringResource(id = R.string.alarm_profile_sound_picker_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                RingtonePickerContent(
+                    selectedUri = "content://media/internal/audio/media/1",
+                    selectedVolume = 80,
+                    ringtones = listOf(
+                        RingtoneItem("Standard System-Alarmton", null),
+                        RingtoneItem("Sanftes Erwachen", "content://media/internal/audio/media/1"),
+                        RingtoneItem("Digitaler Alarm", "content://media/internal/audio/media/2"),
+                        RingtoneItem("Eigene Audio-Datei auswählen…", "ACTION_CUSTOM_FILE", isCustomAction = true)
+                    ),
+                    isLoading = false,
+                    onSelectUri = {},
+                    onVolumeChanged = {},
+                    onPickCustomFile = {}
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    NormalTextButton(onClick = {}) {
+                        Text(stringResource(id = CommonR.string.action_cancel))
+                    }
+                    NormalTextButton(onClick = {}) {
+                        Text(
+                            text = stringResource(id = CommonR.string.action_save),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        }
     }
 }
