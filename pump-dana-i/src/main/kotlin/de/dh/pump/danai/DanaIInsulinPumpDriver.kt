@@ -15,6 +15,7 @@ import de.dh.pump.danai.core.DanaILogger
 import de.dh.pump.danai.core.DanaIPumpAdapter
 import de.dh.pump.danai.core.DanaPumpPreferences
 import de.dh.pump.danai.core.connection.DanaILink
+import de.dh.pump.danai.core.connection.SessionState
 import de.dh.pump.danai.ui.DanaIPumpControl
 import de.dh.pump.danai.ui.DanaISetupScreen
 import de.dh.pump.util.BluetoothBondUtils
@@ -25,7 +26,10 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Insulin pump driver plugin for Sooil Dana-i pumps.
@@ -66,6 +70,20 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
         val name = danaPrefs.getLastName().ifEmpty { "Dana-i" }
 
         if (address.isNotEmpty()) {
+            val bluetoothManager = pc.appContext.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
+            val adapter = bluetoothManager?.adapter
+            val device = try {
+                adapter?.getRemoteDevice(address)
+            } catch (_: Exception) {
+                null
+            }
+
+            if (device == null || !BluetoothBondUtils.isBonded(device)) {
+                Log.w(TAG, "Stored Dana pump $address is no longer bonded on OS level. Clearing preferences.")
+                unbindDevice()
+                return
+            }
+
             try {
                 bindPump(name, address)
             } catch (e: Exception) {
@@ -97,7 +115,7 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
     private suspend fun bindPump(
         deviceName: String,
         deviceAddress: String,
-    ): InsulinPump {
+    ): DanaIPumpAdapter {
         val pc = pluginContext ?: throw IllegalStateException("PluginContext not initialized")
         val bluetoothManager = pc.appContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         val adapter = bluetoothManager.adapter ?: throw IllegalStateException("Bluetooth adapter unavailable.")
@@ -124,15 +142,39 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
     }
 
     /**
-     * Binds a Dana-i pump during device pairing and saves the configuration preferences.
+     * Binds a Dana-i pump during device pairing and saves configuration preferences ONLY after
+     * a successful connection and protocol handshake.
      */
     suspend fun bindPumpDevice(
         deviceName: String,
         deviceAddress: String,
     ): InsulinPump {
         val pc = pluginContext ?: throw IllegalStateException("PluginContext not initialized")
+
+        // Initiate connection attempt and handshake
+        val pumpAdapter = bindPump(deviceName, deviceAddress)
+
+        // Wait for connection and handshake to complete successfully (max 60 seconds for pairing)
+        val isConnected = try {
+            withTimeoutOrNull(60.seconds) {
+                pumpAdapter.controller.link.sessionState.first {
+                    it is SessionState.Connected || it is SessionState.Failed || (it.isClosed && it !is SessionState.Connecting)
+                } is SessionState.Connected
+            } ?: false
+        } catch (_: Exception) {
+            false
+        }
+
+        if (!isConnected) {
+            Log.e(TAG, "Pairing or connection failed for $deviceName ($deviceAddress). Cleaning up.")
+            unbindDevice()
+            throw IllegalStateException("Verbindung oder Kopplung fehlgeschlagen.")
+        }
+
+        // Save preferences only AFTER connection and pairing have succeeded
         DanaPumpPreferences(pc.preferences).savePumpAddress(deviceName, deviceAddress)
-        return bindPump(deviceName, deviceAddress)
+
+        return pumpAdapter
     }
 
     /**

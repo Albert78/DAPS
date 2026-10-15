@@ -62,7 +62,7 @@ fun PumpResponse.ensureOk(commandName: String) {
  */
 class DanaIController(
     private val pump: DanaIPump,
-    private val link: DanaILink,
+    val link: DanaILink,
     private val logger: DanaILogger,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main),
 ) {
