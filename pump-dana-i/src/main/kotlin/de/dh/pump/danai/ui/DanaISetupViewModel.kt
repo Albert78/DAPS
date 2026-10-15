@@ -32,7 +32,7 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
     val connectError: StateFlow<String?> = _connectError.asStateFlow()
 
     fun startDiscovery() {
-        scanner.startScan(viewModelScope)
+        scanner.startScan(viewModelScope, verifyCharacteristics = true)
     }
 
     fun stopDiscovery() {

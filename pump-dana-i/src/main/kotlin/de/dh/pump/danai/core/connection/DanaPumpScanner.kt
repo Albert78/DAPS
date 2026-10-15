@@ -3,13 +3,17 @@ package de.dh.pump.danai.core.connection
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGatt
+import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothManager
+import android.bluetooth.BluetoothProfile
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import de.dh.pump.dana.DanaBleProfiles
 import de.dh.pump.danai.core.DanaILogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -19,6 +23,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeoutOrNull
+import java.util.Collections
+import kotlin.coroutines.resume
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -82,6 +90,9 @@ class DanaPumpScanner(
     private var currentScanScope: CoroutineScope? = null
     private var isReceiverRegistered = false
 
+    private var shouldVerifyCharacteristics = false
+    private val probedAddresses = Collections.synchronizedSet(mutableSetOf<String>())
+
     private val bluetoothReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == BluetoothAdapter.ACTION_STATE_CHANGED) {
@@ -100,7 +111,7 @@ class DanaPumpScanner(
                                 attempts++
                             }
                             if (_scanError.value == DanaScanError.BLUETOOTH_DISABLED) {
-                                startScan(this)
+                                startScan(this, verifyCharacteristics = shouldVerifyCharacteristics)
                             }
                         }
                     }
@@ -137,10 +148,18 @@ class DanaPumpScanner(
      * Starts scanning for Dana pumps for [duration].
      *
      * Automatically stops scanning when [duration] elapses or when [stopScan] is called.
+     * When [verifyCharacteristics] is true, each candidate device is probed via GATT to confirm
+     * the presence of required Dana TX/RX characteristics before adding it to [scanResults].
      */
     @SuppressLint("MissingPermission")
-    fun startScan(scope: CoroutineScope, duration: Duration = 15.seconds) {
+    fun startScan(
+        scope: CoroutineScope,
+        duration: Duration = 15.seconds,
+        verifyCharacteristics: Boolean = false,
+    ) {
         currentScanScope = scope
+        shouldVerifyCharacteristics = verifyCharacteristics
+        probedAddresses.clear()
         _scanError.value = null
 
         val adapter = bluetoothManager?.adapter
@@ -167,7 +186,7 @@ class DanaPumpScanner(
 
         try {
             scanner.startScan(scanCallback)
-            logger?.log("BLE Scan started for Dana pumps.")
+            logger?.log("BLE Scan started for Dana pumps (verifyCharacteristics=$verifyCharacteristics).")
         } catch (e: Exception) {
             _isScanning.value = false
             _scanError.value = DanaScanError.SCANNER_UNAVAILABLE
@@ -204,10 +223,12 @@ class DanaPumpScanner(
         @SuppressLint("MissingPermission")
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             val device = result.device ?: return
-            val name = device.name.orEmpty()
+            val name = (device.name ?: result.scanRecord?.deviceName).orEmpty().trim()
 
-            // Dana pumps always have a 10-character serial number as their name
-            if (name.length != 10) return
+            if (!isValidDanaPumpDevice(name)) return
+
+            if (probedAddresses.contains(device.address)) return
+            probedAddresses.add(device.address)
 
             val item = DanaScanResult.Real(
                 name = name,
@@ -215,19 +236,102 @@ class DanaPumpScanner(
                 device = device,
             )
 
-            _scanResults.update { current ->
-                val index = current.indexOfFirst { it.address == item.address }
-                if (index >= 0) {
-                    current.toMutableList().apply { set(index, item) }
-                } else {
-                    current + item
+            if (shouldVerifyCharacteristics) {
+                currentScanScope?.launch {
+                    logger?.log("Probing GATT characteristics for $name (${device.address})...")
+                    val isValid = withTimeoutOrNull(30.seconds) {
+                        verifyPumpCharacteristics(device)
+                    } ?: false
+
+                    if (isValid) {
+                        logger?.log("GATT probe SUCCESS: $name exposes required Dana TX/RX characteristics.")
+                        addOrUpdateScanResult(item)
+                    } else {
+                        logger?.log("GATT probe FAILED: $name missing required Dana characteristics.")
+                    }
                 }
+            } else {
+                addOrUpdateScanResult(item)
             }
         }
 
         override fun onScanFailed(errorCode: Int) {
             logger?.log("BLE Scan failed with error code: $errorCode")
             _isScanning.value = false
+        }
+    }
+
+    private fun addOrUpdateScanResult(item: DanaScanResult) {
+        _scanResults.update { current ->
+            val index = current.indexOfFirst { it.address == item.address }
+            if (index >= 0) {
+                current.toMutableList().apply { set(index, item) }
+            } else {
+                current + item
+            }
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    @SuppressLint("MissingPermission")
+    private suspend fun verifyPumpCharacteristics(device: BluetoothDevice): Boolean =
+        suspendCancellableCoroutine { continuation ->
+            val profile = DanaBleProfiles.danaI()
+            var gatt: BluetoothGatt? = null
+
+            val callback = object : BluetoothGattCallback() {
+                override fun onConnectionStateChange(g: BluetoothGatt, status: Int, newState: Int) {
+                    if (status == BluetoothGatt.GATT_SUCCESS && newState == BluetoothProfile.STATE_CONNECTED) {
+                        g.discoverServices()
+                    } else {
+                        try { g.close() } catch (_: Exception) {}
+                        if (continuation.isActive) continuation.resume(false)
+                    }
+                }
+
+                override fun onServicesDiscovered(g: BluetoothGatt, status: Int) {
+                    val hasTx = g.services.any { s ->
+                        s.characteristics.any { c -> c.uuid == profile.txCharacteristicUuid }
+                    }
+                    val hasRx = g.services.any { s ->
+                        s.characteristics.any { c -> c.uuid == profile.rxCharacteristicUuid }
+                    }
+
+                    try {
+                        g.disconnect()
+                        g.close()
+                    } catch (_: Exception) {}
+
+                    if (continuation.isActive) continuation.resume(hasTx && hasRx)
+                }
+            }
+
+            try {
+                gatt = device.connectGatt(appContext, false, callback, BluetoothDevice.TRANSPORT_LE)
+                if (gatt == null && continuation.isActive) {
+                    continuation.resume(false)
+                }
+            } catch (_: Exception) {
+                if (continuation.isActive) continuation.resume(false)
+            }
+
+            continuation.invokeOnCancellation {
+                try {
+                    gatt?.disconnect()
+                    gatt?.close()
+                } catch (_: Exception) {}
+            }
+        }
+
+    companion object {
+        /**
+         * Validates whether a discovered device matches the criteria of a Dana insulin pump.
+         *
+         * Dana pumps broadcast a 10-character alphanumeric serial number as their BLE device name
+         * (e.g. "I123456789" or "D123456789").
+         */
+        internal fun isValidDanaPumpDevice(name: String): Boolean {
+            return name.length == 10 && name.all { it.isLetterOrDigit() }
         }
     }
 }
