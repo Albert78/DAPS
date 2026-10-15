@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="food_type_selector_food_type_label">Nahrungstyp</string>
+    <string name="meal_type_standard_label_format">Standard-Mahlzeitentyp %1$s</string>
+</resources>

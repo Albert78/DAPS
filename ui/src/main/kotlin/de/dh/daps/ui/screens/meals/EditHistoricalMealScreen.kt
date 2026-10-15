@@ -58,7 +58,7 @@ import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.controls.meal.BolusPlanEditorDialog
-import de.dh.daps.ui.controls.meal.FoodTypeSelector
+import de.dh.daps.ui.common.composables.FoodTypeSelector
 import de.dh.daps.ui.controls.meal.PlannedBolusUiModel
 import de.dh.daps.common.R as CommonR
 

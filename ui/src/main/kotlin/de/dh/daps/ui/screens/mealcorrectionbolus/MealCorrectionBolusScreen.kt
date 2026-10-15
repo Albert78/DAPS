@@ -87,7 +87,7 @@ import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.daps.ui.common.time
 import de.dh.daps.ui.common.withinTimeDescription
 import de.dh.daps.ui.controls.meal.BolusPlanEditorDialog
-import de.dh.daps.ui.controls.meal.FoodTypeSelector
+import de.dh.daps.ui.common.composables.FoodTypeSelector
 import de.dh.daps.ui.controls.meal.PlannedBolusUiModel
 import kotlin.math.abs
 import de.dh.daps.common.R as CommonR

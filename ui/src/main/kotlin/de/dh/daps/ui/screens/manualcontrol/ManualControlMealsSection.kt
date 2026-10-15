@@ -35,7 +35,7 @@ import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.timeWithUnit
-import de.dh.daps.ui.screens.mealtypes.MealTypeIcon
+import de.dh.daps.ui.common.composables.MealTypeIcon
 
 @Composable
 fun ManualControlMealsSection(

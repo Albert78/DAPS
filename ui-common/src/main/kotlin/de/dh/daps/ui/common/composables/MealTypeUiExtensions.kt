@@ -1,28 +1,17 @@
-package de.dh.daps.ui.screens.mealtypes
+package de.dh.daps.ui.common.composables
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import de.dh.daps.common.ID_MEAL_FAST
 import de.dh.daps.common.ID_MEAL_HIGH_FAT
 import de.dh.daps.common.ID_MEAL_SLOW
 import de.dh.daps.common.ID_MEAL_STANDARD
 import de.dh.daps.common.model.MealType
-import de.dh.daps.ui.R
+import de.dh.daps.ui.common.R
 import de.dh.daps.ui.common.icons.BadgedStarIcon
 import de.dh.daps.ui.common.icons.Icon_Meal_Custom
 import de.dh.daps.ui.common.icons.Icon_Meal_Fast
@@ -83,7 +72,7 @@ fun MealTypeIcon(
         )
         ID_MEAL_HIGH_FAT -> Icon(
             imageVector = Icon_Meal_High_Fat,
-            contentDescription = mealType.name,
+            contentDescription = modifier.toString(), // or mealType.name
             modifier = modifier,
             tint = tint,
         )

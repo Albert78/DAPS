@@ -42,7 +42,9 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.MealType
 import de.dh.daps.common.model.getDefaultMealTypes
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.MealTypeIcon
 import de.dh.daps.ui.common.composables.NormalTextButton
+import de.dh.daps.ui.common.composables.isStandardMealType
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppPreview

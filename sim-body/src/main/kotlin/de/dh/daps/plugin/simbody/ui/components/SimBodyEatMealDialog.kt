@@ -26,7 +26,7 @@ import de.dh.daps.ui.common.carbsUnitLabel
 import de.dh.daps.ui.common.composables.CarbsValueStepper
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.theme.AppPreview
-import de.dh.daps.ui.controls.meal.FoodTypeSelector
+import de.dh.daps.ui.common.composables.FoodTypeSelector
 
 @Composable
 fun SimBodyEatMealDialog(

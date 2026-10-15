@@ -354,7 +354,6 @@
     <string name="edit_historical_meal_discard_title">Änderungen speichern?</string>
     <string name="edit_historical_meal_discard_message">Du hast Änderungen an der Mahlzeit vorgenommen. Möchtest du die Änderungen speichern oder verwerfen?</string>
 
-    <string name="food_type_selector_food_type_label">Nahrungstyp</string>
     <string name="edit_historical_meal_meal_time_label">Zeit der Mahlzeit</string>
     <string name="edit_historical_meal_carbs_label">Mahlzeit</string>
 
@@ -381,7 +380,6 @@
     <string name="meal_type_name_label">Bezeichnung</string>
     <string name="meal_type_symbol_label">Optionales Zeichen</string>
     <string name="meal_type_symbol_subtitle">Buchstabe oder Ziffer</string>
-    <string name="meal_type_standard_label_format">Standard-Mahlzeitentyp %1$s</string>
     <string name="meal_type_cat_label">Resorptionsdauer (Min.)</string>
     <string name="meal_type_components_title">Komponenten</string>
     <string name="meal_type_weight_label">Gewicht (%)</string>

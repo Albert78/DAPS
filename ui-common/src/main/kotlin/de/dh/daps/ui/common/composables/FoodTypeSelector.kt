@@ -1,4 +1,4 @@
-package de.dh.daps.ui.controls.meal
+package de.dh.daps.ui.common.composables
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
@@ -37,10 +37,8 @@ import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.getDefaultFastMealType
 import de.dh.daps.common.model.getDefaultSlowMealType
 import de.dh.daps.common.model.getDefaultStandardMealType
-import de.dh.daps.ui.R
-import de.dh.daps.ui.common.composables.FramedCard
+import de.dh.daps.ui.common.R
 import de.dh.daps.ui.common.theme.AppPreview
-import de.dh.daps.ui.screens.mealtypes.MealTypeIcon
 import de.dh.daps.common.R as CommonR
 
 @OptIn(ExperimentalMaterial3Api::class)
