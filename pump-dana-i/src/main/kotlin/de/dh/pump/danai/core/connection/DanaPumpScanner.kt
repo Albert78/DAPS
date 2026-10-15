@@ -17,6 +17,7 @@ import de.dh.pump.dana.DanaBleProfiles
 import de.dh.pump.danai.core.DanaILogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -86,8 +87,9 @@ class DanaPumpScanner(
     private val _scanError = MutableStateFlow<DanaScanError?>(null)
     val scanError: StateFlow<DanaScanError?> = _scanError.asStateFlow()
 
-    private var scanTimeoutJob: Job? = null
-    private var currentScanScope: CoroutineScope? = null
+    private var parentScope: CoroutineScope? = null
+    private var activeScanJob: Job? = null
+    private var activeScanScope: CoroutineScope? = null
     private var isReceiverRegistered = false
 
     private var shouldVerifyCharacteristics = false
@@ -99,7 +101,7 @@ class DanaPumpScanner(
                 val state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR)
                 if (state == BluetoothAdapter.STATE_ON) {
                     if (_scanError.value == DanaScanError.BLUETOOTH_DISABLED) {
-                        currentScanScope?.launch {
+                        parentScope?.launch {
                             // Give Android BLE stack time to fully initialize the scanner after STATE_ON
                             var attempts = 0
                             while (attempts < 5) {
@@ -111,7 +113,7 @@ class DanaPumpScanner(
                                 attempts++
                             }
                             if (_scanError.value == DanaScanError.BLUETOOTH_DISABLED) {
-                                startScan(this, verifyCharacteristics = shouldVerifyCharacteristics)
+                                parentScope?.let { startScan(it, verifyCharacteristics = shouldVerifyCharacteristics) }
                             }
                         }
                     }
@@ -157,8 +159,12 @@ class DanaPumpScanner(
         duration: Duration = 15.seconds,
         verifyCharacteristics: Boolean = false,
     ) {
-        currentScanScope = scope
+        parentScope = scope
         shouldVerifyCharacteristics = verifyCharacteristics
+
+        // Stop any active scan and cancel all probing/timeout jobs
+        stopScan()
+
         probedAddresses.clear()
         _scanError.value = null
 
@@ -177,8 +183,13 @@ class DanaPumpScanner(
             return
         }
 
-        // Cancel any active scan / timeout job
-        stopScan()
+        val parentJob = scope.coroutineContext[Job]
+        val scanJob = SupervisorJob(parentJob)
+        val scanScope = CoroutineScope(scope.coroutineContext + scanJob)
+
+        activeScanJob = scanJob
+        activeScanScope = scanScope
+
         registerBluetoothReceiver()
 
         _scanResults.value = emptyList()
@@ -191,22 +202,26 @@ class DanaPumpScanner(
             _isScanning.value = false
             _scanError.value = DanaScanError.SCANNER_UNAVAILABLE
             logger?.log("Failed to start BLE scan: ${e.message}")
+            scanJob.cancel()
+            activeScanJob = null
+            activeScanScope = null
             return
         }
 
-        scanTimeoutJob = scope.launch {
+        scanScope.launch {
             delay(duration)
             stopScan()
         }
     }
 
     /**
-     * Stops the active BLE scan.
+     * Stops the active BLE scan and cancels all associated background/probing jobs.
      */
     @SuppressLint("MissingPermission")
     fun stopScan() {
-        scanTimeoutJob?.cancel()
-        scanTimeoutJob = null
+        activeScanJob?.cancel()
+        activeScanJob = null
+        activeScanScope = null
 
         if (_isScanning.value) {
             _isScanning.value = false
@@ -237,7 +252,7 @@ class DanaPumpScanner(
             )
 
             if (shouldVerifyCharacteristics) {
-                currentScanScope?.launch {
+                activeScanScope?.launch {
                     logger?.log("Probing GATT characteristics for $name (${device.address})...")
                     val isValid = withTimeoutOrNull(30.seconds) {
                         verifyPumpCharacteristics(device)
@@ -257,7 +272,7 @@ class DanaPumpScanner(
 
         override fun onScanFailed(errorCode: Int) {
             logger?.log("BLE Scan failed with error code: $errorCode")
-            _isScanning.value = false
+            stopScan()
         }
     }
 
