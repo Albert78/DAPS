@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
@@ -92,7 +93,9 @@ fun SetupStepScaffold(
             if (showBottomBackButton || onNext != null) {
                 Surface(
                     tonalElevation = 2.dp,
-                    modifier = Modifier.imePadding()
+                    modifier = Modifier
+                        .navigationBarsPadding()
+                        .imePadding()
                 ) {
                     Row(
                         modifier = Modifier
