@@ -42,6 +42,7 @@ import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.ReplaceableComponentType
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
+import de.dh.daps.core.pump.PumpCoordinatorState
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.PrimaryButton
@@ -61,7 +62,8 @@ fun PumpTabContent(
     uiState: PumpTabUiState = PumpTabUiState.Loading,
     onChangePumpDriver: () -> Unit = {},
     onRefreshPumpStatus: () -> Unit = {},
-    onCancelPumpJob: (String) -> Unit = {}
+    onCancelPumpJob: (String) -> Unit = {},
+    onResetPumpCommunication: () -> Unit = {}
 ) {
     Column(modifier = modifier) {
         val mainHeadlineText = when (uiState) {
@@ -141,9 +143,11 @@ fun PumpTabContent(
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            PumpJobsCard(
+            PumpTechnicalStatusCard(
+                coordinatorState = uiState.coordinatorState,
                 pendingJobs = uiState.pendingJobs,
-                onCancelJob = onCancelPumpJob
+                onCancelJob = onCancelPumpJob,
+                onResetPumpCommunication = onResetPumpCommunication
             )
 
             if (uiState.pumpPluginSection != null) {
@@ -521,9 +525,11 @@ fun PumpExpirationsCard(
 
 
 @Composable
-fun PumpJobsCard(
+fun PumpTechnicalStatusCard(
+    coordinatorState: PumpCoordinatorState,
     pendingJobs: List<PumpJobItem>,
     onCancelJob: (String) -> Unit,
+    onResetPumpCommunication: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     FramedCard(
@@ -537,11 +543,62 @@ fun PumpJobsCard(
                 .fillMaxWidth()
         ) {
             Text(
+                text = stringResource(R.string.system_control_pump_communication_title),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            val (statusText, statusColor) = when (coordinatorState) {
+                PumpCoordinatorState.Idle -> stringResource(R.string.system_control_pump_coordinator_state_idle) to MaterialTheme.colorScheme.onSurface
+                PumpCoordinatorState.Running -> stringResource(R.string.system_control_pump_coordinator_state_running) to MaterialTheme.colorScheme.primary
+                PumpCoordinatorState.Error -> stringResource(R.string.system_control_pump_coordinator_state_error) to MaterialTheme.colorScheme.error
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        text = stringResource(R.string.system_control_pump_communication_status_label),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = statusText,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = statusColor
+                    )
+                }
+
+                if (coordinatorState == PumpCoordinatorState.Error) {
+                    PrimaryButton(
+                        onClick = onResetPumpCommunication
+                    ) {
+                        Text(
+                            text = stringResource(R.string.system_control_pump_reset_button),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 12.dp),
+                thickness = 0.5.dp,
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
+
+            Text(
                 text = stringResource(R.string.system_control_pump_jobs_title),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
+
             if (pendingJobs.isEmpty()) {
                 Text(
                     text = stringResource(R.string.system_control_pump_jobs_empty),

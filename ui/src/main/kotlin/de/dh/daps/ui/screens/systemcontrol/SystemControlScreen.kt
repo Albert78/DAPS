@@ -72,7 +72,8 @@ fun SystemControlScreen(
         onNavigateToGlucoseSourceSetup = onNavigateToGlucoseSourceSetup,
         onStopGlucoseSource = viewModel::stopActiveGlucoseSource,
         onCancelPumpJob = viewModel::cancelPumpJob,
-        onRefreshPumpStatus = viewModel::refreshPumpStatus
+        onRefreshPumpStatus = viewModel::refreshPumpStatus,
+        onResetPumpCommunication = viewModel::resetPumpCommunication
     )
 }
 
@@ -87,7 +88,8 @@ fun SystemControlContent(
     onNavigateToGlucoseSourceSetup: () -> Unit = {},
     onStopGlucoseSource: () -> Unit = {},
     onCancelPumpJob: (String) -> Unit = {},
-    onRefreshPumpStatus: () -> Unit = {}
+    onRefreshPumpStatus: () -> Unit = {},
+    onResetPumpCommunication: () -> Unit = {}
 ) {
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(initialTab) }
 
@@ -184,7 +186,8 @@ fun SystemControlContent(
                                     uiState = uiState.pumpTabUiState,
                                     onChangePumpDriver = onNavigateToPumpSetup,
                                     onRefreshPumpStatus = onRefreshPumpStatus,
-                                    onCancelPumpJob = onCancelPumpJob
+                                    onCancelPumpJob = onCancelPumpJob,
+                                    onResetPumpCommunication = onResetPumpCommunication
                                 )
                             }
                         }

@@ -39,6 +39,7 @@ import de.dh.daps.common.ui.UiText
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.pump.JobErrorCode
 import de.dh.daps.core.pump.PumpCommand
+import de.dh.daps.core.pump.PumpCoordinatorState
 import de.dh.daps.core.pump.PumpJob
 import de.dh.daps.core.repository.BluetoothStatus
 import de.dh.daps.ui.R
@@ -169,6 +170,7 @@ sealed interface PumpTabUiState {
         val startDate: Timestamp? = null,
         val expirations: List<Expiration> = emptyList(),
         val pendingJobs: List<PumpJobItem> = emptyList(),
+        val coordinatorState: PumpCoordinatorState = PumpCoordinatorState.Idle,
         val pumpPluginSection: (@Composable () -> Unit)? = null
     ) : PumpTabUiState
 }
@@ -215,6 +217,7 @@ class SystemControlViewModel(
         val startDate: Timestamp? = null,
         val expirations: List<Expiration> = emptyList(),
         val jobs: List<PumpJob> = emptyList(),
+        val coordinatorState: PumpCoordinatorState = PumpCoordinatorState.Idle,
         val isSuspended: Boolean = false,
         val isExpired: Boolean = false,
         val hasError: Boolean = false,
@@ -336,6 +339,7 @@ class SystemControlViewModel(
             val coordinator = pumpManager.pumpCoordinator
             val jobsFlow = coordinator?.pendingJobs ?: flowOf(emptyList())
             val lastConnFlow = coordinator?.lastConnectionTime ?: flowOf(Timestamp.INVALID)
+            val coordinatorStateFlow = coordinator?.pumpCoordinatorState ?: flowOf(PumpCoordinatorState.Idle)
 
             combine(
                 pump.isConnected,
@@ -346,7 +350,8 @@ class SystemControlViewModel(
                 pump.startDate,
                 pump.isExpired,
                 pump.expirations,
-                pumpDriverManager.activeDriver
+                pumpDriverManager.activeDriver,
+                coordinatorStateFlow
             ) { array ->
                 val connected = array[0] as Boolean
                 val hardware = array[1] as PumpHardwareInformation?
@@ -359,6 +364,7 @@ class SystemControlViewModel(
                 @Suppress("UNCHECKED_CAST")
                 val expirations = array[7] as List<Expiration>
                 val activeDriver = array[8] as InsulinPumpDriver?
+                val coordinatorState = array[9] as PumpCoordinatorState
 
                 PumpUiData(
                     connected = connected,
@@ -371,6 +377,7 @@ class SystemControlViewModel(
                     startDate = startDate,
                     expirations = expirations,
                     jobs = jobs,
+                    coordinatorState = coordinatorState,
                     isSuspended = status.pumpSuspended,
                     isExpired = isExpired,
                     hasError = jobs.any { it.lastError != null },
@@ -644,6 +651,7 @@ class SystemControlViewModel(
                 startDate = pInfo.startDate,
                 expirations = pInfo.expirations,
                 pendingJobs = pumpJobsList,
+                coordinatorState = pInfo.coordinatorState,
                 pumpPluginSection = section
             )
         }
@@ -670,6 +678,10 @@ class SystemControlViewModel(
 
     fun refreshPumpStatus() {
         pumpManager.issueCommand(PumpCommand.RefreshStatus)
+    }
+
+    fun resetPumpCommunication() {
+        pumpManager.reset()
     }
 
     companion object {
