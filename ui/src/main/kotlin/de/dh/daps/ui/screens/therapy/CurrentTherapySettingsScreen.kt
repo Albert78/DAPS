@@ -73,9 +73,9 @@ import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.glucoseValue
-import de.dh.daps.ui.common.icons.Icon_Navigate_Next
 import de.dh.daps.ui.common.icons.Icon_Insulin_Adjustment
 import de.dh.daps.ui.common.icons.Icon_Insulin_Profile
+import de.dh.daps.ui.common.icons.Icon_Navigate_Next
 import de.dh.daps.ui.common.icons.Icon_Therapy_Adjustment
 import de.dh.daps.ui.common.isfUnitLabel
 import de.dh.daps.ui.common.theme.AppPreview
@@ -744,8 +744,10 @@ private fun TemporaryAdjustmentCard(
                     status = if (adjustment.targetBgOverride != null)
                         if (adjustment.targetBgOverride > baseTarget)
                             stringResource(R.string.label_increased)
-                        else
+                        else if (adjustment.targetBgOverride < baseTarget)
                             stringResource(R.string.label_decreased)
+                        else
+                            stringResource(R.string.label_fixed)
                     else
                         null
                 )
@@ -766,8 +768,10 @@ private fun TemporaryAdjustmentCard(
                     status = if (adjustment.lowThresholdOverride != null)
                         if (adjustment.lowThresholdOverride > baseLow)
                             stringResource(R.string.label_increased)
-                        else
+                        else if (adjustment.lowThresholdOverride < baseLow)
                             stringResource(R.string.label_decreased)
+                        else
+                            stringResource(R.string.label_fixed)
                     else
                         null
                 )

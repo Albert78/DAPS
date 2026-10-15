@@ -305,6 +305,7 @@
     <string name="cd_copy_insulin_profile">Profil kopieren</string>
     <string name="label_increased">erhöht</string>
     <string name="label_decreased">reduziert</string>
+    <string name="label_fixed">fixiert</string>
     <string name="label_active">Aktiv</string>
     <string name="label_inactive">Inaktiv</string>
     <string name="label_adjusted">(angepasst)</string>
