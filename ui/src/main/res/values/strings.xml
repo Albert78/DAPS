@@ -485,7 +485,8 @@
     <string name="system_control_pump_coordinator_state_idle">Bereit</string>
     <string name="system_control_pump_coordinator_state_running">In Ausführung</string>
     <string name="system_control_pump_coordinator_state_error">Fehler</string>
-    <string name="system_control_pump_reset_button">Reset</string>
+    <string name="system_control_pump_coordinator_error_hint">Es ist ein technischer Fehler bei der Kommunikation mit der Insulinpumpe aufgetreten. Der App-Entwickler ist außerordentlich an dieser Fehlersituation interessiert, um die App zu verbessern! Bitte nimm Kontakt auf (z.B. über Discord).</string>
+    <string name="system_control_pump_reset_button">Zurücksetzen</string>
     <string name="system_control_pump_actions">Aktionen</string>
     <string name="system_control_pump_expirations_title">Ablaufdaten &amp; Wechsel</string>
     <string name="system_control_pump_jobs_title">Ausstehende Pumpenjobs</string>

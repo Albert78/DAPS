@@ -555,6 +555,16 @@ fun PumpTechnicalStatusCard(
                 PumpCoordinatorState.Error -> stringResource(R.string.system_control_pump_coordinator_state_error) to MaterialTheme.colorScheme.error
             }
 
+            if (coordinatorState == PumpCoordinatorState.Error) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = stringResource(R.string.system_control_pump_coordinator_error_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -847,6 +857,29 @@ fun PumpTabLoadingPreview() {
         Surface {
             PumpTabContent(
                 uiState = PumpTabUiState.Loading,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Technical Status Card - Error")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Technical Status Card - Error - Dark Mode")
+@Composable
+fun PumpTechnicalStatusErrorCardPreview() {
+    AppTheme {
+        Surface {
+            PumpTechnicalStatusCard(
+                coordinatorState = PumpCoordinatorState.Error,
+                pendingJobs = listOf(
+                    PumpJobItem(
+                        id = "job_1",
+                        title = UiText.StringResource(R.string.system_control_pump_job_type_bolus, "1,50"),
+                        errorMessage = UiText.StringResource(R.string.system_control_pump_job_error_connection_failed, ": Timeout")
+                    )
+                ),
+                onCancelJob = {},
+                onResetPumpCommunication = {},
                 modifier = Modifier.padding(16.dp)
             )
         }
