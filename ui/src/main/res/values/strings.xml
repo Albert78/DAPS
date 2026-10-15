@@ -574,7 +574,7 @@
     <string name="overview_pump_next_expiration_label">Nächster Wechsel</string>
     <string name="overview_pump_battery_label">Batteriestatus</string>
     <string name="overview_pump_reservoir_label">Reservoir-Füllstand</string>
-    <string name="overview_pump_last_bolus_label">Letzter Bolus</string>
+    <string name="overview_pump_last_insulin_label">Letzte Insulingabe</string>
     <string name="overview_pump_state_suspended">Suspended</string>
     <string name="overview_pump_state_error">Fehler</string>
 

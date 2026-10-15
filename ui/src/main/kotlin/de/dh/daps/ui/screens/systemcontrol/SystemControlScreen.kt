@@ -201,8 +201,8 @@ fun SystemControlContent(
     }
 }
 
-@Preview(showBackground = true, name = "Overview Tab")
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Overview Tab - Dark Mode")
+@Preview(showBackground = true, heightDp = 1200, name = "Overview Tab")
+@Preview(showBackground = true, heightDp = 1200, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Overview Tab - Dark Mode")
 @Composable
 fun SystemControlOverviewPreview() {
     AppPreview {

@@ -109,7 +109,7 @@ sealed interface OverviewPumpUiState {
     data class Content(
         val pumpName: UiText,
         val state: StatusMetric<OverviewPumpState>,
-        val lastBolus: StatusMetric<Timestamp>,
+        val lastInsulin: StatusMetric<Timestamp>,
         val battery: StatusMetric<Int>,
         val reservoir: StatusMetric<InsulinAmount>,
         val lastConnection: StatusMetric<Timestamp>,
@@ -271,10 +271,10 @@ class SystemControlViewModel(
         )
     }
 
-    private val lastBolusTimestamp = treatmentRepository.observeInsulinApplications()
+    private val lastInsulinTimestamp = treatmentRepository.observeInsulinApplications()
         .map { applications ->
             applications
-                .filter { !it.basal && it.status == InsulinStatus.Confirmed }
+                .filter { it.status == InsulinStatus.Confirmed }
                 .maxByOrNull { it.timestamp }
                 ?.timestamp
         }
@@ -421,9 +421,9 @@ class SystemControlViewModel(
         apsInfo,
         sourceInfo,
         pumpInfo,
-        lastBolusTimestamp,
+        lastInsulinTimestamp,
         androidSystemInfo
-    ) { apsSystem, gInfo, pInfo, lastBolusTs, androidSystem ->
+    ) { apsSystem, gInfo, pInfo, lastInsulinTs, androidSystem ->
         // Overview Tab State
         val overviewGlucoseSource: OverviewGlucoseSourceUiState = if (gInfo == null) {
             OverviewGlucoseSourceUiState.NoneConfigured
@@ -536,7 +536,7 @@ class SystemControlViewModel(
                     value = pumpOverviewState,
                     status = pumpValueStatus
                 ),
-                lastBolus = StatusMetric(value = lastBolusTs, status = if (lastBolusTs == null) ValueStatus.WARNING else ValueStatus.GOOD),
+                lastInsulin = StatusMetric(value = lastInsulinTs, status = if (lastInsulinTs == null) ValueStatus.WARNING else ValueStatus.GOOD),
                 battery = StatusMetric(
                     value = pInfo.status.batteryRemainingPercent,
                     status = when {

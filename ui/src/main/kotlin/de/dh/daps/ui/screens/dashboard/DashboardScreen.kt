@@ -16,16 +16,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lightbulb
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -72,7 +68,6 @@ import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.WarningBanner
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.getBolusRecommendationText
-import de.dh.daps.ui.common.icons.Icon_Permissions
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.controls.apscontrol.ApsControlCard
 import de.dh.daps.ui.controls.history.HistoryAndImpactChartOrDefault
@@ -97,8 +92,6 @@ import de.dh.daps.ui.screens.therapy.TherapyAdjustmentUiState
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import de.dh.daps.common.R as CommonR
-
 @Composable
 fun DashboardScreen(
     viewModel: DashboardViewModel,
@@ -107,7 +100,6 @@ fun DashboardScreen(
     currentTherapyViewModel: CurrentTherapyViewModel,
     permissionsViewModel: PermissionsViewModel,
     onFixPermissions: () -> Unit,
-    onNavigateToPermissions: () -> Unit,
     onNavigateToTherapySettings: () -> Unit,
     onNavigateToMealCorrectionBolus: (Double?) -> Unit = {},
     onNavigateToSystemControl: () -> Unit,
@@ -135,7 +127,6 @@ fun DashboardScreen(
         currentTherapyUiState = currentTherapyUiState,
         permissionsUiState = permissionsUiState,
         onFixPermissionsClick = onFixPermissions,
-        onNavigateToPermissions = onNavigateToPermissions,
         onNavigateToTherapySettings = onNavigateToTherapySettings,
         onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus,
         isMealCorrectionBolusAllowed = uiState.isMealCorrectionBolusAllowed,
@@ -163,7 +154,6 @@ fun DashboardContent(
     currentTherapyUiState: CurrentTherapyUiState,
     permissionsUiState: PermissionsUiModel,
     onFixPermissionsClick: () -> Unit,
-    onNavigateToPermissions: () -> Unit,
     onNavigateToTherapySettings: () -> Unit,
     onNavigateToMealCorrectionBolus: (Double?) -> Unit = {},
     isMealCorrectionBolusAllowed: Boolean,
@@ -178,8 +168,6 @@ fun DashboardContent(
     onNavigateToPumpSetup: () -> Unit = {},
     extraContent: @Composable () -> Unit = {}
 ) {
-    var menuExpanded by remember { mutableStateOf(false) }
-
     var carbsVisible by remember { mutableStateOf(true) }
     var insulinVisible by remember { mutableStateOf(true) }
 
@@ -192,26 +180,6 @@ fun DashboardContent(
                 ),
                 navigationIcon = {
                     Spacer(modifier = Modifier.width(48.dp))
-                },
-                actions = {
-                    Box {
-                        IconButton(onClick = { menuExpanded = true }) {
-                            Icon(imageVector = Icons.Default.MoreVert, contentDescription = stringResource(id = CommonR.string.cd_more_options))
-                        }
-                        DropdownMenu(
-                            expanded = menuExpanded,
-                            onDismissRequest = { menuExpanded = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(id = R.string.menu_item_permissions_label)) },
-                                leadingIcon = { Icon(imageVector = Icon_Permissions, contentDescription = null) },
-                                onClick = {
-                                    menuExpanded = false
-                                    onNavigateToPermissions()
-                                }
-                            )
-                        }
-                    }
                 }
             )
         }
@@ -650,7 +618,6 @@ fun DashboardPreview() {
                 permissionsMissingText = ""
             ),
             onFixPermissionsClick = {},
-            onNavigateToPermissions = {},
             onNavigateToTherapySettings = {},
             onNavigateToSystemControl = {},
             onHistoryChartClick = {},
@@ -716,7 +683,6 @@ fun DashboardPermissionsWarningPreview() {
                     permissionsMissingText = "1 permission missing"
                 ),
                 onFixPermissionsClick = {},
-                onNavigateToPermissions = {},
                 onNavigateToTherapySettings = {},
                 onNavigateToSystemControl = {},
                 onHistoryChartClick = {},

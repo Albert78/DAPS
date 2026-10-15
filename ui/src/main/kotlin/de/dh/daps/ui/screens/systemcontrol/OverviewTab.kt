@@ -500,8 +500,8 @@ private fun OverviewPumpCard(
                             }
                         }
                         Column(modifier = Modifier.weight(1f)) {
-                            ControlDetailRow(label = stringResource(id = R.string.overview_pump_last_bolus_label)) {
-                                StatusMetricText(metric = state.lastBolus)
+                            ControlDetailRow(label = stringResource(id = R.string.overview_pump_last_insulin_label)) {
+                                StatusMetricText(metric = state.lastInsulin)
                             }
                         }
                     }
@@ -651,7 +651,7 @@ internal fun sampleOverviewTabUiState(): OverviewTabUiState = OverviewTabUiState
     insulinPump = OverviewPumpUiState.Content(
         pumpName = UiText.DynamicString("SimBody Virtuelle Insulinpumpe"),
         state = StatusMetric(OverviewPumpState.ACTIVE, status = ValueStatus.GOOD),
-        lastBolus = StatusMetric(Timestamp(System.currentTimeMillis() - 600_000), status = ValueStatus.GOOD),
+        lastInsulin = StatusMetric(Timestamp(System.currentTimeMillis() - 600_000), status = ValueStatus.GOOD),
         battery = StatusMetric(85, status = ValueStatus.GOOD),
         reservoir = StatusMetric(InsulinAmount(140.0), status = ValueStatus.GOOD),
         lastConnection = StatusMetric(Timestamp(System.currentTimeMillis() - 60_000), status = ValueStatus.GOOD),
@@ -708,7 +708,7 @@ internal fun sampleOverviewTabExpiredUiState(): OverviewTabUiState = OverviewTab
     insulinPump = OverviewPumpUiState.Content(
         pumpName = UiText.DynamicString("SimBody Virtuelle Insulinpumpe"),
         state = StatusMetric(OverviewPumpState.EXPIRED, status = ValueStatus.BAD),
-        lastBolus = StatusMetric(Timestamp(System.currentTimeMillis() - 600_000), status = ValueStatus.GOOD),
+        lastInsulin = StatusMetric(Timestamp(System.currentTimeMillis() - 600_000), status = ValueStatus.GOOD),
         battery = StatusMetric(45, status = ValueStatus.GOOD),
         reservoir = StatusMetric(InsulinAmount(15.0), status = ValueStatus.WARNING),
         lastConnection = StatusMetric(Timestamp(System.currentTimeMillis() - 60_000), status = ValueStatus.GOOD),
