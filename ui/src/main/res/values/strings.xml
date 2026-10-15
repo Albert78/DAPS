@@ -358,12 +358,12 @@
     <string name="edit_historical_meal_carbs_label">Mahlzeit</string>
 
     <string name="drawer_header_title">DAPS</string>
-    <string name="menu_meals_label">Mahlzeiten</string>
+    <string name="menu_meals_label">Mahlzeiten-Historie</string>
     <string name="menu_food_database_label">Essensdatenbank</string>
     <string name="menu_system_control_label">Systemsteuerung</string>
     <string name="cd_open_navigation_drawer">Hauptmenü öffnen</string>
 
-    <string name="meals_screen_title">Mahlzeiten</string>
+    <string name="meals_screen_title">Mahlzeiten-Historie</string>
     <string name="meal_history_detail_title">Mahlzeit Details</string>
     <string name="meals_empty_list">Keine Mahlzeiten eingetragen</string>
     <string name="meal_not_found">Mahlzeit nicht gefunden</string>
@@ -409,8 +409,8 @@
 
     <string name="food_database_screen_title">Essensdatenbank</string>
 
-    <string name="bolus_history_screen_title">Bolus-History</string>
-    <string name="menu_bolus_history_label">Bolus-History</string>
+    <string name="bolus_history_screen_title">Bolus-Historie</string>
+    <string name="menu_bolus_history_label">Bolus-Historie</string>
     <string name="bolus_status_scheduled">Geplant</string>
     <string name="bolus_status_cancelled">Abgebrochen</string>
     <string name="bolus_status_invalidated">Entwertet</string>
