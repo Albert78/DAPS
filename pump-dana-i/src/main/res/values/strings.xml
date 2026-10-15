@@ -3,8 +3,8 @@
     <string name="danai_pump_setup_title">Sooil Dana-i</string>
     <string name="danai_pump_setup_subtitle">Wähle und koppele deine Insulinpumpe</string>
     <string name="danai_pump_setup_available_pumps">Verfügbare Pumpen</string>
-    <string name="danai_pump_setup_no_pumps_found">Keine Dana-i-Pumpen in der Nähe gefunden. Stelle sicher, dass Bluetooth aktiviert ist und sich die Pumpe in Reichweite befindet.</string>
-    <string name="danai_pump_setup_searching_pumps">Suche nach Dana-i-Pumpen in der Nähe…</string>
+    <string name="danai_pump_setup_no_pumps_found">Keine Dana-i-Pumpen in der Nähe gefunden. Stelle sicher, dass Bluetooth aktiviert ist und sich die Pumpe in Reichweite befindet. Die Pumpe darf mit keinem anderen Gerät gekoppelt sein. Du kannst die Suche erneut starten, es ist ganz normal, dass es ein paar Versuche braucht.</string>
+    <string name="danai_pump_setup_searching_pumps">Suche nach Dana-i-Pumpen in der Nähe. Das kann eine Zeit lang dauern…</string>
     <string name="danai_pump_setup_btn_pair">Koppeln</string>
     <string name="danai_pump_setup_btn_search">Nach Pumpen suchen</string>
     <string name="danai_pump_setup_connect_failed">Verbindung zur Dana-i-Pumpe fehlgeschlagen</string>
@@ -20,7 +20,7 @@
     <string name="danai_pump_unbind_dialog_confirm">Bindung verwerfen</string>
 
     <string name="danai_pump_control_title">Pumpensteuerung</string>
-    <string name="danai_pump_control_maintenance_subtitle">Trennt die Bluetooth-Verbindung temporär für Wartungsarbeiten (z.B. Batteriewechsel). Der Status wird als Gestoppt (Suspended) an das System gemeldet.</string>
+    <string name="danai_pump_control_maintenance_subtitle">Trennt die Bluetooth-Verbindung temporär für Wartungsarbeiten (z.B. Reservoir- oder Katheterwechsel). Der Status wird in der Zeit als Gestoppt (Suspended) an das System gemeldet.</string>
     <string name="danai_pump_control_btn_disconnect_maintenance">Zur Wartung trennen</string>
     <string name="danai_pump_control_btn_reconnect_maintenance">Wartung beenden &amp; verbinden</string>
 </resources>

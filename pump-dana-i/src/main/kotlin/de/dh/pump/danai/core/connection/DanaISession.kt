@@ -291,7 +291,7 @@ class DanaISession(
     }
 
     companion object {
-        private const val DANA_HANDSHAKE_TIMEOUT = 5000L
-        private const val DANA_PAIRING_TIMEOUT = 60000L
+        private const val DANA_HANDSHAKE_TIMEOUT = 15000L
+        private const val DANA_PAIRING_TIMEOUT = 120000L
     }
 }

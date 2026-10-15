@@ -156,7 +156,7 @@ class DanaPumpScanner(
     @SuppressLint("MissingPermission")
     fun startScan(
         scope: CoroutineScope,
-        duration: Duration = 15.seconds,
+        duration: Duration = 60.seconds,
         verifyCharacteristics: Boolean = false,
     ) {
         parentScope = scope
@@ -254,7 +254,7 @@ class DanaPumpScanner(
             if (shouldVerifyCharacteristics) {
                 activeScanScope?.launch {
                     logger?.log("Probing GATT characteristics for $name (${device.address})...")
-                    val isValid = withTimeoutOrNull(30.seconds) {
+                    val isValid = withTimeoutOrNull(60.seconds) {
                         verifyPumpCharacteristics(device)
                     } ?: false
 

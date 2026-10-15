@@ -16,8 +16,8 @@ data class BlePumpConfig(
     val serviceUuid: UUID? = null,
     val txCharacteristicUuid: UUID,
     val rxCharacteristicUuid: UUID,
-    val connectionTimeout: Duration = 10.seconds,
-    val operationTimeout: Duration = 5.seconds,
+    val connectionTimeout: Duration = 30.seconds,
+    val operationTimeout: Duration = 10.seconds,
     val writeType: Int = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT,
     val maxWriteChunkSize: Int = 20,
 ) {

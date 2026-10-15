@@ -288,7 +288,7 @@ class DanaILink(
         val client = ensureConnectedClient()
 
         logger.log("Sending command: ${command.javaClass.simpleName}")
-        return client.execute(command, timeout = 20.seconds)
+        return client.execute(command, timeout = 30.seconds)
     }
 
     /**

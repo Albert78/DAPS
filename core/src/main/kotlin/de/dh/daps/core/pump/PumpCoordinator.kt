@@ -449,7 +449,7 @@ class PumpCoordinator(
         private val HEARTBEAT_INTERVAL = Minutes(15)
         private const val RETRY_INTERVAL_MS: Long = 10_000
         private const val MAX_CONNECTION_RETRIES = 3
-        private val BUSY_RETRY_DELAYS_MS = listOf(10_000L, 20_000L, 30_000L)
+        private val BUSY_RETRY_DELAYS_MS = listOf(15_000L, 30_000L, 60_000L)
 
         fun create(
             pump: InsulinPump,
