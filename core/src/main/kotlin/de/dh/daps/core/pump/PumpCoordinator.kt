@@ -303,8 +303,31 @@ class PumpCoordinator(
                             return false
                         }
                     }
+                    PumpStatus.REJECTED -> {
+                        if (job.command is PumpCommand.SetSuspend) {
+                            try {
+                                pump.refreshStatus()
+                            } catch (_: Exception) {
+                                // Ignore refresh error during state check
+                            }
+                            if (pump.basalStatus.value.isSuspended == job.command.suspended ||
+                                pump.pumpStatus.value.pumpSuspended == job.command.suspended
+                            ) {
+                                Log.i(TAG, "Pump rejected SetSuspend(${job.command.suspended}), but state reconciliation confirmed pump is in expected suspend state.")
+                                _lastConnectionTime.value = Timestamp.now()
+                                return true
+                            }
+                        }
+                        _pumpCoordinatorState.value = PumpCoordinatorState.Error
+                        // Since this is an unexpected situation, we don't remove the job from the queue.
+                        // The user must manually remove it in the management interface.
+                        val errorCode = JobErrorCode.CommandFailed(status, e.message)
+                        val failedJob = job.copy(lastError = errorCode)
+                        _pendingJobs.update { pending -> pending.map { if (it.id == job.id) failedJob else it } }
+                        onJobError(failedJob, errorCode)
+                        return false
+                    }
                     PumpStatus.OK, // Should not happen
-                    PumpStatus.REJECTED,
                     PumpStatus.INVALID_PARAMETER,
                     PumpStatus.NOT_AUTHORIZED,
                     PumpStatus.DEVICE_ERROR,
