@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.icons.Icon_Alarms
 import de.dh.daps.ui.common.icons.Icon_Insulin
@@ -66,6 +67,7 @@ fun MasterDataScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .contentScrollIndicator(scrollState)
                 .verticalScroll(scrollState)
         ) {
             ListItem(

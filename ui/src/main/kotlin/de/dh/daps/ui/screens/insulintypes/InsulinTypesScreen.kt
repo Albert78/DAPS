@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import de.dh.daps.ui.common.composables.contentScrollIndicator
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -160,10 +162,13 @@ fun InsulinTypesContent(
                 )
             }
         } else {
+            val listState = rememberLazyListState()
             LazyColumn(
+                state = listState,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
+                    .contentScrollIndicator(listState)
             ) {
                 items(uiState.insulinTypes) { insulinType ->
                     val isInUse = uiState.isTypeInUse(insulinType)

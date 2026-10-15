@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
@@ -30,6 +32,7 @@ import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.PrimaryButton
+import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.theme.AppPreview
 
 @Composable
@@ -51,6 +54,8 @@ fun FullScreenAlarmScreen(
         MaterialTheme.colorScheme.onTertiaryContainer
     }
 
+    val scrollState = rememberScrollState()
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = backgroundColor
@@ -58,6 +63,8 @@ fun FullScreenAlarmScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .contentScrollIndicator(scrollState)
+                .verticalScroll(scrollState)
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween

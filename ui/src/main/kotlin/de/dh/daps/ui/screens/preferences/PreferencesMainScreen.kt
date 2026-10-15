@@ -10,8 +10,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.icons.Icon_Carbs_Unit
 import de.dh.daps.ui.common.icons.Icon_Navigate_Next
 import de.dh.daps.ui.common.icons.Icon_Glucose_Unit
@@ -88,12 +92,15 @@ fun PreferencesContent(
     onCarbsUnitSelected: (CarbsUnit) -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val scrollState = rememberScrollState()
     var showThemeDialog by remember { mutableStateOf(false) }
     var showGlucoseUnitDialog by remember { mutableStateOf(false) }
     var showCarbsUnitDialog by remember { mutableStateOf(false) }
 
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             LargeTopAppBar(
                 title = screenTitle(stringResource(R.string.preferences_screen_title)),
@@ -113,6 +120,8 @@ fun PreferencesContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .contentScrollIndicator(scrollState)
+                .verticalScroll(scrollState)
         ) {
             PreferenceCategory(title = stringResource(R.string.pref_category_appearance_title))
 

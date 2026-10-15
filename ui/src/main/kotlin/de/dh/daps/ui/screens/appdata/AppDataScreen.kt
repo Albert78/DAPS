@@ -58,6 +58,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
+import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.icons.Backup
 import de.dh.daps.ui.common.icons.Icon_Screen_Back
@@ -182,6 +183,7 @@ fun AppDataContent(
             )
         }
     ) { innerPadding ->
+        val scrollState = rememberScrollState()
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -190,7 +192,8 @@ fun AppDataContent(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
+                    .contentScrollIndicator(scrollState)
+                    .verticalScroll(scrollState)
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -521,6 +524,7 @@ fun ResetConfirmationFullscreenDialogContent(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val scrollState = rememberScrollState()
     Surface(
         modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.error,
@@ -529,7 +533,8 @@ fun ResetConfirmationFullscreenDialogContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
+                .contentScrollIndicator(scrollState)
+                .verticalScroll(scrollState)
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
