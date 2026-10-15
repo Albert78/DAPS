@@ -1,7 +1,6 @@
 package de.dh.daps.ui.screens.meals
 
 import android.content.res.Configuration
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,9 +12,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -30,9 +26,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -47,7 +41,6 @@ import de.dh.daps.ui.R
 import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
-import de.dh.daps.ui.common.icons.Icon_Meal_Types
 import de.dh.daps.ui.common.theme.AppPreview
 import java.time.Instant
 import java.time.LocalDate
@@ -59,7 +52,6 @@ import de.dh.daps.common.R as CommonR
 @Composable
 fun MealsScreen(
     viewModel: MealsViewModel,
-    onNavigateToMealTypes: () -> Unit,
     onAddMeal: () -> Unit,
     onEditMeal: (MealEntry) -> Unit,
     onNavigateUp: () -> Unit,
@@ -68,24 +60,20 @@ fun MealsScreen(
 
     MealsContent(
         uiState = uiState,
-        onNavigateToMealTypes = onNavigateToMealTypes,
         onAddMeal = onAddMeal,
         onEditMeal = onEditMeal,
         onNavigateUp = onNavigateUp,
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MealsContent(
     uiState: MealsUiState,
-    onNavigateToMealTypes: () -> Unit,
     onAddMeal: () -> Unit,
     onEditMeal: (MealEntry) -> Unit,
     onNavigateUp: () -> Unit,
 ) {
-    var showMenu by remember { mutableStateOf(false) }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -98,27 +86,6 @@ fun MealsContent(
                         )
                     }
                 },
-                actions = {
-                    IconButton(onClick = { showMenu = !showMenu }) {
-                        Icon(
-                            imageVector = Icons.Default.MoreVert,
-                            contentDescription = stringResource(id = CommonR.string.cd_more_options)
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = showMenu,
-                        onDismissRequest = { showMenu = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(id = R.string.menu_meal_types_label)) },
-                            leadingIcon = { Icon(imageVector = Icon_Meal_Types, contentDescription = null) },
-                            onClick = {
-                                showMenu = false
-                                onNavigateToMealTypes()
-                            }
-                        )
-                    }
-                }
             )
         },
         floatingActionButton = {
@@ -244,7 +211,6 @@ fun MealsPreview() {
     AppPreview {
         MealsContent(
             uiState = MealsUiState(),
-            onNavigateToMealTypes = {},
             onAddMeal = {},
             onEditMeal = {},
             onNavigateUp = {}
@@ -269,7 +235,6 @@ fun MealsWithDataPreview() {
     AppPreview {
         MealsContent(
             uiState = MealsUiState(meals = sampleMeals),
-            onNavigateToMealTypes = {},
             onAddMeal = {},
             onEditMeal = {},
             onNavigateUp = {}

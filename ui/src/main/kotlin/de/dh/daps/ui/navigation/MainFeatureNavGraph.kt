@@ -376,7 +376,6 @@ class MainFeatureNavGraph(
                 )
                 MealsScreen(
                     viewModel = vm,
-                    onNavigateToMealTypes = { navViewModel.push(MealTypesRoute) },
                     onAddMeal = { navViewModel.push(HistoricalMealRoute(mealId = ID_UNDEFINED)) },
                     onEditMeal = { meal -> navViewModel.push(HistoricalMealRoute(mealId = meal.id)) },
                     onNavigateUp = { navViewModel.pop() }
