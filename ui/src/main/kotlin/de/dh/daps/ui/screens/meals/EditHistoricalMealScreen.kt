@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
@@ -52,13 +54,14 @@ import de.dh.daps.common.model.getDefaultMealTypes
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.AbsoluteTimeStepper
 import de.dh.daps.ui.common.composables.CarbsValueStepper
+import de.dh.daps.ui.common.composables.FoodTypeSelector
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.ImageCaptionWithSwitch
 import de.dh.daps.ui.common.composables.NormalTextButton
+import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.controls.meal.BolusPlanEditorDialog
-import de.dh.daps.ui.common.composables.FoodTypeSelector
 import de.dh.daps.ui.controls.meal.PlannedBolusUiModel
 import de.dh.daps.common.R as CommonR
 
@@ -205,10 +208,13 @@ fun EditHistoricalMealContent(
             )
         }
     ) { innerPadding ->
+        val scrollState = rememberScrollState()
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .contentScrollIndicator(scrollState)
+                .verticalScroll(scrollState)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
