@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -46,6 +45,7 @@ import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.glucoseValue
+import de.dh.daps.ui.common.icons.Icon_Cgm_Sensor
 import de.dh.daps.ui.common.icons.Icon_Next
 import de.dh.daps.ui.common.icons.Icon_Previous
 import de.dh.daps.ui.common.readingsInterval
@@ -88,10 +88,10 @@ fun SourceTabContent(
                 Spacer(modifier = Modifier.width(16.dp))
                 OutlinedIconButton(onClick = onChangeGlucoseSource) {
                     Icon(
-                        imageVector = Icons.Default.SwapHoriz,
+                        imageVector = Icon_Cgm_Sensor,
                         contentDescription = stringResource(
-                            if (uiState is SourceTabUiState.NoneConfigured) R.string.system_control_source_setup
-                            else R.string.system_control_source_change
+                            if (uiState is SourceTabUiState.NoneConfigured) R.string.cd_system_control_source_setup
+                            else R.string.cd_system_control_source_change
                         )
                     )
                 }

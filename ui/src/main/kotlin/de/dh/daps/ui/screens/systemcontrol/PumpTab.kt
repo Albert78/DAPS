@@ -18,7 +18,6 @@ import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -45,6 +44,7 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
+import de.dh.daps.ui.common.icons.Icon_Pump_Device
 import de.dh.daps.ui.common.icons.PumpReservoir
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.shortDate
@@ -87,10 +87,10 @@ fun PumpTabContent(
                 Spacer(modifier = Modifier.width(16.dp))
                 OutlinedIconButton(onClick = onChangePumpDriver) {
                     Icon(
-                        imageVector = Icons.Default.SwapHoriz,
+                        imageVector = Icon_Pump_Device,
                         contentDescription = stringResource(
-                            if (uiState is PumpTabUiState.NoneConfigured) R.string.system_control_pump_setup
-                            else R.string.system_control_pump_change
+                            if (uiState is PumpTabUiState.NoneConfigured) R.string.cd_system_control_pump_setup
+                            else R.string.cd_system_control_pump_change
                         )
                     )
                 }

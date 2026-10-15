@@ -434,8 +434,8 @@
     <string name="system_control_tab_glucose_source">CGM</string>
     <string name="system_control_source_plugin_section_title">Datenquelle</string>
     <string name="system_control_source_none_active">Keine Glukosequelle aktiv</string>
-    <string name="system_control_source_change">Glukose-Quelle wechseln</string>
-    <string name="system_control_source_setup">Glukose-Quelle einrichten</string>
+    <string name="cd_system_control_source_change">Glukose-Quelle wechseln</string>
+    <string name="cd_system_control_source_setup">Glukose-Quelle einrichten</string>
     <string name="system_control_source_manufacturer_label">Hersteller</string>
     <string name="system_control_source_model_label">Modell</string>
     <string name="system_control_source_serial_number_label">Seriennummer</string>
@@ -462,8 +462,8 @@
     <string name="system_control_tab_pump">Pumpe</string>
     <string name="system_control_pump_plugin_section_title">Insulinpumpe</string>
     <string name="system_control_pump_none_active">Keine Insulinpumpe aktiv</string>
-    <string name="system_control_pump_change">Insulinpumpe wechseln</string>
-    <string name="system_control_pump_setup">Insulinpumpe einrichten</string>
+    <string name="cd_system_control_pump_change">Insulinpumpe wechseln</string>
+    <string name="cd_system_control_pump_setup">Insulinpumpe einrichten</string>
     <string name="system_control_pump_manufacturer_label">Hersteller</string>
     <string name="system_control_pump_model_label">Pumpenmodell</string>
     <string name="system_control_pump_serial_number_label">Seriennummer</string>
