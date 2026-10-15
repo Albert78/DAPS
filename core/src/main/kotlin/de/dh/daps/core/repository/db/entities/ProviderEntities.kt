@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import androidx.room.RoomWarnings
 import de.dh.daps.common.ID_UNDEFINED
 import de.dh.daps.common.model.data.BgSampleKind
 import de.dh.daps.common.model.data.Timestamp
@@ -50,6 +51,7 @@ data class DataProviderEntity(
         Index("timestamp")
     ]
 )
+@Suppress(RoomWarnings.MISSING_INDEX_ON_FOREIGN_KEY_CHILD)
 data class GlucoseReadingEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = ID_UNDEFINED,

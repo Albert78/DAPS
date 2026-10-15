@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import androidx.room.RoomWarnings
 import de.dh.daps.common.ID_UNDEFINED
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinOrigin
@@ -37,6 +38,7 @@ data class MealTypeEntity(
         )
     ]
 )
+@Suppress(RoomWarnings.MISSING_INDEX_ON_FOREIGN_KEY_CHILD)
 data class MealEntity(
     @PrimaryKey(autoGenerate = true)
     var id: Long = ID_UNDEFINED,
@@ -72,6 +74,7 @@ data class InsulinTypeEntity(
     ],
     indices = [Index("timestamp")]
 )
+@Suppress(RoomWarnings.MISSING_INDEX_ON_FOREIGN_KEY_CHILD)
 data class InsulinEntity(
     @PrimaryKey(autoGenerate = true)
     var id: Long = ID_UNDEFINED,
