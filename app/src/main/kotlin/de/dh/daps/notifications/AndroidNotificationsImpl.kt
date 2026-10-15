@@ -293,6 +293,7 @@ class AndroidNotificationsImpl(
             .setDeleteIntent(snooze15PendingIntent)
             .setAutoCancel(false)
             .setOngoing(true)
+            .setOnlyAlertOnce(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
 

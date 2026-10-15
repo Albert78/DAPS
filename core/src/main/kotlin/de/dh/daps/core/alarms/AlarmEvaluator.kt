@@ -7,6 +7,7 @@ import de.dh.daps.common.model.data.AlarmSeverity
 import de.dh.daps.common.model.data.AlarmSignalConfig
 import de.dh.daps.common.model.data.AlarmType
 import de.dh.daps.common.model.data.BgReading
+import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.aps.ApsIssue
 import de.dh.daps.core.aps.SystemOrchestrator
@@ -47,6 +48,8 @@ class AlarmEvaluator(
     private val _activeFiringConfig = MutableStateFlow<AlarmSignalConfig?>(null)
     val activeFiringConfig: StateFlow<AlarmSignalConfig?> = _activeFiringConfig.asStateFlow()
 
+    private var lastEvaluatedBgValue: BgValue? = null
+
     private var evaluationJob: Job? = null
     private var gracePeriodJob: Job? = null
 
@@ -84,6 +87,7 @@ class AlarmEvaluator(
         _activeAlarms.value = emptySet()
         _activeFiringAlarm.value = null
         _activeFiringConfig.value = null
+        lastEvaluatedBgValue = null
         androidNotifications.cancelAlarmNotification()
     }
 
@@ -168,11 +172,20 @@ class AlarmEvaluator(
             val activeProfile = input.activeProfile
             val config = activeProfile?.getConfigFor(primaryAlarm) ?: AlarmSignalConfig()
 
+            val bgValue = input.bgReading?.value
+            val previousAlarm = _activeFiringAlarm.value
+            val previousConfig = _activeFiringConfig.value
+            val previousBgValue = lastEvaluatedBgValue
+
             _activeFiringAlarm.value = primaryAlarm
             _activeFiringConfig.value = config
+            lastEvaluatedBgValue = bgValue
 
-            Log.d(TAG, "Posting notification for active alarm $primaryAlarm (isFullScreen=${config.isFullScreen})")
-            androidNotifications.showAlarmNotification(primaryAlarm, input.bgReading?.value, isFullScreen = config.isFullScreen)
+            // Only re-post notification if active firing alarm, signal config, or BG reading actually changed
+            if (primaryAlarm != previousAlarm || config != previousConfig || bgValue != previousBgValue) {
+                Log.d(TAG, "Posting notification for active alarm $primaryAlarm (isFullScreen=${config.isFullScreen})")
+                androidNotifications.showAlarmNotification(primaryAlarm, bgValue, isFullScreen = config.isFullScreen)
+            }
         } else {
             // No unsnoozed alarms active
             if (_activeFiringAlarm.value != null) {
@@ -181,6 +194,7 @@ class AlarmEvaluator(
             }
             _activeFiringAlarm.value = null
             _activeFiringConfig.value = null
+            lastEvaluatedBgValue = null
         }
     }
 
