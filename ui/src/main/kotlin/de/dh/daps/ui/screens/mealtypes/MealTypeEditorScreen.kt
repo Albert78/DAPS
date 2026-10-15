@@ -336,8 +336,10 @@ fun MealTypeEditorContent(
             item {
                 PrimaryButton(
                     onClick = {
+                        val lastPeak = uiState.components.lastOrNull()?.peakMinutes
+                        val defaultPeak = lastPeak?.let { it + Minutes(30) } ?: Minutes(30)
                         val newList = uiState.components.toMutableList()
-                        newList.add(CarbCurveComponentData(0, Minutes(60)))
+                        newList.add(CarbCurveComponentData(0, defaultPeak))
                         onComponentsChange(newList)
                     },
                     modifier = Modifier.fillMaxWidth()
