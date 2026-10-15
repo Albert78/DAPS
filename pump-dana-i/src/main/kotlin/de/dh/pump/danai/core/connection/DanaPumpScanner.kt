@@ -3,17 +3,13 @@ package de.dh.pump.danai.core.connection
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothManager
-import android.bluetooth.BluetoothProfile
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import de.dh.pump.dana.DanaBleProfiles
 import de.dh.pump.danai.core.DanaILogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -24,10 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withTimeoutOrNull
 import java.util.Collections
-import kotlin.coroutines.resume
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -92,8 +85,7 @@ class DanaPumpScanner(
     private var activeScanScope: CoroutineScope? = null
     private var isReceiverRegistered = false
 
-    private var shouldVerifyCharacteristics = false
-    private val probedAddresses = Collections.synchronizedSet(mutableSetOf<String>())
+    private val seenAddresses = Collections.synchronizedSet(mutableSetOf<String>())
 
     private val bluetoothReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -113,7 +105,7 @@ class DanaPumpScanner(
                                 attempts++
                             }
                             if (_scanError.value == DanaScanError.BLUETOOTH_DISABLED) {
-                                parentScope?.let { startScan(it, verifyCharacteristics = shouldVerifyCharacteristics) }
+                                parentScope?.let { startScan(it) }
                             }
                         }
                     }
@@ -150,22 +142,18 @@ class DanaPumpScanner(
      * Starts scanning for Dana pumps for [duration].
      *
      * Automatically stops scanning when [duration] elapses or when [stopScan] is called.
-     * When [verifyCharacteristics] is true, each candidate device is probed via GATT to confirm
-     * the presence of required Dana TX/RX characteristics before adding it to [scanResults].
      */
     @SuppressLint("MissingPermission")
     fun startScan(
         scope: CoroutineScope,
         duration: Duration = 60.seconds,
-        verifyCharacteristics: Boolean = false,
     ) {
         parentScope = scope
-        shouldVerifyCharacteristics = verifyCharacteristics
 
-        // Stop any active scan and cancel all probing/timeout jobs
+        // Stop any active scan and cancel all background jobs
         stopScan()
 
-        probedAddresses.clear()
+        seenAddresses.clear()
         _scanError.value = null
 
         val adapter = bluetoothManager?.adapter
@@ -197,7 +185,7 @@ class DanaPumpScanner(
 
         try {
             scanner.startScan(scanCallback)
-            logger?.log("BLE Scan started for Dana pumps (verifyCharacteristics=$verifyCharacteristics).")
+            logger?.log("BLE Scan started for Dana pumps.")
         } catch (e: Exception) {
             _isScanning.value = false
             _scanError.value = DanaScanError.SCANNER_UNAVAILABLE
@@ -215,7 +203,7 @@ class DanaPumpScanner(
     }
 
     /**
-     * Stops the active BLE scan and cancels all associated background/probing jobs.
+     * Stops the active BLE scan and cancels all associated background jobs.
      */
     @SuppressLint("MissingPermission")
     fun stopScan() {
@@ -242,8 +230,8 @@ class DanaPumpScanner(
 
             if (!isValidDanaPumpDevice(name)) return
 
-            if (probedAddresses.contains(device.address)) return
-            probedAddresses.add(device.address)
+            if (seenAddresses.contains(device.address)) return
+            seenAddresses.add(device.address)
 
             val item = DanaScanResult.Real(
                 name = name,
@@ -251,23 +239,7 @@ class DanaPumpScanner(
                 device = device,
             )
 
-            if (shouldVerifyCharacteristics) {
-                activeScanScope?.launch {
-                    logger?.log("Probing GATT characteristics for $name (${device.address})...")
-                    val isValid = withTimeoutOrNull(60.seconds) {
-                        verifyPumpCharacteristics(device)
-                    } ?: false
-
-                    if (isValid) {
-                        logger?.log("GATT probe SUCCESS: $name exposes required Dana TX/RX characteristics.")
-                        addOrUpdateScanResult(item)
-                    } else {
-                        logger?.log("GATT probe FAILED: $name missing required Dana characteristics.")
-                    }
-                }
-            } else {
-                addOrUpdateScanResult(item)
-            }
+            addOrUpdateScanResult(item)
         }
 
         override fun onScanFailed(errorCode: Int) {
@@ -286,57 +258,6 @@ class DanaPumpScanner(
             }
         }
     }
-
-    @Suppress("DEPRECATION")
-    @SuppressLint("MissingPermission")
-    private suspend fun verifyPumpCharacteristics(device: BluetoothDevice): Boolean =
-        suspendCancellableCoroutine { continuation ->
-            val profile = DanaBleProfiles.danaI()
-            var gatt: BluetoothGatt? = null
-
-            val callback = object : BluetoothGattCallback() {
-                override fun onConnectionStateChange(g: BluetoothGatt, status: Int, newState: Int) {
-                    if (status == BluetoothGatt.GATT_SUCCESS && newState == BluetoothProfile.STATE_CONNECTED) {
-                        g.discoverServices()
-                    } else {
-                        try { g.close() } catch (_: Exception) {}
-                        if (continuation.isActive) continuation.resume(false)
-                    }
-                }
-
-                override fun onServicesDiscovered(g: BluetoothGatt, status: Int) {
-                    val hasTx = g.services.any { s ->
-                        s.characteristics.any { c -> c.uuid == profile.txCharacteristicUuid }
-                    }
-                    val hasRx = g.services.any { s ->
-                        s.characteristics.any { c -> c.uuid == profile.rxCharacteristicUuid }
-                    }
-
-                    try {
-                        g.disconnect()
-                        g.close()
-                    } catch (_: Exception) {}
-
-                    if (continuation.isActive) continuation.resume(hasTx && hasRx)
-                }
-            }
-
-            try {
-                gatt = device.connectGatt(appContext, false, callback, BluetoothDevice.TRANSPORT_LE)
-                if (gatt == null && continuation.isActive) {
-                    continuation.resume(false)
-                }
-            } catch (_: Exception) {
-                if (continuation.isActive) continuation.resume(false)
-            }
-
-            continuation.invokeOnCancellation {
-                try {
-                    gatt?.disconnect()
-                    gatt?.close()
-                } catch (_: Exception) {}
-            }
-        }
 
     companion object {
         /**

@@ -32,7 +32,7 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
     val pairError: StateFlow<String?> = _pairError.asStateFlow()
 
     fun startDiscovery() {
-        scanner.startScan(viewModelScope, verifyCharacteristics = true)
+        scanner.startScan(viewModelScope)
     }
 
     fun stopDiscovery() {
