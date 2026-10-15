@@ -106,7 +106,25 @@ class SystemWakeServiceImpl(
         }
     }
 
-    override fun acquireBusyState(tag: String) {
+    override fun <T> withBusyState(tag: String, block: () -> T): T {
+        acquireBusyStateInternal(tag)
+        try {
+            return block()
+        } finally {
+            releaseBusyStateInternal(tag)
+        }
+    }
+
+    override suspend fun <T> withBusyStateSuspend(tag: String, block: suspend () -> T): T {
+        acquireBusyStateInternal(tag)
+        try {
+            return block()
+        } finally {
+            releaseBusyStateInternal(tag)
+        }
+    }
+
+    private fun acquireBusyStateInternal(tag: String) {
         val count = busyCount.incrementAndGet()
         Log.v(TAG, "BusyState acquired for $tag (global count: $count)")
 
@@ -117,7 +135,7 @@ class SystemWakeServiceImpl(
         }
     }
 
-    override fun releaseBusyState(tag: String) {
+    private fun releaseBusyStateInternal(tag: String) {
         val count = busyCount.decrementAndGet()
         Log.v(TAG, "BusyState released for $tag (global count: $count)")
 
@@ -157,26 +175,23 @@ class SystemWakeServiceImpl(
         var onWakeupEndTime: Timestamp? = null
 
         // Temporarily acquire wake lock to ensure handler has time to process
-        acquireBusyState("DISPATCH_WAKEUP_$tag")
-        try {
+        withBusyState("DISPATCH_WAKEUP_$tag") {
             onWakeupStartTime = Timestamp.now()
             handlers[tag]?.onWakeup(wakeupId, intent)
             onWakeupEndTime = Timestamp.now()
-        } finally {
-            releaseBusyState("DISPATCH_WAKEUP_$tag")
+        }
 
-            scope.launch {
-                systemMetricsRepository.saveWakeupMetric(
-                    WakeupMetric(
-                        tag = tag,
-                        wakeupId = wakeupId,
-                        scheduledTime = scheduledTime,
-                        dispatchTime = dispatchTime,
-                        onWakeupStartTime = onWakeupStartTime,
-                        onWakeupEndTime = onWakeupEndTime
-                    )
+        scope.launch {
+            systemMetricsRepository.saveWakeupMetric(
+                WakeupMetric(
+                    tag = tag,
+                    wakeupId = wakeupId,
+                    scheduledTime = scheduledTime,
+                    dispatchTime = dispatchTime,
+                    onWakeupStartTime = onWakeupStartTime,
+                    onWakeupEndTime = onWakeupEndTime
                 )
-            }
+            )
         }
     }
 

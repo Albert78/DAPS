@@ -48,20 +48,20 @@ interface SystemWakeService {
     fun cancelWakeup(tag: String, wakeupId: UInt? = null)
 
     /**
-     * Acquires a wake lock to prevent the device from sleeping.
-     * The lock is reference counted globally. Each call to this method must be
-     * balanced with a call to [releaseBusyState].
+     * Executes the given synchronous [block] while holding a reference-counted system busy state (wake lock).
      *
      * @param tag Informational tag identifying the component acquiring the busy state.
+     * @param block The block of code to execute while holding the busy state.
      */
-    fun acquireBusyState(tag: String)
+    fun <T> withBusyState(tag: String, block: () -> T): T
 
     /**
-     * Releases a previously acquired wake lock.
+     * Suspending variant of [withBusyState].
      *
-     * @param tag Informational tag identifying the component releasing the busy state.
+     * @param tag Informational tag identifying the component acquiring the busy state.
+     * @param block The suspending block of code to execute while holding the busy state.
      */
-    fun releaseBusyState(tag: String)
+    suspend fun <T> withBusyStateSuspend(tag: String, block: suspend () -> T): T
 
     /**
      * Dispatches an incoming wakeup intent to the appropriate handler.

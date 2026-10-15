@@ -115,15 +115,14 @@ class SimBodyHeartbeat(
         Log.d(TAG, "SimBody Heartbeat Simulation Step at $now")
 
         // Ensure the system stays awake during emission
-        wakeService.acquireBusyState(WAKE_TAG)
-        try {
+        wakeService.withBusyStateSuspend(WAKE_TAG) {
             // First advance pump device and body model to current timestamp
             pumpDevice.advanceTo(now)
             bodyModel.advanceTo(now)
 
             if (!bodyModel.isSensorEnabled) {
                 Log.d(TAG, "Sensor is disabled, skipping BG reading emission")
-                return
+                return@withBusyStateSuspend
             }
 
             val baseBg = bodyModel.getDelayedBloodGlucose(
@@ -146,8 +145,6 @@ class SimBodyHeartbeat(
                 timestamp = now
             )
             onBgReading(reading)
-        } finally {
-            wakeService.releaseBusyState(WAKE_TAG)
         }
     }
 

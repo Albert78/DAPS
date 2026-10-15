@@ -437,8 +437,7 @@ class SystemOrchestratorImpl(
             carbsInsulinCalculator = carbsInsulinCalculator,
             glucoseRepository = glucoseRepository,
 
-            onAcquireBusyState = { acquireBusyState() },
-            onReleaseBusyState = { releaseBusyState() },
+            withBusyState = { block -> wakeService.withBusyStateSuspend(WAKE_TAG, block) },
 
             onDeliverBolus = { treatmentLock, amount, handledDeferredBoluses, correctionPart, basalPart ->
                 when (apsMode.value) {
@@ -551,13 +550,7 @@ class SystemOrchestratorImpl(
         timeService.registerTickHandler(TickPriority.APS, apsHandler, "APS Core")
     }
 
-    private fun acquireBusyState() {
-        wakeService.acquireBusyState(WAKE_TAG)
-    }
 
-    private fun releaseBusyState() {
-        wakeService.releaseBusyState(WAKE_TAG)
-    }
 
     override fun createForegroundServiceNotification(): Notification {
         return androidNotifications.createMainAppNotification(glucoseRepository)

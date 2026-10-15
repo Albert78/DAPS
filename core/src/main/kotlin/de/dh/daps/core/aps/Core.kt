@@ -63,7 +63,7 @@ sealed interface CoreState {
  *
  * **Android integration**
  * This class should remain as free as possible of workarounds for the Android system.
- * We only need to signal the internal calculation state by calling [onAcquireBusyState] and [onReleaseBusyState].
+ * We only need to signal the internal calculation state by executing calculations within [withBusyState].
  * The surrounding app is responsible for acquiring a wake lock.
  */
 class Core(
@@ -73,8 +73,11 @@ class Core(
     private val carbsInsulinCalculator: CarbsInsulinCalculator,
     private val glucoseRepository: GlucoseRepository,
 
-    private val onAcquireBusyState: () -> Unit,
-    private val onReleaseBusyState: () -> Unit,
+    /**
+     * Callback to execute code blocks that need a system wake lock during execution.
+     * Keeps the processor awake so critical background calculations aren't interrupted by CPU sleep.
+     */
+    private val withBusyState: suspend (block: suspend () -> Unit) -> Unit,
 
     private val onDeliverBolus: suspend (
         treatmentLock: TreatmentLock,
@@ -101,19 +104,6 @@ class Core(
     private val _lastSuccessfulCoreCalculation = MutableStateFlow(Timestamp.now())
     internal val lastSuccessfulCoreCalculation: StateFlow<Timestamp> = _lastSuccessfulCoreCalculation.asStateFlow()
 
-    /**
-     * Block marker for code blocks which need a wake lock in the system during their executions.
-     * If blocks are not marked with this marker, the processor can go into sleep mode any time.
-     */
-    private suspend fun <T> busyWork(block: suspend () -> T): T {
-        onAcquireBusyState()
-        try {
-            return block()
-        } finally {
-            onReleaseBusyState()
-        }
-    }
-
     fun suspend() {
         setCoreState(CoreState.Suspended)
     }
@@ -127,7 +117,7 @@ class Core(
     }
 
     suspend fun initialize() {
-        busyWork {
+        withBusyState {
             Log.d(TAG, "Initializing...")
             setCoreState(CoreState.Initializing)
 
@@ -152,7 +142,7 @@ class Core(
         // We acquire the wake lock, we acquire the therapy manager's treatment lock,
         // we let the algorithm do its calculations and finally, we
         // execute the calculation result commands.
-        busyWork {
+        withBusyState {
             val now = Timestamp.now()
             val res = therapyManager.tryAcquire(TAG ?: "Core") { treatmentLock ->
                 val issuesWithoutLock = currentCoreState.issues.filterNot { it is CoreIssue.TherapyLockBusy }.toSet()
@@ -398,8 +388,7 @@ class Core(
             carbsInsulinCalculator: CarbsInsulinCalculator,
             glucoseRepository: GlucoseRepository,
 
-            onAcquireBusyState: () -> Unit,
-            onReleaseBusyState: () -> Unit,
+            withBusyState: suspend (block: suspend () -> Unit) -> Unit,
 
             onDeliverBolus: suspend (
                 treatmentLock: TreatmentLock,
@@ -423,8 +412,7 @@ class Core(
                 carbsInsulinCalculator = carbsInsulinCalculator,
                 glucoseRepository = glucoseRepository,
 
-                onAcquireBusyState = onAcquireBusyState,
-                onReleaseBusyState = onReleaseBusyState,
+                withBusyState = withBusyState,
 
                 onDeliverBolus = onDeliverBolus,
                 onApplyDeferredBolusUpdates = onApplyDeferredBolusUpdates,

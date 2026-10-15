@@ -88,10 +88,8 @@ sealed interface JobErrorCode {
 @OptIn(ExperimentalCoroutinesApi::class)
 class PumpCoordinator(
     val pump: InsulinPump,
-    /** Callback to acquire a wake-lock in the system to ensure the CPU stays awake during pump communication. */
-    private val onAcquireBusyState: () -> Unit,
-    /** Callback to release the wake-lock acquired via [onAcquireBusyState]. */
-    private val onReleaseBusyState: () -> Unit,
+    /** Callback to execute work while holding a system busy-state (wake-lock). */
+    private val withBusyState: suspend (block: suspend () -> Unit) -> Unit,
     /** Callback to request a system wakeup at the specified [Timestamp]. The implementation must ensure [wakeup] is called when that time is reached. */
     private val onRequestWakeup: (Timestamp) -> Unit,
     private val onJobError: (job: PumpJob, code: JobErrorCode) -> Unit,
@@ -150,13 +148,12 @@ class PumpCoordinator(
             return
         }
         scope.launch {
-            onAcquireBusyState()
-            try {
+            withBusyState {
                 do {
                     try {
                         // Atomically transition to Running. If another coroutine won the race, exit.
                         if (!_pumpCoordinatorState.compareAndSet(PumpCoordinatorState.Idle, PumpCoordinatorState.Running)) {
-                            return@launch
+                            return@withBusyState
                         }
                         val success = sync()
                         scheduleNextWakeup()
@@ -168,7 +165,7 @@ class PumpCoordinator(
                             } // Else keep former error time
                             // On communication error, stop the loop and rely on the next
                             // scheduled wakeup, reset or manual trigger to retry.
-                            return@launch
+                            return@withBusyState
                         }
                     } finally {
                         // Reset to Idle only if we were Running (don't overwrite Error state if set by job)
@@ -177,8 +174,6 @@ class PumpCoordinator(
                     // Catch-up check: To avoid race conditions with issueCommand(), we must verify
                     // if new jobs were added while we were processing. If so, re-enter the loop.
                 } while (_pendingJobs.value.any { it.isReady() })
-            } finally {
-                onReleaseBusyState()
             }
         }
     }
@@ -458,10 +453,8 @@ class PumpCoordinator(
 
         fun create(
             pump: InsulinPump,
-            /** Callback to acquire a wake-lock in the system to ensure the CPU stays awake during pump communication. */
-            onAcquireBusyState: () -> Unit,
-            /** Callback to release the wake-lock acquired via [onAcquireBusyState]. */
-            onReleaseBusyState: () -> Unit,
+            /** Callback to execute work while holding a system busy-state (wake-lock). */
+            withBusyState: suspend (block: suspend () -> Unit) -> Unit,
             /** Callback to request a system wakeup at the specified [Timestamp]. The implementation must ensure [wakeup] is called when that time is reached. */
             onRequestWakeup: (Timestamp) -> Unit,
             onJobError: (PumpJob, JobErrorCode) -> Unit,
@@ -469,8 +462,7 @@ class PumpCoordinator(
         ): PumpCoordinator {
             return PumpCoordinator(
                 pump = pump,
-                onAcquireBusyState = onAcquireBusyState,
-                onReleaseBusyState = onReleaseBusyState,
+                withBusyState = withBusyState,
                 onRequestWakeup = onRequestWakeup,
                 onJobError = onJobError,
                 scope = scope

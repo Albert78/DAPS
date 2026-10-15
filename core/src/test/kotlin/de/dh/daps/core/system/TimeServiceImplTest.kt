@@ -40,8 +40,8 @@ class TimeServiceImplTest {
         override fun cancelWakeup(tag: String, wakeupId: UInt?) {
             isCancelled = true
         }
-        override fun acquireBusyState(tag: String) {}
-        override fun releaseBusyState(tag: String) {}
+        override fun <T> withBusyState(tag: String, block: () -> T): T = block()
+        override suspend fun <T> withBusyStateSuspend(tag: String, block: suspend () -> T): T = block()
         override fun dispatchWakeup(intent: Intent) {}
     }
 

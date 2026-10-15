@@ -57,8 +57,7 @@ class PumpManagerImpl(
             } else {
                 val pc = PumpCoordinator.create(
                     pump = value,
-                    onAcquireBusyState = { wakeService.acquireBusyState(WAKE_TAG) },
-                    onReleaseBusyState = { wakeService.releaseBusyState(WAKE_TAG) },
+                    withBusyState = { block -> wakeService.withBusyStateSuspend(WAKE_TAG, block) },
                     onRequestWakeup = { timestamp -> wakeService.scheduleWakeup(WAKE_TAG, WAKEUP_PUMP_COORDINATOR, timestamp) },
                     onJobError = { job, jobErrorCode -> handleJobError(job, jobErrorCode) },
                     scope = scope + SupervisorJob() + Dispatchers.Default

@@ -61,37 +61,37 @@ class TimeServiceImpl(
         Log.d(TAG, "System wakeup received (wakeupId=$wakeupId)")
 
         scope.launch {
-            try {
-                wakeService.acquireBusyState(WAKE_TAG)
-                val now = Timestamp.now()
-                val tick = timeline.tick(Timestamp(now.ms - executionOffsetMs))
-                Log.d(TAG, "Tick triggered via system wakeup: $tick (timelineOffset=${timeline.offsetMs}, executionOffset=$executionOffsetMs)")
+            wakeService.withBusyStateSuspend(WAKE_TAG) {
+                try {
+                    val now = Timestamp.now()
+                    val tick = timeline.tick(Timestamp(now.ms - executionOffsetMs))
+                    Log.d(TAG, "Tick triggered via system wakeup: $tick (timelineOffset=${timeline.offsetMs}, executionOffset=$executionOffsetMs)")
 
-                // Sequential execution of handlers
-                handlers.forEach { entry ->
-                    val startTime = Timestamp.now()
-                    try {
-                        entry.handler.onTick(tick)
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Error in tick handler ${entry.handler}", e)
-                    } finally {
-                        val endTime = Timestamp.now()
-                        systemMetricsRepository.saveTickMetric(
-                            TickHandlerMetric(
-                                tick = tick,
-                                handlerName = entry.name,
-                                startTime = startTime,
-                                endTime = endTime
+                    // Sequential execution of handlers
+                    handlers.forEach { entry ->
+                        val startTime = Timestamp.now()
+                        try {
+                            entry.handler.onTick(tick)
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error in tick handler ${entry.handler}", e)
+                        } finally {
+                            val endTime = Timestamp.now()
+                            systemMetricsRepository.saveTickMetric(
+                                TickHandlerMetric(
+                                    tick = tick,
+                                    handlerName = entry.name,
+                                    startTime = startTime,
+                                    endTime = endTime
+                                )
                             )
-                        )
+                        }
                     }
-                }
 
-                _tickFlow.value = tick
-            } finally {
-                // Schedule next tick before releasing busy state
-                scheduleNextTick()
-                wakeService.releaseBusyState(WAKE_TAG)
+                    _tickFlow.value = tick
+                } finally {
+                    // Schedule next tick before releasing busy state
+                    scheduleNextTick()
+                }
             }
         }
     }
