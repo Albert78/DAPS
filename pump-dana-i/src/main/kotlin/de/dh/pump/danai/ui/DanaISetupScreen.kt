@@ -1,6 +1,8 @@
 package de.dh.pump.danai.ui
 
 import android.app.Application
+import android.content.Intent
+import android.provider.Settings
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -52,6 +54,7 @@ import de.dh.daps.ui.common.composables.WarningBanner
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.pump.danai.DanaIInsulinPumpDriver
 import de.dh.pump.danai.R
+import de.dh.pump.danai.core.connection.DanaScanError
 import de.dh.pump.danai.core.connection.DanaScanResult
 import de.dh.daps.common.R as CommonR
 
@@ -75,6 +78,7 @@ fun DanaISetupScreen(
     val lifecycleState by driver.lifecycleState.collectAsStateWithLifecycle()
     val scanResults by viewModel.scanResults.collectAsState()
     val isScanning by viewModel.isScanning.collectAsState()
+    val scanError by viewModel.scanError.collectAsState()
     val isConnecting by viewModel.isConnecting.collectAsState()
     val connectError by viewModel.connectError.collectAsState()
 
@@ -99,6 +103,7 @@ fun DanaISetupScreen(
             DanaISetupContent(
                 scanResults = scanResults,
                 isScanning = isScanning,
+                scanError = scanError,
                 isConnecting = isConnecting,
                 connectError = connectError,
                 onStartDiscovery = { viewModel.startDiscovery() },
@@ -254,12 +259,15 @@ fun DanaIBoundContent(
 fun DanaISetupContent(
     scanResults: List<DanaScanResult>,
     isScanning: Boolean,
+    scanError: DanaScanError?,
     isConnecting: Boolean,
     connectError: String?,
     onStartDiscovery: () -> Unit,
     onPairClick: (DanaScanResult) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -285,6 +293,32 @@ fun DanaISetupContent(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+        }
+
+        scanError?.let { error ->
+            val warningText = when (error) {
+                DanaScanError.BLUETOOTH_DISABLED -> stringResource(R.string.danai_pump_setup_bluetooth_disabled)
+                DanaScanError.SCANNER_UNAVAILABLE -> stringResource(R.string.danai_pump_setup_scanner_unavailable)
+            }
+            val actionText = if (error == DanaScanError.BLUETOOTH_DISABLED) {
+                stringResource(R.string.danai_pump_setup_btn_enable_bluetooth)
+            } else {
+                null
+            }
+
+            WarningBanner(
+                warningText = warningText,
+                actionText = actionText,
+                onActionClick = {
+                    if (error == DanaScanError.BLUETOOTH_DISABLED) {
+                        try {
+                            context.startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
+                        } catch (_: Exception) {
+                            context.startActivity(Intent(Settings.ACTION_SETTINGS))
+                        }
+                    }
+                }
+            )
         }
 
         connectError?.let { errorMsg ->
@@ -454,6 +488,7 @@ private fun DanaISetupContentPreview() {
                 DanaScanResult.Fake(name = "DANA-i-456", address = "AA:BB:CC:DD:EE:FF")
             ),
             isScanning = false,
+            scanError = null,
             isConnecting = false,
             connectError = null,
             onStartDiscovery = {},
@@ -469,6 +504,23 @@ private fun DanaISetupContentScanningPreview() {
         DanaISetupContent(
             scanResults = emptyList(),
             isScanning = true,
+            scanError = null,
+            isConnecting = false,
+            connectError = null,
+            onStartDiscovery = {},
+            onPairClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DanaISetupContentBluetoothDisabledPreview() {
+    AppPreview {
+        DanaISetupContent(
+            scanResults = emptyList(),
+            isScanning = false,
+            scanError = DanaScanError.BLUETOOTH_DISABLED,
             isConnecting = false,
             connectError = null,
             onStartDiscovery = {},

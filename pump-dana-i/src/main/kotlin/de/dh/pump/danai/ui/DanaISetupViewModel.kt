@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import de.dh.pump.danai.DanaIInsulinPumpDriver
 import de.dh.pump.danai.R
 import de.dh.pump.danai.core.connection.DanaPumpScanner
+import de.dh.pump.danai.core.connection.DanaScanError
 import de.dh.pump.danai.core.connection.DanaScanResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +23,7 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
 
     val scanResults: StateFlow<List<DanaScanResult>> = scanner.scanResults
     val isScanning: StateFlow<Boolean> = scanner.isScanning
+    val scanError: StateFlow<DanaScanError?> = scanner.scanError
 
     private val _isConnecting = MutableStateFlow(false)
     val isConnecting: StateFlow<Boolean> = _isConnecting.asStateFlow()
@@ -74,6 +76,7 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
     override fun onCleared() {
         super.onCleared()
         scanner.stopScan()
+        scanner.unregisterBluetoothReceiver()
     }
 
     companion object {

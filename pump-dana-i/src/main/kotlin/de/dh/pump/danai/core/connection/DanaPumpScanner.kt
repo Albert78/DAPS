@@ -1,11 +1,15 @@
 package de.dh.pump.danai.core.connection
 
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import de.dh.pump.danai.core.DanaILogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -17,6 +21,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+
+/**
+ * Errors that can occur during BLE scanning.
+ */
+enum class DanaScanError {
+    BLUETOOTH_DISABLED,
+    SCANNER_UNAVAILABLE,
+}
 
 /**
  * Discovered Dana pump during Bluetooth scanning or UI previews.
@@ -62,7 +74,53 @@ class DanaPumpScanner(
     private val _isScanning = MutableStateFlow(false)
     val isScanning: StateFlow<Boolean> = _isScanning.asStateFlow()
 
+    private val _scanError = MutableStateFlow<DanaScanError?>(null)
+    val scanError: StateFlow<DanaScanError?> = _scanError.asStateFlow()
+
     private var scanTimeoutJob: Job? = null
+    private var currentScanScope: CoroutineScope? = null
+    private var isReceiverRegistered = false
+
+    private val bluetoothReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == BluetoothAdapter.ACTION_STATE_CHANGED) {
+                val state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR)
+                if (state == BluetoothAdapter.STATE_ON) {
+                    if (_scanError.value == DanaScanError.BLUETOOTH_DISABLED) {
+                        currentScanScope?.let { scope ->
+                            startScan(scope)
+                        }
+                    }
+                } else if (state == BluetoothAdapter.STATE_OFF || state == BluetoothAdapter.STATE_TURNING_OFF) {
+                    if (_isScanning.value) {
+                        stopScan()
+                        _scanError.value = DanaScanError.BLUETOOTH_DISABLED
+                    }
+                }
+            }
+        }
+    }
+
+    private fun registerBluetoothReceiver() {
+        if (!isReceiverRegistered) {
+            val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
+            appContext.registerReceiver(bluetoothReceiver, filter)
+            isReceiverRegistered = true
+        }
+    }
+
+    /**
+     * Unregisters the Bluetooth state BroadcastReceiver if registered.
+     */
+    fun unregisterBluetoothReceiver() {
+        if (isReceiverRegistered) {
+            try {
+                appContext.unregisterReceiver(bluetoothReceiver)
+            } catch (_: IllegalArgumentException) {
+            }
+            isReceiverRegistered = false
+        }
+    }
 
     /**
      * Starts scanning for Dana pumps for [duration].
@@ -71,20 +129,27 @@ class DanaPumpScanner(
      */
     @SuppressLint("MissingPermission")
     fun startScan(scope: CoroutineScope, duration: Duration = 15.seconds) {
+        currentScanScope = scope
+        _scanError.value = null
+
         val adapter = bluetoothManager?.adapter
         if (adapter == null || !adapter.isEnabled) {
+            _scanError.value = DanaScanError.BLUETOOTH_DISABLED
+            registerBluetoothReceiver()
             logger?.log("BLE Scan cancelled: Bluetooth is disabled or not supported.")
             return
         }
 
         val scanner = adapter.bluetoothLeScanner
         if (scanner == null) {
+            _scanError.value = DanaScanError.SCANNER_UNAVAILABLE
             logger?.log("BLE Scan cancelled: BluetoothLeScanner is unavailable.")
             return
         }
 
         // Cancel any active scan / timeout job
         stopScan()
+        registerBluetoothReceiver()
 
         _scanResults.value = emptyList()
         _isScanning.value = true
@@ -94,6 +159,7 @@ class DanaPumpScanner(
             logger?.log("BLE Scan started for Dana pumps.")
         } catch (e: Exception) {
             _isScanning.value = false
+            _scanError.value = DanaScanError.SCANNER_UNAVAILABLE
             logger?.log("Failed to start BLE scan: ${e.message}")
             return
         }
@@ -120,6 +186,9 @@ class DanaPumpScanner(
             } catch (e: Exception) {
                 logger?.log("Error stopping BLE scan: ${e.message}")
             }
+        }
+        if (_scanError.value != DanaScanError.BLUETOOTH_DISABLED) {
+            unregisterBluetoothReceiver()
         }
     }
 

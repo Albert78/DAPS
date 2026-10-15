@@ -8,6 +8,9 @@
     <string name="danai_pump_setup_btn_pair">Koppeln</string>
     <string name="danai_pump_setup_btn_search">Nach Pumpen suchen</string>
     <string name="danai_pump_setup_connect_failed">Verbindung zur Dana-i-Pumpe fehlgeschlagen</string>
+    <string name="danai_pump_setup_bluetooth_disabled">Bluetooth ist ausgeschaltet. Bitte aktiviere Bluetooth, um nach Dana-i-Pumpen zu suchen.</string>
+    <string name="danai_pump_setup_scanner_unavailable">Bluetooth-Scanner ist auf diesem Gerät derzeit nicht verfügbar.</string>
+    <string name="danai_pump_setup_btn_enable_bluetooth">Bluetooth-Einstellungen öffnen</string>
     <string name="danai_pump_bound_title">Dana-i Insulinpumpe gebunden</string>
     <string name="danai_pump_bound_subtitle">Deine Dana-i Insulinpumpe ist derzeit aktiv mit der App gebunden.</string>
     <string name="danai_pump_bound_badge">Gebunden</string>
