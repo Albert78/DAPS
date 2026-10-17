@@ -2,6 +2,7 @@ package de.dh.daps.core.aps
 
 import android.util.Log
 import de.dh.daps.common.model.GlucoseSource
+import de.dh.daps.common.model.GlucoseSourceStatus
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
@@ -23,9 +24,13 @@ class GlucoseSourceManager(
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default.limitedParallelism(1))
     private var glucoseJob: Job? = null
+    private var statusJob: Job? = null
 
     private val _glucoseSource = MutableStateFlow<GlucoseSource?>(null)
     val activeGlucoseSource: StateFlow<GlucoseSource?> = _glucoseSource.asStateFlow()
+
+    private val _glucoseSourceIssues = MutableStateFlow<Set<GlucoseSourceIssue>>(setOf(GlucoseSourceIssue.ConnectionMissing))
+    val glucoseSourceIssues: StateFlow<Set<GlucoseSourceIssue>> = _glucoseSourceIssues.asStateFlow()
 
     private val _lastInputTimestamp = MutableStateFlow(Timestamp.INVALID)
     val lastInputTimestamp: StateFlow<Timestamp> = _lastInputTimestamp.asStateFlow()
@@ -35,8 +40,8 @@ class GlucoseSourceManager(
         set(value) {
             _glucoseSource.value?.stop()
             _glucoseSource.value = value
+            updateIssuesAndPipeline(value)
             _glucoseSource.value?.start()
-            restartGlucosePipeline()
         }
 
     /**
@@ -49,6 +54,59 @@ class GlucoseSourceManager(
 
     var readingsInterval: BgReadingsInterval = BgReadingsInterval.FiveMinutes
         private set
+
+    private fun updateIssuesAndPipeline(source: GlucoseSource?) {
+        statusJob?.cancel()
+        statusJob = null
+
+        if (source == null) {
+            _glucoseSourceIssues.value = setOf(GlucoseSourceIssue.ConnectionMissing)
+        } else {
+            statusJob = scope.launch {
+                launch {
+                    source.status.collect { status ->
+                        when (status) {
+                            GlucoseSourceStatus.Ok -> {
+                                removeIssue(GlucoseSourceIssue.ConnectionMissing)
+                                removeIssue(GlucoseSourceIssue.SensorError)
+                                removeIssue(GlucoseSourceIssue.Expired)
+                            }
+                            GlucoseSourceStatus.Expired -> {
+                                removeIssue(GlucoseSourceIssue.ConnectionMissing)
+                                setIssue(GlucoseSourceIssue.Expired)
+                            }
+                            GlucoseSourceStatus.Error -> {
+                                removeIssue(GlucoseSourceIssue.ConnectionMissing)
+                                setIssue(GlucoseSourceIssue.SensorError)
+                            }
+                        }
+                    }
+                }
+                launch {
+                    source.isExpired.collect { expired ->
+                        if (expired) {
+                            setIssue(GlucoseSourceIssue.Expired)
+                        } else {
+                            removeIssue(GlucoseSourceIssue.Expired)
+                        }
+                    }
+                }
+            }
+        }
+        restartGlucosePipeline()
+    }
+
+    private fun setIssue(issue: GlucoseSourceIssue) {
+        if (issue !in _glucoseSourceIssues.value) {
+            _glucoseSourceIssues.value += issue
+        }
+    }
+
+    private fun removeIssue(issue: GlucoseSourceIssue) {
+        if (issue in _glucoseSourceIssues.value) {
+            _glucoseSourceIssues.value -= issue
+        }
+    }
 
     private fun restartGlucosePipeline() {
         glucoseJob?.cancel()
@@ -75,6 +133,7 @@ class GlucoseSourceManager(
     fun stop() {
         glucoseSource = null
         _lastInputTimestamp.value = Timestamp.INVALID
+        _glucoseSourceIssues.value = setOf(GlucoseSourceIssue.ConnectionMissing)
     }
 
     fun predictNextValueTimestamp(): Timestamp {

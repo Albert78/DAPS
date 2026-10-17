@@ -52,6 +52,7 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.core.aps.ApsIssue
 import de.dh.daps.core.aps.CoreIssue
+import de.dh.daps.core.aps.GlucoseSourceIssue
 import de.dh.daps.core.pump.PumpIssue
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.LocalGlucoseUnit
@@ -334,6 +335,12 @@ private fun formatApsIssue(issue: ApsIssue): String = when (issue) {
         is PumpIssue.LowInsulin -> stringResource(id = R.string.pump_issue_low_insulin)
         is PumpIssue.LowBattery -> stringResource(id = R.string.pump_issue_low_battery)
         is PumpIssue.Other -> stringResource(id = R.string.pump_issue_other)
+    }
+    is ApsIssue.GlucoseSource -> when (val gsIssue = issue.issue) {
+        is GlucoseSourceIssue.ConnectionMissing -> stringResource(id = R.string.glucose_source_issue_connection_missing)
+        is GlucoseSourceIssue.Expired -> stringResource(id = R.string.glucose_source_issue_expired)
+        is GlucoseSourceIssue.SensorError -> stringResource(id = R.string.glucose_source_issue_sensor_error)
+        is GlucoseSourceIssue.Other -> gsIssue.message ?: stringResource(id = R.string.glucose_source_issue_other)
     }
     is ApsIssue.Other -> issue.message ?: stringResource(id = R.string.pump_issue_other)
 }

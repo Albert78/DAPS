@@ -559,6 +559,10 @@
     <string name="overview_aps_no_issues">Keine aktiven System-Warnungen vorhanden.</string>
     <string name="overview_aps_status_suspended">Pausiert</string>
     <string name="overview_aps_info_suspended">Das APS-System ist derzeit pausiert (Pumpe gestoppt).</string>
+    <string name="glucose_source_issue_connection_missing">Keine Blutzucker-Quelle (CGM) verbunden.</string>
+    <string name="glucose_source_issue_expired">Der Glukosesensor ist abgelaufen.</string>
+    <string name="glucose_source_issue_sensor_error">Der Glukosesensor meldet einen Fehler.</string>
+    <string name="glucose_source_issue_other">Störung der Blutzucker-Quelle.</string>
     <string name="overview_aps_mode_label">APS-Modus</string>
     <string name="overview_aps_last_calculation_label">Letzte Berechnung</string>
     <string name="overview_aps_show_history_log">Verlaufsprotokoll anzeigen</string>

@@ -63,6 +63,11 @@ sealed interface ApsIssue {
     data class Pump(val issue: PumpIssue) : ApsIssue
 
     /**
+     * Active glucose source issue preventing blood glucose readings.
+     */
+    data class GlucoseSource(val issue: GlucoseSourceIssue) : ApsIssue
+
+    /**
      * Bluetooth is turned off on the phone, preventing communications with pump and CGM.
      */
     data object BluetoothDisabled : ApsIssue
@@ -288,8 +293,9 @@ class SystemOrchestratorImpl(
                 _isBgStale,
                 coreState,
                 pumpManager.pumpIssues,
+                glucoseSourceManager.glucoseSourceIssues,
                 deviceStatusRepository.observeBluetoothStatus()
-            ) { stale, state, pIssues, btStatus ->
+            ) { stale, state, pIssues, gIssues, btStatus ->
                 val issues = mutableSetOf<ApsIssue>()
                 if (btStatus == BluetoothStatus.DISABLED || btStatus == BluetoothStatus.UNAVAILABLE) {
                     issues.add(ApsIssue.BluetoothDisabled)
@@ -301,6 +307,7 @@ class SystemOrchestratorImpl(
                     state.issues.forEach { issues.add(ApsIssue.Core(it)) }
                 }
                 pIssues.forEach { issues.add(ApsIssue.Pump(it)) }
+                gIssues.forEach { issues.add(ApsIssue.GlucoseSource(it)) }
 
                 // TODO: Depending on severity, switch APS mode to manual and issue alarm
                 issues
