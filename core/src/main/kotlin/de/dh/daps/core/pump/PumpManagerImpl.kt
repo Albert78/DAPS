@@ -129,6 +129,15 @@ class PumpManagerImpl(
                             }
                         }
                     }
+                    launch {
+                        pc.pump.isExpired.collect { expired ->
+                            if (expired) {
+                                setIssue(PumpIssue.Expired)
+                            } else {
+                                removeIssue(PumpIssue.Expired)
+                            }
+                        }
+                    }
                     // Sync history
                     launch {
                         pc.pump.history.collect { history ->

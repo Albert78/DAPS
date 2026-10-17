@@ -221,6 +221,7 @@
     <string name="pump_issue_occlusion">Verstopfung (Okklusion) in der Insulinpumpe festgestellt.</string>
     <string name="pump_issue_suspended">Die Insulinabgabe der Pumpe ist unterbrochen.</string>
     <string name="pump_issue_command_failed">Befehl an die Insulinpumpe fehlgeschlagen.</string>
+    <string name="pump_issue_expired">Die Insulinpumpe oder der Pod ist abgelaufen.</string>
     <string name="pump_issue_other">Fehler bei der Kommunikation mit der Insulinpumpe.</string>
     <string name="multiple_issues_title">System-Warnungen (%1$d)</string>
 
