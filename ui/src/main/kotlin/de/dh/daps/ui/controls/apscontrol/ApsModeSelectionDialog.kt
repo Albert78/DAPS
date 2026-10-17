@@ -130,7 +130,7 @@ private fun ModeOption(
             colors = ButtonDefaults.buttonColors(
                 containerColor = when (mode) {
                     ApsMode.AutoCorrection -> SoftGreen
-                    ApsMode.OnlySuggestions -> SoftBlue
+                    ApsMode.Manual -> SoftBlue
                     ApsMode.Suspend -> SoftRed
                 }
             ),
@@ -149,14 +149,14 @@ private fun ModeOption(
 
 @Composable
 private fun ApsMode.toDisplayStringFull(): String = stringResource(id = when (this) {
-    ApsMode.OnlySuggestions -> R.string.aps_mode_only_suggestions
+    ApsMode.Manual -> R.string.aps_mode_manual
     ApsMode.Suspend -> R.string.aps_mode_suspend
     ApsMode.AutoCorrection -> R.string.aps_mode_auto_correction
 })
 
 @Composable
 private fun ApsMode.toDescriptionString(): String = stringResource(id = when (this) {
-    ApsMode.OnlySuggestions -> R.string.aps_mode_only_suggestions_desc
+    ApsMode.Manual -> R.string.aps_mode_manual_desc
     ApsMode.Suspend -> R.string.aps_mode_suspend_desc
     ApsMode.AutoCorrection -> R.string.aps_mode_auto_correction_desc
 })

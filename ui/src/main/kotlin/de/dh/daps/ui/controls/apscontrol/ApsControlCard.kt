@@ -235,7 +235,7 @@ fun ApsControlCard(
                         colors = ButtonDefaults.buttonColors(
                             containerColor = when (selectedMode) {
                                 ApsMode.AutoCorrection -> SoftGreen
-                                ApsMode.OnlySuggestions -> SoftBlue
+                                ApsMode.Manual -> SoftBlue
                                 ApsMode.Suspend -> SoftRed
                             }
                         )
@@ -317,7 +317,7 @@ fun ApsControlCard(
 
 @Composable
 private fun ApsMode.toDisplayStringShort(): String = stringResource(id = when (this) {
-    ApsMode.OnlySuggestions -> R.string.aps_mode_only_suggestions_short
+    ApsMode.Manual -> R.string.aps_mode_manual_short
     ApsMode.Suspend -> R.string.aps_mode_suspend_short
     ApsMode.AutoCorrection -> R.string.aps_mode_auto_correction_short
 })
@@ -365,15 +365,15 @@ private fun PreviewApsControlCardAutoCorrection() {
     }
 }
 
-@Preview(name = "OnlySuggestions - Light", showBackground = true)
-@Preview(name = "OnlySuggestions - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "Manual - Light", showBackground = true)
+@Preview(name = "Manual - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun PreviewApsControlCardOnlySuggestions() {
+private fun PreviewApsControlCardManual() {
     AppPreview {
         ApsControlCard(
             modifier = Modifier.padding(16.dp),
             activeTherapyStatus = createSampleTherapyStatus(),
-            selectedMode = ApsMode.OnlySuggestions,
+            selectedMode = ApsMode.Manual,
             availableModes = ApsMode.entries,
             onModeChange = {},
             onAdjustmentClick = {},

@@ -397,7 +397,7 @@ class SystemControlViewModel(
         val statusValueStatus = if (issues.isEmpty()) ValueStatus.GOOD else ValueStatus.BAD
         val modeValueStatus = when (mode) {
             ApsMode.AutoCorrection -> ValueStatus.GOOD
-            ApsMode.OnlySuggestions -> ValueStatus.WARNING
+            ApsMode.Manual -> ValueStatus.GOOD
             ApsMode.Suspend -> ValueStatus.BAD
         }
         val lastCalcStatus = when {

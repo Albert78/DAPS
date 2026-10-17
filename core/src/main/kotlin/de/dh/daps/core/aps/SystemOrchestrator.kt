@@ -524,7 +524,7 @@ class SystemOrchestratorImpl(
             launch {
                 apsMode.collect { mode ->
                     when (mode) {
-                        ApsMode.AutoCorrection, ApsMode.OnlySuggestions -> {
+                        ApsMode.AutoCorrection, ApsMode.Manual -> {
                             core.activate()
                             core.processCalculation()
                         }
@@ -617,7 +617,7 @@ class SystemOrchestratorImpl(
     }
 
     override fun canOpenMealCorrectionBolus(): Boolean = when (apsMode.value) {
-        ApsMode.AutoCorrection, ApsMode.OnlySuggestions -> true
+        ApsMode.AutoCorrection, ApsMode.Manual -> true
         ApsMode.Suspend -> false
     }
 

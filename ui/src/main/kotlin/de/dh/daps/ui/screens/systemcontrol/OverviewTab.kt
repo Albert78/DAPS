@@ -531,7 +531,7 @@ private fun <T> StatusMetricText(
             is Boolean -> if (v) stringResource(id = R.string.label_active) else stringResource(id = R.string.label_inactive)
             is ApsMode -> when (v) {
                 ApsMode.AutoCorrection -> stringResource(R.string.aps_mode_auto_correction)
-                ApsMode.OnlySuggestions -> stringResource(R.string.aps_mode_only_suggestions)
+                ApsMode.Manual -> stringResource(R.string.aps_mode_manual)
                 ApsMode.Suspend -> stringResource(R.string.aps_mode_suspend_short)
             }
             is OverviewPumpState -> when (v) {

@@ -358,7 +358,7 @@ fun CurrentSettingsEntity.toDto() = CurrentSettingsDto(
 
 fun CurrentSettingsDto.toEntity() = CurrentSettingsEntity(
     id = id,
-    aps_mode = runCatching { ApsMode.valueOf(apsMode) }.getOrDefault(ApsMode.OnlySuggestions)
+    aps_mode = runCatching { ApsMode.valueOf(apsMode) }.getOrDefault(ApsMode.Manual)
 )
 
 fun AlarmProfileEntity.toDto() = AlarmProfileDto(
