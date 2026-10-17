@@ -1,5 +1,6 @@
 package de.dh.pump.dana.commands
 
+import de.dh.daps.common.model.data.PumpTimestamp
 import de.dh.pump.dana.commands.aps.ApsBasalSetTemporaryBasalCommand
 import de.dh.pump.dana.commands.aps.ApsHistoryEventsCommand
 import de.dh.pump.dana.commands.aps.ApsSetEventHistoryCommand
@@ -55,7 +56,6 @@ import de.dh.pump.dana.commands.options.OptionGetUserOptionCommand
 import de.dh.pump.dana.commands.options.OptionSetPumpTimeCommand
 import de.dh.pump.dana.commands.options.OptionSetPumpUtcAndTimeZoneCommand
 import de.dh.pump.dana.commands.options.OptionSetUserOptionCommand
-import de.dh.daps.common.model.data.PumpTimestamp
 import java.time.ZoneId
 
 /**
@@ -223,6 +223,10 @@ class DanaRsCommands {
      * Doesn't work on Dana-i.
      */
     fun optionGetPumpTime() = OptionGetPumpTimeCommand()
+
+    /**
+     * Use this method on Dana-i.
+     */
     fun optionGetPumpUtcAndTimeZone() = OptionGetPumpUtcAndTimeZoneCommand()
     fun optionGetUserOption() = OptionGetUserOptionCommand()
 
@@ -232,12 +236,21 @@ class DanaRsCommands {
     fun optionSetPumpTime(time: PumpTimestamp, zoneId: ZoneId = ZoneId.systemDefault()) =
         OptionSetPumpTimeCommand(time, zoneId)
 
+    /**
+     * Doesn't work on Dana-i.
+     */
     fun optionSetPumpTime(timeMillis: Long, zoneId: ZoneId = ZoneId.systemDefault()) =
         optionSetPumpTime(PumpTimestamp(timeMillis), zoneId)
 
+    /**
+     * Use this method on Dana-i.
+     */
     fun optionSetPumpUtcAndTimeZone(time: PumpTimestamp, zoneOffset: Int) =
         OptionSetPumpUtcAndTimeZoneCommand(time, zoneOffset)
 
+    /**
+     * Use this method on Dana-i.
+     */
     fun optionSetPumpUtcAndTimeZone(timeMillis: Long, zoneOffset: Int) =
         optionSetPumpUtcAndTimeZone(PumpTimestamp(timeMillis), zoneOffset)
 
