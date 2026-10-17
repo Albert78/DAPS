@@ -66,7 +66,7 @@ class OptionGetUserOptionCommand :
         val target = if (reader.remaining >= 2) reader.readUInt16Le() else null
         reader.discardRemaining()
         return OptionUserOptionsResponse(
-            status = if (lcdOnTimeSec >= 5) PumpStatus.OK else PumpStatus.INVALID_PARAMETER,
+            status = PumpStatus.OK,
             timeDisplayType24 = timeDisplayType24,
             buttonScrollOnOff = buttonScrollOnOff,
             beepAndAlarm = beepAndAlarm,

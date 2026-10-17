@@ -19,6 +19,7 @@ import de.dh.pump.PumpConnectionException
 import de.dh.pump.client.singleframe.PumpCommand
 import de.dh.pump.client.singleframe.PumpResponse
 import de.dh.pump.client.singleframe.PumpStreamCommand
+import de.dh.pump.dana.commands.options.DanaRsUserOptions
 import de.dh.pump.danai.core.model.DanaIBolusSpeed
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -183,6 +184,13 @@ class DanaIPump {
      */
     val bolusEvents: SharedFlow<BolusEvent> = _bolusEvents.asSharedFlow()
 
+    private val _userOptions = MutableStateFlow<DanaRsUserOptions?>(null)
+
+    /**
+     * User configurable options on the pump (display light, sound, units, etc.).
+     */
+    val userOptions: StateFlow<DanaRsUserOptions?> = _userOptions.asStateFlow()
+
     // Internal actions to be implemented by the Controller
     internal var onBolus: (suspend (InsulinAmount, DanaIBolusSpeed, String?) -> Unit)? = null
     internal var onTempBasal: (suspend (Int, Int) -> Unit)? = null
@@ -192,6 +200,8 @@ class DanaIPump {
     internal var onSetProfile: (suspend (InsulinProfile) -> Unit)? = null
     internal var onSyncHistory: (suspend (Timestamp) -> Unit)? = null
     internal var onRefreshStatus: (suspend () -> Unit)? = null
+    internal var onGetUserOptions: (suspend () -> DanaRsUserOptions)? = null
+    internal var onSetUserOptions: (suspend (DanaRsUserOptions) -> Unit)? = null
     internal var onExecute: (suspend (PumpCommand<*>) -> PumpResponse)? = null
     internal var onExecuteStream: (suspend (PumpStreamCommand<*, *>) -> Any)? = null
     internal var onDisconnectForMaintenance: (() -> Unit)? = null
@@ -296,6 +306,26 @@ class DanaIPump {
     suspend fun refreshStatus() {
         onRefreshStatus?.invoke()
     }
+
+    /**
+     * Retrieves current user options from the pump.
+     */
+    suspend fun getUserOptions(): DanaRsUserOptions {
+        val executor = onGetUserOptions ?: throw IllegalStateException("No executor wired")
+        return executor.invoke()
+    }
+
+    /**
+     * Updates user options on the pump.
+     */
+    suspend fun setUserOptions(options: DanaRsUserOptions) {
+        onSetUserOptions?.invoke(options)
+    }
+
+    internal fun updateUserOptions(options: DanaRsUserOptions) {
+        _userOptions.value = options
+    }
+
 
     /**
      * Executes a low-level command on the pump.

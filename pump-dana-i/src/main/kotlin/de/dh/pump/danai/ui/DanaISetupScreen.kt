@@ -3,9 +3,9 @@ package de.dh.pump.danai.ui
 import android.app.Application
 import android.content.Intent
 import android.provider.Settings
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.BluetoothSearching
 import androidx.compose.material.icons.filled.Delete
@@ -24,7 +26,9 @@ import androidx.compose.material.icons.filled.Router
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -33,6 +37,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -47,17 +52,17 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.ui.common.composables.FramedCard
-import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.SecondaryButton
 import de.dh.daps.ui.common.composables.WarningBanner
 import de.dh.daps.ui.common.theme.AppPreview
+import de.dh.pump.dana.commands.DanaGlucoseUnits
+import de.dh.pump.dana.commands.options.DanaRsUserOptions
 import de.dh.pump.danai.DanaIInsulinPumpDriver
 import de.dh.pump.danai.R
 import de.dh.pump.danai.core.connection.DanaScanError
 import de.dh.pump.danai.core.connection.DanaScanResult
-import de.dh.daps.common.R as CommonR
 
 /**
  * Stateful setup container for Sooil Dana-i insulin pumps.
@@ -85,10 +90,25 @@ fun DanaISetupScreen(
 
     when (val state = lifecycleState) {
         is DeviceLifecycleState.DeviceBound -> {
+            val userOptions by viewModel.userOptions.collectAsState()
+            val isLoadingOptions by viewModel.isLoadingOptions.collectAsState()
+            val isSavingOptions by viewModel.isSavingOptions.collectAsState()
+            val optionsError by viewModel.optionsError.collectAsState()
+
             DanaIBoundContent(
                 displayName = state.displayName.asString(),
                 deviceId = state.deviceId,
-                onUnbind = {
+                userOptions = userOptions,
+                isLoadingOptions = isLoadingOptions,
+                isSavingOptions = isSavingOptions,
+                optionsError = optionsError,
+                onLoadOptions = { viewModel.loadUserOptions(driver) },
+                onSaveAndUnbind = { options ->
+                    viewModel.saveAndUnbind(driver, options) {
+                        onDriverReset()
+                    }
+                },
+                onUnbindOnly = {
                     viewModel.unbind(driver) {
                         onDriverReset()
                     }
@@ -122,16 +142,28 @@ fun DanaISetupScreen(
 }
 
 /**
- * Stateless view for an already bound Dana-i insulin pump.
+ * View for an already bound Dana-i insulin pump with options and unbind capabilities.
  */
 @Composable
 fun DanaIBoundContent(
     displayName: String,
     deviceId: String?,
-    onUnbind: () -> Unit,
+    userOptions: DanaRsUserOptions?,
+    isLoadingOptions: Boolean,
+    isSavingOptions: Boolean,
+    optionsError: String?,
+    onLoadOptions: () -> Unit,
+    onSaveAndUnbind: (DanaRsUserOptions?) -> Unit,
+    onUnbindOnly: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showUnbindDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(showUnbindDialog) {
+        if (showUnbindDialog) {
+            onLoadOptions()
+        }
+    }
 
     FramedCard(
         modifier = modifier.fillMaxWidth()
@@ -194,14 +226,9 @@ fun DanaIBoundContent(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            NormalButton(
+            SecondaryButton(
                 onClick = { showUnbindDialog = true },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error,
-                    containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.1f)
-                ),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error)
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,
@@ -215,30 +242,177 @@ fun DanaIBoundContent(
     }
 
     if (showUnbindDialog) {
-        AlertDialog(
-            onDismissRequest = { showUnbindDialog = false },
-            title = { Text(stringResource(R.string.danai_pump_unbind_dialog_title)) },
-            text = { Text(stringResource(R.string.danai_pump_unbind_dialog_message)) },
-            confirmButton = {
-                PrimaryButton(
-                    onClick = {
-                        showUnbindDialog = false
-                        onUnbind()
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = MaterialTheme.colorScheme.onError
-                    )
-                ) {
-                    Text(stringResource(R.string.danai_pump_unbind_dialog_confirm))
-                }
+        DanaIPumpUnbindDialog(
+            userOptions = userOptions,
+            isLoading = isLoadingOptions,
+            isSaving = isSavingOptions,
+            error = optionsError,
+            onSaveAndUnbind = { options ->
+                showUnbindDialog = false
+                onSaveAndUnbind(options)
             },
-            dismissButton = {
-                NormalTextButton(onClick = { showUnbindDialog = false }) {
-                    Text(stringResource(CommonR.string.action_cancel))
+            onUnbindOnly = {
+                showUnbindDialog = false
+                onUnbindOnly()
+            },
+            onDismiss = { showUnbindDialog = false }
+        )
+    }
+}
+
+/**
+ * Dialog allowing users to configure display backlight before unbinding.
+ */
+@Composable
+fun DanaIPumpUnbindDialog(
+    userOptions: DanaRsUserOptions?,
+    isLoading: Boolean,
+    isSaving: Boolean,
+    error: String?,
+    onSaveAndUnbind: (DanaRsUserOptions) -> Unit,
+    onUnbindOnly: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var setLightEnabled by remember { mutableStateOf(true) }
+    var backlightTime by remember(userOptions) { mutableIntStateOf(userOptions?.backlightOnTimeSec ?: 30) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.danai_pump_unbind_dialog_title)) },
+        text = {
+            DanaIPumpUnbindDialogContent(
+                isLoading = isLoading,
+                isSaving = isSaving,
+                error = error,
+                setLightEnabled = setLightEnabled,
+                onSetLightEnabledChange = { setLightEnabled = it },
+                backlightTime = backlightTime,
+                onBacklightTimeChange = { backlightTime = it }
+            )
+        },
+        confirmButton = {
+            PrimaryButton(
+                onClick = {
+                    if (setLightEnabled && userOptions != null) {
+                        onSaveAndUnbind(userOptions.copy(backlightOnTimeSec = backlightTime))
+                    } else {
+                        onUnbindOnly()
+                    }
+                },
+                enabled = !isSaving && !isLoading,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError
+                )
+            ) {
+                Text(stringResource(R.string.danai_pump_unbind_confirm))
+            }
+        },
+        dismissButton = {
+            NormalTextButton(onClick = onDismiss, enabled = !isSaving && !isLoading) {
+                Text(stringResource(R.string.danai_pump_unbind_cancel))
+            }
+        }
+    )
+}
+
+/**
+ * Pure presentation content for the unbind dialog.
+ *
+ * Extracted into a standalone composable so it can be previewed without an [AlertDialog] host window.
+ */
+@Composable
+fun DanaIPumpUnbindDialogContent(
+    isLoading: Boolean,
+    isSaving: Boolean,
+    error: String?,
+    setLightEnabled: Boolean,
+    onSetLightEnabledChange: (Boolean) -> Unit,
+    backlightTime: Int,
+    onBacklightTimeChange: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val lightTimeOptions = remember { listOf(0, 10, 30, 60) }
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.danai_pump_unbind_dialog_subtitle),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        if (isLoading || isSaving) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.padding(vertical = 12.dp)
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp
+                )
+                Text(
+                    text = if (isSaving) stringResource(R.string.danai_pump_unbind_saving) else stringResource(R.string.danai_pump_unbind_loading),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
+
+        error?.let { err ->
+            WarningBanner(warningText = err, onActionClick = {})
+        }
+
+        HorizontalDivider()
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Checkbox(
+                checked = setLightEnabled,
+                onCheckedChange = onSetLightEnabledChange,
+                enabled = !isSaving && !isLoading
+            )
+            Text(
+                text = stringResource(R.string.danai_pump_unbind_enable_set_light),
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+
+        if (setLightEnabled) {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(
+                    text = stringResource(R.string.danai_pump_unbind_backlight_time),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    lightTimeOptions.forEach { sec ->
+                        FilterChip(
+                            selected = (backlightTime == sec),
+                            onClick = { onBacklightTimeChange(sec) },
+                            enabled = !isSaving && !isLoading,
+                            label = {
+                                Text(
+                                    if (sec == 0) stringResource(R.string.danai_pump_unbind_off)
+                                    else stringResource(R.string.danai_pump_unbind_seconds_format, sec)
+                                )
+                            }
+                        )
+                    }
                 }
             }
-        )
+        }
     }
 }
 
@@ -468,7 +642,13 @@ private fun DanaIBoundContentPreview() {
         DanaIBoundContent(
             displayName = "Dana-i (DANA-1234)",
             deviceId = "00:11:22:33:44:55",
-            onUnbind = {}
+            userOptions = null,
+            isLoadingOptions = false,
+            isSavingOptions = false,
+            optionsError = null,
+            onLoadOptions = {},
+            onSaveAndUnbind = {},
+            onUnbindOnly = {}
         )
     }
 }
@@ -520,6 +700,36 @@ private fun DanaISetupContentBluetoothDisabledPreview() {
             pairError = null,
             onStartDiscovery = {},
             onPairClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun DanaIPumpUnbindDialogPreview(){
+    AppPreview {
+        DanaIPumpUnbindDialog(
+            userOptions = DanaRsUserOptions(
+                hwModel = 7,
+                timeDisplayType24 = true,
+                buttonScrollOnOff = true,
+                beepAndAlarm = 3,
+                lcdOnTimeSec = 10,
+                backlightOnTimeSec = 30,
+                selectedLanguage = 0,
+                units = DanaGlucoseUnits.MGDL,
+                shutdownHour = 0,
+                lowReservoirRate = 10,
+                cannulaVolume = 50,
+                refillAmount = 300,
+                target = 100
+            ),
+            isLoading = false,
+            isSaving = false,
+            error = null,
+            onSaveAndUnbind = { _ -> },
+            onUnbindOnly = { },
+            onDismiss = { }
         )
     }
 }

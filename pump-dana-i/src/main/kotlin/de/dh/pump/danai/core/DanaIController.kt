@@ -24,6 +24,8 @@ import de.dh.pump.client.singleframe.PumpResponse
 import de.dh.pump.dana.commands.DanaRsCommands
 import de.dh.pump.dana.commands.general.DanaRsPumpErrorState
 import de.dh.pump.dana.commands.history.DanaRsHistoryRecord
+import de.dh.pump.dana.commands.options.DanaRsUserOptions
+import de.dh.pump.dana.commands.options.OptionUserOptionsResponse
 import de.dh.pump.dana.notifications.DanaAlarmNotification
 import de.dh.pump.dana.notifications.DanaDeliveryCompleteNotification
 import de.dh.pump.dana.notifications.DanaDeliveryRateDisplayNotification
@@ -155,9 +157,21 @@ class DanaIController(
         pump.onSetProfile = { profile -> executeSetProfile(profile) }
         pump.onSyncHistory = { start -> executeSyncHistory(start) }
         pump.onRefreshStatus = { executeRefreshStatus() }
+        pump.onGetUserOptions = { executeGetUserOptions() }
+        pump.onSetUserOptions = { options -> executeSetUserOptions(options) }
         pump.onExecute = { command -> withConnection { it.execute(command) } }
         pump.onExecuteStream = { command -> withConnection { client -> client.executeStream(command) as Any } }
-        pump.onDisconnectForMaintenance = { scope.launch { disconnect() } }
+        pump.onDisconnectForMaintenance = {
+            scope.launch {
+                try {
+                    setMaintenanceUserOptions()
+                } catch (e: Exception) {
+                    logger.log("Failed to configure options for maintenance mode: ${e.message}")
+                } finally {
+                    disconnect()
+                }
+            }
+        }
         pump.onConnectFromMaintenance = {
             scope.launch {
                 try {
@@ -222,6 +236,7 @@ class DanaIController(
             try {
                 updateHardwareStatus(client)
                 syncPumpTime(client)
+                updateUserOptions(client)
                 updatePumpStatus(client)
             } catch (e: Exception) {
                 logger.log("Initial status update failed: ${e.message}")
@@ -772,6 +787,96 @@ class DanaIController(
         updatePumpStatus(client)
     }
 
+    private suspend fun updateUserOptions(client: PumpClient) {
+        try {
+            logger.log("Fetching pump user options...")
+            val response = client.execute(commands.optionGetUserOption())
+            if (response.status == PumpStatus.OK) {
+                val hwModel = pump.hardware.value?.hardwareModel ?: 7
+                var currentOptions = response.toUserOptions(hwModel)
+                logger.log("Fetched pump user options: LCD=${currentOptions.lcdOnTimeSec}s, Backlight=${currentOptions.backlightOnTimeSec}s")
+
+                val targetBacklightTime = CONNECTED_BACKLIGHT_ON_TIME_SEC
+                if (currentOptions.backlightOnTimeSec != targetBacklightTime) {
+                    val updatedOptions = currentOptions.copy(
+                        backlightOnTimeSec = targetBacklightTime,
+                    )
+                    logger.log("Auto-configuring pump backlight setting upon connection: Backlight=$targetBacklightTime s (Off)")
+                    val setRes = client.execute(commands.optionSetUserOption(updatedOptions))
+                    if (setRes.status == PumpStatus.OK) {
+                        currentOptions = updatedOptions
+                    } else {
+                        logger.log("Failed to auto-configure backlight setting: status=${setRes.status}")
+                    }
+                }
+                pump.updateUserOptions(currentOptions)
+            }
+        } catch (e: Exception) {
+            logger.log("Failed to update user options: ${e.message}")
+        }
+    }
+
+    private suspend fun setMaintenanceUserOptions() = withConnection { client ->
+        logger.log("Configuring pump user options for maintenance mode...")
+        val currentOptions = pump.userOptions.value ?: try {
+            val response = client.execute(commands.optionGetUserOption())
+            if (response.status == PumpStatus.OK) {
+                val hwModel = pump.hardware.value?.hardwareModel ?: 7
+                response.toUserOptions(hwModel)
+            } else null
+        } catch (e: Exception) {
+            logger.log("Failed to fetch user options for maintenance mode: ${e.message}")
+            null
+        }
+
+        if (currentOptions != null) {
+            val maintenanceOptions = currentOptions.copy(backlightOnTimeSec = MAINTENANCE_BACKLIGHT_ON_TIME_SEC)
+            logger.log("Setting pump backlight to $MAINTENANCE_BACKLIGHT_ON_TIME_SEC s for maintenance mode...")
+            val response = client.execute(commands.optionSetUserOption(maintenanceOptions))
+            if (response.status == PumpStatus.OK) {
+                pump.updateUserOptions(maintenanceOptions)
+            } else {
+                logger.log("Failed to set backlight for maintenance mode: status=${response.status}")
+            }
+        }
+    }
+
+    private suspend fun executeGetUserOptions(): DanaRsUserOptions = withConnection { client ->
+        logger.log("Action: Getting user options")
+        val response = client.execute(commands.optionGetUserOption())
+        response.ensureOk("OPTION_GET_USER_OPTION")
+        val hwModel = pump.hardware.value?.hardwareModel ?: 7
+        val options = response.toUserOptions(hwModel)
+        pump.updateUserOptions(options)
+        options
+    }
+
+    private suspend fun executeSetUserOptions(options: DanaRsUserOptions) = withConnection { client ->
+        logger.log("Action: Setting user options (LCD=${options.lcdOnTimeSec}s, Backlight=${options.backlightOnTimeSec}s)")
+        val cmd = commands.optionSetUserOption(options)
+        val response = client.execute(cmd)
+        response.ensureOk(cmd.name)
+        pump.updateUserOptions(options)
+    }
+
+    private fun OptionUserOptionsResponse.toUserOptions(hwModel: Int = 7): DanaRsUserOptions {
+        return DanaRsUserOptions(
+            hwModel = hwModel,
+            timeDisplayType24 = timeDisplayType24,
+            buttonScrollOnOff = buttonScrollOnOff,
+            beepAndAlarm = beepAndAlarm,
+            lcdOnTimeSec = lcdOnTimeSec,
+            backlightOnTimeSec = backlightOnTimeSec,
+            selectedLanguage = selectedLanguage,
+            units = units,
+            shutdownHour = shutdownHour,
+            lowReservoirRate = lowReservoirRate,
+            cannulaVolume = cannulaVolume,
+            refillAmount = refillAmount,
+            target = target ?: 100,
+        )
+    }
+
     /**
      * Terminates all background activities of this controller.
      */
@@ -785,6 +890,8 @@ class DanaIController(
         pump.onSetProfile = null
         pump.onSyncHistory = null
         pump.onRefreshStatus = null
+        pump.onGetUserOptions = null
+        pump.onSetUserOptions = null
         pump.onExecute = null
         pump.onExecuteStream = null
     }
