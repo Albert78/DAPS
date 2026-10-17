@@ -201,9 +201,7 @@ class ReceiverGlucosePlugin(
         when (val state = currentState) {
             is DeviceLifecycleState.DeviceBound -> {
                 FramedCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
@@ -265,9 +263,7 @@ class ReceiverGlucosePlugin(
                 var selectedSourceType by remember { mutableStateOf(externalSourceType) }
 
                 FramedCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     containerColor = MaterialTheme.colorScheme.surfaceVariant,
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {

@@ -111,9 +111,7 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
         when (val state = currentState) {
             is DeviceLifecycleState.DeviceBound -> {
                 FramedCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
@@ -175,9 +173,7 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
             }
             else -> {
                 FramedCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),

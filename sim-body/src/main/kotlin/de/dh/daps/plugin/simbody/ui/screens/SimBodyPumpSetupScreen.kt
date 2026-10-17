@@ -10,11 +10,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,6 +40,7 @@ import de.dh.daps.ui.common.theme.AppPreview
 fun SimBodyPumpSetupScreen(
     driver: SimBodyInsulinPumpDriver,
     onDriverReset: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val currentState by driver.lifecycleState.collectAsStateWithLifecycle()
 
@@ -54,6 +53,7 @@ fun SimBodyPumpSetupScreen(
             driver.unbindDevice()
             onDriverReset()
         },
+        modifier = modifier,
     )
 }
 
@@ -62,15 +62,14 @@ fun SimBodyPumpSetupContent(
     lifecycleState: DeviceLifecycleState,
     onBind: () -> Unit,
     onUnbind: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     var showUnbindDialog by remember { mutableStateOf(false) }
 
     when (lifecycleState) {
         is DeviceLifecycleState.DeviceBound -> {
             FramedCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+                modifier = modifier.fillMaxWidth(),
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -132,9 +131,7 @@ fun SimBodyPumpSetupContent(
         }
         else -> {
             FramedCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+                modifier = modifier.fillMaxWidth(),
                 containerColor = MaterialTheme.colorScheme.surfaceVariant,
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
