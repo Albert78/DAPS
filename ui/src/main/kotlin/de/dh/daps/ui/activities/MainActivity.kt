@@ -51,6 +51,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -406,11 +407,10 @@ fun DrawerContent(
             Column {
                 Row(
                     modifier = Modifier
-                        .padding(top = 50.dp)
-                        .height(100.dp)
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
+                        .height(150.dp)
+                        .fillMaxWidth()
+                        .padding(top = 60.dp, bottom = 20.dp, start = 30.dp, end = 30.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_app_logo),
@@ -419,10 +419,19 @@ fun DrawerContent(
                         tint = Color.Unspecified
                     )
                     Spacer(Modifier.width(16.dp))
-                    Text(
-                        stringResource(id = R.string.drawer_header_title),
-                        style = MaterialTheme.typography.headlineMedium
-                    )
+                    Column {
+                        Text(
+                            text = stringResource(id = R.string.drawer_header_title),
+                            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            text = stringResource(id = R.string.drawer_header_subtitle),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f)
+                        )
+                    }
                 }
                 HorizontalDivider()
 
@@ -438,12 +447,7 @@ fun DrawerContent(
                     selected = currentRoute == BolusHistoryRoute,
                     onClick = { onRouteSelected(BolusHistoryRoute) }
                 )
-                DrawerItem(
-                    label = stringResource(id = R.string.menu_food_database_label),
-                    icon = Icon_Food_Database,
-                    selected = currentRoute == FoodDatabaseRoute,
-                    onClick = { onRouteSelected(FoodDatabaseRoute) }
-                )
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                 DrawerItem(
                     label = stringResource(id = R.string.manual_control_screen_title),
                     icon = Icon_ManualControlMode,
@@ -455,6 +459,12 @@ fun DrawerContent(
                     icon = Icon_System_Control,
                     selected = currentRoute is SystemControlRoute,
                     onClick = { onRouteSelected(SystemControlRoute()) }
+                )
+                DrawerItem(
+                    label = stringResource(id = R.string.menu_food_database_label),
+                    icon = Icon_Food_Database,
+                    selected = currentRoute == FoodDatabaseRoute,
+                    onClick = { onRouteSelected(FoodDatabaseRoute) }
                 )
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                 DrawerItem(

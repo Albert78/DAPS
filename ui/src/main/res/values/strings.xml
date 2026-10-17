@@ -359,6 +359,7 @@
     <string name="edit_historical_meal_carbs_label">Mahlzeit</string>
 
     <string name="drawer_header_title">DAPS</string>
+    <string name="drawer_header_subtitle">Daniels Automated Pancreas System</string>
     <string name="menu_meals_label">Mahlzeiten-Historie</string>
     <string name="menu_food_database_label">Essensdatenbank</string>
     <string name="menu_system_control_label">Systemsteuerung</string>
