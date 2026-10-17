@@ -525,7 +525,7 @@ private fun BleStatusBannerDisconnectedPreview() {
 private fun OmnipodDashBoundContentPreview() {
     AppPreview {
         OmnipodDashBoundContent(
-            displayName = "Omnipod Dash Pod",
+            displayName = "Omnipod Dash",
             deviceId = "POD-DASH-1234",
             onUnbind = {}
         )

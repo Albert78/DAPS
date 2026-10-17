@@ -1,6 +1,8 @@
 package de.dh.pump.omnipod.dash
 
 import android.Manifest
+import android.bluetooth.BluetoothManager
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.Composable
 import de.dh.daps.common.model.DeviceLifecycleState
@@ -17,8 +19,6 @@ import de.dh.pump.omnipod.dash.ui.OmnipodDashSetupScreen
 import de.dh.pump.omnipod.protocol.ble.OmnipodDashBleManager
 import de.dh.pump.omnipod.protocol.definition.ActivationProgress
 import de.dh.pump.omnipod.protocol.state.OmnipodDashPodStateManagerImpl
-import android.bluetooth.BluetoothManager
-import android.content.Context
 import de.dh.pump.util.BluetoothBondUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,7 +27,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
@@ -90,7 +89,7 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
                 try {
                     bindPod()
                 } catch (e: Exception) {
-                    Log.e(TAG, "Failed to connect to Omnipod Dash pod in initState", e)
+                    Log.e(TAG, "Failed to connect to Omnipod Dash in initState", e)
                 }
             }
             stateManager.activationProgress != ActivationProgress.NOT_STARTED -> {

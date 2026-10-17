@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="omnipod_dash_driver_display_name">Insulet Omnipod Dash</string>
-    <string name="omnipod_dash_pump_display_name">Omnipod Dash Pod</string>
+    <string name="omnipod_dash_pump_display_name">Omnipod Dash</string>
     <string name="omnipod_dash_setup_step1_title">Schritt 1: Pod befüllen &amp; primen/entlüften</string>
     <string name="omnipod_dash_setup_step1_description">Befülle den Pod mit mindestens 85 Einheiten Insulin, bis du 2 Pieptöne hörst. Platziere den Pod neben deinem DAPS-Gerät und tippe auf \'Pod primen\'.</string>
     <string name="omnipod_dash_setup_step2_title">Schritt 2: Pod anbringen &amp; Kanüle einführen</string>
@@ -13,8 +13,8 @@
     <string name="omnipod_dash_setup_btn_activate_pod">Pod aktivieren</string>
     <string name="omnipod_dash_setup_btn_cancel">Einrichtung abbrechen</string>
     <string name="omnipod_dash_setup_activate_failed">Pod-Aktivierung fehlgeschlagen.</string>
-    <string name="omnipod_dash_bound_title">Omnipod Dash Pod gebunden</string>
-    <string name="omnipod_dash_bound_subtitle">Dein Omnipod Dash Pod ist derzeit aktiv mit der App gebunden.</string>
+    <string name="omnipod_dash_bound_title">Omnipod Dash gebunden</string>
+    <string name="omnipod_dash_bound_subtitle">Dein Omnipod Dash ist derzeit aktiv mit der App gebunden.</string>
     <string name="omnipod_dash_bound_badge">Pod Aktiv</string>
     <string name="omnipod_dash_btn_unbind">Bindung verwerfen</string>
     <string name="omnipod_dash_unbind_dialog_title">Pod-Bindung verwerfen?</string>
