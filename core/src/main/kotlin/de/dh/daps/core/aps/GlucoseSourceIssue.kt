@@ -5,9 +5,9 @@ package de.dh.daps.core.aps
  */
 sealed interface GlucoseSourceIssue {
     /**
-     * No glucose source / CGM is connected or configured in the system.
+     * No glucose source / CGM is bound in the system.
      */
-    data object ConnectionMissing : GlucoseSourceIssue
+    data object NoGlucoseSourceBound : GlucoseSourceIssue
 
     /**
      * The glucose source / sensor has expired.

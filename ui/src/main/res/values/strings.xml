@@ -216,13 +216,20 @@
     <string name="core_issue_no_pump_connection">Pumpen-Kommunikation ist fehlgeschlagen</string>
 
     <string name="pump_issue_title">Pumpen-Problem</string>
-    <string name="pump_issue_connection_missing">Keine Verbindung zur Insulinpumpe.</string>
+    <string name="pump_issue_no_pump_bound">Keine Insulinpumpe gebunden.</string>
     <string name="pump_issue_inoperative">Die Insulinpumpe ist nicht betriebsbereit.</string>
+    <string name="pump_issue_connection_missing">Keine Verbindung zur Insulinpumpe.</string>
     <string name="pump_issue_occlusion">Verstopfung (Okklusion) in der Insulinpumpe festgestellt.</string>
     <string name="pump_issue_suspended">Die Insulinabgabe der Pumpe ist unterbrochen.</string>
     <string name="pump_issue_command_failed">Befehl an die Insulinpumpe fehlgeschlagen.</string>
     <string name="pump_issue_expired">Die Insulinpumpe oder der Pod ist abgelaufen.</string>
     <string name="pump_issue_other">Fehler bei der Kommunikation mit der Insulinpumpe.</string>
+
+    <string name="glucose_source_issue_no_source_bound">Keine Blutzucker-Quelle (CGM) gebunden.</string>
+    <string name="glucose_source_issue_expired">Der Glukosesensor ist abgelaufen.</string>
+    <string name="glucose_source_issue_sensor_error">Der Glukosesensor meldet einen Fehler.</string>
+    <string name="glucose_source_issue_other">Störung der Blutzucker-Quelle.</string>
+
     <string name="multiple_issues_title">System-Warnungen (%1$d)</string>
 
     <string name="insulin_unit_label_format">%1$.2f I.E.</string>
@@ -560,10 +567,6 @@
     <string name="overview_aps_no_issues">Keine aktiven System-Warnungen vorhanden.</string>
     <string name="overview_aps_status_suspended">Pausiert</string>
     <string name="overview_aps_info_suspended">Das APS-System ist derzeit pausiert (Pumpe gestoppt).</string>
-    <string name="glucose_source_issue_connection_missing">Keine Blutzucker-Quelle (CGM) verbunden.</string>
-    <string name="glucose_source_issue_expired">Der Glukosesensor ist abgelaufen.</string>
-    <string name="glucose_source_issue_sensor_error">Der Glukosesensor meldet einen Fehler.</string>
-    <string name="glucose_source_issue_other">Störung der Blutzucker-Quelle.</string>
     <string name="overview_aps_mode_label">APS-Modus</string>
     <string name="overview_aps_last_calculation_label">Letzte Berechnung</string>
     <string name="overview_aps_show_history_log">Verlaufsprotokoll anzeigen</string>

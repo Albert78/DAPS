@@ -29,7 +29,7 @@ class GlucoseSourceManager(
     private val _glucoseSource = MutableStateFlow<GlucoseSource?>(null)
     val activeGlucoseSource: StateFlow<GlucoseSource?> = _glucoseSource.asStateFlow()
 
-    private val _glucoseSourceIssues = MutableStateFlow<Set<GlucoseSourceIssue>>(setOf(GlucoseSourceIssue.ConnectionMissing))
+    private val _glucoseSourceIssues = MutableStateFlow<Set<GlucoseSourceIssue>>(setOf(GlucoseSourceIssue.NoGlucoseSourceBound))
     val glucoseSourceIssues: StateFlow<Set<GlucoseSourceIssue>> = _glucoseSourceIssues.asStateFlow()
 
     private val _lastInputTimestamp = MutableStateFlow(Timestamp.INVALID)
@@ -60,23 +60,23 @@ class GlucoseSourceManager(
         statusJob = null
 
         if (source == null) {
-            _glucoseSourceIssues.value = setOf(GlucoseSourceIssue.ConnectionMissing)
+            _glucoseSourceIssues.value = setOf(GlucoseSourceIssue.NoGlucoseSourceBound)
         } else {
             statusJob = scope.launch {
                 launch {
                     source.status.collect { status ->
                         when (status) {
                             GlucoseSourceStatus.Ok -> {
-                                removeIssue(GlucoseSourceIssue.ConnectionMissing)
+                                removeIssue(GlucoseSourceIssue.NoGlucoseSourceBound)
                                 removeIssue(GlucoseSourceIssue.SensorError)
                                 removeIssue(GlucoseSourceIssue.Expired)
                             }
                             GlucoseSourceStatus.Expired -> {
-                                removeIssue(GlucoseSourceIssue.ConnectionMissing)
+                                removeIssue(GlucoseSourceIssue.NoGlucoseSourceBound)
                                 setIssue(GlucoseSourceIssue.Expired)
                             }
                             GlucoseSourceStatus.Error -> {
-                                removeIssue(GlucoseSourceIssue.ConnectionMissing)
+                                removeIssue(GlucoseSourceIssue.NoGlucoseSourceBound)
                                 setIssue(GlucoseSourceIssue.SensorError)
                             }
                         }
@@ -133,7 +133,7 @@ class GlucoseSourceManager(
     fun stop() {
         glucoseSource = null
         _lastInputTimestamp.value = Timestamp.INVALID
-        _glucoseSourceIssues.value = setOf(GlucoseSourceIssue.ConnectionMissing)
+        _glucoseSourceIssues.value = setOf(GlucoseSourceIssue.NoGlucoseSourceBound)
     }
 
     fun predictNextValueTimestamp(): Timestamp {

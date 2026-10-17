@@ -7,16 +7,21 @@ import de.dh.pump.PumpStatus
  */
 sealed interface PumpIssue {
     /**
-     * The pump connection is missing, the system is not able to do its work.
-     * The work will be continued when the connection is available again.
+     * No insulin pump is bound in the system.
      */
-    data object ConnectionMissing : PumpIssue
+    data object NoPumpBound : PumpIssue
 
     /**
      * The pump is connected but in a state where it cannot deliver insulin (e.g. suspended,
      * battery empty, reservoir empty, hardware error).
      */
     data object Inoperative : PumpIssue
+
+    /**
+     * The pump connection is missing, the system is not able to do its work.
+     * The work will be continued when the connection is available again.
+     */
+    data object ConnectionMissing : PumpIssue
 
     /**
      * An occlusion / blockage was detected in the pump or delivery line.

@@ -29,7 +29,7 @@ class PumpManagerImpl(
     private val scope: CoroutineScope,
     private val wakeService: SystemWakeService
 ) : PumpManager, WakeupHandler {
-    private val _pumpIssues = MutableStateFlow<Set<PumpIssue>>(emptySet())
+    private val _pumpIssues = MutableStateFlow<Set<PumpIssue>>(setOf(PumpIssue.NoPumpBound))
     override val pumpIssues: StateFlow<Set<PumpIssue>> = _pumpIssues.asStateFlow()
 
     private val _activeInsulinPump = MutableStateFlow<InsulinPump?>(null)
@@ -62,8 +62,10 @@ class PumpManagerImpl(
             pumpMonitorJob?.cancel()
             pumpCoordinator?.shutdown()
             pumpCoordinator = if (value == null) {
+                _pumpIssues.value = setOf(PumpIssue.NoPumpBound)
                 null
             } else {
+                removeIssue(PumpIssue.NoPumpBound)
                 val pc = PumpCoordinator.create(
                     pump = value,
                     withBusyState = { block -> wakeService.withBusyStateSuspend(WAKE_TAG, block) },
@@ -172,13 +174,13 @@ class PumpManagerImpl(
     }
 
     override fun reset() {
-        _pumpIssues.value = emptySet()
+        _pumpIssues.value = if (insulinPump == null) setOf(PumpIssue.NoPumpBound) else emptySet()
         pumpCoordinator?.reset()
     }
 
     override fun stop() {
         insulinPump = null
-        _pumpIssues.value = emptySet()
+        _pumpIssues.value = setOf(PumpIssue.NoPumpBound)
     }
 
     override fun hasPendingJobs(): Boolean {

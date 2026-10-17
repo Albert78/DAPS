@@ -328,6 +328,7 @@ private fun formatApsIssue(issue: ApsIssue): String = when (issue) {
         is CoreIssue.NoPumpConnection -> stringResource(id = R.string.core_issue_no_pump_connection)
     }
     is ApsIssue.Pump -> when (issue.issue) {
+        is PumpIssue.NoPumpBound -> stringResource(id = R.string.pump_issue_no_pump_bound)
         is PumpIssue.ConnectionMissing -> stringResource(id = R.string.pump_issue_connection_missing)
         is PumpIssue.Inoperative -> stringResource(id = R.string.pump_issue_inoperative)
         is PumpIssue.Occlusion -> stringResource(id = R.string.pump_issue_occlusion)
@@ -338,7 +339,7 @@ private fun formatApsIssue(issue: ApsIssue): String = when (issue) {
         is PumpIssue.Other -> stringResource(id = R.string.pump_issue_other)
     }
     is ApsIssue.GlucoseSource -> when (val gsIssue = issue.issue) {
-        is GlucoseSourceIssue.ConnectionMissing -> stringResource(id = R.string.glucose_source_issue_connection_missing)
+        is GlucoseSourceIssue.NoGlucoseSourceBound -> stringResource(id = R.string.glucose_source_issue_no_source_bound)
         is GlucoseSourceIssue.Expired -> stringResource(id = R.string.glucose_source_issue_expired)
         is GlucoseSourceIssue.SensorError -> stringResource(id = R.string.glucose_source_issue_sensor_error)
         is GlucoseSourceIssue.Other -> gsIssue.message ?: stringResource(id = R.string.glucose_source_issue_other)
