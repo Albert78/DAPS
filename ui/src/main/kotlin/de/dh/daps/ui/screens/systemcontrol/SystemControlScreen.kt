@@ -302,8 +302,7 @@ private fun previewUnconfiguredUiState() = SystemControlUiState.Content(
         ),
         apsSystem = OverviewApsSystemUiState.Content(
             mode = StatusMetric(ApsMode.AutoCorrection, status = ValueStatus.GOOD),
-            lastCalculation = StatusMetric(status = ValueStatus.GOOD),
-            status = StatusMetric(0, status = ValueStatus.GOOD)
+            lastCalculation = StatusMetric(status = ValueStatus.GOOD)
         ),
         glucoseSource = OverviewGlucoseSourceUiState.NoneConfigured,
         insulinPump = OverviewPumpUiState.NoneConfigured

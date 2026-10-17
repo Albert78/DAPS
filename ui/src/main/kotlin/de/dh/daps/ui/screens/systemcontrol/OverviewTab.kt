@@ -18,6 +18,10 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -27,6 +31,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -42,9 +50,14 @@ import de.dh.daps.common.model.ReplaceableComponentType
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
+import de.dh.daps.core.aps.ApsIssue
+import de.dh.daps.core.aps.CoreIssue
+import de.dh.daps.core.pump.PumpIssue
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.FramedCard
+import de.dh.daps.ui.common.composables.NormalTextButton
+import de.dh.daps.ui.common.icons.Icon_Warning
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.pluralStringResourceZero
@@ -151,17 +164,21 @@ private fun ApsCard(
                     }
                 }
                 is OverviewApsSystemUiState.Content -> {
-                    ControlDetailRow(label = stringResource(id = R.string.overview_status_label)) {
-                        StatusMetricText(
-                            metric = state.status,
-                            formatValue = { count ->
-                                pluralStringResourceZero(
-                                    pluralsResId = R.plurals.overview_aps_issues_count,
-                                    zeroResId = R.string.label_active,
-                                    quantity = count,
-                                    count
-                                )
-                            }
+                    var showIssuesDialog by remember { mutableStateOf(false) }
+
+                    ControlDetailRow(
+                        label = stringResource(id = R.string.overview_status_label),
+                        modifier = Modifier.clickable {
+                            showIssuesDialog = true
+                        }
+                    ) {
+                        StatusMetricText(metric = state.status)
+                    }
+
+                    if (showIssuesDialog) {
+                        ApsIssuesDialog(
+                            state = state,
+                            onDismiss = { showIssuesDialog = false }
                         )
                     }
 
@@ -219,6 +236,106 @@ private fun ApsCard(
             }
         }
     }
+}
+
+@Composable
+private fun ApsIssuesDialog(
+    state: OverviewApsSystemUiState.Content,
+    onDismiss: () -> Unit
+) {
+    val isSuspended = state.mode.value == ApsMode.Suspend
+    val displayIssues = state.unintendedIssues
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = stringResource(id = R.string.overview_aps_issues_dialog_title),
+                style = MaterialTheme.typography.titleLarge
+            )
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.verticalScroll(rememberScrollState())
+            ) {
+                if (isSuspended) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = MaterialTheme.shapes.small,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.overview_aps_info_suspended),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
+                }
+
+                if (displayIssues.isEmpty()) {
+                    Text(
+                        text = stringResource(id = R.string.overview_aps_no_issues),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                } else {
+                    displayIssues.forEach { issue ->
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Icon(
+                                imageVector = Icon_Warning,
+                                contentDescription = null,
+                                tint = ExtendedTheme.semanticColors.bad,
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .padding(top = 2.dp)
+                            )
+                            Text(
+                                text = formatApsIssue(issue),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            NormalTextButton(onClick = onDismiss) {
+                Text(text = stringResource(id = de.dh.daps.common.R.string.action_close))
+            }
+        }
+    )
+}
+
+@Composable
+private fun formatApsIssue(issue: ApsIssue): String = when (issue) {
+    is ApsIssue.StaleBG -> stringResource(id = R.string.core_issue_no_recent_values, 15)
+    is ApsIssue.BluetoothDisabled -> stringResource(id = R.string.alarm_type_system_bluetooth_off_desc)
+    is ApsIssue.Core -> when (val coreIssue = issue.issue) {
+        is CoreIssue.NoRecentValues -> stringResource(id = R.string.core_issue_no_recent_values, coreIssue.minutes)
+        is CoreIssue.NoisyValues -> stringResource(id = R.string.core_issue_noisy_values)
+        is CoreIssue.InternalError -> stringResource(
+            id = R.string.core_issue_internal_error,
+            coreIssue.message ?: ""
+        )
+        is CoreIssue.TherapyLockBusy -> stringResource(
+            id = R.string.core_issue_therapy_lock_busy,
+            smartTime(coreIssue.since)
+        )
+        is CoreIssue.NoPumpConnection -> stringResource(id = R.string.core_issue_no_pump_connection)
+    }
+    is ApsIssue.Pump -> when (issue.issue) {
+        is PumpIssue.ConnectionMissing -> stringResource(id = R.string.pump_issue_connection_missing)
+        is PumpIssue.Inoperative -> stringResource(id = R.string.pump_issue_inoperative)
+        is PumpIssue.Occlusion -> stringResource(id = R.string.pump_issue_occlusion)
+        is PumpIssue.CommandFailed -> stringResource(id = R.string.pump_issue_command_failed)
+        is PumpIssue.LowInsulin -> stringResource(id = R.string.pump_issue_low_insulin)
+        is PumpIssue.LowBattery -> stringResource(id = R.string.pump_issue_low_battery)
+        is PumpIssue.Other -> stringResource(id = R.string.pump_issue_other)
+    }
+    is ApsIssue.Other -> issue.message ?: stringResource(id = R.string.pump_issue_other)
 }
 
 @Composable
@@ -529,6 +646,16 @@ private fun <T> StatusMetricText(
     } else {
         when (val v = metric.value) {
             is Boolean -> if (v) stringResource(id = R.string.label_active) else stringResource(id = R.string.label_inactive)
+            is ApsSystemStatus -> when (v) {
+                ApsSystemStatus.Active -> stringResource(id = R.string.label_active)
+                ApsSystemStatus.Suspended -> stringResource(id = R.string.overview_aps_status_suspended)
+                is ApsSystemStatus.Issues -> pluralStringResourceZero(
+                    pluralsResId = R.plurals.overview_aps_issues_count,
+                    zeroResId = R.string.label_active,
+                    quantity = v.count,
+                    v.count
+                )
+            }
             is ApsMode -> when (v) {
                 ApsMode.AutoCorrection -> stringResource(R.string.aps_mode_auto_correction)
                 ApsMode.Manual -> stringResource(R.string.aps_mode_manual)
@@ -638,8 +765,7 @@ internal fun sampleOverviewTabUiState(): OverviewTabUiState = OverviewTabUiState
     ),
     apsSystem = OverviewApsSystemUiState.Content(
         mode = StatusMetric(ApsMode.AutoCorrection, status = ValueStatus.GOOD),
-        lastCalculation = StatusMetric(Timestamp(System.currentTimeMillis() - 120_000), status = ValueStatus.GOOD),
-        status = StatusMetric(0, status = ValueStatus.GOOD)
+        lastCalculation = StatusMetric(Timestamp(System.currentTimeMillis() - 120_000), status = ValueStatus.GOOD)
     ),
     glucoseSource = OverviewGlucoseSourceUiState.Content(
         sensorName = UiText.DynamicString("SimBody Virtueller Glukosesensor"),
@@ -696,7 +822,7 @@ internal fun sampleOverviewTabExpiredUiState(): OverviewTabUiState = OverviewTab
     apsSystem = OverviewApsSystemUiState.Content(
         mode = StatusMetric(ApsMode.AutoCorrection, status = ValueStatus.WARNING),
         lastCalculation = StatusMetric(Timestamp(System.currentTimeMillis() - 120_000), status = ValueStatus.GOOD),
-        status = StatusMetric(1, status = ValueStatus.WARNING)
+        issues = listOf(ApsIssue.StaleBG)
     ),
     glucoseSource = OverviewGlucoseSourceUiState.Content(
         sensorName = UiText.DynamicString("SimBody Virtueller Glukosesensor"),
@@ -772,8 +898,7 @@ internal fun sampleOverviewTabNotConfiguredUiState(): OverviewTabUiState = Overv
     ),
     apsSystem = OverviewApsSystemUiState.Content(
         mode = StatusMetric(ApsMode.AutoCorrection, status = ValueStatus.GOOD),
-        lastCalculation = StatusMetric(Timestamp(System.currentTimeMillis() - 120_000), status = ValueStatus.GOOD),
-        status = StatusMetric(0, status = ValueStatus.GOOD)
+        lastCalculation = StatusMetric(Timestamp(System.currentTimeMillis() - 120_000), status = ValueStatus.GOOD)
     ),
     glucoseSource = OverviewGlucoseSourceUiState.NoneConfigured,
     insulinPump = OverviewPumpUiState.NoneConfigured

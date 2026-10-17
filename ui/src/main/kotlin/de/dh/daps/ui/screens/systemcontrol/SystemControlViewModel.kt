@@ -37,6 +37,8 @@ import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.core.SystemRegistry
+import de.dh.daps.core.aps.ApsIssue
+import de.dh.daps.core.pump.PumpIssue
 import de.dh.daps.core.pump.JobErrorCode
 import de.dh.daps.core.pump.PumpCommand
 import de.dh.daps.core.pump.PumpCoordinatorState
@@ -82,13 +84,45 @@ sealed interface OverviewAndroidSystemUiState {
     ) : OverviewAndroidSystemUiState
 }
 
+sealed interface ApsSystemStatus {
+    data object Active : ApsSystemStatus
+    data object Suspended : ApsSystemStatus
+    data class Issues(val count: Int) : ApsSystemStatus
+}
+
 sealed interface OverviewApsSystemUiState {
     data object Loading : OverviewApsSystemUiState
     data class Content(
         val mode: StatusMetric<ApsMode>,
         val lastCalculation: StatusMetric<Timestamp>,
-        val status: StatusMetric<Int>
-    ) : OverviewApsSystemUiState
+        val issues: List<ApsIssue> = emptyList()
+    ) : OverviewApsSystemUiState {
+        val unintendedIssues: List<ApsIssue>
+            get() = if (mode.value == ApsMode.Suspend) {
+                issues.filterNot { it is ApsIssue.Pump && it.issue is PumpIssue.Inoperative }
+            } else {
+                issues
+            }
+
+        val status: StatusMetric<ApsSystemStatus>
+            get() {
+                val unintended = unintendedIssues
+                return when {
+                    unintended.isNotEmpty() -> StatusMetric(
+                        value = ApsSystemStatus.Issues(unintended.size),
+                        status = ValueStatus.BAD
+                    )
+                    mode.value == ApsMode.Suspend -> StatusMetric(
+                        value = ApsSystemStatus.Suspended,
+                        status = ValueStatus.WARNING
+                    )
+                    else -> StatusMetric(
+                        value = ApsSystemStatus.Active,
+                        status = ValueStatus.GOOD
+                    )
+                }
+            }
+    }
 }
 
 sealed interface OverviewGlucoseSourceUiState {
@@ -393,8 +427,6 @@ class SystemControlViewModel(
         systemOrchestrator.apsIssues,
         systemOrchestrator.lastSuccessfulCoreCalculation
     ) { mode, issues, lastCalcTs ->
-        val statusValue = issues.size
-        val statusValueStatus = if (issues.isEmpty()) ValueStatus.GOOD else ValueStatus.BAD
         val modeValueStatus = when (mode) {
             ApsMode.AutoCorrection -> ValueStatus.GOOD
             ApsMode.Manual -> ValueStatus.GOOD
@@ -411,7 +443,7 @@ class SystemControlViewModel(
                 value = lastCalcTs,
                 status = lastCalcStatus
             ),
-            status = StatusMetric(statusValue, status = statusValueStatus)
+            issues = issues.toList()
         )
     }
 
