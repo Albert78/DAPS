@@ -1,6 +1,7 @@
 package de.dh.pump.omnipod.dash
 
 import android.Manifest
+import android.os.Build
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.util.Log
@@ -33,11 +34,19 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
     override val driverId: String = DRIVER_ID
     override val displayName: UiText = UiText.StringResource(R.string.omnipod_dash_driver_display_name)
     override val pluginId: String = DRIVER_ID
-    override val neededPermissions: Collection<String> = listOf(
-        Manifest.permission.BLUETOOTH_SCAN,
-        Manifest.permission.BLUETOOTH_CONNECT,
-        Manifest.permission.ACCESS_FINE_LOCATION
-    )
+    override val neededPermissions: Collection<String>
+        get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            listOf(
+                Manifest.permission.BLUETOOTH_SCAN,
+                Manifest.permission.BLUETOOTH_CONNECT
+            )
+        } else {
+            listOf(
+                Manifest.permission.BLUETOOTH,
+                Manifest.permission.BLUETOOTH_ADMIN,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            )
+        }
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
