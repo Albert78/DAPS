@@ -20,10 +20,7 @@ import de.dh.pump.omnipod.protocol.definition.ActivationProgress
 import de.dh.pump.omnipod.protocol.state.OmnipodDashPodStateManagerImpl
 import de.dh.pump.util.BluetoothBondUtils
 import de.dh.pump.util.BluetoothPermissionUtils
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,8 +32,6 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
     override val pluginId: String = DRIVER_ID
     override val neededPermissions: Collection<String>
         get() = BluetoothPermissionUtils.neededPermissions
-
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.NoDevice)
     override val lifecycleState: StateFlow<DeviceLifecycleState> = _lifecycleState.asStateFlow()

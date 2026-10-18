@@ -205,8 +205,6 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
         _lifecycleState.value = DeviceLifecycleState.NoDevice
     }
 
-    internal fun getContext(): PluginContext? = pluginContext
-
     companion object {
         const val DRIVER_ID = "de.dh.daps.plugin.danai"
         private const val TAG = "DanaIDriver"
