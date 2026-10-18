@@ -165,7 +165,7 @@ class DanaIController(
         pump.onDisconnectForMaintenance = {
             scope.launch {
                 try {
-                    setMaintenanceUserOptions()
+                    setMaintenanceUserOptions(true)
                 } catch (e: Exception) {
                     logger.log("Failed to configure options for maintenance mode: ${e.message}")
                 } finally {
@@ -177,6 +177,7 @@ class DanaIController(
             scope.launch {
                 try {
                     connect()
+                    setMaintenanceUserOptions(false)
                     executeRefreshStatus()
                     val profileToRestore = lastAppliedProfile
                     if (profileToRestore != null) {
@@ -263,8 +264,8 @@ class DanaIController(
     /**
      * Helper that ensures an active technical connection and provides the client.
      */
-    private suspend fun <T> withConnection(block: suspend (PumpClient) -> T): T = actionMutex.withLock {
-        if (pump.isMaintenanceMode.value) {
+    private suspend fun <T> withConnection(ignoreMaintenanceMode: Boolean = false, block: suspend (PumpClient) -> T): T = actionMutex.withLock {
+        if (pump.isMaintenanceMode.value && !ignoreMaintenanceMode) {
             throw PumpConnectionException("Pump is in maintenance mode")
         }
         link.connect()
@@ -770,8 +771,12 @@ class DanaIController(
         val activeProfileRes = client.execute(commands.basalGetProfileNumber())
         val activeProfileNum = activeProfileRes.activeProfile
 
-        val cmd = commands.basalSetProfileBasalRate(activeProfileNum, hourlyRates)
-        client.execute(cmd, timeout = 15.seconds).ensureOk(cmd.name)
+        val cmdSPBR = commands.basalSetProfileBasalRate(activeProfileNum, hourlyRates)
+        client.execute(cmdSPBR, timeout = 15.seconds).ensureOk(cmdSPBR.name)
+
+        // It seems to be necessary to issue this command after setting the set basal rate command
+        val cmdSPN = commands.basalSetProfileNumber(activeProfileNum)
+        client.execute(cmdSPN).ensureOk(cmdSPN.name)
 
         lastAppliedProfile = profile
 
@@ -817,7 +822,7 @@ class DanaIController(
         }
     }
 
-    private suspend fun setMaintenanceUserOptions() = withConnection { client ->
+    private suspend fun setMaintenanceUserOptions(maintenanceModeOn: Boolean) = withConnection(ignoreMaintenanceMode = true) { client ->
         logger.log("Configuring pump user options for maintenance mode...")
         val currentOptions = pump.userOptions.value ?: try {
             val response = client.execute(commands.optionGetUserOption())
@@ -831,7 +836,10 @@ class DanaIController(
         }
 
         if (currentOptions != null) {
-            val maintenanceOptions = currentOptions.copy(backlightOnTimeSec = MAINTENANCE_BACKLIGHT_ON_TIME_SEC)
+            val maintenanceOptions = if (maintenanceModeOn)
+                currentOptions.copy(backlightOnTimeSec = MAINTENANCE_BACKLIGHT_ON_TIME_SEC)
+            else
+                currentOptions.copy(backlightOnTimeSec = 0)
             logger.log("Setting pump backlight to $MAINTENANCE_BACKLIGHT_ON_TIME_SEC s for maintenance mode...")
             val response = client.execute(commands.optionSetUserOption(maintenanceOptions))
             if (response.status == PumpStatus.OK) {
