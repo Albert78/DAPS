@@ -30,7 +30,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -111,10 +113,15 @@ class TherapyManager(
         checkAndApplyTherapyAdjustmentTiming()
 
         currentScope.launch {
-            currentTherapySettingsFlow
-                .map { it.effectiveInsulinProfile }
+            combine(
+                currentTherapySettingsFlow.map { it.effectiveInsulinProfile },
+                pumpManager.activeInsulinPump
+            ) { effectiveProfile, activePump ->
+                if (activePump != null) effectiveProfile to activePump else null
+            }
+                .filterNotNull()
                 .distinctUntilChanged()
-                .collect { effectiveProfile ->
+                .collect { (effectiveProfile, _) ->
                     pumpManager.issueCommand(
                         PumpCommand.SetProfile(effectiveProfile)
                     )
