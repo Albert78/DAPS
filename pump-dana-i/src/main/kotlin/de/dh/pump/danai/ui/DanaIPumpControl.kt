@@ -20,12 +20,13 @@ import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.SecondaryButton
+import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.pump.danai.R
 import de.dh.pump.danai.core.DanaIPumpAdapter
 
 /**
  * Composable providing Dana-i specific pump controls embedded in the System Control screen.
- * Contains only the maintenance disconnect entry.
+ * Highlights the card in warning/error signal color when maintenance mode is active.
  */
 @Composable
 fun DanaIPumpControl(
@@ -37,10 +38,30 @@ fun DanaIPumpControl(
     adapter?.let { activeAdapter ->
         val isMaintenanceActive = activeAdapter.isMaintenanceMode.collectAsState().value
 
+        val containerColor = if (isMaintenanceActive) {
+            MaterialTheme.colorScheme.errorContainer
+        } else {
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        }
+
+        val borderColor = if (isMaintenanceActive) {
+            MaterialTheme.colorScheme.error
+        } else {
+            ExtendedTheme.semanticColors.border
+        }
+
+        val subtitleRes = if (isMaintenanceActive) {
+            R.string.danai_pump_control_maintenance_subtitle_on
+        } else {
+            R.string.danai_pump_control_maintenance_subtitle_off
+        }
+
         FramedCard(
             modifier = modifier
                 .fillMaxWidth()
                 .padding(vertical = 4.dp),
+            containerColor = containerColor,
+            borderColor = borderColor,
         ) {
             Column(
                 modifier = Modifier
@@ -51,14 +72,15 @@ fun DanaIPumpControl(
                     text = stringResource(R.string.danai_pump_control_title),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
+                    color = if (isMaintenanceActive) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurface,
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = stringResource(R.string.danai_pump_control_maintenance_subtitle),
+                    text = stringResource(subtitleRes),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = if (isMaintenanceActive) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))

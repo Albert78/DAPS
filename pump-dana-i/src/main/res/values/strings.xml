@@ -31,8 +31,9 @@
     <string name="danai_pump_unbind_failed">Fehler beim Entkoppeln</string>
     <string name="danai_pump_unbind_cancel">Abbrechen</string>
 
-    <string name="danai_pump_control_title">Pumpensteuerung</string>
-    <string name="danai_pump_control_maintenance_subtitle">Trennt die Bluetooth-Verbindung temporär für Wartungsarbeiten (z.B. Reservoir- oder Katheterwechsel). Der Status wird in der Zeit als Gestoppt (Suspended) an das System gemeldet.</string>
+    <string name="danai_pump_control_title">Wartungsmodus</string>
+    <string name="danai_pump_control_maintenance_subtitle_off">Trennt die Bluetooth-Verbindung temporär für Wartungsarbeiten (z.B. Reservoir- oder Katheterwechsel). Pumpenbefehle werden in dieser Zeit blockiert.</string>
+    <string name="danai_pump_control_maintenance_subtitle_on">Der Wartungsmodus ist aktiv. Pumpenbefehle werden so lange blockiert, bis der Wartungsmodus beendet wird.</string>
     <string name="danai_pump_control_btn_disconnect_maintenance">Zur Wartung trennen</string>
-    <string name="danai_pump_control_btn_reconnect_maintenance">Wartung beenden &amp; verbinden</string>
+    <string name="danai_pump_control_btn_reconnect_maintenance">Wartung beenden</string>
 </resources>
