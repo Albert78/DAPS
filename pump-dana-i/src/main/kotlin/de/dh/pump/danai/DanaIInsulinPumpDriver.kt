@@ -1,7 +1,5 @@
 package de.dh.pump.danai
 
-import android.Manifest
-import android.os.Build
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.util.Log
@@ -20,6 +18,7 @@ import de.dh.pump.danai.core.connection.SessionState
 import de.dh.pump.danai.ui.DanaIPumpControl
 import de.dh.pump.danai.ui.DanaISetupScreen
 import de.dh.pump.util.BluetoothBondUtils
+import de.dh.pump.util.BluetoothPermissionUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
@@ -41,18 +40,7 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
     override val displayName: UiText = UiText.StringResource(R.string.danai_pump_driver_display_name)
     override val pluginId: String = DRIVER_ID
     override val neededPermissions: Collection<String>
-        get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            listOf(
-                Manifest.permission.BLUETOOTH_SCAN,
-                Manifest.permission.BLUETOOTH_CONNECT
-            )
-        } else {
-            listOf(
-                Manifest.permission.BLUETOOTH,
-                Manifest.permission.BLUETOOTH_ADMIN,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            )
-        }
+        get() = BluetoothPermissionUtils.neededPermissions
 
     private var pluginContext: PluginContext? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)

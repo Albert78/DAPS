@@ -1,7 +1,5 @@
 package de.dh.pump.omnipod.dash
 
-import android.Manifest
-import android.os.Build
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.util.Log
@@ -21,6 +19,7 @@ import de.dh.pump.omnipod.protocol.ble.OmnipodDashBleManager
 import de.dh.pump.omnipod.protocol.definition.ActivationProgress
 import de.dh.pump.omnipod.protocol.state.OmnipodDashPodStateManagerImpl
 import de.dh.pump.util.BluetoothBondUtils
+import de.dh.pump.util.BluetoothPermissionUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
@@ -35,18 +34,7 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
     override val displayName: UiText = UiText.StringResource(R.string.omnipod_dash_driver_display_name)
     override val pluginId: String = DRIVER_ID
     override val neededPermissions: Collection<String>
-        get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            listOf(
-                Manifest.permission.BLUETOOTH_SCAN,
-                Manifest.permission.BLUETOOTH_CONNECT
-            )
-        } else {
-            listOf(
-                Manifest.permission.BLUETOOTH,
-                Manifest.permission.BLUETOOTH_ADMIN,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            )
-        }
+        get() = BluetoothPermissionUtils.neededPermissions
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
