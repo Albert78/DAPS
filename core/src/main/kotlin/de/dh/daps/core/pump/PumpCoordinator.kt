@@ -10,7 +10,6 @@ import de.dh.pump.PumpCommandException
 import de.dh.pump.PumpConnectionException
 import de.dh.pump.PumpStatus
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -85,7 +84,6 @@ sealed interface JobErrorCode {
  * physical connection state of the pump and manages pending jobs.
  */
 // TODO: Notifications from pump
-@OptIn(ExperimentalCoroutinesApi::class)
 class PumpCoordinator(
     val pump: InsulinPump,
     /** Callback to execute work while holding a system busy-state (wake-lock). */
@@ -107,7 +105,7 @@ class PumpCoordinator(
     val pumpCoordinatorState: StateFlow<PumpCoordinatorState> = _pumpCoordinatorState.asStateFlow()
 
     // Must only be set by [operate]
-    private val _pumpCommunicationErrorSince = MutableStateFlow<Timestamp>(Timestamp.INVALID)
+    private val _pumpCommunicationErrorSince = MutableStateFlow(Timestamp.INVALID)
     val pumpCommunicationErrorSince: StateFlow<Timestamp> = _pumpCommunicationErrorSince.asStateFlow()
 
     private val _lastConnectionTime = MutableStateFlow(Timestamp.INVALID)
