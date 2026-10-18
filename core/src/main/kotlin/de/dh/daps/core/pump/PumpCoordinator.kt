@@ -83,7 +83,6 @@ sealed interface JobErrorCode {
  * it remains active as long as a connection with the pump exists. It abstracts from the
  * physical connection state of the pump and manages pending jobs.
  */
-// TODO: Notifications from pump
 class PumpCoordinator(
     val pump: InsulinPump,
     /** Callback to execute work while holding a system busy-state (wake-lock). */

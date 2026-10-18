@@ -243,16 +243,6 @@ class DanaIController(
             } catch (e: Exception) {
                 logger.log("Initial status update failed: ${e.message}")
             }
-
-            // We don't want to poll the status here, since this must be done from an upper layer
-//            while (true) {
-//                delay(30.seconds)
-//                try {
-//                    updatePumpStatus(client)
-//                } catch (e: Exception) {
-//                    logger.log("Session poll failed: ${e.message}")
-//                }
-//            }
         }
     }
 

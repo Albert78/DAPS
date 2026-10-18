@@ -14,6 +14,7 @@ import de.dh.daps.common.model.PumpCapabilities
 import de.dh.daps.common.model.PumpHardwareInformation
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.ui.UiText
 import de.dh.pump.danai.core.connection.DanaILink
 import de.dh.pump.danai.core.model.DanaIBolusSpeed
 import kotlinx.coroutines.CoroutineScope
@@ -23,8 +24,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-
-import de.dh.daps.common.ui.UiText
 
 /**
  * Adapter that maps the Dana-i specific [DanaIPump] to the generic [InsulinPump] interface.
@@ -89,7 +88,7 @@ class DanaIPumpAdapter(
 
     override suspend fun bolus(amount: InsulinAmount, bolusId: String?) {
         // TODO: Read bolus speed from configuration
-        val speed = DanaIBolusSpeed.U30_SECONDS
+        val speed = DanaIBolusSpeed.U12_SECONDS
         pump.bolus(amount, speed, bolusId)
     }
 
