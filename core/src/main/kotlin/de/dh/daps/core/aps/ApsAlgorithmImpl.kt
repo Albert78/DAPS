@@ -450,6 +450,8 @@ class ApsAlgorithmImpl(
 
             if (impendingLowTick != null) {
                 // We're too low or becoming too low soon.
+
+                // Will we recover from low in the current situation?
                 val recovery = predictionModel.findNext(
                     startAt = impendingLowTick,
                     until = impendingLowTick.plusMinutes(LOW_RECOVERY_LOOKAHEAD.value.toInt()),
@@ -555,7 +557,6 @@ class ApsAlgorithmImpl(
 
                 // All predictions are based on the assumption that we deliver normal basal. So
                 // to calculate the low temp scenario, we just subtract the normal basal effect.
-                // When our IOB contains 100% basal deliveries,
                 val lowTempBasalEffectUntilPeak = insulinEffectUntilPeak - normalBasalEffectUntilPeak
 
                 if (bgErrorAtPeak + lowTempBasalEffectUntilPeak < ZERO_TEMP_BASAL_TRIGGER) {
@@ -582,8 +583,6 @@ class ApsAlgorithmImpl(
             // *****************************************************************************************
 
             // -------------------------------- Meal & high handling -----------------------------------
-
-            // Situation: BG >= Target
 
             // Calculate scheduled meal boluses
             var dueMealBolusAmount = InsulinAmount.ZERO
@@ -625,8 +624,6 @@ class ApsAlgorithmImpl(
                     ).withMetrics(insight)
                 }
             } else {
-                // Situation is: BG > Target
-
                 if (bgErrorAtPeak <= HIGH_CORRECTION_BOLUS_TRIGGER) {
                     return CalculationResult.normalSafetyBasal().withMetrics(insight)
                 }
