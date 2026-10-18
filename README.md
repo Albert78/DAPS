@@ -2,6 +2,9 @@
 
 [[Deutsche Version]](#deutsch) • [![Discord](https://img.shields.io/badge/Discord-Join_Community-5865F2?logo=discord&logoColor=white)](https://discord.gg/d3KPpgJ5f)
 
+## 💡 Current state
+The app can be tested but the pump protocols are not yet ready for productive use. Test the app with the simulation plugin!
+
 > [!WARNING]
 > **Experimental software — not a medical device.**
 >
