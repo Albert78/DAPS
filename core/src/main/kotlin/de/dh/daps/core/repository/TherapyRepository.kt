@@ -116,7 +116,7 @@ class TherapyRepository(
         cachedCurrentTherapySettings = null
     }
 
-    fun observeCurrentTherapySettings(): Flow<CurrentTherapySettings> = combine(
+    fun observeCurrentTherapySettingsOrNull(): Flow<CurrentTherapySettings?> = combine(
         therapyDao.observeCurrentTherapySettings(),
         therapyDao.observeAllInsulinProfiles(),
         alarmProfileDao.observeAllAlarmProfiles()
@@ -124,7 +124,10 @@ class TherapyRepository(
         fetchCurrentTherapySettingsFromDb()?.also { fresh ->
             cachedCurrentTherapySettings = fresh
         }
-    }.mapNotNull { it }
+    }
+
+    fun observeCurrentTherapySettings(): Flow<CurrentTherapySettings> =
+        observeCurrentTherapySettingsOrNull().mapNotNull { it }
 
     suspend fun getCurrentTherapySettings(): CurrentTherapySettings {
         return getCurrentTherapySettingsOrNull()

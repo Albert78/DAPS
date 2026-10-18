@@ -46,6 +46,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.time.ZoneOffset
 import java.util.Calendar
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Throws a [PumpCommandException] if the response status is not [PumpStatus.OK].
@@ -770,7 +771,7 @@ class DanaIController(
         val activeProfileNum = activeProfileRes.activeProfile
 
         val cmd = commands.basalSetProfileBasalRate(activeProfileNum, hourlyRates)
-        client.execute(cmd).ensureOk(cmd.name)
+        client.execute(cmd, timeout = 15.seconds).ensureOk(cmd.name)
 
         lastAppliedProfile = profile
 

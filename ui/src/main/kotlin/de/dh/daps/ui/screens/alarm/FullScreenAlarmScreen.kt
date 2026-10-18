@@ -193,6 +193,7 @@ fun getAlarmTypeTitle(alarmType: AlarmType): String = when (alarmType) {
     AlarmType.CGM_SIGNAL_LOSS -> stringResource(id = R.string.alarm_type_cgm_signal_loss)
     AlarmType.SYSTEM_BATTERY_LOW -> stringResource(id = R.string.alarm_type_system_battery_low)
     AlarmType.SYSTEM_BLUETOOTH_OFF -> stringResource(id = R.string.alarm_type_system_bluetooth_off)
+    AlarmType.SYSTEM_THERAPY_SETTINGS_MISSING -> stringResource(id = R.string.alarm_type_system_therapy_settings_missing)
 }
 
 @Composable
@@ -207,6 +208,7 @@ fun getAlarmTypeDescription(alarmType: AlarmType): String = when (alarmType) {
     AlarmType.CGM_SIGNAL_LOSS -> stringResource(id = R.string.core_issue_no_recent_values, 15)
     AlarmType.SYSTEM_BATTERY_LOW -> stringResource(id = R.string.alarm_type_system_battery_low)
     AlarmType.SYSTEM_BLUETOOTH_OFF -> stringResource(id = R.string.alarm_type_system_bluetooth_off_desc)
+    AlarmType.SYSTEM_THERAPY_SETTINGS_MISSING -> stringResource(id = R.string.alarm_type_system_therapy_settings_missing_desc)
 }
 
 @Preview(showBackground = true, name = "Critical Low BG Alarm")

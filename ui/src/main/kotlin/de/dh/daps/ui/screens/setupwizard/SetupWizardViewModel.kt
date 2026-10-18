@@ -219,10 +219,6 @@ class SetupWizardViewModel(
         }
     }
 
-    fun selectInsulinType(type: InsulinType) {
-        selectPrimaryInsulinType(type)
-    }
-
     fun startEditingInsulinType(typeToEdit: InsulinType? = null) {
         _uiState.update { state ->
             state.copy(

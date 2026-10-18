@@ -8,6 +8,7 @@ import de.dh.daps.common.model.data.AlarmSignalConfig
 import de.dh.daps.common.model.data.AlarmType
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.CurrentTherapySettings
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.aps.ApsIssue
 import de.dh.daps.core.aps.SystemOrchestrator
@@ -22,7 +23,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -59,16 +59,18 @@ class AlarmEvaluator(
             combine(
                 glucoseRepository.currentBg,
                 systemOrchestrator.apsIssues,
-                therapyRepository.observeCurrentTherapySettings().map { it.effectiveAlarmProfile },
+                therapyRepository.observeCurrentTherapySettingsOrNull(),
                 alarmSnoozeManager.snoozedAlarms,
                 systemOrchestrator.apsMode,
                 systemOrchestrator.resumeRequestedAt
             ) { flows ->
+                val therapySettings = flows[2] as CurrentTherapySettings?
                 @Suppress("UNCHECKED_CAST")
                 EvaluationInput(
                     bgReading = flows[0] as BgReading?,
                     apsIssues = flows[1] as Set<ApsIssue>,
-                    activeProfile = flows[2] as AlarmProfile?,
+                    currentTherapySettings = therapySettings,
+                    activeProfile = therapySettings?.effectiveAlarmProfile,
                     snoozedMap = flows[3] as Map<AlarmType, AlarmSnoozeState>,
                     apsMode = flows[4] as ApsMode,
                     resumeRequestedAt = flows[5] as Timestamp?
@@ -97,7 +99,12 @@ class AlarmEvaluator(
 
         val activeSet = mutableSetOf<AlarmType>()
 
-        // 1. Evaluate Glucose thresholds
+        // Evaluate Therapy Settings
+        if (input.currentTherapySettings == null) {
+            activeSet.add(AlarmType.SYSTEM_THERAPY_SETTINGS_MISSING)
+        }
+
+        // Evaluate Glucose thresholds
         val bg = input.bgReading?.value
         if (bg != null && bg.isValid()) {
             val mgdl = bg.mgdl
@@ -111,7 +118,7 @@ class AlarmEvaluator(
             }
         }
 
-        // 2. Evaluate Issues
+        // Evaluate Issues
         // When switching out of ApsMode.Suspend to an active mode, the pump resume command is executed asynchronously
         // on the physical device. During this transient phase, the pump remains reported as suspended (`PumpIssue.Inoperative`)
         // until the status update arrives. To prevent false alarm flashing on the UI, we grant a grace period
@@ -157,7 +164,7 @@ class AlarmEvaluator(
         // Sync snooze states: remove snoozes for resolved or expired alarms
         alarmSnoozeManager.clearInactiveAndExpiredSnoozes(activeSet)
 
-        // 3. Filter unsnoozed active alarms
+        // Filter unsnoozed active alarms
         val unsnoozedActiveAlarms = activeSet.filter { alarmType ->
             !alarmSnoozeManager.isSnoozed(alarmType)
         }
@@ -207,6 +214,7 @@ class AlarmEvaluator(
     private data class EvaluationInput(
         val bgReading: BgReading?,
         val apsIssues: Set<ApsIssue>,
+        val currentTherapySettings: CurrentTherapySettings?,
         val activeProfile: AlarmProfile?,
         val snoozedMap: Map<AlarmType, AlarmSnoozeState>,
         val apsMode: ApsMode = ApsMode.Suspend,

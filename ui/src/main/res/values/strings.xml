@@ -666,6 +666,8 @@
     <string name="alarm_type_system_battery_low">Akkustand niedrig</string>
     <string name="alarm_type_system_bluetooth_off">Bluetooth ausgeschaltet</string>
     <string name="alarm_type_system_bluetooth_off_desc">Bluetooth ist auf diesem Gerät deaktiviert. Die Verbindung zur Pumpe und zum Glukosesensor ist unterbrochen.</string>
+    <string name="alarm_type_system_therapy_settings_missing">Therapie-Einstellungen fehlen</string>
+    <string name="alarm_type_system_therapy_settings_missing_desc">Die Therapieeinstellungen wurden noch nicht vorgenommen oder fehlen in der Datenbank.</string>
     <string name="alarm_snoozed_until_format">%1$s stummgeschaltet bis %2$s</string>
     <string name="full_screen_alarm_title">DAPS</string>
 

@@ -50,6 +50,10 @@ enum class AlarmType(
     SYSTEM_BLUETOOTH_OFF(
         defaultSeverity = AlarmSeverity.WARNING,
         category = AlarmCategory.SYSTEM
+    ),
+    SYSTEM_THERAPY_SETTINGS_MISSING(
+        defaultSeverity = AlarmSeverity.WARNING,
+        category = AlarmCategory.SYSTEM
     );
 
     /**
