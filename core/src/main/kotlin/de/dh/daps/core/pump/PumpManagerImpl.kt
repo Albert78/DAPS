@@ -8,6 +8,7 @@ import de.dh.daps.common.model.BolusStatus
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinHistory
 import de.dh.daps.common.model.InsulinPump
+import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.service.SystemWakeService
 import de.dh.daps.common.service.WakeupHandler
@@ -157,12 +158,36 @@ class PumpManagerImpl(
             }
         }
 
-    override fun issueCommand(command: PumpCommand) {
-        pumpCoordinator?.issueCommand(command)
+    override fun setTargetTempBasal(percent: Int, durationHours: Int) {
+        pumpCoordinator?.setTargetTempBasal(percent, durationHours)
     }
 
-    override fun cancelJobs(predicate: (PumpJob) -> Boolean) {
-        pumpCoordinator?.cancelJobs(predicate)
+    override fun cancelTempBasal() {
+        pumpCoordinator?.cancelTempBasal()
+    }
+
+    override fun setTargetSuspend(suspended: Boolean) {
+        pumpCoordinator?.setTargetSuspend(suspended)
+    }
+
+    override fun setTargetProfile(profile: InsulinProfile) {
+        pumpCoordinator?.setTargetProfile(profile)
+    }
+
+    override fun deliverBolus(amount: InsulinAmount, bolusId: String?, expiresAt: Timestamp?) {
+        pumpCoordinator?.deliverBolus(amount, bolusId, expiresAt)
+    }
+
+    override fun stopBolus() {
+        pumpCoordinator?.stopBolus()
+    }
+
+    override fun requestSync() {
+        pumpCoordinator?.triggerSync()
+    }
+
+    override fun cancelJobs(predicate: (BolusJob) -> Boolean) {
+        pumpCoordinator?.cancelBolusJobs(predicate)
     }
 
     override suspend fun waitForJobsOrError(timeout: Duration) {
@@ -225,12 +250,12 @@ class PumpManagerImpl(
         }
     }
 
-    private fun handleJobError(job: PumpJob, jobErrorCode: JobErrorCode) {
+    private fun handleJobError(job: BolusJob, jobErrorCode: JobErrorCode) {
         when (jobErrorCode) {
             JobErrorCode.Expired,
             is JobErrorCode.ConnectionFailed -> setIssue(PumpIssue.ConnectionMissing)
             is JobErrorCode.CommandFailed -> {
-                Log.e(TAG, "Pump command failed with status ${jobErrorCode.status} for job $job")
+                Log.e(TAG, "Pump bolus command failed with status ${jobErrorCode.status} for job $job")
                 setIssue(PumpIssue.CommandFailed(jobErrorCode.status))
             }
             is JobErrorCode.TechnicalError -> {

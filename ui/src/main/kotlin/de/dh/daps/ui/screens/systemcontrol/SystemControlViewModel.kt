@@ -38,11 +38,11 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.aps.ApsIssue
-import de.dh.daps.core.pump.PumpIssue
+import de.dh.daps.core.pump.BolusJob
+import de.dh.daps.core.pump.BolusJobType
 import de.dh.daps.core.pump.JobErrorCode
-import de.dh.daps.core.pump.PumpCommand
 import de.dh.daps.core.pump.PumpCoordinatorState
-import de.dh.daps.core.pump.PumpJob
+import de.dh.daps.core.pump.PumpIssue
 import de.dh.daps.core.repository.BluetoothStatus
 import de.dh.daps.ui.R
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -250,7 +250,7 @@ class SystemControlViewModel(
         val lastConnection: Timestamp = Timestamp.INVALID,
         val startDate: Timestamp? = null,
         val expirations: List<Expiration> = emptyList(),
-        val jobs: List<PumpJob> = emptyList(),
+        val jobs: List<BolusJob> = emptyList(),
         val coordinatorState: PumpCoordinatorState = PumpCoordinatorState.Idle,
         val isSuspended: Boolean = false,
         val isExpired: Boolean = false,
@@ -371,7 +371,7 @@ class SystemControlViewModel(
             val pumpName = pump.insulinPumpDisplayName
 
             val coordinator = pumpManager.pumpCoordinator
-            val jobsFlow = coordinator?.pendingJobs ?: flowOf(emptyList())
+            val jobsFlow = coordinator?.pendingBoluses ?: flowOf(emptyList())
             val lastConnFlow = coordinator?.lastConnectionTime ?: flowOf(Timestamp.INVALID)
             val coordinatorStateFlow = coordinator?.pumpCoordinatorState ?: flowOf(PumpCoordinatorState.Idle)
 
@@ -391,7 +391,7 @@ class SystemControlViewModel(
                 val hardware = array[1] as PumpHardwareInformation?
                 val status = array[2] as InsulinPumpStatus
                 @Suppress("UNCHECKED_CAST")
-                val jobs = array[3] as List<PumpJob>
+                val jobs = array[3] as List<BolusJob>
                 val lastConn = array[4] as Timestamp
                 val startDate = array[5] as Timestamp?
                 val isExpired = array[6] as Boolean
@@ -631,15 +631,9 @@ class SystemControlViewModel(
             PumpTabUiState.NoneConfigured
         } else {
             val pumpJobsList = pInfo.jobs.map { job ->
-                val titleText = when (val cmd = job.command) {
-                    is PumpCommand.RefreshStatus -> UiText.StringResource(R.string.system_control_pump_job_type_refresh_status)
-                    is PumpCommand.SyncHistory -> UiText.StringResource(R.string.system_control_pump_job_type_history_sync)
-                    is PumpCommand.DeliverBolus -> UiText.StringResource(R.string.system_control_pump_job_type_bolus, cmd.amount.iu)
-                    is PumpCommand.SetTempBasal -> UiText.StringResource(R.string.system_control_pump_job_type_temp_basal, cmd.percent)
-                    is PumpCommand.SetProfile -> UiText.StringResource(R.string.system_control_pump_job_type_profile)
-                    is PumpCommand.CancelTempBasal -> UiText.StringResource(R.string.system_control_pump_job_type_cancel_temp_basal)
-                    is PumpCommand.CancelBolus -> UiText.StringResource(R.string.system_control_pump_job_type_cancel_bolus)
-                    is PumpCommand.SetSuspend -> if (cmd.suspended) UiText.StringResource(R.string.system_control_pump_job_type_suspend) else UiText.StringResource(R.string.system_control_pump_job_type_resume)
+                val titleText = when (val type = job.type) {
+                    is BolusJobType.Deliver -> UiText.StringResource(R.string.system_control_pump_job_type_bolus, type.amount.iu)
+                    is BolusJobType.Stop -> UiText.StringResource(R.string.system_control_pump_job_type_cancel_bolus)
                 }
                 val errText = job.lastError?.let { err ->
                     when (err) {
@@ -709,7 +703,7 @@ class SystemControlViewModel(
     }
 
     fun refreshPumpStatus() {
-        pumpManager.issueCommand(PumpCommand.RefreshStatus)
+        pumpManager.requestSync()
     }
 
     fun resetPumpCommunication() {

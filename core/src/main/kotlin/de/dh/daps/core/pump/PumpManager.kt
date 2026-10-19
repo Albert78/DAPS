@@ -1,11 +1,12 @@
 package de.dh.daps.core.pump
 
 import de.dh.daps.common.model.BolusStatus
+import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinHistory
 import de.dh.daps.common.model.InsulinPump
+import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
 import kotlinx.coroutines.flow.StateFlow
-
 import kotlin.time.Duration
 
 /**
@@ -44,14 +45,44 @@ interface PumpManager {
     var requestedHistoryStart: Timestamp
 
     /**
-     * Issues a command to the pump.
+     * Sets the desired target temporary basal rate on the pump.
      */
-    fun issueCommand(command: PumpCommand)
+    fun setTargetTempBasal(percent: Int, durationHours: Int)
 
     /**
-     * Cancels pending jobs that match the predicate.
+     * Clears any active target temporary basal rate (returns to normal profile rate).
      */
-    fun cancelJobs(predicate: (PumpJob) -> Boolean)
+    fun cancelTempBasal()
+
+    /**
+     * Sets the desired suspend state on the pump.
+     */
+    fun setTargetSuspend(suspended: Boolean)
+
+    /**
+     * Sets the desired target profile on the pump.
+     */
+    fun setTargetProfile(profile: InsulinProfile)
+
+    /**
+     * Queues an insulin bolus for delivery.
+     */
+    fun deliverBolus(amount: InsulinAmount, bolusId: String? = null, expiresAt: Timestamp? = null)
+
+    /**
+     * Immediately attempts to stop an ongoing bolus delivery on the pump hardware.
+     */
+    fun stopBolus()
+
+    /**
+     * Requests an explicit status refresh and history synchronization.
+     */
+    fun requestSync()
+
+    /**
+     * Cancels pending bolus jobs matching the predicate.
+     */
+    fun cancelJobs(predicate: (BolusJob) -> Boolean = { true })
 
     /**
      * Waits until all pending pump jobs are completed or until the timeout expires.

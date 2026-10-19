@@ -6,6 +6,9 @@ import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.core.pump.PumpCoordinator.Companion.BUSY_RETRY_DELAYS_MS
+import de.dh.daps.core.pump.PumpCoordinator.Companion.MAX_CONNECTION_RETRIES
+import de.dh.daps.core.pump.PumpCoordinator.Companion.RETRY_INTERVAL_MS
 import de.dh.pump.PumpCommandException
 import de.dh.pump.PumpConnectionException
 import de.dh.pump.PumpStatus
@@ -30,25 +33,55 @@ enum class PumpCoordinatorState {
 }
 
 /**
- * Commands that can be sent to the pump.
+ * Desired target temporary basal rate.
  */
-sealed class PumpCommand {
-    object RefreshStatus : PumpCommand()
-    object SyncHistory : PumpCommand()
-    data class SetProfile(val profile: InsulinProfile) : PumpCommand()
-    data class SetTempBasal(val percent: Int, val durationHours: Int) : PumpCommand()
-    object CancelTempBasal : PumpCommand()
-    data class DeliverBolus(val amount: InsulinAmount, val bolusId: String? = null) : PumpCommand()
-    object CancelBolus : PumpCommand()
-    data class SetSuspend(val suspended: Boolean) : PumpCommand()
+data class TargetTempBasal(
+    val percent: Int,
+    val durationHours: Int,
+    val setAt: Timestamp = Timestamp.now()
+) {
+    fun isExpired(now: Timestamp = Timestamp.now()): Boolean =
+        setAt.plusMinutes(durationHours * 60) <= now
 }
 
 /**
- * A wrapper for a [PumpCommand] with metadata for retry and expiration handling.
+ * Target state configuration for the pump (reconciliation target).
  */
-data class PumpJob(
+data class DesiredPumpState(
+    /**
+     * Desired suspend state.
+     */
+    val targetSuspend: Boolean = false,
+
+    /**
+     * Desired temporary basal rate.
+     */
+    val targetTempBasal: TargetTempBasal? = null,
+
+    /**
+     * Desired insulin profile, if we want to change it. A `null` value indicates no change.
+     */
+    val targetProfile: InsulinProfile? = null
+)
+
+/**
+ * Type of operation for a queued bolus job.
+ */
+sealed interface BolusJobType {
+    data class Deliver(
+        val amount: InsulinAmount,
+        val bolusId: String? = null
+    ) : BolusJobType
+
+    data object Stop : BolusJobType
+}
+
+/**
+ * A queued bolus request (delivery or stop/cancel).
+ */
+data class BolusJob(
     val id: String = UUID.randomUUID().toString(),
-    val command: PumpCommand,
+    val type: BolusJobType,
     val createdAt: Timestamp = Timestamp.now(),
     val expiresAt: Timestamp? = null,
     val retryCount: Int = 0,
@@ -70,30 +103,40 @@ sealed interface JobErrorCode {
  * The PumpCoordinator is the high-level orchestrator for the insulin pump (abstracted via [InsulinPump]).
  *
  * Key Responsibilities:
- * - **Job Management:** Manages a queue of [PumpJob]s, ensuring commands are executed in order
- *   or invalidated upon expiration.
- * - **Resilience:** Implements a multi-tier retry strategy (immediate retries followed by
- *   time-delayed attempts) to handle transient connectivity issues.
- * - **Connectivity Monitoring:** Maintains a persistent link via a regular "heartbeat" to
- *   keep status information (reservoir, battery) up to date.
+ * - **State Reconciliation:** Reconciles the pump's hardware state against the desired target state
+ *   ([DesiredPumpState]) on every execution cycle.
+ * - **Bolus Queue:** Manages a queue of [BolusJob]s for insulin boluses and bolus cancellations.
+ * - **Connectivity & Status Sync:** Automatically refreshes hardware status and syncs history
+ *   in every reconciliation cycle.
  * - **Power Management:** Coordinates with the system's power state by acquiring wake-locks
  *   during active communication and scheduling system wakeups for future tasks.
  *
  * The coordinator's lifecycle is bound to the connection (Bluetooth bonding) with the pump;
- * it remains active as long as a connection with the pump exists. It abstracts from the
- * physical connection state of the pump and manages pending jobs.
+ * it remains active as long as a bonding with the pump exists and is dropped when the bonding is
+ * dismissed. It abstracts from the physical connection state of the pump and manages pending jobs.
  */
 class PumpCoordinator(
     val pump: InsulinPump,
-    /** Callback to execute work while holding a system busy-state (wake-lock). */
+    /**
+     * Callback to execute work while holding a system busy-state (wake-lock).
+     */
     private val withBusyState: suspend (block: suspend () -> Unit) -> Unit,
-    /** Callback to request a system wakeup at the specified [Timestamp]. The implementation must ensure [wakeup] is called when that time is reached. */
+    /**
+     * Callback to request a system wakeup at the specified [Timestamp]. The implementation must
+     * ensure [wakeup] is called when that time is reached.
+     */
     private val onRequestWakeup: (Timestamp) -> Unit,
-    private val onJobError: (job: PumpJob, code: JobErrorCode) -> Unit,
+    private val onJobError: (job: BolusJob, code: JobErrorCode) -> Unit,
     private val scope: CoroutineScope,
 ) {
-    private val _pendingJobs = MutableStateFlow<List<PumpJob>>(emptyList())
-    val pendingJobs: StateFlow<List<PumpJob>> = _pendingJobs.asStateFlow()
+    private val _desiredState = MutableStateFlow(DesiredPumpState())
+    val desiredState: StateFlow<DesiredPumpState> = _desiredState.asStateFlow()
+
+    private val _pendingBoluses = MutableStateFlow<List<BolusJob>>(emptyList())
+    val pendingBoluses: StateFlow<List<BolusJob>> = _pendingBoluses.asStateFlow()
+
+    private val _reconciliationNeeded = MutableStateFlow(true)
+    val reconciliationNeeded: StateFlow<Boolean> = _reconciliationNeeded.asStateFlow()
 
     /**
      * Current execution state of the coordinator.
@@ -107,9 +150,14 @@ class PumpCoordinator(
     private val _pumpCommunicationErrorSince = MutableStateFlow(Timestamp.INVALID)
     val pumpCommunicationErrorSince: StateFlow<Timestamp> = _pumpCommunicationErrorSince.asStateFlow()
 
+    // If we're currently connected, lastConnectionTime is the time when the connection was established,
+    // if we currently disconnected, lastConnectionTime is the time when the connection was disconnected.
     private val _lastConnectionTime = MutableStateFlow(Timestamp.INVALID)
     val lastConnectionTime: StateFlow<Timestamp> = _lastConnectionTime.asStateFlow()
 
+    /**
+     * The start of the requested history range. Set by our clients.
+     */
     var requestedHistoryStart: Timestamp = Timestamp.now().minusHours(InsulinPump.DEFAULT_REQUESTED_HISTORY_HOURS)
 
     init {
@@ -120,26 +168,22 @@ class PumpCoordinator(
     private fun setupPump() {
         scope.launch {
             pump.isConnected.collect { _ ->
-                // Set last connection time on each change of isConnected -
-                // If we're currently connected, lastConnectionTime is the time when the
-                // connection was established, if we currently disconnected,
-                // lastConnectionTime is the time when the connection was disconnected.
                 _lastConnectionTime.value = Timestamp.now()
             }
         }
-
-        issueCommand(PumpCommand.RefreshStatus)
-        issueCommand(PumpCommand.SyncHistory)
-        // Update more data, if necessary...
-        // Here, we have all data from the pump and we are operational.
     }
 
     /**
-     * Main execution loop.
-     * Processes the jobs queue if possible. This method might be called from different threads,
-     * internally, it schedules its work to be executed asynchronously, exactly once.
-     * When the asynchronous coroutine finishes, either the job queue is empty or
-     * [pumpCommunicationErrorSince] signals a communication error.
+     * Main execution loop for state reconciliation and bolus job processing.
+     *
+     * Coordinates communication with the pump hardware while holding a system wake-lock.
+     * On each iteration, it invokes [sync] to refresh status and history, reconcile desired
+     * pump target states (suspend, temp basal, profile), and execute pending bolus jobs.
+     *
+     * This method can be safely called from any thread. Internally, it manages serial execution
+     * via atomic transitions on [_pumpCoordinatorState]. If a communication error occurs,
+     * the loop terminates, setting [pumpCommunicationErrorSince] and relying on scheduled
+     * wakeups or manual retries to resume.
      */
     private fun operate() {
         // Early exit if already running or in error state to avoid unnecessary coroutine launches
@@ -155,7 +199,6 @@ class PumpCoordinator(
                             return@withBusyState
                         }
                         val success = sync()
-                        scheduleNextWakeup()
                         if (success) {
                             _pumpCommunicationErrorSince.value = Timestamp.INVALID
                         } else {
@@ -167,22 +210,28 @@ class PumpCoordinator(
                             return@withBusyState
                         }
                     } finally {
+                        scheduleNextWakeup()
                         // Reset to Idle only if we were Running (don't overwrite Error state if set by job)
                         _pumpCoordinatorState.compareAndSet(PumpCoordinatorState.Running, PumpCoordinatorState.Idle)
                     }
-                    // Catch-up check: To avoid race conditions with issueCommand(), we must verify
-                    // if new jobs were added while we were processing. If so, re-enter the loop.
-                } while (_pendingJobs.value.any { it.isReady() })
+                    // Catch-up check: To avoid race conditions with requests or jobs added while processing,
+                    // we verify if reconciliation is still needed or new bolus jobs were added.
+                } while (_reconciliationNeeded.value || _pendingBoluses.value.any { it.isReady() })
             }
         }
     }
 
     suspend fun waitForJobsOrError(timeout: Duration = DEFAULT_WAIT_FOR_JOBS_TIMEOUT) {
-        // Wait for Idle or Error and all jobs processed (or error in communication)
+        // Wait for Idle AND all status reconciliation + bolus jobs processed (or error in communication)
         val completed = withTimeoutOrNull(timeout) {
-            combine(pumpCoordinatorState, pendingJobs, pumpCommunicationErrorSince) { state, jobs, errorSince ->
+            combine(
+                pumpCoordinatorState,
+                pendingBoluses,
+                pumpCommunicationErrorSince,
+                _reconciliationNeeded
+            ) { state, jobs, errorSince, reconNeeded ->
                 (state == PumpCoordinatorState.Idle || state == PumpCoordinatorState.Error) &&
-                        (jobs.none { it.isReady() } || errorSince.isValid())
+                        ((!reconNeeded && jobs.none { it.isReady() }) || errorSince.isValid())
             }.first { it }
         }
         if (completed == null) {
@@ -191,62 +240,202 @@ class PumpCoordinator(
     }
 
     private suspend fun sync(): Boolean {
-        checkHeartbeat()
-        return processJobs()
+        _reconciliationNeeded.value = false
+
+        // Step 1: Always refresh status and history
+        val statusHistorySuccess = refreshStatusAndHistoryWithRetries()
+        if (!statusHistorySuccess) {
+            _reconciliationNeeded.value = true
+            return false
+        }
+
+        // Step 2: Reconcile Suspend
+        val suspendSuccess = reconcileSuspendWithRetries()
+        if (!suspendSuccess) {
+            _reconciliationNeeded.value = true
+            return false
+        }
+
+        // Check if pump is in suspend mode (reported after Step 1 status refresh or set during Step 2).
+        // If suspended, steps 3-5 (temp basal, profile, boluses) cannot be executed on the pump hardware
+        // and are preserved in desiredState / pendingBoluses until the pump is unsuspended.
+        val isSuspended = _desiredState.value.targetSuspend ||
+                pump.basalStatus.value.isSuspended ||
+                pump.pumpStatus.value.pumpSuspended
+
+        if (isSuspended) {
+            return true
+        }
+
+        // Step 3: Reconcile TempBasal
+        val tempBasalSuccess = reconcileTempBasalWithRetries()
+        if (!tempBasalSuccess) {
+            _reconciliationNeeded.value = true
+            return false
+        }
+
+        // Step 4: Reconcile Profile
+        val profileSuccess = reconcileProfileWithRetries()
+        if (!profileSuccess) {
+            _reconciliationNeeded.value = true
+            return false
+        }
+
+        // Step 5: Process Bolus Queue
+        val bolusSuccess = processBolusQueue()
+        if (!bolusSuccess) return false
+
+        return true
     }
 
-    private suspend fun checkHeartbeat() {
-        val now = Timestamp.now()
-        val lastConn = _lastConnectionTime.value
+    private suspend fun refreshStatusAndHistoryWithRetries(): Boolean {
+        var connectionRetryCount = 0
+        while (true) {
+            try {
+                pump.refreshStatus()
+                pump.syncHistory(requestedHistoryStart)
+                _lastConnectionTime.value = Timestamp.now()
+                return true
+            } catch (e: PumpConnectionException) {
+                if (connectionRetryCount < MAX_CONNECTION_RETRIES) {
+                    connectionRetryCount++
+                    delay(RETRY_INTERVAL_MS.milliseconds)
+                } else {
+                    Log.w(TAG, "Failed to refresh pump status and history due to connection error", e)
+                    return false
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Error refreshing pump status and history", e)
+                return false
+            }
+        }
+    }
 
-        if (lastConn + HEARTBEAT_INTERVAL < now) {
-            repeat(3) {
-                try {
-                    pump.refreshStatus()
-                    pump.syncHistory(requestedHistoryStart)
-                    _lastConnectionTime.value = Timestamp.now()
-                    return
-                } catch (_: Exception) {
-                    if (it < 2) delay(1000.milliseconds)
+    private suspend fun reconcileSuspendWithRetries(): Boolean {
+        val targetSuspend = _desiredState.value.targetSuspend
+        val actualSuspended = pump.basalStatus.value.isSuspended || pump.pumpStatus.value.pumpSuspended
+
+        if (actualSuspended == targetSuspend) {
+            return true
+        }
+
+        return tryExecuteActionWithRetries {
+            pump.setSuspend(targetSuspend)
+        }
+    }
+
+    private suspend fun reconcileTempBasalWithRetries(): Boolean {
+        val targetSuspend = _desiredState.value.targetSuspend
+        if (targetSuspend) {
+            return true
+        }
+
+        val targetTemp = _desiredState.value.targetTempBasal
+        val basalStatus = pump.basalStatus.value
+
+        if (targetTemp != null && !targetTemp.isExpired()) {
+            val isSameRate = basalStatus.isTempBasal && basalStatus.tempBasalPercent == targetTemp.percent
+            if (isSameRate) {
+                return true
+            }
+            return tryExecuteActionWithRetries {
+                pump.tempBasal(targetTemp.percent, targetTemp.durationHours)
+            }
+        } else {
+            if (basalStatus.isTempBasal) {
+                return tryExecuteActionWithRetries {
+                    pump.cancelTempBasal()
                 }
             }
-            // If heartbeat failed, we don't necessarily abort everything,
-            // but jobs will probably fail too.
+            return true
+        }
+    }
+
+    private suspend fun reconcileProfileWithRetries(): Boolean {
+        val targetProfile = _desiredState.value.targetProfile ?: return true
+        val success = tryExecuteActionWithRetries {
+            pump.setProfile(targetProfile)
+        }
+        if (success) {
+            _desiredState.update { it.copy(targetProfile = null) }
+        }
+        return success
+    }
+
+    private suspend fun tryExecuteActionWithRetries(action: suspend () -> Unit): Boolean {
+        var connectionRetryCount = 0
+        var busyRetryCount = 0
+
+        while (true) {
+            try {
+                action()
+                _lastConnectionTime.value = Timestamp.now()
+                return true
+            } catch (e: PumpConnectionException) {
+                if (connectionRetryCount < MAX_CONNECTION_RETRIES) {
+                    connectionRetryCount++
+                    delay(RETRY_INTERVAL_MS.milliseconds)
+                } else {
+                    return false
+                }
+            } catch (e: PumpCommandException) {
+                when (e.status) {
+                    PumpStatus.BUSY -> {
+                        if (busyRetryCount < BUSY_RETRY_DELAYS_MS.size) {
+                            val delayMs = BUSY_RETRY_DELAYS_MS[busyRetryCount]
+                            busyRetryCount++
+                            delay(delayMs.milliseconds)
+                        } else {
+                            return false
+                        }
+                    }
+                    else -> {
+                        _pumpCoordinatorState.value = PumpCoordinatorState.Error
+                        return false
+                    }
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Technical error during pump action", e)
+                _pumpCoordinatorState.value = PumpCoordinatorState.Error
+                return false
+            }
         }
     }
 
     /**
-     * Processes all due jobs in the queue, if the pump connection is ready. Else, commands will
-     * be deferred until next try.
-     * @return `true` if all commands could be executed, else `false`.
+     * Processes pending bolus jobs in FIFO order.
+     *
+     * - Filters out and reports expired jobs ([JobErrorCode.Expired]).
+     * - Selects the earliest ready job and attempts execution via [tryExecuteBolusJobWithRetries].
+     * - On non-fatal failures, increments the job's retry count and reschedules its next attempt.
+     * - Stops processing if an error state or communication failure occurs.
+     *
+     * @return `true` if all ready jobs were successfully processed or if the queue is empty; `false` otherwise.
      */
-    private suspend fun processJobs(): Boolean {
-        // Cleanup expired jobs
-        val expired = _pendingJobs.value.filter { it.isExpired() }
+    private suspend fun processBolusQueue(): Boolean {
+        val expired = _pendingBoluses.value.filter { it.isExpired() }
         if (expired.isNotEmpty()) {
-            _pendingJobs.update { it - expired.toSet() }
+            _pendingBoluses.update { it - expired.toSet() }
             expired.forEach { job ->
                 val expiredJob = job.copy(lastError = JobErrorCode.Expired)
                 onJobError(expiredJob, JobErrorCode.Expired)
             }
         }
 
-        // Execute jobs
         while (true) {
-            val job = _pendingJobs.value
+            val job = _pendingBoluses.value
                 .filter { it.isReady() }
-                .minByOrNull { it.nextAttemptAt } ?: return true // All due jobs executed
+                .minByOrNull { it.nextAttemptAt } ?: return true
 
-            val success = tryExecuteJobWithRetries(job)
+            val success = tryExecuteBolusJobWithRetries(job)
 
             if (success) {
-                _pendingJobs.update { pending -> pending.filterNot { it.id == job.id } }
+                _pendingBoluses.update { pending -> pending.filterNot { it.id == job.id } }
             } else {
                 if (_pumpCoordinatorState.value == PumpCoordinatorState.Error) {
                     return false
                 }
-                // Schedule for 1 minute later
-                _pendingJobs.update { pending ->
+                _pendingBoluses.update { pending ->
                     pending.map { j ->
                         if (j.id == job.id) {
                             j.copy(
@@ -264,14 +453,34 @@ class PumpCoordinator(
         }
     }
 
-    private suspend fun tryExecuteJobWithRetries(job: PumpJob): Boolean {
+    /**
+     * Tries to execute a single [BolusJob] with retries for connection issues and busy pump status.
+     *
+     * Execution and Error Handling Behavior:
+     * - **Success:** Updates [_lastConnectionTime] and returns `true`. The job will subsequently be removed from [_pendingBoluses].
+     * - **Connection Failures ([PumpConnectionException]):** Retries up to [MAX_CONNECTION_RETRIES] times with [RETRY_INTERVAL_MS] delay.
+     *   If retries are exhausted, updates the job with [JobErrorCode.ConnectionFailed], triggers [onJobError], and returns `false`.
+     * - **Pump Busy ([PumpStatus.BUSY]):** Pauses execution according to the backoff schedule in [BUSY_RETRY_DELAYS_MS].
+     *   If all retries are exhausted, updates the job with [JobErrorCode.CommandFailed], triggers [onJobError], and returns `false`.
+     * - **Unexpected / Technical Errors:** Sets [_pumpCoordinatorState] to [PumpCoordinatorState.Error] and triggers [onJobError].
+     *   Since this represents an unexpected or critical situation, the job is NOT removed from the queue automatically
+     *   and must be acknowledged or manually removed in the management interface after user intervention.
+     */
+    private suspend fun tryExecuteBolusJobWithRetries(job: BolusJob): Boolean {
         var connectionRetryCount = 0
         var busyRetryCount = 0
 
         while (true) {
             try {
-                val command = job.command
-                executeOnPump(command)
+                when (val type = job.type) {
+                    is BolusJobType.Deliver -> pump.bolus(type.amount, type.bolusId)
+                    is BolusJobType.Stop ->
+                        try {
+                            pump.stopBolus()
+                        } catch (_: Exception) {
+                            // Ignore. If we cannot stop a bolus, it might already be finished or something else. Shit happens.
+                        }
+                }
                 _lastConnectionTime.value = Timestamp.now()
                 return true
             } catch (e: PumpConnectionException) {
@@ -281,7 +490,7 @@ class PumpCoordinator(
                 } else {
                     val errorCode = JobErrorCode.ConnectionFailed(e.message)
                     val failedJob = job.copy(lastError = errorCode)
-                    _pendingJobs.update { pending -> pending.map { if (it.id == job.id) failedJob else it } }
+                    _pendingBoluses.update { pending -> pending.map { if (it.id == job.id) failedJob else it } }
                     onJobError(failedJob, errorCode)
                     return false
                 }
@@ -295,87 +504,107 @@ class PumpCoordinator(
                         } else {
                             val errorCode = JobErrorCode.CommandFailed(status, e.message)
                             val failedJob = job.copy(lastError = errorCode)
-                            _pendingJobs.update { pending -> pending.map { if (it.id == job.id) failedJob else it } }
+                            _pendingBoluses.update { pending -> pending.map { if (it.id == job.id) failedJob else it } }
                             onJobError(failedJob, errorCode)
                             return false
                         }
                     }
-                    PumpStatus.REJECTED -> {
-                        if (job.command is PumpCommand.SetSuspend) {
-                            try {
-                                pump.refreshStatus()
-                            } catch (_: Exception) {
-                                // Ignore refresh error during state check
-                            }
-                            if (pump.basalStatus.value.isSuspended == job.command.suspended ||
-                                pump.pumpStatus.value.pumpSuspended == job.command.suspended
-                            ) {
-                                Log.i(TAG, "Pump rejected SetSuspend(${job.command.suspended}), but state reconciliation confirmed pump is in expected suspend state.")
-                                _lastConnectionTime.value = Timestamp.now()
-                                return true
-                            }
-                        }
+                    else -> {
                         _pumpCoordinatorState.value = PumpCoordinatorState.Error
                         // Since this is an unexpected situation, we don't remove the job from the queue.
                         // The user must manually remove it in the management interface.
                         val errorCode = JobErrorCode.CommandFailed(status, e.message)
                         val failedJob = job.copy(lastError = errorCode)
-                        _pendingJobs.update { pending -> pending.map { if (it.id == job.id) failedJob else it } }
-                        onJobError(failedJob, errorCode)
-                        return false
-                    }
-                    PumpStatus.OK, // Should not happen
-                    PumpStatus.INVALID_PARAMETER,
-                    PumpStatus.NOT_AUTHORIZED,
-                    PumpStatus.DEVICE_ERROR,
-                    PumpStatus.ILLEGAL_STATE,
-                    PumpStatus.TIMEOUT,
-                    PumpStatus.UNKNOWN -> {
-                        _pumpCoordinatorState.value = PumpCoordinatorState.Error
-                        // Since this is an unexpected situation, we don't remove the job from the queue.
-                        // The user must manually remove it in the management interface.
-                        val errorCode = JobErrorCode.CommandFailed(status, e.message)
-                        val failedJob = job.copy(lastError = errorCode)
-                        _pendingJobs.update { pending -> pending.map { if (it.id == job.id) failedJob else it } }
+                        _pendingBoluses.update { pending -> pending.map { if (it.id == job.id) failedJob else it } }
                         onJobError(failedJob, errorCode)
                         return false
                     }
                 }
             } catch (e: Exception) {
-                Log.w(TAG, "Unknown exception while executing pump job", e)
+                Log.w(TAG, "Unknown exception executing bolus job", e)
                 _pumpCoordinatorState.value = PumpCoordinatorState.Error
                 // Since this is an unexpected situation, we don't remove the job from the queue.
                 // The user must manually remove it in the management interface.
                 val errorCode = JobErrorCode.TechnicalError(e.message)
                 val failedJob = job.copy(lastError = errorCode)
-                _pendingJobs.update { pending -> pending.map { if (it.id == job.id) failedJob else it } }
+                _pendingBoluses.update { pending -> pending.map { if (it.id == job.id) failedJob else it } }
                 onJobError(failedJob, errorCode)
                 return false
             }
         }
     }
 
-    private suspend fun executeOnPump(command: PumpCommand) {
-        when (command) {
-            is PumpCommand.RefreshStatus -> {
-                pump.refreshStatus()
-            }
-            is PumpCommand.SyncHistory -> {
-                pump.syncHistory(requestedHistoryStart)
-            }
-            is PumpCommand.DeliverBolus -> {
-                pump.bolus(command.amount, command.bolusId)
-            }
-            is PumpCommand.SetTempBasal -> {
-                pump.tempBasal(command.percent, command.durationHours)
-            }
-            is PumpCommand.SetProfile -> {
-                pump.setProfile(command.profile)
-            }
-            is PumpCommand.CancelTempBasal -> pump.cancelTempBasal()
-            is PumpCommand.CancelBolus -> pump.stopBolus()
-            is PumpCommand.SetSuspend -> pump.setSuspend(command.suspended)
+    fun setTargetTempBasal(percent: Int, durationHours: Int) {
+        _desiredState.update { it.copy(targetTempBasal = TargetTempBasal(percent, durationHours)) }
+        _reconciliationNeeded.value = true
+        operate()
+    }
+
+    fun cancelTempBasal() {
+        _desiredState.update { it.copy(targetTempBasal = null) }
+        _reconciliationNeeded.value = true
+        operate()
+    }
+
+    fun setTargetSuspend(suspended: Boolean) {
+        _desiredState.update { it.copy(targetSuspend = suspended) }
+        _reconciliationNeeded.value = true
+        operate()
+    }
+
+    fun setTargetProfile(profile: InsulinProfile) {
+        _desiredState.update { it.copy(targetProfile = profile) }
+        _reconciliationNeeded.value = true
+        operate()
+    }
+
+    fun deliverBolus(amount: InsulinAmount, bolusId: String? = null, expiresAt: Timestamp? = null) {
+        _pendingBoluses.update { pending ->
+            pending + BolusJob(
+                type = BolusJobType.Deliver(amount = amount, bolusId = bolusId),
+                expiresAt = expiresAt
+            )
         }
+        operate()
+    }
+
+    fun stopBolus() {
+        _pendingBoluses.update {
+            listOf(
+                BolusJob(
+                    type = BolusJobType.Stop
+                )
+            )
+        }
+        operate()
+    }
+
+    fun cancelBolusJobs(predicate: (BolusJob) -> Boolean = { true }) {
+        _pendingBoluses.update { it.filterNot(predicate) }
+    }
+
+    fun triggerSync() {
+        _reconciliationNeeded.value = true
+        operate()
+    }
+
+    fun wakeup() {
+        operate()
+    }
+
+    fun reset() {
+        _pumpCoordinatorState.value = PumpCoordinatorState.Idle
+        _pumpCommunicationErrorSince.value = Timestamp.INVALID
+        _reconciliationNeeded.value = true
+        operate()
+    }
+
+    fun hasPendingJobs() = _pendingBoluses.value.isNotEmpty()
+
+    fun getPendingJobsCount() = _pendingBoluses.value.size
+
+    fun clearPendingJobs() {
+        _pendingBoluses.update { emptyList() }
     }
 
     private fun scheduleNextWakeup() {
@@ -389,83 +618,20 @@ class PumpCoordinator(
         val now = Timestamp.now()
         val minWakeup = now.plusMinutes(1)
 
-        val nextJobTime = _pendingJobs.value
+        val nextBolusTime = _pendingBoluses.value
             .filter { !it.isExpired() }
             .minOfOrNull { it.nextAttemptAt }
 
         val lastConn = _lastConnectionTime.value
-        val nextHeartbeatTime = lastConn + HEARTBEAT_INTERVAL
+        val baseTime = if (lastConn.isValid()) lastConn else now
+        val nextHeartbeatTime = baseTime + HEARTBEAT_INTERVAL
 
-        val earliest = listOfNotNull(nextJobTime, nextHeartbeatTime).minOrNull() ?: return null
+        val retryTime = if (_pumpCommunicationErrorSince.value.isValid() || _reconciliationNeeded.value) {
+            now.plusMinutes(1)
+        } else null
+
+        val earliest = listOfNotNull(nextBolusTime, nextHeartbeatTime, retryTime).minOrNull() ?: return null
         return if (earliest < minWakeup) minWakeup else earliest
-    }
-
-    fun hasPendingJobs() = _pendingJobs.value.isNotEmpty()
-
-    fun getPendingJobsCount() = _pendingJobs.value.size
-
-    fun clearPendingJobs() {
-        _pendingJobs.update { emptyList() }
-    }
-    /**
-     * Puts a new command into our command queue and tries to send all commands to the pump,
-     * if possible. If the pump is connected and if it accepts all commands, the command queue
-     * will be empty a short time after calling this method. If the pump connection cannot be established
-     * or the pump rejects one of the commands, the queue will still contain the failed commands and
-     * [pumpCommunicationErrorSince] is filled.
-     * Use [waitForJobsOrError] to wait for the operation cycle to finish.
-     * @param command The command to execute.
-     * @param expiresAt Optional time when the command becomes invalid.
-     */
-    fun issueCommand(
-        command: PumpCommand,
-        expiresAt: Timestamp? = null
-    ) {
-        var added = false
-
-        // Add job, but avoid adding multiple SyncHistory commands
-        _pendingJobs.update { pending ->
-            if (command is PumpCommand.SyncHistory && pending.lastOrNull()?.command is PumpCommand.SyncHistory) {
-                pending
-            } else {
-                added = true
-                pending + PumpJob(
-                    command = command,
-                    expiresAt = expiresAt
-                )
-            }
-        }
-        if (added) {
-            operate()
-        }
-    }
-
-    /**
-     * Cancels pending jobs that match the given predicate.
-     */
-    fun cancelJobs(predicate: (PumpJob) -> Boolean = { true }) {
-        _pendingJobs.update { it.filterNot(predicate) }
-    }
-
-    /**
-     * Triggers a synchronization cycle.
-     * This should be called by the system when a requested wakeup time (via [onRequestWakeup]) is reached.
-     */
-    internal fun wakeup() {
-        operate()
-    }
-
-    /**
-     * Resets the coordinator from an error state back to idle, clears communication errors,
-     * schedules the next wakeup, and resumes processing.
-     */
-    fun reset() {
-        if (_pumpCoordinatorState.value == PumpCoordinatorState.Error) {
-            _pumpCoordinatorState.value = PumpCoordinatorState.Idle
-            _pumpCommunicationErrorSince.value = Timestamp.INVALID
-            scheduleNextWakeup()
-            operate()
-        }
     }
 
     /**
@@ -489,7 +655,7 @@ class PumpCoordinator(
             withBusyState: suspend (block: suspend () -> Unit) -> Unit,
             /** Callback to request a system wakeup at the specified [Timestamp]. The implementation must ensure [wakeup] is called when that time is reached. */
             onRequestWakeup: (Timestamp) -> Unit,
-            onJobError: (PumpJob, JobErrorCode) -> Unit,
+            onJobError: (BolusJob, JobErrorCode) -> Unit,
             scope: CoroutineScope
         ): PumpCoordinator {
             return PumpCoordinator(

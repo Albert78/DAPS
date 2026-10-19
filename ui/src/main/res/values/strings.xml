@@ -503,14 +503,8 @@
     <string name="system_control_pump_jobs_empty">Keine ausstehenden Jobs</string>
     <string name="system_control_pump_job_cancel">Job abbrechen</string>
     <string name="system_control_pump_job_type_refresh_status">Status aktualisieren</string>
-    <string name="system_control_pump_job_type_history_sync">History übertragen</string>
     <string name="system_control_pump_job_type_bolus">Bolus: %1$s I.E.</string>
-    <string name="system_control_pump_job_type_temp_basal">Temp-Basal: %1$d%%</string>
-    <string name="system_control_pump_job_type_profile">Profil setzen</string>
-    <string name="system_control_pump_job_type_cancel_temp_basal">Temp-Basal abbrechen</string>
     <string name="system_control_pump_job_type_cancel_bolus">Bolus abbrechen</string>
-    <string name="system_control_pump_job_type_suspend">Pumpe pausieren (Suspend)</string>
-    <string name="system_control_pump_job_type_resume">Pumpe fortsetzen (Resume)</string>
     <string name="system_control_pump_job_error_expired">Abgelaufen</string>
     <string name="system_control_pump_job_error_connection_failed">Verbindung fehlgeschlagen%1$s</string>
     <string name="system_control_pump_job_error_command_failed">Fehler (%1$s)%2$s</string>

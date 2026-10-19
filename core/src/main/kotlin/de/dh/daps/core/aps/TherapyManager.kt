@@ -20,7 +20,6 @@ import de.dh.daps.common.model.data.TherapyAdjustment
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.data.getAmountForMinute
 import de.dh.daps.common.model.data.getBgForMinute
-import de.dh.daps.core.pump.PumpCommand
 import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.repository.TherapyRepository
 import de.dh.daps.core.repository.TreatmentRepository
@@ -100,7 +99,7 @@ class TherapyManager(
             updateBolusStatus(bolusStatus)
         }
 
-        pumpManager.issueCommand(PumpCommand.SyncHistory)
+        pumpManager.requestSync()
 
         wakeService?.registerHandler(WAKEUP_TAG_ADJUSTMENT, object : WakeupHandler {
             override fun onWakeup(wakeupId: UInt?, intent: Intent?) {
@@ -122,9 +121,7 @@ class TherapyManager(
                 .filterNotNull()
                 .distinctUntilChanged()
                 .collect { (effectiveProfile, _) ->
-                    pumpManager.issueCommand(
-                        PumpCommand.SetProfile(effectiveProfile)
-                    )
+                    pumpManager.setTargetProfile(effectiveProfile)
                 }
         }
     }
@@ -521,7 +518,7 @@ class TherapyManager(
             Log.i(TAG, "Skipping bolus which is too low for pump (amount=$amount, minBolusIncrement=$minBolusIncrement)")
             return
         }
-        pumpManager.issueCommand(PumpCommand.DeliverBolus(amount, bolusId))
+        pumpManager.deliverBolus(amount, bolusId)
     }
 
     /**
@@ -537,12 +534,7 @@ class TherapyManager(
             Log.w(TAG, "Cannot set temp basal: No insulin pump configured.")
             return
         }
-        pumpManager.issueCommand(
-            PumpCommand.SetTempBasal(
-                percent = percent,
-                durationHours = durationInHours
-            )
-        )
+        pumpManager.setTargetTempBasal(percent = percent, durationHours = durationInHours)
     }
 
     /**
@@ -551,9 +543,7 @@ class TherapyManager(
     fun clearTempBasal(treatmentLock: TreatmentLock) {
         checkLock(treatmentLock)
         if (pumpManager.activeInsulinPump.value == null) return
-        pumpManager.issueCommand(
-            PumpCommand.CancelTempBasal
-        )
+        pumpManager.cancelTempBasal()
     }
 
     /**
@@ -562,9 +552,7 @@ class TherapyManager(
     fun cancelBolus(treatmentLock: TreatmentLock) {
         checkLock(treatmentLock)
         if (pumpManager.activeInsulinPump.value == null) return
-        pumpManager.issueCommand(
-            PumpCommand.CancelBolus
-        )
+        pumpManager.stopBolus()
     }
 
     /**
@@ -573,9 +561,7 @@ class TherapyManager(
      * @param suspended `true` to suspend delivery, `false` to resume delivery.
      */
     fun setSuspend(suspended: Boolean) {
-        pumpManager.issueCommand(
-            PumpCommand.SetSuspend(suspended)
-        )
+        pumpManager.setTargetSuspend(suspended)
     }
 
     suspend fun addDeferredBolus(treatmentLock: TreatmentLock, deferredBolus: DeferredBolus) {
@@ -618,7 +604,7 @@ class TherapyManager(
      */
     suspend fun waitForPumpSync(treatmentLock: TreatmentLock): Int {
         checkLock(treatmentLock)
-        pumpManager.issueCommand(command = PumpCommand.SyncHistory)
+        pumpManager.requestSync()
         pumpManager.waitForJobsOrError()
         return pumpManager.getPendingJobsCount()
     }
