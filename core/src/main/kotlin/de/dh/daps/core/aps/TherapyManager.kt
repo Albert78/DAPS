@@ -467,6 +467,7 @@ class TherapyManager(
      * @param treatmentLock The lock held by the caller.
      * @param amount The amount of insulin to deliver.
      * @param handledDeferredBoluses Optional deferred boluses that were handled by this delivery.
+     * @param expiresAt Optional timestamp after which the bolus request expires.
      */
     suspend fun issueBolus(
         treatmentLock: TreatmentLock,
@@ -474,7 +475,8 @@ class TherapyManager(
         meal: MealEntry? = null,
         handledDeferredBoluses: List<DeferredBolus>? = null,
         correctionPart: InsulinAmount = InsulinAmount.ZERO,
-        basalPart: InsulinAmount = InsulinAmount.ZERO
+        basalPart: InsulinAmount = InsulinAmount.ZERO,
+        expiresAt: Timestamp? = null
     ) {
         checkLock(treatmentLock)
 
@@ -518,7 +520,7 @@ class TherapyManager(
             Log.i(TAG, "Skipping bolus which is too low for pump (amount=$amount, minBolusIncrement=$minBolusIncrement)")
             return
         }
-        pumpManager.deliverBolus(amount, bolusId)
+        pumpManager.deliverBolus(amount, bolusId, expiresAt = expiresAt)
     }
 
     /**

@@ -9,6 +9,7 @@ import de.dh.daps.common.model.MealEntry
 import de.dh.daps.common.model.calculation.CarbsInsulinCalculator
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Tick
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.service.SystemWakeService
@@ -466,7 +467,8 @@ class SystemOrchestratorImpl(
                             amount = amount,
                             handledDeferredBoluses = handledDeferredBoluses,
                             correctionPart = correctionPart,
-                            basalPart = basalPart
+                            basalPart = basalPart,
+                            expiresAt = Timestamp.now().plus(AUTOMATED_BOLUS_EXPIRATION)
                         )
                     }
                     else -> {
@@ -679,5 +681,6 @@ class SystemOrchestratorImpl(
         const val WAKE_TAG = "SystemOrchestrator"
         const val WAKEUP_STALE_CHECK = 0u
         const val DEVICE_INITIALIZATION_TIMEOUT_MS = 1000L
+        val AUTOMATED_BOLUS_EXPIRATION = Minutes(4)
     }
 }
