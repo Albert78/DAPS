@@ -1,7 +1,5 @@
 package de.dh.pump.omnipod.dash
 
-import android.bluetooth.BluetoothManager
-import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.Composable
 import de.dh.daps.common.model.DeviceLifecycleState
@@ -18,7 +16,6 @@ import de.dh.pump.omnipod.dash.ui.OmnipodDashSetupScreen
 import de.dh.pump.omnipod.protocol.ble.OmnipodDashBleManager
 import de.dh.pump.omnipod.protocol.definition.ActivationProgress
 import de.dh.pump.omnipod.protocol.state.OmnipodDashPodStateManagerImpl
-import de.dh.pump.util.BluetoothBondUtils
 import de.dh.pump.util.BluetoothPermissionUtils
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -154,7 +151,6 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
     }
 
     private suspend fun resetDriverState() {
-        val address = podStateManager?.bluetoothAddress
         pluginContext?.appContext?.let { ctx ->
             try {
                 OmnipodHistoryDatabase.getInstance(ctx).historyDao().insertEvent(
@@ -166,12 +162,6 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
                     )
                 )
             } catch (_: Exception) {}
-
-            if (!address.isNullOrEmpty()) {
-                val bluetoothManager = ctx.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
-                val device = bluetoothManager?.adapter?.getRemoteDevice(address)
-                device?.let { BluetoothBondUtils.removeBond(it) }
-            }
         }
         bleManager?.disconnect()
         bleManager = null

@@ -182,30 +182,17 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
 
     /**
      * Unbinds the currently bound Dana-i pump, clears stored preferences,
-     * disconnects active connection, removes the Bluetooth bond, and resets the driver lifecycle state to NoDevice.
+     * disconnects active connection, and resets the driver lifecycle state to NoDevice.
      */
     suspend fun unbindDevice() = withContext(NonCancellable) {
         val pc = pluginContext
         val pumpAdapter = _activePump.value as? DanaIPumpAdapter
-        var deviceToUnbond = pumpAdapter?.controller?.device
-
-        if ((deviceToUnbond == null) && (pc != null)) {
-            val address = DanaPumpPreferences(pc.preferences).getLastAddress()
-            if (address.isNotEmpty()) {
-                val bluetoothManager = pc.appContext.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
-                deviceToUnbond = bluetoothManager?.adapter?.getRemoteDevice(address)
-            }
-        }
 
         pc?.let {
             DanaPumpPreferences(it.preferences).clear()
         }
 
         pumpAdapter?.controller?.disconnect()
-
-        deviceToUnbond?.let { device ->
-            BluetoothBondUtils.removeBond(device)
-        }
 
         _activePump.value = null
         _lifecycleState.value = DeviceLifecycleState.NoDevice

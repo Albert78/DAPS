@@ -20,7 +20,6 @@ import de.dh.pump.util.BluetoothBondUtils
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -183,25 +182,12 @@ class DanaISession(
                 }
             } catch (e: Exception) {
                 if (shouldAttemptBondRecovery(e)) {
-                    logger.log("Connection failed ($e). Clearing stored app pairing key and checking OS bond state...")
+                    logger.log("Connection failed ($e). Clearing stored app pairing key...")
                     danaPreferences.saveHandshakeData(pairingKey = null, hardwareModel = null, protocol = null)
 
-                    val bondRemoved = BluetoothBondUtils.removeBond(device)
-                    if (bondRemoved && !BluetoothBondUtils.isBonded(device)) {
-                        delay(1000.milliseconds)
-                        logger.log("Retrying connection to ${device.address} without bond...")
-                        withContext(Dispatchers.Main) {
-                            AndroidBleTransport.connect(
-                                context = context,
-                                device = device,
-                                config = profile.toBlePumpConfig(),
-                            )
-                        }
-                    } else {
-                        logger.log("Connection failed due to stale OS Bluetooth bond ($e). Programmatic bond removal restricted.")
-                        _requiresStaleBondRemoval.value = true
-                        throw StaleBondException("Connection failed due to stale OS Bluetooth bond", e)
-                    }
+                    logger.log("Connection failed due to stale OS Bluetooth bond ($e). Programmatic bond removal restricted.")
+                    _requiresStaleBondRemoval.value = true
+                    throw StaleBondException("Connection failed due to stale OS Bluetooth bond", e)
                 } else {
                     throw e
                 }
