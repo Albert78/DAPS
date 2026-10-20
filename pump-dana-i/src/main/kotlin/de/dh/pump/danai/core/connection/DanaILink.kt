@@ -76,6 +76,7 @@ sealed interface LinkStatus {
  */
 data class LinkError(
     val message: String,
+    val isStaleBond: Boolean = false,
     val timestamp: Timestamp = Timestamp.now()
 )
 
@@ -131,6 +132,14 @@ class DanaILink(
      */
     val lastError = _lastError.asStateFlow()
 
+    private val _requiresStaleBondRemoval = MutableStateFlow(false)
+
+    /**
+     * Observable flow indicating whether connection failed due to a stale OS Bluetooth bond
+     * requiring manual unbonding in Android settings.
+     */
+    val requiresStaleBondRemoval = _requiresStaleBondRemoval.asStateFlow()
+
     private val _sessionState = MutableStateFlow<SessionState>(SessionState.Disconnected)
 
     /**
@@ -171,6 +180,7 @@ class DanaILink(
 
             // Clear previous error and set state to Connecting immediately
             _lastError.value = null
+            _requiresStaleBondRemoval.value = false
             _status.value = LinkStatus.Connecting
             _sessionState.value = SessionState.Connecting
 
@@ -206,7 +216,8 @@ class DanaILink(
 
                 if (sState.isClosed) {
                     if (sState is SessionState.Failed) {
-                        _lastError.value = LinkError(sState.message)
+                        _lastError.value = LinkError(sState.message, isStaleBond = sState.isStaleBond)
+                        _requiresStaleBondRemoval.value = sState.isStaleBond
                     }
                     _status.value = LinkStatus.Idle
                     _session.value = null

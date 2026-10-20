@@ -12,6 +12,7 @@ import de.dh.pump.danai.core.DanaIPumpAdapter
 import de.dh.pump.danai.core.connection.DanaPumpScanner
 import de.dh.pump.danai.core.connection.DanaScanError
 import de.dh.pump.danai.core.connection.DanaScanResult
+import de.dh.pump.danai.core.connection.StaleBondException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,6 +33,9 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
 
     private val _pairError = MutableStateFlow<String?>(null)
     val pairError: StateFlow<String?> = _pairError.asStateFlow()
+
+    private val _isStaleBondError = MutableStateFlow(false)
+    val isStaleBondError: StateFlow<Boolean> = _isStaleBondError.asStateFlow()
 
     private val _userOptions = MutableStateFlow<DanaRsUserOptions?>(null)
     val userOptions: StateFlow<DanaRsUserOptions?> = _userOptions.asStateFlow()
@@ -62,6 +66,7 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
         viewModelScope.launch {
             _pairingAddress.value = scanResult.address
             _pairError.value = null
+            _isStaleBondError.value = false
             scanner.stopScan()
 
             try {
@@ -73,7 +78,13 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
                 onSuccess?.invoke()
             } catch (e: Exception) {
                 _pairingAddress.value = null
-                _pairError.value = e.message ?: getApplication<Application>().getString(R.string.danai_pump_setup_connect_failed)
+                if (e is StaleBondException) {
+                    _isStaleBondError.value = true
+                    _pairError.value = getApplication<Application>().getString(R.string.danai_pump_setup_stale_bond_error)
+                } else {
+                    _isStaleBondError.value = false
+                    _pairError.value = e.message ?: getApplication<Application>().getString(R.string.danai_pump_setup_connect_failed)
+                }
             }
         }
     }

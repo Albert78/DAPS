@@ -122,12 +122,15 @@ fun DanaISetupScreen(
                 viewModel.startDiscovery()
             }
 
+            val isStaleBondError by viewModel.isStaleBondError.collectAsState()
+
             DanaISetupContent(
                 scanResults = scanResults,
                 isScanning = isScanning,
                 scanError = scanError,
                 pairingAddress = pairingAddress,
                 pairError = pairError,
+                isStaleBondError = isStaleBondError,
                 onStartDiscovery = { viewModel.startDiscovery() },
                 onPairClick = { scanResult ->
                     viewModel.pairAndBind(
@@ -428,6 +431,7 @@ fun DanaISetupContent(
     scanError: DanaScanError?,
     pairingAddress: String?,
     pairError: String?,
+    isStaleBondError: Boolean = false,
     onStartDiscovery: () -> Unit,
     onPairClick: (DanaScanResult) -> Unit,
     modifier: Modifier = Modifier
@@ -491,7 +495,16 @@ fun DanaISetupContent(
         pairError?.let { errorMsg ->
             WarningBanner(
                 warningText = errorMsg,
-                onActionClick = {}
+                actionText = if (isStaleBondError) stringResource(R.string.danai_pump_setup_btn_open_bluetooth_settings) else null,
+                onActionClick = {
+                    if (isStaleBondError) {
+                        try {
+                            context.startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
+                        } catch (_: Exception) {
+                            context.startActivity(Intent(Settings.ACTION_SETTINGS))
+                        }
+                    }
+                }
             )
         }
 
@@ -698,6 +711,25 @@ private fun DanaISetupContentBluetoothDisabledPreview() {
             scanError = DanaScanError.BLUETOOTH_DISABLED,
             pairingAddress = null,
             pairError = null,
+            onStartDiscovery = {},
+            onPairClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DanaISetupContentStaleBondPreview() {
+    AppPreview {
+        DanaISetupContent(
+            scanResults = listOf(
+                DanaScanResult.Fake(name = "DANA-i-123", address = "00:11:22:33:44:55")
+            ),
+            isScanning = false,
+            scanError = null,
+            pairingAddress = null,
+            pairError = stringResource(R.string.danai_pump_setup_stale_bond_error),
+            isStaleBondError = true,
             onStartDiscovery = {},
             onPairClick = {}
         )

@@ -8,6 +8,8 @@
     <string name="danai_pump_setup_btn_pair">Koppeln</string>
     <string name="danai_pump_setup_btn_search">Nach Pumpen suchen</string>
     <string name="danai_pump_setup_connect_failed">Verbindung zur Dana-i-Pumpe fehlgeschlagen</string>
+    <string name="danai_pump_setup_stale_bond_error">Die Bluetooth-Kopplung mit der Dana-i-Pumpe ist auf deinem Smartphone veraltet. Bitte entkoppele/entferne die Dana-i-Pumpe in den Android-Bluetooth-Einstellungen und versuche das Koppeln danach erneut.</string>
+    <string name="danai_pump_setup_btn_open_bluetooth_settings">Bluetooth-Einstellungen öffnen</string>
     <string name="danai_pump_setup_bluetooth_disabled">Bluetooth ist ausgeschaltet. Bitte aktiviere Bluetooth, um nach Dana-i-Pumpen zu suchen.</string>
     <string name="danai_pump_setup_scanner_unavailable">Bluetooth-Scanner ist auf diesem Gerät derzeit nicht verfügbar.</string>
     <string name="danai_pump_setup_btn_enable_bluetooth">Bluetooth-Einstellungen öffnen</string>

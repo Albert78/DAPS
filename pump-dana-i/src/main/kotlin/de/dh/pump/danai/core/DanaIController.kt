@@ -146,6 +146,11 @@ class DanaIController(
      */
     val lastError = link.lastError
 
+    /**
+     * Flow indicating whether connection failed due to a stale OS Bluetooth bond.
+     */
+    val requiresStaleBondRemoval = link.requiresStaleBondRemoval
+
     init {
         restoreActiveBolusContext()
 

@@ -21,11 +21,23 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import java.util.UUID
 import kotlin.time.Duration.Companion.milliseconds
+
+/**
+ * Exception thrown when a connection fails due to a stale OS-level Bluetooth bond
+ * that cannot be removed programmatically due to Android OS security restrictions.
+ */
+class StaleBondException(
+    message: String = "Stale Bluetooth bond detected requiring manual removal in Android settings",
+    cause: Throwable? = null,
+) : IllegalStateException(message, cause)
 
 /**
  * Low-level state of the Bluetooth connection to a Dana pump.
@@ -76,9 +88,13 @@ sealed interface SessionState {
 
     /**
      * An error occurred during connection or handshake.
-     * Operations: Inspect [message] and [error].
+     * Operations: Inspect [message], [error], and [isStaleBond].
      */
-    data class Failed(val message: String, val error: Throwable? = null) : SessionState {
+    data class Failed(
+        val message: String,
+        val error: Throwable? = null,
+        val isStaleBond: Boolean = false,
+    ) : SessionState {
         override val isStable = true
         override val isClosed = true
     }
@@ -113,6 +129,13 @@ class DanaISession(
     private val onSessionStateChanged: (SessionState) -> Unit
 ) {
     private val danaPreferences = DanaPumpPreferences(preferences)
+
+    private val _requiresStaleBondRemoval = MutableStateFlow(false)
+
+    /**
+     * Flow indicating whether connection failed due to a stale OS Bluetooth bond.
+     */
+    val requiresStaleBondRemoval: StateFlow<Boolean> = _requiresStaleBondRemoval.asStateFlow()
 
     /**
      * The current state of the session.
@@ -160,7 +183,7 @@ class DanaISession(
                 }
             } catch (e: Exception) {
                 if (shouldAttemptBondRecovery(e)) {
-                    logger.log("Connection failed ($e). Clearing stored app pairing key and attempting bond removal...")
+                    logger.log("Connection failed ($e). Clearing stored app pairing key and checking OS bond state...")
                     danaPreferences.saveHandshakeData(pairingKey = null, hardwareModel = null, protocol = null)
 
                     val bondRemoved = BluetoothBondUtils.removeBond(device)
@@ -175,9 +198,9 @@ class DanaISession(
                             )
                         }
                     } else {
-                        val msg = "Verbindung fehlgeschlagen (status=19). Der Bluetooth-Bond ist veraltet. Bitte entkoppele die Dana-i Pumpe in den Android-Einstellungen -> Bluetooth und versuche es erneut."
-                        logger.log(msg)
-                        throw IllegalStateException(msg, e)
+                        logger.log("Connection failed due to stale OS Bluetooth bond ($e). Programmatic bond removal restricted.")
+                        _requiresStaleBondRemoval.value = true
+                        throw StaleBondException("Connection failed due to stale OS Bluetooth bond", e)
                     }
                 } else {
                     throw e
@@ -221,8 +244,13 @@ class DanaISession(
                 monitoringJob.cancel()
             }
         } catch (e: Exception) {
+            val isStaleBond = e is StaleBondException || _requiresStaleBondRemoval.value
             if (!state.isClosed && state !is SessionState.Failed) {
-                state = SessionState.Failed(e.message ?: "Session failed", e)
+                state = SessionState.Failed(
+                    message = e.message ?: "Session failed",
+                    error = e,
+                    isStaleBond = isStaleBond,
+                )
             }
         } finally {
             // Ensure we show 'Disconnecting' if the session ends for any other reason (e.g. cancellation)
