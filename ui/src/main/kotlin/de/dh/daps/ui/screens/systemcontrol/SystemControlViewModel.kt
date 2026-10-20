@@ -42,6 +42,7 @@ import de.dh.daps.core.pump.BolusJob
 import de.dh.daps.core.pump.BolusJobType
 import de.dh.daps.core.pump.JobErrorCode
 import de.dh.daps.core.pump.PumpCoordinatorState
+import de.dh.daps.core.pump.PumpSyncStatus
 import de.dh.daps.core.pump.PumpIssue
 import de.dh.daps.core.repository.BluetoothStatus
 import de.dh.daps.ui.R
@@ -205,6 +206,8 @@ sealed interface PumpTabUiState {
         val expirations: List<Expiration> = emptyList(),
         val pendingJobs: List<PumpJobItem> = emptyList(),
         val coordinatorState: PumpCoordinatorState = PumpCoordinatorState.Idle,
+        val syncStatus: PumpSyncStatus = PumpSyncStatus.InSync(null),
+        val nextWakeupTime: Timestamp? = null,
         val pumpPluginSection: (@Composable () -> Unit)? = null
     ) : PumpTabUiState
 }
@@ -252,6 +255,8 @@ class SystemControlViewModel(
         val expirations: List<Expiration> = emptyList(),
         val jobs: List<BolusJob> = emptyList(),
         val coordinatorState: PumpCoordinatorState = PumpCoordinatorState.Idle,
+        val syncStatus: PumpSyncStatus = PumpSyncStatus.InSync(null),
+        val nextWakeupTime: Timestamp? = null,
         val isSuspended: Boolean = false,
         val isExpired: Boolean = false,
         val hasError: Boolean = false,
@@ -374,6 +379,8 @@ class SystemControlViewModel(
             val jobsFlow = coordinator?.pendingBoluses ?: flowOf(emptyList())
             val lastConnFlow = coordinator?.lastConnectionTime ?: flowOf(Timestamp.INVALID)
             val coordinatorStateFlow = coordinator?.pumpCoordinatorState ?: flowOf(PumpCoordinatorState.Idle)
+            val syncStatusFlow = coordinator?.syncStatus ?: flowOf(PumpSyncStatus.InSync(null))
+            val nextWakeupFlow = coordinator?.nextWakeupTime ?: flowOf(null)
 
             combine(
                 pump.isConnected,
@@ -385,7 +392,9 @@ class SystemControlViewModel(
                 pump.isExpired,
                 pump.expirations,
                 pumpDriverManager.activeDriver,
-                coordinatorStateFlow
+                coordinatorStateFlow,
+                syncStatusFlow,
+                nextWakeupFlow
             ) { array ->
                 val connected = array[0] as Boolean
                 val hardware = array[1] as PumpHardwareInformation?
@@ -399,6 +408,8 @@ class SystemControlViewModel(
                 val expirations = array[7] as List<Expiration>
                 val activeDriver = array[8] as InsulinPumpDriver?
                 val coordinatorState = array[9] as PumpCoordinatorState
+                val syncStatus = array[10] as PumpSyncStatus
+                val nextWakeup = array[11] as Timestamp?
 
                 PumpUiData(
                     connected = connected,
@@ -412,6 +423,8 @@ class SystemControlViewModel(
                     expirations = expirations,
                     jobs = jobs,
                     coordinatorState = coordinatorState,
+                    syncStatus = syncStatus,
+                    nextWakeupTime = nextWakeup,
                     isSuspended = status.pumpSuspended,
                     isExpired = isExpired,
                     hasError = jobs.any { it.lastError != null },
@@ -678,6 +691,8 @@ class SystemControlViewModel(
                 expirations = pInfo.expirations,
                 pendingJobs = pumpJobsList,
                 coordinatorState = pInfo.coordinatorState,
+                syncStatus = pInfo.syncStatus,
+                nextWakeupTime = pInfo.nextWakeupTime,
                 pumpPluginSection = section
             )
         }

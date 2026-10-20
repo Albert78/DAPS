@@ -42,7 +42,11 @@ import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.ReplaceableComponentType
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
+import de.dh.daps.core.pump.JobErrorCode
 import de.dh.daps.core.pump.PumpCoordinatorState
+import de.dh.daps.core.pump.PumpSyncStatus
+import de.dh.daps.core.pump.RetryReason
+import de.dh.daps.core.pump.SyncStep
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.PrimaryButton
@@ -145,6 +149,8 @@ fun PumpTabContent(
 
             PumpTechnicalStatusCard(
                 coordinatorState = uiState.coordinatorState,
+                syncStatus = uiState.syncStatus,
+                nextWakeupTime = uiState.nextWakeupTime,
                 pendingJobs = uiState.pendingJobs,
                 onCancelJob = onCancelPumpJob,
                 onResetPumpCommunication = onResetPumpCommunication
@@ -527,10 +533,12 @@ fun PumpExpirationsCard(
 @Composable
 fun PumpTechnicalStatusCard(
     coordinatorState: PumpCoordinatorState,
-    pendingJobs: List<PumpJobItem>,
-    onCancelJob: (String) -> Unit,
-    onResetPumpCommunication: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    syncStatus: PumpSyncStatus = PumpSyncStatus.InSync(null),
+    nextWakeupTime: Timestamp? = null,
+    pendingJobs: List<PumpJobItem> = emptyList(),
+    onCancelJob: (String) -> Unit = {},
+    onResetPumpCommunication: () -> Unit = {}
 ) {
     FramedCard(
         modifier = modifier
@@ -592,6 +600,120 @@ fun PumpTechnicalStatusCard(
                             text = stringResource(R.string.system_control_pump_reset_button),
                             fontWeight = FontWeight.Bold
                         )
+                    }
+                }
+            }
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 12.dp),
+                thickness = 0.5.dp,
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
+
+            // Section: Synchronisationsverlauf (PumpSyncStatus)
+            Text(
+                text = stringResource(R.string.system_control_pump_sync_status_title),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            when (syncStatus) {
+                is PumpSyncStatus.InSync -> {
+                    Text(
+                        text = stringResource(R.string.system_control_pump_sync_status_in_sync),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = ExtendedTheme.semanticColors.good
+                    )
+                    val scheduledTime = syncStatus.nextScheduledWakeup ?: nextWakeupTime
+                    if (scheduledTime != null && scheduledTime.isValid()) {
+                        val formattedTime = smartTime(scheduledTime)
+                        val relText = shortRelativeTime(scheduledTime)
+                        val fullText = if (relText.isNotEmpty()) "$formattedTime ($relText)" else formattedTime
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "${stringResource(R.string.system_control_pump_next_wakeup_label)}: $fullText",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                is PumpSyncStatus.Reconciling -> {
+                    val stepText = when (syncStatus.step) {
+                        SyncStep.RefreshingStatus -> stringResource(R.string.system_control_pump_sync_step_refreshing_status)
+                        SyncStep.ReconcilingSuspend -> stringResource(R.string.system_control_pump_sync_step_reconciling_suspend)
+                        SyncStep.ReconcilingTempBasal -> stringResource(R.string.system_control_pump_sync_step_reconciling_temp_basal)
+                        SyncStep.ReconcilingProfile -> stringResource(R.string.system_control_pump_sync_step_reconciling_profile)
+                        SyncStep.ExecutingBolus -> stringResource(R.string.system_control_pump_sync_step_executing_bolus)
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = stepText,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+                is PumpSyncStatus.Retrying -> {
+                    val reasonStr = when (syncStatus.reason) {
+                        RetryReason.PUMP_BUSY -> stringResource(R.string.system_control_pump_retry_reason_busy)
+                        RetryReason.CONNECTION_FAILED -> stringResource(R.string.system_control_pump_retry_reason_connection)
+                    }
+                    val statusFormatted = stringResource(
+                        R.string.system_control_pump_retrying_status,
+                        reasonStr,
+                        syncStatus.currentAttempt,
+                        syncStatus.maxAttempts
+                    )
+                    Text(
+                        text = statusFormatted,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = ExtendedTheme.semanticColors.warning
+                    )
+                    if (syncStatus.nextAttemptAt.isValid()) {
+                        val formattedNext = smartTime(syncStatus.nextAttemptAt)
+                        val relNext = shortRelativeTime(syncStatus.nextAttemptAt)
+                        val fullNext = if (relNext.isNotEmpty()) "$formattedNext ($relNext)" else formattedNext
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "${stringResource(R.string.system_control_pump_next_retry_label)}: $fullNext",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                is PumpSyncStatus.Error -> {
+                    val sinceText = if (syncStatus.errorSince.isValid()) {
+                        val smartT = smartTime(syncStatus.errorSince)
+                        val relT = shortRelativeTime(syncStatus.errorSince)
+                        if (relT.isNotEmpty()) "$smartT ($relT)" else smartT
+                    } else null
+
+                    Column {
+                        Text(
+                            text = stringResource(R.string.system_control_pump_coordinator_state_error),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        if (sinceText != null) {
+                            Text(
+                                text = "Seit: $sinceText",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
             }
@@ -674,6 +796,8 @@ internal fun samplePumpTabUiState(): PumpTabUiState = PumpTabUiState.Content(
     manufacturer = "DAPS",
     pumpModel = "Simulator",
     serialNumber = "SIM-001",
+    syncStatus = PumpSyncStatus.InSync(Timestamp(System.currentTimeMillis() + 300_000)),
+    nextWakeupTime = Timestamp(System.currentTimeMillis() + 300_000),
     expirations = listOf(
         Expiration(
             type = ReplaceableComponentType.Catheter,
@@ -794,6 +918,8 @@ internal fun samplePumpTabExpiredUiState(): PumpTabUiState = PumpTabUiState.Cont
     manufacturer = "DAPS",
     pumpModel = "Simulator",
     serialNumber = "SIM-001",
+    syncStatus = PumpSyncStatus.InSync(null),
+    nextWakeupTime = null,
     isExpired = true,
     expirations = listOf(
         Expiration(
@@ -871,6 +997,8 @@ fun PumpTechnicalStatusErrorCardPreview() {
         Surface {
             PumpTechnicalStatusCard(
                 coordinatorState = PumpCoordinatorState.Error,
+                syncStatus = PumpSyncStatus.Error(Timestamp.now(), JobErrorCode.ConnectionFailed("Timeout")),
+                nextWakeupTime = null,
                 pendingJobs = listOf(
                     PumpJobItem(
                         id = "job_1",
