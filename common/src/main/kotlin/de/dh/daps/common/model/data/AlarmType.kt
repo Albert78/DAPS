@@ -47,6 +47,14 @@ enum class AlarmType(
         defaultSeverity = AlarmSeverity.WARNING,
         category = AlarmCategory.CGM
     ),
+    CGM_EXPIRED(
+        defaultSeverity = AlarmSeverity.WARNING,
+        category = AlarmCategory.CGM
+    ),
+    CGM_SENSOR_ERROR(
+        defaultSeverity = AlarmSeverity.WARNING,
+        category = AlarmCategory.CGM
+    ),
     CGM_STALE_BOND(
         defaultSeverity = AlarmSeverity.WARNING,
         category = AlarmCategory.CGM

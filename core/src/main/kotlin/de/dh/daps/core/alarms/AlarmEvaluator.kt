@@ -159,6 +159,8 @@ class AlarmEvaluator(
                 }
                 is ApsIssue.GlucoseSource -> {
                     when (issue.issue) {
+                        is GlucoseSourceIssue.Expired -> activeSet.add(AlarmType.CGM_EXPIRED)
+                        is GlucoseSourceIssue.SensorError -> activeSet.add(AlarmType.CGM_SENSOR_ERROR)
                         is GlucoseSourceIssue.StaleBluetoothBond -> activeSet.add(AlarmType.CGM_STALE_BOND)
                         else -> {}
                     }
