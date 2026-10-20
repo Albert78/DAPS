@@ -55,6 +55,11 @@ sealed interface PumpIssue {
     data object Blocked : PumpIssue
 
     /**
+     * The OS-level Bluetooth bond is stale/corrupted and requires manual unbonding in Android Settings.
+     */
+    data object StaleBluetoothBond : PumpIssue
+
+    /**
      * Any other issue that prevents the pump communication from working.
      */
     data object Other : PumpIssue

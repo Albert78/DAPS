@@ -153,6 +153,15 @@ class PumpManagerImpl(
                             }
                         }
                     }
+                    launch {
+                        pc.pump.requiresStaleBondRemoval.collect { requiresRemoval ->
+                            if (requiresRemoval) {
+                                setIssue(PumpIssue.StaleBluetoothBond)
+                            } else {
+                                removeIssue(PumpIssue.StaleBluetoothBond)
+                            }
+                        }
+                    }
                     // Sync history
                     launch {
                         pc.pump.history.collect { history ->

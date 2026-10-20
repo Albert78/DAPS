@@ -209,7 +209,11 @@ class SystemOrchestratorImpl(
     )
 
     private fun getAvailableApsModes(hasGlucoseSource: Boolean, hasPump: Boolean): List<ApsMode> =
-        ApsMode.entries.filter { it.isAvailable(hasPump = hasPump, hasGlucoseSource = hasGlucoseSource) }
+        if (hasGlucoseSource && hasPump) {
+            ApsMode.entries
+        } else {
+            ApsMode.entries.filter { it != ApsMode.AutoCorrection }
+        }
 
     private val _apsIssues = MutableStateFlow<Set<ApsIssue>>(emptySet())
     override val apsIssues: StateFlow<Set<ApsIssue>> = _apsIssues.asStateFlow()

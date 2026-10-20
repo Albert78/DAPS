@@ -200,6 +200,13 @@ interface InsulinPump {
         get() = MutableStateFlow(false)
 
     /**
+     * Flag indicating whether the connection failed due to a stale OS Bluetooth bond
+     * requiring manual unbonding in Android settings.
+     */
+    val requiresStaleBondRemoval: StateFlow<Boolean>
+        get() = MutableStateFlow(false)
+
+    /**
      * General status and data of the pump (Battery, Reservoir, etc.).
      * Can be updated by calling [refreshStatus].
      */

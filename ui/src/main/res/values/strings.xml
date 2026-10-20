@@ -224,6 +224,7 @@
     <string name="pump_issue_command_failed">Befehl an die Insulinpumpe fehlgeschlagen.</string>
     <string name="pump_issue_expired">Die Insulinpumpe oder der Pod ist abgelaufen.</string>
     <string name="pump_issue_blocked">Kommunikation mit der Insulinpumpe ist App-seitig blockiert (Wartung/Fehler).</string>
+    <string name="pump_issue_stale_bluetooth_bond">Bluetooth-Kopplung ungültig. Bitte entkoppele die Pumpe in den Android-Einstellungen.</string>
     <string name="pump_issue_other">Fehler bei der Kommunikation mit der Insulinpumpe.</string>
 
     <string name="glucose_source_issue_no_source_bound">Keine Blutzucker-Quelle (CGM) gebunden.</string>
@@ -245,8 +246,6 @@
     <string name="aps_mode_suspend">Stopp der Pumpe</string>
     <string name="aps_mode_suspend_short">Pumpe Stopp</string>
     <string name="aps_mode_suspend_desc">Die Insulinabgabe ist vollständig unterbrochen und es werden keine Vorschläge angezeigt.</string>
-    <string name="aps_mode_requires_pump">Insulinpumpe erforderlich</string>
-    <string name="aps_mode_requires_glucose_source">Glucosequelle erforderlich</string>
     <string name="aps_mode_requires_glucose_source_and_pump">Glucosequelle und Insulinpumpe erforderlich</string>
     <string name="aps_control_basal_label">Basal: %1$s I.E./h</string>
     <string name="aps_control_temp_basal_label">Temp-Basal: %1$s I.E./h</string>
