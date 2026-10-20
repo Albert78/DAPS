@@ -19,6 +19,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlin.time.Duration
@@ -138,6 +139,17 @@ class PumpManagerImpl(
                                 setIssue(PumpIssue.Expired)
                             } else {
                                 removeIssue(PumpIssue.Expired)
+                            }
+                        }
+                    }
+                    launch {
+                        combine(pc.pump.isBlocked, pc.syncStatus) { driverBlocked, syncStatus ->
+                            driverBlocked || syncStatus is PumpSyncStatus.Error
+                        }.collect { isBlocked ->
+                            if (isBlocked) {
+                                setIssue(PumpIssue.Blocked)
+                            } else {
+                                removeIssue(PumpIssue.Blocked)
                             }
                         }
                     }

@@ -49,6 +49,12 @@ sealed interface PumpIssue {
     data object Expired : PumpIssue
 
     /**
+     * Communication or command execution with the pump is blocked on software level
+     * (e.g. driver in maintenance/blocked mode or coordinator in error state).
+     */
+    data object Blocked : PumpIssue
+
+    /**
      * Any other issue that prevents the pump communication from working.
      */
     data object Other : PumpIssue

@@ -78,6 +78,7 @@ class DanaIPumpAdapter(
     )
 
     override val isConnected: StateFlow<Boolean> = pump.isConnected
+    override val isBlocked: StateFlow<Boolean> get() = pump.isMaintenanceMode
     override val pumpStatus: StateFlow<InsulinPumpStatus> = pump.status
     override val alerts: StateFlow<PumpAlerts> get() = pump.alerts
     override val basalStatus: StateFlow<BasalStatus> get() = pump.basalStatus

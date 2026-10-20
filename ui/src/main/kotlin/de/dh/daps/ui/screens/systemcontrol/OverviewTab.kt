@@ -336,6 +336,7 @@ private fun formatApsIssue(issue: ApsIssue): String = when (issue) {
         is PumpIssue.LowInsulin -> stringResource(id = R.string.pump_issue_low_insulin)
         is PumpIssue.LowBattery -> stringResource(id = R.string.pump_issue_low_battery)
         is PumpIssue.Expired -> stringResource(id = R.string.pump_issue_expired)
+        is PumpIssue.Blocked -> stringResource(id = R.string.pump_issue_blocked)
         is PumpIssue.Other -> stringResource(id = R.string.pump_issue_other)
     }
     is ApsIssue.GlucoseSource -> when (val gsIssue = issue.issue) {

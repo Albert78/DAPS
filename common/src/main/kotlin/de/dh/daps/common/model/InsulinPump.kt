@@ -5,6 +5,7 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import de.dh.pump.PumpCommandException
 import de.dh.pump.PumpConnectionException
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -190,6 +191,13 @@ interface InsulinPump {
     val pumpCapabilities: StateFlow<PumpCapabilities>
 
     val isConnected: StateFlow<Boolean>
+
+    /**
+     * Flag indicating whether communication or command execution with the pump is currently blocked
+     * on the driver or software side (e.g. driver maintenance mode or software blockade).
+     */
+    val isBlocked: StateFlow<Boolean>
+        get() = MutableStateFlow(false)
 
     /**
      * General status and data of the pump (Battery, Reservoir, etc.).
