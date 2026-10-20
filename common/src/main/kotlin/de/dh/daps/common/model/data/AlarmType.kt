@@ -39,7 +39,15 @@ enum class AlarmType(
         defaultSeverity = AlarmSeverity.WARNING,
         category = AlarmCategory.PUMP
     ),
+    PUMP_STALE_BOND(
+        defaultSeverity = AlarmSeverity.WARNING,
+        category = AlarmCategory.PUMP
+    ),
     CGM_SIGNAL_LOSS(
+        defaultSeverity = AlarmSeverity.WARNING,
+        category = AlarmCategory.CGM
+    ),
+    CGM_STALE_BOND(
         defaultSeverity = AlarmSeverity.WARNING,
         category = AlarmCategory.CGM
     ),

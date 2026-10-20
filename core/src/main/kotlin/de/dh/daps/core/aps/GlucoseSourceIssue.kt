@@ -20,6 +20,11 @@ sealed interface GlucoseSourceIssue {
     data object SensorError : GlucoseSourceIssue
 
     /**
+     * The OS-level Bluetooth bond is stale/corrupted and requires manual unbonding in Android Settings.
+     */
+    data object StaleBluetoothBond : GlucoseSourceIssue
+
+    /**
      * Any other issue related to the glucose source.
      */
     data class Other(val message: String? = null) : GlucoseSourceIssue

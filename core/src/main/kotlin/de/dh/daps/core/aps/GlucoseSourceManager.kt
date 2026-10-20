@@ -91,6 +91,15 @@ class GlucoseSourceManager(
                         }
                     }
                 }
+                launch {
+                    source.requiresStaleBondRemoval.collect { requiresRemoval ->
+                        if (requiresRemoval) {
+                            setIssue(GlucoseSourceIssue.StaleBluetoothBond)
+                        } else {
+                            removeIssue(GlucoseSourceIssue.StaleBluetoothBond)
+                        }
+                    }
+                }
             }
         }
         restartGlucosePipeline()

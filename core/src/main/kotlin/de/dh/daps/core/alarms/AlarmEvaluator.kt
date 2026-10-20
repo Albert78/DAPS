@@ -11,6 +11,7 @@ import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.CurrentTherapySettings
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.aps.ApsIssue
+import de.dh.daps.core.aps.GlucoseSourceIssue
 import de.dh.daps.core.aps.SystemOrchestrator
 import de.dh.daps.core.pump.PumpIssue
 import de.dh.daps.core.repository.GlucoseRepository
@@ -152,6 +153,13 @@ class AlarmEvaluator(
                         is PumpIssue.Occlusion -> activeSet.add(AlarmType.PUMP_OCCLUSION)
                         is PumpIssue.LowInsulin -> activeSet.add(AlarmType.PUMP_LOW_INSULIN)
                         is PumpIssue.LowBattery -> activeSet.add(AlarmType.PUMP_LOW_BATTERY)
+                        is PumpIssue.StaleBluetoothBond -> activeSet.add(AlarmType.PUMP_STALE_BOND)
+                        else -> {}
+                    }
+                }
+                is ApsIssue.GlucoseSource -> {
+                    when (issue.issue) {
+                        is GlucoseSourceIssue.StaleBluetoothBond -> activeSet.add(AlarmType.CGM_STALE_BOND)
                         else -> {}
                     }
                 }

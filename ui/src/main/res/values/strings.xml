@@ -230,6 +230,7 @@
     <string name="glucose_source_issue_no_source_bound">Keine Blutzucker-Quelle (CGM) gebunden.</string>
     <string name="glucose_source_issue_expired">Der Glukosesensor ist abgelaufen.</string>
     <string name="glucose_source_issue_sensor_error">Der Glukosesensor meldet einen Fehler.</string>
+    <string name="glucose_source_issue_stale_bluetooth_bond">Bluetooth-Kopplung ungültig. Bitte entkoppele den Glukosesensor in den Android-Einstellungen.</string>
     <string name="glucose_source_issue_other">Störung der Blutzucker-Quelle.</string>
 
     <string name="multiple_issues_title">System-Warnungen (%1$d)</string>
@@ -671,7 +672,9 @@
     <string name="alarm_type_pump_suspended">PUMPE PAUSIERT / UNTERBROCHEN</string>
     <string name="alarm_type_pump_low_insulin">Wenig Insulin in der Pumpe</string>
     <string name="alarm_type_pump_low_battery">Pumpen-Akku schwach</string>
+    <string name="alarm_type_pump_stale_bond">Pumpen-Bluetooth-Kopplung ungültig</string>
     <string name="alarm_type_cgm_signal_loss">CGM-Signal verloren</string>
+    <string name="alarm_type_cgm_stale_bond">CGM-Bluetooth-Kopplung ungültig</string>
     <string name="alarm_type_system_battery_low">Akkustand niedrig</string>
     <string name="alarm_type_system_bluetooth_off">Bluetooth ausgeschaltet</string>
     <string name="alarm_type_system_bluetooth_off_desc">Bluetooth ist auf diesem Gerät deaktiviert. Die Verbindung zur Pumpe und zum Glukosesensor ist unterbrochen.</string>

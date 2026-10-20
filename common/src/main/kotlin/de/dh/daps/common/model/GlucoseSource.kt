@@ -6,6 +6,7 @@ import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -73,6 +74,13 @@ interface GlucoseSource {
     val sensorType: StateFlow<String>
 
     val hardwareInformation: StateFlow<SourceHardwareInformation?>
+
+    /**
+     * Flag indicating whether the connection failed due to a stale OS Bluetooth bond
+     * requiring manual unbonding in Android settings.
+     */
+    val requiresStaleBondRemoval: StateFlow<Boolean>
+        get() = MutableStateFlow(false)
 
     fun getValues(): Flow<BgReading>
 
