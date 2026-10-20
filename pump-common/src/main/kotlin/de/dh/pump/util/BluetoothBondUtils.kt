@@ -64,13 +64,19 @@ object BluetoothBondUtils {
             } else {
                 Log.d(TAG, "Removing Bluetooth bond for device ${device.address}")
                 val removeBondMethod = device.javaClass.getMethod("removeBond")
-                (removeBondMethod.invoke(device) as? Boolean) ?: true
+                val result = (removeBondMethod.invoke(device) as? Boolean) ?: false
+                if (result) {
+                    Log.d(TAG, "Successfully invoked removeBond for device ${device.address}")
+                }
+                result
             }
-        } catch (e: SecurityException) {
-            Log.e(TAG, "SecurityException removing Bluetooth bond for device ${device.address}", e)
-            false
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to remove Bluetooth bond for device ${device.address}", e)
+            val cause = if (e is java.lang.reflect.InvocationTargetException) e.cause ?: e else e
+            if (cause is SecurityException) {
+                Log.w(TAG, "Cannot remove Bluetooth bond programmatically on Android OS: BLUETOOTH_PRIVILEGED permission required for ${device.address}")
+            } else {
+                Log.e(TAG, "Failed to remove Bluetooth bond for device ${device.address}", cause)
+            }
             false
         }
     }

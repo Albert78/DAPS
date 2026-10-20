@@ -14,9 +14,13 @@ import de.dh.pump.dana.protocol.DanaRsPairingSecrets
 import de.dh.pump.danai.core.DanaILogger
 import de.dh.pump.danai.core.DanaPumpPreferences
 import de.dh.pump.transport.AndroidBleTransport
+import de.dh.pump.transport.BleGattException
+import de.dh.pump.transport.BleGattStatus
+import de.dh.pump.util.BluetoothBondUtils
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
@@ -146,12 +150,38 @@ class DanaISession(
             )
 
             logger.log("Connecting to ${device.address}...")
-            val transport = withContext(Dispatchers.Main) {
-                AndroidBleTransport.connect(
-                    context = context,
-                    device = device,
-                    config = profile.toBlePumpConfig(),
-                )
+            val transport = try {
+                withContext(Dispatchers.Main) {
+                    AndroidBleTransport.connect(
+                        context = context,
+                        device = device,
+                        config = profile.toBlePumpConfig(),
+                    )
+                }
+            } catch (e: Exception) {
+                if (shouldAttemptBondRecovery(e)) {
+                    logger.log("Connection failed ($e). Clearing stored app pairing key and attempting bond removal...")
+                    danaPreferences.saveHandshakeData(pairingKey = null, hardwareModel = null, protocol = null)
+
+                    val bondRemoved = BluetoothBondUtils.removeBond(device)
+                    if (bondRemoved && !BluetoothBondUtils.isBonded(device)) {
+                        delay(1000.milliseconds)
+                        logger.log("Retrying connection to ${device.address} without bond...")
+                        withContext(Dispatchers.Main) {
+                            AndroidBleTransport.connect(
+                                context = context,
+                                device = device,
+                                config = profile.toBlePumpConfig(),
+                            )
+                        }
+                    } else {
+                        val msg = "Verbindung fehlgeschlagen (status=19). Der Bluetooth-Bond ist veraltet. Bitte entkoppele die Dana-i Pumpe in den Android-Einstellungen -> Bluetooth und versuche es erneut."
+                        logger.log(msg)
+                        throw IllegalStateException(msg, e)
+                    }
+                } else {
+                    throw e
+                }
             }
             this@DanaISession.transport = transport
 
@@ -275,6 +305,18 @@ class DanaISession(
                 }
             }
         }
+    }
+
+    private suspend fun shouldAttemptBondRecovery(error: Throwable): Boolean {
+        val isBondedOrHasKey = BluetoothBondUtils.isBonded(device) || danaPreferences.getBle5PairingKey() != null
+        if (!isBondedOrHasKey) return false
+
+        val status = (error as? BleGattException)?.status ?: return false
+
+        return status == BleGattStatus.GATT_CONN_TERMINATE_PEER_USER ||
+               status == BleGattStatus.GATT_ERROR ||
+               status == BleGattStatus.GATT_INSUFFICIENT_AUTHENTICATION ||
+               status == BleGattStatus.GATT_INSUFFICIENT_ENCRYPTION
     }
 
     suspend fun disconnect() {

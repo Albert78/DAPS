@@ -143,7 +143,7 @@ class AndroidBleTransport private constructor(
     private inner class OperationalHandler : BluetoothGattCallback() {
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
             if (newState == BluetoothProfile.STATE_DISCONNECTED || status != BluetoothGatt.GATT_SUCCESS) {
-                val error = IllegalStateException("Connection lost (status=$status, state=$newState)")
+                val error = BleGattException(status = status, newState = newState, message = "Connection lost (status=$status, state=$newState)")
                 characteristicWriteResult?.completeExceptionally(error)
                 _state.value = TransportState.Disconnected(error)
                 gattCallbackProxy.delegate = null
@@ -317,7 +317,7 @@ class AndroidBleTransport private constructor(
                 if (status == BluetoothGatt.GATT_SUCCESS && newState == BluetoothProfile.STATE_CONNECTED) {
                     connection.complete(Unit)
                 } else if (newState == BluetoothProfile.STATE_DISCONNECTED || status != BluetoothGatt.GATT_SUCCESS) {
-                    val error = IllegalStateException("Connect failed: status=$status, state=$newState")
+                    val error = BleGattException(status = status, newState = newState, message = "Connect failed: status=$status, state=$newState")
                     connection.completeExceptionally(error)
                     services.completeExceptionally(error)
                     mtu.completeExceptionally(error)
