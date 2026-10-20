@@ -28,8 +28,65 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
+/**
+ * Low-level execution concurrency state of the coordinator.
+ * Used as a thread guard / mutex lock state for [PumpCoordinator.operate].
+ */
 enum class PumpCoordinatorState {
     Idle, Running, Error
+}
+
+/**
+ * High-level synchronization steps during pump hardware state reconciliation.
+ */
+enum class SyncStep {
+    RefreshingStatus,
+    ReconcilingSuspend,
+    ReconcilingTempBasal,
+    ReconcilingProfile,
+    ExecutingBolus
+}
+
+/**
+ * Reasons why a sync step or command is currently pausing and retrying.
+ */
+enum class RetryReason {
+    PUMP_BUSY,
+    CONNECTION_FAILED
+}
+
+/**
+ * Logical operational state of the pump coordinator spanning across execution cycles and delays.
+ * Distinct from low-level concurrency gate ([PumpCoordinatorState]).
+ */
+sealed interface PumpSyncStatus {
+    /**
+     * Coordinator is in sync. Waiting for the next scheduled wakeup or user action.
+     */
+    data class InSync(val nextScheduledWakeup: Timestamp?) : PumpSyncStatus
+
+    /**
+     * Actively communicating with pump hardware during a reconciliation/sync step.
+     */
+    data class Reconciling(val step: SyncStep) : PumpSyncStatus
+
+    /**
+     * Paused and waiting for backoff retry due to a temporary hardware response or connection issue.
+     */
+    data class Retrying(
+        val reason: RetryReason,
+        val currentAttempt: Int,
+        val maxAttempts: Int,
+        val nextAttemptAt: Timestamp
+    ) : PumpSyncStatus
+
+    /**
+     * Permanent communication error or critical command error requiring intervention/reset.
+     */
+    data class Error(
+        val errorSince: Timestamp,
+        val cause: JobErrorCode? = null
+    ) : PumpSyncStatus
 }
 
 /**
@@ -38,10 +95,11 @@ enum class PumpCoordinatorState {
 data class TargetTempBasal(
     val percent: Int,
     val durationHours: Int,
-    val setAt: Timestamp = Timestamp.now()
+    val createdAt: Timestamp = Timestamp.now()
 ) {
-    fun isExpired(now: Timestamp = Timestamp.now()): Boolean =
-        setAt.plusMinutes(durationHours * 60) <= now
+    fun isExpired(): Boolean {
+        return Timestamp.now() > createdAt.plusHours(durationHours)
+    }
 }
 
 /**
@@ -68,12 +126,18 @@ data class DesiredPumpState(
  * Type of operation for a queued bolus job.
  */
 sealed interface BolusJobType {
-    data class Deliver(
-        val amount: InsulinAmount,
-        val bolusId: String? = null
-    ) : BolusJobType
-
+    data class Deliver(val amount: InsulinAmount, val bolusId: String? = null) : BolusJobType
     data object Stop : BolusJobType
+}
+
+/**
+ * Error code describing why a bolus job failed or expired.
+ */
+sealed interface JobErrorCode {
+    data object Expired : JobErrorCode
+    data class ConnectionFailed(val message: String?) : JobErrorCode
+    data class CommandFailed(val status: PumpStatus, val message: String?) : JobErrorCode
+    data class TechnicalError(val message: String?) : JobErrorCode
 }
 
 /**
@@ -85,18 +149,17 @@ data class BolusJob(
     val createdAt: Timestamp = Timestamp.now(),
     val expiresAt: Timestamp? = null,
     val retryCount: Int = 0,
-    val nextAttemptAt: Timestamp = createdAt,
+    val nextAttemptAt: Timestamp = Timestamp.now(),
     val lastError: JobErrorCode? = null
 ) {
-    fun isExpired(): Boolean = expiresAt?.let { it < Timestamp.now() } ?: false
-    fun isReady(): Boolean = nextAttemptAt <= Timestamp.now()
-}
+    fun isExpired(): Boolean {
+        val exp = expiresAt ?: return false
+        return Timestamp.now() >= exp
+    }
 
-sealed interface JobErrorCode {
-    data object Expired : JobErrorCode
-    data class ConnectionFailed(val message: String? = null) : JobErrorCode
-    data class CommandFailed(val status: PumpStatus, val message: String? = null) : JobErrorCode
-    data class TechnicalError(val message: String? = null) : JobErrorCode
+    fun isReady(): Boolean {
+        return Timestamp.now() >= nextAttemptAt
+    }
 }
 
 /**
@@ -110,12 +173,14 @@ sealed interface JobErrorCode {
  *   in every reconciliation cycle.
  * - **Power Management:** Coordinates with the system's power state by acquiring wake-locks
  *   during active communication and scheduling system wakeups for future tasks.
+ * - **Lifecycle Status Tracking:** Exposes [PumpSyncStatus] to reflect active reconciliation steps
+ *   ([SyncStep]), transient retries ([RetryReason]), and scheduled wakeup timing ([nextWakeupTime]).
  *
  * The coordinator's lifecycle is bound to the connection (Bluetooth bonding) with the pump;
  * it remains active as long as a bonding with the pump exists and is dropped when the bonding is
  * dismissed. It abstracts from the physical connection state of the pump and manages pending jobs.
  */
-class PumpCoordinator(
+class PumpCoordinator private constructor(
     val pump: InsulinPump,
     /**
      * Callback to execute work while holding a system busy-state (wake-lock).
@@ -142,11 +207,23 @@ class PumpCoordinator(
      * Current execution state of the coordinator.
      * Used as a concurrency gate to ensure serial execution of pump commands.
      */
-    // Must only be set by [operate]
+    // Must only be set by [operate] or [reset] or called methods
     private val _pumpCoordinatorState = MutableStateFlow(PumpCoordinatorState.Idle)
     val pumpCoordinatorState: StateFlow<PumpCoordinatorState> = _pumpCoordinatorState.asStateFlow()
 
-    // Must only be set by [operate]
+    /**
+     * High-level logical sync status across lifecycle and retries.
+     */
+    private val _syncStatus = MutableStateFlow<PumpSyncStatus>(PumpSyncStatus.InSync(null))
+    val syncStatus: StateFlow<PumpSyncStatus> = _syncStatus.asStateFlow()
+
+    /**
+     * Next scheduled wakeup time computed by [calculateNextWakeup].
+     */
+    private val _nextWakeupTime = MutableStateFlow<Timestamp?>(null)
+    val nextWakeupTime: StateFlow<Timestamp?> = _nextWakeupTime.asStateFlow()
+
+    // Must only be set by [operate] or [reset] or called methods
     private val _pumpCommunicationErrorSince = MutableStateFlow(Timestamp.INVALID)
     val pumpCommunicationErrorSince: StateFlow<Timestamp> = _pumpCommunicationErrorSince.asStateFlow()
 
@@ -211,6 +288,11 @@ class PumpCoordinator(
                         }
                     } finally {
                         scheduleNextWakeup()
+                        if (_pumpCommunicationErrorSince.value.isValid()) {
+                            _syncStatus.value = PumpSyncStatus.Error(_pumpCommunicationErrorSince.value)
+                        } else {
+                            _syncStatus.value = PumpSyncStatus.InSync(_nextWakeupTime.value)
+                        }
                         // Reset to Idle only if we were Running (don't overwrite Error state if set by job)
                         _pumpCoordinatorState.compareAndSet(PumpCoordinatorState.Running, PumpCoordinatorState.Idle)
                     }
@@ -243,6 +325,7 @@ class PumpCoordinator(
         _reconciliationNeeded.value = false
 
         // Step 1: Always refresh status and history
+        _syncStatus.value = PumpSyncStatus.Reconciling(SyncStep.RefreshingStatus)
         val statusHistorySuccess = refreshStatusAndHistoryWithRetries()
         if (!statusHistorySuccess) {
             _reconciliationNeeded.value = true
@@ -250,6 +333,7 @@ class PumpCoordinator(
         }
 
         // Step 2: Reconcile Suspend
+        _syncStatus.value = PumpSyncStatus.Reconciling(SyncStep.ReconcilingSuspend)
         val suspendSuccess = reconcileSuspendWithRetries()
         if (!suspendSuccess) {
             _reconciliationNeeded.value = true
@@ -268,6 +352,7 @@ class PumpCoordinator(
         }
 
         // Step 3: Reconcile TempBasal
+        _syncStatus.value = PumpSyncStatus.Reconciling(SyncStep.ReconcilingTempBasal)
         val tempBasalSuccess = reconcileTempBasalWithRetries()
         if (!tempBasalSuccess) {
             _reconciliationNeeded.value = true
@@ -275,6 +360,7 @@ class PumpCoordinator(
         }
 
         // Step 4: Reconcile Profile
+        _syncStatus.value = PumpSyncStatus.Reconciling(SyncStep.ReconcilingProfile)
         val profileSuccess = reconcileProfileWithRetries()
         if (!profileSuccess) {
             _reconciliationNeeded.value = true
@@ -282,6 +368,7 @@ class PumpCoordinator(
         }
 
         // Step 5: Process Bolus Queue
+        _syncStatus.value = PumpSyncStatus.Reconciling(SyncStep.ExecutingBolus)
         val bolusSuccess = processBolusQueue()
         if (!bolusSuccess) return false
 
@@ -299,6 +386,12 @@ class PumpCoordinator(
             } catch (e: PumpConnectionException) {
                 if (connectionRetryCount < MAX_CONNECTION_RETRIES) {
                     connectionRetryCount++
+                    _syncStatus.value = PumpSyncStatus.Retrying(
+                        reason = RetryReason.CONNECTION_FAILED,
+                        currentAttempt = connectionRetryCount,
+                        maxAttempts = MAX_CONNECTION_RETRIES,
+                        nextAttemptAt = Timestamp.now().plusMs(RETRY_INTERVAL_MS)
+                    )
                     delay(RETRY_INTERVAL_MS.milliseconds)
                 } else {
                     Log.w(TAG, "Failed to refresh pump status and history due to connection error", e)
@@ -374,6 +467,12 @@ class PumpCoordinator(
             } catch (e: PumpConnectionException) {
                 if (connectionRetryCount < MAX_CONNECTION_RETRIES) {
                     connectionRetryCount++
+                    _syncStatus.value = PumpSyncStatus.Retrying(
+                        reason = RetryReason.CONNECTION_FAILED,
+                        currentAttempt = connectionRetryCount,
+                        maxAttempts = MAX_CONNECTION_RETRIES,
+                        nextAttemptAt = Timestamp.now().plusMs(RETRY_INTERVAL_MS)
+                    )
                     delay(RETRY_INTERVAL_MS.milliseconds)
                 } else {
                     return false
@@ -384,6 +483,12 @@ class PumpCoordinator(
                         if (busyRetryCount < BUSY_RETRY_DELAYS_MS.size) {
                             val delayMs = BUSY_RETRY_DELAYS_MS[busyRetryCount]
                             busyRetryCount++
+                            _syncStatus.value = PumpSyncStatus.Retrying(
+                                reason = RetryReason.PUMP_BUSY,
+                                currentAttempt = busyRetryCount,
+                                maxAttempts = BUSY_RETRY_DELAYS_MS.size,
+                                nextAttemptAt = Timestamp.now().plusMs(delayMs)
+                            )
                             delay(delayMs.milliseconds)
                         } else {
                             return false
@@ -391,12 +496,20 @@ class PumpCoordinator(
                     }
                     else -> {
                         _pumpCoordinatorState.value = PumpCoordinatorState.Error
+                        _syncStatus.value = PumpSyncStatus.Error(
+                            errorSince = Timestamp.now(),
+                            cause = JobErrorCode.CommandFailed(e.status, e.message)
+                        )
                         return false
                     }
                 }
             } catch (e: Exception) {
                 Log.w(TAG, "Technical error during pump action", e)
                 _pumpCoordinatorState.value = PumpCoordinatorState.Error
+                _syncStatus.value = PumpSyncStatus.Error(
+                    errorSince = Timestamp.now(),
+                    cause = JobErrorCode.TechnicalError(e.message)
+                )
                 return false
             }
         }
@@ -486,6 +599,12 @@ class PumpCoordinator(
             } catch (e: PumpConnectionException) {
                 if (connectionRetryCount < MAX_CONNECTION_RETRIES) {
                     connectionRetryCount++
+                    _syncStatus.value = PumpSyncStatus.Retrying(
+                        reason = RetryReason.CONNECTION_FAILED,
+                        currentAttempt = connectionRetryCount,
+                        maxAttempts = MAX_CONNECTION_RETRIES,
+                        nextAttemptAt = Timestamp.now().plusMs(RETRY_INTERVAL_MS)
+                    )
                     delay(RETRY_INTERVAL_MS.milliseconds)
                 } else {
                     val errorCode = JobErrorCode.ConnectionFailed(e.message)
@@ -500,6 +619,12 @@ class PumpCoordinator(
                         if (busyRetryCount < BUSY_RETRY_DELAYS_MS.size) {
                             val delayMs = BUSY_RETRY_DELAYS_MS[busyRetryCount]
                             busyRetryCount++
+                            _syncStatus.value = PumpSyncStatus.Retrying(
+                                reason = RetryReason.PUMP_BUSY,
+                                currentAttempt = busyRetryCount,
+                                maxAttempts = BUSY_RETRY_DELAYS_MS.size,
+                                nextAttemptAt = Timestamp.now().plusMs(delayMs)
+                            )
                             delay(delayMs.milliseconds)
                         } else {
                             val errorCode = JobErrorCode.CommandFailed(status, e.message)
@@ -511,11 +636,13 @@ class PumpCoordinator(
                     }
                     else -> {
                         _pumpCoordinatorState.value = PumpCoordinatorState.Error
-                        // Since this is an unexpected situation, we don't remove the job from the queue.
-                        // The user must manually remove it in the management interface.
                         val errorCode = JobErrorCode.CommandFailed(status, e.message)
                         val failedJob = job.copy(lastError = errorCode)
                         _pendingBoluses.update { pending -> pending.map { if (it.id == job.id) failedJob else it } }
+                        _syncStatus.value = PumpSyncStatus.Error(
+                            errorSince = Timestamp.now(),
+                            cause = errorCode
+                        )
                         onJobError(failedJob, errorCode)
                         return false
                     }
@@ -523,11 +650,13 @@ class PumpCoordinator(
             } catch (e: Exception) {
                 Log.w(TAG, "Unknown exception executing bolus job", e)
                 _pumpCoordinatorState.value = PumpCoordinatorState.Error
-                // Since this is an unexpected situation, we don't remove the job from the queue.
-                // The user must manually remove it in the management interface.
                 val errorCode = JobErrorCode.TechnicalError(e.message)
                 val failedJob = job.copy(lastError = errorCode)
                 _pendingBoluses.update { pending -> pending.map { if (it.id == job.id) failedJob else it } }
+                _syncStatus.value = PumpSyncStatus.Error(
+                    errorSince = Timestamp.now(),
+                    cause = errorCode
+                )
                 onJobError(failedJob, errorCode)
                 return false
             }
@@ -595,6 +724,7 @@ class PumpCoordinator(
     fun reset() {
         _pumpCoordinatorState.value = PumpCoordinatorState.Idle
         _pumpCommunicationErrorSince.value = Timestamp.INVALID
+        _syncStatus.value = PumpSyncStatus.InSync(calculateNextWakeup())
         _reconciliationNeeded.value = true
         operate()
     }
@@ -609,6 +739,7 @@ class PumpCoordinator(
 
     private fun scheduleNextWakeup() {
         val nextWakeup = calculateNextWakeup()
+        _nextWakeupTime.value = nextWakeup
         if (nextWakeup != null) {
             onRequestWakeup(nextWakeup)
         }
