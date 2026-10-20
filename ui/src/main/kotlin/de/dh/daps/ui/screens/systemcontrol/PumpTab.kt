@@ -603,7 +603,7 @@ fun PumpTechnicalStatusCard(
             )
 
             Text(
-                text = stringResource(R.string.system_control_pump_jobs_title),
+                text = stringResource(R.string.system_control_pump_bolus_jobs_title),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold
             )

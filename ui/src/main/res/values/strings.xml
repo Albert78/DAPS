@@ -499,9 +499,9 @@
     <string name="system_control_pump_reset_button">Wiederanlauf</string>
     <string name="system_control_pump_actions">Aktionen</string>
     <string name="system_control_pump_expirations_title">Ablaufdaten &amp; Wechsel</string>
-    <string name="system_control_pump_jobs_title">Ausstehende Pumpenjobs</string>
-    <string name="system_control_pump_jobs_empty">Keine ausstehenden Jobs</string>
-    <string name="system_control_pump_job_cancel">Job abbrechen</string>
+    <string name="system_control_pump_bolus_jobs_title">Ausstehende Bolus-Kommandos</string>
+    <string name="system_control_pump_jobs_empty">Keine ausstehenden Kommandos</string>
+    <string name="system_control_pump_job_cancel">Kommando abbrechen</string>
     <string name="system_control_pump_job_type_refresh_status">Status aktualisieren</string>
     <string name="system_control_pump_job_type_bolus">Bolus: %1$s I.E.</string>
     <string name="system_control_pump_job_type_cancel_bolus">Bolus abbrechen</string>
@@ -704,7 +704,7 @@
     <string name="manual_control_temp_basal_expiry_hours_info">Aktiv bis %1$s (noch %2$dh %3$dm)</string>
     <string name="manual_control_normal_basal_active">Normale Basalrate aktiv (%1$s I.E./h)</string>
     <string name="manual_control_no_active_temp_basal">Normale Basalrate aktiv (100%).</string>
-    <string name="manual_control_duration_hours_label">Dauer (Stunden)</string>
+    <string name="manual_control_duration_hours_label">Automat. zurücksetzen in (Stunden)</string>
     <string name="manual_control_unit_hours_short">Std</string>
     <string name="manual_control_rate_percent_label">Basalrate (%)</string>
     <string name="manual_control_pump_not_configured">Keine Insulinpumpe konfiguriert</string>
