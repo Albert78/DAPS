@@ -13,6 +13,7 @@ import androidx.compose.material3.Badge
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -255,9 +256,91 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
         }
     }
 
+    override fun getSettingsScreen(pump: InsulinPump, onClose: () -> Unit): (@Composable () -> Unit) = {
+        SamplePumpSettingsContent(onClose = onClose)
+    }
+
     companion object {
         const val DRIVER_ID = "de.dh.daps.plugin.pump.sample"
         private const val KEY_DEVICE_ID = "device_id"
         private const val KEY_DEVICE_NAME = "device_name"
+    }
+}
+
+@Composable
+private fun SamplePumpSettingsContent(
+    onClose: () -> Unit
+) {
+    var audioFeedback by remember { mutableStateOf(true) }
+    var autoResume by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = "Sample Insulinpumpe Einstellungen",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+        )
+
+        HorizontalDivider()
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Akustisches Signal",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = "Tonsignale bei Bolus-Abgabe abspielen",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Switch(
+                checked = audioFeedback,
+                onCheckedChange = { audioFeedback = it }
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Automatische Fortsetzung",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = "Basal-Abgabe nach temporärer Unterbrechung fortsetzen",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Switch(
+                checked = autoResume,
+                onCheckedChange = { autoResume = it }
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            PrimaryButton(onClick = onClose) {
+                Text(stringResource(de.dh.daps.common.R.string.action_close))
+            }
+        }
     }
 }

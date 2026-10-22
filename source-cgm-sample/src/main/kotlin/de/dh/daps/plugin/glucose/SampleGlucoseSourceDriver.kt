@@ -15,6 +15,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -257,9 +258,91 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
         }
     }
 
+    override fun getSettingsScreen(glucoseSource: GlucoseSource, onClose: () -> Unit): (@Composable () -> Unit) = {
+        SampleGlucoseSettingsContent(onClose = onClose)
+    }
+
     companion object {
         const val DRIVER_ID = "de.dh.daps.plugin.cgm.sample"
         private const val KEY_DEVICE_ID = "device_id"
         private const val KEY_DEVICE_NAME = "device_name"
+    }
+}
+
+@Composable
+private fun SampleGlucoseSettingsContent(
+    onClose: () -> Unit
+) {
+    var noiseSimulation by remember { mutableStateOf(false) }
+    var highFrequencyMode by remember { mutableStateOf(true) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = "Sample Glukose-Quelle Einstellungen",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+        )
+
+        HorizontalDivider()
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Rausch-Simulation",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = "Zufällige Schwankungen in Glukosewerten simulieren",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Switch(
+                checked = noiseSimulation,
+                onCheckedChange = { noiseSimulation = it }
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Hohe Messfrequenz",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = "Messwerte jede Minute statt alle 5 Minuten generieren",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Switch(
+                checked = highFrequencyMode,
+                onCheckedChange = { highFrequencyMode = it }
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            PrimaryButton(onClick = onClose) {
+                Text(stringResource(de.dh.daps.common.R.string.action_close))
+            }
+        }
     }
 }

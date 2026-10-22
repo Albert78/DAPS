@@ -42,7 +42,7 @@ interface InsulinPumpDriver {
 
     /**
      * Renders the driver's custom UI workflow for initial setup, device scanning, and pairing.
-     * When the driver is explicitly reset, cancelled, or unbound by the user, [onDriverReset] is invoked
+     * When the driver is explicitly reset, canceled, or unbound by the user, [onDriverReset] is invoked
      * to notify the host container to restore the driver selection list.
      */
     @Composable
@@ -56,5 +56,15 @@ interface InsulinPumpDriver {
      */
     fun getPumpTabSection(
         pump: InsulinPump,
+    ): (@Composable () -> Unit)? = null
+
+    /**
+     * Returns optional Composable UI content for driver-specific settings for [pump],
+     * or null if this driver provides no custom settings screen.
+     * When displayed, [onClose] is invoked when the user dismisses the settings view.
+     */
+    fun getSettingsScreen(
+        pump: InsulinPump,
+        onClose: () -> Unit,
     ): (@Composable () -> Unit)? = null
 }

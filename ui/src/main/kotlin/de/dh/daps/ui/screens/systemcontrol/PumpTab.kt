@@ -30,6 +30,10 @@ import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -37,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import de.dh.daps.common.model.Expiration
 import de.dh.daps.common.model.ExpirationDate
 import de.dh.daps.common.model.InsulinAmount
@@ -71,6 +76,8 @@ fun PumpTabContent(
     onCancelPumpJob: (String) -> Unit = {},
     onResetPumpCommunication: () -> Unit = {}
 ) {
+    var showSettingsDialog by remember { mutableStateOf(false) }
+
     Column(modifier = modifier) {
         val mainHeadlineText = when (uiState) {
             is PumpTabUiState.Loading -> stringResource(R.string.system_control_pump_plugin_section_title)
@@ -94,11 +101,24 @@ fun PumpTabContent(
             )
             if (uiState is PumpTabUiState.Content) {
                 Spacer(modifier = Modifier.width(16.dp))
-                OutlinedIconButton(onClick = onChangePumpDriver) {
-                    Icon(
-                        imageVector = Icon_Pump_Device,
-                        contentDescription = stringResource(R.string.cd_system_control_pump_change)
-                    )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (uiState.pumpSettingsScreen != null) {
+                        OutlinedIconButton(onClick = { showSettingsDialog = true }) {
+                            Icon(
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = stringResource(R.string.cd_system_control_pump_settings)
+                            )
+                        }
+                    }
+                    OutlinedIconButton(onClick = onChangePumpDriver) {
+                        Icon(
+                            imageVector = Icon_Pump_Device,
+                            contentDescription = stringResource(R.string.cd_system_control_pump_change)
+                        )
+                    }
                 }
             }
         }
@@ -165,6 +185,21 @@ fun PumpTabContent(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 uiState.pumpPluginSection.invoke()
+            }
+        }
+
+        if (showSettingsDialog && uiState is PumpTabUiState.Content && uiState.pumpSettingsScreen != null) {
+            Dialog(onDismissRequest = { showSettingsDialog = false }) {
+                Surface(
+                    shape = MaterialTheme.shapes.extraLarge,
+                    color = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 6.dp,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    uiState.pumpSettingsScreen.invoke {
+                        showSettingsDialog = false
+                    }
+                }
             }
         }
     }

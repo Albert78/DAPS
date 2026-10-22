@@ -3,13 +3,32 @@ package de.dh.pump.danai
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.PluginContext
 import de.dh.daps.common.ui.UiText
+import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.pump.danai.core.DanaILogger
 import de.dh.pump.danai.core.DanaIPumpAdapter
 import de.dh.pump.danai.core.DanaPumpPreferences
@@ -206,8 +225,90 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
         _lifecycleState.value = DeviceLifecycleState.NoDevice
     }
 
+    override fun getSettingsScreen(pump: InsulinPump, onClose: () -> Unit): (@Composable () -> Unit) = {
+        DanaISettingsContent(onClose = onClose)
+    }
+
     companion object {
         const val DRIVER_ID = "de.dh.daps.plugin.danai"
         private const val TAG = "DanaIDriver"
+    }
+}
+
+@Composable
+private fun DanaISettingsContent(
+    onClose: () -> Unit
+) {
+    var beepEnabled by remember { mutableStateOf(true) }
+    var autoConnect by remember { mutableStateOf(true) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = "Dana-i Einstellungen",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+        )
+
+        HorizontalDivider()
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Signaltöne",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = "Tonsignale der Dana-i Pumpe aktivieren",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Switch(
+                checked = beepEnabled,
+                onCheckedChange = { beepEnabled = it }
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Automatisch verbinden",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = "Verbindung bei Reichweite automatisch wiederherstellen",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Switch(
+                checked = autoConnect,
+                onCheckedChange = { autoConnect = it }
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            PrimaryButton(onClick = onClose) {
+                Text(stringResource(de.dh.daps.common.R.string.action_close))
+            }
+        }
     }
 }

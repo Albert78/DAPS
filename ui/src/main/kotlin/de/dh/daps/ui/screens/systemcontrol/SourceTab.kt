@@ -26,6 +26,10 @@ import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -33,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import de.dh.daps.common.model.Expiration
 import de.dh.daps.common.model.ExpirationDate
 import de.dh.daps.common.model.ReplaceableComponentType
@@ -64,6 +69,8 @@ fun SourceTabContent(
     onChangeGlucoseSource: () -> Unit = {},
     @Suppress("UNUSED_PARAMETER") onStopSensor: () -> Unit = {}
 ) {
+    var showSettingsDialog by remember { mutableStateOf(false) }
+
     Column(modifier = modifier) {
         val mainHeadlineText = when (uiState) {
             is SourceTabUiState.Loading -> stringResource(R.string.overview_section_glucose_source)
@@ -87,11 +94,24 @@ fun SourceTabContent(
             )
             if (uiState is SourceTabUiState.Content) {
                 Spacer(modifier = Modifier.width(16.dp))
-                OutlinedIconButton(onClick = onChangeGlucoseSource) {
-                    Icon(
-                        imageVector = Icon_Cgm_Sensor,
-                        contentDescription = stringResource(R.string.cd_system_control_source_change)
-                    )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (uiState.glucoseSourceSettingsScreen != null) {
+                        OutlinedIconButton(onClick = { showSettingsDialog = true }) {
+                            Icon(
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = stringResource(R.string.cd_system_control_source_settings)
+                            )
+                        }
+                    }
+                    OutlinedIconButton(onClick = onChangeGlucoseSource) {
+                        Icon(
+                            imageVector = Icon_Cgm_Sensor,
+                            contentDescription = stringResource(R.string.cd_system_control_source_change)
+                        )
+                    }
                 }
             }
         }
@@ -132,6 +152,21 @@ fun SourceTabContent(
             )
             Spacer(modifier = Modifier.height(8.dp))
             uiState.glucoseSourcePluginSection.invoke()
+        }
+
+        if (showSettingsDialog && uiState is SourceTabUiState.Content && uiState.glucoseSourceSettingsScreen != null) {
+            Dialog(onDismissRequest = { showSettingsDialog = false }) {
+                Surface(
+                    shape = MaterialTheme.shapes.extraLarge,
+                    color = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 6.dp,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    uiState.glucoseSourceSettingsScreen.invoke {
+                        showSettingsDialog = false
+                    }
+                }
+            }
         }
     }
 }

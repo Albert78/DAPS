@@ -179,7 +179,8 @@ sealed interface SourceTabUiState {
         val hasNextPrediction: Boolean,
         val expiration: Expiration? = null,
         val isExpired: Boolean,
-        val glucoseSourcePluginSection: (@Composable () -> Unit)? = null
+        val glucoseSourcePluginSection: (@Composable () -> Unit)? = null,
+        val glucoseSourceSettingsScreen: (@Composable (onClose: () -> Unit) -> Unit)? = null
     ) : SourceTabUiState
 }
 
@@ -211,7 +212,8 @@ sealed interface PumpTabUiState {
         val coordinatorState: PumpCoordinatorState,
         val syncStatus: PumpSyncStatus,
         val nextWakeupTime: Timestamp? = null,
-        val pumpPluginSection: (@Composable () -> Unit)? = null
+        val pumpPluginSection: (@Composable () -> Unit)? = null,
+        val pumpSettingsScreen: (@Composable (onClose: () -> Unit) -> Unit)? = null
     ) : PumpTabUiState
 }
 
@@ -627,6 +629,12 @@ class SystemControlViewModel(
             val driver = gInfo.driver
             val source = gInfo.source
             val section = if (driver != null && source != null) driver.getGlucoseSourceControlSection(source) else null
+            val sourceSettings: (@Composable (onClose: () -> Unit) -> Unit)? = if (driver != null && source != null && driver.getSettingsScreen(source) {} != null) {
+                { onClose ->
+                    driver.getSettingsScreen(source, onClose)?.invoke()
+                }
+            } else null
+
             SourceTabUiState.Content(
                 glucoseSourceName = gInfo.sourceName,
                 manufacturer = gInfo.manufacturer,
@@ -639,7 +647,8 @@ class SystemControlViewModel(
                 hasNextPrediction = gInfo.hasNextPrediction,
                 expiration = gInfo.expiration,
                 isExpired = gInfo.isExpired,
-                glucoseSourcePluginSection = section
+                glucoseSourcePluginSection = section,
+                glucoseSourceSettingsScreen = sourceSettings
             )
         }
 
@@ -679,6 +688,11 @@ class SystemControlViewModel(
             val driver = pInfo.driver
             val pump = pInfo.pump
             val section = if (driver != null && pump != null) driver.getPumpTabSection(pump) else null
+            val pumpSettings: (@Composable (onClose: () -> Unit) -> Unit)? = if (driver != null && pump != null && driver.getSettingsScreen(pump) {} != null) {
+                { onClose ->
+                    driver.getSettingsScreen(pump, onClose)?.invoke()
+                }
+            } else null
 
             PumpTabUiState.Content(
                 pumpName = pInfo.pumpName,
@@ -698,7 +712,8 @@ class SystemControlViewModel(
                 coordinatorState = pInfo.coordinatorState,
                 syncStatus = pInfo.syncStatus,
                 nextWakeupTime = pInfo.nextWakeupTime,
-                pumpPluginSection = section
+                pumpPluginSection = section,
+                pumpSettingsScreen = pumpSettings
             )
         }
 

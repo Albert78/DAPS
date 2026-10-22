@@ -57,4 +57,14 @@ interface GlucoseSourceDriver {
     fun getGlucoseSourceControlSection(
         glucoseSource: GlucoseSource,
     ): (@Composable () -> Unit)? = null
+
+    /**
+     * Returns optional Composable UI content for driver-specific settings for [glucoseSource],
+     * or null if this driver provides no custom settings screen.
+     * When displayed, [onClose] is invoked when the user dismisses the settings view.
+     */
+    fun getSettingsScreen(
+        glucoseSource: GlucoseSource,
+        onClose: () -> Unit,
+    ): (@Composable () -> Unit)? = null
 }

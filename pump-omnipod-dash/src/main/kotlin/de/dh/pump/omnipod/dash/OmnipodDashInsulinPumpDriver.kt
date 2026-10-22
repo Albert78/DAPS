@@ -1,13 +1,32 @@
 package de.dh.pump.omnipod.dash
 
 import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.PluginContext
 import de.dh.daps.common.ui.UiText
+import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.pump.omnipod.dash.activation.OmnipodDashActivationManager
 import de.dh.pump.omnipod.dash.db.OmnipodHistoryDatabase
 import de.dh.pump.omnipod.dash.db.OmnipodHistoryEntity
@@ -175,8 +194,90 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
 
     fun getContext(): PluginContext? = pluginContext
 
+    override fun getSettingsScreen(pump: InsulinPump, onClose: () -> Unit): (@Composable () -> Unit) = {
+        OmnipodDashSettingsContent(onClose = onClose)
+    }
+
     companion object {
         const val DRIVER_ID = "de.dh.daps.plugin.omnipod.dash"
         private const val TAG = "OmnipodDashDriver"
+    }
+}
+
+@Composable
+private fun OmnipodDashSettingsContent(
+    onClose: () -> Unit
+) {
+    var confidenceReminders by remember { mutableStateOf(true) }
+    var expirationAlerts by remember { mutableStateOf(true) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = "Omnipod Dash Einstellungen",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+        )
+
+        HorizontalDivider()
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Bestätigungstöne",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = "Akustische Bestätigung bei Bolus-Befehlen",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Switch(
+                checked = confidenceReminders,
+                onCheckedChange = { confidenceReminders = it }
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Pod-Ablaufwarnungen",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = "Warnmeldungen vor Pod-Ablauf anzeigen",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Switch(
+                checked = expirationAlerts,
+                onCheckedChange = { expirationAlerts = it }
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            PrimaryButton(onClick = onClose) {
+                Text(stringResource(de.dh.daps.common.R.string.action_close))
+            }
+        }
     }
 }

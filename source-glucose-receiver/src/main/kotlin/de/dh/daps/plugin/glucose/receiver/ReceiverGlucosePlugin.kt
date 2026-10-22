@@ -22,6 +22,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -387,5 +388,63 @@ class ReceiverGlucosePlugin(
         private const val KEY_SOURCE_TYPE = "source_type"
         val TAG = ReceiverGlucosePlugin::class.simpleName
         var instance: ReceiverGlucosePlugin? = null
+    }
+
+    override fun getSettingsScreen(glucoseSource: GlucoseSource, onClose: () -> Unit): (@Composable () -> Unit) = {
+        ReceiverGlucoseSettingsContent(onClose = onClose)
+    }
+}
+
+@Composable
+private fun ReceiverGlucoseSettingsContent(
+    onClose: () -> Unit
+) {
+    var allowOutdatedData by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = "Broadcast Receiver Einstellungen",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+        )
+
+        HorizontalDivider()
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Veraltete Daten erlauben",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = "Broadcast-Nachrichten verarbeiten, auch wenn Zeitstempel älter als 15 Minuten ist",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Switch(
+                checked = allowOutdatedData,
+                onCheckedChange = { allowOutdatedData = it }
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            PrimaryButton(onClick = onClose) {
+                Text(stringResource(de.dh.daps.common.R.string.action_close))
+            }
+        }
     }
 }
