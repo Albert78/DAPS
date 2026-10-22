@@ -446,6 +446,7 @@
     <string name="cd_system_control_source_change">Glukose-Quelle wechseln</string>
     <string name="cd_system_control_source_setup">Glukose-Quelle einrichten</string>
     <string name="cd_system_control_source_settings">Glukosequellen-Einstellungen</string>
+    <string name="system_control_source_no_settings_toast">Für diese Glukosequelle sind keine Einstellungen vorhanden.</string>
     <string name="system_control_source_settings_title">Glukosequellen-Einstellungen</string>
     <string name="system_control_source_manufacturer_label">Hersteller</string>
     <string name="system_control_source_model_label">Modell</string>
@@ -476,6 +477,7 @@
     <string name="cd_system_control_pump_change">Insulinpumpe wechseln</string>
     <string name="cd_system_control_pump_setup">Insulinpumpe einrichten</string>
     <string name="cd_system_control_pump_settings">Pumpeneinstellungen</string>
+    <string name="system_control_pump_no_settings_toast">Für diese Insulinpumpe sind keine Einstellungen vorhanden.</string>
     <string name="system_control_pump_settings_title">Pumpeneinstellungen</string>
     <string name="system_control_pump_manufacturer_label">Hersteller</string>
     <string name="system_control_pump_model_label">Pumpenmodell</string>

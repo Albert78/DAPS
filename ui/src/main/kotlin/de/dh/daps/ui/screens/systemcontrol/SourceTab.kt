@@ -1,6 +1,7 @@
 package de.dh.daps.ui.screens.systemcontrol
 
 import android.content.res.Configuration
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +23,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Surface
@@ -33,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -100,13 +103,40 @@ fun SourceTabContent(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (uiState.glucoseSourceSettingsScreen != null) {
-                        OutlinedIconButton(onClick = { showSettingsDialog = true }) {
-                            Icon(
-                                imageVector = Icons.Default.Settings,
-                                contentDescription = stringResource(R.string.cd_system_control_source_settings)
+                    val hasSettings = uiState.glucoseSourceSettingsScreen != null
+                    val context = LocalContext.current
+                    val noSettingsMessage = stringResource(R.string.system_control_source_no_settings_toast)
+
+                    OutlinedIconButton(
+                        onClick = {
+                            if (hasSettings) {
+                                showSettingsDialog = true
+                            } else {
+                                Toast.makeText(context, noSettingsMessage, Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        colors = if (hasSettings) {
+                            IconButtonDefaults.outlinedIconButtonColors()
+                        } else {
+                            IconButtonDefaults.outlinedIconButtonColors(
+                                contentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                             )
+                        },
+                        border = if (hasSettings) {
+                            IconButtonDefaults.outlinedIconButtonBorder(enabled = true)
+                        } else {
+                            IconButtonDefaults.outlinedIconButtonBorder(enabled = false)
                         }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = stringResource(R.string.cd_system_control_source_settings),
+                            tint = if (hasSettings) {
+                                MaterialTheme.colorScheme.onSurface
+                            } else {
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                            }
+                        )
                     }
                     OutlinedIconButton(onClick = onChangeGlucoseSource) {
                         Icon(
