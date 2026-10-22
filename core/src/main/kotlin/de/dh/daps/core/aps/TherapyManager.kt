@@ -271,6 +271,23 @@ class TherapyManager(
     suspend fun getPumpCapabilities() = pumpManager.insulinPump?.pumpCapabilities?.value
 
     /**
+     * Observes all available insulin types.
+     */
+    fun observeInsulinTypes(): Flow<List<InsulinType>> = treatmentRepository.observeInsulinTypes()
+
+    /**
+     * Gets all available insulin types.
+     */
+    suspend fun getAllInsulinTypes(): List<InsulinType> = treatmentRepository.getAllInsulinTypes()
+
+    /**
+     * Adds or updates an insulin type.
+     */
+    suspend fun addInsulinType(insulinType: InsulinType) {
+        treatmentRepository.insertInsulinType(insulinType)
+    }
+
+    /**
      * Checks if an insulin type is currently in use (either set on the active pump or present in history).
      */
     suspend fun isInsulinTypeInUse(insulinTypeId: String): Boolean {

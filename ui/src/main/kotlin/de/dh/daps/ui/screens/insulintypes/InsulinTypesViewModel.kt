@@ -32,11 +32,10 @@ class InsulinTypesViewModel(
     private val defaultInsulinTypes: List<InsulinType> = emptyList()
 ) : ViewModel() {
 
-    private val treatmentRepository = registry.treatmentRepository
     private val therapyManager = registry.therapyManager
 
     val uiState: StateFlow<InsulinTypesUiState> = combine(
-        treatmentRepository.observeInsulinTypes(),
+        therapyManager.observeInsulinTypes(),
         therapyManager.observeUsedInsulinTypeIds()
     ) { types, usedIds ->
         val availableStandard = defaultInsulinTypes.filter { std ->
@@ -64,7 +63,7 @@ class InsulinTypesViewModel(
             } else {
                 insulinType
             }
-            treatmentRepository.insertInsulinType(toAdd)
+            therapyManager.addInsulinType(toAdd)
         }
     }
 

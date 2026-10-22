@@ -38,9 +38,6 @@ interface TherapyDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertInsulinProfiles(items: List<InsulinProfileEntity>)
 
-    @Query("SELECT COUNT(*) FROM insulin_profiles WHERE insulin_settings LIKE '%' || :insulinTypeId || '%'")
-    suspend fun countProfilesUsingInsulinType(insulinTypeId: String): Int
-
     // Current Therapy Settings
     @Query("SELECT * FROM current_therapy_settings LIMIT 1")
     suspend fun getCurrentTherapySettings(): CurrentTherapySettingsEntity?
