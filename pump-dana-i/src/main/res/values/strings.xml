@@ -39,4 +39,8 @@
     <string name="danai_pump_control_maintenance_subtitle_on">Der Wartungsmodus ist aktiv. Pumpenbefehle werden so lange blockiert, bis der Wartungsmodus beendet wird.</string>
     <string name="danai_pump_control_btn_disconnect_maintenance">Zur Wartung trennen</string>
     <string name="danai_pump_control_btn_reconnect_maintenance">Wartung beenden</string>
+
+    <string name="danai_config_screen_title">Dana-i Konfiguration</string>
+    <string name="danai_config_concentration_title">Insulinkonzentration</string>
+    <string name="danai_config_concentration_subtitle">Wähle die Konzentration des in der Dana-Pumpe geladenen Insulins. Der Standardwert ist U100.</string>
 </resources>

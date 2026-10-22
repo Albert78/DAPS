@@ -1,5 +1,6 @@
 package de.dh.pump.omnipod.protocol.state
 
+import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.PluginPreferences
 import de.dh.pump.omnipod.protocol.definition.ActivationProgress
 import de.dh.pump.omnipod.protocol.definition.AlarmType
@@ -61,6 +62,7 @@ interface OmnipodDashPodStateManager {
     val basalDrift: Double
     var lastBasalCorrectionTime: Long?
     var basalCorrectionInProgress: Boolean
+    var insulinConcentration: InsulinConcentration
 
     fun updateFromDefaultStatusResponse(response: DefaultStatusResponse)
     fun updateFromAlarmStatusResponse(response: AlarmStatusResponse)
@@ -138,6 +140,8 @@ class OmnipodDashPodStateManagerImpl(
     override val isActivationCompleted: Boolean get() = activationProgress == ActivationProgress.COMPLETED
     override val isSuspended: Boolean get() = deliveryStatus == DeliveryStatus.SUSPENDED
     override val isPodRunning: Boolean get() = podStatus?.isRunning() == true
+
+    override var insulinConcentration: InsulinConcentration = InsulinConcentration.U100
 
     override var uniqueId: Int? = null
     override var lotNumber: Long? = null
@@ -448,11 +452,14 @@ class OmnipodDashPodStateManagerImpl(
             lastBasalCorrectionTime?.let { putLong(KEY_LAST_BASAL_CORRECTION_TIME, it) } ?: putLong(KEY_LAST_BASAL_CORRECTION_TIME, 0L)
             tempBasal?.let { putString(KEY_TEMP_BASAL, Json.encodeToString(it)) } ?: putString(KEY_TEMP_BASAL, null)
             basalProgram?.let { putString(KEY_BASAL_PROGRAM, Json.encodeToString(it)) } ?: putString(KEY_BASAL_PROGRAM, null)
+            putFloat(KEY_INSULIN_CONCENTRATION, insulinConcentration.factor.toFloat())
         }
     }
 
     override suspend fun loadFromPreferences() {
         preferences?.let { prefs ->
+            val concFactor = prefs.getFloat(KEY_INSULIN_CONCENTRATION, 1.0f).first()
+            insulinConcentration = InsulinConcentration(concFactor.toDouble())
             uniqueId = prefs.getInt(KEY_UNIQUE_ID, 0).first().takeIf { it != 0 }
             lotNumber = prefs.getLong(KEY_LOT_NUMBER, 0L).first().takeIf { it != 0L }
             podSequenceNumber = prefs.getLong(KEY_POD_SEQ_NUMBER, 0L).first().takeIf { it != 0L }
@@ -550,9 +557,11 @@ class OmnipodDashPodStateManagerImpl(
         bolusPulsesDelivered = null
         lastBasalCorrectionTime = null
         basalCorrectionInProgress = false
+        insulinConcentration = InsulinConcentration.U100
     }
 
     companion object {
+        private const val KEY_INSULIN_CONCENTRATION = "omnipod_dash_insulin_concentration"
         private const val KEY_UNIQUE_ID = "omnipod_dash_unique_id"
         private const val KEY_LOT_NUMBER = "omnipod_dash_lot_number"
         private const val KEY_POD_SEQ_NUMBER = "omnipod_dash_pod_seq_number"

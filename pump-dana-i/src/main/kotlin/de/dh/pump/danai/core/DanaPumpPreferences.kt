@@ -1,5 +1,6 @@
 package de.dh.pump.danai.core
 
+import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.PluginPreferences
 import kotlinx.coroutines.flow.first
 
@@ -7,6 +8,15 @@ import kotlinx.coroutines.flow.first
  * Type-safe wrapper over [PluginPreferences] for Dana pump driver preferences.
  */
 class DanaPumpPreferences(val preferences: PluginPreferences) {
+
+    suspend fun getInsulinConcentration(): InsulinConcentration {
+        val factor = preferences.getFloat(KEY_INSULIN_CONCENTRATION, 1.0f).first().toDouble()
+        return InsulinConcentration(factor)
+    }
+
+    suspend fun saveInsulinConcentration(concentration: InsulinConcentration) {
+        preferences.putFloat(KEY_INSULIN_CONCENTRATION, concentration.factor.toFloat())
+    }
 
     suspend fun getLastName(): String =
         preferences.getString(KEY_LAST_NAME, "").first() ?: ""
@@ -48,6 +58,7 @@ class DanaPumpPreferences(val preferences: PluginPreferences) {
     }
 
     companion object {
+        const val KEY_INSULIN_CONCENTRATION = "insulin_concentration"
         const val KEY_LAST_NAME = "last_name"
         const val KEY_LAST_ADDRESS = "last_address"
         const val KEY_BLE5_PAIRING_KEY = "ble5_pairing_key"

@@ -36,6 +36,7 @@ import de.dh.pump.danai.core.connection.DanaILink
 import de.dh.pump.danai.core.connection.PairingFailedException
 import de.dh.pump.danai.core.connection.SessionState
 import de.dh.pump.danai.core.connection.StaleBondException
+import de.dh.pump.danai.ui.DanaIConfigurationScreen
 import de.dh.pump.danai.ui.DanaIPumpControl
 import de.dh.pump.danai.ui.DanaISetupScreen
 import de.dh.pump.util.BluetoothBondUtils
@@ -147,7 +148,9 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
             context = pc.appContext,
         )
 
+        val danaPrefs = DanaPumpPreferences(pc.preferences)
         val pumpAdapter = DanaIPumpAdapter.create(link, defaultLogger, scope)
+        pumpAdapter.insulinConcentration = danaPrefs.getInsulinConcentration()
         pumpAdapter.controller.connect()
 
         _lifecycleState.value = DeviceLifecycleState.DeviceBound(
@@ -226,7 +229,11 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
     }
 
     override fun getSettingsScreen(pump: InsulinPump, onClose: () -> Unit): (@Composable () -> Unit) = {
-        DanaISettingsContent(onClose = onClose)
+        DanaIConfigurationScreen(
+            pump = pump,
+            preferences = pluginContext?.preferences,
+            onClose = onClose
+        )
     }
 
     companion object {

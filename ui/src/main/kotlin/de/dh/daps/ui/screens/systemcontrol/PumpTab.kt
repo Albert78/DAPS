@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -42,6 +43,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import de.dh.daps.common.model.Expiration
 import de.dh.daps.common.model.ExpirationDate
 import de.dh.daps.common.model.InsulinAmount
@@ -189,12 +191,13 @@ fun PumpTabContent(
         }
 
         if (showSettingsDialog && uiState is PumpTabUiState.Content && uiState.pumpSettingsScreen != null) {
-            Dialog(onDismissRequest = { showSettingsDialog = false }) {
+            Dialog(
+                onDismissRequest = { showSettingsDialog = false },
+                properties = DialogProperties(usePlatformDefaultWidth = false)
+            ) {
                 Surface(
-                    shape = MaterialTheme.shapes.extraLarge,
-                    color = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 6.dp,
-                    modifier = Modifier.fillMaxWidth()
+                    color = MaterialTheme.colorScheme.background,
+                    modifier = Modifier.fillMaxSize()
                 ) {
                     uiState.pumpSettingsScreen.invoke {
                         showSettingsDialog = false

@@ -754,10 +754,6 @@ class DanaIController(
     private suspend fun executeSetProfile(profile: InsulinProfile) = withConnection { client ->
         logger.log("Action: Setting profile '${profile.name}'")
 
-        if (profile.insulinConcentration != pump.insulinConcentration) {
-            pump.insulinConcentration = profile.insulinConcentration
-        }
-
         val hourlyRates = (0..23).map { hour ->
             val amount = profile.basalBlocks.getAmountForMinute(Minutes.ofHours(hour))
             InsulinAmount(amount).toPumpUnits(pump.insulinConcentration)

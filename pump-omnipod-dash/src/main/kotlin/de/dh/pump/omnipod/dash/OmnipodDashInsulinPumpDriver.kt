@@ -31,6 +31,7 @@ import de.dh.pump.omnipod.dash.activation.OmnipodDashActivationManager
 import de.dh.pump.omnipod.dash.db.OmnipodHistoryDatabase
 import de.dh.pump.omnipod.dash.db.OmnipodHistoryEntity
 import de.dh.pump.omnipod.dash.db.OmnipodHistoryEventType
+import de.dh.pump.omnipod.dash.ui.OmnipodDashConfigurationScreen
 import de.dh.pump.omnipod.dash.ui.OmnipodDashSetupScreen
 import de.dh.pump.omnipod.protocol.ble.OmnipodDashBleManager
 import de.dh.pump.omnipod.protocol.definition.ActivationProgress
@@ -146,6 +147,7 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
         val stateManager = getPodStateManager()
         val ble = getBleManager()
         val pump = OmnipodDashPump(stateManager, ble, pc.appContext)
+        pump.insulinConcentration = stateManager.insulinConcentration
         _lifecycleState.value = DeviceLifecycleState.DeviceBound(
             deviceId = stateManager.bluetoothAddress ?: "POD-DASH-ACTIVE",
             displayName = UiText.StringResource(R.string.omnipod_dash_pump_display_name),
@@ -195,7 +197,11 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
     fun getContext(): PluginContext? = pluginContext
 
     override fun getSettingsScreen(pump: InsulinPump, onClose: () -> Unit): (@Composable () -> Unit) = {
-        OmnipodDashSettingsContent(onClose = onClose)
+        OmnipodDashConfigurationScreen(
+            pump = pump,
+            driver = this,
+            onClose = onClose
+        )
     }
 
     companion object {
