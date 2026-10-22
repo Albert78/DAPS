@@ -1,5 +1,12 @@
 <resources>
-    <string name="glucose_broadcast_receiver_display_name">Glucose Broadcast Receiver</string>
+    <string name="glucose_broadcast_receiver_display_name">Glucose Broadcast Empfänger</string>
+    <string name="receiver_status_bound">Gebunden</string>
+    <string name="receiver_bound_description">Der Broadcast-Empfänger nimmt Glukosewerte von externen Apps entgegen.</string>
+    <string name="receiver_action_unbind">Bindung verwerfen</string>
+    <string name="receiver_setup_title">Setup des Broadcast-Empfängers</string>
+    <string name="receiver_setup_description">Empfange Blutzuckerwerte, die von externen Apps wie xDrip+ oder Juggluco gesendet werden.</string>
+    <string name="receiver_action_setup">Einrichten</string>
+
     <string name="receiver_unbind_dialog_title">Bindung verwerfen?</string>
     <string name="receiver_unbind_dialog_message">Möchtest du die Bindung zu diesem Glukose-Broadcast-Empfänger wirklich verwerfen?</string>
     <string name="receiver_unbind_dialog_confirm">Bindung verwerfen</string>

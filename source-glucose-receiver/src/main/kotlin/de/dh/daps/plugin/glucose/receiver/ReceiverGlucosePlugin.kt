@@ -4,37 +4,8 @@ import android.app.Application
 import android.content.Context
 import android.content.IntentFilter
 import android.util.Log
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Badge
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.Expiration
@@ -49,12 +20,8 @@ import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.ui.common.composables.FramedCard
-import de.dh.daps.ui.common.composables.NormalButton
-import de.dh.daps.ui.common.composables.NormalTextButton
-import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.common.ui.UiText
-import de.dh.daps.ui.common.composables.FramedCard
+import de.dh.daps.plugin.glucose.receiver.ui.ReceiverGlucoseSetupScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -182,6 +149,15 @@ class ReceiverGlucosePlugin(
         _activeGlucoseSource.value = this
     }
 
+    fun saveAndBindSource(sourceType: ExternalSourceType) {
+        pluginContext?.preferences?.let { prefs ->
+            scope.launch {
+                prefs.putString(KEY_SOURCE_TYPE, sourceType.name)
+            }
+        }
+        bindSource(sourceType)
+    }
+
     suspend fun unbindDevice() {
         pluginContext?.preferences?.remove(KEY_SOURCE_TYPE)
         stop()
@@ -197,172 +173,20 @@ class ReceiverGlucosePlugin(
         onDriverReset: () -> Unit,
     ) {
         val currentState by lifecycleState.collectAsStateWithLifecycle()
-        var showUnbindDialog by remember { mutableStateOf(false) }
 
-        when (val state = currentState) {
-            is DeviceLifecycleState.DeviceBound -> {
-                FramedCard(
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = state.displayName.asString(),
-                                    style = MaterialTheme.typography.titleLarge,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    text = stringResource(externalSourceType.displayNameRes),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            Badge(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                            ) {
-                                Text(
-                                    text = "Gebunden",
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                )
-                            }
-                        }
-
-                        HorizontalDivider()
-
-                        Text(
-                            text = "Der Broadcast-Empfänger nimmt Glukosewerte von externen Apps entgegen.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        NormalButton(
-                            onClick = { showUnbindDialog = true },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = MaterialTheme.colorScheme.error,
-                                containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.1f)
-                            ),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.error)
-                        ) {
-                            Text("Bindung verwerfen")
-                        }
-                    }
+        ReceiverGlucoseSetupScreen(
+            lifecycleState = currentState,
+            externalSourceType = externalSourceType,
+            onSelectSourceType = { sourceType ->
+                saveAndBindSource(sourceType)
+            },
+            onUnbindDevice = {
+                scope.launch {
+                    unbindDevice()
+                    onDriverReset()
                 }
-            }
-            else -> {
-                var selectedSourceType by remember { mutableStateOf(externalSourceType) }
-
-                FramedCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "External Receiver Setup",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Empfange Blutzuckerwerte, die von externen Apps wie xDrip+ oder Juggluco gesendet werden.",
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Text(
-                            text = stringResource(R.string.source_type_label),
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            ExternalSourceType.entries.forEach { type ->
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .selectable(
-                                            selected = (type == selectedSourceType),
-                                            onClick = { selectedSourceType = type },
-                                            role = Role.RadioButton,
-                                        )
-                                        .padding(vertical = 4.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    RadioButton(
-                                        selected = (type == selectedSourceType),
-                                        onClick = null,
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = stringResource(type.displayNameRes),
-                                        style = MaterialTheme.typography.bodyMedium,
-                                    )
-                                }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-                        PrimaryButton(
-                            onClick = {
-                                pluginContext?.preferences?.let { prefs ->
-                                    scope.launch {
-                                        prefs.putString(KEY_SOURCE_TYPE, selectedSourceType.name)
-                                    }
-                                }
-                                bindSource(selectedSourceType)
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text("Einrichten")
-                        }
-                    }
-                }
-            }
-        }
-
-        if (showUnbindDialog) {
-            AlertDialog(
-                onDismissRequest = { showUnbindDialog = false },
-                title = { Text(stringResource(R.string.receiver_unbind_dialog_title)) },
-                text = { Text(stringResource(R.string.receiver_unbind_dialog_message)) },
-                confirmButton = {
-                    PrimaryButton(
-                        onClick = {
-                            showUnbindDialog = false
-                            scope.launch {
-                                unbindDevice()
-                                onDriverReset()
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error,
-                            contentColor = MaterialTheme.colorScheme.onError
-                        )
-                    ) {
-                        Text(stringResource(R.string.receiver_unbind_dialog_confirm))
-                    }
-                },
-                dismissButton = {
-                    NormalTextButton(onClick = { showUnbindDialog = false }) {
-                        Text(stringResource(de.dh.daps.common.R.string.action_cancel))
-                    }
-                }
-            )
-        }
+            },
+        )
     }
 
     private suspend fun refreshLifecycleState(preferences: PluginPreferences) {
@@ -382,69 +206,16 @@ class ReceiverGlucosePlugin(
         }
     }
 
+    override fun getSettingsScreen(
+        glucoseSource: GlucoseSource,
+        onClose: () -> Unit,
+    ): (@Composable () -> Unit)? = null
+
     companion object {
         const val DRIVER_ID = "de.dh.daps.plugin.glucose.receiver"
         const val SOURCE_ID = "receiver-glucose-source"
         private const val KEY_SOURCE_TYPE = "source_type"
         val TAG = ReceiverGlucosePlugin::class.simpleName
         var instance: ReceiverGlucosePlugin? = null
-    }
-
-    override fun getSettingsScreen(glucoseSource: GlucoseSource, onClose: () -> Unit): (@Composable () -> Unit) = {
-        ReceiverGlucoseSettingsContent(onClose = onClose)
-    }
-}
-
-@Composable
-private fun ReceiverGlucoseSettingsContent(
-    onClose: () -> Unit
-) {
-    var allowOutdatedData by remember { mutableStateOf(false) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Text(
-            text = "Broadcast Receiver Einstellungen",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold
-        )
-
-        HorizontalDivider()
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Veraltete Daten erlauben",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = "Broadcast-Nachrichten verarbeiten, auch wenn Zeitstempel älter als 15 Minuten ist",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Switch(
-                checked = allowOutdatedData,
-                onCheckedChange = { allowOutdatedData = it }
-            )
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
-        ) {
-            PrimaryButton(onClick = onClose) {
-                Text(stringResource(de.dh.daps.common.R.string.action_close))
-            }
-        }
     }
 }
