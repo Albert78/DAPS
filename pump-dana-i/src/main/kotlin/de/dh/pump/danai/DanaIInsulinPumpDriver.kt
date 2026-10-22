@@ -14,6 +14,7 @@ import de.dh.pump.danai.core.DanaILogger
 import de.dh.pump.danai.core.DanaIPumpAdapter
 import de.dh.pump.danai.core.DanaPumpPreferences
 import de.dh.pump.danai.core.connection.DanaILink
+import de.dh.pump.danai.core.connection.PairingFailedException
 import de.dh.pump.danai.core.connection.SessionState
 import de.dh.pump.danai.core.connection.StaleBondException
 import de.dh.pump.danai.ui.DanaIPumpControl
@@ -165,11 +166,18 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
 
         if (!isConnected) {
             Log.e(TAG, "Pairing or connection failed for $deviceName ($deviceAddress). Cleaning up.")
+            val lastError = pumpAdapter.controller.lastError.value
             val isStaleBond = pumpAdapter.controller.requiresStaleBondRemoval.value ||
-                    pumpAdapter.controller.lastError.value?.isStaleBond == true
+                    lastError?.isStaleBond == true
+            val isPossibleStaleBond = lastError?.isPossibleStaleBond == true
+
             unbindDevice()
+
             if (isStaleBond) {
                 throw StaleBondException("Pairing failed due to stale OS Bluetooth bond")
+            }
+            if (isPossibleStaleBond) {
+                throw PairingFailedException("Pairing failed, possibly due to a stale Bluetooth bond")
             }
             throw IllegalStateException("Connection or pairing failed")
         }

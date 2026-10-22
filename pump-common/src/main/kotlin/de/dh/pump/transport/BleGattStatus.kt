@@ -26,6 +26,12 @@ object BleGattStatus {
      * Generic Android BLE stack error, frequently caused by stale bonds, connection timeouts, or stack deadlocks.
      */
     const val GATT_ERROR = 133
+
+    /**
+     * GATT Authentication Failure (0x89 / 137).
+     * Android internal GATT status returned when bonding or authentication fails.
+     */
+    const val GATT_AUTH_FAIL = 137
 }
 
 /**

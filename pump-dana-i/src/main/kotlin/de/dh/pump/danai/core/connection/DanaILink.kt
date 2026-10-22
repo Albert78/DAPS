@@ -77,6 +77,7 @@ sealed interface LinkStatus {
 data class LinkError(
     val message: String,
     val isStaleBond: Boolean = false,
+    val isPossibleStaleBond: Boolean = false,
     val timestamp: Timestamp = Timestamp.now()
 )
 
@@ -216,7 +217,11 @@ class DanaILink(
 
                 if (sState.isClosed) {
                     if (sState is SessionState.Failed) {
-                        _lastError.value = LinkError(sState.message, isStaleBond = sState.isStaleBond)
+                        _lastError.value = LinkError(
+                            message = sState.message,
+                            isStaleBond = sState.isStaleBond,
+                            isPossibleStaleBond = sState.isPossibleStaleBond,
+                        )
                         _requiresStaleBondRemoval.value = sState.isStaleBond
                     }
                     _status.value = LinkStatus.Idle

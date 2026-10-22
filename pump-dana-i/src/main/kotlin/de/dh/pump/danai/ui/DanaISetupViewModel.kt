@@ -12,6 +12,7 @@ import de.dh.pump.danai.core.DanaIPumpAdapter
 import de.dh.pump.danai.core.connection.DanaPumpScanner
 import de.dh.pump.danai.core.connection.DanaScanError
 import de.dh.pump.danai.core.connection.DanaScanResult
+import de.dh.pump.danai.core.connection.PairingFailedException
 import de.dh.pump.danai.core.connection.StaleBondException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -81,6 +82,9 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
                 if (e is StaleBondException) {
                     _isStaleBondError.value = true
                     _pairError.value = getApplication<Application>().getString(R.string.danai_pump_setup_stale_bond_error)
+                } else if (e is PairingFailedException) {
+                    _isStaleBondError.value = true
+                    _pairError.value = getApplication<Application>().getString(R.string.danai_pump_setup_possible_stale_bond_error)
                 } else {
                     _isStaleBondError.value = false
                     _pairError.value = e.message ?: getApplication<Application>().getString(R.string.danai_pump_setup_connect_failed)

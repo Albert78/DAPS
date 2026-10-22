@@ -16,7 +16,6 @@ import de.dh.pump.danai.core.DanaPumpPreferences
 import de.dh.pump.transport.AndroidBleTransport
 import de.dh.pump.transport.BleGattException
 import de.dh.pump.transport.BleGattStatus
-import de.dh.pump.util.BluetoothBondUtils
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -35,6 +34,15 @@ import kotlin.time.Duration.Companion.milliseconds
  */
 class StaleBondException(
     message: String = "Stale Bluetooth bond detected requiring manual removal in Android settings",
+    cause: Throwable? = null,
+) : IllegalStateException(message, cause)
+
+/**
+ * Exception thrown when a pairing or connection attempt fails with errors like GATT_ERROR or
+ * TERMINATE_PEER_USER which could potentially be caused by a stale OS-level Bluetooth bond.
+ */
+class PairingFailedException(
+    message: String = "Pairing failed; possible stale Bluetooth bond detected requiring manual removal in Android settings",
     cause: Throwable? = null,
 ) : IllegalStateException(message, cause)
 
@@ -93,6 +101,7 @@ sealed interface SessionState {
         val message: String,
         val error: Throwable? = null,
         val isStaleBond: Boolean = false,
+        val isPossibleStaleBond: Boolean = false,
     ) : SessionState {
         override val isStable = true
         override val isClosed = true
@@ -181,7 +190,7 @@ class DanaISession(
                     )
                 }
             } catch (e: Exception) {
-                if (shouldAttemptBondRecovery(e)) {
+                if (isStaleBondError(e)) {
                     logger.log("Connection failed ($e). Clearing stored app pairing key...")
                     danaPreferences.saveHandshakeData(pairingKey = null, hardwareModel = null, protocol = null)
 
@@ -231,11 +240,13 @@ class DanaISession(
             }
         } catch (e: Exception) {
             val isStaleBond = e is StaleBondException || _requiresStaleBondRemoval.value
+            val isPossibleStaleBond = e is PairingFailedException || isPossibleStaleBondError(e)
             if (!state.isClosed && state !is SessionState.Failed) {
                 state = SessionState.Failed(
                     message = e.message ?: "Session failed",
                     error = e,
                     isStaleBond = isStaleBond,
+                    isPossibleStaleBond = isPossibleStaleBond,
                 )
             }
         } finally {
@@ -321,16 +332,23 @@ class DanaISession(
         }
     }
 
-    private suspend fun shouldAttemptBondRecovery(error: Throwable): Boolean {
-        val isBondedOrHasKey = BluetoothBondUtils.isBonded(device) || danaPreferences.getBle5PairingKey() != null
-        if (!isBondedOrHasKey) return false
+    @SuppressLint("MissingPermission")
+    private suspend fun isStaleBondError(error: Throwable): Boolean {
+        val osUnbonded = device.bondState == BluetoothDevice.BOND_NONE
+        val appHasKey = danaPreferences.getBle5PairingKey() != null
+        if (osUnbonded && appHasKey) return true
 
         val status = (error as? BleGattException)?.status ?: return false
 
+        return status == BleGattStatus.GATT_INSUFFICIENT_AUTHENTICATION ||
+               status == BleGattStatus.GATT_INSUFFICIENT_ENCRYPTION ||
+               status == BleGattStatus.GATT_AUTH_FAIL
+    }
+
+    private fun isPossibleStaleBondError(error: Throwable): Boolean {
+        val status = (error as? BleGattException)?.status ?: return false
         return status == BleGattStatus.GATT_CONN_TERMINATE_PEER_USER ||
-               status == BleGattStatus.GATT_ERROR ||
-               status == BleGattStatus.GATT_INSUFFICIENT_AUTHENTICATION ||
-               status == BleGattStatus.GATT_INSUFFICIENT_ENCRYPTION
+               status == BleGattStatus.GATT_ERROR
     }
 
     suspend fun disconnect() {
