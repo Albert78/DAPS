@@ -408,6 +408,12 @@ fun PumpOverviewCard(
                                     maxLines = 2,
                                     overflow = TextOverflow.Ellipsis
                                 )
+                                val volumeMl = uiState.reservoirRemaining.toMl(uiState.insulinConcentration)
+                                Text(
+                                    text = stringResource(R.string.system_control_pump_reservoir_detail_format, volumeMl, uiState.insulinConcentration.uValue),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         }
                     }

@@ -1,13 +1,13 @@
 package de.dh.daps.common.model
 
 import de.dh.daps.common.ID_UNDEFINED
-import de.dh.daps.common.model.InsulinAmount.Companion.EPSILON
 import de.dh.daps.common.model.data.BgDelta
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import java.util.UUID
 import kotlin.math.abs
 import kotlin.math.round
+import kotlin.math.roundToInt
 
 
 /**
@@ -78,6 +78,16 @@ value class InsulinAmount(val iu: Double): Comparable<InsulinAmount> {
         return iu / concentration.factor
     }
 
+    /**
+     * Calculates the volume in milliliters (ml) for this insulin amount.
+     *
+     * @param concentration The concentration of the insulin used (defaults to U100).
+     * @return The volume in ml.
+     */
+    fun toMl(concentration: InsulinConcentration = InsulinConcentration.U100): Double {
+        return toPumpUnits(concentration) / 100.0
+    }
+
     companion object {
         val ZERO = InsulinAmount(0.0)
         val EPSILON = InsulinAmount(0.01)
@@ -95,6 +105,8 @@ value class InsulinAmount(val iu: Double): Comparable<InsulinAmount> {
  */
 @JvmInline
 value class InsulinConcentration(val factor: Double) {
+    val uValue: Int get() = (factor * 100).roundToInt()
+
     companion object {
         val U20 = InsulinConcentration(0.2)
         val U40 = InsulinConcentration(0.4)
@@ -211,7 +223,7 @@ data class InsulinApplication(
 
 /**
  * Converts a list of [InsulinApplication] entries into a list of pure [InsulinDose] objects,
- * filtering out cancelled or invalidated applications and optionally basal applications.
+ * filtering out canceled or invalidated applications and optionally basal applications.
  */
 fun List<InsulinApplication>.toActiveDoses(excludeBasal: Boolean = false): List<InsulinDose> =
     filter { it.status != InsulinStatus.Cancelled && it.status != InsulinStatus.Invalidated && (!excludeBasal || !it.basal) }

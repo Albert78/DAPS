@@ -612,7 +612,14 @@ private fun OverviewPumpCard(
                         }
                         Column(modifier = Modifier.weight(1f)) {
                             ControlDetailRow(label = stringResource(id = R.string.overview_pump_reservoir_label)) {
-                                StatusMetricText(metric = state.reservoir)
+                                val volumeMl = state.reservoir.value?.toMl(state.insulinConcentration)
+                                val detailText = if (volumeMl != null) {
+                                    stringResource(R.string.system_control_pump_reservoir_detail_format, volumeMl, state.insulinConcentration.uValue)
+                                } else null
+                                StatusMetricText(
+                                    metric = state.reservoir,
+                                    detailText = detailText
+                                )
                             }
                         }
                     }
@@ -645,6 +652,7 @@ private fun <T> StatusMetricText(
     metric: StatusMetric<T>,
     modifier: Modifier = Modifier,
     isDateTime: Boolean = false,
+    detailText: String? = null,
     formatValue: @Composable ((T) -> String)? = null
 ) {
     val glucoseUnit = LocalGlucoseUnit.current
@@ -718,6 +726,7 @@ private fun <T> StatusMetricText(
     StatusValueText(
         value = formattedValue,
         relativeTime = relativeTime,
+        detailText = detailText,
         status = if (isSet) metric.status else null,
         modifier = modifier
     )
@@ -728,6 +737,7 @@ private fun StatusValueText(
     value: String,
     modifier: Modifier = Modifier,
     relativeTime: String? = null,
+    detailText: String? = null,
     status: ValueStatus? = null,
     reserveIconSpace: Boolean = true
 ) {
@@ -760,6 +770,14 @@ private fun StatusValueText(
         if (relativeTime != null) {
             Text(
                 text = relativeTime,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = if (status != null || reserveIconSpace) 20.dp else 0.dp)
+            )
+        }
+        if (detailText != null) {
+            Text(
+                text = detailText,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(start = if (status != null || reserveIconSpace) 20.dp else 0.dp)

@@ -26,6 +26,7 @@ import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.common.model.GlucoseSourceStatus
 import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.InsulinPumpStatus
@@ -148,7 +149,8 @@ sealed interface OverviewPumpUiState {
         val battery: StatusMetric<Int>,
         val reservoir: StatusMetric<InsulinAmount>,
         val lastConnection: StatusMetric<Timestamp>,
-        val nextExpiration: StatusMetric<Expiration>
+        val nextExpiration: StatusMetric<Expiration>,
+        val insulinConcentration: InsulinConcentration = InsulinConcentration.U100
     ) : OverviewPumpUiState
 }
 
@@ -195,6 +197,7 @@ sealed interface PumpTabUiState {
         val pumpName: UiText,
         val batteryPercent: Int,
         val reservoirRemaining: InsulinAmount,
+        val insulinConcentration: InsulinConcentration = InsulinConcentration.U100,
         val lastConnectionTimestamp: Timestamp,
         val manufacturer: String? = null,
         val pumpModel: String? = null,
@@ -605,7 +608,8 @@ class SystemControlViewModel(
                 nextExpiration = StatusMetric(
                     value = nextExpirationItem,
                     status = nextExpirationStatus
-                )
+                ),
+                insulinConcentration = pInfo.pump?.insulinConcentration ?: InsulinConcentration.U100
             )
         }
 
@@ -680,6 +684,7 @@ class SystemControlViewModel(
                 pumpName = pInfo.pumpName,
                 batteryPercent = pInfo.status.batteryRemainingPercent,
                 reservoirRemaining = pInfo.status.reservoirRemainingUnits,
+                insulinConcentration = pInfo.pump?.insulinConcentration ?: InsulinConcentration.U100,
                 lastConnectionTimestamp = pInfo.lastConnection,
                 manufacturer = pInfo.manufacturer,
                 pumpModel = pInfo.model,
