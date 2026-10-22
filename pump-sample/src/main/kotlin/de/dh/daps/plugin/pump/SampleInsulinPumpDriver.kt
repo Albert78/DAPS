@@ -236,7 +236,7 @@ class SampleInsulinPumpDriver : InsulinPumpDriver, Plugin {
         }
     }
 
-    override fun getPumpControlSection(pump: InsulinPump): (@Composable () -> Unit) = {
+    override fun getPumpTabSection(pump: InsulinPump): (@Composable () -> Unit) = {
         FramedCard(
             modifier = Modifier.fillMaxWidth(),
             containerColor = MaterialTheme.colorScheme.surfaceVariant

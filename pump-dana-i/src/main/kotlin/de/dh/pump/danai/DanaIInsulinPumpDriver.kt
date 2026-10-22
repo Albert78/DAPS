@@ -107,7 +107,7 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
         )
     }
 
-    override fun getPumpControlSection(pump: InsulinPump): @Composable (() -> Unit) = {
+    override fun getPumpTabSection(pump: InsulinPump): @Composable (() -> Unit) = {
         DanaIPumpControl(pump = pump)
     }
 

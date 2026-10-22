@@ -43,8 +43,8 @@ import de.dh.daps.core.pump.BolusJob
 import de.dh.daps.core.pump.BolusJobType
 import de.dh.daps.core.pump.JobErrorCode
 import de.dh.daps.core.pump.PumpCoordinatorState
-import de.dh.daps.core.pump.PumpSyncStatus
 import de.dh.daps.core.pump.PumpIssue
+import de.dh.daps.core.pump.PumpSyncStatus
 import de.dh.daps.core.repository.BluetoothStatus
 import de.dh.daps.ui.R
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -678,7 +678,7 @@ class SystemControlViewModel(
 
             val driver = pInfo.driver
             val pump = pInfo.pump
-            val section = if (driver != null && pump != null) driver.getPumpControlSection(pump) else null
+            val section = if (driver != null && pump != null) driver.getPumpTabSection(pump) else null
 
             PumpTabUiState.Content(
                 pumpName = pInfo.pumpName,

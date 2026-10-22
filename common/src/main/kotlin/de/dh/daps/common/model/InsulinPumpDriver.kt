@@ -54,7 +54,7 @@ interface InsulinPumpDriver {
      * Returns optional Composable UI content to display in the Pump tab of the System Control screen for [pump],
      * or null if this driver provides no custom control section.
      */
-    fun getPumpControlSection(
+    fun getPumpTabSection(
         pump: InsulinPump,
     ): (@Composable () -> Unit)? = null
 }
