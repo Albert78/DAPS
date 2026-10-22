@@ -246,7 +246,6 @@ private val previewInsulinProfile = InsulinProfile(
     isfBlocks = listOf(Block(Minutes.ofHours(24), 40.0)),
     crBlocks = listOf(Block(Minutes.ofHours(24), 10.0)),
     insulinType = previewInsulinType,
-    insulinConcentration = InsulinConcentration.U100,
     dia = Minutes.ofHours(5),
     peak = Minutes(75)
 )

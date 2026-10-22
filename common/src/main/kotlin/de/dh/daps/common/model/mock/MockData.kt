@@ -34,7 +34,6 @@ fun mockSimpleInsulinProfile() =
             )
         ),
         insulinType = mockInsulinType(),
-        insulinConcentration = de.dh.daps.common.model.InsulinConcentration.U100,
         dia = Minutes.ofHours(5),
         peak = Minutes(75)
     )

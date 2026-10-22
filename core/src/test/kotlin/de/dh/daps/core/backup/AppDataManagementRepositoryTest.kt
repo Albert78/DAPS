@@ -43,7 +43,6 @@ class AppDataManagementRepositoryTest {
                     isfBlocks = listOf(DBBlockDto(24, 40.0)),
                     crBlocks = listOf(DBBlockDto(24, 10.0)),
                     insulinTypeId = "rapid",
-                    insulinConcentration = 1.0,
                     diaMinutes = 300,
                     peakMinutes = 75
                 )

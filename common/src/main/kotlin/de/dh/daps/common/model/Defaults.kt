@@ -125,7 +125,6 @@ fun getDefaultInsulinProfile(context: Context, insulinType: InsulinType): Insuli
     isfBlocks = listOf(Block(Minutes.ofHours(24), DEFAULT_ISF_MGDL_PER_UNIT)),
     crBlocks = listOf(Block(Minutes.ofHours(24), DEFAULT_CR_GRAM_PER_UNIT)),
     insulinType = insulinType,
-    insulinConcentration = insulinType.defaultConcentration,
     dia = insulinType.dia,
     peak = insulinType.peak
 )

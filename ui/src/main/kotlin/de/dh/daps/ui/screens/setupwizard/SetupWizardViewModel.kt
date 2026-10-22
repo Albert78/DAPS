@@ -189,8 +189,7 @@ class SetupWizardViewModel(
                 state.insulinProfile.copy(
                     insulinType = newPrimaryType,
                     dia = newPrimaryType.dia,
-                    peak = newPrimaryType.peak,
-                    insulinConcentration = newPrimaryType.defaultConcentration
+                    peak = newPrimaryType.peak
                 )
             } else state.insulinProfile
 
@@ -208,8 +207,7 @@ class SetupWizardViewModel(
             val updatedProfile = state.insulinProfile?.copy(
                 insulinType = type,
                 dia = type.dia,
-                peak = type.peak,
-                insulinConcentration = type.defaultConcentration
+                peak = type.peak
             )
             state.copy(
                 selectedInsulinTypeIds = newSelectedIds,
@@ -293,8 +291,7 @@ class SetupWizardViewModel(
                 state.insulinProfile.copy(
                     insulinType = primaryType,
                     dia = primaryType.dia,
-                    peak = primaryType.peak,
-                    insulinConcentration = primaryType.defaultConcentration
+                    peak = primaryType.peak
                 )
             } else state.insulinProfile
 

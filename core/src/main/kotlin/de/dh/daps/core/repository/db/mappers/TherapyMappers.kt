@@ -1,6 +1,5 @@
 package de.dh.daps.core.repository.db.mappers
 
-import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.data.AlarmProfile
 import de.dh.daps.common.model.data.BgBlock
@@ -48,7 +47,6 @@ fun InsulinProfile.toEntity() = InsulinProfileEntity(
     isf_blocks = this.isfBlocks.map { it.toDb() },
     cr_blocks = this.crBlocks.map { it.toDb() },
     insulin_type_id = this.insulinType.id,
-    insulin_concentration = this.insulinConcentration.factor,
     dia = this.dia,
     peak = this.peak
 )
@@ -60,7 +58,6 @@ fun InsulinProfileEntity.toModel(insulinType: InsulinType) = InsulinProfile(
     isfBlocks = this.isf_blocks.map { it.toModel() },
     crBlocks = this.cr_blocks.map { it.toModel() },
     insulinType = insulinType,
-    insulinConcentration = InsulinConcentration(this.insulin_concentration),
     dia = this.dia,
     peak = this.peak
 )

@@ -27,7 +27,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.data.Block
 import de.dh.daps.common.model.data.CarbsUnit
@@ -147,7 +146,6 @@ private val previewInsulinProfile = InsulinProfile(
     isfBlocks = listOf(Block(Minutes.ofHours(24), 40.0)),
     crBlocks = listOf(Block(Minutes.ofHours(24), 10.0)),
     insulinType = previewInsulinType,
-    insulinConcentration = InsulinConcentration.U100,
     dia = Minutes.ofHours(5),
     peak = Minutes(75)
 )

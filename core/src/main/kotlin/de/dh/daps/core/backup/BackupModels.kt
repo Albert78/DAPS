@@ -70,7 +70,6 @@ data class InsulinProfileDto(
     val isfBlocks: List<DBBlockDto>,
     val crBlocks: List<DBBlockDto>,
     val insulinTypeId: String,
-    val insulinConcentration: Double,
     val diaMinutes: Short,
     val peakMinutes: Short
 )
@@ -270,7 +269,6 @@ fun InsulinProfileEntity.toDto() = InsulinProfileDto(
     isfBlocks = isf_blocks.map { it.toDto() },
     crBlocks = cr_blocks.map { it.toDto() },
     insulinTypeId = insulin_type_id,
-    insulinConcentration = insulin_concentration,
     diaMinutes = dia.value,
     peakMinutes = peak.value
 )
@@ -282,7 +280,6 @@ fun InsulinProfileDto.toEntity() = InsulinProfileEntity(
     isf_blocks = isfBlocks.map { it.toEntity() },
     cr_blocks = crBlocks.map { it.toEntity() },
     insulin_type_id = insulinTypeId,
-    insulin_concentration = insulinConcentration,
     dia = Minutes(diaMinutes),
     peak = Minutes(peakMinutes)
 )
