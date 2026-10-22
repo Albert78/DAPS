@@ -24,10 +24,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -62,6 +64,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.BASAL_MAX
@@ -394,6 +397,13 @@ fun InsulinSettingsEditor(
     onInsulinSettingsChanged: (List<EditableInsulinSettingState>) -> Unit
 ) {
     val scrollState = rememberScrollState()
+    var showAddMenu by remember { mutableStateOf(false) }
+
+    val unconfiguredTypes = remember(insulinTypes, insulinSettings) {
+        insulinTypes.filter { type ->
+            insulinSettings.none { it.insulinType.id == type.id }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -417,59 +427,78 @@ fun InsulinSettingsEditor(
         insulinSettings.forEachIndexed { index, setting ->
             InsulinSettingCard(
                 setting = setting,
-                availableInsulinTypes = insulinTypes,
                 onSettingChanged = { updatedSetting ->
                     val newList = insulinSettings.toMutableList()
                     newList[index] = updatedSetting
                     onInsulinSettingsChanged(newList)
                 },
-                onDelete = if (insulinSettings.size > 1) {
-                    {
-                        val newList = insulinSettings.toMutableList()
-                        newList.removeAt(index)
-                        onInsulinSettingsChanged(newList)
-                    }
-                } else null
+                onDelete = {
+                    val newList = insulinSettings.toMutableList()
+                    newList.removeAt(index)
+                    onInsulinSettingsChanged(newList)
+                }
             )
         }
 
-        val unusedType = insulinTypes.firstOrNull { type ->
-            insulinSettings.none { it.insulinType.id == type.id }
-        } ?: insulinTypes.firstOrNull()
+        val buttonText = if (unconfiguredTypes.isNotEmpty()) {
+            stringResource(id = R.string.insulin_profile_editor_add_insulin_setting, unconfiguredTypes.size)
+        } else {
+            stringResource(id = R.string.insulin_profile_editor_all_insulins_configured)
+        }
+        val buttonIcon = if (unconfiguredTypes.isNotEmpty()) Icons.Default.Add else Icons.Default.Check
 
-        if (unusedType != null) {
+        Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedButton(
-                onClick = {
-                    val newSetting = EditableInsulinSettingState(
-                        insulinType = unusedType,
-                        dia = unusedType.dia.value.toString(),
-                        peak = unusedType.peak.value.toString()
-                    )
-                    onInsulinSettingsChanged(insulinSettings + newSetting)
-                },
+                onClick = { showAddMenu = true },
+                enabled = unconfiguredTypes.isNotEmpty(),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = Icons.Default.Add,
+                    imageVector = buttonIcon,
                     contentDescription = null,
                     modifier = Modifier.padding(end = 8.dp)
                 )
-                Text(text = stringResource(id = R.string.insulin_profile_editor_add_insulin_setting))
+                Text(
+                    text = buttonText,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            DropdownMenu(
+                expanded = showAddMenu && unconfiguredTypes.isNotEmpty(),
+                onDismissRequest = { showAddMenu = false }
+            ) {
+                unconfiguredTypes.forEach { type ->
+                    val itemText = if (!type.activeSubstance.isNullOrBlank()) {
+                        "${type.name} (${type.activeSubstance})"
+                    } else {
+                        type.name
+                    }
+                    DropdownMenuItem(
+                        text = { Text(itemText) },
+                        onClick = {
+                            showAddMenu = false
+                            val newSetting = EditableInsulinSettingState(
+                                insulinType = type,
+                                dia = type.dia.value.toString(),
+                                peak = type.peak.value.toString()
+                            )
+                            onInsulinSettingsChanged(insulinSettings + newSetting)
+                        }
+                    )
+                }
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun InsulinSettingCard(
     setting: EditableInsulinSettingState,
-    availableInsulinTypes: List<InsulinType>,
     onSettingChanged: (EditableInsulinSettingState) -> Unit,
-    onDelete: (() -> Unit)?
+    onDelete: () -> Unit
 ) {
-    var expandedType by remember { mutableStateOf(false) }
-
     OutlinedCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp)
@@ -485,63 +514,30 @@ private fun InsulinSettingCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                ExposedDropdownMenuBox(
-                    expanded = expandedType,
-                    onExpandedChange = { expandedType = !expandedType },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    val typeText = if (!setting.insulinType.activeSubstance.isNullOrBlank()) {
-                        "${setting.insulinType.name} (${setting.insulinType.activeSubstance})"
-                    } else {
-                        setting.insulinType.name
-                    }
-                    OutlinedTextField(
-                        value = typeText,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text(stringResource(id = R.string.insulin_profile_editor_insulin_type_label)) },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedType) },
-                        modifier = Modifier
-                            .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
-                            .fillMaxWidth()
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = setting.insulinType.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
                     )
-                    ExposedDropdownMenu(
-                        expanded = expandedType,
-                        onDismissRequest = { expandedType = false }
-                    ) {
-                        availableInsulinTypes.forEach { type ->
-                            val itemText = if (!type.activeSubstance.isNullOrBlank()) {
-                                "${type.name} (${type.activeSubstance})"
-                            } else {
-                                type.name
-                            }
-                            DropdownMenuItem(
-                                text = { Text(itemText) },
-                                onClick = {
-                                    expandedType = false
-                                    onSettingChanged(
-                                        setting.copy(
-                                            insulinType = type,
-                                            dia = type.dia.value.toString(),
-                                            peak = type.peak.value.toString()
-                                        )
-                                    )
-                                }
-                            )
-                        }
+                    val activeSubstance = setting.insulinType.activeSubstance
+                    if (!activeSubstance.isNullOrBlank()) {
+                        Text(
+                            text = activeSubstance,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
 
-                if (onDelete != null) {
-                    IconButton(
-                        onClick = onDelete,
-                        modifier = Modifier.padding(start = 8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = stringResource(id = R.string.cd_delete_insulin_setting)
-                        )
-                    }
+                IconButton(
+                    onClick = onDelete,
+                    modifier = Modifier.padding(start = 8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = stringResource(id = R.string.cd_delete_insulin_setting)
+                    )
                 }
             }
 

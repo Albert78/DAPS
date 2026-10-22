@@ -59,7 +59,6 @@ fun SetupWizardScreen(
         onSetGlucoseUnit = viewModel::setGlucoseUnit,
         onSetCarbsUnit = viewModel::setCarbsUnit,
         onToggleInsulinTypeSelection = viewModel::toggleInsulinTypeSelection,
-        onSelectPrimaryInsulinType = viewModel::selectPrimaryInsulinType,
         onStartEditingInsulinType = viewModel::startEditingInsulinType,
         onCancelEditingInsulinType = viewModel::cancelEditingInsulinType,
         onUpdateInsulinTypeEditorName = viewModel::updateInsulinTypeEditorName,
@@ -85,7 +84,6 @@ fun SetupWizardContent(
     onSetGlucoseUnit: (GlucoseUnit) -> Unit = {},
     onSetCarbsUnit: (CarbsUnit) -> Unit = {},
     onToggleInsulinTypeSelection: (InsulinType) -> Unit = {},
-    onSelectPrimaryInsulinType: (InsulinType) -> Unit = {},
     onStartEditingInsulinType: (InsulinType?) -> Unit = {},
     onCancelEditingInsulinType: () -> Unit = {},
     onUpdateInsulinTypeEditorName: (String) -> Unit = {},
@@ -101,12 +99,11 @@ fun SetupWizardContent(
     onCompleteManualSetup: () -> Unit = {}
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
 
     LaunchedEffect(uiState.errorMessage) {
         val error = uiState.errorMessage
         if (error != null) {
-            snackbarHostState.showSnackbar(error.asString(context))
+            snackbarHostState.showSnackbar(error)
         }
     }
 
@@ -171,11 +168,9 @@ fun SetupWizardContent(
                         InsulinTypeStep(
                             availableTypes = uiState.availableInsulinTypes,
                             selectedTypeIds = uiState.selectedInsulinTypeIds,
-                            primaryTypeId = uiState.primaryInsulinTypeId,
                             isEditing = uiState.isEditingInsulinType,
                             editorUiState = uiState.insulinTypeEditorUiState,
                             onToggleTypeSelection = onToggleInsulinTypeSelection,
-                            onSelectPrimaryType = onSelectPrimaryInsulinType,
                             onStartEditing = onStartEditingInsulinType,
                             onCancelEditing = onCancelEditingInsulinType,
                             onUpdateName = onUpdateInsulinTypeEditorName,
@@ -298,8 +293,7 @@ fun SetupWizardInsulinTypeStepPreview() {
             uiState = SetupWizardUiState(
                 currentStep = SetupWizardStep.MANUAL_INSULIN_TYPE,
                 availableInsulinTypes = listOf(previewInsulinType),
-                selectedInsulinTypeIds = setOf(previewInsulinType.id),
-                primaryInsulinTypeId = previewInsulinType.id
+                selectedInsulinTypeIds = setOf(previewInsulinType.id)
             )
         )
     }
@@ -334,7 +328,6 @@ fun SetupWizardInsulinProfileStepPreview() {
                 currentStep = SetupWizardStep.MANUAL_INSULIN_PROFILE,
                 availableInsulinTypes = listOf(previewInsulinType),
                 selectedInsulinTypeIds = setOf(previewInsulinType.id),
-                primaryInsulinTypeId = previewInsulinType.id,
                 insulinProfile = previewInsulinProfile
             )
         )
@@ -364,7 +357,6 @@ fun SetupWizardSummaryStepPreview() {
                 glucoseUnit = GlucoseUnit.MG_DL,
                 carbsUnit = CarbsUnit.GRAMS,
                 selectedInsulinTypeIds = setOf(previewInsulinType.id),
-                primaryInsulinTypeId = previewInsulinType.id,
                 insulinProfile = previewInsulinProfile,
                 bgBlocks = previewBgBlocks
             )

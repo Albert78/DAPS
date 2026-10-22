@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
@@ -21,9 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -49,11 +46,9 @@ import de.dh.daps.ui.screens.setupwizard.components.SetupStepScaffold
 fun InsulinTypeStep(
     availableTypes: List<InsulinType>,
     selectedTypeIds: Set<String>,
-    primaryTypeId: String?,
     isEditing: Boolean,
     editorUiState: InsulinTypeEditorUiState,
     onToggleTypeSelection: (InsulinType) -> Unit,
-    onSelectPrimaryType: (InsulinType) -> Unit,
     onStartEditing: (InsulinType?) -> Unit,
     onCancelEditing: () -> Unit,
     onUpdateName: (String) -> Unit,
@@ -98,7 +93,7 @@ fun InsulinTypeStep(
             )
         }
     } else {
-        val isNextEnabled = selectedTypeIds.isNotEmpty() && primaryTypeId != null
+        val isNextEnabled = selectedTypeIds.isNotEmpty()
 
         SetupStepScaffold(
             title = stringResource(R.string.setup_wizard_insulin_title),
@@ -131,7 +126,6 @@ fun InsulinTypeStep(
                 ) {
                     availableTypes.forEach { type ->
                         val isSelected = type.id in selectedTypeIds
-                        val isPrimary = type.id == primaryTypeId
 
                         FramedCard(
                             modifier = Modifier
@@ -159,29 +153,11 @@ fun InsulinTypeStep(
                                 )
                                 Spacer(Modifier.width(16.dp))
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        Text(
-                                            text = type.name,
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                        if (isSelected && isPrimary) {
-                                            Surface(
-                                                color = MaterialTheme.colorScheme.primary,
-                                                contentColor = MaterialTheme.colorScheme.onPrimary,
-                                                shape = MaterialTheme.shapes.extraSmall
-                                            ) {
-                                                Text(
-                                                    text = stringResource(R.string.setup_wizard_insulin_primary_badge),
-                                                    style = MaterialTheme.typography.labelSmall,
-                                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                                )
-                                            }
-                                        }
-                                    }
+                                    Text(
+                                        text = type.name,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
                                     Spacer(Modifier.height(4.dp))
                                     val activeSubstance = type.activeSubstance
                                     if (!activeSubstance.isNullOrBlank()) {
@@ -215,62 +191,6 @@ fun InsulinTypeStep(
                 ) {
                     Text(stringResource(R.string.setup_wizard_insulin_custom_btn))
                 }
-
-                val selectedTypes = availableTypes.filter { it.id in selectedTypeIds }
-                if (selectedTypes.size > 1) {
-                    FramedCard(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.setup_wizard_insulin_primary_header),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = stringResource(R.string.setup_wizard_insulin_primary_desc),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-
-                            Column(
-                                modifier = Modifier.selectableGroup(),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                selectedTypes.forEach { type ->
-                                    val isPrimary = type.id == primaryTypeId
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .selectable(
-                                                selected = isPrimary,
-                                                onClick = { onSelectPrimaryType(type) },
-                                                role = Role.RadioButton
-                                            )
-                                            .padding(vertical = 4.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        RadioButton(
-                                            selected = isPrimary,
-                                            onClick = null
-                                        )
-                                        Spacer(Modifier.width(12.dp))
-                                        Text(
-                                            text = type.name,
-                                            style = MaterialTheme.typography.bodyLarge,
-                                            fontWeight = if (isPrimary) FontWeight.Bold else FontWeight.Normal
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
             }
         }
     }
@@ -300,11 +220,9 @@ private fun InsulinTypeStepPreview() {
         InsulinTypeStep(
             availableTypes = listOf(previewInsulinType1, previewInsulinType2),
             selectedTypeIds = setOf("1", "2"),
-            primaryTypeId = "1",
             isEditing = false,
             editorUiState = InsulinTypeEditorUiState(),
             onToggleTypeSelection = {},
-            onSelectPrimaryType = {},
             onStartEditing = {},
             onCancelEditing = {},
             onUpdateName = {},
@@ -327,7 +245,6 @@ private fun InsulinTypeStepEditingPreview() {
         InsulinTypeStep(
             availableTypes = listOf(previewInsulinType1),
             selectedTypeIds = setOf("1"),
-            primaryTypeId = "1",
             isEditing = true,
             editorUiState = InsulinTypeEditorUiState(
                 id = previewInsulinType1.id,
@@ -337,7 +254,6 @@ private fun InsulinTypeStepEditingPreview() {
                 concentration = previewInsulinType1.defaultConcentration
             ),
             onToggleTypeSelection = {},
-            onSelectPrimaryType = {},
             onStartEditing = {},
             onCancelEditing = {},
             onUpdateName = {},

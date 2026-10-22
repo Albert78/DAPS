@@ -100,19 +100,20 @@ fun SummaryStep(
                     )
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-                    val insulin = uiState.selectedInsulinType
-                    if (insulin != null) {
-                        val insulinDisplayName = if (!insulin.activeSubstance.isNullOrBlank()) {
-                            "${insulin.name} (${insulin.activeSubstance})"
-                        } else {
-                            insulin.name
+                    val selectedTypes = uiState.selectedInsulinTypes
+                    if (selectedTypes.isNotEmpty()) {
+                        val insulinNames = selectedTypes.joinToString(", ") { type ->
+                            val activeSubstance = type.activeSubstance
+                            if (!activeSubstance.isNullOrBlank()) {
+                                "${type.name} ($activeSubstance)"
+                            } else {
+                                type.name
+                            }
                         }
                         Text(
                             stringResource(
-                                R.string.setup_wizard_summary_insulin_type_format,
-                                insulinDisplayName,
-                                insulin.dia.value.toInt(),
-                                insulin.peak.value.toInt()
+                                R.string.setup_wizard_summary_insulin_types_format,
+                                insulinNames
                             )
                         )
                     }
@@ -166,7 +167,6 @@ private fun SummaryStepPreview() {
                 carbsUnit = CarbsUnit.GRAMS,
                 availableInsulinTypes = listOf(previewInsulinType),
                 selectedInsulinTypeIds = setOf(previewInsulinType.id),
-                primaryInsulinTypeId = previewInsulinType.id,
                 insulinProfile = previewInsulinProfile
             ),
             onComplete = {},

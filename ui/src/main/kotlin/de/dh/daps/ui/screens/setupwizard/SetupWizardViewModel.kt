@@ -20,7 +20,6 @@ import de.dh.daps.common.model.data.ProfileInsulinSetting
 import de.dh.daps.common.model.getDefaultInsulinProfile
 import de.dh.daps.common.model.getDefaultInsulinTypes
 import de.dh.daps.common.model.getDefaultMealTypes
-import de.dh.daps.common.ui.UiText
 import de.dh.daps.core.InitializationState
 import de.dh.daps.core.SetupOption
 import de.dh.daps.core.SystemRegistry
@@ -36,37 +35,23 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.UUID
 
-enum class SetupWizardStep {
-    MODE_SELECTION,
-    MANUAL_UNITS,
-    MANUAL_INSULIN_TYPE,
-    MANUAL_INSULIN_PROFILE,
-    MANUAL_BG_TARGETS,
-    MANUAL_SUMMARY;
-
-    val manualStepIndex: Int?
-        get() {
-            val steps = entries.filter { it != MODE_SELECTION }
-            val index = steps.indexOf(this)
-            return if (index >= 0) index + 1 else null
-        }
-
-    val totalManualSteps: Int
-        get() = entries.count { it != MODE_SELECTION }
-
-    val progress: Pair<Int, Int>?
-        get() = manualStepIndex?.let { Pair(it, totalManualSteps) }
+enum class SetupWizardStep(val progress: Pair<Int, Int>) {
+    MODE_SELECTION(1 to 5),
+    MANUAL_UNITS(2 to 5),
+    MANUAL_INSULIN_TYPE(3 to 5),
+    MANUAL_INSULIN_PROFILE(4 to 5),
+    MANUAL_BG_TARGETS(5 to 5),
+    MANUAL_SUMMARY(5 to 5)
 }
 
 data class SetupWizardUiState(
     val currentStep: SetupWizardStep = SetupWizardStep.MODE_SELECTION,
     val isBusy: Boolean = false,
-    val errorMessage: UiText? = null,
+    val errorMessage: String? = null,
     val glucoseUnit: GlucoseUnit = GlucoseUnit.MG_DL,
     val carbsUnit: CarbsUnit = CarbsUnit.GRAMS,
     val availableInsulinTypes: List<InsulinType> = emptyList(),
     val selectedInsulinTypeIds: Set<String> = emptySet(),
-    val primaryInsulinTypeId: String? = null,
     val isEditingInsulinType: Boolean = false,
     val insulinTypeEditorUiState: InsulinTypeEditorUiState = InsulinTypeEditorUiState(),
     val insulinProfile: InsulinProfile? = null,
@@ -74,10 +59,6 @@ data class SetupWizardUiState(
 ) {
     val selectedInsulinTypes: List<InsulinType>
         get() = availableInsulinTypes.filter { it.id in selectedInsulinTypeIds }
-
-    val selectedInsulinType: InsulinType?
-        get() = availableInsulinTypes.firstOrNull { it.id == primaryInsulinTypeId }
-            ?: selectedInsulinTypes.firstOrNull()
 }
 
 class SetupWizardViewModel(
@@ -100,11 +81,7 @@ class SetupWizardViewModel(
     fun resetState() {
         val context = registry.appContext
         val defaultTypes = getDefaultInsulinTypes(context)
-        val primaryType = defaultTypes.firstOrNull()
-
-        val initialProfile = if (primaryType != null) {
-            getDefaultInsulinProfile(context, primaryType)
-        } else null
+        val initialProfile = getDefaultInsulinProfile(context, defaultTypes)
 
         val initialBgBlocks = listOf(
             BgBlock(
@@ -121,8 +98,7 @@ class SetupWizardViewModel(
             glucoseUnit = GlucoseUnit.MG_DL,
             carbsUnit = CarbsUnit.GRAMS,
             availableInsulinTypes = defaultTypes,
-            selectedInsulinTypeIds = primaryType?.let { setOf(it.id) } ?: emptySet(),
-            primaryInsulinTypeId = primaryType?.id,
+            selectedInsulinTypeIds = emptySet(),
             insulinProfile = initialProfile,
             bgBlocks = initialBgBlocks
         )
@@ -133,14 +109,19 @@ class SetupWizardViewModel(
             _uiState.update { it.copy(isBusy = true, errorMessage = null) }
             runCatching {
                 registry.completeInitialization(SetupOption.SeedDemoData)
-            }.onSuccess {
-                resetState()
-            }.onFailure { error ->
-                val message = error.localizedMessage?.let { UiText.DynamicString(it) }
-                    ?: UiText.StringResource(R.string.setup_wizard_error_load_demo_data)
-                _uiState.update { it.copy(isBusy = false, errorMessage = message) }
+            }.onFailure { ex ->
+                _uiState.update {
+                    it.copy(
+                        isBusy = false,
+                        errorMessage = ex.message ?: registry.appContext.getString(R.string.setup_wizard_error_load_demo_data)
+                    )
+                }
             }
         }
+    }
+
+    fun startManualSetup() {
+        goToNextStep()
     }
 
     fun importBackup(uri: Uri) {
@@ -148,18 +129,15 @@ class SetupWizardViewModel(
             _uiState.update { it.copy(isBusy = true, errorMessage = null) }
             runCatching {
                 registry.completeInitialization(SetupOption.ImportBackup(uri))
-            }.onSuccess {
-                resetState()
-            }.onFailure { error ->
-                val message = error.localizedMessage?.let { UiText.DynamicString(it) }
-                    ?: UiText.StringResource(R.string.setup_wizard_error_import_backup)
-                _uiState.update { it.copy(isBusy = false, errorMessage = message) }
+            }.onFailure { ex ->
+                _uiState.update {
+                    it.copy(
+                        isBusy = false,
+                        errorMessage = ex.message ?: registry.appContext.getString(R.string.setup_wizard_error_import_backup)
+                    )
+                }
             }
         }
-    }
-
-    fun startManualSetup() {
-        _uiState.update { it.copy(currentStep = SetupWizardStep.MANUAL_UNITS) }
     }
 
     fun setGlucoseUnit(unit: GlucoseUnit) {
@@ -178,43 +156,21 @@ class SetupWizardViewModel(
                 state.selectedInsulinTypeIds + type.id
             }
 
-            val newPrimaryId = if (state.primaryInsulinTypeId in newSelectedIds) {
-                state.primaryInsulinTypeId
-            } else {
-                newSelectedIds.firstOrNull()
-            }
-
             val updatedProfile = if (state.insulinProfile != null) {
                 val selectedTypes = state.availableInsulinTypes.filter { it.id in newSelectedIds }
                 val currentSettingsMap = state.insulinProfile.insulinSettings.associateBy { it.insulinType.id }
-                val newSettings = selectedTypes.map { type ->
-                    currentSettingsMap[type.id] ?: ProfileInsulinSetting(insulinType = type, dia = type.dia, peak = type.peak)
+                val newSettings = selectedTypes.map { selectedType ->
+                    currentSettingsMap[selectedType.id] ?: ProfileInsulinSetting(
+                        insulinType = selectedType,
+                        dia = selectedType.dia,
+                        peak = selectedType.peak
+                    )
                 }
                 state.insulinProfile.copy(insulinSettings = newSettings)
             } else state.insulinProfile
 
             state.copy(
                 selectedInsulinTypeIds = newSelectedIds,
-                primaryInsulinTypeId = newPrimaryId,
-                insulinProfile = updatedProfile
-            )
-        }
-    }
-
-    fun selectPrimaryInsulinType(type: InsulinType) {
-        _uiState.update { state ->
-            val newSelectedIds = state.selectedInsulinTypeIds + type.id
-            val updatedProfile = if (state.insulinProfile != null) {
-                val selectedTypes = state.availableInsulinTypes.filter { it.id in newSelectedIds }
-                val currentSettingsMap = state.insulinProfile.insulinSettings.associateBy { it.insulinType.id }
-                val newSettings = selectedTypes.map { type ->
-                    currentSettingsMap[type.id] ?: ProfileInsulinSetting(insulinType = type, dia = type.dia, peak = type.peak)
-                }
-                state.insulinProfile.copy(insulinSettings = newSettings)
-            } else state.insulinProfile
-            state.copy(
-                selectedInsulinTypeIds = newSelectedIds,
-                primaryInsulinTypeId = type.id,
                 insulinProfile = updatedProfile
             )
         }
@@ -228,8 +184,8 @@ class SetupWizardViewModel(
                     id = typeToEdit?.id,
                     name = typeToEdit?.name ?: "",
                     activeSubstance = typeToEdit?.activeSubstance,
-                    peak = typeToEdit?.peak?.value?.toString() ?: DEFAULT_PEAK_MINUTES.toString(),
-                    dia = typeToEdit?.dia?.value?.toString() ?: DEFAULT_DIA_MINUTES.toString(),
+                    peak = typeToEdit?.peak?.value?.toString() ?: "",
+                    dia = typeToEdit?.dia?.value?.toString() ?: "",
                     concentration = typeToEdit?.defaultConcentration ?: InsulinConcentration.U100
                 )
             )
@@ -237,36 +193,51 @@ class SetupWizardViewModel(
     }
 
     fun cancelEditingInsulinType() {
-        _uiState.update { it.copy(isEditingInsulinType = false) }
+        _uiState.update { state ->
+            state.copy(
+                isEditingInsulinType = false,
+                insulinTypeEditorUiState = InsulinTypeEditorUiState()
+            )
+        }
     }
 
     fun updateInsulinTypeEditorName(name: String) {
         _uiState.update { state ->
-            state.copy(insulinTypeEditorUiState = state.insulinTypeEditorUiState.copy(name = name))
+            state.copy(
+                insulinTypeEditorUiState = state.insulinTypeEditorUiState.copy(name = name)
+            )
         }
     }
 
-    fun updateInsulinTypeEditorActiveSubstance(activeSubstance: String) {
+    fun updateInsulinTypeEditorActiveSubstance(substance: String) {
         _uiState.update { state ->
-            state.copy(insulinTypeEditorUiState = state.insulinTypeEditorUiState.copy(activeSubstance = activeSubstance.ifBlank { null }))
+            state.copy(
+                insulinTypeEditorUiState = state.insulinTypeEditorUiState.copy(activeSubstance = substance)
+            )
         }
     }
 
     fun updateInsulinTypeEditorPeak(peak: String) {
         _uiState.update { state ->
-            state.copy(insulinTypeEditorUiState = state.insulinTypeEditorUiState.copy(peak = peak))
+            state.copy(
+                insulinTypeEditorUiState = state.insulinTypeEditorUiState.copy(peak = peak)
+            )
         }
     }
 
     fun updateInsulinTypeEditorDia(dia: String) {
         _uiState.update { state ->
-            state.copy(insulinTypeEditorUiState = state.insulinTypeEditorUiState.copy(dia = dia))
+            state.copy(
+                insulinTypeEditorUiState = state.insulinTypeEditorUiState.copy(dia = dia)
+            )
         }
     }
 
     fun updateInsulinTypeEditorConcentration(concentration: InsulinConcentration) {
         _uiState.update { state ->
-            state.copy(insulinTypeEditorUiState = state.insulinTypeEditorUiState.copy(concentration = concentration))
+            state.copy(
+                insulinTypeEditorUiState = state.insulinTypeEditorUiState.copy(concentration = concentration)
+            )
         }
     }
 
@@ -286,8 +257,6 @@ class SetupWizardViewModel(
         _uiState.update { state ->
             val updatedTypes = (state.availableInsulinTypes.filterNot { it.id == newType.id } + newType)
             val newSelectedIds = state.selectedInsulinTypeIds + newType.id
-            val isFirstSelection = state.primaryInsulinTypeId == null || state.selectedInsulinTypeIds.isEmpty()
-            val newPrimaryId = if (isFirstSelection) newType.id else state.primaryInsulinTypeId
 
             val updatedProfile = if (state.insulinProfile != null) {
                 val selectedTypes = updatedTypes.filter { it.id in newSelectedIds }
@@ -301,7 +270,6 @@ class SetupWizardViewModel(
             state.copy(
                 availableInsulinTypes = updatedTypes,
                 selectedInsulinTypeIds = newSelectedIds,
-                primaryInsulinTypeId = newPrimaryId,
                 insulinProfile = updatedProfile,
                 isEditingInsulinType = false
             )
@@ -357,8 +325,9 @@ class SetupWizardViewModel(
 
                 // Insert Insulin Types and Meal Types
                 val selectedTypes = state.selectedInsulinTypes
-                val primaryType = state.selectedInsulinType
-                    ?: throw IllegalStateException(context.getString(R.string.setup_wizard_error_no_insulin_type))
+                if (selectedTypes.isEmpty()) {
+                    throw IllegalStateException(context.getString(R.string.setup_wizard_error_no_insulin_type))
+                }
 
                 selectedTypes.forEach {
                     registry.treatmentRepository.insertInsulinType(it)
@@ -385,22 +354,28 @@ class SetupWizardViewModel(
                     }
                 )
 
-                // Complete initialization
                 registry.completeInitialization(SetupOption.ManualSetupCompleted)
-            }.onSuccess {
-                resetState()
-            }.onFailure { error ->
-                val message = error.localizedMessage?.let { UiText.DynamicString(it) }
-                    ?: UiText.StringResource(R.string.setup_wizard_error_manual_setup)
-                _uiState.update { it.copy(isBusy = false, errorMessage = message) }
+            }.onFailure { ex ->
+                _uiState.update {
+                    it.copy(
+                        isBusy = false,
+                        errorMessage = ex.message ?: registry.appContext.getString(R.string.setup_wizard_error_manual_setup)
+                    )
+                }
             }
         }
     }
 
-    class Factory(private val registry: SystemRegistry) : ViewModelProvider.Factory {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return SetupWizardViewModel(registry) as T
+    fun dismissError() {
+        _uiState.update { it.copy(errorMessage = null) }
+    }
+
+    companion object {
+        fun Factory(registry: SystemRegistry): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return SetupWizardViewModel(registry) as T
+            }
         }
     }
 }
