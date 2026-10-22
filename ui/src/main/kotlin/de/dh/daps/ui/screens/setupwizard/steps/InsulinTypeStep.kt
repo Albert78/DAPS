@@ -31,7 +31,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.ui.R
@@ -55,7 +54,6 @@ fun InsulinTypeStep(
     onUpdateActiveSubstance: (String) -> Unit = {},
     onUpdatePeak: (String) -> Unit,
     onUpdateDia: (String) -> Unit,
-    onUpdateConcentration: (InsulinConcentration) -> Unit,
     onSaveEditedType: () -> Unit,
     onNext: () -> Unit,
     onBack: () -> Unit,
@@ -88,7 +86,6 @@ fun InsulinTypeStep(
                 onActiveSubstanceChange = onUpdateActiveSubstance,
                 onPeakChange = onUpdatePeak,
                 onDiaChange = onUpdateDia,
-                onConcentrationChange = onUpdateConcentration,
                 modifier = Modifier.padding(innerPadding)
             )
         }
@@ -168,7 +165,7 @@ fun InsulinTypeStep(
                                         )
                                     }
                                     Text(
-                                        text = "DIA: ${type.dia.value} min, Peak: ${type.peak.value} min (U${(type.defaultConcentration.factor * 100).toInt()})",
+                                        text = "DIA: ${type.dia.value} min, Peak: ${type.peak.value} min",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -228,7 +225,6 @@ private fun InsulinTypeStepPreview() {
             onUpdateName = {},
             onUpdatePeak = {},
             onUpdateDia = {},
-            onUpdateConcentration = {},
             onSaveEditedType = {},
             onNext = {},
             onBack = {},
@@ -250,8 +246,7 @@ private fun InsulinTypeStepEditingPreview() {
                 id = previewInsulinType1.id,
                 name = previewInsulinType1.name,
                 peak = previewInsulinType1.peak.value.toString(),
-                dia = previewInsulinType1.dia.value.toString(),
-                concentration = previewInsulinType1.defaultConcentration
+                dia = previewInsulinType1.dia.value.toString()
             ),
             onToggleTypeSelection = {},
             onStartEditing = {},
@@ -259,7 +254,6 @@ private fun InsulinTypeStepEditingPreview() {
             onUpdateName = {},
             onUpdatePeak = {},
             onUpdateDia = {},
-            onUpdateConcentration = {},
             onSaveEditedType = {},
             onNext = {},
             onBack = {},

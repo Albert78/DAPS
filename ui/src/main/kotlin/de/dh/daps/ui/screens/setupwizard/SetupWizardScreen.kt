@@ -22,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.data.BgBlock
 import de.dh.daps.common.model.data.BgValue
@@ -65,7 +64,6 @@ fun SetupWizardScreen(
         onUpdateInsulinTypeEditorActiveSubstance = viewModel::updateInsulinTypeEditorActiveSubstance,
         onUpdateInsulinTypeEditorPeak = viewModel::updateInsulinTypeEditorPeak,
         onUpdateInsulinTypeEditorDia = viewModel::updateInsulinTypeEditorDia,
-        onUpdateInsulinTypeEditorConcentration = viewModel::updateInsulinTypeEditorConcentration,
         onSaveEditedInsulinType = viewModel::saveEditedInsulinType,
         onSetInsulinProfile = viewModel::setInsulinProfile,
         onSetBgBlocks = viewModel::setBgBlocks,
@@ -90,7 +88,6 @@ fun SetupWizardContent(
     onUpdateInsulinTypeEditorActiveSubstance: (String) -> Unit = {},
     onUpdateInsulinTypeEditorPeak: (String) -> Unit = {},
     onUpdateInsulinTypeEditorDia: (String) -> Unit = {},
-    onUpdateInsulinTypeEditorConcentration: (InsulinConcentration) -> Unit = {},
     onSaveEditedInsulinType: () -> Unit = {},
     onSetInsulinProfile: (InsulinProfile) -> Unit = {},
     onSetBgBlocks: (List<BgBlock>) -> Unit = {},
@@ -177,7 +174,6 @@ fun SetupWizardContent(
                             onUpdateActiveSubstance = onUpdateInsulinTypeEditorActiveSubstance,
                             onUpdatePeak = onUpdateInsulinTypeEditorPeak,
                             onUpdateDia = onUpdateInsulinTypeEditorDia,
-                            onUpdateConcentration = onUpdateInsulinTypeEditorConcentration,
                             onSaveEditedType = onSaveEditedInsulinType,
                             onNext = onGoToNextStep,
                             onBack = onGoToPreviousStep,
@@ -311,8 +307,7 @@ fun SetupWizardInsulinTypeEditPreview() {
                     id = previewInsulinType.id,
                     name = previewInsulinType.name,
                     peak = previewInsulinType.peak.value.toString(),
-                    dia = previewInsulinType.dia.value.toString(),
-                    concentration = previewInsulinType.defaultConcentration
+                    dia = previewInsulinType.dia.value.toString()
                 )
             )
         )

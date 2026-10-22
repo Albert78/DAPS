@@ -135,8 +135,7 @@ data class InsulinTypeDto(
     val name: String,
     val activeSubstance: String?,
     val peakMinutes: Short,
-    val diaMinutes: Short,
-    val defaultConcentration: Double = 1.0
+    val diaMinutes: Short
 )
 
 @Serializable
@@ -404,8 +403,7 @@ fun InsulinTypeEntity.toDto() = InsulinTypeDto(
     name = name,
     activeSubstance = active_substance,
     peakMinutes = peak.value,
-    diaMinutes = dia.value,
-    defaultConcentration = default_concentration
+    diaMinutes = dia.value
 )
 
 fun InsulinTypeDto.toEntity() = InsulinTypeEntity(
@@ -413,8 +411,7 @@ fun InsulinTypeDto.toEntity() = InsulinTypeEntity(
     name = name,
     active_substance = activeSubstance,
     peak = Minutes(peakMinutes),
-    dia = Minutes(diaMinutes),
-    default_concentration = defaultConcentration
+    dia = Minutes(diaMinutes)
 )
 
 fun SensorTypeEntity.toDto() = SensorTypeDto(id = id, name = name)

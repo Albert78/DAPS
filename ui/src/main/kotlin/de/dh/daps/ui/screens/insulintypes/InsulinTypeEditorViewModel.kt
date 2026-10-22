@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import de.dh.daps.common.DEFAULT_DIA_MINUTES
 import de.dh.daps.common.DEFAULT_PEAK_MINUTES
-import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.core.SystemRegistry
@@ -23,7 +22,6 @@ data class InsulinTypeEditorUiState(
     val activeSubstance: String? = null,
     val peak: String = DEFAULT_PEAK_MINUTES.toString(),
     val dia: String = DEFAULT_DIA_MINUTES.toString(),
-    val concentration: InsulinConcentration = InsulinConcentration.U100,
     val isSaving: Boolean = false,
     val isLoading: Boolean = false
 ) {
@@ -64,7 +62,6 @@ class InsulinTypeEditorViewModel(
                         activeSubstance = type.activeSubstance,
                         peak = type.peak.value.toString(),
                         dia = type.dia.value.toString(),
-                        concentration = type.defaultConcentration,
                         isLoading = false
                     )
                 }
@@ -90,10 +87,6 @@ class InsulinTypeEditorViewModel(
         _uiState.update { it.copy(dia = dia) }
     }
 
-    fun onConcentrationChange(concentration: InsulinConcentration) {
-        _uiState.update { it.copy(concentration = concentration) }
-    }
-
     fun save(onSuccess: () -> Unit) {
         val state = _uiState.value
         if (!state.isValid) return
@@ -105,8 +98,7 @@ class InsulinTypeEditorViewModel(
                 name = state.name.trim(),
                 activeSubstance = state.activeSubstance?.trim()?.ifEmpty { null },
                 peak = Minutes((state.peak.toIntOrNull() ?: DEFAULT_PEAK_MINUTES).toShort()),
-                dia = Minutes((state.dia.toIntOrNull() ?: DEFAULT_DIA_MINUTES).toShort()),
-                defaultConcentration = state.concentration
+                dia = Minutes((state.dia.toIntOrNull() ?: DEFAULT_DIA_MINUTES).toShort())
             )
             treatmentRepository.insertInsulinType(insulinType)
             onSuccess()

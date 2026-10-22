@@ -15,11 +15,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -39,7 +35,6 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
@@ -52,8 +47,7 @@ private data class InitialInsulinTypeValues(
     val name: String,
     val activeSubstance: String?,
     val peak: String,
-    val dia: String,
-    val concentration: InsulinConcentration
+    val dia: String
 )
 
 @Composable
@@ -69,7 +63,6 @@ fun InsulinTypeEditorScreen(
         onActiveSubstanceChange = viewModel::onActiveSubstanceChange,
         onPeakChange = viewModel::onPeakChange,
         onDiaChange = viewModel::onDiaChange,
-        onConcentrationChange = viewModel::onConcentrationChange,
         onSave = {
             viewModel.save(onSuccess = onNavigateUp)
         },
@@ -85,7 +78,6 @@ fun InsulinTypeEditorContent(
     onActiveSubstanceChange: (String) -> Unit,
     onPeakChange: (String) -> Unit,
     onDiaChange: (String) -> Unit,
-    onConcentrationChange: (InsulinConcentration) -> Unit,
     onSave: () -> Unit,
     onNavigateUp: () -> Unit
 ) {
@@ -98,8 +90,7 @@ fun InsulinTypeEditorContent(
                 name = uiState.name,
                 activeSubstance = uiState.activeSubstance,
                 peak = uiState.peak,
-                dia = uiState.dia,
-                concentration = uiState.concentration
+                dia = uiState.dia
             )
         } else null
     }
@@ -109,7 +100,6 @@ fun InsulinTypeEditorContent(
         uiState.activeSubstance,
         uiState.peak,
         uiState.dia,
-        uiState.concentration,
         initialValues
     ) {
         if (initialValues == null) false
@@ -117,8 +107,7 @@ fun InsulinTypeEditorContent(
             uiState.name != initialValues.name ||
                     uiState.activeSubstance != initialValues.activeSubstance ||
                     uiState.peak != initialValues.peak ||
-                    uiState.dia != initialValues.dia ||
-                    uiState.concentration != initialValues.concentration
+                    uiState.dia != initialValues.dia
         }
     }
 
@@ -173,7 +162,6 @@ fun InsulinTypeEditorContent(
             onActiveSubstanceChange = onActiveSubstanceChange,
             onPeakChange = onPeakChange,
             onDiaChange = onDiaChange,
-            onConcentrationChange = onConcentrationChange,
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -206,7 +194,6 @@ fun InsulinTypeEditorContent(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InsulinTypeEditorFormContent(
     uiState: InsulinTypeEditorUiState,
@@ -214,18 +201,9 @@ fun InsulinTypeEditorFormContent(
     onActiveSubstanceChange: (String) -> Unit,
     onPeakChange: (String) -> Unit,
     onDiaChange: (String) -> Unit,
-    onConcentrationChange: (InsulinConcentration) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
-    var expandedConc by remember { mutableStateOf(false) }
-
-    val concentrations = listOf(
-        InsulinConcentration.U20,
-        InsulinConcentration.U40,
-        InsulinConcentration.U100,
-        InsulinConcentration.U200
-    )
 
     Column(
         modifier = modifier
@@ -282,37 +260,6 @@ fun InsulinTypeEditorFormContent(
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
-
-        ExposedDropdownMenuBox(
-            expanded = expandedConc,
-            onExpandedChange = { expandedConc = !expandedConc }
-        ) {
-            OutlinedTextField(
-                value = "U${(uiState.concentration.factor * 100).toInt()}",
-                onValueChange = {},
-                readOnly = true,
-                label = { Text(stringResource(id = R.string.insulin_type_editor_concentration_label)) },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedConc) },
-                modifier = Modifier
-                    .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
-                    .fillMaxWidth()
-            )
-
-            ExposedDropdownMenu(
-                expanded = expandedConc,
-                onDismissRequest = { expandedConc = false }
-            ) {
-                concentrations.forEach { conc ->
-                    DropdownMenuItem(
-                        text = { Text("U${(conc.factor * 100).toInt()}") },
-                        onClick = {
-                            onConcentrationChange(conc)
-                            expandedConc = false
-                        }
-                    )
-                }
-            }
-        }
     }
 }
 
@@ -333,7 +280,6 @@ fun InsulinTypeEditorPreview() {
             onActiveSubstanceChange = {},
             onPeakChange = {},
             onDiaChange = {},
-            onConcentrationChange = {},
             onSave = {},
             onNavigateUp = {}
         )
@@ -356,8 +302,7 @@ fun InsulinTypeEditorFormContentPreview() {
             onNameChange = {},
             onActiveSubstanceChange = {},
             onPeakChange = {},
-            onDiaChange = {},
-            onConcentrationChange = {}
+            onDiaChange = {}
         )
     }
 }

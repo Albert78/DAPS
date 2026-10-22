@@ -231,8 +231,7 @@ fun InsulinTypeItem(
     onDelete: () -> Unit,
     onClick: () -> Unit
 ) {
-    val concStr = "U${(insulinType.defaultConcentration.factor * 100).toInt()}"
-    val detailsStr = "Peak: ${insulinType.peak.value} Min. | DIA: ${insulinType.dia.value} Min. | $concStr"
+    val detailsStr = "Peak: ${insulinType.peak.value} Min. | DIA: ${insulinType.dia.value} Min."
 
     ListItem(
         headlineContent = {

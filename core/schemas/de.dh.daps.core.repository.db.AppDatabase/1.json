@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "5f51a8875ef90724f8674bcefd14743d",
+    "identityHash": "74c77bc7ec3163e3f10c8b637c729b27",
     "entities": [
       {
         "tableName": "sensor_type",
@@ -592,7 +592,7 @@
       },
       {
         "tableName": "insulin_type",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `active_substance` TEXT, `peak` INTEGER NOT NULL, `dia` INTEGER NOT NULL, `default_concentration` REAL NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `active_substance` TEXT, `peak` INTEGER NOT NULL, `dia` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -621,12 +621,6 @@
             "fieldPath": "dia",
             "columnName": "dia",
             "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "default_concentration",
-            "columnName": "default_concentration",
-            "affinity": "REAL",
             "notNull": true
           }
         ],
@@ -986,7 +980,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5f51a8875ef90724f8674bcefd14743d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '74c77bc7ec3163e3f10c8b637c729b27')"
     ]
   }
 }

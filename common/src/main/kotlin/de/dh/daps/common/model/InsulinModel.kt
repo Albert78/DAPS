@@ -19,8 +19,7 @@ data class InsulinType(
     val name: String,
     val activeSubstance: String?,
     val peak: Minutes,
-    val dia: Minutes,
-    val defaultConcentration: InsulinConcentration = InsulinConcentration.U100
+    val dia: Minutes
 )
 
 /**

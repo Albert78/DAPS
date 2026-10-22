@@ -8,7 +8,6 @@ import de.dh.daps.common.DEFAULT_BG_LOW_THRESHOLD_MGDL
 import de.dh.daps.common.DEFAULT_BG_TARGET_MGDL
 import de.dh.daps.common.DEFAULT_DIA_MINUTES
 import de.dh.daps.common.DEFAULT_PEAK_MINUTES
-import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.data.BgBlock
 import de.dh.daps.common.model.data.BgValue
@@ -185,8 +184,7 @@ class SetupWizardViewModel(
                     name = typeToEdit?.name ?: "",
                     activeSubstance = typeToEdit?.activeSubstance,
                     peak = typeToEdit?.peak?.value?.toString() ?: "",
-                    dia = typeToEdit?.dia?.value?.toString() ?: "",
-                    concentration = typeToEdit?.defaultConcentration ?: InsulinConcentration.U100
+                    dia = typeToEdit?.dia?.value?.toString() ?: ""
                 )
             )
         }
@@ -233,14 +231,6 @@ class SetupWizardViewModel(
         }
     }
 
-    fun updateInsulinTypeEditorConcentration(concentration: InsulinConcentration) {
-        _uiState.update { state ->
-            state.copy(
-                insulinTypeEditorUiState = state.insulinTypeEditorUiState.copy(concentration = concentration)
-            )
-        }
-    }
-
     fun saveEditedInsulinType() {
         val editorState = _uiState.value.insulinTypeEditorUiState
         if (!editorState.isValid) return
@@ -250,8 +240,7 @@ class SetupWizardViewModel(
             name = editorState.name.trim(),
             activeSubstance = editorState.activeSubstance?.trim()?.ifEmpty { null },
             peak = Minutes((editorState.peak.toIntOrNull() ?: DEFAULT_PEAK_MINUTES).toShort()),
-            dia = Minutes((editorState.dia.toIntOrNull() ?: DEFAULT_DIA_MINUTES).toShort()),
-            defaultConcentration = editorState.concentration
+            dia = Minutes((editorState.dia.toIntOrNull() ?: DEFAULT_DIA_MINUTES).toShort())
         )
 
         _uiState.update { state ->

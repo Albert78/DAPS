@@ -4,7 +4,6 @@ import de.dh.daps.common.model.CarbCurveComponentData
 import de.dh.daps.common.model.DeferredBolus
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinApplication
-import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.MealEntry
 import de.dh.daps.common.model.MealType
@@ -76,8 +75,7 @@ fun InsulinType.toEntity() = InsulinTypeEntity(
     name = this.name,
     active_substance = this.activeSubstance,
     peak = this.peak,
-    dia = this.dia,
-    default_concentration = this.defaultConcentration.factor
+    dia = this.dia
 )
 
 fun InsulinTypeEntity.toModel() = InsulinType(
@@ -85,8 +83,7 @@ fun InsulinTypeEntity.toModel() = InsulinType(
     name = this.name,
     activeSubstance = this.active_substance,
     peak = this.peak,
-    dia = this.dia,
-    defaultConcentration = InsulinConcentration(this.default_concentration)
+    dia = this.dia
 )
 
 fun InsulinApplication.toEntity() = InsulinEntity(
