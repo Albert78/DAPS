@@ -20,11 +20,11 @@ import de.dh.daps.common.model.data.TherapyAdjustment
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.data.getAmountForMinute
 import de.dh.daps.common.model.data.getBgForMinute
+import de.dh.daps.common.service.SystemWakeService
+import de.dh.daps.common.service.WakeupHandler
 import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.repository.TherapyRepository
 import de.dh.daps.core.repository.TreatmentRepository
-import de.dh.daps.common.service.SystemWakeService
-import de.dh.daps.common.service.WakeupHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -258,22 +258,14 @@ class TherapyManager(
     suspend fun getPumpInsulinType(): InsulinType {
         val activePump = pumpManager.activeInsulinPump.value ?: pumpManager.insulinPump
         val insulinTypeId = activePump?.insulinTypeId
+        val allTypes = treatmentRepository.getAllInsulinTypes()
         if (!insulinTypeId.isNullOrBlank()) {
-            val type = treatmentRepository.getAllInsulinTypes().firstOrNull { it.id == insulinTypeId }
+            val type = allTypes.firstOrNull { it.id == insulinTypeId }
             if (type != null) {
                 return type
             }
         }
-        val currentSettings = getCurrentTherapySettings()
-        return currentSettings.insulinProfile.insulinType
-    }
-
-    suspend fun isInsulinTypeInUse(insulinTypeId: String): Boolean {
-        return treatmentRepository.isInsulinTypeInUse(insulinTypeId)
-    }
-
-    suspend fun canDeleteInsulinType(insulinTypeId: String): Boolean {
-        return treatmentRepository.canDeleteInsulinType(insulinTypeId)
+        return allTypes.firstOrNull() ?: throw IllegalStateException("No insulin type configured in database")
     }
 
     suspend fun getPumpCapabilities() = pumpManager.insulinPump?.pumpCapabilities?.value

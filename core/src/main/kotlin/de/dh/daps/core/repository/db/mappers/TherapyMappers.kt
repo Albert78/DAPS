@@ -8,11 +8,13 @@ import de.dh.daps.common.model.data.Block
 import de.dh.daps.common.model.data.CurrentTherapySettings
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.ProfileInsulinSetting
 import de.dh.daps.common.model.data.ScheduledTherapyAdjustment
 import de.dh.daps.common.model.data.TherapyAdjustment
 import de.dh.daps.core.repository.db.entities.CurrentTherapySettingsEntity
 import de.dh.daps.core.repository.db.entities.DBBgBlock
 import de.dh.daps.core.repository.db.entities.DBBlock
+import de.dh.daps.core.repository.db.entities.DBInsulinSetting
 import de.dh.daps.core.repository.db.entities.InsulinProfileEntity
 import de.dh.daps.core.repository.db.entities.ScheduledTherapyAdjustmentEntity
 import de.dh.daps.core.repository.db.entities.TherapyAdjustmentEntity
@@ -40,27 +42,42 @@ fun DBBgBlock.toModel() = BgBlock(
     lowThreshold = BgValue.fromMgDl(this.lowThreshold)
 )
 
+fun ProfileInsulinSetting.toDb() = DBInsulinSetting(
+    insulinTypeId = this.insulinType.id,
+    dia = this.dia.value,
+    peak = this.peak.value
+)
+
 fun InsulinProfile.toEntity() = InsulinProfileEntity(
     id = this.id,
     name = this.name,
     basal_blocks = this.basalBlocks.map { it.toDb() },
     isf_blocks = this.isfBlocks.map { it.toDb() },
     cr_blocks = this.crBlocks.map { it.toDb() },
-    insulin_type_id = this.insulinType.id,
-    dia = this.dia,
-    peak = this.peak
+    insulin_settings = this.insulinSettings.map { it.toDb() }
 )
 
-fun InsulinProfileEntity.toModel(insulinType: InsulinType) = InsulinProfile(
-    id = this.id,
-    name = this.name,
-    basalBlocks = this.basal_blocks.map { it.toModel() },
-    isfBlocks = this.isf_blocks.map { it.toModel() },
-    crBlocks = this.cr_blocks.map { it.toModel() },
-    insulinType = insulinType,
-    dia = this.dia,
-    peak = this.peak
-)
+fun InsulinProfileEntity.toModel(availableInsulinTypes: List<InsulinType>): InsulinProfile {
+    val typesMap = availableInsulinTypes.associateBy { it.id }
+    val settings = this.insulin_settings.mapNotNull { dbSetting ->
+        val type = typesMap[dbSetting.insulinTypeId]
+        if (type != null) {
+            ProfileInsulinSetting(
+                insulinType = type,
+                dia = Minutes(dbSetting.dia),
+                peak = Minutes(dbSetting.peak)
+            )
+        } else null
+    }
+    return InsulinProfile(
+        id = this.id,
+        name = this.name,
+        basalBlocks = this.basal_blocks.map { it.toModel() },
+        isfBlocks = this.isf_blocks.map { it.toModel() },
+        crBlocks = this.cr_blocks.map { it.toModel() },
+        insulinSettings = settings
+    )
+}
 
 fun CurrentTherapySettings.toEntity() = CurrentTherapySettingsEntity(
     id = this.id,

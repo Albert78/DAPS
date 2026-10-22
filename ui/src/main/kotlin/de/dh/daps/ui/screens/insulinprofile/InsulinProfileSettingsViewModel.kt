@@ -12,6 +12,7 @@ import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.data.Block
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.ProfileInsulinSetting
 import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -60,7 +61,14 @@ class InsulinProfileSettingsViewModel(
     }
 
     fun startEditingNewProfile() {
-        val defaultInsulinType = _uiState.value.insulinTypes.firstOrNull() ?: return
+        val availableTypes = _uiState.value.insulinTypes
+        val initialSettings = availableTypes.map { type ->
+            ProfileInsulinSetting(
+                insulinType = type,
+                dia = type.dia,
+                peak = type.peak
+            )
+        }
         startEditing(
             InsulinProfile(
                 name = "",
@@ -72,9 +80,7 @@ class InsulinProfileSettingsViewModel(
                 ),
                 isfBlocks = listOf(Block(Minutes.ofHours(24), DEFAULT_ISF_MGDL_PER_UNIT)),
                 crBlocks = listOf(Block(Minutes.ofHours(24), DEFAULT_CR_GRAM_PER_UNIT)),
-                insulinType = defaultInsulinType,
-                dia = defaultInsulinType.dia,
-                peak = defaultInsulinType.peak
+                insulinSettings = initialSettings
             )
         )
     }

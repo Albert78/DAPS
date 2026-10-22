@@ -10,6 +10,7 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.aps.CoreReasoning
 import de.dh.daps.core.repository.db.entities.DBBgBlock
 import de.dh.daps.core.repository.db.entities.DBBlock
+import de.dh.daps.core.repository.db.entities.DBInsulinSetting
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -125,6 +126,38 @@ class DbTypeConverters {
                     jsonObject.getInt("duration").toShort(),
                     jsonObject.getInt("target").toShort(),
                     jsonObject.getInt("lowThreshold").toShort()
+                )
+            )
+        }
+        return list
+    }
+
+    @TypeConverter
+    fun fromListOfInsulinSettings(settings: List<DBInsulinSetting>?): String? {
+        if (settings == null) return null
+        val jsonArray = JSONArray()
+        settings.forEach {
+            val jsonObject = JSONObject()
+            jsonObject.put("insulinTypeId", it.insulinTypeId)
+            jsonObject.put("dia", it.dia)
+            jsonObject.put("peak", it.peak)
+            jsonArray.put(jsonObject)
+        }
+        return jsonArray.toString()
+    }
+
+    @TypeConverter
+    fun toListOfInsulinSettings(jsonString: String?): List<DBInsulinSetting>? {
+        if (jsonString.isNullOrBlank()) return emptyList()
+        val jsonArray = JSONArray(jsonString)
+        val list = mutableListOf<DBInsulinSetting>()
+        for (i in 0 until jsonArray.length()) {
+            val jsonObject = jsonArray.getJSONObject(i)
+            list.add(
+                DBInsulinSetting(
+                    insulinTypeId = jsonObject.getString("insulinTypeId"),
+                    dia = jsonObject.getInt("dia").toShort(),
+                    peak = jsonObject.getInt("peak").toShort()
                 )
             )
         }

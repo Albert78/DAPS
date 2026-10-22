@@ -4,6 +4,7 @@ import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.data.Block
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.ProfileInsulinSetting
 import de.dh.daps.plugin.simbody.model.BodyProfile
 
 /**
@@ -25,9 +26,13 @@ val DEFAULT_SIM_INSULIN_PROFILE = InsulinProfile(
     basalBlocks = listOf(Block(Minutes.ofHours(24), 0.5)),
     isfBlocks = listOf(Block(Minutes.ofHours(24), 50.0)),
     crBlocks = listOf(Block(Minutes.ofHours(24), 10.0)),
-    insulinType = DEFAULT_SIM_INSULIN_TYPE,
-    dia = DEFAULT_SIM_INSULIN_TYPE.dia,
-    peak = DEFAULT_SIM_INSULIN_TYPE.peak
+    insulinSettings = listOf(
+        ProfileInsulinSetting(
+            insulinType = DEFAULT_SIM_INSULIN_TYPE,
+            dia = DEFAULT_SIM_INSULIN_TYPE.dia,
+            peak = DEFAULT_SIM_INSULIN_TYPE.peak
+        )
+    )
 )
 
 /**

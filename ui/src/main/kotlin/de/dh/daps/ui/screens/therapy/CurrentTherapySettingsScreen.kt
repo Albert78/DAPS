@@ -62,6 +62,7 @@ import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Block
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.ProfileInsulinSetting
 import de.dh.daps.common.model.data.ScheduledTherapyAdjustment
 import de.dh.daps.common.model.data.TherapyAdjustment
 import de.dh.daps.ui.R
@@ -425,22 +426,12 @@ private fun ActiveInsulinProfileCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
+                    if (profile.profile != null && profile.profile.insulinSettings.isNotEmpty()) {
+                        val settingsText = profile.profile.insulinSettings.joinToString(" • ") { s ->
+                            "${s.insulinType.name}: DIA ${s.dia.value}m, Peak ${s.peak.value}m"
+                        }
                         Text(
-                            text = stringResource(id = R.string.current_therapy_dia_label_format, formatMinutes(profile.dia)),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = "•",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                        )
-                        Text(
-                            text = stringResource(id = R.string.current_therapy_peak_label_format, formatMinutes(profile.peak)),
+                            text = settingsText,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -889,9 +880,13 @@ fun CurrentTherapySettingsPreview() {
         basalBlocks = listOf(Block(Minutes(1440), 0.5)),
         isfBlocks = listOf(Block(Minutes(1440), 40.0)),
         crBlocks = listOf(Block(Minutes(1440), 10.0)),
-        insulinType = mockInsulinType,
-        dia = Minutes(300),
-        peak = Minutes(75)
+        insulinSettings = listOf(
+            ProfileInsulinSetting(
+                insulinType = mockInsulinType,
+                dia = Minutes(300),
+                peak = Minutes(75)
+            )
+        )
     )
 
     val mockProfile2 = InsulinProfile(
@@ -900,9 +895,13 @@ fun CurrentTherapySettingsPreview() {
         basalBlocks = listOf(Block(Minutes(1440), 0.3)),
         isfBlocks = listOf(Block(Minutes(1440), 50.0)),
         crBlocks = listOf(Block(Minutes(1440), 12.0)),
-        insulinType = mockInsulinType,
-        dia = Minutes(300),
-        peak = Minutes(75)
+        insulinSettings = listOf(
+            ProfileInsulinSetting(
+                insulinType = mockInsulinType,
+                dia = Minutes(300),
+                peak = Minutes(75)
+            )
+        )
     )
 
     val mockUiState = CurrentTherapyUiState(
@@ -913,9 +912,7 @@ fun CurrentTherapySettingsPreview() {
                 activeProfileId = 1L,
                 isfRange = "40 - 50",
                 crRange = "10.0 - 12.0",
-                basalRange = "0.50 - 0.55",
-                dia = Minutes(300),
-                peak = Minutes(75)
+                basalRange = "0.50 - 0.55"
             ),
             adjustment = TherapyAdjustmentUiState(
                 percentage = -30,

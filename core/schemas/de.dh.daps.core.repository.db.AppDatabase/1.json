@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "99f941d898d8ca35ec4fc68c8f9042cd",
+    "identityHash": "5f51a8875ef90724f8674bcefd14743d",
     "entities": [
       {
         "tableName": "sensor_type",
@@ -137,7 +137,7 @@
       },
       {
         "tableName": "insulin_profiles",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `basal_blocks` TEXT NOT NULL, `isf_blocks` TEXT NOT NULL, `cr_blocks` TEXT NOT NULL, `insulin_type_id` TEXT NOT NULL, `dia` INTEGER NOT NULL, `peak` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `basal_blocks` TEXT NOT NULL, `isf_blocks` TEXT NOT NULL, `cr_blocks` TEXT NOT NULL, `insulin_settings` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -170,21 +170,9 @@
             "notNull": true
           },
           {
-            "fieldPath": "insulin_type_id",
-            "columnName": "insulin_type_id",
+            "fieldPath": "insulin_settings",
+            "columnName": "insulin_settings",
             "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "dia",
-            "columnName": "dia",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "peak",
-            "columnName": "peak",
-            "affinity": "INTEGER",
             "notNull": true
           }
         ],
@@ -998,7 +986,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '99f941d898d8ca35ec4fc68c8f9042cd')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5f51a8875ef90724f8674bcefd14743d')"
     ]
   }
 }

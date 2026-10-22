@@ -36,6 +36,8 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SecondaryTabRow
@@ -50,8 +52,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -77,6 +77,7 @@ import de.dh.daps.common.model.data.Block
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.ProfileInsulinSetting
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.DefaultSteppingStrategy
 import de.dh.daps.ui.common.LocalGlucoseUnit
@@ -89,7 +90,17 @@ import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.isfUnitLabel
 import de.dh.daps.ui.common.theme.AppPreview
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import java.util.UUID
 import de.dh.daps.common.R as CommonR
+
+data class EditableInsulinSettingState(
+    val id: String = UUID.randomUUID().toString(),
+    val insulinType: InsulinType,
+    val dia: String,
+    val peak: String
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -100,28 +111,59 @@ fun InsulinProfileDetailEditor(
     onCancel: () -> Unit,
     isNameUnique: (String, Long) -> Boolean = { _, _ -> true }
 ) {
-    var name by remember { mutableStateOf(profile.name) }
-    var basalBlocks by remember { mutableStateOf(profile.basalBlocks) }
-    var isfBlocks by remember { mutableStateOf(profile.isfBlocks) }
-    var crBlocks by remember { mutableStateOf(profile.crBlocks) }
-    var insulinType by remember { mutableStateOf(profile.insulinType) }
-    var dia by remember { mutableStateOf(profile.dia.value.toString()) }
-    var peak by remember { mutableStateOf(profile.peak.value.toString()) }
+    var name by remember(profile) { mutableStateOf(profile.name) }
+    var basalBlocks by remember(profile) { mutableStateOf(profile.basalBlocks) }
+    var isfBlocks by remember(profile) { mutableStateOf(profile.isfBlocks) }
+    var crBlocks by remember(profile) { mutableStateOf(profile.crBlocks) }
+
+    val initialSettings = remember(profile) {
+        if (profile.insulinSettings.isNotEmpty()) {
+            profile.insulinSettings.map { setting ->
+                EditableInsulinSettingState(
+                    insulinType = setting.insulinType,
+                    dia = setting.dia.value.toString(),
+                    peak = setting.peak.value.toString()
+                )
+            }
+        } else if (insulinTypes.isNotEmpty()) {
+            insulinTypes.map { type ->
+                EditableInsulinSettingState(
+                    insulinType = type,
+                    dia = type.dia.value.toString(),
+                    peak = type.peak.value.toString()
+                )
+            }
+        } else emptyList()
+    }
+    var insulinSettings by remember(profile) { mutableStateOf(initialSettings) }
 
     var selectedTab by remember { mutableIntStateOf(0) }
     var showDiscardConfirmation by remember { mutableStateOf(false) }
 
     val isNameValid = name.trim().isNotBlank() && isNameUnique(name.trim(), profile.id)
-    val diaValue = dia.toIntOrNull() ?: 0
-    val peakValue = peak.toIntOrNull() ?: 0
+    val areSettingsValid = insulinSettings.isNotEmpty() && insulinSettings.all { setting ->
+        val diaVal = setting.dia.toIntOrNull() ?: 0
+        val peakVal = setting.peak.toIntOrNull() ?: 0
+        diaVal > 0 && peakVal > 0
+    }
+
+    val currentSettingsMapped = remember(insulinSettings) {
+        insulinSettings.map { setting ->
+            val diaVal = setting.dia.toIntOrNull() ?: 0
+            val peakVal = setting.peak.toIntOrNull() ?: 0
+            ProfileInsulinSetting(
+                insulinType = setting.insulinType,
+                dia = Minutes(diaVal.toShort()),
+                peak = Minutes(peakVal.toShort())
+            )
+        }
+    }
 
     val hasChanges = name != profile.name ||
             basalBlocks != profile.basalBlocks ||
             isfBlocks != profile.isfBlocks ||
             crBlocks != profile.crBlocks ||
-            insulinType != profile.insulinType ||
-            diaValue != profile.dia.value.toInt() ||
-            peakValue != profile.peak.value.toInt()
+            currentSettingsMapped != profile.insulinSettings
 
     fun handleBack() {
         if (hasChanges) {
@@ -138,9 +180,7 @@ fun InsulinProfileDetailEditor(
                 basalBlocks = basalBlocks,
                 isfBlocks = isfBlocks,
                 crBlocks = crBlocks,
-                insulinType = insulinType,
-                dia = Minutes(diaValue.toShort()),
-                peak = Minutes(peakValue.toShort())
+                insulinSettings = currentSettingsMapped
             )
         )
     }
@@ -168,7 +208,7 @@ fun InsulinProfileDetailEditor(
                 actions = {
                     IconButton(
                         onClick = ::saveChanges,
-                        enabled = isNameValid && diaValue > 0 && peakValue > 0
+                        enabled = isNameValid && areSettingsValid
                     ) {
                         Icon(
                             imageVector = Icons.Default.Save,
@@ -186,16 +226,8 @@ fun InsulinProfileDetailEditor(
             selectedTab = selectedTab,
             onTabSelected = { selectedTab = it },
             insulinTypes = insulinTypes,
-            selectedInsulinType = insulinType,
-            onInsulinTypeSelected = {
-                insulinType = it
-                dia = it.dia.value.toString()
-                peak = it.peak.value.toString()
-            },
-            dia = dia,
-            onDiaChanged = { dia = it },
-            peak = peak,
-            onPeakChanged = { peak = it },
+            insulinSettings = insulinSettings,
+            onInsulinSettingsChanged = { insulinSettings = it },
             basalBlocks = basalBlocks,
             onBasalBlocksChanged = { basalBlocks = it },
             isfBlocks = isfBlocks,
@@ -217,7 +249,7 @@ fun InsulinProfileDetailEditor(
                         showDiscardConfirmation = false
                         saveChanges()
                     },
-                    enabled = isNameValid && diaValue > 0 && peakValue > 0
+                    enabled = isNameValid && areSettingsValid
                 ) {
                     Text(stringResource(id = CommonR.string.action_save))
                 }
@@ -240,12 +272,8 @@ fun InsulinProfileEditorContent(
     name: String,
     onNameChange: (String) -> Unit,
     insulinTypes: List<InsulinType>,
-    selectedInsulinType: InsulinType,
-    onInsulinTypeSelected: (InsulinType) -> Unit,
-    dia: String,
-    onDiaChanged: (String) -> Unit,
-    peak: String,
-    onPeakChanged: (String) -> Unit,
+    insulinSettings: List<EditableInsulinSettingState>,
+    onInsulinSettingsChanged: (List<EditableInsulinSettingState>) -> Unit,
     basalBlocks: List<Block>,
     onBasalBlocksChanged: (List<Block>) -> Unit,
     isfBlocks: List<Block>,
@@ -302,12 +330,8 @@ fun InsulinProfileEditorContent(
             when (currentTab) {
                 0 -> InsulinSettingsEditor(
                     insulinTypes = insulinTypes,
-                    selectedInsulinType = selectedInsulinType,
-                    onInsulinTypeSelected = onInsulinTypeSelected,
-                    dia = dia,
-                    onDiaChanged = onDiaChanged,
-                    peak = peak,
-                    onPeakChanged = onPeakChanged
+                    insulinSettings = insulinSettings,
+                    onInsulinSettingsChanged = onInsulinSettingsChanged
                 )
                 1 -> TherapyBlockListEditor(
                     title = stringResource(id = R.string.insulin_profile_editor_basal_title),
@@ -363,18 +387,12 @@ fun InsulinProfileEditorContent(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InsulinSettingsEditor(
     insulinTypes: List<InsulinType>,
-    selectedInsulinType: InsulinType,
-    onInsulinTypeSelected: (InsulinType) -> Unit,
-    dia: String,
-    onDiaChanged: (String) -> Unit,
-    peak: String,
-    onPeakChanged: (String) -> Unit
+    insulinSettings: List<EditableInsulinSettingState>,
+    onInsulinSettingsChanged: (List<EditableInsulinSettingState>) -> Unit
 ) {
-    var expandedType by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
     Column(
@@ -385,69 +403,189 @@ fun InsulinSettingsEditor(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(text = stringResource(id = R.string.insulin_profile_editor_insulin_settings_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        Text(
+            text = stringResource(id = R.string.insulin_profile_editor_multi_insulin_title),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = stringResource(id = R.string.insulin_profile_editor_multi_insulin_desc),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
 
-        ExposedDropdownMenuBox(
-            expanded = expandedType,
-            onExpandedChange = { expandedType = !expandedType }
-        ) {
-            OutlinedTextField(
-                value = if (!selectedInsulinType.activeSubstance.isNullOrBlank()) {
-                    "${selectedInsulinType.name} (${selectedInsulinType.activeSubstance})"
-                } else {
-                    selectedInsulinType.name
+        insulinSettings.forEachIndexed { index, setting ->
+            InsulinSettingCard(
+                setting = setting,
+                availableInsulinTypes = insulinTypes,
+                onSettingChanged = { updatedSetting ->
+                    val newList = insulinSettings.toMutableList()
+                    newList[index] = updatedSetting
+                    onInsulinSettingsChanged(newList)
                 },
-                onValueChange = {},
-                readOnly = true,
-                label = { Text(stringResource(id = R.string.insulin_profile_editor_insulin_type_label)) },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedType) },
-                modifier = Modifier
-                    .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
-                    .fillMaxWidth()
-            )
-            ExposedDropdownMenu(
-                expanded = expandedType,
-                onDismissRequest = { expandedType = false }
-            ) {
-                insulinTypes.forEach { type ->
-                    val typeText = if (!type.activeSubstance.isNullOrBlank()) {
-                        "${type.name} (${type.activeSubstance})"
-                    } else {
-                        type.name
+                onDelete = if (insulinSettings.size > 1) {
+                    {
+                        val newList = insulinSettings.toMutableList()
+                        newList.removeAt(index)
+                        onInsulinSettingsChanged(newList)
                     }
-                    DropdownMenuItem(
-                        text = { Text(typeText) },
-                        onClick = {
-                            onInsulinTypeSelected(type)
-                            expandedType = false
-                        }
-                    )
-                }
-            }
+                } else null
+            )
         }
 
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            OutlinedTextField(
-                value = dia,
-                onValueChange = { onDiaChanged(it) },
-                label = { Text(stringResource(id = R.string.insulin_profile_editor_dia_label)) },
-                modifier = Modifier.weight(1f),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                    imeAction = ImeAction.Next
+        val unusedType = insulinTypes.firstOrNull { type ->
+            insulinSettings.none { it.insulinType.id == type.id }
+        } ?: insulinTypes.firstOrNull()
+
+        if (unusedType != null) {
+            OutlinedButton(
+                onClick = {
+                    val newSetting = EditableInsulinSettingState(
+                        insulinType = unusedType,
+                        dia = unusedType.dia.value.toString(),
+                        peak = unusedType.peak.value.toString()
+                    )
+                    onInsulinSettingsChanged(insulinSettings + newSetting)
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = null,
+                    modifier = Modifier.padding(end = 8.dp)
                 )
-            )
-            OutlinedTextField(
-                value = peak,
-                onValueChange = { onPeakChanged(it) },
-                label = { Text(stringResource(id = R.string.insulin_profile_editor_peak_label)) },
-                modifier = Modifier.weight(1f),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                    imeAction = ImeAction.Done
+                Text(text = stringResource(id = R.string.insulin_profile_editor_add_insulin_setting))
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun InsulinSettingCard(
+    setting: EditableInsulinSettingState,
+    availableInsulinTypes: List<InsulinType>,
+    onSettingChanged: (EditableInsulinSettingState) -> Unit,
+    onDelete: (() -> Unit)?
+) {
+    var expandedType by remember { mutableStateOf(false) }
+
+    OutlinedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                ExposedDropdownMenuBox(
+                    expanded = expandedType,
+                    onExpandedChange = { expandedType = !expandedType },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    val typeText = if (!setting.insulinType.activeSubstance.isNullOrBlank()) {
+                        "${setting.insulinType.name} (${setting.insulinType.activeSubstance})"
+                    } else {
+                        setting.insulinType.name
+                    }
+                    OutlinedTextField(
+                        value = typeText,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text(stringResource(id = R.string.insulin_profile_editor_insulin_type_label)) },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedType) },
+                        modifier = Modifier
+                            .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
+                            .fillMaxWidth()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expandedType,
+                        onDismissRequest = { expandedType = false }
+                    ) {
+                        availableInsulinTypes.forEach { type ->
+                            val itemText = if (!type.activeSubstance.isNullOrBlank()) {
+                                "${type.name} (${type.activeSubstance})"
+                            } else {
+                                type.name
+                            }
+                            DropdownMenuItem(
+                                text = { Text(itemText) },
+                                onClick = {
+                                    expandedType = false
+                                    onSettingChanged(
+                                        setting.copy(
+                                            insulinType = type,
+                                            dia = type.dia.value.toString(),
+                                            peak = type.peak.value.toString()
+                                        )
+                                    )
+                                }
+                            )
+                        }
+                    }
+                }
+
+                if (onDelete != null) {
+                    IconButton(
+                        onClick = onDelete,
+                        modifier = Modifier.padding(start = 8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = stringResource(id = R.string.cd_delete_insulin_setting)
+                        )
+                    }
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedTextField(
+                    value = setting.dia,
+                    onValueChange = { newDia ->
+                        onSettingChanged(setting.copy(dia = newDia))
+                    },
+                    label = { Text(stringResource(id = R.string.insulin_profile_editor_dia_label)) },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Next
+                    )
                 )
+
+                OutlinedTextField(
+                    value = setting.peak,
+                    onValueChange = { newPeak ->
+                        onSettingChanged(setting.copy(peak = newPeak))
+                    },
+                    label = { Text(stringResource(id = R.string.insulin_profile_editor_peak_label)) },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done
+                    )
+                )
+            }
+
+            Text(
+                text = stringResource(
+                    id = R.string.insulin_profile_editor_default_values_hint,
+                    setting.insulinType.dia.value.toInt(),
+                    setting.insulinType.peak.value.toInt()
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -718,9 +856,13 @@ private fun InsulinProfileDetailEditorPreview() {
         ),
         isfBlocks = listOf(Block(Minutes.ofHours(24), 50.0)),
         crBlocks = listOf(Block(Minutes.ofHours(24), 10.0)),
-        insulinType = sampleInsulinType,
-        dia = sampleInsulinType.dia,
-        peak = sampleInsulinType.peak
+        insulinSettings = listOf(
+            ProfileInsulinSetting(
+                insulinType = sampleInsulinType,
+                dia = sampleInsulinType.dia,
+                peak = sampleInsulinType.peak
+            )
+        )
     )
 
     AppPreview {
@@ -745,12 +887,14 @@ private fun InsulinProfileEditorContentPreview() {
             name = "Normal",
             onNameChange = {},
             insulinTypes = listOf(sampleInsulinType),
-            selectedInsulinType = sampleInsulinType,
-            onInsulinTypeSelected = {},
-            dia = "300",
-            onDiaChanged = {},
-            peak = "60",
-            onPeakChanged = {},
+            insulinSettings = listOf(
+                EditableInsulinSettingState(
+                    insulinType = sampleInsulinType,
+                    dia = "300",
+                    peak = "60"
+                )
+            ),
+            onInsulinSettingsChanged = {},
             basalBlocks = listOf(Block(Minutes.ofHours(24), 1.0)),
             onBasalBlocksChanged = {},
             isfBlocks = listOf(Block(Minutes.ofHours(24), 50.0)),

@@ -33,6 +33,7 @@ import de.dh.daps.common.model.data.CarbsUnit
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.ProfileInsulinSetting
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.carbsUnitLabel
 import de.dh.daps.ui.common.composables.FramedCard
@@ -145,9 +146,13 @@ private val previewInsulinProfile = InsulinProfile(
     basalBlocks = listOf(Block(Minutes.ofHours(24), 1.0)),
     isfBlocks = listOf(Block(Minutes.ofHours(24), 40.0)),
     crBlocks = listOf(Block(Minutes.ofHours(24), 10.0)),
-    insulinType = previewInsulinType,
-    dia = Minutes.ofHours(5),
-    peak = Minutes(75)
+    insulinSettings = listOf(
+        ProfileInsulinSetting(
+            insulinType = previewInsulinType,
+            dia = Minutes.ofHours(5),
+            peak = Minutes(75)
+        )
+    )
 )
 
 @Preview(showBackground = true, name = "Light Mode")

@@ -40,6 +40,7 @@ import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.data.Block
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.ProfileInsulinSetting
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
@@ -228,9 +229,13 @@ private fun InsulinProfilesPreview() {
             basalBlocks = listOf(Block(Minutes.ofHours(24), 0.8)),
             isfBlocks = listOf(Block(Minutes.ofHours(24), 50.0)),
             crBlocks = listOf(Block(Minutes.ofHours(24), 10.0)),
-            insulinType = sampleInsulinType,
-            dia = sampleInsulinType.dia,
-            peak = sampleInsulinType.peak
+            insulinSettings = listOf(
+                ProfileInsulinSetting(
+                    insulinType = sampleInsulinType,
+                    dia = sampleInsulinType.dia,
+                    peak = sampleInsulinType.peak
+                )
+            )
         ),
         InsulinProfile(
             id = 2,
@@ -238,9 +243,13 @@ private fun InsulinProfilesPreview() {
             basalBlocks = listOf(Block(Minutes.ofHours(24), 0.5)),
             isfBlocks = listOf(Block(Minutes.ofHours(24), 80.0)),
             crBlocks = listOf(Block(Minutes.ofHours(24), 15.0)),
-            insulinType = sampleInsulinType,
-            dia = sampleInsulinType.dia,
-            peak = sampleInsulinType.peak
+            insulinSettings = listOf(
+                ProfileInsulinSetting(
+                    insulinType = sampleInsulinType,
+                    dia = sampleInsulinType.dia,
+                    peak = sampleInsulinType.peak
+                )
+            )
         )
     )
 

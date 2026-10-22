@@ -5,8 +5,13 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import de.dh.daps.common.ID_UNDEFINED
-import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
+
+data class DBInsulinSetting(
+    val insulinTypeId: String,
+    val dia: Short,
+    val peak: Short
+)
 
 /**
  * Entity for a therapy profile.
@@ -21,9 +26,7 @@ data class InsulinProfileEntity(
     val basal_blocks: List<DBBlock>,
     val isf_blocks: List<DBBlock>,
     val cr_blocks: List<DBBlock>,
-    val insulin_type_id: String,
-    val dia: Minutes,
-    val peak: Minutes
+    val insulin_settings: List<DBInsulinSetting> = emptyList()
 )
 
 /**

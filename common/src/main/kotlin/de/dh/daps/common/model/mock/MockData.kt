@@ -4,6 +4,7 @@ import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.data.Block
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.ProfileInsulinSetting
 
 fun mockInsulinType() = InsulinType(
     name = "Mock Insulin",
@@ -33,7 +34,11 @@ fun mockSimpleInsulinProfile() =
                 0.5
             )
         ),
-        insulinType = mockInsulinType(),
-        dia = Minutes.ofHours(5),
-        peak = Minutes(75)
+        insulinSettings = listOf(
+            ProfileInsulinSetting(
+                insulinType = mockInsulinType(),
+                dia = Minutes.ofHours(5),
+                peak = Minutes(75)
+            )
+        )
     )

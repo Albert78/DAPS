@@ -80,8 +80,10 @@ class ApsAlgorithmImpl(
         val meals = treatmentRepository.getMeals()
         val insulinApplications = treatmentRepository.getInsulinApplications()
         val settings = therapyManager.getCurrentTherapySettings()
-        val dia = settings.insulinProfile.dia
-        val insulinPeak = settings.insulinProfile.peak
+        val pumpInsulinType = therapyManager.getPumpInsulinType()
+        val setting = settings.insulinProfile.getSettingFor(pumpInsulinType)
+        val dia = setting.dia
+        val insulinPeak = setting.peak
         val activeDoses = insulinApplications.toActiveDoses()
 
         predictionModel.calculate(
@@ -119,8 +121,10 @@ class ApsAlgorithmImpl(
             val mealsHistory = treatmentRepository.getMeals(from = historyLimit)
 
             val settings = therapyManager.getCurrentTherapySettings()
-            val dia = settings.insulinProfile.dia
-            val peak = settings.insulinProfile.peak
+            val pumpInsulinType = therapyManager.getPumpInsulinType()
+            val setting = settings.insulinProfile.getSettingFor(pumpInsulinType)
+            val dia = setting.dia
+            val peak = setting.peak
             val lowThreshold = therapyManager.getBgSettings().second
 
             val mealTimeTick = timeline.tick(mealTimestamp)
@@ -281,8 +285,9 @@ class ApsAlgorithmImpl(
      * of the last hours.
      */
     private suspend fun calculateArtificialNormalBasalDoses(): List<InsulinDose> {
-        val diaHours = (therapyManager.getCurrentTherapySettings().insulinProfile.dia.value + 59) / 60
         val insulinType = therapyManager.getPumpInsulinType()
+        val pumpSetting = therapyManager.getCurrentTherapySettings().insulinProfile.getSettingFor(insulinType)
+        val diaHours = (pumpSetting.dia.value + 59) / 60
         val now = Timestamp.now()
         // For the more distant past, it's sufficient to approximate the basal with one delivery per hour
         val hourlyDoses = (1..diaHours).map { hour ->
@@ -395,8 +400,10 @@ class ApsAlgorithmImpl(
             val meals = treatmentRepository.getMeals()
             val insulinApplications = treatmentRepository.getInsulinApplications()
             val settings = therapyManager.getCurrentTherapySettings()
-            val dia = settings.insulinProfile.dia
-            val insulinPeak = settings.insulinProfile.peak
+            val pumpInsulinType = therapyManager.getPumpInsulinType()
+            val setting = settings.insulinProfile.getSettingFor(pumpInsulinType)
+            val dia = setting.dia
+            val insulinPeak = setting.peak
 
             val bgSettings = therapyManager.getBgSettings(now)
             val targetBg = bgSettings.first

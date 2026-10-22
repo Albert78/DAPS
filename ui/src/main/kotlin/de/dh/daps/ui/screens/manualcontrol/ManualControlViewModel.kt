@@ -89,8 +89,7 @@ class ManualControlViewModel(
         val iob = carbsInsulinCalculator.iob(
             insulinDoses = insulin.toActiveDoses(),
             timestamp = now,
-            dia = settings.insulinProfile.dia,
-            peak = settings.insulinProfile.peak
+            profile = settings.insulinProfile
         )
         val cob = carbsInsulinCalculator.cob(
             meals = meals,

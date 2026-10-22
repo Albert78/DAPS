@@ -40,8 +40,7 @@ data class InsulinProfileUiState(
     val isfRange: String = "",
     val crRange: String = "",
     val basalRange: String = "",
-    val dia: Minutes = Minutes(0),
-    val peak: Minutes = Minutes(0)
+    val profile: InsulinProfile? = null
 )
 
 data class TherapyAdjustmentUiState(
@@ -153,8 +152,7 @@ class CurrentTherapyViewModel(
             isfRange = formatIsfRange(isfValues, unit),
             crRange = formatRange(crValues, "%.1f"),
             basalRange = formatRange(basalValues, "%.2f"),
-            dia = currentSettings.insulinProfile.dia,
-            peak = currentSettings.insulinProfile.peak
+            profile = currentSettings.insulinProfile
         )
 
         val adjustmentUiState = TherapyAdjustmentUiState(

@@ -16,6 +16,7 @@ import de.dh.daps.core.repository.db.entities.CurrentSettingsEntity
 import de.dh.daps.core.repository.db.entities.CurrentTherapySettingsEntity
 import de.dh.daps.core.repository.db.entities.DBBgBlock
 import de.dh.daps.core.repository.db.entities.DBBlock
+import de.dh.daps.core.repository.db.entities.DBInsulinSetting
 import de.dh.daps.core.repository.db.entities.DataProviderEntity
 import de.dh.daps.core.repository.db.entities.DeferredBolusEntity
 import de.dh.daps.core.repository.db.entities.GlucoseReadingEntity
@@ -63,15 +64,20 @@ data class DBBlockDto(val duration: Short, val amount: Double)
 data class DBBgBlockDto(val duration: Short, val target: Short, val lowThreshold: Short)
 
 @Serializable
+data class DBInsulinSettingDto(
+    val insulinTypeId: String,
+    val diaMinutes: Short,
+    val peakMinutes: Short
+)
+
+@Serializable
 data class InsulinProfileDto(
     val id: Long,
     val name: String,
     val basalBlocks: List<DBBlockDto>,
     val isfBlocks: List<DBBlockDto>,
     val crBlocks: List<DBBlockDto>,
-    val insulinTypeId: String,
-    val diaMinutes: Short,
-    val peakMinutes: Short
+    val insulinSettings: List<DBInsulinSettingDto> = emptyList()
 )
 
 @Serializable
@@ -262,15 +268,16 @@ fun DBBlockDto.toEntity() = DBBlock(duration, amount)
 fun DBBgBlock.toDto() = DBBgBlockDto(duration, target, lowThreshold)
 fun DBBgBlockDto.toEntity() = DBBgBlock(duration, target, lowThreshold)
 
+fun DBInsulinSetting.toDto() = DBInsulinSettingDto(insulinTypeId, dia, peak)
+fun DBInsulinSettingDto.toEntity() = DBInsulinSetting(insulinTypeId, diaMinutes, peakMinutes)
+
 fun InsulinProfileEntity.toDto() = InsulinProfileDto(
     id = id,
     name = name,
     basalBlocks = basal_blocks.map { it.toDto() },
     isfBlocks = isf_blocks.map { it.toDto() },
     crBlocks = cr_blocks.map { it.toDto() },
-    insulinTypeId = insulin_type_id,
-    diaMinutes = dia.value,
-    peakMinutes = peak.value
+    insulinSettings = insulin_settings.map { it.toDto() }
 )
 
 fun InsulinProfileDto.toEntity() = InsulinProfileEntity(
@@ -279,9 +286,7 @@ fun InsulinProfileDto.toEntity() = InsulinProfileEntity(
     basal_blocks = basalBlocks.map { it.toEntity() },
     isf_blocks = isfBlocks.map { it.toEntity() },
     cr_blocks = crBlocks.map { it.toEntity() },
-    insulin_type_id = insulinTypeId,
-    dia = Minutes(diaMinutes),
-    peak = Minutes(peakMinutes)
+    insulin_settings = insulinSettings.map { it.toEntity() }
 )
 
 fun CurrentTherapySettingsEntity.toDto() = CurrentTherapySettingsDto(

@@ -328,9 +328,7 @@ private fun createSampleTherapyStatus() = ActiveTherapyStatusUiState(
         activeProfileId = null,
         isfRange = "50",
         crRange = "12.0",
-        basalRange = "0.80",
-        dia = Minutes(300),
-        peak = Minutes(75)
+        basalRange = "0.80"
     ),
     adjustment = TherapyAdjustmentUiState(
         percentage = 0,

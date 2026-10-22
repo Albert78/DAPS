@@ -5,6 +5,7 @@ import de.dh.daps.common.model.InsulinDose
 import de.dh.daps.common.model.MealEntry
 import de.dh.daps.common.model.convertToBgDeltaFromUnits
 import de.dh.daps.common.model.data.BgDelta
+import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 
@@ -98,6 +99,32 @@ class CarbsInsulinCalculator(
                 amount = entry.amount,
                 dia = dia,
                 peak = peak,
+                intervalsSinceApplication = intervalsSinceApplication
+            )
+        }
+        return total
+    }
+
+    /**
+     * Calculates the amount of Insulin On Board (IOB) which is expected as result of the given
+     * insulin doses during the interval of the given timestamp using individual insulin settings from the [profile].
+     * @return IOB in [InsulinAmount]
+     */
+    fun iob(
+        insulinDoses: List<InsulinDose>,
+        timestamp: Timestamp,
+        profile: InsulinProfile
+    ): InsulinAmount {
+        var total = InsulinAmount.ZERO
+        insulinDoses.forEach { entry ->
+            val setting = profile.getSettingFor(entry.insulinType)
+            val intervalsSinceApplication =
+                Minutes.timeDifference(entry.timestamp, timestamp).value / intervalSize.value
+
+            total += insulinCalculationCache.remainingInsulin(
+                amount = entry.amount,
+                dia = setting.dia,
+                peak = setting.peak,
                 intervalsSinceApplication = intervalsSinceApplication
             )
         }

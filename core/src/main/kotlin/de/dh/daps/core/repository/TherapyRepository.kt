@@ -53,38 +53,28 @@ class TherapyRepository(
         return metabolicEventsDao.getAllInsulinTypes().map { it.toModel() }
     }
 
-    suspend fun isInsulinTypeInUse(insulinTypeId: String): Boolean {
-        val profileCount = therapyDao.countProfilesUsingInsulinType(insulinTypeId)
-        val historyCount = metabolicEventsDao.countInsulinEntriesUsingInsulinType(insulinTypeId)
-        return profileCount > 0 || historyCount > 0
-    }
-
-    suspend fun canDeleteInsulinType(insulinTypeId: String): Boolean {
-        return getAllInsulinTypes().size > 1 && !isInsulinTypeInUse(insulinTypeId)
-    }
-
     // --- Profile Operations ---
 
     suspend fun getAllInsulinProfiles(): List<InsulinProfile> {
-        return therapyDao.getAllInsulinProfiles().mapNotNull { entity ->
-            val insulinType = getInsulinTypeById(entity.insulin_type_id)
-            insulinType?.let { entity.toModel(it) }
+        val insulinTypes = getAllInsulinTypes()
+        return therapyDao.getAllInsulinProfiles().map { entity ->
+            entity.toModel(insulinTypes)
         }
     }
 
     fun observeAllInsulinProfiles(): Flow<List<InsulinProfile>> {
         return therapyDao.observeAllInsulinProfiles().map { entities ->
-            entities.mapNotNull { entity ->
-                val insulinType = getInsulinTypeById(entity.insulin_type_id)
-                insulinType?.let { entity.toModel(it) }
+            val insulinTypes = getAllInsulinTypes()
+            entities.map { entity ->
+                entity.toModel(insulinTypes)
             }
         }
     }
 
     suspend fun getInsulinProfileById(id: Long): InsulinProfile? {
         val entity = therapyDao.getInsulinProfileById(id) ?: return null
-        val insulinType = getInsulinTypeById(entity.insulin_type_id) ?: return null
-        return entity.toModel(insulinType)
+        val insulinTypes = getAllInsulinTypes()
+        return entity.toModel(insulinTypes)
     }
 
     suspend fun insertInsulinProfile(profile: InsulinProfile): Long {

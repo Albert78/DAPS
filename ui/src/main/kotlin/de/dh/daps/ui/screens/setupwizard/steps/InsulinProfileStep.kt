@@ -16,8 +16,10 @@ import de.dh.daps.common.model.InsulinType
 import de.dh.daps.common.model.data.Block
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.ProfileInsulinSetting
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.theme.AppPreview
+import de.dh.daps.ui.screens.insulinprofile.EditableInsulinSettingState
 import de.dh.daps.ui.screens.insulinprofile.InsulinProfileEditorContent
 import de.dh.daps.ui.screens.setupwizard.components.SetupStepScaffold
 
@@ -35,26 +37,54 @@ fun InsulinProfileStep(
     var basalBlocks by remember(profile) { mutableStateOf(profile.basalBlocks) }
     var isfBlocks by remember(profile) { mutableStateOf(profile.isfBlocks) }
     var crBlocks by remember(profile) { mutableStateOf(profile.crBlocks) }
-    var selectedInsulinType by remember(profile) { mutableStateOf(profile.insulinType) }
-    var dia by remember(profile) { mutableStateOf(profile.dia.value.toString()) }
-    var peak by remember(profile) { mutableStateOf(profile.peak.value.toString()) }
+
+    val initialSettings = remember(profile) {
+        if (profile.insulinSettings.isNotEmpty()) {
+            profile.insulinSettings.map { setting ->
+                EditableInsulinSettingState(
+                    insulinType = setting.insulinType,
+                    dia = setting.dia.value.toString(),
+                    peak = setting.peak.value.toString()
+                )
+            }
+        } else if (availableInsulinTypes.isNotEmpty()) {
+            availableInsulinTypes.map { type ->
+                EditableInsulinSettingState(
+                    insulinType = type,
+                    dia = type.dia.value.toString(),
+                    peak = type.peak.value.toString()
+                )
+            }
+        } else emptyList()
+    }
+    var insulinSettings by remember(profile) { mutableStateOf(initialSettings) }
     var selectedTab by remember { mutableIntStateOf(0) }
 
     val isNameValid = name.trim().isNotBlank()
-    val diaValue = dia.toIntOrNull() ?: 0
-    val peakValue = peak.toIntOrNull() ?: 0
-    val isValid = isNameValid && diaValue > 0 && peakValue > 0
+    val areSettingsValid = insulinSettings.isNotEmpty() && insulinSettings.all { setting ->
+        val diaVal = setting.dia.toIntOrNull() ?: 0
+        val peakVal = setting.peak.toIntOrNull() ?: 0
+        diaVal > 0 && peakVal > 0
+    }
+    val isValid = isNameValid && areSettingsValid
 
     fun handleSaveAndNext() {
         if (!isValid) return
+        val mappedSettings = insulinSettings.map { setting ->
+            val diaVal = setting.dia.toIntOrNull() ?: 0
+            val peakVal = setting.peak.toIntOrNull() ?: 0
+            ProfileInsulinSetting(
+                insulinType = setting.insulinType,
+                dia = Minutes(diaVal.toShort()),
+                peak = Minutes(peakVal.toShort())
+            )
+        }
         val updatedProfile = profile.copy(
             name = name.trim(),
             basalBlocks = basalBlocks,
             isfBlocks = isfBlocks,
             crBlocks = crBlocks,
-            insulinType = selectedInsulinType,
-            dia = Minutes(diaValue.toShort()),
-            peak = Minutes(peakValue.toShort())
+            insulinSettings = mappedSettings
         )
         onSaveProfile(updatedProfile)
         onNext()
@@ -77,16 +107,8 @@ fun InsulinProfileStep(
             selectedTab = selectedTab,
             onTabSelected = { selectedTab = it },
             insulinTypes = availableInsulinTypes,
-            selectedInsulinType = selectedInsulinType,
-            onInsulinTypeSelected = { type ->
-                selectedInsulinType = type
-                dia = type.dia.value.toString()
-                peak = type.peak.value.toString()
-            },
-            dia = dia,
-            onDiaChanged = { dia = it },
-            peak = peak,
-            onPeakChanged = { peak = it },
+            insulinSettings = insulinSettings,
+            onInsulinSettingsChanged = { insulinSettings = it },
             basalBlocks = basalBlocks,
             onBasalBlocksChanged = { basalBlocks = it },
             isfBlocks = isfBlocks,
@@ -112,9 +134,13 @@ private val previewInsulinProfile = InsulinProfile(
     basalBlocks = listOf(Block(Minutes.ofHours(24), 1.0)),
     isfBlocks = listOf(Block(Minutes.ofHours(24), 40.0)),
     crBlocks = listOf(Block(Minutes.ofHours(24), 10.0)),
-    insulinType = previewInsulinType,
-    dia = Minutes.ofHours(5),
-    peak = Minutes(75)
+    insulinSettings = listOf(
+        ProfileInsulinSetting(
+            insulinType = previewInsulinType,
+            dia = Minutes.ofHours(5),
+            peak = Minutes(75)
+        )
+    )
 )
 
 @Preview(showBackground = true, name = "Light Mode")

@@ -71,6 +71,7 @@ import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgSampleKind
 import de.dh.daps.common.model.data.CarbsUnit
 import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timeline
 import de.dh.daps.common.model.data.Timestamp
@@ -108,6 +109,7 @@ data class HistoryAndImpactDiagramData(
             carbsUnit: CarbsUnit = CarbsUnit.GRAMS,
             insulinApplications: List<InsulinApplication> = emptyList(),
             meals: List<MealEntry> = emptyList(),
+            profile: InsulinProfile? = null,
             dia: Minutes = Minutes(DEFAULT_DIA_MINUTES.toShort()),
             peak: Minutes = Minutes(DEFAULT_PEAK_MINUTES.toShort())
         ): HistoryAndImpactDiagramData? {
@@ -146,7 +148,18 @@ data class HistoryAndImpactDiagramData(
             val carbX = mutableListOf<Double>()
             val carbY = mutableListOf<Double>()
 
-            val insulinCurve = InsulinCurve(dia.value.toDouble(), peak.value.toDouble())
+            val defaultInsulinCurve = InsulinCurve(dia.value.toDouble(), peak.value.toDouble())
+            val insulinCurves = mutableMapOf<String, InsulinCurve>()
+            fun getInsulinCurve(type: InsulinType): InsulinCurve {
+                return insulinCurves.getOrPut(type.id) {
+                    if (profile != null) {
+                        val setting = profile.getSettingFor(type)
+                        InsulinCurve(setting.dia.value.toDouble(), setting.peak.value.toDouble())
+                    } else {
+                        defaultInsulinCurve
+                    }
+                }
+            }
 
             // Optimization: Pre-calculate meal curves
             val mealCurves = meals.map { it.mealType }.distinct().associateWith { mealType ->
@@ -165,6 +178,7 @@ data class HistoryAndImpactDiagramData(
                     if (app.status == InsulinStatus.Cancelled || app.status == InsulinStatus.Invalidated) continue
                     val xStart = (app.timestamp.ms - baseTimestamp).toDouble() / MS_PER_MINUTE
                     val timeSinceApp = x - xStart
+                    val insulinCurve = getInsulinCurve(app.insulinType)
                     // normalizedActivity * 60.0 gives activity as hourly rate (IU/h)
                     totalInsulinActivity += app.amount.iu * insulinCurve.normalizedActivity(timeSinceApp) * 60.0
                 }

@@ -65,6 +65,11 @@
     <string name="insulin_profile_editor_tab_bg">BG</string>
     <string name="insulin_profile_editor_tab_insulin">Insulin</string>
     <string name="insulin_profile_editor_insulin_settings_title">Insulin-Einstellungen</string>
+    <string name="insulin_profile_editor_multi_insulin_title">Konfigurierte Insulintypen</string>
+    <string name="insulin_profile_editor_multi_insulin_desc">Lege für die von dir genutzten Insulintypen die spezifischen Wirkzeiten (Wirkdauer DIA und Wirkungsgipfel Peak) fest. Wenn für einen Typ keine eigene Konfiguration vorliegt, werden dessen Standardwerte verwendet.</string>
+    <string name="insulin_profile_editor_add_insulin_setting">Insulintyp-Einstellungen hinzufügen</string>
+    <string name="insulin_profile_editor_default_values_hint">Standard des Typs: DIA %1$d min, Peak %2$d min</string>
+    <string name="cd_delete_insulin_setting">Insulin-Einstellung entfernen</string>
     <string name="insulin_profile_editor_insulin_type_label">Insulin-Typ</string>
     <string name="insulin_profile_editor_concentration_label">Insulin-Konzentration</string>
     <string name="insulin_profile_editor_dia_label">DIA (Min.)</string>

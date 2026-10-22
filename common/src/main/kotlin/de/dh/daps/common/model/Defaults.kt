@@ -17,6 +17,7 @@ import de.dh.daps.common.R
 import de.dh.daps.common.model.data.Block
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.ProfileInsulinSetting
 import de.dh.daps.common.model.data.TherapyAdjustment
 
 val FAST_KE_DEFAULT_PEAK = Minutes(25)
@@ -114,7 +115,7 @@ fun getDefaultMealTypes(context: Context): List<MealType> = listOf(
     getDefaultSlowMealType(context)
 )
 
-fun getDefaultInsulinProfile(context: Context, insulinType: InsulinType): InsulinProfile = InsulinProfile(
+fun getDefaultInsulinProfile(context: Context, insulinTypes: List<InsulinType>): InsulinProfile = InsulinProfile(
     name = context.getString(R.string.profile_default_normal_name),
     basalBlocks = listOf(
         Block(
@@ -124,10 +125,17 @@ fun getDefaultInsulinProfile(context: Context, insulinType: InsulinType): Insuli
     ),
     isfBlocks = listOf(Block(Minutes.ofHours(24), DEFAULT_ISF_MGDL_PER_UNIT)),
     crBlocks = listOf(Block(Minutes.ofHours(24), DEFAULT_CR_GRAM_PER_UNIT)),
-    insulinType = insulinType,
-    dia = insulinType.dia,
-    peak = insulinType.peak
+    insulinSettings = insulinTypes.map { type ->
+        ProfileInsulinSetting(
+            insulinType = type,
+            dia = type.dia,
+            peak = type.peak
+        )
+    }
 )
+
+fun getDefaultInsulinProfile(context: Context, insulinType: InsulinType): InsulinProfile =
+    getDefaultInsulinProfile(context, listOf(insulinType))
 
 fun getDefaultTherapyAdjustments(context: Context): List<TherapyAdjustment> = listOf(
     TherapyAdjustment(name = context.getString(R.string.therapy_adjustment_preset_neutral)),

@@ -16,6 +16,7 @@ import de.dh.daps.common.model.data.CarbsUnit
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.model.data.ProfileInsulinSetting
 import de.dh.daps.common.model.getDefaultInsulinProfile
 import de.dh.daps.common.model.getDefaultInsulinTypes
 import de.dh.daps.common.model.getDefaultMealTypes
@@ -183,14 +184,13 @@ class SetupWizardViewModel(
                 newSelectedIds.firstOrNull()
             }
 
-            val newPrimaryType = state.availableInsulinTypes.firstOrNull { it.id == newPrimaryId }
-
-            val updatedProfile = if (newPrimaryType != null && state.insulinProfile != null) {
-                state.insulinProfile.copy(
-                    insulinType = newPrimaryType,
-                    dia = newPrimaryType.dia,
-                    peak = newPrimaryType.peak
-                )
+            val updatedProfile = if (state.insulinProfile != null) {
+                val selectedTypes = state.availableInsulinTypes.filter { it.id in newSelectedIds }
+                val currentSettingsMap = state.insulinProfile.insulinSettings.associateBy { it.insulinType.id }
+                val newSettings = selectedTypes.map { type ->
+                    currentSettingsMap[type.id] ?: ProfileInsulinSetting(insulinType = type, dia = type.dia, peak = type.peak)
+                }
+                state.insulinProfile.copy(insulinSettings = newSettings)
             } else state.insulinProfile
 
             state.copy(
@@ -204,11 +204,14 @@ class SetupWizardViewModel(
     fun selectPrimaryInsulinType(type: InsulinType) {
         _uiState.update { state ->
             val newSelectedIds = state.selectedInsulinTypeIds + type.id
-            val updatedProfile = state.insulinProfile?.copy(
-                insulinType = type,
-                dia = type.dia,
-                peak = type.peak
-            )
+            val updatedProfile = if (state.insulinProfile != null) {
+                val selectedTypes = state.availableInsulinTypes.filter { it.id in newSelectedIds }
+                val currentSettingsMap = state.insulinProfile.insulinSettings.associateBy { it.insulinType.id }
+                val newSettings = selectedTypes.map { type ->
+                    currentSettingsMap[type.id] ?: ProfileInsulinSetting(insulinType = type, dia = type.dia, peak = type.peak)
+                }
+                state.insulinProfile.copy(insulinSettings = newSettings)
+            } else state.insulinProfile
             state.copy(
                 selectedInsulinTypeIds = newSelectedIds,
                 primaryInsulinTypeId = type.id,
@@ -286,13 +289,13 @@ class SetupWizardViewModel(
             val isFirstSelection = state.primaryInsulinTypeId == null || state.selectedInsulinTypeIds.isEmpty()
             val newPrimaryId = if (isFirstSelection) newType.id else state.primaryInsulinTypeId
 
-            val primaryType = updatedTypes.firstOrNull { it.id == newPrimaryId }
-            val updatedProfile = if (primaryType != null && state.insulinProfile != null) {
-                state.insulinProfile.copy(
-                    insulinType = primaryType,
-                    dia = primaryType.dia,
-                    peak = primaryType.peak
-                )
+            val updatedProfile = if (state.insulinProfile != null) {
+                val selectedTypes = updatedTypes.filter { it.id in newSelectedIds }
+                val currentSettingsMap = state.insulinProfile.insulinSettings.associateBy { it.insulinType.id }
+                val newSettings = selectedTypes.map { type ->
+                    currentSettingsMap[type.id] ?: ProfileInsulinSetting(insulinType = type, dia = type.dia, peak = type.peak)
+                }
+                state.insulinProfile.copy(insulinSettings = newSettings)
             } else state.insulinProfile
 
             state.copy(
@@ -365,11 +368,7 @@ class SetupWizardViewModel(
                 }
 
                 // Insert Insulin Profile
-                val profileToInsert = (state.insulinProfile ?: getDefaultInsulinProfile(context, primaryType)).copy(
-                    insulinType = primaryType,
-                    dia = primaryType.dia,
-                    peak = primaryType.peak
-                )
+                val profileToInsert = state.insulinProfile ?: getDefaultInsulinProfile(context, selectedTypes)
                 val insertedProfileId = registry.therapyRepository.insertInsulinProfile(profileToInsert)
 
                 // Save Therapy Settings with configured BgBlocks

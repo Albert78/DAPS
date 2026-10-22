@@ -317,8 +317,7 @@ fun DashboardContent(
                             carbsUnit = carbsUnit,
                             insulinApplications = historyUiState.insulinApplications,
                             meals = historyUiState.meals,
-                            dia = currentTherapyUiState.activeTherapyStatus.profile.dia,
-                            peak = currentTherapyUiState.activeTherapyStatus.profile.peak
+                            profile = currentTherapyUiState.activeTherapyStatus.profile.profile
                         ),
                         state = chartState,
                         onChartClick = onHistoryChartClick,
@@ -587,9 +586,7 @@ fun DashboardPreview() {
                         activeProfileId = null,
                         isfRange = "50",
                         crRange = "10.0",
-                        basalRange = "0.50",
-                        dia = Minutes(300),
-                        peak = Minutes(75)
+                        basalRange = "0.50"
                     ),
                     adjustment = TherapyAdjustmentUiState(
                         percentage = 0,
@@ -652,9 +649,7 @@ fun DashboardPermissionsWarningPreview() {
                             activeProfileId = null,
                             isfRange = "50",
                             crRange = "10.0",
-                            basalRange = "0.50",
-                            dia = Minutes(300),
-                            peak = Minutes(75)
+                            basalRange = "0.50"
                         ),
                         adjustment = TherapyAdjustmentUiState(
                             percentage = 0,

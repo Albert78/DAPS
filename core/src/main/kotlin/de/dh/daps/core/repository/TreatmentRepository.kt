@@ -493,7 +493,9 @@ class TreatmentRepository(
      */
     fun observeUsedInsulinTypeIds(): Flow<Set<String>> {
         return combine(
-            therapyDao.observeUsedInsulinTypeIdsInProfiles(),
+            therapyDao.observeAllInsulinProfiles().map { profiles ->
+                profiles.flatMap { p -> p.insulin_settings.map { s -> s.insulinTypeId } }
+            },
             metabolicEventsDao.observeUsedInsulinTypeIdsInHistory()
         ) { profileTypeIds, historyTypeIds ->
             (profileTypeIds + historyTypeIds).toSet()
@@ -507,13 +509,6 @@ class TreatmentRepository(
         val profileCount = therapyDao.countProfilesUsingInsulinType(insulinTypeId)
         val historyCount = metabolicEventsDao.countInsulinEntriesUsingInsulinType(insulinTypeId)
         return profileCount > 0 || historyCount > 0
-    }
-
-    /**
-     * Checks if an insulin type can be safely deleted.
-     */
-    suspend fun canDeleteInsulinType(insulinTypeId: String): Boolean = mutex.withLock {
-        return@withLock canDeleteInsulinTypeUnlocked(insulinTypeId)
     }
 
     /**
@@ -538,7 +533,7 @@ class TreatmentRepository(
      */
     suspend fun deleteInsulinType(insulinType: InsulinType) = mutex.withLock {
         if (!canDeleteInsulinTypeUnlocked(insulinType.id)) {
-            throw IllegalStateException("Insulintyp '${insulinType.name}' kann nicht gelöscht werden, da er in Verwendung oder der einzige Insulintyp ist.")
+            throw IllegalStateException("Insulin type '${insulinType.name}' cannot be deleted because it is in use or is the only insulin type")
         }
         metabolicEventsDao.deleteInsulinType(insulinType.id)
         insulinTypes = insulinTypes.filter { it.id != insulinType.id }
