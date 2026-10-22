@@ -248,15 +248,15 @@ interface InsulinPump {
      * The ID refers to the entity in the database.
      * Optional / nullable if not configured.
      */
-    var insulinTypeId: String?
-        get() = null
-        set(_) {}
+    val insulinTypeId: StateFlow<String?>
+        get() = MutableStateFlow(null)
 
     /**
      * Concentration of the insulin loaded in the pump. Default is [InsulinConcentration.U100].
      * Needed to convert [InsulinAmount] to pump units and vice versa.
      */
-    var insulinConcentration: InsulinConcentration
+    val insulinConcentration: StateFlow<InsulinConcentration>
+        get() = MutableStateFlow(InsulinConcentration.U100)
 
     /**
      * Initiates a bolus delivery with an optional tracking [bolusId].

@@ -41,17 +41,11 @@ class DanaIPumpAdapter(
     override val isExpired: StateFlow<Boolean> = MutableStateFlow(false)
     override val expirations: StateFlow<List<Expiration>> = MutableStateFlow(emptyList())
 
-    override var insulinTypeId: String?
+    override val insulinTypeId: StateFlow<String?>
         get() = pump.insulinTypeId
-        set(value) {
-            pump.insulinTypeId = value
-        }
 
-    override var insulinConcentration: InsulinConcentration
+    override val insulinConcentration: StateFlow<InsulinConcentration>
         get() = pump.insulinConcentration
-        set(value) {
-            pump.insulinConcentration = value
-        }
 
     override val hardwareInformation: StateFlow<PumpHardwareInformation?> = pump.hardware.map { hi ->
         hi?.let {

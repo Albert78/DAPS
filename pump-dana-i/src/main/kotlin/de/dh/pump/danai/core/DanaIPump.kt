@@ -86,15 +86,27 @@ enum class DanaPumpError {
  * and bolus results, and allows issuing functional commands (orders) to the pump.
  */
 class DanaIPump {
+    private val _insulinTypeId = MutableStateFlow<String?>(null)
+
     /**
      * ID of the insulin type loaded in the pump.
      */
-    var insulinTypeId: String? = null
+    val insulinTypeId: StateFlow<String?> = _insulinTypeId.asStateFlow()
+
+    private val _insulinConcentration = MutableStateFlow(InsulinConcentration.U100)
 
     /**
      * Concentration of the insulin loaded in the pump. Default is [InsulinConcentration.U100].
      */
-    var insulinConcentration: InsulinConcentration = InsulinConcentration.U100
+    val insulinConcentration: StateFlow<InsulinConcentration> = _insulinConcentration.asStateFlow()
+
+    fun setInsulinTypeId(id: String?) {
+        _insulinTypeId.value = id
+    }
+
+    fun setInsulinConcentration(concentration: InsulinConcentration) {
+        _insulinConcentration.value = concentration
+    }
 
     /**
      * Difference in milliseconds between pump UTC time and system time (pumpUtcMillis - systemMillis).
@@ -108,7 +120,7 @@ class DanaIPump {
      */
     val hardware = _hardware.asStateFlow()
 
-    private val _isConnected = MutableStateFlow<Boolean>(false)
+    private val _isConnected = MutableStateFlow(false)
     val isConnected = _isConnected.asStateFlow()
 
     private val _pumpCapabilities = MutableStateFlow<PumpCapabilities?>(null)

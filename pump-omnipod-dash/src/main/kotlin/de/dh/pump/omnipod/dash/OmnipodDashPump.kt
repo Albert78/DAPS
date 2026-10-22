@@ -78,8 +78,8 @@ class OmnipodDashPump(
 
     override val insulinPumpId: String = PUMP_ID
     override val insulinPumpDisplayName: UiText = UiText.StringResource(R.string.omnipod_dash_pump_display_name)
-    override var insulinTypeId: String? = null
-    override var insulinConcentration: InsulinConcentration = InsulinConcentration.U100
+    override val insulinTypeId: StateFlow<String?> get() = podStateManager.insulinTypeId
+    override val insulinConcentration: StateFlow<InsulinConcentration> get() = podStateManager.insulinConcentration
 
     private var sequenceNumber: Short = 1
     private var lastSyncTimestamp: Timestamp = Timestamp.now().minusHours(24)

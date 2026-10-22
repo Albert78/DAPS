@@ -31,7 +31,8 @@ class SampleInsulinPump : InsulinPump {
     override val isExpired: StateFlow<Boolean> = MutableStateFlow(false)
     override val expirations: StateFlow<List<Expiration>> = MutableStateFlow(emptyList())
 
-    override var insulinConcentration: InsulinConcentration = InsulinConcentration.U100
+    override val insulinTypeId: StateFlow<String?> = MutableStateFlow(null)
+    override val insulinConcentration: StateFlow<InsulinConcentration> = MutableStateFlow(InsulinConcentration.U100)
 
     override val hardwareInformation: StateFlow<PumpHardwareInformation?> = MutableStateFlow(
         PumpHardwareInformation(

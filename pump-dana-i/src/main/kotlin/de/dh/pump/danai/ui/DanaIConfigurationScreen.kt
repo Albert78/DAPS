@@ -24,11 +24,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -57,6 +56,7 @@ import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.pump.danai.R
+import de.dh.pump.danai.core.DanaIPumpAdapter
 import de.dh.pump.danai.core.DanaPumpPreferences
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -78,10 +78,8 @@ fun DanaIConfigurationScreen(
     val danaPrefs = remember(preferences) { preferences?.let { DanaPumpPreferences(it) } }
 
     val availableInsulinTypes = remember(context) { getDefaultInsulinTypes(context) }
-    var currentInsulinTypeId by remember(pump.insulinTypeId) {
-        mutableStateOf(pump.insulinTypeId ?: availableInsulinTypes.firstOrNull()?.id)
-    }
-    var currentConcentration by remember(pump.insulinConcentration) { mutableStateOf(pump.insulinConcentration) }
+    val currentInsulinTypeId by pump.insulinTypeId.collectAsState()
+    val currentConcentration by pump.insulinConcentration.collectAsState()
 
     Scaffold(
         modifier = modifier,
@@ -141,12 +139,13 @@ fun DanaIConfigurationScreen(
                                 FilterChip(
                                     selected = isSelected,
                                     onClick = {
-                                        currentInsulinTypeId = insulinType.id
-                                        pump.insulinTypeId = insulinType.id
                                         danaPrefs?.let { prefs ->
                                             scope.launch {
                                                 prefs.saveInsulinTypeId(insulinType.id)
                                             }
+                                        }
+                                        if (pump is DanaIPumpAdapter) {
+                                            pump.pump.setInsulinTypeId(insulinType.id)
                                         }
                                     },
                                     label = { Text(text = insulinType.name) }
@@ -193,12 +192,13 @@ fun DanaIConfigurationScreen(
                                 FilterChip(
                                     selected = isSelected,
                                     onClick = {
-                                        currentConcentration = concentration
-                                        pump.insulinConcentration = concentration
                                         danaPrefs?.let { prefs ->
                                             scope.launch {
                                                 prefs.saveInsulinConcentration(concentration)
                                             }
+                                        }
+                                        if (pump is DanaIPumpAdapter) {
+                                            pump.pump.setInsulinConcentration(concentration)
                                         }
                                     },
                                     label = { Text(text = label) }
@@ -213,8 +213,8 @@ fun DanaIConfigurationScreen(
 }
 
 private class PreviewDanaIPump(
-    override var insulinTypeId: String? = null,
-    override var insulinConcentration: InsulinConcentration = InsulinConcentration.U100,
+    override val insulinTypeId: StateFlow<String?> = MutableStateFlow(null),
+    override val insulinConcentration: StateFlow<InsulinConcentration> = MutableStateFlow(InsulinConcentration.U100),
 ) : InsulinPump {
     override val insulinPumpId: String = "preview-dana-i"
     override val insulinPumpDisplayName: UiText = UiText.DynamicString("Sooil Dana-i")

@@ -399,7 +399,9 @@ class SystemControlViewModel(
                 pumpDriverManager.activeDriver,
                 coordinatorStateFlow,
                 syncStatusFlow,
-                nextWakeupFlow
+                nextWakeupFlow,
+                pump.insulinConcentration,
+                pump.insulinTypeId
             ) { array ->
                 val connected = array[0] as Boolean
                 val hardware = array[1] as PumpHardwareInformation?
@@ -611,7 +613,7 @@ class SystemControlViewModel(
                     value = nextExpirationItem,
                     status = nextExpirationStatus
                 ),
-                insulinConcentration = pInfo.pump?.insulinConcentration ?: InsulinConcentration.U100
+                insulinConcentration = pInfo.pump?.insulinConcentration?.value ?: InsulinConcentration.U100
             )
         }
 
@@ -698,7 +700,7 @@ class SystemControlViewModel(
                 pumpName = pInfo.pumpName,
                 batteryPercent = pInfo.status.batteryRemainingPercent,
                 reservoirRemaining = pInfo.status.reservoirRemainingUnits,
-                insulinConcentration = pInfo.pump?.insulinConcentration ?: InsulinConcentration.U100,
+                insulinConcentration = pInfo.pump?.insulinConcentration?.value ?: InsulinConcentration.U100,
                 lastConnectionTimestamp = pInfo.lastConnection,
                 manufacturer = pInfo.manufacturer,
                 pumpModel = pInfo.model,

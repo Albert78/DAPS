@@ -15,6 +15,9 @@ import de.dh.pump.omnipod.protocol.response.NakResponse
 import de.dh.pump.omnipod.protocol.response.SetUniqueIdResponse
 import de.dh.pump.omnipod.protocol.response.VersionResponse
 import de.dh.pump.omnipod.protocol.util.PodPulseCalculator
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -62,8 +65,10 @@ interface OmnipodDashPodStateManager {
     val basalDrift: Double
     var lastBasalCorrectionTime: Long?
     var basalCorrectionInProgress: Boolean
-    var insulinTypeId: String?
-    var insulinConcentration: InsulinConcentration
+    val insulinTypeId: StateFlow<String?>
+    val insulinConcentration: StateFlow<InsulinConcentration>
+    fun setInsulinTypeId(id: String?)
+    fun setInsulinConcentration(concentration: InsulinConcentration)
 
     fun updateFromDefaultStatusResponse(response: DefaultStatusResponse)
     fun updateFromAlarmStatusResponse(response: AlarmStatusResponse)
@@ -142,8 +147,19 @@ class OmnipodDashPodStateManagerImpl(
     override val isSuspended: Boolean get() = deliveryStatus == DeliveryStatus.SUSPENDED
     override val isPodRunning: Boolean get() = podStatus?.isRunning() == true
 
-    override var insulinTypeId: String? = null
-    override var insulinConcentration: InsulinConcentration = InsulinConcentration.U100
+    private val _insulinTypeId = MutableStateFlow<String?>(null)
+    override val insulinTypeId: StateFlow<String?> = _insulinTypeId.asStateFlow()
+
+    private val _insulinConcentration = MutableStateFlow(InsulinConcentration.U100)
+    override val insulinConcentration: StateFlow<InsulinConcentration> = _insulinConcentration.asStateFlow()
+
+    override fun setInsulinTypeId(id: String?) {
+        _insulinTypeId.value = id
+    }
+
+    override fun setInsulinConcentration(concentration: InsulinConcentration) {
+        _insulinConcentration.value = concentration
+    }
 
     override var uniqueId: Int? = null
     override var lotNumber: Long? = null
@@ -454,16 +470,16 @@ class OmnipodDashPodStateManagerImpl(
             lastBasalCorrectionTime?.let { putLong(KEY_LAST_BASAL_CORRECTION_TIME, it) } ?: putLong(KEY_LAST_BASAL_CORRECTION_TIME, 0L)
             tempBasal?.let { putString(KEY_TEMP_BASAL, Json.encodeToString(it)) } ?: putString(KEY_TEMP_BASAL, null)
             basalProgram?.let { putString(KEY_BASAL_PROGRAM, Json.encodeToString(it)) } ?: putString(KEY_BASAL_PROGRAM, null)
-            insulinTypeId?.let { putString(KEY_INSULIN_TYPE_ID, it) } ?: putString(KEY_INSULIN_TYPE_ID, null)
-            putFloat(KEY_INSULIN_CONCENTRATION, insulinConcentration.factor.toFloat())
+            _insulinTypeId.value?.let { putString(KEY_INSULIN_TYPE_ID, it) } ?: putString(KEY_INSULIN_TYPE_ID, null)
+            putFloat(KEY_INSULIN_CONCENTRATION, _insulinConcentration.value.factor.toFloat())
         }
     }
 
     override suspend fun loadFromPreferences() {
         preferences?.let { prefs ->
-            insulinTypeId = prefs.getString(KEY_INSULIN_TYPE_ID).first()
+            _insulinTypeId.value = prefs.getString(KEY_INSULIN_TYPE_ID).first()
             val concFactor = prefs.getFloat(KEY_INSULIN_CONCENTRATION, 1.0f).first()
-            insulinConcentration = InsulinConcentration(concFactor.toDouble())
+            _insulinConcentration.value = InsulinConcentration(concFactor.toDouble())
             uniqueId = prefs.getInt(KEY_UNIQUE_ID, 0).first().takeIf { it != 0 }
             lotNumber = prefs.getLong(KEY_LOT_NUMBER, 0L).first().takeIf { it != 0L }
             podSequenceNumber = prefs.getLong(KEY_POD_SEQ_NUMBER, 0L).first().takeIf { it != 0L }
@@ -561,8 +577,8 @@ class OmnipodDashPodStateManagerImpl(
         bolusPulsesDelivered = null
         lastBasalCorrectionTime = null
         basalCorrectionInProgress = false
-        insulinTypeId = null
-        insulinConcentration = InsulinConcentration.U100
+        _insulinTypeId.value = null
+        _insulinConcentration.value = InsulinConcentration.U100
     }
 
     companion object {

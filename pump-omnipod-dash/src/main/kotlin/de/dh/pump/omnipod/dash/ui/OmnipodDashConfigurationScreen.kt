@@ -24,11 +24,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -75,10 +74,8 @@ fun OmnipodDashConfigurationScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val availableInsulinTypes = remember(context) { getDefaultInsulinTypes(context) }
-    var currentInsulinTypeId by remember(pump.insulinTypeId) {
-        mutableStateOf(pump.insulinTypeId ?: availableInsulinTypes.firstOrNull()?.id)
-    }
-    var currentConcentration by remember(pump.insulinConcentration) { mutableStateOf(pump.insulinConcentration) }
+    val currentInsulinTypeId by pump.insulinTypeId.collectAsState()
+    val currentConcentration by pump.insulinConcentration.collectAsState()
 
     Scaffold(
         modifier = modifier,
@@ -138,12 +135,10 @@ fun OmnipodDashConfigurationScreen(
                                 FilterChip(
                                     selected = isSelected,
                                     onClick = {
-                                        currentInsulinTypeId = insulinType.id
-                                        pump.insulinTypeId = insulinType.id
                                         driver?.let { d ->
                                             scope.launch {
                                                 val stateManager = d.getPodStateManager()
-                                                stateManager.insulinTypeId = insulinType.id
+                                                stateManager.setInsulinTypeId(insulinType.id)
                                                 stateManager.saveToPreferences()
                                             }
                                         }
@@ -192,12 +187,10 @@ fun OmnipodDashConfigurationScreen(
                                 FilterChip(
                                     selected = isSelected,
                                     onClick = {
-                                        currentConcentration = concentration
-                                        pump.insulinConcentration = concentration
                                         driver?.let { d ->
                                             scope.launch {
                                                 val stateManager = d.getPodStateManager()
-                                                stateManager.insulinConcentration = concentration
+                                                stateManager.setInsulinConcentration(concentration)
                                                 stateManager.saveToPreferences()
                                             }
                                         }
@@ -214,8 +207,8 @@ fun OmnipodDashConfigurationScreen(
 }
 
 private class PreviewOmnipodPump(
-    override var insulinTypeId: String? = null,
-    override var insulinConcentration: InsulinConcentration = InsulinConcentration.U100,
+    override val insulinTypeId: StateFlow<String?> = MutableStateFlow(null),
+    override val insulinConcentration: StateFlow<InsulinConcentration> = MutableStateFlow(InsulinConcentration.U100),
 ) : InsulinPump {
     override val insulinPumpId: String = "preview-omnipod"
     override val insulinPumpDisplayName: UiText = UiText.DynamicString("Omnipod Dash")

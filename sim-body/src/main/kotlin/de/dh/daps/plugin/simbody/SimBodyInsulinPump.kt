@@ -57,7 +57,8 @@ class SimBodyInsulinPump(
     override val isExpired: StateFlow<Boolean> = MutableStateFlow(false)
     override val expirations: StateFlow<List<Expiration>> = MutableStateFlow(emptyList())
 
-    override var insulinConcentration: InsulinConcentration = InsulinConcentration.U100
+    override val insulinTypeId: StateFlow<String?> = MutableStateFlow(null)
+    override val insulinConcentration: StateFlow<InsulinConcentration> = MutableStateFlow(InsulinConcentration.U100)
     private var lastRequestedStart: Timestamp = Timestamp.now().minusHours(InsulinPump.DEFAULT_REQUESTED_HISTORY_HOURS)
 
     companion object {

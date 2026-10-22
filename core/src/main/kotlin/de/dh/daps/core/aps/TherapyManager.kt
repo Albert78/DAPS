@@ -26,12 +26,15 @@ import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.repository.TherapyRepository
 import de.dh.daps.core.repository.TreatmentRepository
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -257,7 +260,7 @@ class TherapyManager(
 
     suspend fun getPumpInsulinType(): InsulinType {
         val activePump = pumpManager.activeInsulinPump.value ?: pumpManager.insulinPump
-        val insulinTypeId = activePump?.insulinTypeId
+        val insulinTypeId = activePump?.insulinTypeId?.value
         val allTypes = treatmentRepository.getAllInsulinTypes()
         if (!insulinTypeId.isNullOrBlank()) {
             val type = allTypes.firstOrNull { it.id == insulinTypeId }
@@ -276,6 +279,27 @@ class TherapyManager(
     fun observeInsulinTypes(): Flow<List<InsulinType>> = treatmentRepository.observeInsulinTypes()
 
     /**
+     * Observes the currently configured [InsulinType] of the active pump.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun observePumpInsulinType(): Flow<InsulinType> {
+        return pumpManager.activeInsulinPump.flatMapLatest { activePump ->
+            val typeIdFlow = activePump?.insulinTypeId ?: flowOf(null)
+            combine(
+                typeIdFlow,
+                treatmentRepository.observeInsulinTypes()
+            ) { typeId, allTypes ->
+                if (!typeId.isNullOrBlank()) {
+                    allTypes.firstOrNull { it.id == typeId }
+                } else null
+            }
+        }.map { type ->
+            type ?: treatmentRepository.getAllInsulinTypes().firstOrNull()
+            ?: throw IllegalStateException("No insulin type configured in database")
+        }
+    }
+
+    /**
      * Gets all available insulin types.
      */
     suspend fun getAllInsulinTypes(): List<InsulinType> = treatmentRepository.getAllInsulinTypes()
@@ -292,7 +316,7 @@ class TherapyManager(
      */
     suspend fun isInsulinTypeInUse(insulinTypeId: String): Boolean {
         val activePump = pumpManager.activeInsulinPump.value ?: pumpManager.insulinPump
-        val isUsedInPump = activePump?.insulinTypeId == insulinTypeId
+        val isUsedInPump = activePump?.insulinTypeId?.value == insulinTypeId
         val isUsedInHistory = treatmentRepository.isInsulinTypeUsedInHistory(insulinTypeId)
         return isUsedInPump || isUsedInHistory
     }
@@ -300,16 +324,19 @@ class TherapyManager(
     /**
      * Observes IDs of insulin types currently in use (either set on active pump or present in history).
      */
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun observeUsedInsulinTypeIds(): Flow<Set<String>> {
-        return combine(
-            treatmentRepository.observeUsedInsulinTypeIds(),
-            pumpManager.activeInsulinPump
-        ) { historyUsedIds, activePump ->
-            val pumpTypeId = activePump?.insulinTypeId
-            if (!pumpTypeId.isNullOrBlank()) {
-                historyUsedIds + pumpTypeId
-            } else {
-                historyUsedIds
+        return pumpManager.activeInsulinPump.flatMapLatest { activePump ->
+            val pumpTypeFlow = activePump?.insulinTypeId ?: flowOf(null)
+            combine(
+                treatmentRepository.observeUsedInsulinTypeIds(),
+                pumpTypeFlow
+            ) { historyUsedIds, pumpTypeId ->
+                if (!pumpTypeId.isNullOrBlank()) {
+                    historyUsedIds + pumpTypeId
+                } else {
+                    historyUsedIds
+                }
             }
         }
     }
