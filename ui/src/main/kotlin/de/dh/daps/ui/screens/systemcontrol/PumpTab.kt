@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.Expiration
 import de.dh.daps.common.model.ExpirationDate
 import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.ReplaceableComponentType
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
@@ -798,10 +799,15 @@ internal fun samplePumpTabUiState(): PumpTabUiState = PumpTabUiState.Content(
     pumpName = UiText.DynamicString("SimBody Virtuelle Insulinpumpe"),
     batteryPercent = 85,
     reservoirRemaining = InsulinAmount(140.0),
+    insulinConcentration = InsulinConcentration.U100,
     lastConnectionTimestamp = Timestamp(System.currentTimeMillis() - 60_000),
     manufacturer = "DAPS",
     pumpModel = "Simulator",
     serialNumber = "SIM-001",
+    pumpConnected = true,
+    isSuspended = false,
+    isExpired = false,
+    coordinatorState = PumpCoordinatorState.Idle,
     syncStatus = PumpSyncStatus.InSync(Timestamp(System.currentTimeMillis() + 300_000)),
     nextWakeupTime = Timestamp(System.currentTimeMillis() + 300_000),
     expirations = listOf(
@@ -920,10 +926,14 @@ internal fun samplePumpTabExpiredUiState(): PumpTabUiState = PumpTabUiState.Cont
     pumpName = UiText.DynamicString("SimBody Virtuelle Insulinpumpe"),
     batteryPercent = 45,
     reservoirRemaining = InsulinAmount(15.0),
+    insulinConcentration = InsulinConcentration.U100,
     lastConnectionTimestamp = Timestamp(System.currentTimeMillis() - 120_000),
     manufacturer = "DAPS",
     pumpModel = "Simulator",
     serialNumber = "SIM-001",
+    pumpConnected = true,
+    isSuspended = false,
+    coordinatorState = PumpCoordinatorState.Idle,
     syncStatus = PumpSyncStatus.InSync(null),
     nextWakeupTime = null,
     isExpired = true,

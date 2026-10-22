@@ -46,6 +46,7 @@ import de.dh.daps.common.model.Expiration
 import de.dh.daps.common.model.ExpirationDate
 import de.dh.daps.common.model.GlucoseSourceStatus
 import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.ReplaceableComponentType
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.Timestamp
@@ -795,7 +796,8 @@ internal fun sampleOverviewTabUiState(): OverviewTabUiState = OverviewTabUiState
     ),
     apsSystem = OverviewApsSystemUiState.Content(
         mode = StatusMetric(ApsMode.AutoCorrection, status = ValueStatus.GOOD),
-        lastCalculation = StatusMetric(Timestamp(System.currentTimeMillis() - 120_000), status = ValueStatus.GOOD)
+        lastCalculation = StatusMetric(Timestamp(System.currentTimeMillis() - 120_000), status = ValueStatus.GOOD),
+        issues = emptyList()
     ),
     glucoseSource = OverviewGlucoseSourceUiState.Content(
         sensorName = UiText.DynamicString("SimBody Virtueller Glukosesensor"),
@@ -817,7 +819,8 @@ internal fun sampleOverviewTabUiState(): OverviewTabUiState = OverviewTabUiState
                 date = ExpirationDate.Hard(Timestamp(System.currentTimeMillis() + 172_800_000))
             ),
             status = ValueStatus.GOOD
-        )
+        ),
+        insulinConcentration = InsulinConcentration.U100
     )
 )
 
@@ -874,7 +877,8 @@ internal fun sampleOverviewTabExpiredUiState(): OverviewTabUiState = OverviewTab
                 date = ExpirationDate.Hard(Timestamp(System.currentTimeMillis() - 7_200_000))
             ),
             status = ValueStatus.BAD
-        )
+        ),
+        insulinConcentration = InsulinConcentration.U100
     )
 )
 
@@ -928,7 +932,8 @@ internal fun sampleOverviewTabNotConfiguredUiState(): OverviewTabUiState = Overv
     ),
     apsSystem = OverviewApsSystemUiState.Content(
         mode = StatusMetric(ApsMode.AutoCorrection, status = ValueStatus.GOOD),
-        lastCalculation = StatusMetric(Timestamp(System.currentTimeMillis() - 120_000), status = ValueStatus.GOOD)
+        lastCalculation = StatusMetric(Timestamp(System.currentTimeMillis() - 120_000), status = ValueStatus.GOOD),
+        issues = emptyList()
     ),
     glucoseSource = OverviewGlucoseSourceUiState.NoneConfigured,
     insulinPump = OverviewPumpUiState.NoneConfigured

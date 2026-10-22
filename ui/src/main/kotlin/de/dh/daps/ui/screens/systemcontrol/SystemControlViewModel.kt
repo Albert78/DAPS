@@ -97,7 +97,7 @@ sealed interface OverviewApsSystemUiState {
     data class Content(
         val mode: StatusMetric<ApsMode>,
         val lastCalculation: StatusMetric<Timestamp>,
-        val issues: List<ApsIssue> = emptyList()
+        val issues: List<ApsIssue>
     ) : OverviewApsSystemUiState {
         val unintendedIssues: List<ApsIssue>
             get() = if (mode.value == ApsMode.Suspend) {
@@ -150,7 +150,7 @@ sealed interface OverviewPumpUiState {
         val reservoir: StatusMetric<InsulinAmount>,
         val lastConnection: StatusMetric<Timestamp>,
         val nextExpiration: StatusMetric<Expiration>,
-        val insulinConcentration: InsulinConcentration = InsulinConcentration.U100
+        val insulinConcentration: InsulinConcentration
     ) : OverviewPumpUiState
 }
 
@@ -176,9 +176,9 @@ sealed interface SourceTabUiState {
         val startDate: Timestamp? = null,
         val lastBgReading: BgReading? = null,
         val nextPredictedTimestamp: Timestamp? = null,
-        val hasNextPrediction: Boolean = false,
+        val hasNextPrediction: Boolean,
         val expiration: Expiration? = null,
-        val isExpired: Boolean = false,
+        val isExpired: Boolean,
         val glucoseSourcePluginSection: (@Composable () -> Unit)? = null
     ) : SourceTabUiState
 }
@@ -197,19 +197,19 @@ sealed interface PumpTabUiState {
         val pumpName: UiText,
         val batteryPercent: Int,
         val reservoirRemaining: InsulinAmount,
-        val insulinConcentration: InsulinConcentration = InsulinConcentration.U100,
+        val insulinConcentration: InsulinConcentration,
         val lastConnectionTimestamp: Timestamp,
         val manufacturer: String? = null,
         val pumpModel: String? = null,
         val serialNumber: String? = null,
-        val pumpConnected: Boolean = false,
-        val isSuspended: Boolean = false,
-        val isExpired: Boolean = false,
+        val pumpConnected: Boolean,
+        val isSuspended: Boolean,
+        val isExpired: Boolean,
         val startDate: Timestamp? = null,
-        val expirations: List<Expiration> = emptyList(),
-        val pendingJobs: List<PumpJobItem> = emptyList(),
-        val coordinatorState: PumpCoordinatorState = PumpCoordinatorState.Idle,
-        val syncStatus: PumpSyncStatus = PumpSyncStatus.InSync(null),
+        val expirations: List<Expiration>,
+        val pendingJobs: List<PumpJobItem>,
+        val coordinatorState: PumpCoordinatorState,
+        val syncStatus: PumpSyncStatus,
         val nextWakeupTime: Timestamp? = null,
         val pumpPluginSection: (@Composable () -> Unit)? = null
     ) : PumpTabUiState
@@ -239,30 +239,30 @@ class SystemControlViewModel(
         val lastConnection: Timestamp? = null,
         val lastBgReading: BgReading? = null,
         val nextPredictedTimestamp: Timestamp? = null,
-        val hasNextPrediction: Boolean = false,
+        val hasNextPrediction: Boolean,
         val expiration: Expiration? = null,
-        val isExpired: Boolean = false,
+        val isExpired: Boolean,
         val source: GlucoseSource? = null,
         val driver: GlucoseSourceDriver? = null
     )
 
     private data class PumpUiData(
         val pumpName: UiText,
-        val connected: Boolean = false,
+        val connected: Boolean,
         val model: String? = null,
         val manufacturer: String? = null,
         val serialNumber: String? = null,
         val status: InsulinPumpStatus,
-        val lastConnection: Timestamp = Timestamp.INVALID,
+        val lastConnection: Timestamp,
         val startDate: Timestamp? = null,
-        val expirations: List<Expiration> = emptyList(),
-        val jobs: List<BolusJob> = emptyList(),
-        val coordinatorState: PumpCoordinatorState = PumpCoordinatorState.Idle,
-        val syncStatus: PumpSyncStatus = PumpSyncStatus.InSync(null),
+        val expirations: List<Expiration>,
+        val jobs: List<BolusJob>,
+        val coordinatorState: PumpCoordinatorState,
+        val syncStatus: PumpSyncStatus,
         val nextWakeupTime: Timestamp? = null,
-        val isSuspended: Boolean = false,
-        val isExpired: Boolean = false,
-        val hasError: Boolean = false,
+        val isSuspended: Boolean,
+        val isExpired: Boolean,
+        val hasError: Boolean,
         val pump: InsulinPump? = null,
         val driver: InsulinPumpDriver? = null
     )

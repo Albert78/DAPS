@@ -609,6 +609,7 @@ internal fun sampleSourceTabUiState(): SourceTabUiState = SourceTabUiState.Conte
         type = ReplaceableComponentType.Sensor,
         date = ExpirationDate.Hard(Timestamp(System.currentTimeMillis() + 864000000))
     ),
+    isExpired = false,
     glucoseSourcePluginSection = {
         GlucoseSourcePluginExampleCard(
             sensorCode = "8132",
