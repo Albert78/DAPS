@@ -20,7 +20,6 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Link
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -905,7 +904,7 @@ fun PumpPluginExampleCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Button(
+                PrimaryButton(
                     onClick = onRunSelfTest,
                     modifier = Modifier.weight(1f)
                 ) {
@@ -914,7 +913,7 @@ fun PumpPluginExampleCard(
                         fontWeight = FontWeight.Bold
                     )
                 }
-                Button(
+                PrimaryButton(
                     onClick = onPrimeCatheter,
                     modifier = Modifier.weight(1f)
                 ) {
@@ -956,8 +955,8 @@ internal fun samplePumpTabExpiredUiState(): PumpTabUiState = PumpTabUiState.Cont
     }
 )
 
-@Preview(showBackground = true, name = "Pump Tab - Light Mode")
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Pump Tab - Dark Mode")
+@Preview(showBackground = true, heightDp = 1200, name = "Pump Tab - Light Mode")
+@Preview(showBackground = true, heightDp = 1200, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Pump Tab - Dark Mode")
 @Composable
 fun PumpTabPreview() {
     AppTheme {
