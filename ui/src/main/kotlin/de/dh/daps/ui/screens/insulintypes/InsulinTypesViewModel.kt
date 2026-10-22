@@ -33,10 +33,11 @@ class InsulinTypesViewModel(
 ) : ViewModel() {
 
     private val treatmentRepository = registry.treatmentRepository
+    private val therapyManager = registry.therapyManager
 
     val uiState: StateFlow<InsulinTypesUiState> = combine(
         treatmentRepository.observeInsulinTypes(),
-        treatmentRepository.observeUsedInsulinTypeIds()
+        therapyManager.observeUsedInsulinTypeIds()
     ) { types, usedIds ->
         val availableStandard = defaultInsulinTypes.filter { std ->
             types.none { existing ->
@@ -70,7 +71,7 @@ class InsulinTypesViewModel(
     fun deleteInsulinType(insulinType: InsulinType) {
         viewModelScope.launch {
             try {
-                treatmentRepository.deleteInsulinType(insulinType)
+                therapyManager.deleteInsulinType(insulinType)
             } catch (_: Exception) {
                 // Ignore to prevent app crash if deletion fails due to constraint
             }

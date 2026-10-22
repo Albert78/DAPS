@@ -270,6 +270,58 @@ class TherapyManager(
 
     suspend fun getPumpCapabilities() = pumpManager.insulinPump?.pumpCapabilities?.value
 
+    /**
+     * Checks if an insulin type is currently in use (either set on the active pump or present in history).
+     */
+    suspend fun isInsulinTypeInUse(insulinTypeId: String): Boolean {
+        val activePump = pumpManager.activeInsulinPump.value ?: pumpManager.insulinPump
+        val isUsedInPump = activePump?.insulinTypeId == insulinTypeId
+        val isUsedInHistory = treatmentRepository.isInsulinTypeUsedInHistory(insulinTypeId)
+        return isUsedInPump || isUsedInHistory
+    }
+
+    /**
+     * Observes IDs of insulin types currently in use (either set on active pump or present in history).
+     */
+    fun observeUsedInsulinTypeIds(): Flow<Set<String>> {
+        return combine(
+            treatmentRepository.observeUsedInsulinTypeIds(),
+            pumpManager.activeInsulinPump
+        ) { historyUsedIds, activePump ->
+            val pumpTypeId = activePump?.insulinTypeId
+            if (!pumpTypeId.isNullOrBlank()) {
+                historyUsedIds + pumpTypeId
+            } else {
+                historyUsedIds
+            }
+        }
+    }
+
+    /**
+     * Deletes an insulin type if allowed (not in use on pump or in history, and not the last type)
+     * and strips it from all insulin profiles.
+     */
+    suspend fun deleteInsulinType(insulinType: InsulinType) {
+        if (isInsulinTypeInUse(insulinType.id)) {
+            throw IllegalStateException("Insulin type '${insulinType.name}' cannot be deleted because it is currently in use.")
+        }
+        val allTypes = treatmentRepository.getAllInsulinTypes()
+        if (allTypes.size <= 1) {
+            throw IllegalStateException("Cannot delete insulin type '${insulinType.name}' because it is the only insulin type.")
+        }
+
+        // Clean up references in all insulin profiles
+        val profiles = therapyRepository.getAllInsulinProfiles()
+        for (profile in profiles) {
+            if (profile.insulinSettings.any { it.insulinType.id == insulinType.id }) {
+                val updatedSettings = profile.insulinSettings.filter { it.insulinType.id != insulinType.id }
+                therapyRepository.updateInsulinProfile(profile.copy(insulinSettings = updatedSettings))
+            }
+        }
+
+        treatmentRepository.deleteInsulinType(insulinType)
+    }
+
     suspend fun getAllInsulinProfiles() = therapyRepository.getAllInsulinProfiles()
 
     fun observeAllInsulinProfiles() = therapyRepository.observeAllInsulinProfiles()
