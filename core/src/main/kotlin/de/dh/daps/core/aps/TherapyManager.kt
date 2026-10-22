@@ -256,6 +256,14 @@ class TherapyManager(
     }
 
     suspend fun getPumpInsulinType(): InsulinType {
+        val activePump = pumpManager.activeInsulinPump.value ?: pumpManager.insulinPump
+        val insulinTypeId = activePump?.insulinTypeId
+        if (!insulinTypeId.isNullOrBlank()) {
+            val type = treatmentRepository.getAllInsulinTypes().firstOrNull { it.id == insulinTypeId }
+            if (type != null) {
+                return type
+            }
+        }
         val currentSettings = getCurrentTherapySettings()
         return currentSettings.insulinProfile.insulinType
     }
@@ -435,8 +443,7 @@ class TherapyManager(
      * Triggered when the history of actual bolus and basal values was updated.
      */
     suspend fun updatePumpHistory(history: InsulinHistory) {
-        val cts = getCurrentTherapySettings()
-        val nextRequestedStart = treatmentRepository.mergeInsulinHistory(history, cts.insulinProfile.insulinType)
+        val nextRequestedStart = treatmentRepository.mergeInsulinHistory(history, getPumpInsulinType())
         if (nextRequestedStart != null) {
             pumpManager.requestedHistoryStart = nextRequestedStart
         }
@@ -504,11 +511,10 @@ class TherapyManager(
             treatmentRepository.removeDeferredBoluses(it)
         }
         // Preserve delivery metadata until history sync
-        val cts = getCurrentTherapySettings()
         val scheduledEntry = treatmentRepository.addScheduledPumpInsulinEntry(
             timestamp = Timestamp.now(),
             amount = amount,
-            insulinType = cts.insulinProfile.insulinType,
+            insulinType = getPumpInsulinType(),
             basal = basalPart > InsulinAmount.ZERO,
             correction = correctionPart > InsulinAmount.ZERO,
             meal = isMealBolus
