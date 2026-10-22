@@ -244,6 +244,15 @@ interface InsulinPump {
     val history: StateFlow<InsulinHistory?>
 
     /**
+     * ID of the insulin type loaded in the pump (e.g. Novorapid, Fiasp).
+     * The ID refers to the entity in the database.
+     * Optional / nullable if not configured.
+     */
+    var insulinTypeId: String?
+        get() = null
+        set(_) {}
+
+    /**
      * Concentration of the insulin loaded in the pump. Default is [InsulinConcentration.U100].
      * Needed to convert [InsulinAmount] to pump units and vice versa.
      */

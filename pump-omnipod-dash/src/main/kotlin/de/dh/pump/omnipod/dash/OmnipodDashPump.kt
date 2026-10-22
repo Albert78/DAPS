@@ -78,6 +78,7 @@ class OmnipodDashPump(
 
     override val insulinPumpId: String = PUMP_ID
     override val insulinPumpDisplayName: UiText = UiText.StringResource(R.string.omnipod_dash_pump_display_name)
+    override var insulinTypeId: String? = null
     override var insulinConcentration: InsulinConcentration = InsulinConcentration.U100
 
     private var sequenceNumber: Short = 1

@@ -147,6 +147,7 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
         val stateManager = getPodStateManager()
         val ble = getBleManager()
         val pump = OmnipodDashPump(stateManager, ble, pc.appContext)
+        pump.insulinTypeId = stateManager.insulinTypeId
         pump.insulinConcentration = stateManager.insulinConcentration
         _lifecycleState.value = DeviceLifecycleState.DeviceBound(
             deviceId = stateManager.bluetoothAddress ?: "POD-DASH-ACTIVE",

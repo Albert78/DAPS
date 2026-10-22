@@ -33,6 +33,8 @@
     <string name="omnipod_dash_ble_status_disconnected">Kein Pod in Reichweite oder Bluetooth getrennt</string>
 
     <string name="omnipod_dash_config_screen_title">Omnipod Dash Konfiguration</string>
+    <string name="omnipod_dash_config_insulin_type_title">Insulin-Typ</string>
+    <string name="omnipod_dash_config_insulin_type_subtitle">Wähle den Typ des im Pod geladenen Insulins.</string>
     <string name="omnipod_dash_config_concentration_title">Insulinkonzentration</string>
     <string name="omnipod_dash_config_concentration_subtitle">Wähle die Konzentration des im Pod geladenen Insulins. Der Standardwert ist U100.</string>
 </resources>

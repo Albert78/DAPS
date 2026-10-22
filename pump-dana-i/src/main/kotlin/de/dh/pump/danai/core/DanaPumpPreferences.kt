@@ -9,6 +9,17 @@ import kotlinx.coroutines.flow.first
  */
 class DanaPumpPreferences(val preferences: PluginPreferences) {
 
+    suspend fun getInsulinTypeId(): String? =
+        preferences.getString(KEY_INSULIN_TYPE_ID).first()
+
+    suspend fun saveInsulinTypeId(insulinTypeId: String?) {
+        if (insulinTypeId != null) {
+            preferences.putString(KEY_INSULIN_TYPE_ID, insulinTypeId)
+        } else {
+            preferences.remove(KEY_INSULIN_TYPE_ID)
+        }
+    }
+
     suspend fun getInsulinConcentration(): InsulinConcentration {
         val factor = preferences.getFloat(KEY_INSULIN_CONCENTRATION, 1.0f).first().toDouble()
         return InsulinConcentration(factor)
@@ -58,6 +69,7 @@ class DanaPumpPreferences(val preferences: PluginPreferences) {
     }
 
     companion object {
+        const val KEY_INSULIN_TYPE_ID = "insulin_type_id"
         const val KEY_INSULIN_CONCENTRATION = "insulin_concentration"
         const val KEY_LAST_NAME = "last_name"
         const val KEY_LAST_ADDRESS = "last_address"

@@ -150,6 +150,7 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
 
         val danaPrefs = DanaPumpPreferences(pc.preferences)
         val pumpAdapter = DanaIPumpAdapter.create(link, defaultLogger, scope)
+        pumpAdapter.insulinTypeId = danaPrefs.getInsulinTypeId()
         pumpAdapter.insulinConcentration = danaPrefs.getInsulinConcentration()
         pumpAdapter.controller.connect()
 

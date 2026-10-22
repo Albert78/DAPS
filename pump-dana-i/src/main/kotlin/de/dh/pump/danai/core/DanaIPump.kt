@@ -87,6 +87,11 @@ enum class DanaPumpError {
  */
 class DanaIPump {
     /**
+     * ID of the insulin type loaded in the pump.
+     */
+    var insulinTypeId: String? = null
+
+    /**
      * Concentration of the insulin loaded in the pump. Default is [InsulinConcentration.U100].
      */
     var insulinConcentration: InsulinConcentration = InsulinConcentration.U100

@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,6 +31,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -49,6 +51,7 @@ import de.dh.daps.common.model.PumpCapabilities
 import de.dh.daps.common.model.PumpHardwareInformation
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.model.getDefaultInsulinTypes
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.screenTitle
@@ -70,8 +73,14 @@ fun DanaIConfigurationScreen(
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val danaPrefs = remember(preferences) { preferences?.let { DanaPumpPreferences(it) } }
+
+    val availableInsulinTypes = remember(context) { getDefaultInsulinTypes(context) }
+    var currentInsulinTypeId by remember(pump.insulinTypeId) {
+        mutableStateOf(pump.insulinTypeId ?: availableInsulinTypes.firstOrNull()?.id)
+    }
     var currentConcentration by remember(pump.insulinConcentration) { mutableStateOf(pump.insulinConcentration) }
 
     Scaffold(
@@ -102,6 +111,51 @@ fun DanaIConfigurationScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                // FramedCard: Insulin Type Setting
+                FramedCard(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.danai_config_insulin_type_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = stringResource(R.string.danai_config_insulin_type_subtitle),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            availableInsulinTypes.forEach { insulinType ->
+                                val isSelected = currentInsulinTypeId == insulinType.id
+                                FilterChip(
+                                    selected = isSelected,
+                                    onClick = {
+                                        currentInsulinTypeId = insulinType.id
+                                        pump.insulinTypeId = insulinType.id
+                                        danaPrefs?.let { prefs ->
+                                            scope.launch {
+                                                prefs.saveInsulinTypeId(insulinType.id)
+                                            }
+                                        }
+                                    },
+                                    label = { Text(text = insulinType.name) }
+                                )
+                            }
+                        }
+                    }
+                }
+
                 // FramedCard: Insulin Concentration Setting
                 FramedCard(
                     modifier = Modifier.fillMaxWidth()
@@ -153,15 +207,14 @@ fun DanaIConfigurationScreen(
                         }
                     }
                 }
-
-                // Additional setting cards can easily be appended here in the future
             }
         }
     }
 }
 
 private class PreviewDanaIPump(
-    override var insulinConcentration: InsulinConcentration = InsulinConcentration.U100
+    override var insulinTypeId: String? = null,
+    override var insulinConcentration: InsulinConcentration = InsulinConcentration.U100,
 ) : InsulinPump {
     override val insulinPumpId: String = "preview-dana-i"
     override val insulinPumpDisplayName: UiText = UiText.DynamicString("Sooil Dana-i")

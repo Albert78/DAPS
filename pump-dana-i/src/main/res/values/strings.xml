@@ -41,6 +41,8 @@
     <string name="danai_pump_control_btn_reconnect_maintenance">Wartung beenden</string>
 
     <string name="danai_config_screen_title">Dana-i Konfiguration</string>
+    <string name="danai_config_insulin_type_title">Insulin-Typ</string>
+    <string name="danai_config_insulin_type_subtitle">Wähle den Typ des in der Dana-Pumpe geladenen Insulins.</string>
     <string name="danai_config_concentration_title">Insulinkonzentration</string>
     <string name="danai_config_concentration_subtitle">Wähle die Konzentration des in der Dana-Pumpe geladenen Insulins. Der Standardwert ist U100.</string>
 </resources>

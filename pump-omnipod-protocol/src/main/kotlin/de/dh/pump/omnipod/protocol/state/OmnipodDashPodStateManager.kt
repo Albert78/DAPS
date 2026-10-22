@@ -62,6 +62,7 @@ interface OmnipodDashPodStateManager {
     val basalDrift: Double
     var lastBasalCorrectionTime: Long?
     var basalCorrectionInProgress: Boolean
+    var insulinTypeId: String?
     var insulinConcentration: InsulinConcentration
 
     fun updateFromDefaultStatusResponse(response: DefaultStatusResponse)
@@ -141,6 +142,7 @@ class OmnipodDashPodStateManagerImpl(
     override val isSuspended: Boolean get() = deliveryStatus == DeliveryStatus.SUSPENDED
     override val isPodRunning: Boolean get() = podStatus?.isRunning() == true
 
+    override var insulinTypeId: String? = null
     override var insulinConcentration: InsulinConcentration = InsulinConcentration.U100
 
     override var uniqueId: Int? = null
@@ -452,12 +454,14 @@ class OmnipodDashPodStateManagerImpl(
             lastBasalCorrectionTime?.let { putLong(KEY_LAST_BASAL_CORRECTION_TIME, it) } ?: putLong(KEY_LAST_BASAL_CORRECTION_TIME, 0L)
             tempBasal?.let { putString(KEY_TEMP_BASAL, Json.encodeToString(it)) } ?: putString(KEY_TEMP_BASAL, null)
             basalProgram?.let { putString(KEY_BASAL_PROGRAM, Json.encodeToString(it)) } ?: putString(KEY_BASAL_PROGRAM, null)
+            insulinTypeId?.let { putString(KEY_INSULIN_TYPE_ID, it) } ?: putString(KEY_INSULIN_TYPE_ID, null)
             putFloat(KEY_INSULIN_CONCENTRATION, insulinConcentration.factor.toFloat())
         }
     }
 
     override suspend fun loadFromPreferences() {
         preferences?.let { prefs ->
+            insulinTypeId = prefs.getString(KEY_INSULIN_TYPE_ID).first()
             val concFactor = prefs.getFloat(KEY_INSULIN_CONCENTRATION, 1.0f).first()
             insulinConcentration = InsulinConcentration(concFactor.toDouble())
             uniqueId = prefs.getInt(KEY_UNIQUE_ID, 0).first().takeIf { it != 0 }
@@ -557,10 +561,12 @@ class OmnipodDashPodStateManagerImpl(
         bolusPulsesDelivered = null
         lastBasalCorrectionTime = null
         basalCorrectionInProgress = false
+        insulinTypeId = null
         insulinConcentration = InsulinConcentration.U100
     }
 
     companion object {
+        private const val KEY_INSULIN_TYPE_ID = "omnipod_dash_insulin_type_id"
         private const val KEY_INSULIN_CONCENTRATION = "omnipod_dash_insulin_concentration"
         private const val KEY_UNIQUE_ID = "omnipod_dash_unique_id"
         private const val KEY_LOT_NUMBER = "omnipod_dash_lot_number"
