@@ -2,11 +2,13 @@ package de.dh.daps.plugin.simbody
 
 import androidx.compose.runtime.Composable
 import de.dh.daps.common.model.DeviceLifecycleState
+import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.Plugin
 import de.dh.daps.common.model.PluginContext
 import de.dh.daps.common.ui.UiText
+import de.dh.daps.plugin.simbody.ui.screens.SimBodyConfigurationScreen
 import de.dh.daps.plugin.simbody.ui.screens.SimBodyPumpSetupScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -52,7 +54,25 @@ class SimBodyInsulinPumpDriver(
             deviceId = deviceId,
             displayName = UiText.StringResource(R.string.sim_body_pump_device_display_name),
         )
-        _activePump.value = simBodyPlugin.getInsulinPump()
+        val pump = simBodyPlugin.getInsulinPump()
+        restorePumpPreferences(pump)
+        _activePump.value = pump
+    }
+
+    private fun restorePumpPreferences(pump: InsulinPump) {
+        val simPump = pump as? SimBodyInsulinPump ?: return
+        pluginContext?.preferences?.let { prefs ->
+            scope.launch {
+                val typeId = prefs.getString(KEY_INSULIN_TYPE_ID).first()
+                if (!typeId.isNullOrEmpty()) {
+                    simPump.setInsulinTypeId(typeId)
+                }
+                val uValue = prefs.getInt(KEY_INSULIN_CONCENTRATION_UVALUE, 100).first()
+                if (uValue > 0) {
+                    simPump.setInsulinConcentration(InsulinConcentration.fromUValue(uValue))
+                }
+            }
+        }
     }
 
     fun unbindDevice() {
@@ -89,9 +109,22 @@ class SimBodyInsulinPumpDriver(
         )
     }
 
+    override fun getSettingsScreen(
+        pump: InsulinPump,
+        onClose: () -> Unit,
+    ): (@Composable () -> Unit) = {
+        SimBodyConfigurationScreen(
+            pump = pump,
+            preferences = pluginContext?.preferences,
+            onClose = onClose,
+        )
+    }
+
     companion object {
         const val DRIVER_ID = "de.dh.daps.plugin.simbody"
         const val DEFAULT_DEVICE_ID = "simbody-virtual-pump-01"
         private const val KEY_DEVICE_ID = "device_id"
+        const val KEY_INSULIN_TYPE_ID = "insulin_type_id"
+        const val KEY_INSULIN_CONCENTRATION_UVALUE = "insulin_concentration_uvalue"
     }
 }
