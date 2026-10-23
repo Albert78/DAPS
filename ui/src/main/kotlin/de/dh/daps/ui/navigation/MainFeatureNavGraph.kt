@@ -22,7 +22,7 @@ import de.dh.daps.common.navigation.AlarmProfileEditorRoute
 import de.dh.daps.common.navigation.AlarmProfilesRoute
 import de.dh.daps.common.navigation.AppDataRoute
 import de.dh.daps.common.navigation.BgEditorRoute
-import de.dh.daps.common.navigation.BolusHistoryRoute
+import de.dh.daps.common.navigation.InsulinHistoryRoute
 import de.dh.daps.common.navigation.CoreDecisionsRoute
 import de.dh.daps.common.navigation.CurrentTherapySettingsRoute
 import de.dh.daps.common.navigation.DashboardRoute
@@ -62,8 +62,8 @@ import de.dh.daps.ui.screens.alarmprofiles.AlarmProfilesScreen
 import de.dh.daps.ui.screens.alarmprofiles.AlarmProfilesViewModel
 import de.dh.daps.ui.screens.appdata.AppDataScreen
 import de.dh.daps.ui.screens.appdata.AppDataViewModel
-import de.dh.daps.ui.screens.bolushistory.BolusHistoryScreen
-import de.dh.daps.ui.screens.bolushistory.BolusHistoryViewModel
+import de.dh.daps.ui.screens.insulinhistory.InsulinHistoryScreen
+import de.dh.daps.ui.screens.insulinhistory.InsulinHistoryViewModel
 import de.dh.daps.ui.screens.dashboard.DashboardScreen
 import de.dh.daps.ui.screens.dashboard.DashboardViewModel
 import de.dh.daps.ui.screens.fooddatabase.FoodDatabaseScreen
@@ -402,11 +402,11 @@ class MainFeatureNavGraph(
                 )
             }
 
-            is BolusHistoryRoute -> NavEntry(key) {
-                val vm: BolusHistoryViewModel = viewModel(
-                    factory = BolusHistoryViewModel.Companion.Factory(registry)
+            is InsulinHistoryRoute -> NavEntry(key) {
+                val vm: InsulinHistoryViewModel = viewModel(
+                    factory = InsulinHistoryViewModel.Companion.Factory(registry)
                 )
-                BolusHistoryScreen(
+                InsulinHistoryScreen(
                     viewModel = vm,
                     onNavigateUp = { navViewModel.pop() }
                 )

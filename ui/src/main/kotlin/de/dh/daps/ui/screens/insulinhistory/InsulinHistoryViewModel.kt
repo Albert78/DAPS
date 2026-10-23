@@ -1,4 +1,4 @@
-package de.dh.daps.ui.screens.bolushistory
+package de.dh.daps.ui.screens.insulinhistory
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -18,14 +18,14 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-data class BolusHistoryUiState(
-    val bolusEntries: List<InsulinApplication> = emptyList(),
+data class InsulinHistoryUiState(
+    val insulinEntries: List<InsulinApplication> = emptyList(),
     val insulinTypes: List<InsulinType> = emptyList(),
     val defaultInsulinType: InsulinType? = null,
     val editThresholdHours: Int = MEAL_EDIT_THRESHOLD_HOURS
 )
 
-class BolusHistoryViewModel(
+class InsulinHistoryViewModel(
     private val registry: SystemRegistry
 ) : ViewModel() {
 
@@ -42,13 +42,13 @@ class BolusHistoryViewModel(
         }
     }
 
-    val uiState: StateFlow<BolusHistoryUiState> = combine(
+    val uiState: StateFlow<InsulinHistoryUiState> = combine(
         treatmentRepository.observeInsulinApplications(includeCancelled = true),
         _insulinTypes,
         _defaultInsulinType
     ) { entries, types, defaultType ->
-        BolusHistoryUiState(
-            bolusEntries = entries.sortedByDescending { it.timestamp },
+        InsulinHistoryUiState(
+            insulinEntries = entries.sortedByDescending { it.timestamp },
             insulinTypes = types,
             defaultInsulinType = defaultType,
             editThresholdHours = MEAL_EDIT_THRESHOLD_HOURS
@@ -57,19 +57,19 @@ class BolusHistoryViewModel(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = BolusHistoryUiState()
+            initialValue = InsulinHistoryUiState()
         )
 
     companion object {
         class Factory(private val registry: SystemRegistry) : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return BolusHistoryViewModel(registry) as T
+                return InsulinHistoryViewModel(registry) as T
             }
         }
     }
 
-    fun addManualBolus(
+    fun addManualInsulin(
         amount: InsulinAmount,
         insulinType: InsulinType,
         basal: Boolean,
@@ -90,7 +90,7 @@ class BolusHistoryViewModel(
         }
     }
 
-    fun updateManualBolus(
+    fun updateManualInsulin(
         application: InsulinApplication,
         newAmount: InsulinAmount,
         newType: InsulinType,
@@ -109,7 +109,7 @@ class BolusHistoryViewModel(
         }
     }
 
-    fun deleteBolus(application: InsulinApplication) {
+    fun deleteInsulin(application: InsulinApplication) {
         viewModelScope.launch {
             treatmentRepository.removeInsulinApplication(application)
         }

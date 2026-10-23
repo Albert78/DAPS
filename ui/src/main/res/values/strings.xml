@@ -426,24 +426,24 @@
 
     <string name="food_database_screen_title">Essensdatenbank</string>
 
-    <string name="bolus_history_screen_title">Bolus-Historie</string>
-    <string name="menu_bolus_history_label">Bolus-Historie</string>
-    <string name="bolus_status_scheduled">Geplant</string>
-    <string name="bolus_status_cancelled">Abgebrochen</string>
-    <string name="bolus_status_invalidated">Entwertet</string>
-    <string name="action_invalidate">Entwerten</string>
-    <string name="action_restore">Reaktivieren</string>
-    <string name="bolus_history_empty_list">Keine Bolus-Einträge vorhanden</string>
-    <string name="bolus_history_add_manual_title">Pen-Bolus</string>
-    <string name="bolus_history_edit_manual_title">Bolus bearbeiten</string>
-    <string name="bolus_history_add_manual_desc">Trage hier einen Bolus ein, den du dir selbst gespritzt hast (Pen, Spritze). Der Bolus wird NICHT über die Pumpe abgegeben, aber im Algorithmus berücksichtigt.</string>
-    <string name="delete_bolus_title">Bolus-Eintrag löschen</string>
-    <string name="delete_bolus_message">Nach dem Löschen wird der Algorithmus den Bolus nicht mehr berücksichtigen.\nMöchtest du diesen Bolus-Eintrag wirklich löschen?</string>
-    <string name="bolus_category_correction">Korrektur</string>
-    <string name="bolus_category_basal">Basal</string>
-    <string name="bolus_category_meal">Mahlzeit</string>
-    <string name="bolus_origin_pump">Pumpe</string>
-    <string name="bolus_origin_manual">Manuell</string>
+    <string name="insulin_history_screen_title">Insulin-Historie</string>
+    <string name="menu_insulin_history_label">Insulin-Historie</string>
+    <string name="insulin_status_scheduled">Geplant</string>
+    <string name="insulin_status_cancelled">Abgebrochen</string>
+    <string name="insulin_status_invalidated">Entwertet</string>
+    <string name="insulin_history_action_invalidate">Entwerten</string>
+    <string name="insulin_history_action_restore">Reaktivieren</string>
+    <string name="insulin_history_empty_list">Keine Insulin-Einträge vorhanden</string>
+    <string name="insulin_history_add_manual_title">Pen-Insulin</string>
+    <string name="insulin_history_edit_manual_title">Insulineintrag bearbeiten</string>
+    <string name="insulin_history_add_manual_desc">Trage hier eine Dosis ein, die du dir selbst gespritzt hast (Pen, Spritze). Das Insulin wird NICHT über die Pumpe abgegeben, aber im Algorithmus berücksichtigt.</string>
+    <string name="delete_insulin_title">Insulin-Eintrag löschen</string>
+    <string name="delete_insulin_message">Nach dem Löschen wird der Algorithmus die Dosis nicht mehr berücksichtigen.\nMöchtest du diesen Insulin-Eintrag wirklich löschen?</string>
+    <string name="insulin_category_correction">Korrektur</string>
+    <string name="insulin_category_basal">Basal</string>
+    <string name="insulin_category_meal">Mahlzeit</string>
+    <string name="insulin_origin_pump">Pumpe</string>
+    <string name="insulin_origin_manual">Manuell</string>
 
     <string name="system_control_screen_title">Systemsteuerung</string>
     <string name="system_control_tab_glucose_source">CGM</string>

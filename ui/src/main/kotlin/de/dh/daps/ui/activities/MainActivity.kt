@@ -61,7 +61,7 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import de.dh.daps.common.navigation.AppDataRoute
-import de.dh.daps.common.navigation.BolusHistoryRoute
+import de.dh.daps.common.navigation.InsulinHistoryRoute
 import de.dh.daps.common.navigation.DashboardRoute
 import de.dh.daps.common.navigation.FeatureNavGraph
 import de.dh.daps.common.navigation.FoodDatabaseRoute
@@ -442,10 +442,10 @@ fun DrawerContent(
                     onClick = { onRouteSelected(MealsRoute) }
                 )
                 DrawerItem(
-                    label = stringResource(id = R.string.menu_bolus_history_label),
+                    label = stringResource(id = R.string.menu_insulin_history_label),
                     icon = Icon_Bolus,
-                    selected = currentRoute == BolusHistoryRoute,
-                    onClick = { onRouteSelected(BolusHistoryRoute) }
+                    selected = currentRoute == InsulinHistoryRoute,
+                    onClick = { onRouteSelected(InsulinHistoryRoute) }
                 )
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                 DrawerItem(
