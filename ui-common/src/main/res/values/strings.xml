@@ -2,4 +2,9 @@
 <resources>
     <string name="food_type_selector_food_type_label">Nahrungstyp</string>
     <string name="meal_type_standard_label_format">Standard-Mahlzeitentyp %1$s</string>
+
+    <string name="pump_config_insulin_type_title">Insulin-Typ</string>
+    <string name="pump_config_insulin_type_subtitle">Wähle den Typ des in der Pumpe geladenen Insulins.</string>
+    <string name="pump_config_concentration_title">Insulinkonzentration</string>
+    <string name="pump_config_concentration_subtitle">Wähle die Konzentration des in der Pumpe geladenen Insulins. Der Standardwert ist U100.</string>
 </resources>

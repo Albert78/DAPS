@@ -1,40 +1,15 @@
 package de.dh.pump.omnipod.dash.ui
 
 import android.content.res.Configuration
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.BasalStatus
 import de.dh.daps.common.model.BolusEvent
 import de.dh.daps.common.model.BolusStatus
@@ -51,8 +26,7 @@ import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.getDefaultInsulinTypes
 import de.dh.daps.common.ui.UiText
-import de.dh.daps.ui.common.composables.FramedCard
-import de.dh.daps.ui.common.composables.screenTitle
+import de.dh.daps.ui.common.composables.PumpConfigurationScreen
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.pump.omnipod.dash.OmnipodDashInsulinPumpDriver
 import de.dh.pump.omnipod.dash.R
@@ -61,9 +35,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import de.dh.daps.common.R as CommonR
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OmnipodDashConfigurationScreen(
     pump: InsulinPump,
@@ -77,133 +49,34 @@ fun OmnipodDashConfigurationScreen(
     val currentInsulinTypeId by pump.insulinTypeId.collectAsState()
     val currentConcentration by pump.insulinConcentration.collectAsState()
 
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            TopAppBar(
-                title = screenTitle(stringResource(R.string.omnipod_dash_config_screen_title)),
-                navigationIcon = {
-                    IconButton(onClick = onClose) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = stringResource(CommonR.string.cd_close)
-                        )
-                    }
-                }
-            )
-        }
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // FramedCard: Insulin Type Setting
-                FramedCard(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.omnipod_dash_config_insulin_type_title),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = stringResource(R.string.omnipod_dash_config_insulin_type_subtitle),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            availableInsulinTypes.forEach { insulinType ->
-                                val isSelected = currentInsulinTypeId == insulinType.id
-                                FilterChip(
-                                    selected = isSelected,
-                                    onClick = {
-                                        driver?.let { d ->
-                                            scope.launch {
-                                                val stateManager = d.getPodStateManager()
-                                                stateManager.setInsulinTypeId(insulinType.id)
-                                                stateManager.saveToPreferences()
-                                            }
-                                        }
-                                    },
-                                    label = { Text(text = insulinType.name) }
-                                )
-                            }
-                        }
-                    }
-                }
-
-                // FramedCard: Insulin Concentration Setting
-                FramedCard(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.omnipod_dash_config_concentration_title),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = stringResource(R.string.omnipod_dash_config_concentration_subtitle),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            val options = listOf(
-                                InsulinConcentration.U100 to "U100",
-                                InsulinConcentration.U40 to "U40",
-                                InsulinConcentration.U200 to "U200",
-                                InsulinConcentration.U20 to "U20",
-                            )
-
-                            options.forEach { (concentration, label) ->
-                                val isSelected = currentConcentration == concentration
-                                FilterChip(
-                                    selected = isSelected,
-                                    onClick = {
-                                        driver?.let { d ->
-                                            scope.launch {
-                                                val stateManager = d.getPodStateManager()
-                                                stateManager.setInsulinConcentration(concentration)
-                                                stateManager.saveToPreferences()
-                                            }
-                                        }
-                                    },
-                                    label = { Text(text = label) }
-                                )
-                            }
-                        }
-                    }
+    PumpConfigurationScreen(
+        title = stringResource(R.string.omnipod_dash_config_screen_title),
+        selectedTypeId = currentInsulinTypeId,
+        availableTypes = availableInsulinTypes,
+        onSelectType = { insulinType ->
+            driver?.let { d ->
+                scope.launch {
+                    val stateManager = d.getPodStateManager()
+                    stateManager.setInsulinTypeId(insulinType.id)
+                    stateManager.saveToPreferences()
                 }
             }
-        }
-    }
+        },
+        selectedConcentration = currentConcentration,
+        onSelectConcentration = { concentration ->
+            driver?.let { d ->
+                scope.launch {
+                    val stateManager = d.getPodStateManager()
+                    stateManager.setInsulinConcentration(concentration)
+                    stateManager.saveToPreferences()
+                }
+            }
+        },
+        onClose = onClose,
+        modifier = modifier,
+        typeCardSubtitle = stringResource(R.string.omnipod_dash_config_insulin_type_subtitle),
+        concentrationCardSubtitle = stringResource(R.string.omnipod_dash_config_concentration_subtitle),
+    )
 }
 
 private class PreviewOmnipodPump(
