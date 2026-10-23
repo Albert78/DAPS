@@ -167,31 +167,46 @@ fun InsulinTypeEditorContent(
     }
 
     if (showDiscardConfirmation) {
-        AlertDialog(
+        DiscardChangesDialog(
+            isSaveEnabled = uiState.isValid && !uiState.isSaving,
             onDismissRequest = { showDiscardConfirmation = false },
-            title = { Text(stringResource(id = R.string.insulin_type_editor_discard_title)) },
-            text = { Text(stringResource(id = R.string.insulin_type_editor_discard_message)) },
-            confirmButton = {
-                NormalTextButton(
-                    onClick = {
-                        showDiscardConfirmation = false
-                        onSave()
-                    },
-                    enabled = uiState.isValid && !uiState.isSaving
-                ) {
-                    Text(stringResource(id = CommonR.string.action_save))
-                }
+            onSave = {
+                showDiscardConfirmation = false
+                onSave()
             },
-            dismissButton = {
-                NormalTextButton(onClick = {
-                    showDiscardConfirmation = false
-                    onNavigateUp()
-                }) {
-                    Text(stringResource(id = R.string.discard_confirm_button))
-                }
+            onDiscard = {
+                showDiscardConfirmation = false
+                onNavigateUp()
             }
         )
     }
+}
+
+@Composable
+private fun DiscardChangesDialog(
+    isSaveEnabled: Boolean,
+    onDismissRequest: () -> Unit,
+    onSave: () -> Unit,
+    onDiscard: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = { Text(stringResource(id = R.string.insulin_type_editor_discard_title)) },
+        text = { Text(stringResource(id = R.string.insulin_type_editor_discard_message)) },
+        confirmButton = {
+            NormalTextButton(
+                onClick = onSave,
+                enabled = isSaveEnabled
+            ) {
+                Text(stringResource(id = CommonR.string.action_save))
+            }
+        },
+        dismissButton = {
+            NormalTextButton(onClick = onDiscard) {
+                Text(stringResource(id = R.string.discard_confirm_button))
+            }
+        }
+    )
 }
 
 @Composable
@@ -303,6 +318,19 @@ fun InsulinTypeEditorFormContentPreview() {
             onActiveSubstanceChange = {},
             onPeakChange = {},
             onDiaChange = {}
+        )
+    }
+}
+
+@Preview(showSystemUi = true, name = "Discard Changes Dialog")
+@Composable
+private fun DiscardChangesDialogPreview() {
+    AppPreview {
+        DiscardChangesDialog(
+            isSaveEnabled = true,
+            onDismissRequest = {},
+            onSave = {},
+            onDiscard = {}
         )
     }
 }
