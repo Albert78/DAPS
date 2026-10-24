@@ -41,9 +41,9 @@ import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.common.R as CommonR
 
 val DEFAULT_INSULIN_CONCENTRATION_OPTIONS = listOf(
+    InsulinConcentration.U200 to "U200",
     InsulinConcentration.U100 to "U100",
     InsulinConcentration.U40 to "U40",
-    InsulinConcentration.U200 to "U200",
     InsulinConcentration.U20 to "U20",
 )
 
