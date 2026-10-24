@@ -15,6 +15,9 @@ import de.dh.daps.common.model.MealEntry
 import de.dh.daps.common.model.MealType
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.model.reminder.ReminderType
+import de.dh.daps.common.service.createMealReminder
+import de.dh.daps.common.service.deleteMealReminders
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.aps.TreatmentLock
 import de.dh.daps.ui.controls.meal.PlannedBolusUiModel
@@ -50,7 +53,7 @@ class EditHistoricalMealViewModel(
 
     private val treatmentRepository = registry.treatmentRepository
     val therapyManager = registry.therapyManager
-    private val recommendationManager = registry.recommendationManager
+    private val reminderManager = registry.reminderManager
     private val isAddMode = mealId == ID_UNDEFINED
     private var originalDeferredBoluses: List<DeferredBolus> = emptyList()
 
@@ -81,9 +84,9 @@ class EditHistoricalMealViewModel(
                 )
             }
 
-            val allReminders = recommendationManager.mealReminders.value
+            val allReminders = reminderManager.activeReminders.value
             val existingReminder = if (meal != null) {
-                allReminders.find { it.mealId == meal.id }
+                allReminders.find { it.type == ReminderType.MEAL && it.sourceId == meal.id.toString() }
             } else null
 
             val now = Timestamp.now()
@@ -273,12 +276,9 @@ class EditHistoricalMealViewModel(
             val savedMealId = mealToSave.id
 
             // Synchronize meal reminders
-            val existingReminders = recommendationManager.mealReminders.value.filter { it.mealId == savedMealId }
-            for (reminder in existingReminders) {
-                recommendationManager.deleteMealReminder(reminder.id)
-            }
+            reminderManager.deleteMealReminders(savedMealId)
             if (state.isMealReminderEnabled) {
-                recommendationManager.scheduleMealReminder(
+                reminderManager.createMealReminder(
                     mealTimestamp = state.editedTimestamp,
                     mealId = savedMealId
                 )
@@ -297,10 +297,7 @@ class EditHistoricalMealViewModel(
     fun deleteMeal(onSuccess: () -> Unit) {
         viewModelScope.launch {
             _uiState.value.meal?.let { meal ->
-                val existingReminders = recommendationManager.mealReminders.value.filter { it.mealId == meal.id }
-                for (reminder in existingReminders) {
-                    recommendationManager.deleteMealReminder(reminder.id)
-                }
+                reminderManager.deleteMealReminders(meal.id)
 
                 val mealDeferred = treatmentRepository.getDeferredBoluses().filter { it.mealId == meal.id }
                 if (mealDeferred.isNotEmpty()) {

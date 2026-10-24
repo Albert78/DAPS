@@ -21,6 +21,7 @@ import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.data.max
 import de.dh.daps.common.model.getDefaultStandardMealType
+import de.dh.daps.common.service.createMealReminder
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.aps.BolusCalculationMath
 import de.dh.daps.core.aps.BolusProjections
@@ -182,6 +183,7 @@ class MealCorrectionBolusViewModel(
 
     private val therapyManager = registry.therapyManager
     private val recommendationManager = registry.recommendationManager
+    private val reminderManager = registry.reminderManager
     private val treatmentRepository = registry.treatmentRepository
     private val bolusCorrectionCalculator = registry.systemOrchestrator.getBolusCorrectionCalculator()
 
@@ -511,7 +513,7 @@ class MealCorrectionBolusViewModel(
 
                     // Schedule reminder
                     if (state.isMealReminderEnabled) {
-                        recommendationManager.scheduleMealReminder(
+                        reminderManager.createMealReminder(
                             mealTimestamp = state.input.mealTimestamp,
                             mealId = mealEntry.id
                         )

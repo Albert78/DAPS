@@ -7,13 +7,14 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
 import de.dh.daps.R
 import de.dh.daps.common.ID_UNDEFINED
 import de.dh.daps.common.model.DeferredBolus
-import de.dh.daps.common.model.MealReminder
+import de.dh.daps.common.model.reminder.Reminder
 import de.dh.daps.common.model.data.AlarmType
 import de.dh.daps.common.model.data.BgDelta
 import de.dh.daps.common.model.data.BgValue
@@ -192,22 +193,31 @@ class AndroidNotificationsImpl(
         manager.cancel(RECOMMENDATION_NOTIFICATION_ID)
     }
 
-    override fun showMealReminderNotification(mealReminder: MealReminder) {
-        val title = context.getString(UiR.string.notification_meal_reminder_title)
-        val text = if (mealReminder.description.isNotBlank()) {
-            context.getString(UiR.string.notification_meal_reminder_text_with_description, mealReminder.description)
-        } else {
-            context.getString(UiR.string.notification_meal_reminder_text_default)
-        }
+    override fun showReminderNotification(reminder: Reminder) {
+        val titleText = reminder.title.asString(context)
+        val title = titleText.ifBlank { context.getString(CommonR.string.notification_meal_reminder_title) }
+        val text = reminder.description.ifBlank { context.getString(CommonR.string.notification_meal_reminder_text_default) }
 
-        val mealId = mealReminder.mealId ?: ID_UNDEFINED
-        val mealIntent = MainActivity.createEditMealIntent(context, mealId)
-        val pendingIntent = PendingIntent.getActivity(
-            context,
-            mealId.hashCode(),
-            mealIntent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
+        val pendingIntent = if (reminder.targetRoute.isNotBlank()) {
+            val routeIntent = Intent(Intent.ACTION_VIEW, Uri.parse(reminder.targetRoute)).apply {
+                setClass(context, MainActivity::class.java)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+            PendingIntent.getActivity(
+                context,
+                reminder.id.hashCode(),
+                routeIntent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+        } else {
+            val dashboardIntent = MainActivity.createStartDashboardIntent(context)
+            PendingIntent.getActivity(
+                context,
+                reminder.id.hashCode(),
+                dashboardIntent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+        }
 
         val notification = NotificationCompat.Builder(context, RECOMMENDATION_CHANNEL_ID)
             .setContentTitle(title)
@@ -219,7 +229,8 @@ class AndroidNotificationsImpl(
             .setCategory(NotificationCompat.CATEGORY_EVENT)
             .build()
 
-        notify(MEAL_REMINDER_NOTIFICATION_ID, notification)
+        val notificationId = MEAL_REMINDER_NOTIFICATION_ID + (reminder.id % 10000).toInt()
+        notify(notificationId, notification)
     }
 
     override fun showDeferredBolusRecommendationNotification(dueDeferredBoluses: List<DeferredBolus>) {

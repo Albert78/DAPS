@@ -1,45 +1,14 @@
 package de.dh.daps.core.aps
 
-import android.content.Intent
 import de.dh.daps.common.model.InsulinAmount
-import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.core.repository.db.dao.MealReminderDao
-import de.dh.daps.core.repository.db.entities.MealReminderEntity
-import de.dh.daps.common.service.SystemWakeService
-import de.dh.daps.common.service.WakeupHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class RecommendationManagerTest {
 
-    private val fakeDao = object : MealReminderDao {
-        override suspend fun getAllMealReminders(): List<MealReminderEntity> = emptyList()
-        override fun observeAllMealReminders(): Flow<List<MealReminderEntity>> = flowOf(emptyList())
-        override suspend fun insertMealReminder(reminder: MealReminderEntity): Long = 1L
-        override suspend fun insertMealReminders(reminders: List<MealReminderEntity>) {}
-        override suspend fun updateMealReminder(reminder: MealReminderEntity) {}
-        override suspend fun deleteMealReminder(id: Long) {}
-        override suspend fun deleteAllMealReminders() {}
-    }
-
-    private val fakeWakeService = object : SystemWakeService {
-        override fun registerHandler(tag: String, handler: WakeupHandler) {}
-        override fun unregisterHandler(tag: String) {}
-        override fun scheduleWakeup(tag: String, wakeupId: UInt?, timestamp: Timestamp) {}
-        override fun cancelWakeup(tag: String, wakeupId: UInt?) {}
-        override fun <T> withBusyState(tag: String, block: () -> T): T = block()
-        override suspend fun <T> withBusyStateSuspend(tag: String, block: suspend () -> T): T = block()
-        override fun dispatchWakeup(intent: Intent) {}
-    }
-
     @Test
     fun testAddBolusRecommendationRoundsAmountToTwoDecimals() {
-        val scope = CoroutineScope(Dispatchers.Unconfined)
-        val manager = RecommendationManager(fakeDao, fakeWakeService, scope)
+        val manager = RecommendationManager()
 
         manager.addBolusRecommendation(
             amount = InsulinAmount(1.234567),
@@ -57,9 +26,8 @@ class RecommendationManagerTest {
     }
 
     @Test
-    fun testStopClearsRecommendationsMealRemindersAndDrainsChannel() {
-        val scope = CoroutineScope(Dispatchers.Unconfined)
-        val manager = RecommendationManager(fakeDao, fakeWakeService, scope)
+    fun testStopClearsRecommendations() {
+        val manager = RecommendationManager()
 
         manager.addCarbsRecommendation(30)
         assertEquals(1, manager.recommendations.value.size)
@@ -67,6 +35,5 @@ class RecommendationManagerTest {
         manager.stop()
 
         assertEquals(0, manager.recommendations.value.size)
-        assertEquals(0, manager.mealReminders.value.size)
     }
 }

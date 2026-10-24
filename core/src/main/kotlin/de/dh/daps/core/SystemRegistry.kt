@@ -5,6 +5,7 @@ import android.net.Uri
 import de.dh.daps.AppPreferencesRepository
 import de.dh.daps.common.model.PluginManager
 import de.dh.daps.common.model.calculation.CarbsInsulinCalculator
+import de.dh.daps.common.service.ReminderManager
 import de.dh.daps.common.service.SystemWakeService
 import de.dh.daps.common.service.TimeService
 import de.dh.daps.core.alarms.AlarmEvaluator
@@ -203,9 +204,14 @@ interface SystemRegistry {
     val therapyManager: TherapyManager
 
     /**
-     * Central manager for treatment recommendations and meal reminders.
+     * Central manager for treatment recommendations.
      */
     val recommendationManager: RecommendationManager
+
+    /**
+     * App-wide service for managing reminders.
+     */
+    val reminderManager: ReminderManager
 
     /**
      * Manages the overall application state, including the active APS mode and system-wide issues.

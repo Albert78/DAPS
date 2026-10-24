@@ -12,6 +12,7 @@ import de.dh.daps.common.model.PluginManager
 import de.dh.daps.common.model.ScopedPluginPreferences
 import de.dh.daps.common.model.calculation.CarbsInsulinCalculator
 import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.service.ReminderManager
 import de.dh.daps.common.service.SystemWakeService
 import de.dh.daps.common.service.TimeService
 import de.dh.daps.core.alarms.AlarmEvaluator
@@ -46,6 +47,7 @@ import de.dh.daps.core.repository.TherapyRepository
 import de.dh.daps.core.repository.TreatmentRepository
 import de.dh.daps.core.repository.db.AppDatabase
 import de.dh.daps.core.system.AndroidNotifications
+import de.dh.daps.core.system.ReminderManagerImpl
 import de.dh.daps.core.system.SystemWakeServiceImpl
 import de.dh.daps.core.system.TimeServiceImpl
 import kotlinx.coroutines.CoroutineScope
@@ -81,6 +83,7 @@ class SystemRegistryImpl(
     override val glucoseSourceDriverManager: GlucoseSourceDriverManager,
     override val therapyManager: TherapyManager,
     override val recommendationManager: RecommendationManager,
+    override val reminderManager: ReminderManager,
     override val systemOrchestrator: SystemOrchestrator,
     override val pluginManager: PluginManager,
     override val wakeService: SystemWakeService,
@@ -101,7 +104,8 @@ class SystemRegistryImpl(
                 timeService = timeService,
                 carbsInsulinCalculator = carbsInsulinCalculator,
                 preferences = ScopedPluginPreferences(plugin.pluginId, appPreferencesRepository),
-                wakeService = wakeService
+                wakeService = wakeService,
+                reminderManager = reminderManager
             )
         }
     }
@@ -194,6 +198,7 @@ class SystemRegistryImpl(
                 alarmPlayerManager.stopAlarm()
                 alarmSnoozeManager.clearAllSnoozes()
                 recommendationManager.stop()
+                reminderManager.stop()
                 timeService.stop()
 
                 // 2. Wipe database and app preferences
@@ -216,12 +221,13 @@ class SystemRegistryImpl(
         deviceConnectionManager.restoreConnections()
 
         therapyManager.startInitialization()
-        recommendationManager.startInitialization()
+        reminderManager.start()
 
         systemOrchestrator.startInitialization(
             treatmentRepository = treatmentRepository,
             therapyManager = therapyManager,
             recommendationManager = recommendationManager,
+            reminderManager = reminderManager,
             pumpManager = pumpManager,
             appPreferencesRepository = appPreferencesRepository,
             carbsInsulinCalculator = carbsInsulinCalculator,
@@ -302,11 +308,14 @@ class SystemRegistryImpl(
                 scope = scope
             )
 
-            val recommendationManager = RecommendationManager(
-                mealReminderDao = appDatabase.mealReminderDao(),
+            val reminderManager = ReminderManagerImpl(
+                reminderDao = appDatabase.reminderDao(),
                 wakeService = wakeService,
+                timeService = timeService,
                 scope = scope
             )
+
+            val recommendationManager = RecommendationManager()
 
             val therapyManager = TherapyManager(
                 therapyRepository = therapyRepository,
@@ -376,6 +385,7 @@ class SystemRegistryImpl(
                 appDataManagementRepository = appDataManagementRepository,
                 therapyManager = therapyManager,
                 recommendationManager = recommendationManager,
+                reminderManager = reminderManager,
                 glucoseSourceManager = glucoseSourceManager,
                 glucoseSourceDriverManager = glucoseSourceDriverManager,
                 systemOrchestrator = systemOrchestrator,

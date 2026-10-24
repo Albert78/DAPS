@@ -116,4 +116,7 @@
     <string name="unit_g">g</string>
     <string name="unit_ke">KE</string>
     <string name="time_unit">Uhr</string>
+
+    <string name="notification_meal_reminder_title">Nahrungserinnerung</string>
+    <string name="notification_meal_reminder_text_default">Zeit für deine geplante Mahlzeit.</string>
 </resources>

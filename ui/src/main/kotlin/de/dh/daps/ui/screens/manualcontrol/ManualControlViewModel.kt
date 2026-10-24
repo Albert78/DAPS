@@ -12,6 +12,7 @@ import de.dh.daps.common.model.InsulinStatus
 import de.dh.daps.common.model.MealEntry
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.model.reminder.ReminderType
 import de.dh.daps.common.model.toActiveDoses
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.aps.ApsRecommendation
@@ -71,6 +72,7 @@ class ManualControlViewModel(
     systemRegistry: SystemRegistry
 ) : ViewModel() {
     private val recommendationManager = systemRegistry.recommendationManager
+    private val reminderManager = systemRegistry.reminderManager
     private val treatmentRepository = systemRegistry.treatmentRepository
     private val pumpManager = systemRegistry.pumpManager
     private val therapyManager = systemRegistry.therapyManager
@@ -145,15 +147,14 @@ class ManualControlViewModel(
     val uiState: StateFlow<ManualControlUiState> = combine(
         contextInfoFlow,
         recommendationManager.recommendations,
-        recommendationManager.mealReminders,
+        reminderManager.activeReminders,
         pumpFlow,
         lockErrorFlow
-    ) { contextInfo, recommendations, mealReminders, pump, lockErrorOwner ->
+    ) { contextInfo, recommendations, activeReminders, pump, lockErrorOwner ->
         val nextMeal = contextInfo.nextPlannedMeal
         val hasNextPlannedMealReminder = if (nextMeal != null) {
-            mealReminders.any { reminder ->
-                (reminder.mealId != null && reminder.mealId == nextMeal.id) ||
-                        reminder.mealTimestamp == nextMeal.timestamp
+            activeReminders.any { reminder ->
+                reminder.type == ReminderType.MEAL && reminder.sourceId == nextMeal.id.toString()
             }
         } else false
 

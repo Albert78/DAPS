@@ -12,6 +12,7 @@ import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Tick
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.service.ReminderManager
 import de.dh.daps.common.service.SystemWakeService
 import de.dh.daps.common.service.TickHandler
 import de.dh.daps.common.service.TickPriority
@@ -132,6 +133,7 @@ interface SystemOrchestrator {
         treatmentRepository: TreatmentRepository,
         therapyManager: TherapyManager,
         recommendationManager: RecommendationManager,
+        reminderManager: ReminderManager,
         pumpManager: PumpManager,
         appPreferencesRepository: AppPreferencesRepository,
         carbsInsulinCalculator: CarbsInsulinCalculator,
@@ -274,6 +276,7 @@ class SystemOrchestratorImpl(
         treatmentRepository: TreatmentRepository,
         therapyManager: TherapyManager,
         recommendationManager: RecommendationManager,
+        reminderManager: ReminderManager,
         pumpManager: PumpManager,
         appPreferencesRepository: AppPreferencesRepository,
         carbsInsulinCalculator: CarbsInsulinCalculator,
@@ -443,8 +446,8 @@ class SystemOrchestratorImpl(
         }
 
         newInitScope.launch {
-            recommendationManager.dueMealReminders.collect { reminder ->
-                androidNotifications.showMealReminderNotification(reminder)
+            reminderManager.dueReminders.collect { reminder ->
+                androidNotifications.showReminderNotification(reminder)
             }
         }
 

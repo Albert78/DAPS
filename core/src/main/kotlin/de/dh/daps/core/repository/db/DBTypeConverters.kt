@@ -7,6 +7,8 @@ import de.dh.daps.common.model.data.BgDelta
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.model.reminder.ReminderStatus
+import de.dh.daps.common.model.reminder.ReminderType
 import de.dh.daps.core.aps.CoreReasoning
 import de.dh.daps.core.repository.db.entities.DBBgBlock
 import de.dh.daps.core.repository.db.entities.DBBlock
@@ -72,6 +74,30 @@ class DbTypeConverters {
             CoreReasoning.valueOf(value)
         } catch (_: Exception) {
             CoreReasoning.INTERNAL_ERROR
+        }
+    }
+
+    @TypeConverter
+    fun fromReminderType(type: ReminderType): String = type.name
+
+    @TypeConverter
+    fun toReminderType(value: String): ReminderType {
+        return try {
+            ReminderType.valueOf(value)
+        } catch (_: Exception) {
+            ReminderType.CUSTOM
+        }
+    }
+
+    @TypeConverter
+    fun fromReminderStatus(status: ReminderStatus): String = status.name
+
+    @TypeConverter
+    fun toReminderStatus(value: String): ReminderStatus {
+        return try {
+            ReminderStatus.valueOf(value)
+        } catch (_: Exception) {
+            ReminderStatus.ACTIVE
         }
     }
 

@@ -6,9 +6,9 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import de.dh.daps.core.repository.db.dao.AlarmProfileDao
-import de.dh.daps.core.repository.db.dao.MealReminderDao
 import de.dh.daps.core.repository.db.dao.MetabolicEventsDao
 import de.dh.daps.core.repository.db.dao.ProviderDao
+import de.dh.daps.core.repository.db.dao.ReminderDao
 import de.dh.daps.core.repository.db.dao.SettingsDao
 import de.dh.daps.core.repository.db.dao.SystemMetricsDao
 import de.dh.daps.core.repository.db.dao.TherapyDao
@@ -23,8 +23,8 @@ import de.dh.daps.core.repository.db.entities.InsulinEntity
 import de.dh.daps.core.repository.db.entities.InsulinProfileEntity
 import de.dh.daps.core.repository.db.entities.InsulinTypeEntity
 import de.dh.daps.core.repository.db.entities.MealEntity
-import de.dh.daps.core.repository.db.entities.MealReminderEntity
 import de.dh.daps.core.repository.db.entities.MealTypeEntity
+import de.dh.daps.core.repository.db.entities.ReminderEntity
 import de.dh.daps.core.repository.db.entities.ScheduledTherapyAdjustmentEntity
 import de.dh.daps.core.repository.db.entities.SensorTypeEntity
 import de.dh.daps.core.repository.db.entities.TherapyAdjustmentEntity
@@ -49,7 +49,7 @@ import java.util.concurrent.Executors
     // Metabolic events
     MealTypeEntity::class,
     MealEntity::class,
-    MealReminderEntity::class,
+    ReminderEntity::class,
     InsulinTypeEntity::class,
     InsulinEntity::class,
     DeferredBolusEntity::class,
@@ -67,7 +67,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun settingsDao(): SettingsDao
     abstract fun systemMetricsDao(): SystemMetricsDao
     abstract fun alarmProfileDao(): AlarmProfileDao
-    abstract fun mealReminderDao(): MealReminderDao
+    abstract fun reminderDao(): ReminderDao
 
     companion object {
         const val CURRENT_DATABASE_VERSION = "1.0"

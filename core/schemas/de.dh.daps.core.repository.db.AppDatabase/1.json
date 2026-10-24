@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "74c77bc7ec3163e3f10c8b637c729b27",
+    "identityHash": "9ea47cc0308846f2d18c0c7eac555247",
     "entities": [
       {
         "tableName": "sensor_type",
@@ -550,8 +550,8 @@
         ]
       },
       {
-        "tableName": "meal_reminders",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `meal_id` INTEGER, `meal_timestamp` INTEGER NOT NULL, `reminder_timestamp` INTEGER NOT NULL, `description` TEXT NOT NULL)",
+        "tableName": "reminders",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `type` TEXT NOT NULL, `source_id` TEXT NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `reminder_timestamp` INTEGER NOT NULL, `expiration_timestamp` INTEGER, `target_route` TEXT NOT NULL, `payload` TEXT, `status` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -560,14 +560,27 @@
             "notNull": true
           },
           {
-            "fieldPath": "meal_id",
-            "columnName": "meal_id",
-            "affinity": "INTEGER"
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
           },
           {
-            "fieldPath": "meal_timestamp",
-            "columnName": "meal_timestamp",
-            "affinity": "INTEGER",
+            "fieldPath": "source_id",
+            "columnName": "source_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -577,8 +590,24 @@
             "notNull": true
           },
           {
-            "fieldPath": "description",
-            "columnName": "description",
+            "fieldPath": "expiration_timestamp",
+            "columnName": "expiration_timestamp",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "target_route",
+            "columnName": "target_route",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payload",
+            "columnName": "payload",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
             "affinity": "TEXT",
             "notNull": true
           }
@@ -980,7 +1009,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '74c77bc7ec3163e3f10c8b637c729b27')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9ea47cc0308846f2d18c0c7eac555247')"
     ]
   }
 }

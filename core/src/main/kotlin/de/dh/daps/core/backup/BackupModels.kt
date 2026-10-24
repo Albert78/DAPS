@@ -24,7 +24,9 @@ import de.dh.daps.core.repository.db.entities.InsulinEntity
 import de.dh.daps.core.repository.db.entities.InsulinProfileEntity
 import de.dh.daps.core.repository.db.entities.InsulinTypeEntity
 import de.dh.daps.core.repository.db.entities.MealEntity
-import de.dh.daps.core.repository.db.entities.MealReminderEntity
+import de.dh.daps.common.model.reminder.ReminderStatus
+import de.dh.daps.common.model.reminder.ReminderType
+import de.dh.daps.core.repository.db.entities.ReminderEntity
 import de.dh.daps.core.repository.db.entities.MealTypeEntity
 import de.dh.daps.core.repository.db.entities.ScheduledTherapyAdjustmentEntity
 import de.dh.daps.core.repository.db.entities.SensorTypeEntity
@@ -212,12 +214,17 @@ data class ScheduledTherapyAdjustmentDto(
 )
 
 @Serializable
-data class MealReminderDto(
+data class ReminderDto(
     val id: Long,
-    val mealId: Long? = null,
-    val mealTimestampMs: Long,
+    val type: String,
+    val sourceId: String,
+    val title: String,
+    val description: String,
     val reminderTimestampMs: Long,
-    val description: String = ""
+    val expirationTimestampMs: Long? = null,
+    val targetRoute: String,
+    val payload: String? = null,
+    val status: String
 )
 
 @Serializable
@@ -227,7 +234,7 @@ data class MedicalHistoryDto(
     val insulinApplications: List<InsulinApplicationDto> = emptyList(),
     val deferredBoluses: List<DeferredBolusDto> = emptyList(),
     val scheduledTherapyAdjustments: List<ScheduledTherapyAdjustmentDto> = emptyList(),
-    val mealReminders: List<MealReminderDto> = emptyList()
+    val reminders: List<ReminderDto> = emptyList()
 )
 
 @Serializable
@@ -496,20 +503,30 @@ fun DeferredBolusDto.toEntity() = DeferredBolusEntity(
     meal_id = mealId
 )
 
-fun MealReminderEntity.toDto() = MealReminderDto(
+fun ReminderEntity.toDto() = ReminderDto(
     id = id,
-    mealId = meal_id,
-    mealTimestampMs = meal_timestamp.ms,
+    type = type.name,
+    sourceId = source_id,
+    title = title,
+    description = description,
     reminderTimestampMs = reminder_timestamp.ms,
-    description = description
+    expirationTimestampMs = expiration_timestamp?.ms,
+    targetRoute = target_route,
+    payload = payload,
+    status = status.name
 )
 
-fun MealReminderDto.toEntity() = MealReminderEntity(
+fun ReminderDto.toEntity() = ReminderEntity(
     id = id,
-    meal_id = mealId,
-    meal_timestamp = Timestamp(mealTimestampMs),
+    type = try { ReminderType.valueOf(type) } catch (_: Exception) { ReminderType.CUSTOM },
+    source_id = sourceId,
+    title = title,
+    description = description,
     reminder_timestamp = Timestamp(reminderTimestampMs),
-    description = description
+    expiration_timestamp = expirationTimestampMs?.let { Timestamp(it) },
+    target_route = targetRoute,
+    payload = payload,
+    status = try { ReminderStatus.valueOf(status) } catch (_: Exception) { ReminderStatus.ACTIVE }
 )
 
 fun CoreInsightEntity.toDto() = CoreInsightDto(

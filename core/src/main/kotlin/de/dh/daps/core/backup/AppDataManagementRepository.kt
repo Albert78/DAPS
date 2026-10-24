@@ -116,7 +116,7 @@ class AppDataManagementRepositoryImpl(
 
                 val deferredBoluses = metabolicDao.getAllDeferredBoluses()
                 val scheduledTherapyAdjustments = therapyDao.getAllScheduledTherapyAdjustments()
-                val mealReminders = appDatabase.mealReminderDao().getAllMealReminders()
+                val reminders = appDatabase.reminderDao().getAllReminders()
 
                 MedicalHistoryDto(
                     glucoseReadings = glucoseReadings.map { it.toDto() },
@@ -124,7 +124,7 @@ class AppDataManagementRepositoryImpl(
                     insulinApplications = insulinApplications.map { it.toDto() },
                     deferredBoluses = deferredBoluses.map { it.toDto() },
                     scheduledTherapyAdjustments = scheduledTherapyAdjustments.map { it.toDto() },
-                    mealReminders = mealReminders.map { it.toDto() }
+                    reminders = reminders.map { it.toDto() }
                 )
             } else {
                 MedicalHistoryDto()
@@ -249,14 +249,14 @@ class AppDataManagementRepositoryImpl(
                 val settingsDao = appDatabase.settingsDao()
                 val alarmDao = appDatabase.alarmProfileDao()
                 val metabolicDao = appDatabase.metabolicEventsDao()
-                val mealReminderDao = appDatabase.mealReminderDao()
+                val reminderDao = appDatabase.reminderDao()
 
                 // Core metrics
                 metricsDao.deleteAllCoreInsights()
 
                 // Delete history data, regardless of whether history is imported or not
                 metabolicDao.deleteAllDeferredBoluses()
-                mealReminderDao.deleteAllMealReminders()
+                reminderDao.deleteAllReminders()
                 metabolicDao.deleteAllMeals()
                 metabolicDao.deleteAllInsulinApplications()
                 providerDao.deleteAllGlucoseReadings()
@@ -317,8 +317,8 @@ class AppDataManagementRepositoryImpl(
                         if (history.meals.isNotEmpty()) {
                             metabolicDao.insertMeals(history.meals.map { it.toEntity() })
                         }
-                        if (history.mealReminders.isNotEmpty()) {
-                            mealReminderDao.insertMealReminders(history.mealReminders.map { it.toEntity() })
+                        if (history.reminders.isNotEmpty()) {
+                            reminderDao.insertReminders(history.reminders.map { it.toEntity() })
                         }
                         if (history.deferredBoluses.isNotEmpty()) {
                             metabolicDao.insertDeferredBoluses(history.deferredBoluses.map { it.toEntity() })
@@ -398,11 +398,11 @@ class AppDataManagementRepositoryImpl(
             val settingsDao = appDatabase.settingsDao()
             val alarmDao = appDatabase.alarmProfileDao()
             val metabolicDao = appDatabase.metabolicEventsDao()
-            val mealReminderDao = appDatabase.mealReminderDao()
+            val reminderDao = appDatabase.reminderDao()
 
             metricsDao.deleteAllCoreInsights()
             metabolicDao.deleteAllDeferredBoluses()
-            mealReminderDao.deleteAllMealReminders()
+            reminderDao.deleteAllReminders()
             metabolicDao.deleteAllMeals()
             metabolicDao.deleteAllInsulinApplications()
             providerDao.deleteAllGlucoseReadings()
