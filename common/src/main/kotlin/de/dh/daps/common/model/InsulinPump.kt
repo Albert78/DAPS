@@ -166,24 +166,14 @@ interface InsulinPump {
     val insulinPumpDisplayName: UiText
 
     /**
-     * Optional start date / activation timestamp of the current pump component or pod.
-     */
-    val startDate: StateFlow<Timestamp?>
-
-    /**
-     * Flag indicating whether the pump or patch is completely expired and no longer operating.
-     */
-    val isExpired: StateFlow<Boolean>
-
-    /**
-     * List of expiration dates for various replaceable components (e.g. Catheter, Patch).
-     */
-    val expirations: StateFlow<List<Expiration>>
-
-    /**
      * Pump hardware information. Null if not yet retrieved.
      */
     val hardwareInformation: StateFlow<PumpHardwareInformation?>
+
+    /**
+     * Structured lifecycle state of the pump hardware or its consumables.
+     */
+    val lifecycleState: StateFlow<PumpLifecycleState>
 
     /**
      * Pump capabilities information.

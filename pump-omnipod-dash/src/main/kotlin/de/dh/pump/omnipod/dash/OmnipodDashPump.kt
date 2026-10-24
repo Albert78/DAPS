@@ -13,9 +13,12 @@ import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinHistory
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpStatus
+import de.dh.daps.common.model.PatchDeactivationReason
+import de.dh.daps.common.model.PatchPhase
 import de.dh.daps.common.model.PumpAlerts
 import de.dh.daps.common.model.PumpCapabilities
 import de.dh.daps.common.model.PumpHardwareInformation
+import de.dh.daps.common.model.PumpLifecycleState
 import de.dh.daps.common.model.ReplaceableComponentType
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
@@ -87,14 +90,15 @@ class OmnipodDashPump(
     private var activeBolusJob: Job? = null
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-    private val _startDate = MutableStateFlow<Timestamp?>(null)
-    override val startDate: StateFlow<Timestamp?> = _startDate.asStateFlow()
-
-    private val _isExpired = MutableStateFlow(false)
-    override val isExpired: StateFlow<Boolean> = _isExpired.asStateFlow()
-
-    private val _expirations = MutableStateFlow<List<Expiration>>(emptyList())
-    override val expirations: StateFlow<List<Expiration>> = _expirations.asStateFlow()
+    private val _lifecycleState = MutableStateFlow<PumpLifecycleState>(
+        PumpLifecycleState.Patch(
+            phase = PatchPhase.PRIMING,
+            activationTime = Timestamp.INVALID,
+            activeUntil = Timestamp.INVALID,
+            graceUntil = Timestamp.INVALID
+        )
+    )
+    override val lifecycleState: StateFlow<PumpLifecycleState> = _lifecycleState.asStateFlow()
 
     private val _hardwareInformation = MutableStateFlow<PumpHardwareInformation?>(
         PumpHardwareInformation(
@@ -160,19 +164,45 @@ class OmnipodDashPump(
         val activationTime = podStateManager.activatedAtTimestampMs
         if (activationTime != null && activationTime > 0) {
             val start = Timestamp(activationTime)
-            _startDate.value = start
             val expiresAtMs = activationTime + TimeUnit.HOURS.toMillis(POD_DURATION_HOURS)
             val expiresAt = Timestamp(expiresAtMs)
             val graceAt = Timestamp(activationTime + TimeUnit.HOURS.toMillis(POD_DURATION_HOURS + POD_GRACE_HOURS))
             val nowMs = System.currentTimeMillis()
 
-            _isExpired.value = nowMs >= graceAt.ms
-            _expirations.value = listOf(
-                Expiration(
-                    type = ReplaceableComponentType.Patch,
-                    date = ExpirationDate.Hard(expiresAt),
-                    graceUntil = graceAt
-                )
+            val podStatus = podStateManager.podStatus
+            val isDeactivated = podStatus == PodStatus.DEACTIVATED || podStatus == PodStatus.ALARM || podStatus == PodStatus.LUMP_OF_COAL
+            val isExpired = nowMs >= graceAt.ms || isDeactivated
+
+            val phase = when {
+                isExpired -> PatchPhase.EXPIRED
+                podStatus == PodStatus.PRIMING || podStatus == PodStatus.FILLED || podStatus == PodStatus.ENGAGING_CLUTCH_DRIVE -> PatchPhase.PRIMING
+                nowMs >= expiresAtMs -> PatchPhase.IN_GRACE_PERIOD
+                else -> PatchPhase.ACTIVE
+            }
+
+            val reason = when {
+                podStatus == PodStatus.ALARM || podStatus == PodStatus.LUMP_OF_COAL -> {
+                    if (podStateManager.lastAlarmType == AlarmType.ALARM_OCCLUDED) PatchDeactivationReason.OCCLUSION
+                    else PatchDeactivationReason.HARDWARE_FAULT
+                }
+                nowMs >= graceAt.ms -> PatchDeactivationReason.HARD_TIME_LIMIT
+                isDeactivated -> PatchDeactivationReason.MANUAL_DEACTIVATION
+                else -> null
+            }
+
+            _lifecycleState.value = PumpLifecycleState.Patch(
+                phase = phase,
+                activationTime = start,
+                activeUntil = expiresAt,
+                graceUntil = graceAt,
+                deactivationReason = reason
+            )
+        } else {
+            _lifecycleState.value = PumpLifecycleState.Patch(
+                phase = PatchPhase.PRIMING,
+                activationTime = Timestamp.INVALID,
+                activeUntil = Timestamp.INVALID,
+                graceUntil = Timestamp.INVALID
             )
         }
     }
@@ -629,7 +659,7 @@ class OmnipodDashPump(
             other = !isOcclusion
         )
 
-        _isExpired.value = true
+        updateExpirationState()
 
         val pdmRef = alarmResponse?.pdmRef ?: podStateManager.lastPdmRef ?: "Fault Code: ${alarmType?.name ?: "Unknown"}"
         logEvent(
@@ -654,9 +684,7 @@ class OmnipodDashPump(
             other = isPodFault && !hasOcclusion
         )
 
-        if (isPodFault) {
-            _isExpired.value = true
-        }
+        updateExpirationState()
 
         _pumpStatus.value = OmnipodDashStatusData(
             pumpSuspended = podStateManager.isSuspended || isPodFault,

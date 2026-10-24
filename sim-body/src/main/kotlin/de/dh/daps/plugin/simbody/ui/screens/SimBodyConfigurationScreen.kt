@@ -13,7 +13,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import de.dh.daps.common.model.BasalStatus
 import de.dh.daps.common.model.BolusEvent
 import de.dh.daps.common.model.BolusStatus
-import de.dh.daps.common.model.Expiration
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinHistory
@@ -23,6 +22,7 @@ import de.dh.daps.common.model.PluginPreferences
 import de.dh.daps.common.model.PumpAlerts
 import de.dh.daps.common.model.PumpCapabilities
 import de.dh.daps.common.model.PumpHardwareInformation
+import de.dh.daps.common.model.PumpLifecycleState
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.getDefaultInsulinTypes
@@ -85,9 +85,7 @@ private class PreviewSimBodyPump(
 ) : InsulinPump {
     override val insulinPumpId: String = "preview-simbody"
     override val insulinPumpDisplayName: UiText = UiText.DynamicString("SimBody Virtuelle Insulinpumpe")
-    override val startDate: StateFlow<Timestamp?> = MutableStateFlow(null)
-    override val isExpired: StateFlow<Boolean> = MutableStateFlow(false)
-    override val expirations: StateFlow<List<Expiration>> = MutableStateFlow(emptyList())
+    override val lifecycleState: StateFlow<PumpLifecycleState> = MutableStateFlow(PumpLifecycleState.Durable())
     override val hardwareInformation: StateFlow<PumpHardwareInformation?> = MutableStateFlow(null)
     override val pumpCapabilities: StateFlow<PumpCapabilities> = MutableStateFlow(
         PumpCapabilities(

@@ -51,6 +51,7 @@ import de.dh.daps.common.model.Expiration
 import de.dh.daps.common.model.ExpirationDate
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinConcentration
+import de.dh.daps.common.model.PumpLifecycleState
 import de.dh.daps.common.model.ReplaceableComponentType
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
@@ -186,13 +187,33 @@ fun PumpTabContent(
         }
 
         if (uiState is PumpTabUiState.Content) {
-            if (uiState.expirations.isNotEmpty()) {
+            val expirations = when (val lifecycle = uiState.lifecycleState) {
+                is PumpLifecycleState.Patch -> {
+                    if (lifecycle.activeUntil.isValid()) {
+                        listOf(
+                            Expiration(
+                                type = ReplaceableComponentType.Patch,
+                                date = ExpirationDate.Hard(lifecycle.activeUntil),
+                                graceUntil = lifecycle.graceUntil
+                            )
+                        )
+                    } else emptyList()
+                }
+                is PumpLifecycleState.Durable -> {
+                    val list = mutableListOf<Expiration>()
+                    lifecycle.approximateCatheterExpiration?.let {
+                        list.add(Expiration(ReplaceableComponentType.Catheter, ExpirationDate.Approximate(it)))
+                    }
+                    list
+                }
+            }
+            if (expirations.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(16.dp))
                 SectionHeader(
                     title = stringResource(R.string.system_control_pump_expirations_title)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                PumpExpirationsCard(expirations = uiState.expirations)
+                PumpExpirationsCard(expirations = expirations)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -362,13 +383,17 @@ fun PumpOverviewCard(
                         color = MaterialTheme.colorScheme.outlineVariant
                     )
 
+                    val isExpired = when (val lifecycle = uiState.lifecycleState) {
+                        is PumpLifecycleState.Patch -> lifecycle.isExpired
+                        is PumpLifecycleState.Durable -> false
+                    }
                     val statusText = when {
-                        uiState.isExpired -> stringResource(R.string.overview_glucose_source_status_expired)
+                        isExpired -> stringResource(R.string.overview_glucose_source_status_expired)
                         uiState.isSuspended -> stringResource(R.string.system_control_pump_state_suspended)
                         else -> stringResource(R.string.system_control_pump_state_active)
                     }
                     val statusColor = when {
-                        uiState.isExpired -> MaterialTheme.colorScheme.error
+                        isExpired -> MaterialTheme.colorScheme.error
                         uiState.isSuspended -> ExtendedTheme.semanticColors.warning
                         else -> ExtendedTheme.semanticColors.good
                     }
@@ -879,17 +904,15 @@ internal fun samplePumpTabUiState(): PumpTabUiState = PumpTabUiState.Content(
     serialNumber = "SIM-001",
     pumpConnected = true,
     isSuspended = false,
-    isExpired = false,
+    lifecycleState = PumpLifecycleState.Patch(
+        phase = de.dh.daps.common.model.PatchPhase.ACTIVE,
+        activationTime = Timestamp.now(),
+        activeUntil = Timestamp(System.currentTimeMillis() + 172_800_000),
+        graceUntil = Timestamp(System.currentTimeMillis() + 180_000_000)
+    ),
     coordinatorState = PumpCoordinatorState.Idle,
     syncStatus = PumpSyncStatus.InSync(Timestamp(System.currentTimeMillis() + 300_000)),
     nextWakeupTime = Timestamp(System.currentTimeMillis() + 300_000),
-    expirations = listOf(
-        Expiration(
-            type = ReplaceableComponentType.Catheter,
-            date = ExpirationDate.Hard(Timestamp(System.currentTimeMillis() + 172_800_000)),
-            graceUntil = Timestamp(System.currentTimeMillis() + 180_000_000)
-        )
-    ),
     pendingJobs = listOf(
         PumpJobItem(
             id = "job_1",
@@ -1009,13 +1032,11 @@ internal fun samplePumpTabExpiredUiState(): PumpTabUiState = PumpTabUiState.Cont
     coordinatorState = PumpCoordinatorState.Idle,
     syncStatus = PumpSyncStatus.InSync(null),
     nextWakeupTime = null,
-    isExpired = true,
-    expirations = listOf(
-        Expiration(
-            type = ReplaceableComponentType.Catheter,
-            date = ExpirationDate.Hard(Timestamp(System.currentTimeMillis() - 7_200_000)),
-            graceUntil = Timestamp(System.currentTimeMillis() - 1_800_000)
-        )
+    lifecycleState = PumpLifecycleState.Patch(
+        phase = de.dh.daps.common.model.PatchPhase.EXPIRED,
+        activationTime = Timestamp(System.currentTimeMillis() - 260_000_000),
+        activeUntil = Timestamp(System.currentTimeMillis() - 7_200_000),
+        graceUntil = Timestamp(System.currentTimeMillis() - 1_800_000)
     ),
     pendingJobs = emptyList(),
     pumpPluginSection = {

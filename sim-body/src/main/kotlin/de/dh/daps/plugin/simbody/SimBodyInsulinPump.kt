@@ -4,7 +4,6 @@ import de.dh.daps.common.model.BasalStatus
 import de.dh.daps.common.model.BolusDeliveryState
 import de.dh.daps.common.model.BolusEvent
 import de.dh.daps.common.model.BolusStatus
-import de.dh.daps.common.model.Expiration
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinCategory
 import de.dh.daps.common.model.InsulinConcentration
@@ -15,6 +14,7 @@ import de.dh.daps.common.model.InsulinPumpStatus
 import de.dh.daps.common.model.PumpAlerts
 import de.dh.daps.common.model.PumpCapabilities
 import de.dh.daps.common.model.PumpHardwareInformation
+import de.dh.daps.common.model.PumpLifecycleState
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.data.getAmountForMinute
@@ -53,9 +53,7 @@ class SimBodyInsulinPump(
     override val insulinPumpId: String = SimBodyInsulinPumpDriver.DRIVER_ID
     override val insulinPumpDisplayName: UiText = UiText.StringResource(R.string.sim_body_pump_device_display_name)
 
-    override val startDate: StateFlow<Timestamp?> = MutableStateFlow(null)
-    override val isExpired: StateFlow<Boolean> = MutableStateFlow(false)
-    override val expirations: StateFlow<List<Expiration>> = MutableStateFlow(emptyList())
+    override val lifecycleState: StateFlow<PumpLifecycleState> = MutableStateFlow(PumpLifecycleState.Durable())
 
     private val _insulinTypeId = MutableStateFlow<String?>(null)
     override val insulinTypeId: StateFlow<String?> = _insulinTypeId.asStateFlow()

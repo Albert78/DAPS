@@ -8,6 +8,7 @@ import de.dh.daps.common.model.BolusStatus
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinHistory
 import de.dh.daps.common.model.InsulinPump
+import de.dh.daps.common.model.PumpLifecycleState
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.service.SystemWakeService
@@ -134,8 +135,12 @@ class PumpManagerImpl(
                         }
                     }
                     launch {
-                        pc.pump.isExpired.collect { expired ->
-                            if (expired) {
+                        pc.pump.lifecycleState.collect { lifecycle ->
+                            val isExpired = when (lifecycle) {
+                                is PumpLifecycleState.Patch -> lifecycle.isExpired
+                                is PumpLifecycleState.Durable -> false
+                            }
+                            if (isExpired) {
                                 setIssue(PumpIssue.Expired)
                             } else {
                                 removeIssue(PumpIssue.Expired)

@@ -30,6 +30,8 @@ import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.InsulinPumpStatus
+import de.dh.daps.common.model.PumpLifecycleState
+import de.dh.daps.common.model.ReplaceableComponentType
 import de.dh.daps.common.model.InsulinStatus
 import de.dh.daps.common.model.PumpHardwareInformation
 import de.dh.daps.common.model.SourceHardwareInformation
@@ -205,9 +207,7 @@ sealed interface PumpTabUiState {
         val serialNumber: String? = null,
         val pumpConnected: Boolean,
         val isSuspended: Boolean,
-        val isExpired: Boolean,
-        val startDate: Timestamp? = null,
-        val expirations: List<Expiration>,
+        val lifecycleState: PumpLifecycleState,
         val pendingJobs: List<PumpJobItem>,
         val coordinatorState: PumpCoordinatorState,
         val syncStatus: PumpSyncStatus,
@@ -256,14 +256,12 @@ class SystemControlViewModel(
         val serialNumber: String? = null,
         val status: InsulinPumpStatus,
         val lastConnection: Timestamp,
-        val startDate: Timestamp? = null,
-        val expirations: List<Expiration>,
+        val lifecycleState: PumpLifecycleState,
         val jobs: List<BolusJob>,
         val coordinatorState: PumpCoordinatorState,
         val syncStatus: PumpSyncStatus,
         val nextWakeupTime: Timestamp? = null,
         val isSuspended: Boolean,
-        val isExpired: Boolean,
         val hasError: Boolean,
         val pump: InsulinPump? = null,
         val driver: InsulinPumpDriver? = null
@@ -393,9 +391,7 @@ class SystemControlViewModel(
                 pump.pumpStatus,
                 jobsFlow,
                 lastConnFlow,
-                pump.startDate,
-                pump.isExpired,
-                pump.expirations,
+                pump.lifecycleState,
                 pumpDriverManager.activeDriver,
                 coordinatorStateFlow,
                 syncStatusFlow,
@@ -409,14 +405,11 @@ class SystemControlViewModel(
                 @Suppress("UNCHECKED_CAST")
                 val jobs = array[3] as List<BolusJob>
                 val lastConn = array[4] as Timestamp
-                val startDate = array[5] as Timestamp?
-                val isExpired = array[6] as Boolean
-                @Suppress("UNCHECKED_CAST")
-                val expirations = array[7] as List<Expiration>
-                val activeDriver = array[8] as InsulinPumpDriver?
-                val coordinatorState = array[9] as PumpCoordinatorState
-                val syncStatus = array[10] as PumpSyncStatus
-                val nextWakeup = array[11] as Timestamp?
+                val lifecycleState = array[5] as PumpLifecycleState
+                val activeDriver = array[6] as InsulinPumpDriver?
+                val coordinatorState = array[7] as PumpCoordinatorState
+                val syncStatus = array[8] as PumpSyncStatus
+                val nextWakeup = array[9] as Timestamp?
 
                 PumpUiData(
                     connected = connected,
@@ -426,14 +419,12 @@ class SystemControlViewModel(
                     serialNumber = hardware?.serialNumber,
                     status = status,
                     lastConnection = lastConn,
-                    startDate = startDate,
-                    expirations = expirations,
+                    lifecycleState = lifecycleState,
                     jobs = jobs,
                     coordinatorState = coordinatorState,
                     syncStatus = syncStatus,
                     nextWakeupTime = nextWakeup,
                     isSuspended = status.pumpSuspended,
-                    isExpired = isExpired,
                     hasError = jobs.any { it.lastError != null },
                     pump = pump,
                     driver = activeDriver
@@ -543,8 +534,12 @@ class SystemControlViewModel(
         val overviewInsulinPump: OverviewPumpUiState = if (pInfo == null) {
             OverviewPumpUiState.NoneConfigured
         } else {
+            val isExpired = when (val lifecycle = pInfo.lifecycleState) {
+                is PumpLifecycleState.Patch -> lifecycle.isExpired
+                is PumpLifecycleState.Durable -> false
+            }
             val (pumpOverviewState, pumpValueStatus) = when {
-                pInfo.isExpired -> OverviewPumpState.EXPIRED to ValueStatus.BAD
+                isExpired -> OverviewPumpState.EXPIRED to ValueStatus.BAD
                 pInfo.hasError -> OverviewPumpState.ERROR to ValueStatus.BAD
                 pInfo.isSuspended -> OverviewPumpState.SUSPENDED to ValueStatus.WARNING
                 else -> OverviewPumpState.ACTIVE to ValueStatus.GOOD
@@ -554,13 +549,22 @@ class SystemControlViewModel(
                 pInfo.lastConnection < Timestamp.now().minusMinutes(CONNECTION_WARNING_THRESHOLD_MINUTES) -> ValueStatus.WARNING
                 else -> ValueStatus.GOOD
             }
-            val nextExpirationItem = pInfo.expirations
-                .minByOrNull { exp ->
-                    when (val expDate = exp.date) {
-                        is ExpirationDate.Hard -> expDate.dateTime.ms
-                        is ExpirationDate.Approximate -> expDate.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            val nextExpirationItem: Expiration? = when (val lifecycle = pInfo.lifecycleState) {
+                is PumpLifecycleState.Patch -> {
+                    if (lifecycle.activeUntil.isValid()) {
+                        Expiration(
+                            type = ReplaceableComponentType.Patch,
+                            date = ExpirationDate.Hard(lifecycle.activeUntil),
+                            graceUntil = lifecycle.graceUntil
+                        )
+                    } else null
+                }
+                is PumpLifecycleState.Durable -> {
+                    lifecycle.approximateCatheterExpiration?.let {
+                        Expiration(ReplaceableComponentType.Catheter, ExpirationDate.Approximate(it))
                     }
                 }
+            }
             val nextExpirationStatus = when (val expDate = nextExpirationItem?.date) {
                 null -> ValueStatus.GOOD
                 is ExpirationDate.Hard -> {
@@ -707,9 +711,7 @@ class SystemControlViewModel(
                 serialNumber = pInfo.serialNumber,
                 pumpConnected = pInfo.connected,
                 isSuspended = pInfo.isSuspended,
-                isExpired = pInfo.isExpired,
-                startDate = pInfo.startDate,
-                expirations = pInfo.expirations,
+                lifecycleState = pInfo.lifecycleState,
                 pendingJobs = pumpJobsList,
                 coordinatorState = pInfo.coordinatorState,
                 syncStatus = pInfo.syncStatus,
