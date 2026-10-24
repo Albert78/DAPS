@@ -8,13 +8,19 @@
     <string name="time_ago_seconds_ago">vor %1$d Sek</string>
     <string name="time_ago_minutes_ago">vor %1$d Min</string>
     <string name="time_ago_hours_ago">vor %1$d Std</string>
+    <plurals name="time_ago_days">
+        <item quantity="one">vor %1$d Tag</item>
+        <item quantity="other">vor %1$d Tagen</item>
+    </plurals>
 
     <string name="time_until_just_now">jetzt</string>
     <string name="time_until_seconds">in %1$d Sek</string>
     <string name="time_until_minutes">in %1$d Min</string>
     <string name="time_until_hours">in %1$d Std</string>
-    <string name="time_until_tomorrow">morgen</string>
-    <string name="time_until_days">in %1$d Tagen</string>
+    <plurals name="time_until_days">
+        <item quantity="one">in %1$d Tag</item>
+        <item quantity="other">in %1$d Tagen</item>
+    </plurals>
 
     <string name="duration_minutes_format">%1$d Min.</string>
     <string name="duration_minutes_signed_format">%1$+d Min.</string>

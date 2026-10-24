@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLocale
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import de.dh.daps.common.model.ExpirationDate
 import de.dh.daps.common.model.InsulinAmount
@@ -330,19 +331,21 @@ fun shortDate(date: LocalDate?, default: String = "-"): String {
  * @example shortRelativeTimeAgo(3000) -> "Gerade eben" / "just now"
  * @example shortRelativeTimeAgo(300000) -> "vor 5 Min." / "5 min ago"
  * @example shortRelativeTimeAgo(7200000) -> "vor 2 Std." / "2 h ago"
+ * @example shortRelativeTimeAgo(259200000) -> "vor 3 Tagen" / "3 days ago"
  */
 @Composable
 fun shortRelativeTimeAgo(diffMs: Long): String {
     val diffSec = diffMs / 1000
     val diffMin = diffMs / 60000
+    val diffHours = diffMin / 60
+    val diffDays = diffHours / 24
     return when {
         diffSec < 5 -> stringResource(CommonR.string.time_ago_just_now)
         diffSec < 61 -> stringResource(CommonR.string.time_ago_seconds_ago, diffSec)
         diffMin < 1 -> stringResource(CommonR.string.time_ago_just_now)
         diffMin < 91 -> stringResource(CommonR.string.time_ago_minutes_ago, diffMin)
-        else -> {
-            stringResource(CommonR.string.time_ago_hours_ago, diffMin / 60)
-        }
+        diffHours < 24 -> stringResource(CommonR.string.time_ago_hours_ago, diffHours)
+        else -> pluralStringResource(CommonR.plurals.time_ago_days, diffDays.toInt(), diffDays)
     }
 }
 
@@ -364,7 +367,7 @@ fun shortRelativeTimeAgo(timestamp: Timestamp): String {
  *
  * @example shortRelativeTimeUntil(300000) -> "in 5 Min." / "in 5 min"
  * @example shortRelativeTimeUntil(7200000) -> "in 2 Std." / "in 2 h"
- * @example shortRelativeTimeUntil(86400000) -> "morgen" / "tomorrow"
+ * @example shortRelativeTimeUntil(86400000) -> "in 1 Tag" / "in 1 day"
  * @example shortRelativeTimeUntil(259200000) -> "in 3 Tagen" / "in 3 days"
  */
 @Composable
@@ -379,8 +382,7 @@ fun shortRelativeTimeUntil(diffMs: Long): String {
         diffMin < 1 -> stringResource(CommonR.string.time_until_just_now)
         diffMin < 91 -> stringResource(CommonR.string.time_until_minutes, diffMin)
         diffHours < 24 -> stringResource(CommonR.string.time_until_hours, diffHours)
-        diffDays == 1L -> stringResource(CommonR.string.time_until_tomorrow)
-        else -> stringResource(CommonR.string.time_until_days, diffDays)
+        else -> pluralStringResource(CommonR.plurals.time_until_days, diffDays.toInt(), diffDays)
     }
 }
 
