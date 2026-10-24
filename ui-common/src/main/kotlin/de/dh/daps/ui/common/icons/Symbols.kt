@@ -28,18 +28,17 @@ import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material.icons.outlined.Badge
 import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.Build
-import androidx.compose.material.icons.outlined.ChangeCircle
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.DevicesOther
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Error
 import androidx.compose.material.icons.outlined.Fastfood
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Science
@@ -48,7 +47,6 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Snooze
 import androidx.compose.material.icons.outlined.StackedLineChart
 import androidx.compose.material.icons.outlined.StarOutline
-import androidx.compose.material.icons.outlined.SyncAlt
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material.icons.outlined.Warning
@@ -91,6 +89,7 @@ val Icon_Low_Threshold = Icons.Default.VerticalAlignBottom
 val Icon_Food_Database = Icons.AutoMirrored.Outlined.MenuBook
 val Icon_System_Control = Icons.Outlined.Build
 val Icon_Alarms = Icons.Outlined.NotificationsActive
+val Icon_Reminders = Icons.Outlined.Notifications
 val Icon_Permissions = Icons.Outlined.Security
 val Icon_Meal_Types = Icons.Outlined.Meal_Types
 val Icon_Master_Data = Icons.Outlined.Badge
@@ -166,6 +165,7 @@ private val iconsForPreview = listOf(
     IconPreview("Target_Bg", Icon_Target_Bg),
     IconPreview("Low_Threshold", Icon_Low_Threshold),
     IconPreview("Food_Database", Icon_Food_Database),
+    IconPreview("Reminders", Icon_Reminders),
     IconPreview("System_Control", Icon_System_Control),
     IconPreview("Alarms", Icon_Alarms),
     IconPreview("Permissions", Icon_Permissions),

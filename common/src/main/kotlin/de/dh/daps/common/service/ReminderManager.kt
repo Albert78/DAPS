@@ -3,7 +3,6 @@ package de.dh.daps.common.service
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.reminder.Reminder
 import de.dh.daps.common.model.reminder.ReminderType
-import de.dh.daps.common.ui.UiText
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -85,6 +84,7 @@ suspend fun ReminderManager.createMealReminder(
     mealTimestamp: Timestamp,
     reminderTimestamp: Timestamp = mealTimestamp,
     mealId: Long? = null,
+    title: String = "",
     description: String = ""
 ): Reminder {
     val sourceId = mealId?.toString() ?: ""
@@ -92,7 +92,7 @@ suspend fun ReminderManager.createMealReminder(
     val reminder = Reminder(
         type = ReminderType.MEAL,
         sourceId = sourceId,
-        title = UiText.StringResource(de.dh.daps.common.R.string.notification_meal_reminder_title),
+        title = title,
         description = description,
         reminderTimestamp = reminderTimestamp,
         expirationTimestamp = reminderTimestamp + de.dh.daps.common.model.data.Minutes(120),

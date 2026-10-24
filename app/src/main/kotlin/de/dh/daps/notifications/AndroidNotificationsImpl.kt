@@ -194,8 +194,7 @@ class AndroidNotificationsImpl(
     }
 
     override fun showReminderNotification(reminder: Reminder) {
-        val titleText = reminder.title.asString(context)
-        val title = titleText.ifBlank { context.getString(CommonR.string.notification_meal_reminder_title) }
+        val title = reminder.title.ifBlank { context.getString(CommonR.string.notification_meal_reminder_title) }
         val text = reminder.description.ifBlank { context.getString(CommonR.string.notification_meal_reminder_text_default) }
 
         val pendingIntent = if (reminder.targetRoute.isNotBlank()) {

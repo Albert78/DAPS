@@ -424,6 +424,17 @@
 
     <string name="insulin_history_screen_title">Insulin-Historie</string>
     <string name="menu_insulin_history_label">Insulin-Historie</string>
+    <string name="reminders_screen_title">Erinnerungen</string>
+    <string name="menu_reminders_label">Erinnerungen</string>
+    <string name="reminders_empty_state_title">Keine aktiven Erinnerungen</string>
+    <string name="reminders_empty_state_description">Zurzeit sind keine Erinnerungen aktiv oder geplant.</string>
+    <string name="reminders_action_snooze">Schlummern</string>
+    <string name="reminders_action_dismiss">Erledigt</string>
+    <string name="reminders_action_delete">Löschen</string>
+    <string name="reminders_snooze_15m">+15 Min</string>
+    <string name="reminders_snooze_30m">+30 Min</string>
+    <string name="reminders_snooze_1h">+1 Std</string>
+    <string name="reminders_snooze_2h">+2 Std</string>
     <string name="insulin_status_scheduled">Geplant</string>
     <string name="insulin_status_cancelled">Abgebrochen</string>
     <string name="insulin_status_invalidated">Entwertet</string>

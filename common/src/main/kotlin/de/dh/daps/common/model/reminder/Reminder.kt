@@ -2,7 +2,6 @@ package de.dh.daps.common.model.reminder
 
 import de.dh.daps.common.ID_UNDEFINED
 import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.common.ui.UiText
 
 /**
  * Type of reminder.
@@ -43,7 +42,7 @@ data class Reminder(
     val id: Long = ID_UNDEFINED,
     val type: ReminderType = ReminderType.CUSTOM,
     val sourceId: String = "",
-    val title: UiText = UiText.DynamicString(""),
+    val title: String = "",
     val description: String = "",
     val reminderTimestamp: Timestamp = Timestamp.now(),
     val expirationTimestamp: Timestamp? = null,

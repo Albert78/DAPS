@@ -23,6 +23,7 @@ import de.dh.daps.common.navigation.AlarmProfilesRoute
 import de.dh.daps.common.navigation.AppDataRoute
 import de.dh.daps.common.navigation.BgEditorRoute
 import de.dh.daps.common.navigation.InsulinHistoryRoute
+import de.dh.daps.common.navigation.RemindersRoute
 import de.dh.daps.common.navigation.CoreDecisionsRoute
 import de.dh.daps.common.navigation.CurrentTherapySettingsRoute
 import de.dh.daps.common.navigation.DashboardRoute
@@ -100,6 +101,8 @@ import de.dh.daps.ui.screens.preferences.PreferencesScreen
 import de.dh.daps.ui.screens.preferences.PreferencesViewModel
 import de.dh.daps.ui.screens.pumpsetup.PumpSetupScreen
 import de.dh.daps.ui.screens.pumpsetup.PumpSetupViewModel
+import de.dh.daps.ui.screens.reminders.RemindersScreen
+import de.dh.daps.ui.screens.reminders.RemindersViewModel
 import de.dh.daps.ui.screens.systemcontrol.CoreDecisionsScreen
 import de.dh.daps.ui.screens.systemcontrol.CoreDecisionsViewModel
 import de.dh.daps.ui.screens.systemcontrol.SystemControlScreen
@@ -407,6 +410,16 @@ class MainFeatureNavGraph(
                     factory = InsulinHistoryViewModel.Companion.Factory(registry)
                 )
                 InsulinHistoryScreen(
+                    viewModel = vm,
+                    onNavigateUp = { navViewModel.pop() }
+                )
+            }
+
+            is RemindersRoute -> NavEntry(key) {
+                val vm: RemindersViewModel = viewModel(
+                    factory = RemindersViewModel.Companion.Factory(registry)
+                )
+                RemindersScreen(
                     viewModel = vm,
                     onNavigateUp = { navViewModel.pop() }
                 )

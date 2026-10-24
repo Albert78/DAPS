@@ -62,6 +62,7 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import de.dh.daps.common.navigation.AppDataRoute
 import de.dh.daps.common.navigation.InsulinHistoryRoute
+import de.dh.daps.common.navigation.RemindersRoute
 import de.dh.daps.common.navigation.DashboardRoute
 import de.dh.daps.common.navigation.FeatureNavGraph
 import de.dh.daps.common.navigation.FoodDatabaseRoute
@@ -93,6 +94,7 @@ import de.dh.daps.ui.common.icons.Icon_ManualControlMode
 import de.dh.daps.ui.common.icons.Icon_Master_Data
 import de.dh.daps.ui.common.icons.Icon_Meal
 import de.dh.daps.ui.common.icons.Icon_Permissions
+import de.dh.daps.ui.common.icons.Icon_Reminders
 import de.dh.daps.ui.common.icons.Icon_Settings
 import de.dh.daps.ui.common.icons.Icon_System_Control
 import de.dh.daps.ui.common.theme.AppPreview
@@ -446,6 +448,12 @@ fun DrawerContent(
                     icon = Icon_Bolus,
                     selected = currentRoute == InsulinHistoryRoute,
                     onClick = { onRouteSelected(InsulinHistoryRoute) }
+                )
+                DrawerItem(
+                    label = stringResource(id = R.string.menu_reminders_label),
+                    icon = Icon_Reminders,
+                    selected = currentRoute == RemindersRoute,
+                    onClick = { onRouteSelected(RemindersRoute) }
                 )
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                 DrawerItem(
