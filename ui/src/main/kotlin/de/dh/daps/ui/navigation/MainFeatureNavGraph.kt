@@ -8,6 +8,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
@@ -29,6 +30,13 @@ import de.dh.daps.common.navigation.CurrentTherapySettingsRoute
 import de.dh.daps.common.navigation.DashboardRoute
 import de.dh.daps.common.navigation.FeatureNavGraph
 import de.dh.daps.common.navigation.FoodDatabaseRoute
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import de.dh.daps.common.navigation.GlucoseSourceSettingsRoute
 import de.dh.daps.common.navigation.GlucoseSourceSetupRoute
 import de.dh.daps.common.navigation.HistoricalMealRoute
 import de.dh.daps.common.navigation.HistoryRoute
@@ -44,9 +52,14 @@ import de.dh.daps.common.navigation.MealsRoute
 import de.dh.daps.common.navigation.NavigationViewModel
 import de.dh.daps.common.navigation.PermissionsRoute
 import de.dh.daps.common.navigation.PreferencesMainRoute
+import de.dh.daps.common.navigation.PumpSettingsRoute
 import de.dh.daps.common.navigation.PumpSetupRoute
 import de.dh.daps.common.navigation.ScheduledTherapyAdjustmentRoute
 import de.dh.daps.common.navigation.SystemControlRoute
+import de.dh.daps.ui.screens.systemcontrol.GlucoseSourceSettingsUiState
+import de.dh.daps.ui.screens.systemcontrol.GlucoseSourceSettingsViewModel
+import de.dh.daps.ui.screens.systemcontrol.PumpSettingsUiState
+import de.dh.daps.ui.screens.systemcontrol.PumpSettingsViewModel
 import de.dh.daps.common.navigation.TherapyAdjustmentEditorRoute
 import de.dh.daps.common.navigation.TherapyAdjustmentPresetsRoute
 import de.dh.daps.common.navigation.TherapyAdjustmentRoute
@@ -453,7 +466,9 @@ class MainFeatureNavGraph(
                     onNavigateUp = { navViewModel.pop() },
                     onNavigateToCoreDecisions = { navViewModel.push(CoreDecisionsRoute) },
                     onNavigateToPumpSetup = { navViewModel.push(PumpSetupRoute) },
-                    onNavigateToGlucoseSourceSetup = { navViewModel.push(GlucoseSourceSetupRoute) }
+                    onNavigateToGlucoseSourceSetup = { navViewModel.push(GlucoseSourceSetupRoute) },
+                    onNavigateToGlucoseSourceSettings = { navViewModel.push(GlucoseSourceSettingsRoute) },
+                    onNavigateToPumpSettings = { navViewModel.push(PumpSettingsRoute) }
                 )
             }
 
@@ -475,6 +490,78 @@ class MainFeatureNavGraph(
                     viewModel = vm,
                     onNavigateUp = { navViewModel.pop() }
                 )
+            }
+
+            is GlucoseSourceSettingsRoute -> NavEntry(key) {
+                val vm: GlucoseSourceSettingsViewModel = viewModel(
+                    factory = GlucoseSourceSettingsViewModel.Companion.Factory(registry)
+                )
+                val uiState by vm.uiState.collectAsStateWithLifecycle()
+
+                when (val state = uiState) {
+                    GlucoseSourceSettingsUiState.Loading -> {
+                        // Wait for resolution
+                    }
+                    GlucoseSourceSettingsUiState.NoSettingsAvailable -> {
+                        LaunchedEffect(Unit) {
+                            navViewModel.pop()
+                        }
+                    }
+                    is GlucoseSourceSettingsUiState.Content -> {
+                        val settingsContent = state.driver.getSettingsScreen(
+                            glucoseSource = state.source,
+                            onClose = { navViewModel.pop() }
+                        )
+                        if (settingsContent != null) {
+                            Surface(
+                                color = MaterialTheme.colorScheme.background,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                settingsContent()
+                            }
+                        } else {
+                            LaunchedEffect(Unit) {
+                                navViewModel.pop()
+                            }
+                        }
+                    }
+                }
+            }
+
+            is PumpSettingsRoute -> NavEntry(key) {
+                val vm: PumpSettingsViewModel = viewModel(
+                    factory = PumpSettingsViewModel.Companion.Factory(registry)
+                )
+                val uiState by vm.uiState.collectAsStateWithLifecycle()
+
+                when (val state = uiState) {
+                    PumpSettingsUiState.Loading -> {
+                        // Wait for resolution
+                    }
+                    PumpSettingsUiState.NoSettingsAvailable -> {
+                        LaunchedEffect(Unit) {
+                            navViewModel.pop()
+                        }
+                    }
+                    is PumpSettingsUiState.Content -> {
+                        val settingsContent = state.driver.getSettingsScreen(
+                            pump = state.pump,
+                            onClose = { navViewModel.pop() }
+                        )
+                        if (settingsContent != null) {
+                            Surface(
+                                color = MaterialTheme.colorScheme.background,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                settingsContent()
+                            }
+                        } else {
+                            LaunchedEffect(Unit) {
+                                navViewModel.pop()
+                            }
+                        }
+                    }
+                }
             }
 
             is CoreDecisionsRoute -> NavEntry(key) {

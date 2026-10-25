@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -34,10 +33,6 @@ import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,8 +42,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import de.dh.daps.common.model.ExpirationDate
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinConcentration
@@ -81,12 +74,11 @@ fun PumpTabContent(
     modifier: Modifier = Modifier,
     uiState: PumpTabUiState = PumpTabUiState.Loading,
     onSetupPumpDriver: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {},
     onRefreshPumpStatus: () -> Unit = {},
     onCancelPumpJob: (String) -> Unit = {},
     onResetPumpCommunication: () -> Unit = {}
 ) {
-    var showSettingsDialog by remember { mutableStateOf(false) }
-
     Column(modifier = modifier) {
         val mainHeadlineText = when (uiState) {
             is PumpTabUiState.Loading -> stringResource(R.string.system_control_pump_plugin_section_title)
@@ -114,14 +106,14 @@ fun PumpTabContent(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val hasSettings = uiState.pumpSettingsScreen != null
+                    val hasSettings = uiState.hasSettingsScreen
                     val context = LocalContext.current
                     val noSettingsMessage = stringResource(R.string.system_control_pump_no_settings_toast)
 
                     OutlinedIconButton(
                         onClick = {
                             if (hasSettings) {
-                                showSettingsDialog = true
+                                onNavigateToSettings()
                             } else {
                                 Toast.makeText(context, noSettingsMessage, Toast.LENGTH_SHORT).show()
                             }
@@ -220,22 +212,6 @@ fun PumpTabContent(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 uiState.pumpPluginSection.invoke()
-            }
-        }
-
-        if (showSettingsDialog && uiState is PumpTabUiState.Content && uiState.pumpSettingsScreen != null) {
-            Dialog(
-                onDismissRequest = { showSettingsDialog = false },
-                properties = DialogProperties(usePlatformDefaultWidth = false)
-            ) {
-                Surface(
-                    color = MaterialTheme.colorScheme.background,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    uiState.pumpSettingsScreen.invoke {
-                        showSettingsDialog = false
-                    }
-                }
             }
         }
     }

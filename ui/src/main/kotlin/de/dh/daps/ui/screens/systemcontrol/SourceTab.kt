@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -17,9 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -29,10 +25,6 @@ import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -41,8 +33,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.BgSampleKind
@@ -57,7 +47,6 @@ import de.dh.daps.ui.common.icons.Icon_Cgm_Sensor
 import de.dh.daps.ui.common.icons.Icon_Next
 import de.dh.daps.ui.common.icons.Icon_Previous
 import de.dh.daps.ui.common.readingsInterval
-import de.dh.daps.ui.common.shortDate
 import de.dh.daps.ui.common.shortDateTime
 import de.dh.daps.ui.common.shortRelativeTime
 import de.dh.daps.ui.common.smartTime
@@ -69,10 +58,9 @@ fun SourceTabContent(
     modifier: Modifier = Modifier,
     uiState: SourceTabUiState = SourceTabUiState.Loading,
     onSetupGlucoseSource: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {},
     @Suppress("UNUSED_PARAMETER") onStopSensor: () -> Unit = {}
 ) {
-    var showSettingsDialog by remember { mutableStateOf(false) }
-
     Column(modifier = modifier) {
         val mainHeadlineText = when (uiState) {
             is SourceTabUiState.Loading -> stringResource(R.string.overview_section_glucose_source)
@@ -100,14 +88,14 @@ fun SourceTabContent(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val hasSettings = uiState.glucoseSourceSettingsScreen != null
+                    val hasSettings = uiState.hasSettingsScreen
                     val context = LocalContext.current
                     val noSettingsMessage = stringResource(R.string.system_control_source_no_settings_toast)
 
                     OutlinedIconButton(
                         onClick = {
                             if (hasSettings) {
-                                showSettingsDialog = true
+                                onNavigateToSettings()
                             } else {
                                 Toast.makeText(context, noSettingsMessage, Toast.LENGTH_SHORT).show()
                             }
@@ -181,22 +169,6 @@ fun SourceTabContent(
             )
             Spacer(modifier = Modifier.height(8.dp))
             uiState.glucoseSourcePluginSection.invoke()
-        }
-
-        if (showSettingsDialog && uiState is SourceTabUiState.Content && uiState.glucoseSourceSettingsScreen != null) {
-            Dialog(
-                onDismissRequest = { showSettingsDialog = false },
-                properties = DialogProperties(usePlatformDefaultWidth = false)
-            ) {
-                Surface(
-                    color = MaterialTheme.colorScheme.background,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    uiState.glucoseSourceSettingsScreen.invoke {
-                        showSettingsDialog = false
-                    }
-                }
-            }
         }
     }
 }

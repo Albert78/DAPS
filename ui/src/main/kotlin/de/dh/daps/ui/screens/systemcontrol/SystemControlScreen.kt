@@ -58,6 +58,8 @@ fun SystemControlScreen(
     onNavigateToCoreDecisions: () -> Unit,
     onNavigateToPumpSetup: () -> Unit = {},
     onNavigateToGlucoseSourceSetup: () -> Unit = {},
+    onNavigateToGlucoseSourceSettings: () -> Unit = {},
+    onNavigateToPumpSettings: () -> Unit = {},
     viewModel: SystemControlViewModel,
     initialTab: Int = SYSTEM_CONTROL_TAB_OVERVIEW
 ) {
@@ -70,6 +72,8 @@ fun SystemControlScreen(
         onNavigateToCoreDecisions = onNavigateToCoreDecisions,
         onNavigateToPumpSetup = onNavigateToPumpSetup,
         onNavigateToGlucoseSourceSetup = onNavigateToGlucoseSourceSetup,
+        onNavigateToGlucoseSourceSettings = onNavigateToGlucoseSourceSettings,
+        onNavigateToPumpSettings = onNavigateToPumpSettings,
         onStopGlucoseSource = viewModel::stopActiveGlucoseSource,
         onCancelPumpJob = viewModel::cancelPumpJob,
         onRefreshPumpStatus = viewModel::refreshPumpStatus,
@@ -86,6 +90,8 @@ fun SystemControlContent(
     onNavigateToCoreDecisions: () -> Unit,
     onNavigateToPumpSetup: () -> Unit = {},
     onNavigateToGlucoseSourceSetup: () -> Unit = {},
+    onNavigateToGlucoseSourceSettings: () -> Unit = {},
+    onNavigateToPumpSettings: () -> Unit = {},
     onStopGlucoseSource: () -> Unit = {},
     onCancelPumpJob: (String) -> Unit = {},
     onRefreshPumpStatus: () -> Unit = {},
@@ -180,11 +186,13 @@ fun SystemControlContent(
                                 SYSTEM_CONTROL_TAB_GLUCOSE_SOURCE -> SourceTabContent(
                                     uiState = uiState.sourceTabUiState,
                                     onSetupGlucoseSource = onNavigateToGlucoseSourceSetup,
+                                    onNavigateToSettings = onNavigateToGlucoseSourceSettings,
                                     onStopSensor = onStopGlucoseSource
                                 )
                                 SYSTEM_CONTROL_TAB_PUMP -> PumpTabContent(
                                     uiState = uiState.pumpTabUiState,
                                     onSetupPumpDriver = onNavigateToPumpSetup,
+                                    onNavigateToSettings = onNavigateToPumpSettings,
                                     onRefreshPumpStatus = onRefreshPumpStatus,
                                     onCancelPumpJob = onCancelPumpJob,
                                     onResetPumpCommunication = onResetPumpCommunication

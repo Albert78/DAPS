@@ -181,7 +181,7 @@ sealed interface SourceTabUiState {
         val expiration: Timestamp? = null,
         val isExpired: Boolean,
         val glucoseSourcePluginSection: (@Composable () -> Unit)? = null,
-        val glucoseSourceSettingsScreen: (@Composable (onClose: () -> Unit) -> Unit)? = null
+        val hasSettingsScreen: Boolean = false
     ) : SourceTabUiState
 }
 
@@ -214,7 +214,7 @@ sealed interface PumpTabUiState {
         val syncStatus: PumpSyncStatus,
         val nextWakeupTime: Timestamp? = null,
         val pumpPluginSection: (@Composable () -> Unit)? = null,
-        val pumpSettingsScreen: (@Composable (onClose: () -> Unit) -> Unit)? = null
+        val hasSettingsScreen: Boolean = false
     ) : PumpTabUiState
 }
 
@@ -614,11 +614,7 @@ class SystemControlViewModel(
             val driver = gInfo.driver
             val source = gInfo.source
             val section = if (driver != null && source != null) driver.getGlucoseSourceControlSection(source) else null
-            val sourceSettings: (@Composable (onClose: () -> Unit) -> Unit)? = if (driver != null && source != null && driver.getSettingsScreen(source) {} != null) {
-                { onClose ->
-                    driver.getSettingsScreen(source, onClose)?.invoke()
-                }
-            } else null
+            val hasSettings = driver != null && source != null && driver.getSettingsScreen(source, onClose = {}) != null
 
             SourceTabUiState.Content(
                 glucoseSourceName = gInfo.sourceName,
@@ -633,7 +629,7 @@ class SystemControlViewModel(
                 expiration = gInfo.expiration,
                 isExpired = gInfo.isExpired,
                 glucoseSourcePluginSection = section,
-                glucoseSourceSettingsScreen = sourceSettings
+                hasSettingsScreen = hasSettings
             )
         }
 
@@ -673,11 +669,7 @@ class SystemControlViewModel(
             val driver = pInfo.driver
             val pump = pInfo.pump
             val section = if (driver != null && pump != null) driver.getPumpTabSection(pump) else null
-            val pumpSettings: (@Composable (onClose: () -> Unit) -> Unit)? = if (driver != null && pump != null && driver.getSettingsScreen(pump) {} != null) {
-                { onClose ->
-                    driver.getSettingsScreen(pump, onClose)?.invoke()
-                }
-            } else null
+            val hasSettings = driver != null && pump != null && driver.getSettingsScreen(pump, onClose = {}) != null
 
             // TODO: Calculate Total Daily Dose (TDD) and Estimated Reservoir Runout (ERR) when TDD is available in the app.
             // val tdd = ...
@@ -705,7 +697,7 @@ class SystemControlViewModel(
                 syncStatus = pInfo.syncStatus,
                 nextWakeupTime = pInfo.nextWakeupTime,
                 pumpPluginSection = section,
-                pumpSettingsScreen = pumpSettings
+                hasSettingsScreen = hasSettings
             )
         }
 

@@ -29,6 +29,8 @@ import kotlinx.serialization.Serializable
 @Serializable data class SystemControlRoute(val initialTab: Int = 0) : NavKey
 @Serializable object PumpSetupRoute : NavKey
 @Serializable object GlucoseSourceSetupRoute : NavKey
+@Serializable object PumpSettingsRoute : NavKey
+@Serializable object GlucoseSourceSettingsRoute : NavKey
 @Serializable object CoreDecisionsRoute : NavKey
 @Serializable object MasterDataRoute : NavKey
 @Serializable object InsulinTypesRoute : NavKey
