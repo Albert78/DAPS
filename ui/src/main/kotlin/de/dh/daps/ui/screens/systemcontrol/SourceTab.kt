@@ -582,7 +582,7 @@ fun GlucoseSourcePluginExampleCard(
                 .fillMaxWidth()
         ) {
             Text(
-                text = stringResource(R.string.system_control_source_control_title),
+                text = "Sensor-Daten",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -600,7 +600,7 @@ fun GlucoseSourcePluginExampleCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     ControlDetailRow(
-                        label = stringResource(R.string.system_control_source_sensor_code_label)
+                        label = "Sensor-Code"
                     ) {
                         Text(
                             text = sensorCode ?: notAvailableText,
@@ -613,7 +613,7 @@ fun GlucoseSourcePluginExampleCard(
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     ControlDetailRow(
-                        label = stringResource(R.string.system_control_source_transmitter_sn_label)
+                        label = "Transmitter-Seriennummer"
                     ) {
                         Text(
                             text = transmitterSerialNumber ?: notAvailableText,
@@ -624,28 +624,6 @@ fun GlucoseSourcePluginExampleCard(
                         )
                     }
                 }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Button(
-                onClick = onStopSensor,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error,
-                    contentColor = MaterialTheme.colorScheme.onError
-                ),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Stop,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = stringResource(R.string.system_control_source_action_stop_sensor),
-                    fontWeight = FontWeight.Bold
-                )
             }
         }
     }
