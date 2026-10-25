@@ -5,8 +5,6 @@ import de.dh.daps.common.model.BasalStatus
 import de.dh.daps.common.model.BolusDeliveryState
 import de.dh.daps.common.model.BolusEvent
 import de.dh.daps.common.model.BolusStatus
-import de.dh.daps.common.model.Expiration
-import de.dh.daps.common.model.ExpirationDate
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinCategory
 import de.dh.daps.common.model.InsulinConcentration
@@ -19,7 +17,6 @@ import de.dh.daps.common.model.PumpAlerts
 import de.dh.daps.common.model.PumpCapabilities
 import de.dh.daps.common.model.PumpHardwareInformation
 import de.dh.daps.common.model.PumpLifecycleState
-import de.dh.daps.common.model.ReplaceableComponentType
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
@@ -48,7 +45,6 @@ import de.dh.pump.omnipod.protocol.response.ResponseParser
 import de.dh.pump.omnipod.protocol.state.OmnipodDashPodStateManager
 import de.dh.pump.omnipod.protocol.util.PodPulseCalculator
 import de.dh.pump.omnipod.protocol.util.ProfileToBasalScheduleConverter
-import java.util.EnumSet
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -64,13 +60,20 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.Date
+import java.util.EnumSet
 import java.util.concurrent.TimeUnit
 
 data class OmnipodDashStatusData(
     override val pumpSuspended: Boolean = false,
     override val batteryRemainingPercent: Int = 100,
     override val reservoirRemainingUnits: InsulinAmount = InsulinAmount.ZERO,
-    override val lastSyncTimestamp: Timestamp = Timestamp.now()
+    override val lastSyncTimestamp: Timestamp = Timestamp.now(),
+    override val lifecycleState: PumpLifecycleState = PumpLifecycleState.Patch(
+        phase = PatchPhase.PRIMING,
+        activationTime = Timestamp.INVALID,
+        activeUntil = Timestamp.INVALID,
+        graceUntil = Timestamp.INVALID
+    )
 ) : InsulinPumpStatus
 
 class OmnipodDashPump(
@@ -89,16 +92,6 @@ class OmnipodDashPump(
 
     private var activeBolusJob: Job? = null
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-
-    private val _lifecycleState = MutableStateFlow<PumpLifecycleState>(
-        PumpLifecycleState.Patch(
-            phase = PatchPhase.PRIMING,
-            activationTime = Timestamp.INVALID,
-            activeUntil = Timestamp.INVALID,
-            graceUntil = Timestamp.INVALID
-        )
-    )
-    override val lifecycleState: StateFlow<PumpLifecycleState> = _lifecycleState.asStateFlow()
 
     private val _hardwareInformation = MutableStateFlow<PumpHardwareInformation?>(
         PumpHardwareInformation(
@@ -160,7 +153,7 @@ class OmnipodDashPump(
         return podStateManager.lastNonce ?: 0x49534141
     }
 
-    private fun updateExpirationState() {
+    private fun computeLifecycleState(): PumpLifecycleState.Patch {
         val activationTime = podStateManager.activatedAtTimestampMs
         if (activationTime != null && activationTime > 0) {
             val start = Timestamp(activationTime)
@@ -190,7 +183,7 @@ class OmnipodDashPump(
                 else -> null
             }
 
-            _lifecycleState.value = PumpLifecycleState.Patch(
+            return PumpLifecycleState.Patch(
                 phase = phase,
                 activationTime = start,
                 activeUntil = expiresAt,
@@ -198,12 +191,22 @@ class OmnipodDashPump(
                 deactivationReason = reason
             )
         } else {
-            _lifecycleState.value = PumpLifecycleState.Patch(
+            return PumpLifecycleState.Patch(
                 phase = PatchPhase.PRIMING,
                 activationTime = Timestamp.INVALID,
                 activeUntil = Timestamp.INVALID,
                 graceUntil = Timestamp.INVALID
             )
+        }
+    }
+
+    private fun updateExpirationState() {
+        val newLifecycle = computeLifecycleState()
+        val currentStatus = _pumpStatus.value
+        if (currentStatus is OmnipodDashStatusData) {
+            _pumpStatus.value = currentStatus.copy(lifecycleState = newLifecycle)
+        } else {
+            _pumpStatus.value = OmnipodDashStatusData(lifecycleState = newLifecycle)
         }
     }
 

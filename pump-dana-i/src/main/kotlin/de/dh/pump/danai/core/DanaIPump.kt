@@ -12,6 +12,7 @@ import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpStatus
 import de.dh.daps.common.model.PumpAlerts
 import de.dh.daps.common.model.PumpCapabilities
+import de.dh.daps.common.model.PumpLifecycleState
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.pump.PumpCommandException
@@ -51,6 +52,7 @@ data class DanaPumpStatusData(
     override val reservoirRemainingUnits: InsulinAmount = InsulinAmount.ZERO,
     val dailyTotalUnits: Double = 0.0,
     override val lastSyncTimestamp: Timestamp = Timestamp.INVALID,
+    override val lifecycleState: PumpLifecycleState = PumpLifecycleState.Durable(),
 ) : InsulinPumpStatus
 
 /**

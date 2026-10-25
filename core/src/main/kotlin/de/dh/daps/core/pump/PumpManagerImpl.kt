@@ -135,8 +135,8 @@ class PumpManagerImpl(
                         }
                     }
                     launch {
-                        pc.pump.lifecycleState.collect { lifecycle ->
-                            val isExpired = when (lifecycle) {
+                        pc.pump.pumpStatus.collect { status ->
+                            val isExpired = when (val lifecycle = status.lifecycleState) {
                                 is PumpLifecycleState.Patch -> lifecycle.isExpired
                                 is PumpLifecycleState.Durable -> false
                             }

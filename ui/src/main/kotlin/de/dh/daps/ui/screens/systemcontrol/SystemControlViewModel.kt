@@ -391,7 +391,6 @@ class SystemControlViewModel(
                 pump.pumpStatus,
                 jobsFlow,
                 lastConnFlow,
-                pump.lifecycleState,
                 pumpDriverManager.activeDriver,
                 coordinatorStateFlow,
                 syncStatusFlow,
@@ -405,11 +404,10 @@ class SystemControlViewModel(
                 @Suppress("UNCHECKED_CAST")
                 val jobs = array[3] as List<BolusJob>
                 val lastConn = array[4] as Timestamp
-                val lifecycleState = array[5] as PumpLifecycleState
-                val activeDriver = array[6] as InsulinPumpDriver?
-                val coordinatorState = array[7] as PumpCoordinatorState
-                val syncStatus = array[8] as PumpSyncStatus
-                val nextWakeup = array[9] as Timestamp?
+                val activeDriver = array[5] as InsulinPumpDriver?
+                val coordinatorState = array[6] as PumpCoordinatorState
+                val syncStatus = array[7] as PumpSyncStatus
+                val nextWakeup = array[8] as Timestamp?
 
                 PumpUiData(
                     connected = connected,
@@ -419,7 +417,7 @@ class SystemControlViewModel(
                     serialNumber = hardware?.serialNumber,
                     status = status,
                     lastConnection = lastConn,
-                    lifecycleState = lifecycleState,
+                    lifecycleState = status.lifecycleState,
                     jobs = jobs,
                     coordinatorState = coordinatorState,
                     syncStatus = syncStatus,

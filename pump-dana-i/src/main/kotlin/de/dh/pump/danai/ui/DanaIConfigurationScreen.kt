@@ -91,7 +91,6 @@ private class PreviewDanaIPump(
 ) : InsulinPump {
     override val insulinPumpId: String = "preview-dana-i"
     override val insulinPumpDisplayName: UiText = UiText.DynamicString("Sooil Dana-i")
-    override val lifecycleState: StateFlow<PumpLifecycleState> = MutableStateFlow(PumpLifecycleState.Durable())
     override val hardwareInformation: StateFlow<PumpHardwareInformation?> = MutableStateFlow(null)
     override val pumpCapabilities: StateFlow<PumpCapabilities> = MutableStateFlow(
         PumpCapabilities(
@@ -111,6 +110,7 @@ private class PreviewDanaIPump(
             override val batteryRemainingPercent: Int = 90
             override val reservoirRemainingUnits: InsulinAmount = InsulinAmount(150.0)
             override val lastSyncTimestamp: Timestamp = Timestamp.now()
+            override val lifecycleState: PumpLifecycleState = PumpLifecycleState.Durable()
         }
     )
     override val alerts: StateFlow<PumpAlerts> = MutableStateFlow(PumpAlerts())

@@ -86,14 +86,6 @@ private class PreviewOmnipodPump(
 ) : InsulinPump {
     override val insulinPumpId: String = "preview-omnipod"
     override val insulinPumpDisplayName: UiText = UiText.DynamicString("Omnipod Dash")
-    override val lifecycleState: StateFlow<PumpLifecycleState> = MutableStateFlow(
-        PumpLifecycleState.Patch(
-            phase = PatchPhase.ACTIVE,
-            activationTime = Timestamp.now(),
-            activeUntil = Timestamp.now().plusHours(72),
-            graceUntil = Timestamp.now().plusHours(80)
-        )
-    )
     override val hardwareInformation: StateFlow<PumpHardwareInformation?> = MutableStateFlow(null)
     override val pumpCapabilities: StateFlow<PumpCapabilities> = MutableStateFlow(
         PumpCapabilities(
@@ -113,6 +105,12 @@ private class PreviewOmnipodPump(
             override val batteryRemainingPercent: Int = 100
             override val reservoirRemainingUnits: InsulinAmount = InsulinAmount(200.0)
             override val lastSyncTimestamp: Timestamp = Timestamp.now()
+            override val lifecycleState: PumpLifecycleState = PumpLifecycleState.Patch(
+                phase = PatchPhase.ACTIVE,
+                activationTime = Timestamp.now(),
+                activeUntil = Timestamp.now().plusHours(72),
+                graceUntil = Timestamp.now().plusHours(80)
+            )
         }
     )
     override val alerts: StateFlow<PumpAlerts> = MutableStateFlow(PumpAlerts())

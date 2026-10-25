@@ -30,7 +30,6 @@ data class PumpCapabilities(
     val maxBolusSize: InsulinAmount,
     // TODO: Continue list for sensible capability values
 //    val supportsTempBasal: Boolean,
-//    val supportsExtendedBolus: Boolean,
 //    val audibleTempBasalReminder: Boolean,
 //    val deliversBasalWhileBolusing: Boolean
 )
@@ -43,6 +42,11 @@ interface InsulinPumpStatus {
     val batteryRemainingPercent: Int
     val reservoirRemainingUnits: InsulinAmount
     val lastSyncTimestamp: Timestamp
+
+    /**
+     * Structured lifecycle state of the pump hardware or its consumables.
+     */
+    val lifecycleState: PumpLifecycleState
 }
 
 /**
@@ -169,11 +173,6 @@ interface InsulinPump {
      * Pump hardware information. Null if not yet retrieved.
      */
     val hardwareInformation: StateFlow<PumpHardwareInformation?>
-
-    /**
-     * Structured lifecycle state of the pump hardware or its consumables.
-     */
-    val lifecycleState: StateFlow<PumpLifecycleState>
 
     /**
      * Pump capabilities information.

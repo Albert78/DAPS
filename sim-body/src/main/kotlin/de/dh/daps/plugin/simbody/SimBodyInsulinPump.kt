@@ -53,8 +53,6 @@ class SimBodyInsulinPump(
     override val insulinPumpId: String = SimBodyInsulinPumpDriver.DRIVER_ID
     override val insulinPumpDisplayName: UiText = UiText.StringResource(R.string.sim_body_pump_device_display_name)
 
-    override val lifecycleState: StateFlow<PumpLifecycleState> = MutableStateFlow(PumpLifecycleState.Durable())
-
     private val _insulinTypeId = MutableStateFlow<String?>(null)
     override val insulinTypeId: StateFlow<String?> = _insulinTypeId.asStateFlow()
 
@@ -129,6 +127,7 @@ class SimBodyInsulinPump(
             override val batteryRemainingPercent: Int = (battery * 100).toInt()
             override val reservoirRemainingUnits: InsulinAmount = reservoir
             override val lastSyncTimestamp: Timestamp = if (connected) Timestamp.now() else Timestamp.INVALID
+            override val lifecycleState: PumpLifecycleState = PumpLifecycleState.Durable()
         }
     }
         .debounce(300.milliseconds)
@@ -137,6 +136,7 @@ class SimBodyInsulinPump(
             override val batteryRemainingPercent: Int = 100
             override val reservoirRemainingUnits: InsulinAmount = InsulinAmount(300.0)
             override val lastSyncTimestamp: Timestamp = Timestamp.now()
+            override val lifecycleState: PumpLifecycleState = PumpLifecycleState.Durable()
         })
 
     override val alerts: StateFlow<PumpAlerts> = combine(

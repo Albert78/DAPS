@@ -27,8 +27,6 @@ class SampleInsulinPump : InsulinPump {
     override val insulinPumpId: String = SampleInsulinPumpDriver.DRIVER_ID
     override val insulinPumpDisplayName: UiText = UiText.StringResource(R.string.sample_pump_device_display_name)
 
-    override val lifecycleState: StateFlow<PumpLifecycleState> = MutableStateFlow(PumpLifecycleState.Durable())
-
     override val insulinTypeId: StateFlow<String?> = MutableStateFlow(null)
     override val insulinConcentration: StateFlow<InsulinConcentration> = MutableStateFlow(InsulinConcentration.U100)
 
@@ -56,6 +54,7 @@ class SampleInsulinPump : InsulinPump {
             override val batteryRemainingPercent: Int = 85
             override val reservoirRemainingUnits: InsulinAmount = InsulinAmount(120.5)
             override val lastSyncTimestamp: Timestamp = Timestamp.now()
+            override val lifecycleState: PumpLifecycleState = PumpLifecycleState.Durable()
         }
     )
     override val alerts: StateFlow<PumpAlerts> = MutableStateFlow(PumpAlerts())

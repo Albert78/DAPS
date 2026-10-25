@@ -11,14 +11,12 @@ import de.dh.daps.common.model.InsulinPumpStatus
 import de.dh.daps.common.model.PumpAlerts
 import de.dh.daps.common.model.PumpCapabilities
 import de.dh.daps.common.model.PumpHardwareInformation
-import de.dh.daps.common.model.PumpLifecycleState
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import de.dh.pump.danai.core.connection.DanaILink
 import de.dh.pump.danai.core.model.DanaIBolusSpeed
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -36,8 +34,6 @@ class DanaIPumpAdapter(
     override val insulinPumpId: String = PUMP_DRIVER_ID
     override val insulinPumpDisplayName: UiText
         get() = UiText.DynamicString(controller.deviceName.ifBlank { "Sooil Dana-i" })
-
-    override val lifecycleState: StateFlow<PumpLifecycleState> = MutableStateFlow(PumpLifecycleState.Durable())
 
     override val insulinTypeId: StateFlow<String?>
         get() = pump.insulinTypeId

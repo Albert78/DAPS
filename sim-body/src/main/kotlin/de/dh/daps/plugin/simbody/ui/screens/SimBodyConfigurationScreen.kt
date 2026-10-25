@@ -85,7 +85,6 @@ private class PreviewSimBodyPump(
 ) : InsulinPump {
     override val insulinPumpId: String = "preview-simbody"
     override val insulinPumpDisplayName: UiText = UiText.DynamicString("SimBody Virtuelle Insulinpumpe")
-    override val lifecycleState: StateFlow<PumpLifecycleState> = MutableStateFlow(PumpLifecycleState.Durable())
     override val hardwareInformation: StateFlow<PumpHardwareInformation?> = MutableStateFlow(null)
     override val pumpCapabilities: StateFlow<PumpCapabilities> = MutableStateFlow(
         PumpCapabilities(
@@ -105,6 +104,7 @@ private class PreviewSimBodyPump(
             override val batteryRemainingPercent: Int = 100
             override val reservoirRemainingUnits: InsulinAmount = InsulinAmount(300.0)
             override val lastSyncTimestamp: Timestamp = Timestamp.now()
+            override val lifecycleState: PumpLifecycleState = PumpLifecycleState.Durable()
         }
     )
     override val alerts: StateFlow<PumpAlerts> = MutableStateFlow(PumpAlerts())
