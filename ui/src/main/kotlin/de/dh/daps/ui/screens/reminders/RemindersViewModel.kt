@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.reminder.Reminder
+import de.dh.daps.common.model.reminder.ReminderStatus
 import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -23,7 +24,6 @@ data class RemindersUiState(
 class RemindersViewModel(
     registry: SystemRegistry
 ) : ViewModel() {
-
     private val reminderManager = registry.reminderManager
 
     val uiState: StateFlow<RemindersUiState> = reminderManager.activeReminders
@@ -39,6 +39,8 @@ class RemindersViewModel(
             initialValue = RemindersUiState(isLoading = true)
         )
 
+    private var lastRemovedReminder: Reminder? = null
+
     fun snoozeReminder(id: Long, minutes: Int) {
         viewModelScope.launch {
             val newTimestamp = Timestamp.now() + Minutes(minutes.toShort())
@@ -47,14 +49,32 @@ class RemindersViewModel(
     }
 
     fun dismissReminder(id: Long) {
+        val reminder = uiState.value.activeReminders.find { it.id == id }
+        if (reminder != null) {
+            lastRemovedReminder = reminder
+        }
         viewModelScope.launch {
             reminderManager.dismissReminder(id)
         }
     }
 
     fun deleteReminder(id: Long) {
+        val reminder = uiState.value.activeReminders.find { it.id == id }
+        if (reminder != null) {
+            lastRemovedReminder = reminder
+        }
         viewModelScope.launch {
             reminderManager.deleteReminder(id)
+        }
+    }
+
+    fun restoreLastRemovedReminder() {
+        val reminder = lastRemovedReminder ?: return
+        lastRemovedReminder = null
+        viewModelScope.launch {
+            reminderManager.scheduleReminder(
+                reminder.copy(status = ReminderStatus.ACTIVE)
+            )
         }
     }
 

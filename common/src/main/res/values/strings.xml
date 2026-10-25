@@ -67,6 +67,7 @@
     <string name="action_cancel">Abbrechen</string>
     <string name="action_save">Speichern</string>
     <string name="action_close">Schließen</string>
+    <string name="action_undo">Rückgängig</string>
 
     <string name="selection_mode_num_items_selected">%d ausgewählt</string>
 

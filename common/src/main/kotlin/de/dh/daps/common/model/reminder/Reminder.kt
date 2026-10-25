@@ -33,7 +33,7 @@ enum class ReminderStatus {
  * @property title Title text shown in notifications or UI cards.
  * @property description Detailed description text.
  * @property reminderTimestamp Timestamp when the reminder is due.
- * @property expirationTimestamp Optional timestamp after which the reminder is considered obsolete ("veraltet").
+ * @property expirationTimestamp Optional timestamp after which the reminder is considered obsolete.
  * @property targetRoute Deep-link navigation URI string invoked on click (e.g. "app://daps.dh.de/meal/123").
  * @property payload Optional custom metadata payload (e.g., JSON string or key-value string).
  * @property status Current status of the reminder.

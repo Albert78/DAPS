@@ -429,8 +429,11 @@
     <string name="reminders_empty_state_title">Keine aktiven Erinnerungen</string>
     <string name="reminders_empty_state_description">Zurzeit sind keine Erinnerungen aktiv oder geplant.</string>
     <string name="reminders_action_snooze">Schlummern</string>
-    <string name="reminders_action_dismiss">Erledigt</string>
-    <string name="reminders_action_delete">Löschen</string>
+    <string name="cd_reminders_action_dismiss">Erledigt</string>
+    <string name="cd_reminders_action_delete">Löschen</string>
+    <string name="delete_reminder_title">Erinnerung löschen</string>
+    <string name="delete_reminder_message">Möchtest du die Erinnerung „%1$s“ wirklich löschen?</string>
+    <string name="reminders_snackbar_dismissed">Erinnerung erledigt</string>
     <string name="reminders_snooze_15m">+15 Min</string>
     <string name="reminders_snooze_30m">+30 Min</string>
     <string name="reminders_snooze_1h">+1 Std</string>

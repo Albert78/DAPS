@@ -14,17 +14,27 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -36,6 +46,7 @@ import de.dh.daps.common.model.reminder.Reminder
 import de.dh.daps.common.model.reminder.ReminderType
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
+import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.ScreenTitle
 import de.dh.daps.ui.common.icons.Icon_Check_Yes
 import de.dh.daps.ui.common.icons.Icon_Delete
@@ -47,6 +58,7 @@ import de.dh.daps.ui.common.icons.Icon_Therapy_Adjustment
 import de.dh.daps.ui.common.shortDateTime
 import de.dh.daps.ui.common.shortRelativeTimeUntil
 import de.dh.daps.ui.common.theme.AppPreview
+import kotlinx.coroutines.launch
 import de.dh.daps.common.R as CommonR
 
 @Composable
@@ -61,6 +73,7 @@ fun RemindersScreen(
         onSnooze = { id, minutes -> viewModel.snoozeReminder(id, minutes) },
         onDismiss = { id -> viewModel.dismissReminder(id) },
         onDelete = { id -> viewModel.deleteReminder(id) },
+        onUndo = { viewModel.restoreLastRemovedReminder() },
         onNavigateUp = onNavigateUp
     )
 }
@@ -72,8 +85,30 @@ fun RemindersContent(
     onSnooze: (Long, Int) -> Unit,
     onDismiss: (Long) -> Unit,
     onDelete: (Long) -> Unit,
+    onUndo: () -> Unit,
     onNavigateUp: () -> Unit
 ) {
+    var reminderToDelete by remember { mutableStateOf<Reminder?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    val actionUndoLabel = stringResource(CommonR.string.action_undo)
+    val snackbarDismissedText = stringResource(R.string.reminders_snackbar_dismissed)
+
+    val showUndoSnackbar: (String) -> Unit = { message ->
+        scope.launch {
+            snackbarHostState.currentSnackbarData?.dismiss()
+            val result = snackbarHostState.showSnackbar(
+                message = message,
+                actionLabel = actionUndoLabel,
+                duration = SnackbarDuration.Short
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                onUndo()
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -87,7 +122,8 @@ fun RemindersContent(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -135,13 +171,47 @@ fun RemindersContent(
                         ReminderCard(
                             reminder = reminder,
                             onSnooze = { minutes -> onSnooze(reminder.id, minutes) },
-                            onDismiss = { onDismiss(reminder.id) },
-                            onDelete = { onDelete(reminder.id) }
+                            onDismiss = {
+                                onDismiss(reminder.id)
+                                showUndoSnackbar(snackbarDismissedText)
+                            },
+                            onDelete = { reminderToDelete = reminder }
                         )
                     }
                 }
             }
         }
+    }
+
+    reminderToDelete?.let { reminder ->
+        val titleText = reminder.title.ifBlank { stringResource(CommonR.string.notification_meal_reminder_title) }
+        AlertDialog(
+            onDismissRequest = { reminderToDelete = null },
+            title = {
+                Text(text = stringResource(R.string.delete_reminder_title))
+            },
+            text = {
+                Text(text = stringResource(R.string.delete_reminder_message, titleText))
+            },
+            confirmButton = {
+                NormalTextButton(
+                    onClick = {
+                        onDelete(reminder.id)
+                        reminderToDelete = null
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text(text = stringResource(CommonR.string.action_delete))
+                }
+            },
+            dismissButton = {
+                NormalTextButton(onClick = { reminderToDelete = null }) {
+                    Text(text = stringResource(CommonR.string.action_cancel))
+                }
+            }
+        )
     }
 }
 
@@ -197,7 +267,7 @@ fun ReminderCard(
                 IconButton(onClick = onDelete) {
                     Icon(
                         imageVector = Icon_Delete,
-                        contentDescription = stringResource(R.string.reminders_action_delete),
+                        contentDescription = stringResource(R.string.cd_reminders_action_delete),
                         tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
                     )
                 }
@@ -239,7 +309,7 @@ fun ReminderCard(
                 IconButton(onClick = onDismiss) {
                     Icon(
                         imageVector = Icon_Check_Yes,
-                        contentDescription = stringResource(R.string.reminders_action_dismiss),
+                        contentDescription = stringResource(R.string.cd_reminders_action_dismiss),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -258,6 +328,7 @@ fun RemindersEmptyPreview() {
             onSnooze = { _, _ -> },
             onDismiss = {},
             onDelete = {},
+            onUndo = {},
             onNavigateUp = {}
         )
     }
@@ -297,6 +368,7 @@ fun RemindersWithDataPreview() {
             onSnooze = { _, _ -> },
             onDismiss = {},
             onDelete = {},
+            onUndo = {},
             onNavigateUp = {}
         )
     }
