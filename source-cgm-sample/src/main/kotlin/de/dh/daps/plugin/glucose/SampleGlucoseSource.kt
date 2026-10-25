@@ -1,6 +1,5 @@
 package de.dh.daps.plugin.glucose
 
-import de.dh.daps.common.model.Expiration
 import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.GlucoseSourceStatus
 import de.dh.daps.common.model.SourceHardwareInformation
@@ -29,7 +28,7 @@ class SampleGlucoseSource : GlucoseSource {
     override val readingsTimeDelay = Minutes(5)
     override val status: StateFlow<GlucoseSourceStatus> = MutableStateFlow(GlucoseSourceStatus.Ok)
     override val startDate: StateFlow<Timestamp?> = MutableStateFlow(null)
-    override val endDate: StateFlow<Expiration?> = MutableStateFlow(null)
+    override val endDate: StateFlow<Timestamp?> = MutableStateFlow(null)
     override val isExpired: StateFlow<Boolean> = MutableStateFlow(false)
     override val lastConnection: StateFlow<Timestamp?> = MutableStateFlow(null)
     override val sensorType: StateFlow<String> = MutableStateFlow("Dexcom-G6")

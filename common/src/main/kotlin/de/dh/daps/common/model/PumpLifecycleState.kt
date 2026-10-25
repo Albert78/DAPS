@@ -4,6 +4,27 @@ import de.dh.daps.common.model.data.Timestamp
 import java.time.LocalDate
 
 /**
+ * Expiration date representation for replaceable components or lifecycle states.
+ */
+sealed interface ExpirationDate {
+    data class Approximate(
+        val date: LocalDate
+    ) : ExpirationDate
+
+    data class Hard(
+        val dateTime: Timestamp
+    ) : ExpirationDate
+}
+
+/**
+ * Replaceable consumable or component type on an insulin pump.
+ */
+enum class PumpReplaceableComponent {
+    CATHETER,
+    PATCH
+}
+
+/**
  * Phase of a disposable patch pump lifecycle.
  */
 enum class PatchPhase {

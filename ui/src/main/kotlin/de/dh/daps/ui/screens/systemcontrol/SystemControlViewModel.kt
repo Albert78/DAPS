@@ -20,7 +20,6 @@ import de.dh.daps.common.PUMP_RESERVOIR_LOW_THRESHOLD
 import de.dh.daps.common.PUMP_RESERVOIR_WARNING_THRESHOLD
 import de.dh.daps.common.SENSOR_EXPIRATION_WARNING_THRESHOLD_HOURS
 import de.dh.daps.common.model.ApsMode
-import de.dh.daps.common.model.Expiration
 import de.dh.daps.common.model.ExpirationDate
 import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.GlucoseSourceDriver
@@ -31,7 +30,7 @@ import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.InsulinPumpStatus
 import de.dh.daps.common.model.PumpLifecycleState
-import de.dh.daps.common.model.ReplaceableComponentType
+import de.dh.daps.common.model.PumpReplaceableComponent
 import de.dh.daps.common.model.InsulinStatus
 import de.dh.daps.common.model.PumpHardwareInformation
 import de.dh.daps.common.model.SourceHardwareInformation
@@ -58,7 +57,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import java.time.LocalDate
-import java.time.ZoneId
 
 enum class ValueStatus {
     GOOD,
@@ -137,7 +135,7 @@ sealed interface OverviewGlucoseSourceUiState {
         val status: StatusMetric<GlucoseSourceStatus>,
         val lastConnection: StatusMetric<Timestamp>,
         val lastReading: StatusMetric<Timestamp>,
-        val sensorExpiration: StatusMetric<ExpirationDate>
+        val sensorExpiration: StatusMetric<Timestamp>
     ) : OverviewGlucoseSourceUiState
 }
 
@@ -151,7 +149,8 @@ sealed interface OverviewPumpUiState {
         val battery: StatusMetric<Int>,
         val reservoir: StatusMetric<InsulinAmount>,
         val lastConnection: StatusMetric<Timestamp>,
-        val nextExpiration: StatusMetric<Expiration>,
+        val nextExpiration: StatusMetric<ExpirationDate>,
+        val nextExpirationType: PumpReplaceableComponent? = null,
         val insulinConcentration: InsulinConcentration
     ) : OverviewPumpUiState
 }
@@ -179,7 +178,7 @@ sealed interface SourceTabUiState {
         val lastBgReading: BgReading? = null,
         val nextPredictedTimestamp: Timestamp? = null,
         val hasNextPrediction: Boolean,
-        val expiration: Expiration? = null,
+        val expiration: Timestamp? = null,
         val isExpired: Boolean,
         val glucoseSourcePluginSection: (@Composable () -> Unit)? = null,
         val glucoseSourceSettingsScreen: (@Composable (onClose: () -> Unit) -> Unit)? = null
@@ -242,7 +241,7 @@ class SystemControlViewModel(
         val lastBgReading: BgReading? = null,
         val nextPredictedTimestamp: Timestamp? = null,
         val hasNextPrediction: Boolean,
-        val expiration: Expiration? = null,
+        val expiration: Timestamp? = null,
         val isExpired: Boolean,
         val source: GlucoseSource? = null,
         val driver: GlucoseSourceDriver? = null
@@ -347,7 +346,7 @@ class SystemControlViewModel(
                 val currentBg = array[3] as BgReading?
                 val lastConn = array[4] as Timestamp?
                 val startDate = array[5] as Timestamp?
-                val endDate = array[6] as Expiration?
+                val endDate = array[6] as Timestamp?
                 val isExpired = array[7] as Boolean
                 val activeDriver = array[8] as GlucoseSourceDriver?
 
@@ -486,27 +485,12 @@ class SystemControlViewModel(
                 lastReadingTs < Timestamp.now().minusMinutes(BG_READING_WARNING_THRESHOLD_MINUTES) -> ValueStatus.WARNING
                 else -> ValueStatus.GOOD
             }
-            val sensorExpiration = gInfo.expiration?.date
-            val sensorExpirationStatus = when (sensorExpiration) {
-                null -> ValueStatus.GOOD
-                is ExpirationDate.Hard -> {
-                    val ts = sensorExpiration.dateTime
-                    when {
-                        ts.isInvalid() -> ValueStatus.GOOD
-                        ts <= Timestamp.now() -> ValueStatus.BAD
-                        ts < Timestamp.now().plusHours(SENSOR_EXPIRATION_WARNING_THRESHOLD_HOURS) -> ValueStatus.WARNING
-                        else -> ValueStatus.GOOD
-                    }
-                }
-                is ExpirationDate.Approximate -> {
-                    val date = sensorExpiration.date
-                    val today = LocalDate.now()
-                    when {
-                        date <= today -> ValueStatus.BAD
-                        date <= today.plusDays(1) -> ValueStatus.WARNING
-                        else -> ValueStatus.GOOD
-                    }
-                }
+            val sensorExpiration = gInfo.expiration
+            val sensorExpirationStatus = when {
+                sensorExpiration == null || sensorExpiration.isInvalid() -> ValueStatus.GOOD
+                sensorExpiration <= Timestamp.now() -> ValueStatus.BAD
+                sensorExpiration < Timestamp.now().plusHours(SENSOR_EXPIRATION_WARNING_THRESHOLD_HOURS) -> ValueStatus.WARNING
+                else -> ValueStatus.GOOD
             }
             OverviewGlucoseSourceUiState.Content(
                 sensorName = gInfo.sourceName,
@@ -547,26 +531,20 @@ class SystemControlViewModel(
                 pInfo.lastConnection < Timestamp.now().minusMinutes(CONNECTION_WARNING_THRESHOLD_MINUTES) -> ValueStatus.WARNING
                 else -> ValueStatus.GOOD
             }
-            val nextExpirationItem: Expiration? = when (val lifecycle = pInfo.lifecycleState) {
+            val (nextExpirationItem, nextExpirationType) = when (val lifecycle = pInfo.lifecycleState) {
                 is PumpLifecycleState.Patch -> {
-                    if (lifecycle.activeUntil.isValid()) {
-                        Expiration(
-                            type = ReplaceableComponentType.Patch,
-                            date = ExpirationDate.Hard(lifecycle.activeUntil),
-                            graceUntil = lifecycle.graceUntil
-                        )
-                    } else null
+                    val exp = if (lifecycle.activeUntil.isValid()) ExpirationDate.Hard(lifecycle.activeUntil) else null
+                    exp to PumpReplaceableComponent.PATCH
                 }
                 is PumpLifecycleState.Durable -> {
-                    lifecycle.approximateCatheterExpiration?.let {
-                        Expiration(ReplaceableComponentType.Catheter, ExpirationDate.Approximate(it))
-                    }
+                    val exp = lifecycle.approximateCatheterExpiration?.let { ExpirationDate.Approximate(it) }
+                    exp to PumpReplaceableComponent.CATHETER
                 }
             }
-            val nextExpirationStatus = when (val expDate = nextExpirationItem?.date) {
+            val nextExpirationStatus = when (nextExpirationItem) {
                 null -> ValueStatus.GOOD
                 is ExpirationDate.Hard -> {
-                    val ts = expDate.dateTime
+                    val ts = nextExpirationItem.dateTime
                     when {
                         ts.isInvalid() -> ValueStatus.GOOD
                         ts <= Timestamp.now() -> ValueStatus.BAD
@@ -575,7 +553,7 @@ class SystemControlViewModel(
                     }
                 }
                 is ExpirationDate.Approximate -> {
-                    val date = expDate.date
+                    val date = nextExpirationItem.date
                     val today = LocalDate.now()
                     when {
                         date <= today -> ValueStatus.BAD
@@ -615,6 +593,7 @@ class SystemControlViewModel(
                     value = nextExpirationItem,
                     status = nextExpirationStatus
                 ),
+                nextExpirationType = nextExpirationType,
                 insulinConcentration = pInfo.pump?.insulinConcentration?.value ?: InsulinConcentration.U100
             )
         }

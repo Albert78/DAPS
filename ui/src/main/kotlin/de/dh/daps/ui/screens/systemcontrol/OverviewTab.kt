@@ -1,6 +1,7 @@
 package de.dh.daps.ui.screens.systemcontrol
 
 import android.content.res.Configuration
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,15 +13,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
@@ -42,12 +42,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.ApsMode
-import de.dh.daps.common.model.Expiration
 import de.dh.daps.common.model.ExpirationDate
 import de.dh.daps.common.model.GlucoseSourceStatus
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinConcentration
-import de.dh.daps.common.model.ReplaceableComponentType
+import de.dh.daps.common.model.PumpReplaceableComponent
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
@@ -59,8 +58,8 @@ import de.dh.daps.ui.R
 import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalTextButton
-import de.dh.daps.ui.common.icons.Icon_Warning
 import de.dh.daps.ui.common.glucoseUnitLabel
+import de.dh.daps.ui.common.icons.Icon_Warning
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.pluralStringResourceZero
 import de.dh.daps.ui.common.shortDate
@@ -581,20 +580,14 @@ private fun OverviewPumpCard(
                             }
                         }
                         Column(modifier = Modifier.weight(1f)) {
-                            val nextExp = state.nextExpiration.value
-                            val label = when (nextExp?.type) {
-                                ReplaceableComponentType.Catheter -> stringResource(id = R.string.overview_pump_next_catheter_change_label)
-                                ReplaceableComponentType.Patch -> stringResource(id = R.string.overview_pump_next_patch_change_label)
-                                ReplaceableComponentType.Sensor -> stringResource(id = R.string.overview_pump_next_sensor_change_label)
+                            val label = when (state.nextExpirationType) {
+                                PumpReplaceableComponent.PATCH -> stringResource(id = R.string.overview_pump_next_patch_change_label)
+                                PumpReplaceableComponent.CATHETER -> stringResource(id = R.string.overview_pump_next_catheter_change_label)
                                 null -> stringResource(id = R.string.overview_pump_next_expiration_label)
                             }
                             ControlDetailRow(label = label) {
                                 StatusMetricText(
-                                    metric = StatusMetric(
-                                        value = nextExp?.date,
-                                        status = state.nextExpiration.status
-                                    ),
-                                    isDateTime = true
+                                    metric = state.nextExpiration
                                 )
                             }
                         }
@@ -804,7 +797,7 @@ internal fun sampleOverviewTabUiState(): OverviewTabUiState = OverviewTabUiState
         status = StatusMetric(GlucoseSourceStatus.Ok, status = ValueStatus.GOOD),
         lastConnection = StatusMetric(Timestamp(System.currentTimeMillis() - 60_000), status = ValueStatus.GOOD),
         lastReading = StatusMetric(Timestamp(System.currentTimeMillis() - 120_000), status = ValueStatus.GOOD),
-        sensorExpiration = StatusMetric(ExpirationDate.Hard(Timestamp(System.currentTimeMillis() + 864_000_000)), status = ValueStatus.GOOD)
+        sensorExpiration = StatusMetric(Timestamp(System.currentTimeMillis() + 864_000_000), status = ValueStatus.GOOD)
     ),
     insulinPump = OverviewPumpUiState.Content(
         pumpName = UiText.DynamicString("SimBody Virtuelle Insulinpumpe"),
@@ -814,12 +807,10 @@ internal fun sampleOverviewTabUiState(): OverviewTabUiState = OverviewTabUiState
         reservoir = StatusMetric(InsulinAmount(140.0), status = ValueStatus.GOOD),
         lastConnection = StatusMetric(Timestamp(System.currentTimeMillis() - 60_000), status = ValueStatus.GOOD),
         nextExpiration = StatusMetric(
-            value = Expiration(
-                type = ReplaceableComponentType.Catheter,
-                date = ExpirationDate.Hard(Timestamp(System.currentTimeMillis() + 172_800_000))
-            ),
+            value = ExpirationDate.Hard(Timestamp(System.currentTimeMillis() + 172_800_000)),
             status = ValueStatus.GOOD
         ),
+        nextExpirationType = PumpReplaceableComponent.CATHETER,
         insulinConcentration = InsulinConcentration.U100
     )
 )
@@ -862,7 +853,7 @@ internal fun sampleOverviewTabExpiredUiState(): OverviewTabUiState = OverviewTab
         status = StatusMetric(GlucoseSourceStatus.Expired, status = ValueStatus.BAD),
         lastConnection = StatusMetric(Timestamp(System.currentTimeMillis() - 60_000), status = ValueStatus.GOOD),
         lastReading = StatusMetric(Timestamp(System.currentTimeMillis() - 900_000), status = ValueStatus.WARNING),
-        sensorExpiration = StatusMetric(ExpirationDate.Hard(Timestamp(System.currentTimeMillis() - 7_200_000)), status = ValueStatus.BAD)
+        sensorExpiration = StatusMetric(Timestamp(System.currentTimeMillis() - 7_200_000), status = ValueStatus.BAD)
     ),
     insulinPump = OverviewPumpUiState.Content(
         pumpName = UiText.DynamicString("SimBody Virtuelle Insulinpumpe"),
@@ -872,12 +863,10 @@ internal fun sampleOverviewTabExpiredUiState(): OverviewTabUiState = OverviewTab
         reservoir = StatusMetric(InsulinAmount(15.0), status = ValueStatus.WARNING),
         lastConnection = StatusMetric(Timestamp(System.currentTimeMillis() - 60_000), status = ValueStatus.GOOD),
         nextExpiration = StatusMetric(
-            value = Expiration(
-                type = ReplaceableComponentType.Catheter,
-                date = ExpirationDate.Hard(Timestamp(System.currentTimeMillis() - 7_200_000))
-            ),
+            value = ExpirationDate.Hard(Timestamp(System.currentTimeMillis() - 7_200_000)),
             status = ValueStatus.BAD
         ),
+        nextExpirationType = PumpReplaceableComponent.CATHETER,
         insulinConcentration = InsulinConcentration.U100
     )
 )

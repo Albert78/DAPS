@@ -43,9 +43,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import de.dh.daps.common.model.Expiration
-import de.dh.daps.common.model.ExpirationDate
-import de.dh.daps.common.model.ReplaceableComponentType
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.BgSampleKind
@@ -321,16 +318,11 @@ fun SourceOverviewCard(
                         null
                     }
 
-                    val (expDateText, expDateRel) = when (val expDate = uiState.expiration?.date) {
-                        is ExpirationDate.Hard -> {
-                            val rel = shortRelativeTime(expDate)
-                            shortDateTime(expDate.dateTime) to (if (rel.isNotEmpty()) "($rel)" else null)
-                        }
-                        is ExpirationDate.Approximate -> {
-                            val rel = shortRelativeTime(expDate)
-                            shortDate(expDate.date) to (if (rel.isNotEmpty()) "($rel)" else null)
-                        }
-                        null -> notAvailableText to null
+                    val (expDateText, expDateRel) = if (uiState.expiration != null) {
+                        val rel = shortRelativeTime(uiState.expiration)
+                        shortDateTime(uiState.expiration) to (if (rel.isNotEmpty()) "($rel)" else null)
+                    } else {
+                        notAvailableText to null
                     }
 
                     Row(
@@ -673,10 +665,7 @@ internal fun sampleSourceTabUiState(): SourceTabUiState = SourceTabUiState.Conte
     ),
     hasNextPrediction = true,
     nextPredictedTimestamp = Timestamp(System.currentTimeMillis() + 180_000),
-    expiration = Expiration(
-        type = ReplaceableComponentType.Sensor,
-        date = ExpirationDate.Hard(Timestamp(System.currentTimeMillis() + 864000000))
-    ),
+    expiration = Timestamp(System.currentTimeMillis() + 864000000),
     isExpired = false,
     glucoseSourcePluginSection = {
         GlucoseSourcePluginExampleCard(
@@ -701,11 +690,7 @@ internal fun sampleSourceTabExpiredUiState(): SourceTabUiState = SourceTabUiStat
     ),
     hasNextPrediction = false,
     nextPredictedTimestamp = null,
-    expiration = Expiration(
-        type = ReplaceableComponentType.Sensor,
-        date = ExpirationDate.Hard(Timestamp(System.currentTimeMillis() - 7_200_000L)),
-        graceUntil = Timestamp(System.currentTimeMillis() - 1_800_000L)
-    ),
+    expiration = Timestamp(System.currentTimeMillis() - 7_200_000L),
     isExpired = true,
     glucoseSourcePluginSection = {
         GlucoseSourcePluginExampleCard(

@@ -8,7 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.dh.daps.common.model.DeviceLifecycleState
-import de.dh.daps.common.model.Expiration
 import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.GlucoseSourceDriver
 import de.dh.daps.common.model.GlucoseSourceStatus
@@ -78,7 +77,7 @@ class ReceiverGlucosePlugin(
 
     override val status: StateFlow<GlucoseSourceStatus> = MutableStateFlow(GlucoseSourceStatus.Ok)
     override val startDate: StateFlow<Timestamp?> = MutableStateFlow(null)
-    override val endDate: StateFlow<Expiration?> = MutableStateFlow(null)
+    override val endDate: StateFlow<Timestamp?> = MutableStateFlow(null)
     override val isExpired: StateFlow<Boolean> = MutableStateFlow(false)
 
     private val _lastConnection = MutableStateFlow<Timestamp?>(null)

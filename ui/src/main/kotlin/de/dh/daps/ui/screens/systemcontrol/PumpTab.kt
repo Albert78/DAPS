@@ -27,6 +27,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedIconButton
@@ -39,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -47,12 +49,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import de.dh.daps.common.model.Expiration
 import de.dh.daps.common.model.ExpirationDate
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinConcentration
+import de.dh.daps.common.model.PatchDeactivationReason
+import de.dh.daps.common.model.PatchPhase
 import de.dh.daps.common.model.PumpLifecycleState
-import de.dh.daps.common.model.ReplaceableComponentType
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.core.pump.JobErrorCode
@@ -72,6 +74,7 @@ import de.dh.daps.ui.common.shortRelativeTime
 import de.dh.daps.ui.common.smartTime
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.ExtendedTheme
+import java.time.LocalDate
 
 @Composable
 fun PumpTabContent(
@@ -187,34 +190,8 @@ fun PumpTabContent(
         }
 
         if (uiState is PumpTabUiState.Content) {
-            val expirations = when (val lifecycle = uiState.lifecycleState) {
-                is PumpLifecycleState.Patch -> {
-                    if (lifecycle.activeUntil.isValid()) {
-                        listOf(
-                            Expiration(
-                                type = ReplaceableComponentType.Patch,
-                                date = ExpirationDate.Hard(lifecycle.activeUntil),
-                                graceUntil = lifecycle.graceUntil
-                            )
-                        )
-                    } else emptyList()
-                }
-                is PumpLifecycleState.Durable -> {
-                    val list = mutableListOf<Expiration>()
-                    lifecycle.approximateCatheterExpiration?.let {
-                        list.add(Expiration(ReplaceableComponentType.Catheter, ExpirationDate.Approximate(it)))
-                    }
-                    list
-                }
-            }
-            if (expirations.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(16.dp))
-                SectionHeader(
-                    title = stringResource(R.string.system_control_pump_expirations_title)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                PumpExpirationsCard(expirations = expirations)
-            }
+            Spacer(modifier = Modifier.height(16.dp))
+            PumpLifecycleSection(lifecycleState = uiState.lifecycleState)
 
             Spacer(modifier = Modifier.height(16.dp))
             SectionHeader(
@@ -523,12 +500,28 @@ fun PumpOverviewCard(
 }
 
 @Composable
-fun PumpExpirationsCard(
-    expirations: List<Expiration>,
+fun PumpLifecycleSection(
+    lifecycleState: PumpLifecycleState,
     modifier: Modifier = Modifier
 ) {
-    if (expirations.isEmpty()) return
+    Column(modifier = modifier) {
+        SectionHeader(
+            title = stringResource(R.string.system_control_pump_expirations_title)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
 
+        when (lifecycleState) {
+            is PumpLifecycleState.Patch -> PatchPumpLifecycleSection(state = lifecycleState)
+            is PumpLifecycleState.Durable -> DurablePumpLifecycleSection(state = lifecycleState)
+        }
+    }
+}
+
+@Composable
+fun PatchPumpLifecycleSection(
+    state: PumpLifecycleState.Patch,
+    modifier: Modifier = Modifier
+) {
     FramedCard(
         modifier = modifier
             .fillMaxWidth()
@@ -539,52 +532,95 @@ fun PumpExpirationsCard(
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
-            expirations.forEachIndexed { index, exp ->
-                if (index > 0) {
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 12.dp),
-                        thickness = 0.5.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.overview_pump_patch_title),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+
+                val (phaseText, phaseColor) = when (state.phase) {
+                    PatchPhase.PRIMING -> "Vorbereitung" to MaterialTheme.colorScheme.primary
+                    PatchPhase.ACTIVE -> "Aktiv" to ExtendedTheme.semanticColors.good
+                    PatchPhase.IN_GRACE_PERIOD -> "Nachfrist" to ExtendedTheme.semanticColors.warning
+                    PatchPhase.EXPIRED -> stringResource(R.string.overview_glucose_source_status_expired) to MaterialTheme.colorScheme.error
+                }
+
+                Surface(
+                    color = phaseColor.copy(alpha = 0.15f),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        text = phaseText,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = phaseColor
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            if (state.isOperating) {
+                val progress = state.activeProgress()
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "Aktivitätsdauer",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = "${(progress * 100).toInt()}%",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    LinearProgressIndicator(
+                        progress = { progress },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(8.dp)
+                            .clip(RoundedCornerShape(4.dp)),
+                        color = if (state.isInGracePeriod) ExtendedTheme.semanticColors.warning else MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.surfaceContainerHigh
                     )
                 }
 
-                val typeLabel = when (exp.type) {
-                    ReplaceableComponentType.Catheter -> stringResource(R.string.overview_pump_next_catheter_change_label)
-                    ReplaceableComponentType.Patch -> stringResource(R.string.overview_pump_next_patch_change_label)
-                    ReplaceableComponentType.Sensor -> stringResource(R.string.overview_pump_next_sensor_change_label)
-                }
+                Spacer(modifier = Modifier.height(12.dp))
+            }
 
-                val (expDateText, expDateRel) = when (val expDate = exp.date) {
-                    is ExpirationDate.Hard -> {
-                        val rel = shortRelativeTime(expDate)
-                        shortDateTime(expDate.dateTime) to (if (rel.isNotEmpty()) "($rel)" else null)
-                    }
-                    is ExpirationDate.Approximate -> {
-                        val rel = shortRelativeTime(expDate)
-                        shortDate(expDate.date) to (if (rel.isNotEmpty()) "($rel)" else null)
-                    }
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(24.dp)
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        ControlDetailRow(
-                            label = typeLabel,
-                            reserveIconSpace = true
-                        ) {
-                            Column {
-                                Text(
-                                    text = expDateText,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                if (expDateRel != null) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    ControlDetailRow(
+                        label = stringResource(R.string.system_control_source_expiration_label),
+                        reserveIconSpace = true
+                    ) {
+                        Column {
+                            Text(
+                                text = if (state.activeUntil.isValid()) shortDateTime(state.activeUntil) else stringResource(R.string.system_control_value_not_available),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            if (state.activeUntil.isValid()) {
+                                val rel = shortRelativeTime(state.activeUntil)
+                                if (rel.isNotEmpty()) {
                                     Text(
-                                        text = expDateRel,
+                                        text = "($rel)",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         maxLines = 2,
@@ -594,29 +630,203 @@ fun PumpExpirationsCard(
                             }
                         }
                     }
-                    Column(modifier = Modifier.weight(1f)) {
-                        val graceUntil = exp.graceUntil
-                        if (graceUntil != null && graceUntil.isValid()) {
-                            val graceText = shortDateTime(graceUntil)
-                            val graceRel = shortRelativeTime(graceUntil)
-                            val formattedGraceRel = if (graceRel.isNotEmpty()) "($graceRel)" else null
+                }
 
-                            ControlDetailRow(
-                                label = stringResource(R.string.system_control_expiration_grace_until_label),
-                                reserveIconSpace = true
-                            ) {
-                                Column {
+                Column(modifier = Modifier.weight(1f)) {
+                    if (state.graceUntil.isValid()) {
+                        ControlDetailRow(
+                            label = stringResource(R.string.system_control_expiration_grace_until_label),
+                            reserveIconSpace = true
+                        ) {
+                            Column {
+                                Text(
+                                    text = shortDateTime(state.graceUntil),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.tertiary,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                val graceRel = shortRelativeTime(state.graceUntil)
+                                if (graceRel.isNotEmpty()) {
                                     Text(
-                                        text = graceText,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.tertiary,
+                                        text = "($graceRel)",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         maxLines = 2,
                                         overflow = TextOverflow.Ellipsis
                                     )
-                                    if (formattedGraceRel != null) {
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            val reason = state.deactivationReason
+            if (state.isExpired && reason != null) {
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 12.dp),
+                    thickness = 0.5.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+                Text(
+                    text = "Deaktivierungsgrund: ${reason.name.replace('_', ' ')}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun DurablePumpLifecycleSection(
+    state: PumpLifecycleState.Durable,
+    modifier: Modifier = Modifier
+) {
+    FramedCard(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+        ) {
+            Text(
+                text = stringResource(R.string.system_control_pump_catheter_title),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    ControlDetailRow(
+                        label = stringResource(R.string.system_control_pump_last_changed_label),
+                        reserveIconSpace = true
+                    ) {
+                        val lastChanged = state.catheterLastChanged
+                        if (lastChanged != null) {
+                            Text(
+                                text = shortDateTime(lastChanged),
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        } else {
+                            Text(
+                                text = stringResource(R.string.system_control_value_not_available),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+
+                Column(modifier = Modifier.weight(1f)) {
+                    ControlDetailRow(
+                        label = stringResource(R.string.overview_pump_next_expiration_label),
+                        reserveIconSpace = true
+                    ) {
+                        val exp = state.approximateCatheterExpiration
+                        if (exp != null) {
+                            Column {
+                                Text(
+                                    text = shortDate(exp),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                val rel = shortRelativeTime(ExpirationDate.Approximate(exp))
+                                if (rel.isNotEmpty()) {
+                                    Text(
+                                        text = "($rel)",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                            }
+                        } else {
+                            Text(
+                                text = stringResource(R.string.system_control_value_not_available),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (state.approximateReservoirExpiration != null || state.reservoirLastChanged != null) {
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 12.dp),
+                    thickness = 0.5.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+
+                Text(
+                    text = stringResource(R.string.system_control_pump_reservoir_label),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        ControlDetailRow(
+                            label = stringResource(R.string.system_control_pump_reservoir_last_filled_label),
+                            reserveIconSpace = true
+                        ) {
+                            val lastResChanged = state.reservoirLastChanged
+                            if (lastResChanged != null) {
+                                Text(
+                                    text = shortDateTime(lastResChanged),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            } else {
+                                Text(
+                                    text = stringResource(R.string.system_control_value_not_available),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        ControlDetailRow(
+                            label = stringResource(R.string.system_control_pump_reservoir_until_label),
+                            reserveIconSpace = true
+                        ) {
+                            val resExp = state.approximateReservoirExpiration
+                            if (resExp != null) {
+                                Column {
+                                    Text(
+                                        text = shortDate(resExp),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    val rel = shortRelativeTime(ExpirationDate.Approximate(resExp))
+                                    if (rel.isNotEmpty()) {
                                         Text(
-                                            text = formattedGraceRel,
+                                            text = "($rel)",
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             maxLines = 2,
@@ -624,6 +834,12 @@ fun PumpExpirationsCard(
                                         )
                                     }
                                 }
+                            } else {
+                                Text(
+                                    text = stringResource(R.string.system_control_value_not_available),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         }
                     }
@@ -905,7 +1121,7 @@ internal fun samplePumpTabUiState(): PumpTabUiState = PumpTabUiState.Content(
     pumpConnected = true,
     isSuspended = false,
     lifecycleState = PumpLifecycleState.Patch(
-        phase = de.dh.daps.common.model.PatchPhase.ACTIVE,
+        phase = PatchPhase.ACTIVE,
         activationTime = Timestamp.now(),
         activeUntil = Timestamp(System.currentTimeMillis() + 172_800_000),
         graceUntil = Timestamp(System.currentTimeMillis() + 180_000_000)
@@ -1017,33 +1233,6 @@ fun PumpPluginExampleCard(
         }
     }
 }
-
-internal fun samplePumpTabExpiredUiState(): PumpTabUiState = PumpTabUiState.Content(
-    pumpName = UiText.DynamicString("SimBody Virtuelle Insulinpumpe"),
-    batteryPercent = 45,
-    reservoirRemaining = InsulinAmount(15.0),
-    insulinConcentration = InsulinConcentration.U100,
-    lastConnectionTimestamp = Timestamp(System.currentTimeMillis() - 120_000),
-    manufacturer = "DAPS",
-    pumpModel = "Simulator",
-    serialNumber = "SIM-001",
-    pumpConnected = true,
-    isSuspended = false,
-    coordinatorState = PumpCoordinatorState.Idle,
-    syncStatus = PumpSyncStatus.InSync(null),
-    nextWakeupTime = null,
-    lifecycleState = PumpLifecycleState.Patch(
-        phase = de.dh.daps.common.model.PatchPhase.EXPIRED,
-        activationTime = Timestamp(System.currentTimeMillis() - 260_000_000),
-        activeUntil = Timestamp(System.currentTimeMillis() - 7_200_000),
-        graceUntil = Timestamp(System.currentTimeMillis() - 1_800_000)
-    ),
-    pendingJobs = emptyList(),
-    pumpPluginSection = {
-        PumpPluginExampleCard()
-    }
-)
-
 @Preview(showBackground = true, heightDp = 1200, name = "Pump Tab - Light Mode")
 @Preview(showBackground = true, heightDp = 1200, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Pump Tab - Dark Mode")
 @Composable
@@ -1052,20 +1241,6 @@ fun PumpTabPreview() {
         Surface {
             PumpTabContent(
                 uiState = samplePumpTabUiState(),
-                modifier = Modifier.padding(16.dp)
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Pump Tab - Expired")
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Pump Tab - Expired - Dark Mode")
-@Composable
-fun PumpTabExpiredPreview() {
-    AppTheme {
-        Surface {
-            PumpTabContent(
-                uiState = samplePumpTabExpiredUiState(),
                 modifier = Modifier.padding(16.dp)
             )
         }
@@ -1118,6 +1293,101 @@ fun PumpTechnicalStatusErrorCardPreview() {
                 ),
                 onCancelJob = {},
                 onResetPumpCommunication = {},
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Patch Pump Lifecycle - Active")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Patch Pump Lifecycle - Active - Dark Mode")
+@Composable
+fun PatchPumpLifecycleSectionActivePreview() {
+    AppTheme {
+        Surface {
+            PumpLifecycleSection(
+                lifecycleState = PumpLifecycleState.Patch(
+                    phase = PatchPhase.ACTIVE,
+                    activationTime = Timestamp.now(),
+                    activeUntil = Timestamp(System.currentTimeMillis() + 172_800_000),
+                    graceUntil = Timestamp(System.currentTimeMillis() + 180_000_000)
+                ),
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Patch Pump Lifecycle - Grace Period")
+@Composable
+fun PatchPumpLifecycleSectionGracePreview() {
+    AppTheme {
+        Surface {
+            PumpLifecycleSection(
+                lifecycleState = PumpLifecycleState.Patch(
+                    phase = PatchPhase.IN_GRACE_PERIOD,
+                    activationTime = Timestamp(System.currentTimeMillis() - 250_000_000),
+                    activeUntil = Timestamp(System.currentTimeMillis() - 3_600_000),
+                    graceUntil = Timestamp(System.currentTimeMillis() + 25_200_000)
+                ),
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Patch Pump Lifecycle - Expired")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Patch Pump Lifecycle - Expired - Dark Mode")
+@Composable
+fun PatchPumpLifecycleSectionExpiredPreview() {
+    AppTheme {
+        Surface {
+            PumpLifecycleSection(
+                lifecycleState = PumpLifecycleState.Patch(
+                    phase = PatchPhase.EXPIRED,
+                    activationTime = Timestamp(System.currentTimeMillis() - 260_000_000),
+                    activeUntil = Timestamp(System.currentTimeMillis() - 7_200_000),
+                    graceUntil = Timestamp(System.currentTimeMillis() - 1_800_000),
+                    deactivationReason = PatchDeactivationReason.HARD_TIME_LIMIT
+                ),
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Durable Pump Lifecycle - Active")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Durable Pump Lifecycle - Active - Dark Mode")
+@Composable
+fun DurablePumpLifecycleSectionActivePreview() {
+    AppTheme {
+        Surface {
+            PumpLifecycleSection(
+                lifecycleState = PumpLifecycleState.Durable(
+                    approximateCatheterExpiration = LocalDate.now().plusDays(2),
+                    catheterLastChanged = Timestamp(System.currentTimeMillis() - 86_400_000),
+                    approximateReservoirExpiration = LocalDate.now().plusDays(4),
+                    reservoirLastChanged = Timestamp(System.currentTimeMillis() - 86_400_000)
+                ),
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Durable Pump Lifecycle - Expired")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Durable Pump Lifecycle - Expired - Dark Mode")
+@Composable
+fun DurablePumpLifecycleSectionExpiredPreview() {
+    AppTheme {
+        Surface {
+            PumpLifecycleSection(
+                lifecycleState = PumpLifecycleState.Durable(
+                    approximateCatheterExpiration = LocalDate.now().minusDays(1),
+                    catheterLastChanged = Timestamp(System.currentTimeMillis() - 4 * 86_400_000),
+                    approximateReservoirExpiration = LocalDate.now().minusDays(1),
+                    reservoirLastChanged = Timestamp(System.currentTimeMillis() - 4 * 86_400_000)
+                ),
                 modifier = Modifier.padding(16.dp)
             )
         }
