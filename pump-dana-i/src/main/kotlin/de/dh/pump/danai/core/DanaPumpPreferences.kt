@@ -2,6 +2,7 @@ package de.dh.pump.danai.core
 
 import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.PluginPreferences
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 
 /**
@@ -28,6 +29,16 @@ class DanaPumpPreferences(val preferences: PluginPreferences) {
     suspend fun saveInsulinConcentration(concentration: InsulinConcentration) {
         preferences.putFloat(KEY_INSULIN_CONCENTRATION, concentration.factor.toFloat())
     }
+
+    suspend fun getCatheterWearDurationDays(defaultDays: Int = DEFAULT_CATHETER_WEAR_DURATION_DAYS): Int =
+        preferences.getInt(KEY_CATHETER_WEAR_DURATION_DAYS, defaultDays).first()
+
+    suspend fun saveCatheterWearDurationDays(days: Int) {
+        preferences.putInt(KEY_CATHETER_WEAR_DURATION_DAYS, days)
+    }
+
+    fun getCatheterWearDurationDaysFlow(defaultDays: Int = DEFAULT_CATHETER_WEAR_DURATION_DAYS): Flow<Int> =
+        preferences.getInt(KEY_CATHETER_WEAR_DURATION_DAYS, defaultDays)
 
     suspend fun getLastName(): String =
         preferences.getString(KEY_LAST_NAME, "").first() ?: ""
@@ -71,6 +82,8 @@ class DanaPumpPreferences(val preferences: PluginPreferences) {
     companion object {
         const val KEY_INSULIN_TYPE_ID = "insulin_type_id"
         const val KEY_INSULIN_CONCENTRATION = "insulin_concentration"
+        const val KEY_CATHETER_WEAR_DURATION_DAYS = "catheter_wear_duration_days"
+        const val DEFAULT_CATHETER_WEAR_DURATION_DAYS = 3
         const val KEY_LAST_NAME = "last_name"
         const val KEY_LAST_ADDRESS = "last_address"
         const val KEY_BLE5_PAIRING_KEY = "ble5_pairing_key"

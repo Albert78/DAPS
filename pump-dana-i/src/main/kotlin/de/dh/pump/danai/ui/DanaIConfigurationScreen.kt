@@ -1,6 +1,14 @@
 package de.dh.pump.danai.ui
 
 import android.content.res.Configuration
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -8,8 +16,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.BasalStatus
 import de.dh.daps.common.model.BolusEvent
 import de.dh.daps.common.model.BolusStatus
@@ -27,6 +38,9 @@ import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.getDefaultInsulinTypes
 import de.dh.daps.common.ui.UiText
+import de.dh.daps.ui.common.DefaultSteppingStrategy
+import de.dh.daps.ui.common.composables.EditableValueStepper
+import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.PumpConfigurationScreen
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.pump.danai.R
@@ -36,6 +50,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
 @Composable
@@ -52,6 +67,10 @@ fun DanaIConfigurationScreen(
     val availableInsulinTypes = remember(context) { getDefaultInsulinTypes(context) }
     val currentInsulinTypeId by pump.insulinTypeId.collectAsState()
     val currentConcentration by pump.insulinConcentration.collectAsState()
+
+    val currentCatheterWearDurationDays by remember(danaPrefs) {
+        danaPrefs?.getCatheterWearDurationDaysFlow() ?: flowOf(DanaPumpPreferences.DEFAULT_CATHETER_WEAR_DURATION_DAYS)
+    }.collectAsState(initial = DanaPumpPreferences.DEFAULT_CATHETER_WEAR_DURATION_DAYS)
 
     PumpConfigurationScreen(
         title = stringResource(R.string.danai_config_screen_title),
@@ -82,7 +101,65 @@ fun DanaIConfigurationScreen(
         modifier = modifier,
         typeCardSubtitle = stringResource(R.string.danai_config_insulin_type_subtitle),
         concentrationCardSubtitle = stringResource(R.string.danai_config_concentration_subtitle),
+        additionalContent = {
+            CatheterWearDurationCard(
+                selectedDays = currentCatheterWearDurationDays,
+                onSelectDays = { days ->
+                    danaPrefs?.let { prefs ->
+                        scope.launch {
+                            prefs.saveCatheterWearDurationDays(days)
+                        }
+                    }
+                }
+            )
+        }
     )
+}
+
+/**
+ * Card displaying catheter wear duration selection stepper (2-14 days).
+ */
+@Composable
+fun CatheterWearDurationCard(
+    selectedDays: Int,
+    onSelectDays: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    minDays: Int = 1,
+    maxDays: Int = 14,
+    title: String = stringResource(R.string.danai_config_catheter_title),
+    subtitle: String = stringResource(R.string.danai_config_catheter_subtitle),
+) {
+    FramedCard(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            EditableValueStepper(
+                currentValue = selectedDays.toDouble(),
+                onValueChange = { onSelectDays(it.toInt().coerceIn(minDays, maxDays)) },
+                minValue = minDays.toDouble(),
+                maxValue = maxDays.toDouble(),
+                steppingStrategy = DefaultSteppingStrategy(step = 1.0),
+                suffix = pluralStringResource(R.plurals.danai_config_catheter_days_suffix, selectedDays),
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
 }
 
 private class PreviewDanaIPump(

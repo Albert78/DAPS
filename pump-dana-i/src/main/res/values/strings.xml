@@ -43,4 +43,10 @@
     <string name="danai_config_screen_title">Dana-i Konfiguration</string>
     <string name="danai_config_insulin_type_subtitle">Wähle den Typ des in der Dana-Pumpe geladenen Insulins.</string>
     <string name="danai_config_concentration_subtitle">Wähle die Konzentration des in der Dana-Pumpe geladenen Insulins. Der Standardwert ist U100.</string>
+    <string name="danai_config_catheter_title">Katheter-Tragedauer</string>
+    <string name="danai_config_catheter_subtitle">Wähle die Tragedauer des Katheters in Tagen.</string>
+    <plurals name="danai_config_catheter_days_suffix">
+        <item quantity="one">Tag</item>
+        <item quantity="other">Tage</item>
+    </plurals>
 </resources>
