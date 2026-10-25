@@ -39,6 +39,9 @@ class ReminderManagerImpl(
     private val _activeReminders = MutableStateFlow<List<Reminder>>(emptyList())
     override val activeReminders: StateFlow<List<Reminder>> = _activeReminders.asStateFlow()
 
+    private val _allReminders = MutableStateFlow<List<Reminder>>(emptyList())
+    override val allReminders: StateFlow<List<Reminder>> = _allReminders.asStateFlow()
+
     private val dueRemindersChannel = Channel<Reminder>(capacity = Channel.UNLIMITED)
     override val dueReminders: Flow<Reminder> = dueRemindersChannel.receiveAsFlow()
 
@@ -53,6 +56,7 @@ class ReminderManagerImpl(
         observeJob = scope.launch {
             reminderDao.observeAllReminders().collect { entities ->
                 val models = entities.map { it.toModel() }
+                _allReminders.value = models
                 checkAndProcessRemindersInternal(models)
             }
         }
@@ -92,6 +96,7 @@ class ReminderManagerImpl(
         }
 
         val updatedEntities = reminderDao.getAllReminders().map { it.toModel() }
+        _allReminders.value = updatedEntities
         val activeList = updatedEntities.filter {
             (it.status == ReminderStatus.ACTIVE || it.status == ReminderStatus.SNOOZED) && !it.isExpired(now)
         }

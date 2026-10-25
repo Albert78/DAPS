@@ -17,6 +17,11 @@ interface ReminderManager {
     val activeReminders: StateFlow<List<Reminder>>
 
     /**
+     * Flow emitting all reminders (both active and historical).
+     */
+    val allReminders: StateFlow<List<Reminder>>
+
+    /**
      * Flow emitting reminders as they become due.
      */
     val dueReminders: Flow<Reminder>

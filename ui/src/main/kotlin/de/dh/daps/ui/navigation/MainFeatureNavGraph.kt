@@ -97,10 +97,13 @@ import de.dh.daps.ui.screens.permissions.openAppUseFullScreenSettings
 import de.dh.daps.ui.screens.permissions.openAutoRevokeSettings
 import de.dh.daps.ui.screens.permissions.openNotificationSettings
 import de.dh.daps.ui.screens.permissions.requestIgnoreBatteryOptimizations
+import de.dh.daps.common.navigation.PastRemindersRoute
 import de.dh.daps.ui.screens.preferences.PreferencesScreen
 import de.dh.daps.ui.screens.preferences.PreferencesViewModel
 import de.dh.daps.ui.screens.pumpsetup.PumpSetupScreen
 import de.dh.daps.ui.screens.pumpsetup.PumpSetupViewModel
+import de.dh.daps.ui.screens.reminders.PastRemindersScreen
+import de.dh.daps.ui.screens.reminders.PastRemindersViewModel
 import de.dh.daps.ui.screens.reminders.RemindersScreen
 import de.dh.daps.ui.screens.reminders.RemindersViewModel
 import de.dh.daps.ui.screens.systemcontrol.CoreDecisionsScreen
@@ -420,6 +423,17 @@ class MainFeatureNavGraph(
                     factory = RemindersViewModel.Companion.Factory(registry)
                 )
                 RemindersScreen(
+                    viewModel = vm,
+                    onNavigateUp = { navViewModel.pop() },
+                    onNavigateToPastReminders = { navViewModel.push(PastRemindersRoute) }
+                )
+            }
+
+            is PastRemindersRoute -> NavEntry(key) {
+                val vm: PastRemindersViewModel = viewModel(
+                    factory = PastRemindersViewModel.Companion.Factory(registry)
+                )
+                PastRemindersScreen(
                     viewModel = vm,
                     onNavigateUp = { navViewModel.pop() }
                 )

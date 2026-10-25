@@ -14,9 +14,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -65,6 +69,7 @@ import de.dh.daps.common.R as CommonR
 fun RemindersScreen(
     viewModel: RemindersViewModel,
     onNavigateUp: () -> Unit,
+    onNavigateToPastReminders: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -74,7 +79,8 @@ fun RemindersScreen(
         onDismiss = { id -> viewModel.dismissReminder(id) },
         onDelete = { id -> viewModel.deleteReminder(id) },
         onUndo = { viewModel.restoreLastRemovedReminder() },
-        onNavigateUp = onNavigateUp
+        onNavigateUp = onNavigateUp,
+        onNavigateToPastReminders = onNavigateToPastReminders
     )
 }
 
@@ -86,9 +92,11 @@ fun RemindersContent(
     onDismiss: (Long) -> Unit,
     onDelete: (Long) -> Unit,
     onUndo: () -> Unit,
-    onNavigateUp: () -> Unit
+    onNavigateUp: () -> Unit,
+    onNavigateToPastReminders: () -> Unit
 ) {
     var reminderToDelete by remember { mutableStateOf<Reminder?>(null) }
+    var showMenu by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -119,6 +127,28 @@ fun RemindersContent(
                             imageVector = Icon_Screen_Back,
                             contentDescription = stringResource(CommonR.string.cd_navigate_up)
                         )
+                    }
+                },
+                actions = {
+                    Box {
+                        IconButton(onClick = { showMenu = true }) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = stringResource(CommonR.string.cd_more_options)
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.reminders_menu_past_reminders)) },
+                                onClick = {
+                                    showMenu = false
+                                    onNavigateToPastReminders()
+                                }
+                            )
+                        }
                     }
                 }
             )
@@ -329,7 +359,8 @@ fun RemindersEmptyPreview() {
             onDismiss = {},
             onDelete = {},
             onUndo = {},
-            onNavigateUp = {}
+            onNavigateUp = {},
+            onNavigateToPastReminders = {}
         )
     }
 }
@@ -369,7 +400,8 @@ fun RemindersWithDataPreview() {
             onDismiss = {},
             onDelete = {},
             onUndo = {},
-            onNavigateUp = {}
+            onNavigateUp = {},
+            onNavigateToPastReminders = {}
         )
     }
 }

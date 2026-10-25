@@ -438,6 +438,16 @@
     <string name="reminders_snooze_30m">+30 Min</string>
     <string name="reminders_snooze_1h">+1 Std</string>
     <string name="reminders_snooze_2h">+2 Std</string>
+    <string name="reminders_menu_past_reminders">Vergangene Erinnerungen</string>
+    <string name="past_reminders_screen_title">Vergangene Erinnerungen</string>
+    <string name="past_reminders_empty_state_title">Keine vergangenen Erinnerungen</string>
+    <string name="past_reminders_empty_state_description">Es sind bisher keine vergangenen oder erledigten Erinnerungen vorhanden.</string>
+    <string name="past_reminders_action_reactivate">Reaktivieren</string>
+    <string name="past_reminders_status_dismissed">Erledigt</string>
+    <string name="past_reminders_status_expired">Abgelaufen</string>
+    <string name="past_reminders_status_triggered">Ausgelöst</string>
+    <string name="past_reminders_status_active">Aktiv</string>
+    <string name="past_reminders_status_snoozed">Schlummert</string>
     <string name="insulin_status_scheduled">Geplant</string>
     <string name="insulin_status_cancelled">Abgebrochen</string>
     <string name="insulin_status_invalidated">Entwertet</string>
