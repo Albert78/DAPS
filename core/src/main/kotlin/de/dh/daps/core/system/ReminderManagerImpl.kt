@@ -60,6 +60,9 @@ class ReminderManagerImpl(
                 checkAndProcessRemindersInternal(models)
             }
         }
+        scope.launch {
+            purgeOldReminders(3)
+        }
     }
 
     override fun stop() {
@@ -154,6 +157,17 @@ class ReminderManagerImpl(
         return reminderDao.getRemindersByType(type)
             .map { it.toModel() }
             .filter { (it.status == ReminderStatus.ACTIVE || it.status == ReminderStatus.SNOOZED) && !it.isExpired(now) }
+    }
+
+    override suspend fun purgeOldReminders(olderThanDays: Int) {
+        val cutoff = timeService.currentTime.minusHours(olderThanDays * 24)
+        reminderDao.deletePastRemindersOlderThan(cutoff.ms)
+        checkAndProcessReminders()
+    }
+
+    override suspend fun purgeAllPastReminders() {
+        reminderDao.deleteAllPastReminders()
+        checkAndProcessReminders()
     }
 
     companion object {

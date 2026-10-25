@@ -58,6 +58,12 @@ class PastRemindersViewModel(
         }
     }
 
+    fun clearAllPastReminders() {
+        viewModelScope.launch {
+            reminderManager.purgeAllPastReminders()
+        }
+    }
+
     companion object {
         class Factory(private val registry: SystemRegistry) : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")

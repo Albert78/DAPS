@@ -238,6 +238,7 @@ class SystemOrchestratorImpl(
     private var therapyManager: TherapyManager? = null
     private var treatmentRepository: TreatmentRepository? = null
     private var carbsInsulinCalculator: CarbsInsulinCalculator? = null
+    private var reminderManager: ReminderManager? = null
 
     private inner class NotificationTickHandler : TickHandler {
         override suspend fun onTick(tick: Tick) {
@@ -247,8 +248,9 @@ class SystemOrchestratorImpl(
 
     private inner class SystemWakeupHandler : WakeupHandler {
         override fun onWakeup(wakeupId: UInt?, intent: Intent?) {
-            if (wakeupId == WAKEUP_STALE_CHECK) {
-                staleCheck()
+            when (wakeupId) {
+                WAKEUP_STALE_CHECK -> staleCheck()
+                WAKEUP_DAILY_MAINTENANCE -> performDailyMaintenance()
             }
         }
     }
@@ -295,6 +297,9 @@ class SystemOrchestratorImpl(
         this.therapyManager = therapyManager
         this.treatmentRepository = treatmentRepository
         this.carbsInsulinCalculator = carbsInsulinCalculator
+        this.reminderManager = reminderManager
+
+        performDailyMaintenance()
 
         newInitScope.launch {
             combine(
@@ -601,6 +606,7 @@ class SystemOrchestratorImpl(
         coreDispatcher = null
 
         wakeService.cancelWakeup(WAKE_TAG, WAKEUP_STALE_CHECK)
+        wakeService.cancelWakeup(WAKE_TAG, WAKEUP_DAILY_MAINTENANCE)
         wakeService.unregisterHandler(WAKE_TAG)
 
         _apsIssues.value = emptySet()
@@ -673,6 +679,18 @@ class SystemOrchestratorImpl(
         _isBgStale.value = isBgStale()
     }
 
+    private fun performDailyMaintenance() {
+        scope.launch {
+            reminderManager?.purgeOldReminders(3)
+        }
+        scheduleDailyMaintenance()
+    }
+
+    private fun scheduleDailyMaintenance() {
+        val nextMaintenance = timeService.currentTime.plusHours(24)
+        wakeService.scheduleWakeup(WAKE_TAG, WAKEUP_DAILY_MAINTENANCE, nextMaintenance)
+    }
+
     fun isBgStale(): Boolean {
         val lastDataTime = glucoseSourceManager.lastInputTimestamp.value
         return lastDataTime.isInvalid() || lastDataTime + STALE_BG_THRESHOLD < Timestamp.now()
@@ -687,6 +705,7 @@ class SystemOrchestratorImpl(
         private val TAG = SystemOrchestratorImpl::class.simpleName
         const val WAKE_TAG = "SystemOrchestrator"
         const val WAKEUP_STALE_CHECK = 0u
+        const val WAKEUP_DAILY_MAINTENANCE = 1u
         const val DEVICE_INITIALIZATION_TIMEOUT_MS = 1000L
         val AUTOMATED_BOLUS_EXPIRATION = Minutes(4)
     }

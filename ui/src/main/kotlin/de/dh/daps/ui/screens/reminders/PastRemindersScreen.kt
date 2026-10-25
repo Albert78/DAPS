@@ -14,9 +14,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -67,6 +71,7 @@ fun PastRemindersScreen(
         uiState = uiState,
         onReactivate = { reminder -> viewModel.reactivateReminder(reminder) },
         onDelete = { id -> viewModel.deleteReminder(id) },
+        onClearAll = { viewModel.clearAllPastReminders() },
         onNavigateUp = onNavigateUp
     )
 }
@@ -77,9 +82,12 @@ fun PastRemindersContent(
     uiState: PastRemindersUiState,
     onReactivate: (Reminder) -> Unit,
     onDelete: (Long) -> Unit,
+    onClearAll: () -> Unit,
     onNavigateUp: () -> Unit
 ) {
     var reminderToDelete by remember { mutableStateOf<Reminder?>(null) }
+    var showClearAllDialog by remember { mutableStateOf(false) }
+    var showMenu by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -91,6 +99,30 @@ fun PastRemindersContent(
                             imageVector = Icon_Screen_Back,
                             contentDescription = stringResource(CommonR.string.cd_navigate_up)
                         )
+                    }
+                },
+                actions = {
+                    if (uiState.pastReminders.isNotEmpty()) {
+                        Box {
+                            IconButton(onClick = { showMenu = true }) {
+                                Icon(
+                                    imageVector = Icons.Default.MoreVert,
+                                    contentDescription = stringResource(CommonR.string.cd_more_options)
+                                )
+                            }
+                            DropdownMenu(
+                                expanded = showMenu,
+                                onDismissRequest = { showMenu = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.past_reminders_menu_clear_all)) },
+                                    onClick = {
+                                        showMenu = false
+                                        showClearAllDialog = true
+                                    }
+                                )
+                            }
+                        }
                     }
                 }
             )
@@ -175,6 +207,36 @@ fun PastRemindersContent(
             },
             dismissButton = {
                 NormalTextButton(onClick = { reminderToDelete = null }) {
+                    Text(text = stringResource(CommonR.string.action_cancel))
+                }
+            }
+        )
+    }
+
+    if (showClearAllDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearAllDialog = false },
+            title = {
+                Text(text = stringResource(R.string.past_reminders_clear_dialog_title))
+            },
+            text = {
+                Text(text = stringResource(R.string.past_reminders_clear_dialog_message))
+            },
+            confirmButton = {
+                NormalTextButton(
+                    onClick = {
+                        onClearAll()
+                        showClearAllDialog = false
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text(text = stringResource(CommonR.string.action_delete))
+                }
+            },
+            dismissButton = {
+                NormalTextButton(onClick = { showClearAllDialog = false }) {
                     Text(text = stringResource(CommonR.string.action_cancel))
                 }
             }
@@ -292,6 +354,7 @@ fun PastRemindersEmptyPreview() {
             uiState = PastRemindersUiState(pastReminders = emptyList()),
             onReactivate = {},
             onDelete = {},
+            onClearAll = {},
             onNavigateUp = {}
         )
     }
@@ -325,6 +388,7 @@ fun PastRemindersWithDataPreview() {
             uiState = PastRemindersUiState(pastReminders = samplePastReminders),
             onReactivate = {},
             onDelete = {},
+            onClearAll = {},
             onNavigateUp = {}
         )
     }

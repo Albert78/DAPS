@@ -67,6 +67,16 @@ interface ReminderManager {
     suspend fun getRemindersByType(type: ReminderType): List<Reminder>
 
     /**
+     * Purges expired, dismissed, or triggered reminders older than [olderThanDays] days.
+     */
+    suspend fun purgeOldReminders(olderThanDays: Int = 3)
+
+    /**
+     * Purges all expired, dismissed, or triggered reminders.
+     */
+    suspend fun purgeAllPastReminders()
+
+    /**
      * Manually triggers checking and processing of reminders (for wake-up triggers or system ticks).
      */
     suspend fun checkAndProcessReminders()

@@ -45,6 +45,12 @@ interface ReminderDao {
     @Query("DELETE FROM reminders WHERE source_id = :sourceId")
     suspend fun deleteRemindersBySource(sourceId: String)
 
+    @Query("DELETE FROM reminders WHERE status IN ('EXPIRED', 'DISMISSED', 'TRIGGERED') AND reminder_timestamp < :cutoffTimestamp")
+    suspend fun deletePastRemindersOlderThan(cutoffTimestamp: Long): Int
+
+    @Query("DELETE FROM reminders WHERE status IN ('EXPIRED', 'DISMISSED', 'TRIGGERED')")
+    suspend fun deleteAllPastReminders(): Int
+
     @Query("DELETE FROM reminders")
     suspend fun deleteAllReminders()
 }

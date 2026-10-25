@@ -448,6 +448,9 @@
     <string name="past_reminders_status_triggered">Ausgelöst</string>
     <string name="past_reminders_status_active">Aktiv</string>
     <string name="past_reminders_status_snoozed">Schlummert</string>
+    <string name="past_reminders_menu_clear_all">Verlauf leeren</string>
+    <string name="past_reminders_clear_dialog_title">Vergangene Erinnerungen leeren</string>
+    <string name="past_reminders_clear_dialog_message">Möchtest du alle vergangenen Erinnerungen unwiderruflich löschen?</string>
     <string name="insulin_status_scheduled">Geplant</string>
     <string name="insulin_status_cancelled">Abgebrochen</string>
     <string name="insulin_status_invalidated">Entwertet</string>
