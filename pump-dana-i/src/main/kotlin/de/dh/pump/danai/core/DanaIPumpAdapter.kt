@@ -11,6 +11,7 @@ import de.dh.daps.common.model.InsulinPumpStatus
 import de.dh.daps.common.model.PumpAlerts
 import de.dh.daps.common.model.PumpCapabilities
 import de.dh.daps.common.model.PumpHardwareInformation
+import de.dh.daps.common.model.PumpLifecycleState
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
@@ -20,8 +21,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import java.time.Instant
+import java.time.ZoneId
 
 /**
  * Adapter that maps the Dana-i specific [DanaIPump] to the generic [InsulinPump] interface.
@@ -74,7 +78,39 @@ class DanaIPumpAdapter(
     override val isConnected: StateFlow<Boolean> = pump.isConnected
     override val isBlocked: StateFlow<Boolean> get() = pump.isMaintenanceMode
     override val requiresStaleBondRemoval: StateFlow<Boolean> get() = controller.requiresStaleBondRemoval
-    override val pumpStatus: StateFlow<InsulinPumpStatus> = pump.status
+
+    private val danaPreferences: DanaPumpPreferences? = try {
+        DanaPumpPreferences(controller.link.preferences)
+    } catch (_: Exception) {
+        null
+    }
+
+    override val pumpStatus: StateFlow<InsulinPumpStatus> = if (danaPreferences != null) {
+        combine(
+            pump.status,
+            danaPreferences.getCatheterLastChangedFlow(),
+            danaPreferences.getCatheterWearDurationDaysFlow()
+        ) { status, catheterLastChanged, wearDurationDays ->
+            val approximateExpiration = catheterLastChanged?.let { ts ->
+                Instant.ofEpochMilli(ts.ms)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate()
+                    .plusDays(wearDurationDays.toLong())
+            }
+            val currentLifecycle = status.lifecycleState as? PumpLifecycleState.Durable
+            val updatedLifecycle = (currentLifecycle ?: PumpLifecycleState.Durable()).copy(
+                catheterLastChanged = catheterLastChanged,
+                approximateCatheterExpiration = approximateExpiration
+            )
+            (status as? DanaPumpStatusData)?.copy(lifecycleState = updatedLifecycle) ?: status
+        }.stateIn(scope, SharingStarted.Eagerly, pump.status.value)
+    } else {
+        pump.status
+    }
+
+    suspend fun saveCatheterLastChanged(timestamp: Timestamp?) {
+        danaPreferences?.saveCatheterLastChanged(timestamp)
+    }
     override val alerts: StateFlow<PumpAlerts> get() = pump.alerts
     override val basalStatus: StateFlow<BasalStatus> get() = pump.basalStatus
     override val bolusStatus: StateFlow<BolusStatus> get() = pump.bolusStatus

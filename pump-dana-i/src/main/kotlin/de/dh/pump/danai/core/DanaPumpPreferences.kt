@@ -2,8 +2,10 @@ package de.dh.pump.danai.core
 
 import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.PluginPreferences
+import de.dh.daps.common.model.data.Timestamp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 
 /**
  * Type-safe wrapper over [PluginPreferences] for Dana pump driver preferences.
@@ -39,6 +41,24 @@ class DanaPumpPreferences(val preferences: PluginPreferences) {
 
     fun getCatheterWearDurationDaysFlow(defaultDays: Int = DEFAULT_CATHETER_WEAR_DURATION_DAYS): Flow<Int> =
         preferences.getInt(KEY_CATHETER_WEAR_DURATION_DAYS, defaultDays)
+
+    suspend fun getCatheterLastChanged(): Timestamp? =
+        preferences.getLong(KEY_CATHETER_LAST_CHANGED, 0L).first()
+            .takeIf { it > 0L }
+            ?.let { Timestamp(it) }
+
+    suspend fun saveCatheterLastChanged(timestamp: Timestamp?) {
+        if (timestamp != null && timestamp.ms > 0L) {
+            preferences.putLong(KEY_CATHETER_LAST_CHANGED, timestamp.ms)
+        } else {
+            preferences.remove(KEY_CATHETER_LAST_CHANGED)
+        }
+    }
+
+    fun getCatheterLastChangedFlow(): Flow<Timestamp?> =
+        preferences.getLong(KEY_CATHETER_LAST_CHANGED, 0L).map { millis ->
+            if (millis > 0L) Timestamp(millis) else null
+        }
 
     suspend fun getLastName(): String =
         preferences.getString(KEY_LAST_NAME, "").first() ?: ""
@@ -84,6 +104,7 @@ class DanaPumpPreferences(val preferences: PluginPreferences) {
         const val KEY_INSULIN_CONCENTRATION = "insulin_concentration"
         const val KEY_CATHETER_WEAR_DURATION_DAYS = "catheter_wear_duration_days"
         const val DEFAULT_CATHETER_WEAR_DURATION_DAYS = 3
+        const val KEY_CATHETER_LAST_CHANGED = "catheter_last_changed"
         const val KEY_LAST_NAME = "last_name"
         const val KEY_LAST_ADDRESS = "last_address"
         const val KEY_BLE5_PAIRING_KEY = "ble5_pairing_key"
