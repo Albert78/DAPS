@@ -7,11 +7,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.dh.daps.common.model.DeviceLifecycleState
+import de.dh.daps.common.model.data.Timestamp
 import de.dh.pump.danai.DanaIInsulinPumpDriver
 import de.dh.pump.danai.core.DanaIPumpAdapter
+import kotlinx.coroutines.launch
 
 /**
  * Stateful setup container for Sooil Dana-i insulin pumps.
@@ -49,9 +52,15 @@ fun DanaISetupScreen(
             val isMaintenanceActive = pumpAdapter?.isMaintenanceMode?.collectAsStateWithLifecycle()?.value ?: false
 
             if (isMaintenanceActive) {
+                val coroutineScope = rememberCoroutineScope()
                 DanaIMaintenanceScreen(
-                    onEndMaintenance = {
-                        pumpAdapter.setMaintenanceMode(false)
+                    onEndMaintenance = { resetCatheterWear ->
+                        coroutineScope.launch {
+                            if (resetCatheterWear) {
+                                pumpAdapter.saveCatheterLastChanged(Timestamp.now())
+                            }
+                            pumpAdapter.setMaintenanceMode(false)
+                        }
                     },
                     modifier = modifier
                 )
