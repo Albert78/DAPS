@@ -34,6 +34,7 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Error
+import androidx.compose.material.icons.outlined.Extension
 import androidx.compose.material.icons.outlined.Fastfood
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
@@ -81,6 +82,7 @@ val Icon_Basal_Alternative = Icons.Outlined.Basal_Alternative
 val Icon_Reservoir = Icons.Outlined.PumpReservoir
 val Icon_Pump_Device = Icons.Outlined.InsulinPump
 val Icon_Cgm_Sensor = Icons.Outlined.CgmSensor
+val Icon_Plugin = Icons.Outlined.Extension
 val Icon_Insulin_Profile = Icons.Outlined.StackedLineChart
 val Icon_Therapy_Adjustment = Icons.Outlined.Tune
 val Icon_Insulin_Adjustment = Icons.Default.UnfoldMore
@@ -159,6 +161,7 @@ private val iconsForPreview = listOf(
     IconPreview("Reservoir", Icon_Reservoir),
     IconPreview("Pump_Device", Icon_Pump_Device),
     IconPreview("Cgm_Sensor", Icon_Cgm_Sensor),
+    IconPreview("Plugin", Icon_Plugin),
     IconPreview("Insulin_Profile", Icon_Insulin_Profile),
     IconPreview("Therapy_Adjustment", Icon_Therapy_Adjustment),
     IconPreview("Insulin_Adjustment", Icon_Insulin_Adjustment),

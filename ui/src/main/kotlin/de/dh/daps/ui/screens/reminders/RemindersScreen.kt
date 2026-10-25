@@ -52,13 +52,14 @@ import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.ScreenTitle
+import de.dh.daps.ui.common.icons.Icon_Cgm_Sensor
 import de.dh.daps.ui.common.icons.Icon_Check_Yes
 import de.dh.daps.ui.common.icons.Icon_Delete
 import de.dh.daps.ui.common.icons.Icon_Meal
+import de.dh.daps.ui.common.icons.Icon_Plugin
 import de.dh.daps.ui.common.icons.Icon_Pump_Device
 import de.dh.daps.ui.common.icons.Icon_Reminders
 import de.dh.daps.ui.common.icons.Icon_Screen_Back
-import de.dh.daps.ui.common.icons.Icon_Therapy_Adjustment
 import de.dh.daps.ui.common.shortDateTime
 import de.dh.daps.ui.common.shortRelativeTimeUntil
 import de.dh.daps.ui.common.theme.AppPreview
@@ -254,8 +255,9 @@ fun ReminderCard(
 ) {
     val icon = when (reminder.type) {
         ReminderType.MEAL -> Icon_Meal
-        ReminderType.PLUGIN -> Icon_Pump_Device
-        ReminderType.THERAPY -> Icon_Therapy_Adjustment
+        ReminderType.PLUGIN -> Icon_Plugin
+        ReminderType.PUMP -> Icon_Pump_Device
+        ReminderType.CGM -> Icon_Cgm_Sensor
         ReminderType.CUSTOM -> Icon_Reminders
     }
 
@@ -379,16 +381,16 @@ fun RemindersWithDataPreview() {
         ),
         Reminder(
             id = 2,
-            type = ReminderType.PLUGIN,
+            type = ReminderType.PUMP,
             title = "Pod-Wechsel fällig",
             description = "Reservoir fast leer. Bitte Pod tauschen.",
             reminderTimestamp = Timestamp.now().plusMinutes(45)
         ),
         Reminder(
             id = 3,
-            type = ReminderType.THERAPY,
-            title = "Basalrate kontrollieren",
-            description = "Basalraten-Anpassung überprüfen",
+            type = ReminderType.CGM,
+            title = "Sensor-Wechsel fällig",
+            description = "Glukosesensor läuft in 1 Stunde ab.",
             reminderTimestamp = Timestamp.now().plusHours(2)
         )
     )

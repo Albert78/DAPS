@@ -45,12 +45,13 @@ import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.SecondaryButton
 import de.dh.daps.ui.common.composables.ScreenTitle
+import de.dh.daps.ui.common.icons.Icon_Cgm_Sensor
 import de.dh.daps.ui.common.icons.Icon_Delete
 import de.dh.daps.ui.common.icons.Icon_Meal
+import de.dh.daps.ui.common.icons.Icon_Plugin
 import de.dh.daps.ui.common.icons.Icon_Pump_Device
 import de.dh.daps.ui.common.icons.Icon_Reminders
 import de.dh.daps.ui.common.icons.Icon_Screen_Back
-import de.dh.daps.ui.common.icons.Icon_Therapy_Adjustment
 import de.dh.daps.ui.common.shortDateTime
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.common.R as CommonR
@@ -189,8 +190,9 @@ fun PastReminderCard(
 ) {
     val icon = when (reminder.type) {
         ReminderType.MEAL -> Icon_Meal
-        ReminderType.PLUGIN -> Icon_Pump_Device
-        ReminderType.THERAPY -> Icon_Therapy_Adjustment
+        ReminderType.PLUGIN -> Icon_Plugin
+        ReminderType.PUMP -> Icon_Pump_Device
+        ReminderType.CGM -> Icon_Cgm_Sensor
         ReminderType.CUSTOM -> Icon_Reminders
     }
 
@@ -310,7 +312,7 @@ fun PastRemindersWithDataPreview() {
         ),
         Reminder(
             id = 2,
-            type = ReminderType.THERAPY,
+            type = ReminderType.PUMP,
             title = "Katheter wechseln",
             description = "Katheterwechsel fällig",
             reminderTimestamp = Timestamp.now().minusHours(3),

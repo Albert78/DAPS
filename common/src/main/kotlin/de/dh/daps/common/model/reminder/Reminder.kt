@@ -9,7 +9,8 @@ import de.dh.daps.common.model.data.Timestamp
 enum class ReminderType {
     MEAL,
     PLUGIN,
-    THERAPY,
+    PUMP,
+    CGM,
     CUSTOM
 }
 
