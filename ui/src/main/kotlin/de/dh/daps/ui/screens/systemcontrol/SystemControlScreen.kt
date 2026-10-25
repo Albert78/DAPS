@@ -179,12 +179,12 @@ fun SystemControlContent(
                                 )
                                 SYSTEM_CONTROL_TAB_GLUCOSE_SOURCE -> SourceTabContent(
                                     uiState = uiState.sourceTabUiState,
-                                    onChangeGlucoseSource = onNavigateToGlucoseSourceSetup,
+                                    onSetupGlucoseSource = onNavigateToGlucoseSourceSetup,
                                     onStopSensor = onStopGlucoseSource
                                 )
                                 SYSTEM_CONTROL_TAB_PUMP -> PumpTabContent(
                                     uiState = uiState.pumpTabUiState,
-                                    onChangePumpDriver = onNavigateToPumpSetup,
+                                    onSetupPumpDriver = onNavigateToPumpSetup,
                                     onRefreshPumpStatus = onRefreshPumpStatus,
                                     onCancelPumpJob = onCancelPumpJob,
                                     onResetPumpCommunication = onResetPumpCommunication

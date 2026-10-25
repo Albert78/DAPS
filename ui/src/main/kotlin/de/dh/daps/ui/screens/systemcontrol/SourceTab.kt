@@ -68,7 +68,7 @@ import de.dh.daps.ui.common.theme.ExtendedTheme
 fun SourceTabContent(
     modifier: Modifier = Modifier,
     uiState: SourceTabUiState = SourceTabUiState.Loading,
-    onChangeGlucoseSource: () -> Unit = {},
+    onSetupGlucoseSource: () -> Unit = {},
     @Suppress("UNUSED_PARAMETER") onStopSensor: () -> Unit = {}
 ) {
     var showSettingsDialog by remember { mutableStateOf(false) }
@@ -135,10 +135,10 @@ fun SourceTabContent(
                             }
                         )
                     }
-                    OutlinedIconButton(onClick = onChangeGlucoseSource) {
+                    OutlinedIconButton(onClick = onSetupGlucoseSource) {
                         Icon(
                             imageVector = Icon_Cgm_Sensor,
-                            contentDescription = stringResource(R.string.cd_system_control_source_change)
+                            contentDescription = stringResource(R.string.cd_system_control_source_setup)
                         )
                     }
                 }
@@ -149,7 +149,7 @@ fun SourceTabContent(
 
         if (uiState is SourceTabUiState.NoneConfigured) {
             PrimaryButton(
-                onClick = onChangeGlucoseSource,
+                onClick = onSetupGlucoseSource,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(

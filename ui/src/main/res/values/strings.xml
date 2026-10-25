@@ -472,7 +472,6 @@
     <string name="system_control_tab_glucose_source">CGM</string>
     <string name="system_control_source_plugin_section_title">Datenquelle</string>
     <string name="system_control_source_none_active">Keine Glukosequelle aktiv</string>
-    <string name="cd_system_control_source_change">Glukose-Quelle wechseln</string>
     <string name="cd_system_control_source_setup">Glukose-Quelle einrichten</string>
     <string name="cd_system_control_source_settings">Glukosequellen-Einstellungen</string>
     <string name="system_control_source_no_settings_toast">Für diese Glukosequelle sind keine Einstellungen vorhanden.</string>
@@ -503,7 +502,6 @@
     <string name="system_control_tab_pump">Pumpe</string>
     <string name="system_control_pump_plugin_section_title">Insulinpumpe</string>
     <string name="system_control_pump_none_active">Keine Insulinpumpe aktiv</string>
-    <string name="cd_system_control_pump_change">Insulinpumpe wechseln</string>
     <string name="cd_system_control_pump_setup">Insulinpumpe einrichten</string>
     <string name="cd_system_control_pump_settings">Pumpeneinstellungen</string>
     <string name="system_control_pump_no_settings_toast">Für diese Insulinpumpe sind keine Einstellungen vorhanden.</string>
@@ -539,7 +537,7 @@
     <string name="system_control_pump_catheter_title">Katheter</string>
     <string name="system_control_pump_last_changed_label">Zuletzt gewechselt</string>
     <string name="system_control_pump_reservoir_last_filled_label">Zuletzt befüllt</string>
-    <string name="system_control_pump_reservoir_until_label">Reicht voraussichtlich bis</string>
+    <string name="system_control_pump_reservoir_until_label">Reicht bis ca.</string>
     <string name="system_control_pump_bolus_jobs_title">Ausstehende Bolus-Kommandos</string>
     <string name="system_control_pump_jobs_empty">Keine ausstehenden Kommandos</string>
     <string name="system_control_pump_job_cancel">Kommando abbrechen</string>

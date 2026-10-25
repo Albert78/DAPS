@@ -80,7 +80,7 @@ import java.time.LocalDate
 fun PumpTabContent(
     modifier: Modifier = Modifier,
     uiState: PumpTabUiState = PumpTabUiState.Loading,
-    onChangePumpDriver: () -> Unit = {},
+    onSetupPumpDriver: () -> Unit = {},
     onRefreshPumpStatus: () -> Unit = {},
     onCancelPumpJob: (String) -> Unit = {},
     onResetPumpCommunication: () -> Unit = {}
@@ -149,10 +149,10 @@ fun PumpTabContent(
                             }
                         )
                     }
-                    OutlinedIconButton(onClick = onChangePumpDriver) {
+                    OutlinedIconButton(onClick = onSetupPumpDriver) {
                         Icon(
                             imageVector = Icon_Pump_Device,
-                            contentDescription = stringResource(R.string.cd_system_control_pump_change)
+                            contentDescription = stringResource(R.string.cd_system_control_pump_setup)
                         )
                     }
                 }
@@ -163,7 +163,7 @@ fun PumpTabContent(
 
         if (uiState is PumpTabUiState.NoneConfigured) {
             PrimaryButton(
-                onClick = onChangePumpDriver,
+                onClick = onSetupPumpDriver,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
