@@ -207,6 +207,8 @@ sealed interface PumpTabUiState {
         val pumpConnected: Boolean,
         val isSuspended: Boolean,
         val lifecycleState: PumpLifecycleState,
+        val tdd: InsulinAmount? = null,
+        val estimatedReservoirRunout: Timestamp? = null,
         val pendingJobs: List<PumpJobItem>,
         val coordinatorState: PumpCoordinatorState,
         val syncStatus: PumpSyncStatus,
@@ -677,10 +679,18 @@ class SystemControlViewModel(
                 }
             } else null
 
+            // TODO: Calculate Total Daily Dose (TDD) and Estimated Reservoir Runout (ERR) when TDD is available in the app.
+            // val tdd = ...
+            // val reachMs = (pInfo.status.reservoirRemainingUnits.iu / tdd.iu) * 24 * 3600 * 1000
+            // val estimatedReservoirRunout = Timestamp(Timestamp.now().ms + reachMs.toLong())
+            val tdd: InsulinAmount? = null
+            val estimatedReservoirRunout: Timestamp? = null
+
             PumpTabUiState.Content(
                 pumpName = pInfo.pumpName,
                 batteryPercent = pInfo.status.batteryRemainingPercent,
                 reservoirRemaining = pInfo.status.reservoirRemainingUnits,
+                tdd = tdd,
                 insulinConcentration = pInfo.pump?.insulinConcentration?.value ?: InsulinConcentration.U100,
                 lastConnectionTimestamp = pInfo.lastConnection,
                 manufacturer = pInfo.manufacturer,
@@ -689,6 +699,7 @@ class SystemControlViewModel(
                 pumpConnected = pInfo.connected,
                 isSuspended = pInfo.isSuspended,
                 lifecycleState = pInfo.lifecycleState,
+                estimatedReservoirRunout = estimatedReservoirRunout,
                 pendingJobs = pumpJobsList,
                 coordinatorState = pInfo.coordinatorState,
                 syncStatus = pInfo.syncStatus,

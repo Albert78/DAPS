@@ -536,8 +536,9 @@
     <string name="system_control_pump_expirations_title">Ablaufdaten &amp; Wechsel</string>
     <string name="system_control_pump_catheter_title">Katheter</string>
     <string name="system_control_pump_last_changed_label">Zuletzt gewechselt</string>
-    <string name="system_control_pump_reservoir_last_filled_label">Zuletzt befüllt</string>
-    <string name="system_control_pump_reservoir_until_label">Reicht bis ca.</string>
+    <string name="system_control_pump_reservoir_level_label">Füllstand</string>
+    <string name="system_control_pump_tdd_label">Tagesgesamtdosis (TDD)</string>
+    <string name="system_control_pump_reservoir_estimated_runout_label">Geschätzte Reservoirreichweite (ERR)</string>
     <string name="system_control_pump_bolus_jobs_title">Ausstehende Bolus-Kommandos</string>
     <string name="system_control_pump_jobs_empty">Keine ausstehenden Kommandos</string>
     <string name="system_control_pump_job_cancel">Kommando abbrechen</string>

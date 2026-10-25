@@ -72,9 +72,7 @@ sealed interface PumpLifecycleState {
      */
     data class Durable(
         val approximateCatheterExpiration: LocalDate? = null,
-        val approximateReservoirExpiration: LocalDate? = null,
         val catheterLastChanged: Timestamp? = null,
-        val reservoirLastChanged: Timestamp? = null
     ) : PumpLifecycleState
 
     /**

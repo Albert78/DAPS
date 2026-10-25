@@ -191,7 +191,12 @@ fun PumpTabContent(
 
         if (uiState is PumpTabUiState.Content) {
             Spacer(modifier = Modifier.height(16.dp))
-            PumpLifecycleSection(lifecycleState = uiState.lifecycleState)
+            PumpLifecycleSection(
+                lifecycleState = uiState.lifecycleState,
+                reservoirRemaining = uiState.reservoirRemaining,
+                tdd = uiState.tdd,
+                estimatedReservoirRunout = uiState.estimatedReservoirRunout
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
             SectionHeader(
@@ -502,7 +507,10 @@ fun PumpOverviewCard(
 @Composable
 fun PumpLifecycleSection(
     lifecycleState: PumpLifecycleState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    reservoirRemaining: InsulinAmount? = null,
+    tdd: InsulinAmount? = null,
+    estimatedReservoirRunout: Timestamp? = null
 ) {
     Column(modifier = modifier) {
         SectionHeader(
@@ -512,7 +520,12 @@ fun PumpLifecycleSection(
 
         when (lifecycleState) {
             is PumpLifecycleState.Patch -> PatchPumpLifecycleSection(state = lifecycleState)
-            is PumpLifecycleState.Durable -> DurablePumpLifecycleSection(state = lifecycleState)
+            is PumpLifecycleState.Durable -> DurablePumpLifecycleSection(
+                state = lifecycleState,
+                reservoirRemaining = reservoirRemaining,
+                tdd = tdd,
+                estimatedReservoirRunout = estimatedReservoirRunout
+            )
         }
     }
 }
@@ -684,7 +697,10 @@ fun PatchPumpLifecycleSection(
 @Composable
 fun DurablePumpLifecycleSection(
     state: PumpLifecycleState.Durable,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    reservoirRemaining: InsulinAmount? = null,
+    tdd: InsulinAmount? = null,
+    estimatedReservoirRunout: Timestamp? = null
 ) {
     FramedCard(
         modifier = modifier
@@ -767,82 +783,98 @@ fun DurablePumpLifecycleSection(
                 }
             }
 
-            if (state.approximateReservoirExpiration != null || state.reservoirLastChanged != null) {
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 12.dp),
-                    thickness = 0.5.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant
-                )
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 12.dp),
+                thickness = 0.5.dp,
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
 
-                Text(
-                    text = stringResource(R.string.system_control_pump_reservoir_label),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = stringResource(R.string.system_control_pump_reservoir_label),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(24.dp)
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        ControlDetailRow(
-                            label = stringResource(R.string.system_control_pump_reservoir_last_filled_label),
-                            reserveIconSpace = true
-                        ) {
-                            val lastResChanged = state.reservoirLastChanged
-                            if (lastResChanged != null) {
-                                Text(
-                                    text = shortDateTime(lastResChanged),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            } else {
-                                Text(
-                                    text = stringResource(R.string.system_control_value_not_available),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    ControlDetailRow(
+                        label = stringResource(R.string.system_control_pump_reservoir_level_label),
+                        reserveIconSpace = true
+                    ) {
+                        if (reservoirRemaining != null) {
+                            Text(
+                                text = insulinValue(reservoirRemaining),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        } else {
+                            Text(
+                                text = stringResource(R.string.system_control_value_not_available),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
+                }
 
-                    Column(modifier = Modifier.weight(1f)) {
-                        ControlDetailRow(
-                            label = stringResource(R.string.system_control_pump_reservoir_until_label),
-                            reserveIconSpace = true
-                        ) {
-                            val resExp = state.approximateReservoirExpiration
-                            if (resExp != null) {
-                                Column {
-                                    Text(
-                                        text = shortDate(resExp),
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        maxLines = 2,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                    val rel = shortRelativeTime(ExpirationDate.Approximate(resExp))
-                                    if (rel.isNotEmpty()) {
-                                        Text(
-                                            text = "($rel)",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            maxLines = 2,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                    }
-                                }
-                            } else {
-                                Text(
-                                    text = stringResource(R.string.system_control_value_not_available),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
+                Column(modifier = Modifier.weight(1f)) {
+                    ControlDetailRow(
+                        label = stringResource(R.string.system_control_pump_tdd_label),
+                        reserveIconSpace = true
+                    ) {
+                        if (tdd != null) {
+                            Text(
+                                text = insulinValue(tdd),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        } else {
+                            Text(
+                                text = stringResource(R.string.system_control_value_not_available),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            ControlDetailRow(
+                label = stringResource(R.string.system_control_pump_reservoir_estimated_runout_label),
+                reserveIconSpace = true
+            ) {
+                if (estimatedReservoirRunout != null && estimatedReservoirRunout.isValid()) {
+                    Column {
+                        Text(
+                            text = shortDateTime(estimatedReservoirRunout),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        val rel = shortRelativeTime(estimatedReservoirRunout)
+                        if (rel.isNotEmpty()) {
+                            Text(
+                                text = "($rel)",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                } else {
+                    Text(
+                        text = stringResource(R.string.system_control_value_not_available),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
@@ -1112,7 +1144,7 @@ fun PumpTechnicalStatusCard(
 internal fun samplePumpTabUiState(): PumpTabUiState = PumpTabUiState.Content(
     pumpName = UiText.DynamicString("SimBody Virtuelle Insulinpumpe"),
     batteryPercent = 85,
-    reservoirRemaining = InsulinAmount(140.0),
+    reservoirRemaining = InsulinAmount(86.0),
     insulinConcentration = InsulinConcentration.U100,
     lastConnectionTimestamp = Timestamp(System.currentTimeMillis() - 60_000),
     manufacturer = "DAPS",
@@ -1126,6 +1158,7 @@ internal fun samplePumpTabUiState(): PumpTabUiState = PumpTabUiState.Content(
         activeUntil = Timestamp(System.currentTimeMillis() + 172_800_000),
         graceUntil = Timestamp(System.currentTimeMillis() + 180_000_000)
     ),
+    estimatedReservoirRunout = Timestamp(System.currentTimeMillis() + (86.0 / 25.0 * 24 * 3600 * 1000).toLong()),
     coordinatorState = PumpCoordinatorState.Idle,
     syncStatus = PumpSyncStatus.InSync(Timestamp(System.currentTimeMillis() + 300_000)),
     nextWakeupTime = Timestamp(System.currentTimeMillis() + 300_000),
@@ -1362,13 +1395,15 @@ fun PatchPumpLifecycleSectionExpiredPreview() {
 fun DurablePumpLifecycleSectionActivePreview() {
     AppTheme {
         Surface {
+            val reachMs = (86.0 / 25.0 * 24 * 3600 * 1000).toLong()
             PumpLifecycleSection(
                 lifecycleState = PumpLifecycleState.Durable(
                     approximateCatheterExpiration = LocalDate.now().plusDays(2),
-                    catheterLastChanged = Timestamp(System.currentTimeMillis() - 86_400_000),
-                    approximateReservoirExpiration = LocalDate.now().plusDays(4),
-                    reservoirLastChanged = Timestamp(System.currentTimeMillis() - 86_400_000)
+                    catheterLastChanged = Timestamp(System.currentTimeMillis() - 86_400_000)
                 ),
+                reservoirRemaining = InsulinAmount(86.0),
+                tdd = InsulinAmount(25.0),
+                estimatedReservoirRunout = Timestamp(System.currentTimeMillis() + reachMs),
                 modifier = Modifier.padding(16.dp)
             )
         }
@@ -1384,10 +1419,11 @@ fun DurablePumpLifecycleSectionExpiredPreview() {
             PumpLifecycleSection(
                 lifecycleState = PumpLifecycleState.Durable(
                     approximateCatheterExpiration = LocalDate.now().minusDays(1),
-                    catheterLastChanged = Timestamp(System.currentTimeMillis() - 4 * 86_400_000),
-                    approximateReservoirExpiration = LocalDate.now().minusDays(1),
-                    reservoirLastChanged = Timestamp(System.currentTimeMillis() - 4 * 86_400_000)
+                    catheterLastChanged = Timestamp(System.currentTimeMillis() - 4 * 86_400_000)
                 ),
+                reservoirRemaining = null,
+                tdd = null,
+                estimatedReservoirRunout = null,
                 modifier = Modifier.padding(16.dp)
             )
         }
