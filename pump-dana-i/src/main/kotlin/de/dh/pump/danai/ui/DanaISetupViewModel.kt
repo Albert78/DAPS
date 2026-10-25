@@ -81,13 +81,13 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
                 _pairingAddress.value = null
                 if (e is StaleBondException) {
                     _isStaleBondError.value = true
-                    _pairError.value = getApplication<Application>().getString(R.string.danai_pump_setup_stale_bond_error)
+                    _pairError.value = getApplication<Application>().getString(R.string.danai_setup_stale_bond_error)
                 } else if (e is PairingFailedException) {
                     _isStaleBondError.value = true
-                    _pairError.value = getApplication<Application>().getString(R.string.danai_pump_setup_possible_stale_bond_error)
+                    _pairError.value = getApplication<Application>().getString(R.string.danai_setup_possible_stale_bond_error)
                 } else {
                     _isStaleBondError.value = false
-                    _pairError.value = e.message ?: getApplication<Application>().getString(R.string.danai_pump_setup_connect_failed)
+                    _pairError.value = e.message ?: getApplication<Application>().getString(R.string.danai_setup_connect_failed)
                 }
             }
         }
@@ -118,10 +118,10 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
                     val options = pump.getUserOptions()
                     _userOptions.value = options
                 } else {
-                    _optionsError.value = getApplication<Application>().getString(R.string.danai_pump_unbind_pump_not_connected)
+                    _optionsError.value = getApplication<Application>().getString(R.string.danai_unbind_dialog_pump_not_connected)
                 }
             } catch (e: Exception) {
-                _optionsError.value = e.message ?: getApplication<Application>().getString(R.string.danai_pump_unbind_load_failed)
+                _optionsError.value = e.message ?: getApplication<Application>().getString(R.string.danai_unbind_dialog_load_failed)
             } finally {
                 _isLoadingOptions.value = false
             }
@@ -145,7 +145,7 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
                 driver.unbindDevice()
                 onSuccess?.invoke()
             } catch (e: Exception) {
-                _optionsError.value = e.message ?: getApplication<Application>().getString(R.string.danai_pump_unbind_failed)
+                _optionsError.value = e.message ?: getApplication<Application>().getString(R.string.danai_unbind_dialog_failed)
             } finally {
                 _isSavingOptions.value = false
             }

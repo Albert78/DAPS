@@ -1,45 +1,54 @@
 <resources>
     <string name="danai_pump_driver_display_name">Sooil Dana-i</string>
-    <string name="danai_pump_setup_title">Sooil Dana-i</string>
-    <string name="danai_pump_setup_subtitle">Wähle und kopple deine Insulinpumpe</string>
-    <string name="danai_pump_setup_available_pumps">Verfügbare Pumpen</string>
-    <string name="danai_pump_setup_no_pumps_found">Keine Dana-i-Pumpen in der Nähe gefunden. Stelle sicher, dass Bluetooth aktiviert ist und sich die Pumpe in Reichweite befindet. Die Pumpe darf mit keinem anderen Gerät gekoppelt sein. Du kannst die Suche erneut starten, es ist ganz normal, dass es ein paar Versuche braucht.</string>
-    <string name="danai_pump_setup_searching_pumps">Suche nach Dana-i-Pumpen in der Nähe. Das kann eine Zeit lang dauern…</string>
-    <string name="danai_pump_setup_btn_pair">Koppeln</string>
-    <string name="danai_pump_setup_btn_search">Nach Pumpen suchen</string>
-    <string name="danai_pump_setup_connect_failed">Verbindung zur Dana-i-Pumpe fehlgeschlagen</string>
-    <string name="danai_pump_setup_stale_bond_error">Die Bluetooth-Kopplung mit der Dana-i-Pumpe ist auf deinem Smartphone ungültig. Bitte entkoppele/entferne das Bluetooth-Gerät in den Android-Bluetooth-Einstellungen und versuche das Koppeln danach erneut.</string>
-    <string name="danai_pump_setup_possible_stale_bond_error">Verbindung zur Dana-i-Pumpe fehlgeschlagen. Dies könnte an einer ungültigen Bluetooth-Kopplung im Android-System liegen. Falls das Problem bestehen bleibt, entferne das Bluetooth-Gerät in den Android-Bluetooth-Einstellungen und versuche es erneut.</string>
-    <string name="danai_pump_setup_btn_open_bluetooth_settings">Bluetooth-Einstellungen öffnen</string>
-    <string name="danai_pump_setup_bluetooth_disabled">Bluetooth ist ausgeschaltet. Bitte aktiviere Bluetooth, um nach Dana-i-Pumpen zu suchen.</string>
-    <string name="danai_pump_setup_scanner_unavailable">Bluetooth-Scanner ist auf diesem Gerät derzeit nicht verfügbar.</string>
-    <string name="danai_pump_setup_btn_enable_bluetooth">Bluetooth-Einstellungen öffnen</string>
-    <string name="danai_pump_bound_title">Dana-i Insulinpumpe gebunden</string>
-    <string name="danai_pump_bound_subtitle">Deine Dana-i Insulinpumpe ist derzeit aktiv mit der App gebunden.</string>
-    <string name="danai_pump_bound_badge">Gebunden</string>
-    <string name="danai_pump_btn_unbind">Bindung verwerfen</string>
-    <string name="danai_pump_unbind_dialog_title">Entkoppeln</string>
-    <string name="danai_pump_unbind_dialog_subtitle">Verwirft die Bindung zur Pumpe. Die App kann danach mit einer anderen Insulinpumpe verbunden werden und die aktuelle Pumpe ist wieder \"frei\". Du kannst jederzeit erneut mit der Pumpe koppeln.</string>
-    <string name="danai_pump_unbind_enable_set_light">Display-Beleuchtung vor dem Entkoppeln anpassen</string>
-    <string name="danai_pump_unbind_backlight_time">Display-Beleuchtung Dauer</string>
-    <string name="danai_pump_unbind_off">Aus</string>
-    <string name="danai_pump_unbind_seconds_format">%1$d Sek.</string>
-    <string name="danai_pump_unbind_confirm">Entkoppeln</string>
-    <string name="danai_pump_unbind_loading">Lade Pumpen-Optionen…</string>
-    <string name="danai_pump_unbind_saving">Speichere Einstellungen…</string>
-    <string name="danai_pump_unbind_error">Fehler beim Laden oder Speichern der Optionen</string>
-    <string name="danai_pump_unbind_pump_not_connected">Pumpe nicht verbunden</string>
-    <string name="danai_pump_unbind_load_failed">Fehler beim Laden der Optionen</string>
-    <string name="danai_pump_unbind_save_failed">Fehler beim Speichern der Optionen</string>
-    <string name="danai_pump_unbind_failed">Fehler beim Entkoppeln</string>
-    <string name="danai_pump_unbind_cancel">Abbrechen</string>
 
-    <string name="danai_pump_control_title">Wartungsmodus</string>
-    <string name="danai_pump_control_maintenance_subtitle_off">Trennt die Bluetooth-Verbindung temporär für Wartungsarbeiten (z.B. Reservoir- oder Katheterwechsel). Pumpenbefehle werden in dieser Zeit blockiert.</string>
-    <string name="danai_pump_control_maintenance_subtitle_on">Der Wartungsmodus ist aktiv. Pumpenbefehle werden so lange blockiert, bis der Wartungsmodus beendet wird.</string>
-    <string name="danai_pump_control_btn_disconnect_maintenance">Zur Wartung trennen</string>
-    <string name="danai_pump_control_btn_reconnect_maintenance">Wartung beenden</string>
+    <!-- Setup / Scanning Screen -->
+    <string name="danai_setup_title">Sooil Dana-i</string>
+    <string name="danai_setup_subtitle">Wähle und kopple deine Insulinpumpe</string>
+    <string name="danai_setup_available_pumps">Verfügbare Pumpen</string>
+    <string name="danai_setup_no_pumps_found">Keine Dana-i-Pumpen in der Nähe gefunden. Stelle sicher, dass Bluetooth aktiviert ist und sich die Pumpe in Reichweite befindet. Die Pumpe darf mit keinem anderen Gerät gekoppelt sein. Du kannst die Suche erneut starten, es ist ganz normal, dass es ein paar Versuche braucht.</string>
+    <string name="danai_setup_searching_pumps">Suche nach Dana-i-Pumpen in der Nähe. Das kann eine Zeit lang dauern…</string>
+    <string name="danai_setup_btn_pair">Koppeln</string>
+    <string name="danai_setup_btn_search">Nach Pumpen suchen</string>
+    <string name="danai_setup_connect_failed">Verbindung zur Dana-i-Pumpe fehlgeschlagen</string>
+    <string name="danai_setup_stale_bond_error">Die Bluetooth-Kopplung mit der Dana-i-Pumpe ist auf deinem Smartphone ungültig. Bitte entkoppele/entferne das Bluetooth-Gerät in den Android-Bluetooth-Einstellungen und versuche das Koppeln danach erneut.</string>
+    <string name="danai_setup_possible_stale_bond_error">Verbindung zur Dana-i-Pumpe fehlgeschlagen. Dies könnte an einer ungültigen Bluetooth-Kopplung im Android-System liegen. Falls das Problem bestehen bleibt, entferne das Bluetooth-Gerät in den Android-Bluetooth-Einstellungen und versuche es erneut.</string>
+    <string name="danai_setup_btn_open_bluetooth_settings">Bluetooth-Einstellungen öffnen</string>
+    <string name="danai_setup_bluetooth_disabled">Bluetooth ist ausgeschaltet. Bitte aktiviere Bluetooth, um nach Dana-i-Pumpen zu suchen.</string>
+    <string name="danai_setup_scanner_unavailable">Bluetooth-Scanner ist auf diesem Gerät derzeit nicht verfügbar.</string>
+    <string name="danai_setup_btn_enable_bluetooth">Bluetooth-Einstellungen öffnen</string>
 
+    <!-- Bound Screen -->
+    <string name="danai_bound_title">Dana-i Insulinpumpe gebunden</string>
+    <string name="danai_bound_subtitle">Deine Dana-i Insulinpumpe ist derzeit aktiv mit der App gebunden.</string>
+    <string name="danai_bound_badge">Gebunden</string>
+    <string name="danai_bound_btn_start_maintenance">Zur Wartung trennen</string>
+    <string name="danai_bound_btn_unbind">Bindung verwerfen</string>
+
+    <!-- Maintenance Screen -->
+    <string name="danai_maintenance_title">Wartungsmodus</string>
+    <string name="danai_maintenance_subtitle">Der Wartungsmodus ist aktiv. Pumpenbefehle werden so lange blockiert, bis der Wartungsmodus beendet wird.</string>
+    <string name="danai_maintenance_status_active">Aktiv</string>
+    <string name="danai_maintenance_btn_end">Wartung beenden</string>
+    <string name="danai_maintenance_btn_back">Zurück</string>
+
+    <!-- Unbind Dialog -->
+    <string name="danai_unbind_dialog_title">Entkoppeln</string>
+    <string name="danai_unbind_dialog_subtitle">Verwirft die Bindung zur Pumpe. Die App kann danach mit einer anderen Insulinpumpe verbunden werden und die aktuelle Pumpe ist wieder \"frei\". Du kannst jederzeit erneut mit der Pumpe koppeln.</string>
+    <string name="danai_unbind_dialog_enable_set_light">Display-Beleuchtung vor dem Entkoppeln anpassen</string>
+    <string name="danai_unbind_dialog_backlight_time">Display-Beleuchtung Dauer</string>
+    <string name="danai_unbind_dialog_off">Aus</string>
+    <string name="danai_unbind_dialog_seconds_format">%1$d Sek.</string>
+    <string name="danai_unbind_dialog_btn_confirm">Entkoppeln</string>
+    <string name="danai_unbind_dialog_btn_cancel">Abbrechen</string>
+    <string name="danai_unbind_dialog_loading">Lade Pumpen-Optionen…</string>
+    <string name="danai_unbind_dialog_saving">Speichere Einstellungen…</string>
+    <string name="danai_unbind_dialog_error">Fehler beim Laden oder Speichern der Optionen</string>
+    <string name="danai_unbind_dialog_pump_not_connected">Pumpe nicht verbunden</string>
+    <string name="danai_unbind_dialog_load_failed">Fehler beim Laden der Optionen</string>
+    <string name="danai_unbind_dialog_save_failed">Fehler beim Speichern der Optionen</string>
+    <string name="danai_unbind_dialog_failed">Fehler beim Entkoppeln</string>
+
+    <!-- Configuration Screen -->
     <string name="danai_config_screen_title">Dana-i Konfiguration</string>
     <string name="danai_config_insulin_type_subtitle">Wähle den Typ des in der Dana-Pumpe geladenen Insulins.</string>
     <string name="danai_config_concentration_subtitle">Wähle die Konzentration des in der Dana-Pumpe geladenen Insulins. Der Standardwert ist U100.</string>

@@ -37,7 +37,6 @@ import de.dh.pump.danai.core.connection.PairingFailedException
 import de.dh.pump.danai.core.connection.SessionState
 import de.dh.pump.danai.core.connection.StaleBondException
 import de.dh.pump.danai.ui.DanaIConfigurationScreen
-import de.dh.pump.danai.ui.DanaIPumpControl
 import de.dh.pump.danai.ui.DanaISetupScreen
 import de.dh.pump.util.BluetoothBondUtils
 import de.dh.pump.util.BluetoothPermissionUtils
@@ -125,10 +124,6 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
             driver = this,
             onDriverReset = onDriverReset,
         )
-    }
-
-    override fun getPumpTabSection(pump: InsulinPump): @Composable (() -> Unit) = {
-        DanaIPumpControl(pump = pump)
     }
 
     private suspend fun bindPump(
