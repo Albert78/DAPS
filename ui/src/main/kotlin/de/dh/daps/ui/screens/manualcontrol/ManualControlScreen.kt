@@ -49,7 +49,7 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.getDefaultSlowMealType
 import de.dh.daps.common.model.getDefaultStandardMealType
 import de.dh.daps.common.navigation.ManualControlInitialDialog
-import de.dh.daps.core.aps.ApsRecommendation
+import de.dh.daps.core.orchestration.ApsRecommendation
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator

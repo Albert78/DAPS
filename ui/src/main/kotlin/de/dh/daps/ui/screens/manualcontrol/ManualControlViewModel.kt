@@ -15,7 +15,7 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.reminder.ReminderType
 import de.dh.daps.common.model.toActiveDoses
 import de.dh.daps.core.SystemRegistry
-import de.dh.daps.core.aps.ApsRecommendation
+import de.dh.daps.core.orchestration.ApsRecommendation
 import de.dh.daps.core.aps.LockResult
 import de.dh.daps.core.aps.TreatmentLock
 import kotlinx.coroutines.ExperimentalCoroutinesApi

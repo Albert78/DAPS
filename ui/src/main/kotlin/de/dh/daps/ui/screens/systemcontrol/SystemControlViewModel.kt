@@ -39,7 +39,7 @@ import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.core.SystemRegistry
-import de.dh.daps.core.aps.ApsIssue
+import de.dh.daps.core.orchestration.ApsIssue
 import de.dh.daps.core.pump.BolusJob
 import de.dh.daps.core.pump.BolusJobType
 import de.dh.daps.core.pump.JobErrorCode

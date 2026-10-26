@@ -1,4 +1,4 @@
-package de.dh.daps.core.aps
+package de.dh.daps.core.aps.prediction
 
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgValue

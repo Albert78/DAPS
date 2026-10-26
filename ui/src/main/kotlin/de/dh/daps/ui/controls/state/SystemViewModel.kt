@@ -18,7 +18,7 @@ import de.dh.daps.common.service.TickPriority
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.toActiveDoses
 import de.dh.daps.core.SystemRegistry
-import de.dh.daps.core.aps.ApsIssue
+import de.dh.daps.core.orchestration.ApsIssue
 import de.dh.daps.core.aps.CoreState
 import de.dh.daps.glucoseUnit
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -20,6 +20,9 @@ import de.dh.daps.common.model.data.Tick
 import de.dh.daps.common.model.data.Timeline
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.toActiveDoses
+import de.dh.daps.core.aps.prediction.PredictionModel
+import de.dh.daps.core.aps.prediction.RecentBgReadingsHistory
+import de.dh.daps.core.aps.prediction.SampledBgReadings
 import de.dh.daps.core.repository.GlucoseRepository
 import de.dh.daps.core.repository.TreatmentRepository
 import kotlin.math.abs

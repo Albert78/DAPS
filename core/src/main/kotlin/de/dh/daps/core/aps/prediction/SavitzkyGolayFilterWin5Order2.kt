@@ -1,4 +1,4 @@
-package de.dh.daps.core.aps
+package de.dh.daps.core.aps.prediction
 
 class SavitzkyGolayFilterWin5Order2 {
     companion object {

@@ -5,7 +5,7 @@ import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.core.aps.ApsIssue
+import de.dh.daps.core.orchestration.ApsIssue
 import de.dh.daps.core.aps.CoreState
 
 enum class BgTrend {

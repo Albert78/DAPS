@@ -11,7 +11,7 @@ import de.dh.daps.common.model.data.AlarmSignalConfig
 import de.dh.daps.common.model.data.AlarmType
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.alarms.AlarmSnoozeState
-import de.dh.daps.core.aps.ApsRecommendation
+import de.dh.daps.core.orchestration.ApsRecommendation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

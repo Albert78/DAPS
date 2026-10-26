@@ -21,7 +21,7 @@ import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.CarbsUnit
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.navigation.ManualControlInitialDialog
-import de.dh.daps.core.aps.ApsRecommendation
+import de.dh.daps.core.orchestration.ApsRecommendation
 import de.dh.daps.core.repository.GlucoseRepository
 import de.dh.daps.core.system.AndroidNotifications
 import de.dh.daps.core.system.RegistryProvider

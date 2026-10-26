@@ -3,8 +3,8 @@ package de.dh.daps.core.device
 import android.util.Log
 import de.dh.daps.common.model.GlucoseSource
 import de.dh.daps.common.model.InsulinPump
-import de.dh.daps.core.aps.GlucoseSourceDriverManager
-import de.dh.daps.core.aps.GlucoseSourceManager
+import de.dh.daps.core.cgm.GlucoseSourceDriverManager
+import de.dh.daps.core.cgm.GlucoseSourceManager
 import de.dh.daps.core.pump.PumpDriverManager
 import de.dh.daps.core.pump.PumpManager
 import kotlinx.coroutines.CoroutineScope

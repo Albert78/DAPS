@@ -1,4 +1,4 @@
-package de.dh.daps.core.aps
+package de.dh.daps.core.aps.prediction
 
 import de.dh.daps.common.model.data.Tick
 import de.dh.daps.common.model.data.Timeline
@@ -74,11 +74,6 @@ class RollingPredictionWindow(
         }
     }
 
-    /**
-     * Searches the state buffer forward starting at [startTick] for the first [PredictionTickState],
-     * which meets the [predicate] condition.
-     * Returns `null` if there is no match in the current prediction window.
-     */
     /**
      * Searches the state buffer forward starting at [startTick] for the first [PredictionTickState],
      * which meets the [predicate] condition.

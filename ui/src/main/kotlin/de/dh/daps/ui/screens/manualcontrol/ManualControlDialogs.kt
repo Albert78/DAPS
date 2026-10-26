@@ -27,7 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.model.DeferredBolus
 import de.dh.daps.common.model.InsulinAmount
-import de.dh.daps.core.aps.ApsRecommendation
+import de.dh.daps.core.orchestration.ApsRecommendation
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
 import de.dh.daps.ui.common.DefaultSteppingStrategy

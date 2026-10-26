@@ -2,7 +2,7 @@ package de.dh.daps.ui.common
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import de.dh.daps.core.aps.ApsRecommendation
+import de.dh.daps.core.orchestration.ApsRecommendation
 import de.dh.daps.ui.R
 
 /**

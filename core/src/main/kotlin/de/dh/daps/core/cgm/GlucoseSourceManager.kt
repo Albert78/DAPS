@@ -1,4 +1,4 @@
-package de.dh.daps.core.aps
+package de.dh.daps.core.cgm
 
 import android.util.Log
 import de.dh.daps.common.model.GlucoseSource

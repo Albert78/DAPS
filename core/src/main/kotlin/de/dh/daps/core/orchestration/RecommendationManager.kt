@@ -1,4 +1,4 @@
-package de.dh.daps.core.aps
+package de.dh.daps.core.orchestration
 
 import de.dh.daps.common.model.DeferredBolus
 import de.dh.daps.common.model.InsulinAmount
@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.asStateFlow
  * - Core decisions for Open-Loop mode (Temp-Basal, Bolus)
  */
 class RecommendationManager {
-
     private val _recommendations = MutableStateFlow<List<ApsRecommendation>>(emptyList())
     val recommendations: StateFlow<List<ApsRecommendation>> = _recommendations.asStateFlow()
 

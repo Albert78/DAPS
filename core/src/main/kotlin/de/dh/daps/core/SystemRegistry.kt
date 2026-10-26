@@ -11,10 +11,10 @@ import de.dh.daps.common.service.TimeService
 import de.dh.daps.core.alarms.AlarmEvaluator
 import de.dh.daps.core.alarms.AlarmPlayerManager
 import de.dh.daps.core.alarms.AlarmSnoozeManager
-import de.dh.daps.core.aps.GlucoseSourceDriverManager
-import de.dh.daps.core.aps.GlucoseSourceManager
-import de.dh.daps.core.aps.RecommendationManager
-import de.dh.daps.core.aps.SystemOrchestrator
+import de.dh.daps.core.cgm.GlucoseSourceDriverManager
+import de.dh.daps.core.cgm.GlucoseSourceManager
+import de.dh.daps.core.orchestration.RecommendationManager
+import de.dh.daps.core.orchestration.SystemOrchestrator
 import de.dh.daps.core.aps.TherapyManager
 import de.dh.daps.core.backup.AppDataManagementRepository
 import de.dh.daps.core.device.DeviceConnectionManager

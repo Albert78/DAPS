@@ -1,4 +1,4 @@
-package de.dh.daps.core.aps
+package de.dh.daps.core.orchestration
 
 import de.dh.daps.common.model.InsulinAmount
 import org.junit.Assert.assertEquals

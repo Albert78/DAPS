@@ -5,7 +5,7 @@ import de.dh.daps.common.model.DeferredBolus
 import de.dh.daps.common.model.data.AlarmType
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.reminder.Reminder
-import de.dh.daps.core.aps.ApsRecommendation
+import de.dh.daps.core.orchestration.ApsRecommendation
 import de.dh.daps.core.repository.GlucoseRepository
 
 interface AndroidNotifications {

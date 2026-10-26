@@ -14,9 +14,9 @@ import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.CurrentTherapySettings
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.service.WakeupHandler
-import de.dh.daps.core.aps.ApsIssue
-import de.dh.daps.core.aps.GlucoseSourceIssue
-import de.dh.daps.core.aps.SystemOrchestrator
+import de.dh.daps.core.cgm.GlucoseSourceIssue
+import de.dh.daps.core.orchestration.ApsIssue
+import de.dh.daps.core.orchestration.SystemOrchestrator
 import de.dh.daps.core.pump.PumpIssue
 import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.repository.GlucoseRepository
