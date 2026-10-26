@@ -3,6 +3,7 @@ package de.dh.daps.common.service
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.reminder.Reminder
 import de.dh.daps.common.model.reminder.ReminderType
+import de.dh.daps.common.navigation.AppDeepLinks
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -103,7 +104,7 @@ suspend fun ReminderManager.createMealReminder(
     description: String = ""
 ): Reminder {
     val sourceId = mealId?.toString() ?: ""
-    val route = if (mealId != null && mealId != de.dh.daps.common.ID_UNDEFINED) "app://daps.dh.de/meal/$mealId" else ""
+    val route = if (mealId != null && mealId != de.dh.daps.common.ID_UNDEFINED) AppDeepLinks.meal(mealId) else ""
     val reminder = Reminder(
         type = ReminderType.MEAL,
         sourceId = sourceId,
@@ -144,7 +145,7 @@ suspend fun ReminderManager.syncConsumableReminder(
             description = description,
             reminderTimestamp = reminderTimestamp,
             expirationTimestamp = reminderTimestamp + de.dh.daps.common.model.data.Minutes(180),
-            targetRoute = "app://daps.dh.de/systemcontrol/pump"
+            targetRoute = AppDeepLinks.SYSTEM_CONTROL_PUMP
         )
         return scheduleReminder(reminder)
     }

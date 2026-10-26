@@ -26,7 +26,11 @@ import kotlinx.serialization.Serializable
 @Serializable object ScheduledTherapyAdjustmentRoute : NavKey
 @Serializable object TherapyAdjustmentPresetsRoute : NavKey
 @Serializable data class TherapyAdjustmentEditorRoute(val adjustmentId: Long? = null) : NavKey
-@Serializable data class SystemControlRoute(val initialTab: Int = 0) : NavKey
+const val SYSTEM_CONTROL_TAB_OVERVIEW = 0
+const val SYSTEM_CONTROL_TAB_GLUCOSE_SOURCE = 1
+const val SYSTEM_CONTROL_TAB_PUMP = 2
+
+@Serializable data class SystemControlRoute(val initialTab: Int = SYSTEM_CONTROL_TAB_OVERVIEW) : NavKey
 @Serializable object PumpSetupRoute : NavKey
 @Serializable object GlucoseSourceSetupRoute : NavKey
 @Serializable object PumpSettingsRoute : NavKey

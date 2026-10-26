@@ -46,11 +46,10 @@ import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppPreview
+import de.dh.daps.common.navigation.SYSTEM_CONTROL_TAB_GLUCOSE_SOURCE
+import de.dh.daps.common.navigation.SYSTEM_CONTROL_TAB_OVERVIEW
+import de.dh.daps.common.navigation.SYSTEM_CONTROL_TAB_PUMP
 import de.dh.daps.common.R as CommonR
-
-const val SYSTEM_CONTROL_TAB_OVERVIEW = 0
-const val SYSTEM_CONTROL_TAB_GLUCOSE_SOURCE = 1
-const val SYSTEM_CONTROL_TAB_PUMP = 2
 
 @Composable
 fun SystemControlScreen(
