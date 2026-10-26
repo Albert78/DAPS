@@ -11,13 +11,12 @@ import de.dh.daps.common.service.TimeService
 import de.dh.daps.core.alarms.AlarmEvaluator
 import de.dh.daps.core.alarms.AlarmPlayerManager
 import de.dh.daps.core.alarms.AlarmSnoozeManager
-import de.dh.daps.core.cgm.GlucoseSourceDriverManager
-import de.dh.daps.core.cgm.GlucoseSourceManager
+import de.dh.daps.core.backup.AppDataManagementRepository
+import de.dh.daps.core.glucosesource.GlucoseSourceDriverManager
+import de.dh.daps.core.glucosesource.GlucoseSourceManager
+import de.dh.daps.core.orchestration.DeviceConnectionManager
 import de.dh.daps.core.orchestration.RecommendationManager
 import de.dh.daps.core.orchestration.SystemOrchestrator
-import de.dh.daps.core.therapy.TherapyManager
-import de.dh.daps.core.backup.AppDataManagementRepository
-import de.dh.daps.core.device.DeviceConnectionManager
 import de.dh.daps.core.pump.PumpDriverManager
 import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.repository.AlarmRepository
@@ -29,6 +28,7 @@ import de.dh.daps.core.repository.SettingsRepository
 import de.dh.daps.core.repository.SystemMetricsRepository
 import de.dh.daps.core.repository.TherapyRepository
 import de.dh.daps.core.repository.TreatmentRepository
+import de.dh.daps.core.therapy.TherapyManager
 import kotlinx.coroutines.flow.StateFlow
 
 /**
