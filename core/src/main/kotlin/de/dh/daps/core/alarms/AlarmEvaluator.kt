@@ -1,7 +1,11 @@
 package de.dh.daps.core.alarms
 
 import android.util.Log
+import de.dh.daps.AppPreferencesRepository
 import de.dh.daps.common.model.ApsMode
+import de.dh.daps.common.model.InsulinPumpStatus
+import de.dh.daps.common.model.PatchPhase
+import de.dh.daps.common.model.PumpLifecycleState
 import de.dh.daps.common.model.data.AlarmProfile
 import de.dh.daps.common.model.data.AlarmSeverity
 import de.dh.daps.common.model.data.AlarmSignalConfig
@@ -14,22 +18,31 @@ import de.dh.daps.core.aps.ApsIssue
 import de.dh.daps.core.aps.GlucoseSourceIssue
 import de.dh.daps.core.aps.SystemOrchestrator
 import de.dh.daps.core.pump.PumpIssue
+import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.repository.GlucoseRepository
 import de.dh.daps.core.repository.TherapyRepository
 import de.dh.daps.core.system.AndroidNotifications
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneId
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Continuously evaluates glucose values, pump/system issues, active alarm profile settings,
- * and snooze states to trigger audio/haptics, notification updates, and full-screen alarm screens.
+ * consumable lifecycle state (catheter/patch changes), and snooze states to trigger audio/haptics,
+ * notification updates, and full-screen alarm screens.
  */
 class AlarmEvaluator(
     private val glucoseRepository: GlucoseRepository,
@@ -37,6 +50,8 @@ class AlarmEvaluator(
     private val therapyRepository: TherapyRepository,
     private val alarmSnoozeManager: AlarmSnoozeManager,
     private val androidNotifications: AndroidNotifications,
+    private val pumpManager: PumpManager,
+    private val appPreferencesRepository: AppPreferencesRepository,
     private val scope: CoroutineScope
 ) {
 
@@ -54,8 +69,14 @@ class AlarmEvaluator(
     private var evaluationJob: Job? = null
     private var gracePeriodJob: Job? = null
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun start() {
         stop()
+
+        val pumpStatusFlow = pumpManager.activeInsulinPump.flatMapLatest { pump ->
+            pump?.pumpStatus ?: flowOf(null)
+        }
+
         evaluationJob = scope.launch {
             combine(
                 glucoseRepository.currentBg,
@@ -63,7 +84,9 @@ class AlarmEvaluator(
                 therapyRepository.observeCurrentTherapySettingsOrNull(),
                 alarmSnoozeManager.snoozedAlarms,
                 systemOrchestrator.apsMode,
-                systemOrchestrator.resumeRequestedAt
+                systemOrchestrator.resumeRequestedAt,
+                pumpStatusFlow,
+                appPreferencesRepository.catheterPatchWarningTime
             ) { flows ->
                 val therapySettings = flows[2] as CurrentTherapySettings?
                 @Suppress("UNCHECKED_CAST")
@@ -74,7 +97,9 @@ class AlarmEvaluator(
                     activeProfile = therapySettings?.effectiveAlarmProfile,
                     snoozedMap = flows[3] as Map<AlarmType, AlarmSnoozeState>,
                     apsMode = flows[4] as ApsMode,
-                    resumeRequestedAt = flows[5] as Timestamp?
+                    resumeRequestedAt = flows[5] as Timestamp?,
+                    pumpStatus = flows[6] as InsulinPumpStatus?,
+                    catheterPatchWarningTime = flows[7] as LocalTime
                 )
             }.collect { input ->
                 evaluate(input)
@@ -154,6 +179,13 @@ class AlarmEvaluator(
                         is PumpIssue.LowInsulin -> activeSet.add(AlarmType.PUMP_LOW_INSULIN)
                         is PumpIssue.LowBattery -> activeSet.add(AlarmType.PUMP_LOW_BATTERY)
                         is PumpIssue.StaleBluetoothBond -> activeSet.add(AlarmType.PUMP_STALE_BOND)
+                        is PumpIssue.Expired -> {
+                            if (input.pumpStatus?.lifecycleState is PumpLifecycleState.Durable) {
+                                activeSet.add(AlarmType.PUMP_CATHETER_CHANGE_WARN)
+                            } else {
+                                activeSet.add(AlarmType.PUMP_PATCH_CHANGE_WARN)
+                            }
+                        }
                         else -> {}
                     }
                 }
@@ -168,6 +200,14 @@ class AlarmEvaluator(
                 else -> {}
             }
         }
+
+        // Evaluate Consumable Lifecycle (Catheter / Patch change reminders)
+        evaluatePumpConsumables(
+            lifecycleState = input.pumpStatus?.lifecycleState,
+            warningTime = input.catheterPatchWarningTime,
+            activeSet = activeSet,
+            now = now
+        )
 
         _activeAlarms.value = activeSet
 
@@ -215,6 +255,55 @@ class AlarmEvaluator(
         }
     }
 
+    private fun evaluatePumpConsumables(
+        lifecycleState: PumpLifecycleState?,
+        warningTime: LocalTime,
+        activeSet: MutableSet<AlarmType>,
+        now: Timestamp
+    ) {
+        if (lifecycleState == null) return
+
+        val zoneId = ZoneId.systemDefault()
+        val currentZoneDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(now.ms), zoneId)
+
+        when (lifecycleState) {
+            is PumpLifecycleState.Durable -> {
+                val expirationDate = lifecycleState.approximateCatheterExpiration ?: return
+                val infoTriggerDateTime = expirationDate.minusDays(1).atTime(warningTime)
+                val warnTriggerDateTime = expirationDate.atTime(warningTime)
+
+                if (currentZoneDateTime >= warnTriggerDateTime) {
+                    activeSet.add(AlarmType.PUMP_CATHETER_CHANGE_WARN)
+                } else if (currentZoneDateTime >= infoTriggerDateTime) {
+                    activeSet.add(AlarmType.PUMP_CATHETER_CHANGE_INFO)
+                }
+            }
+            is PumpLifecycleState.Patch -> {
+                if (lifecycleState.phase == PatchPhase.PRIMING) {
+                    return
+                }
+
+                if (lifecycleState.phase == PatchPhase.IN_GRACE_PERIOD || lifecycleState.phase == PatchPhase.EXPIRED) {
+                    activeSet.add(AlarmType.PUMP_PATCH_CHANGE_WARN)
+                    return
+                }
+
+                val activeUntil = lifecycleState.activeUntil
+                if (lifecycleState.phase == PatchPhase.ACTIVE && activeUntil.isValid() && activeUntil.ms > 0) {
+                    val activeUntilZoneDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(activeUntil.ms), zoneId)
+                    val activeUntilDate = activeUntilZoneDateTime.toLocalDate()
+                    val infoTriggerDateTime = activeUntilDate.minusDays(1).atTime(warningTime)
+
+                    if (now >= activeUntil) {
+                        activeSet.add(AlarmType.PUMP_PATCH_CHANGE_WARN)
+                    } else if (currentZoneDateTime >= infoTriggerDateTime) {
+                        activeSet.add(AlarmType.PUMP_PATCH_CHANGE_INFO)
+                    }
+                }
+            }
+        }
+    }
+
     private fun severityRank(severity: AlarmSeverity): Int = when (severity) {
         AlarmSeverity.CRITICAL -> 3
         AlarmSeverity.WARNING -> 2
@@ -228,7 +317,9 @@ class AlarmEvaluator(
         val activeProfile: AlarmProfile?,
         val snoozedMap: Map<AlarmType, AlarmSnoozeState>,
         val apsMode: ApsMode = ApsMode.Suspend,
-        val resumeRequestedAt: Timestamp? = null
+        val resumeRequestedAt: Timestamp? = null,
+        val pumpStatus: InsulinPumpStatus? = null,
+        val catheterPatchWarningTime: LocalTime = LocalTime.of(19, 0)
     )
 
     companion object {

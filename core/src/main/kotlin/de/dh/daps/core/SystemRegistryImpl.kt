@@ -345,6 +345,8 @@ class SystemRegistryImpl(
                 therapyRepository = therapyRepository,
                 alarmSnoozeManager = alarmSnoozeManager,
                 androidNotifications = androidNotifications,
+                pumpManager = pumpManager,
+                appPreferencesRepository = appPreferencesRepository,
                 scope = scope
             )
 

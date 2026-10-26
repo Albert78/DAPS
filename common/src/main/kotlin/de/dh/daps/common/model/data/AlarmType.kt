@@ -43,6 +43,22 @@ enum class AlarmType(
         defaultSeverity = AlarmSeverity.WARNING,
         category = AlarmCategory.PUMP
     ),
+    PUMP_CATHETER_CHANGE_INFO(
+        defaultSeverity = AlarmSeverity.INFO,
+        category = AlarmCategory.PUMP
+    ),
+    PUMP_CATHETER_CHANGE_WARN(
+        defaultSeverity = AlarmSeverity.WARNING,
+        category = AlarmCategory.PUMP
+    ),
+    PUMP_PATCH_CHANGE_INFO(
+        defaultSeverity = AlarmSeverity.INFO,
+        category = AlarmCategory.PUMP
+    ),
+    PUMP_PATCH_CHANGE_WARN(
+        defaultSeverity = AlarmSeverity.WARNING,
+        category = AlarmCategory.PUMP
+    ),
     CGM_SIGNAL_LOSS(
         defaultSeverity = AlarmSeverity.WARNING,
         category = AlarmCategory.CGM
@@ -79,6 +95,8 @@ enum class AlarmType(
     val subsumedAlarms: Set<AlarmType>
         get() = when (this) {
             CRITICAL_LOW_BG -> setOf(LOW_BG)
+            PUMP_CATHETER_CHANGE_WARN -> setOf(PUMP_CATHETER_CHANGE_INFO)
+            PUMP_PATCH_CHANGE_WARN -> setOf(PUMP_PATCH_CHANGE_INFO)
             else -> emptySet()
         }
 }
