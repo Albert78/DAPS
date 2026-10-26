@@ -1,4 +1,4 @@
-package de.dh.daps.core.plugin
+package de.dh.daps.core.infrastructure
 
 import android.content.Context
 import de.dh.daps.common.model.PluginContext

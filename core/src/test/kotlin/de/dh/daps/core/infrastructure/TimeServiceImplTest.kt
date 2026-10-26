@@ -1,4 +1,4 @@
-package de.dh.daps.core.system
+package de.dh.daps.core.infrastructure
 
 import android.content.Intent
 import androidx.room.InvalidationTracker

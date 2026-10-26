@@ -14,14 +14,14 @@ import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.CurrentTherapySettings
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.service.WakeupHandler
-import de.dh.daps.core.cgm.GlucoseSourceIssue
+import de.dh.daps.core.glucosesource.GlucoseSourceIssue
 import de.dh.daps.core.orchestration.ApsIssue
 import de.dh.daps.core.orchestration.SystemOrchestrator
 import de.dh.daps.core.pump.PumpIssue
 import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.repository.GlucoseRepository
 import de.dh.daps.core.repository.TherapyRepository
-import de.dh.daps.core.system.AndroidNotifications
+import de.dh.daps.core.infrastructure.AndroidNotifications
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job

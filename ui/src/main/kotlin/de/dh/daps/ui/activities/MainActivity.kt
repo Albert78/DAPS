@@ -79,7 +79,7 @@ import de.dh.daps.common.navigation.SystemControlRoute
 import de.dh.daps.common.navigation.combineEntryProviders
 import de.dh.daps.core.InitializationState
 import de.dh.daps.core.SystemRegistry
-import de.dh.daps.core.system.RegistryProvider
+import de.dh.daps.core.infrastructure.RegistryProvider
 import de.dh.daps.ui.GlobalViewModel
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.EdgeToEdgeHandler

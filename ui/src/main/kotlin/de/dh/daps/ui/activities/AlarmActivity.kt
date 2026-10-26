@@ -7,7 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import de.dh.daps.core.system.RegistryProvider
+import de.dh.daps.core.infrastructure.RegistryProvider
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.screens.alarm.FullScreenAlarmScreen
 

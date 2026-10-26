@@ -1,4 +1,4 @@
-package de.dh.daps.core.system
+package de.dh.daps.core.infrastructure
 
 import android.app.Notification
 import de.dh.daps.common.model.DeferredBolus

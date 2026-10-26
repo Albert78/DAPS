@@ -1,4 +1,4 @@
-package de.dh.daps.core.cgm
+package de.dh.daps.core.glucosesource
 
 /**
  * Normalized state of glucose-source-related issues that prevent the system from receiving blood glucose readings.

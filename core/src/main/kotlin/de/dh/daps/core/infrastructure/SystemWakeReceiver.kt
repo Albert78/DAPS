@@ -1,8 +1,9 @@
-package de.dh.daps.core.system
+package de.dh.daps.core.infrastructure
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import de.dh.daps.common.service.SystemWakeService
 
 /**
  * Central receiver for system alarms to wake up different components of the application.

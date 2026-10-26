@@ -109,10 +109,10 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name="de.dh.daps.core.system.SystemWakeReceiver"
+        <receiver android:name="de.dh.daps.core.infrastructure.SystemWakeReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="de.dh.daps.core.system.ACTION_WAKEUP" />
+                <action android:name="de.dh.daps.core.infrastructure.ACTION_WAKEUP" />
             </intent-filter>
         </receiver>
 

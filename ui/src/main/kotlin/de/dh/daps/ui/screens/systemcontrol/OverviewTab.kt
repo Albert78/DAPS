@@ -50,9 +50,9 @@ import de.dh.daps.common.model.PumpReplaceableComponent
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
-import de.dh.daps.core.orchestration.ApsIssue
 import de.dh.daps.core.aps.CoreIssue
-import de.dh.daps.core.cgm.GlucoseSourceIssue
+import de.dh.daps.core.glucosesource.GlucoseSourceIssue
+import de.dh.daps.core.orchestration.ApsIssue
 import de.dh.daps.core.pump.PumpIssue
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.LocalGlucoseUnit

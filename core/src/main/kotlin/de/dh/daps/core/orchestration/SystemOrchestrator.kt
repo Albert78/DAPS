@@ -21,11 +21,10 @@ import de.dh.daps.core.aps.BolusCorrectionCalculator
 import de.dh.daps.core.aps.Core
 import de.dh.daps.core.aps.CoreIssue
 import de.dh.daps.core.aps.CoreState
-import de.dh.daps.core.cgm.GlucoseSourceIssue
-import de.dh.daps.core.cgm.GlucoseSourceManager
 import de.dh.daps.core.aps.NoopAlgorithm
 import de.dh.daps.core.aps.SimpleBolusCorrectionCalculator
-import de.dh.daps.core.therapy.TherapyManager
+import de.dh.daps.core.glucosesource.GlucoseSourceIssue
+import de.dh.daps.core.glucosesource.GlucoseSourceManager
 import de.dh.daps.core.pump.PumpIssue
 import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.repository.DeviceStatusRepository
@@ -33,7 +32,8 @@ import de.dh.daps.core.repository.GlucoseRepository
 import de.dh.daps.core.repository.SettingsRepository
 import de.dh.daps.core.repository.SystemMetricsRepository
 import de.dh.daps.core.repository.TreatmentRepository
-import de.dh.daps.core.system.AndroidNotifications
+import de.dh.daps.core.infrastructure.AndroidNotifications
+import de.dh.daps.core.therapy.TherapyManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi

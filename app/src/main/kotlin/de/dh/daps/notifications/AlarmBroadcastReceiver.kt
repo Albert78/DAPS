@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import de.dh.daps.common.model.data.AlarmType
-import de.dh.daps.core.system.RegistryProvider
+import de.dh.daps.core.infrastructure.RegistryProvider
 
 class AlarmBroadcastReceiver : BroadcastReceiver() {
 

@@ -29,7 +29,11 @@ import de.dh.daps.core.orchestration.DeviceConnectionManager
 import de.dh.daps.core.orchestration.RecommendationManager
 import de.dh.daps.core.orchestration.SystemOrchestrator
 import de.dh.daps.core.orchestration.SystemOrchestratorImpl
-import de.dh.daps.core.plugin.PluginContextImpl
+import de.dh.daps.core.infrastructure.AndroidNotifications
+import de.dh.daps.core.infrastructure.PluginContextImpl
+import de.dh.daps.core.infrastructure.ReminderManagerImpl
+import de.dh.daps.core.infrastructure.SystemWakeServiceImpl
+import de.dh.daps.core.infrastructure.TimeServiceImpl
 import de.dh.daps.core.pump.PumpDriverManager
 import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.pump.PumpManagerImpl
@@ -45,10 +49,6 @@ import de.dh.daps.core.repository.SystemMetricsRepository
 import de.dh.daps.core.repository.TherapyRepository
 import de.dh.daps.core.repository.TreatmentRepository
 import de.dh.daps.core.repository.db.AppDatabase
-import de.dh.daps.core.system.AndroidNotifications
-import de.dh.daps.core.system.ReminderManagerImpl
-import de.dh.daps.core.system.SystemWakeServiceImpl
-import de.dh.daps.core.system.TimeServiceImpl
 import de.dh.daps.core.therapy.TherapyManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

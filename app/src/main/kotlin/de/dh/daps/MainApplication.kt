@@ -9,7 +9,7 @@ import androidx.core.content.ContextCompat
 import de.dh.daps.core.InitializationState
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.SystemRegistryImpl
-import de.dh.daps.core.system.RegistryProvider
+import de.dh.daps.core.infrastructure.RegistryProvider
 import de.dh.daps.notifications.AndroidNotificationsImpl
 import de.dh.daps.pluginmanager.PluginManagerImpl
 import de.dh.daps.services.ApsService

@@ -1,4 +1,4 @@
-package de.dh.daps.core.cgm
+package de.dh.daps.core.glucosesource
 
 import de.dh.daps.common.model.DeviceLifecycleState
 import de.dh.daps.common.model.GlucoseSource

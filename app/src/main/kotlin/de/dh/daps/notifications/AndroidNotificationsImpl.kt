@@ -23,8 +23,8 @@ import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.common.navigation.ManualControlInitialDialog
 import de.dh.daps.core.orchestration.ApsRecommendation
 import de.dh.daps.core.repository.GlucoseRepository
-import de.dh.daps.core.system.AndroidNotifications
-import de.dh.daps.core.system.RegistryProvider
+import de.dh.daps.core.infrastructure.AndroidNotifications
+import de.dh.daps.core.infrastructure.RegistryProvider
 import de.dh.daps.ui.activities.AlarmActivity
 import de.dh.daps.ui.activities.MainActivity
 import de.dh.daps.ui.common.formatCarbsValue

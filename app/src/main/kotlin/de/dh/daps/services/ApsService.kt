@@ -7,7 +7,7 @@ import android.content.pm.ServiceInfo
 import android.os.IBinder
 import de.dh.daps.MainApplication
 import de.dh.daps.core.InitializationState
-import de.dh.daps.core.system.AndroidNotifications
+import de.dh.daps.core.infrastructure.AndroidNotifications
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

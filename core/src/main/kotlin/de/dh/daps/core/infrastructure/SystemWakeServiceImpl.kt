@@ -1,4 +1,4 @@
-package de.dh.daps.core.system
+package de.dh.daps.core.infrastructure
 
 import android.annotation.SuppressLint
 import android.app.AlarmManager
@@ -197,7 +197,7 @@ class SystemWakeServiceImpl(
 
     companion object {
         private const val TAG = "SystemWakeService"
-        private const val ACTION_WAKEUP = "de.dh.daps.core.system.ACTION_WAKEUP"
+        private const val ACTION_WAKEUP = "de.dh.daps.core.infrastructure.ACTION_WAKEUP"
         private const val EXTRA_TAG = "extra_tag"
         private const val EXTRA_WAKEUP_ID = "extra_wakeup_id"
         private const val EXTRA_SCHEDULED_TIME = "extra_scheduled_time"

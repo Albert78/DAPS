@@ -8,7 +8,7 @@ import de.dh.daps.common.service.TickHandler
 import de.dh.daps.common.service.TickPriority
 import de.dh.daps.common.service.TimeService
 import de.dh.daps.core.repository.GlucoseRepository
-import de.dh.daps.core.system.AndroidNotifications
+import de.dh.daps.core.infrastructure.AndroidNotifications
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch

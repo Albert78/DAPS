@@ -1,4 +1,4 @@
-package de.dh.daps.core.system
+package de.dh.daps.core.infrastructure
 
 import de.dh.daps.core.SystemRegistry
 
