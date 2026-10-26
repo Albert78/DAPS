@@ -347,6 +347,7 @@ class SystemRegistryImpl(
                 androidNotifications = androidNotifications,
                 pumpManager = pumpManager,
                 appPreferencesRepository = appPreferencesRepository,
+                wakeService = wakeService,
                 scope = scope
             )
 

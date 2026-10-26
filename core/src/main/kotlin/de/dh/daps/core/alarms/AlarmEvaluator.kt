@@ -1,5 +1,6 @@
 package de.dh.daps.core.alarms
 
+import android.content.Intent
 import android.util.Log
 import de.dh.daps.AppPreferencesRepository
 import de.dh.daps.common.model.ApsMode
@@ -14,6 +15,8 @@ import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.CurrentTherapySettings
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.service.SystemWakeService
+import de.dh.daps.common.service.WakeupHandler
 import de.dh.daps.core.aps.ApsIssue
 import de.dh.daps.core.aps.GlucoseSourceIssue
 import de.dh.daps.core.aps.SystemOrchestrator
@@ -52,9 +55,9 @@ class AlarmEvaluator(
     private val androidNotifications: AndroidNotifications,
     private val pumpManager: PumpManager,
     private val appPreferencesRepository: AppPreferencesRepository,
+    private val wakeService: SystemWakeService,
     private val scope: CoroutineScope
-) {
-
+) : WakeupHandler {
     private val _activeAlarms = MutableStateFlow<Set<AlarmType>>(emptySet())
     val activeAlarms: StateFlow<Set<AlarmType>> = _activeAlarms.asStateFlow()
 
@@ -65,6 +68,7 @@ class AlarmEvaluator(
     val activeFiringConfig: StateFlow<AlarmSignalConfig?> = _activeFiringConfig.asStateFlow()
 
     private var lastEvaluatedBgValue: BgValue? = null
+    private var lastInput: EvaluationInput? = null
 
     private var evaluationJob: Job? = null
     private var gracePeriodJob: Job? = null
@@ -72,6 +76,7 @@ class AlarmEvaluator(
     @OptIn(ExperimentalCoroutinesApi::class)
     fun start() {
         stop()
+        wakeService.registerHandler(WAKE_TAG_ALARM_EVALUATOR, this)
 
         val pumpStatusFlow = pumpManager.activeInsulinPump.flatMapLatest { pump ->
             pump?.pumpStatus ?: flowOf(null)
@@ -108,6 +113,8 @@ class AlarmEvaluator(
     }
 
     fun stop() {
+        wakeService.unregisterHandler(WAKE_TAG_ALARM_EVALUATOR)
+        wakeService.cancelWakeup(WAKE_TAG_ALARM_EVALUATOR, WAKEUP_ID_ALARM_EVALUATOR)
         evaluationJob?.cancel()
         evaluationJob = null
         gracePeriodJob?.cancel()
@@ -116,14 +123,24 @@ class AlarmEvaluator(
         _activeFiringAlarm.value = null
         _activeFiringConfig.value = null
         lastEvaluatedBgValue = null
+        lastInput = null
         androidNotifications.cancelAlarmNotification()
     }
 
+    override fun onWakeup(wakeupId: UInt?, intent: Intent?) {
+        val input = lastInput ?: return
+        scope.launch {
+            evaluate(input)
+        }
+    }
+
     private fun evaluate(input: EvaluationInput) {
+        lastInput = input
         gracePeriodJob?.cancel()
         gracePeriodJob = null
 
         val activeSet = mutableSetOf<AlarmType>()
+        val nextWakeups = mutableListOf<Long>()
 
         // Evaluate Therapy Settings
         if (input.currentTherapySettings == null) {
@@ -206,8 +223,17 @@ class AlarmEvaluator(
             lifecycleState = input.pumpStatus?.lifecycleState,
             warningTime = input.catheterPatchWarningTime,
             activeSet = activeSet,
-            now = now
+            now = now,
+            nextWakeups = nextWakeups
         )
+
+        // Schedule next system wakeup if future transition timestamps exist
+        val nextWakeupMs = nextWakeups.minOrNull()
+        if (nextWakeupMs != null && nextWakeupMs > now.ms) {
+            wakeService.scheduleWakeup(WAKE_TAG_ALARM_EVALUATOR, WAKEUP_ID_ALARM_EVALUATOR, Timestamp(nextWakeupMs))
+        } else {
+            wakeService.cancelWakeup(WAKE_TAG_ALARM_EVALUATOR, WAKEUP_ID_ALARM_EVALUATOR)
+        }
 
         _activeAlarms.value = activeSet
 
@@ -259,7 +285,8 @@ class AlarmEvaluator(
         lifecycleState: PumpLifecycleState?,
         warningTime: LocalTime,
         activeSet: MutableSet<AlarmType>,
-        now: Timestamp
+        now: Timestamp,
+        nextWakeups: MutableList<Long>
     ) {
         if (lifecycleState == null) return
 
@@ -276,6 +303,15 @@ class AlarmEvaluator(
                     activeSet.add(AlarmType.PUMP_CATHETER_CHANGE_WARN)
                 } else if (currentZoneDateTime >= infoTriggerDateTime) {
                     activeSet.add(AlarmType.PUMP_CATHETER_CHANGE_INFO)
+                    val warnMs = warnTriggerDateTime.atZone(zoneId).toInstant().toEpochMilli()
+                    if (warnMs > now.ms) {
+                        nextWakeups.add(warnMs)
+                    }
+                } else {
+                    val infoMs = infoTriggerDateTime.atZone(zoneId).toInstant().toEpochMilli()
+                    if (infoMs > now.ms) {
+                        nextWakeups.add(infoMs)
+                    }
                 }
             }
             is PumpLifecycleState.Patch -> {
@@ -298,6 +334,14 @@ class AlarmEvaluator(
                         activeSet.add(AlarmType.PUMP_PATCH_CHANGE_WARN)
                     } else if (currentZoneDateTime >= infoTriggerDateTime) {
                         activeSet.add(AlarmType.PUMP_PATCH_CHANGE_INFO)
+                        if (activeUntil.ms > now.ms) {
+                            nextWakeups.add(activeUntil.ms)
+                        }
+                    } else {
+                        val infoMs = infoTriggerDateTime.atZone(zoneId).toInstant().toEpochMilli()
+                        if (infoMs > now.ms) {
+                            nextWakeups.add(infoMs)
+                        }
                     }
                 }
             }
@@ -328,5 +372,8 @@ class AlarmEvaluator(
         const val LOW_THRESHOLD_MGDL = 70.0
         const val HIGH_THRESHOLD_MGDL = 250.0
         const val PUMP_RESUME_GRACE_PERIOD_MS = 10_000L
+
+        const val WAKE_TAG_ALARM_EVALUATOR = "AlarmEvaluator"
+        val WAKEUP_ID_ALARM_EVALUATOR: UInt = 600u
     }
 }
