@@ -60,25 +60,35 @@ import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDe
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import de.dh.daps.common.navigation.AlarmProfilesRoute
 import de.dh.daps.common.navigation.AppDataRoute
-import de.dh.daps.common.navigation.InsulinHistoryRoute
-import de.dh.daps.common.navigation.RemindersRoute
+import de.dh.daps.common.navigation.AppDeepLinks
+import de.dh.daps.common.navigation.BgEditorRoute
+import de.dh.daps.common.navigation.CoreDecisionsRoute
 import de.dh.daps.common.navigation.DashboardRoute
 import de.dh.daps.common.navigation.FeatureNavGraph
 import de.dh.daps.common.navigation.FoodDatabaseRoute
+import de.dh.daps.common.navigation.GlucoseSourceSettingsRoute
+import de.dh.daps.common.navigation.GlucoseSourceSetupRoute
 import de.dh.daps.common.navigation.HistoricalMealRoute
+import de.dh.daps.common.navigation.HistoryRoute
+import de.dh.daps.common.navigation.InsulinHistoryRoute
 import de.dh.daps.common.navigation.ManualControlInitialDialog
 import de.dh.daps.common.navigation.ManualControlRoute
 import de.dh.daps.common.navigation.MasterDataRoute
 import de.dh.daps.common.navigation.MealCorrectionBolusRoute
 import de.dh.daps.common.navigation.MealsRoute
+import de.dh.daps.common.navigation.MealTypesRoute
 import de.dh.daps.common.navigation.NavigationViewModel
+import de.dh.daps.common.navigation.PastRemindersRoute
 import de.dh.daps.common.navigation.PermissionsRoute
-import de.dh.daps.common.navigation.AppDeepLinks
 import de.dh.daps.common.navigation.PreferencesMainRoute
-import de.dh.daps.common.navigation.SYSTEM_CONTROL_TAB_OVERVIEW
-import de.dh.daps.common.navigation.SYSTEM_CONTROL_TAB_PUMP
+import de.dh.daps.common.navigation.PumpSettingsRoute
+import de.dh.daps.common.navigation.PumpSetupRoute
+import de.dh.daps.common.navigation.RemindersRoute
 import de.dh.daps.common.navigation.SystemControlRoute
+import de.dh.daps.common.navigation.SystemControlTab
+import de.dh.daps.common.navigation.TherapyAdjustmentRoute
 import de.dh.daps.common.navigation.combineEntryProviders
 import de.dh.daps.core.InitializationState
 import de.dh.daps.core.SystemRegistry
@@ -285,28 +295,30 @@ class MainActivity : ComponentActivity() {
             val data = intent.data
             if (intent.action == Intent.ACTION_VIEW && data?.scheme == AppDeepLinks.SCHEME && data.host == AppDeepLinks.HOST) {
                 val path = data.path
-                if (path == AppDeepLinks.PATH_DASHBOARD) {
-                    return listOf(DashboardRoute)
-                } else if (path?.startsWith(AppDeepLinks.PATH_MEAL_PREFIX) == true) {
-                    val mealId = data.lastPathSegment?.toLongOrNull()
-                    if (mealId != null) {
-                        return listOf(DashboardRoute, HistoricalMealRoute(mealId))
+                return when {
+                    path == AppDeepLinks.PATH_DASHBOARD -> listOf(DashboardRoute)
+                    path?.startsWith(AppDeepLinks.PATH_MEAL_PREFIX) == true -> {
+                        val mealId = data.lastPathSegment?.toLongOrNull()
+                        if (mealId != null) listOf(DashboardRoute, HistoricalMealRoute(mealId)) else null
                     }
-                } else if (path == AppDeepLinks.PATH_MEAL_CORRECTION_BOLUS) {
-                    val carbsInG = data.getQueryParameter("carbsInG")?.toDoubleOrNull()
-                    return listOf(DashboardRoute, MealCorrectionBolusRoute(prefilledCarbsInG = carbsInG))
-                } else if (path == AppDeepLinks.PATH_MANUAL_CONTROL) {
-                    val dialogStr = data.getQueryParameter("dialog")
-                    val initialDialog = when (dialogStr) {
-                        "bolus" -> ManualControlInitialDialog.BOLUS
-                        "temp_basal" -> ManualControlInitialDialog.TEMP_BASAL
-                        else -> ManualControlInitialDialog.NONE
+                    path == AppDeepLinks.PATH_MEAL_CORRECTION_BOLUS -> {
+                        val carbsInG = data.getQueryParameter("carbsInG")?.toDoubleOrNull()
+                        listOf(DashboardRoute, MealCorrectionBolusRoute(prefilledCarbsInG = carbsInG))
                     }
-                    return listOf(DashboardRoute, ManualControlRoute(initialDialog = initialDialog))
-                } else if (path == AppDeepLinks.PATH_SYSTEM_CONTROL_PUMP) {
-                    return listOf(DashboardRoute, SystemControlRoute(initialTab = SYSTEM_CONTROL_TAB_PUMP))
-                } else if (path == AppDeepLinks.PATH_SYSTEM_CONTROL) {
-                    return listOf(DashboardRoute, SystemControlRoute())
+                    path == AppDeepLinks.PATH_MANUAL_CONTROL -> {
+                        val dialogStr = data.getQueryParameter("dialog")
+                        val initialDialog = when (dialogStr) {
+                            "bolus" -> ManualControlInitialDialog.BOLUS
+                            "temp_basal" -> ManualControlInitialDialog.TEMP_BASAL
+                            else -> ManualControlInitialDialog.NONE
+                        }
+                        listOf(DashboardRoute, ManualControlRoute(initialDialog = initialDialog))
+                    }
+                    path == AppDeepLinks.PATH_SYSTEM_CONTROL_PUMP -> listOf(DashboardRoute, SystemControlRoute(initialTab = SystemControlTab.PUMP))
+                    path == AppDeepLinks.PATH_SYSTEM_CONTROL_GLUCOSE_SOURCE -> listOf(DashboardRoute, SystemControlRoute(initialTab = SystemControlTab.GLUCOSE_SOURCE))
+                    path == AppDeepLinks.PATH_SYSTEM_CONTROL_OVERVIEW || path == AppDeepLinks.PATH_SYSTEM_CONTROL -> listOf(DashboardRoute, SystemControlRoute(initialTab = SystemControlTab.OVERVIEW))
+                    path == AppDeepLinks.PATH_REMINDERS -> listOf(DashboardRoute, RemindersRoute)
+                    else -> null
                 }
             }
 
@@ -321,65 +333,55 @@ class MainActivity : ComponentActivity() {
         }
 
         companion object {
-            fun createStartDashboardIntent(context: Context): Intent {
-                return Intent(context, MainActivity::class.java).apply {
-                    action = Intent.ACTION_VIEW
-                    data = AppDeepLinks.DASHBOARD.toUri()
-                }
-            }
+            fun createStartDashboardIntent(context: Context): Intent =
+                createIntent(context, AppDeepLinks.DASHBOARD)
 
-            fun createEditMealIntent(context: Context, mealId: Long): Intent {
-                return Intent(context, MainActivity::class.java).apply {
-                    action = Intent.ACTION_VIEW
-                    data = AppDeepLinks.meal(mealId).toUri()
-                }
-            }
+            fun createEditMealIntent(context: Context, mealId: Long): Intent =
+                createIntent(context, AppDeepLinks.meal(mealId))
 
             fun createMealCorrectionBolusIntent(
                 context: Context,
                 carbsInG: Double? = null
             ): Intent {
-                return Intent(context, MainActivity::class.java).apply {
-                    action = Intent.ACTION_VIEW
-                    val uriBuilder = AppDeepLinks.MEAL_CORRECTION_BOLUS.toUri().buildUpon()
-                    if (carbsInG != null) {
-                        uriBuilder.appendQueryParameter("carbsInG", carbsInG.toString())
-                    }
-                    data = uriBuilder.build()
+                val uriBuilder = AppDeepLinks.MEAL_CORRECTION_BOLUS.toUri().buildUpon()
+                if (carbsInG != null) {
+                    uriBuilder.appendQueryParameter("carbsInG", carbsInG.toString())
                 }
+                return createIntent(context, uriBuilder.build().toString())
             }
 
             fun createManualControlIntent(
                 context: Context,
                 initialDialog: ManualControlInitialDialog = ManualControlInitialDialog.NONE
             ): Intent {
-                return Intent(context, MainActivity::class.java).apply {
-                    action = Intent.ACTION_VIEW
-                    val uriBuilder = AppDeepLinks.MANUAL_CONTROL.toUri().buildUpon()
-                    val dialogStr = when (initialDialog) {
-                        ManualControlInitialDialog.BOLUS -> "bolus"
-                        ManualControlInitialDialog.TEMP_BASAL -> "temp_basal"
-                        ManualControlInitialDialog.NONE -> null
-                    }
-                    if (dialogStr != null) {
-                        uriBuilder.appendQueryParameter("dialog", dialogStr)
-                    }
-                    data = uriBuilder.build()
+                val uriBuilder = AppDeepLinks.MANUAL_CONTROL.toUri().buildUpon()
+                val dialogStr = when (initialDialog) {
+                    ManualControlInitialDialog.BOLUS -> "bolus"
+                    ManualControlInitialDialog.TEMP_BASAL -> "temp_basal"
+                    ManualControlInitialDialog.NONE -> null
                 }
+                if (dialogStr != null) {
+                    uriBuilder.appendQueryParameter("dialog", dialogStr)
+                }
+                return createIntent(context, uriBuilder.build().toString())
             }
 
             fun createSystemControlIntent(
                 context: Context,
-                initialTab: Int = SYSTEM_CONTROL_TAB_OVERVIEW
+                initialTab: SystemControlTab = SystemControlTab.OVERVIEW
             ): Intent {
+                val url = when (initialTab) {
+                    SystemControlTab.OVERVIEW -> AppDeepLinks.SYSTEM_CONTROL_OVERVIEW
+                    SystemControlTab.GLUCOSE_SOURCE -> AppDeepLinks.SYSTEM_CONTROL_GLUCOSE_SOURCE
+                    SystemControlTab.PUMP -> AppDeepLinks.SYSTEM_CONTROL_PUMP
+                }
+                return createIntent(context, url)
+            }
+
+            private fun createIntent(context: Context, url: String): Intent {
                 return Intent(context, MainActivity::class.java).apply {
                     action = Intent.ACTION_VIEW
-                    val targetUrl = if (initialTab == SYSTEM_CONTROL_TAB_PUMP) {
-                        AppDeepLinks.SYSTEM_CONTROL_PUMP
-                    } else {
-                        AppDeepLinks.SYSTEM_CONTROL
-                    }
-                    data = targetUrl.toUri()
+                    data = url.toUri()
                 }
             }
         }
@@ -407,7 +409,7 @@ class MainActivity : ComponentActivity() {
 
         fun createSystemControlIntent(
             context: Context,
-            initialTab: Int = SYSTEM_CONTROL_TAB_OVERVIEW
+            initialTab: SystemControlTab = SystemControlTab.OVERVIEW
         ): Intent = IntentHandler.createSystemControlIntent(context, initialTab)
     }
 }

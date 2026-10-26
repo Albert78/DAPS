@@ -26,8 +26,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -42,13 +42,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.dh.daps.common.model.ApsMode
+import de.dh.daps.common.navigation.SystemControlTab
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppPreview
-import de.dh.daps.common.navigation.SYSTEM_CONTROL_TAB_GLUCOSE_SOURCE
-import de.dh.daps.common.navigation.SYSTEM_CONTROL_TAB_OVERVIEW
-import de.dh.daps.common.navigation.SYSTEM_CONTROL_TAB_PUMP
 import de.dh.daps.common.R as CommonR
 
 @Composable
@@ -60,7 +58,7 @@ fun SystemControlScreen(
     onNavigateToGlucoseSourceSettings: () -> Unit = {},
     onNavigateToPumpSettings: () -> Unit = {},
     viewModel: SystemControlViewModel,
-    initialTab: Int = SYSTEM_CONTROL_TAB_OVERVIEW
+    initialTab: SystemControlTab = SystemControlTab.OVERVIEW
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -84,7 +82,7 @@ fun SystemControlScreen(
 @Composable
 fun SystemControlContent(
     uiState: SystemControlUiState,
-    initialTab: Int = SYSTEM_CONTROL_TAB_OVERVIEW,
+    initialTab: SystemControlTab = SystemControlTab.OVERVIEW,
     onNavigateUp: () -> Unit,
     onNavigateToCoreDecisions: () -> Unit,
     onNavigateToPumpSetup: () -> Unit = {},
@@ -96,7 +94,7 @@ fun SystemControlContent(
     onRefreshPumpStatus: () -> Unit = {},
     onResetPumpCommunication: () -> Unit = {}
 ) {
-    var selectedTabIndex by rememberSaveable { mutableIntStateOf(initialTab) }
+    var selectedTab by rememberSaveable { mutableStateOf(initialTab) }
 
     var timeTicker by remember { mutableLongStateOf(0L) }
     LaunchedEffect(Unit) {
@@ -127,21 +125,22 @@ fun SystemControlContent(
                     }
                 )
                 PrimaryTabRow(
-                    selectedTabIndex = selectedTabIndex,
+                    selectedTabIndex = selectedTab.ordinal,
                     containerColor = MaterialTheme.colorScheme.surface,
                     contentColor = MaterialTheme.colorScheme.primary,
                     divider = {}
                 ) {
                     tabs.forEachIndexed { index, title ->
+                        val tab = SystemControlTab.entries[index]
                         Tab(
-                            selected = selectedTabIndex == index,
-                            onClick = { selectedTabIndex = index },
+                            selected = selectedTab == tab,
+                            onClick = { selectedTab = tab },
                             text = {
                                 Text(
                                     text = title,
                                     maxLines = 1,
                                     style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = if (selectedTabIndex == index) FontWeight.Bold else FontWeight.Normal
+                                    fontWeight = if (selectedTab == tab) FontWeight.Bold else FontWeight.Normal
                                 )
                             }
                         )
@@ -175,20 +174,20 @@ fun SystemControlContent(
                 }
                 is SystemControlUiState.Content -> {
                     item {
-                        key(selectedTabIndex, timeTicker) {
-                            when (selectedTabIndex) {
-                                SYSTEM_CONTROL_TAB_OVERVIEW -> OverviewTabContent(
+                        key(selectedTab, timeTicker) {
+                            when (selectedTab) {
+                                SystemControlTab.OVERVIEW -> OverviewTabContent(
                                     uiState = uiState.overviewUiState,
                                     onRefreshPumpStatus = onRefreshPumpStatus,
                                     onNavigateToCoreDecisions = onNavigateToCoreDecisions
                                 )
-                                SYSTEM_CONTROL_TAB_GLUCOSE_SOURCE -> SourceTabContent(
+                                SystemControlTab.GLUCOSE_SOURCE -> SourceTabContent(
                                     uiState = uiState.sourceTabUiState,
                                     onSetupGlucoseSource = onNavigateToGlucoseSourceSetup,
                                     onNavigateToSettings = onNavigateToGlucoseSourceSettings,
                                     onStopSensor = onStopGlucoseSource
                                 )
-                                SYSTEM_CONTROL_TAB_PUMP -> PumpTabContent(
+                                SystemControlTab.PUMP -> PumpTabContent(
                                     uiState = uiState.pumpTabUiState,
                                     onSetupPumpDriver = onNavigateToPumpSetup,
                                     onNavigateToSettings = onNavigateToPumpSettings,
@@ -215,7 +214,7 @@ fun SystemControlOverviewPreview() {
     AppPreview {
         SystemControlContent(
             uiState = previewUiState(),
-            initialTab = SYSTEM_CONTROL_TAB_OVERVIEW,
+            initialTab = SystemControlTab.OVERVIEW,
             onNavigateUp = {},
             onNavigateToCoreDecisions = {},
             onStopGlucoseSource = {},
@@ -232,7 +231,7 @@ fun SystemControlOverviewUnconfiguredPreview() {
     AppPreview {
         SystemControlContent(
             uiState = previewUnconfiguredUiState(),
-            initialTab = SYSTEM_CONTROL_TAB_OVERVIEW,
+            initialTab = SystemControlTab.OVERVIEW,
             onNavigateUp = {},
             onNavigateToCoreDecisions = {},
             onStopGlucoseSource = {},
@@ -249,7 +248,7 @@ fun SystemControlGlucosePreview() {
     AppPreview {
         SystemControlContent(
             uiState = previewUiState(),
-            initialTab = SYSTEM_CONTROL_TAB_GLUCOSE_SOURCE,
+            initialTab = SystemControlTab.GLUCOSE_SOURCE,
             onNavigateUp = {},
             onNavigateToCoreDecisions = {},
             onStopGlucoseSource = {},
@@ -266,7 +265,7 @@ fun SystemControlPumpPreview() {
     AppPreview {
         SystemControlContent(
             uiState = previewUiState(),
-            initialTab = SYSTEM_CONTROL_TAB_PUMP,
+            initialTab = SystemControlTab.PUMP,
             onNavigateUp = {},
             onNavigateToCoreDecisions = {},
             onStopGlucoseSource = {},
@@ -283,7 +282,7 @@ fun SystemControlScreenLoadingPreview() {
     AppPreview {
         SystemControlContent(
             uiState = previewLoadingUiState(),
-            initialTab = SYSTEM_CONTROL_TAB_OVERVIEW,
+            initialTab = SystemControlTab.OVERVIEW,
             onNavigateUp = {},
             onNavigateToCoreDecisions = {},
             onStopGlucoseSource = {},

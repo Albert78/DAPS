@@ -26,11 +26,15 @@ import kotlinx.serialization.Serializable
 @Serializable object ScheduledTherapyAdjustmentRoute : NavKey
 @Serializable object TherapyAdjustmentPresetsRoute : NavKey
 @Serializable data class TherapyAdjustmentEditorRoute(val adjustmentId: Long? = null) : NavKey
-const val SYSTEM_CONTROL_TAB_OVERVIEW = 0
-const val SYSTEM_CONTROL_TAB_GLUCOSE_SOURCE = 1
-const val SYSTEM_CONTROL_TAB_PUMP = 2
+enum class SystemControlTab {
+    OVERVIEW,
+    GLUCOSE_SOURCE,
+    PUMP
+}
 
-@Serializable data class SystemControlRoute(val initialTab: Int = SYSTEM_CONTROL_TAB_OVERVIEW) : NavKey
+@Serializable data class SystemControlRoute(
+    val initialTab: SystemControlTab = SystemControlTab.OVERVIEW
+) : NavKey
 @Serializable object PumpSetupRoute : NavKey
 @Serializable object GlucoseSourceSetupRoute : NavKey
 @Serializable object PumpSettingsRoute : NavKey

@@ -77,6 +77,14 @@
                     android:scheme="app"
                     android:host="daps.dh.de"
                     android:pathPrefix="/manualcontrol" />
+                <data
+                    android:scheme="app"
+                    android:host="daps.dh.de"
+                    android:pathPrefix="/systemcontrol" />
+                <data
+                    android:scheme="app"
+                    android:host="daps.dh.de"
+                    android:pathPrefix="/reminders" />
             </intent-filter>
         </activity>
 
