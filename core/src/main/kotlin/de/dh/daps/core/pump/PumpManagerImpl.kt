@@ -2,17 +2,28 @@ package de.dh.daps.core.pump
 
 import android.content.Intent
 import android.util.Log
+import de.dh.daps.AppPreferencesRepository
+import de.dh.daps.catheterPatchWarningTime
 import de.dh.daps.common.PUMP_BATTERY_LOW_THRESHOLD
 import de.dh.daps.common.PUMP_RESERVOIR_LOW_THRESHOLD
 import de.dh.daps.common.model.BolusStatus
 import de.dh.daps.common.model.InsulinAmount
 import de.dh.daps.common.model.InsulinHistory
 import de.dh.daps.common.model.InsulinPump
+import de.dh.daps.common.model.PatchPhase
 import de.dh.daps.common.model.PumpLifecycleState
 import de.dh.daps.common.model.data.InsulinProfile
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.service.REMINDER_SOURCE_CATHETER_CHANGE
+import de.dh.daps.common.service.REMINDER_SOURCE_PATCH_CHANGE
+import de.dh.daps.common.service.ReminderManager
 import de.dh.daps.common.service.SystemWakeService
 import de.dh.daps.common.service.WakeupHandler
+import de.dh.daps.common.service.clearConsumableReminder
+import de.dh.daps.common.service.syncConsumableReminder
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -30,7 +41,9 @@ import kotlin.time.Duration
  */
 class PumpManagerImpl(
     private val scope: CoroutineScope,
-    private val wakeService: SystemWakeService
+    private val wakeService: SystemWakeService,
+    private val reminderManager: ReminderManager,
+    private val appPreferencesRepository: AppPreferencesRepository
 ) : PumpManager, WakeupHandler {
     private val _pumpIssues = MutableStateFlow<Set<PumpIssue>>(setOf(PumpIssue.NoPumpBound))
     override val pumpIssues: StateFlow<Set<PumpIssue>> = _pumpIssues.asStateFlow()
@@ -145,6 +158,13 @@ class PumpManagerImpl(
                             } else {
                                 removeIssue(PumpIssue.Expired)
                             }
+                        }
+                    }
+                    launch {
+                        combine(pc.pump.pumpStatus, appPreferencesRepository.catheterPatchWarningTime) { status, warningTime ->
+                            Pair(status.lifecycleState, warningTime)
+                        }.collect { (lifecycleState, warningTime) ->
+                            syncConsumableReminder(lifecycleState, warningTime)
                         }
                     }
                     launch {
@@ -273,6 +293,48 @@ class PumpManagerImpl(
     private fun removeIssue(issue: PumpIssue) {
         if (issue in _pumpIssues.value) {
             _pumpIssues.value -= issue
+        }
+    }
+
+    private suspend fun syncConsumableReminder(lifecycleState: PumpLifecycleState, warningTime: LocalTime) {
+        val zoneId = ZoneId.systemDefault()
+        when (lifecycleState) {
+            is PumpLifecycleState.Durable -> {
+                val expirationDate = lifecycleState.approximateCatheterExpiration
+                if (expirationDate != null) {
+                    val triggerDateTime = expirationDate.minusDays(1).atTime(warningTime)
+                    val triggerMs = triggerDateTime.atZone(zoneId).toInstant().toEpochMilli()
+
+                    reminderManager.syncConsumableReminder(
+                        sourceId = REMINDER_SOURCE_CATHETER_CHANGE,
+                        reminderTimestamp = Timestamp(triggerMs),
+                        title = "Katheterwechsel bevorstehend",
+                        description = "Katheterwechsel steht morgen bevor."
+                    )
+                } else {
+                    reminderManager.clearConsumableReminder(REMINDER_SOURCE_CATHETER_CHANGE)
+                }
+                reminderManager.clearConsumableReminder(REMINDER_SOURCE_PATCH_CHANGE)
+            }
+            is PumpLifecycleState.Patch -> {
+                val activeUntil = lifecycleState.activeUntil
+                if (lifecycleState.phase == PatchPhase.ACTIVE && activeUntil.isValid() && activeUntil.ms > 0) {
+                    val activeUntilZoneDateTime = LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(activeUntil.ms), zoneId)
+                    val activeUntilDate = activeUntilZoneDateTime.toLocalDate()
+                    val triggerDateTime = activeUntilDate.minusDays(1).atTime(warningTime)
+                    val triggerMs = triggerDateTime.atZone(zoneId).toInstant().toEpochMilli()
+
+                    reminderManager.syncConsumableReminder(
+                        sourceId = REMINDER_SOURCE_PATCH_CHANGE,
+                        reminderTimestamp = Timestamp(triggerMs),
+                        title = "Patch-Wechsel bevorstehend",
+                        description = "Patch-Wechsel steht morgen bevor."
+                    )
+                } else {
+                    reminderManager.clearConsumableReminder(REMINDER_SOURCE_PATCH_CHANGE)
+                }
+                reminderManager.clearConsumableReminder(REMINDER_SOURCE_CATHETER_CHANGE)
+            }
         }
     }
 

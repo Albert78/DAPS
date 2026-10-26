@@ -286,7 +286,19 @@ class SystemRegistryImpl(
                 systemMetricsRepository = systemMetricsRepository,
                 scope = scope
             )
-            val pumpManager = PumpManagerImpl(scope = scope, wakeService = wakeService)
+            val reminderManager = ReminderManagerImpl(
+                reminderDao = appDatabase.reminderDao(),
+                wakeService = wakeService,
+                timeService = timeService,
+                scope = scope
+            )
+
+            val pumpManager = PumpManagerImpl(
+                scope = scope,
+                wakeService = wakeService,
+                reminderManager = reminderManager,
+                appPreferencesRepository = appPreferencesRepository
+            )
             val pumpDriverManager = PumpDriverManager(
                 drivers = pluginManager.getPlugins().filterIsInstance<InsulinPumpDriver>(),
                 scope = scope
@@ -305,13 +317,6 @@ class SystemRegistryImpl(
                 pumpDriverManager = pumpDriverManager,
                 glucoseSourceManager = glucoseSourceManager,
                 pumpManager = pumpManager,
-                scope = scope
-            )
-
-            val reminderManager = ReminderManagerImpl(
-                reminderDao = appDatabase.reminderDao(),
-                wakeService = wakeService,
-                timeService = timeService,
                 scope = scope
             )
 

@@ -122,3 +122,38 @@ suspend fun ReminderManager.createMealReminder(
 suspend fun ReminderManager.deleteMealReminders(mealId: Long) {
     cancelRemindersForSource(mealId.toString())
 }
+
+const val REMINDER_SOURCE_CATHETER_CHANGE = "catheter_change"
+const val REMINDER_SOURCE_PATCH_CHANGE = "patch_change"
+
+/**
+ * Convenience extension for syncing a consumable reminder (catheter / patch change).
+ */
+suspend fun ReminderManager.syncConsumableReminder(
+    sourceId: String,
+    reminderTimestamp: Timestamp,
+    title: String,
+    description: String
+): Reminder? {
+    cancelRemindersForSource(sourceId)
+    if (reminderTimestamp.ms > System.currentTimeMillis()) {
+        val reminder = Reminder(
+            type = ReminderType.PUMP,
+            sourceId = sourceId,
+            title = title,
+            description = description,
+            reminderTimestamp = reminderTimestamp,
+            expirationTimestamp = reminderTimestamp + de.dh.daps.common.model.data.Minutes(180),
+            targetRoute = "app://daps.dh.de/systemcontrol/pump"
+        )
+        return scheduleReminder(reminder)
+    }
+    return null
+}
+
+/**
+ * Convenience extension for clearing a consumable reminder (catheter / patch change).
+ */
+suspend fun ReminderManager.clearConsumableReminder(sourceId: String) {
+    cancelRemindersForSource(sourceId)
+}

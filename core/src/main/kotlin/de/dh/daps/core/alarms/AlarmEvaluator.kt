@@ -2,7 +2,6 @@ package de.dh.daps.core.alarms
 
 import android.content.Intent
 import android.util.Log
-import de.dh.daps.AppPreferencesRepository
 import de.dh.daps.common.model.ApsMode
 import de.dh.daps.common.model.InsulinPumpStatus
 import de.dh.daps.common.model.PatchPhase
@@ -36,6 +35,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
+import de.dh.daps.AppPreferencesRepository
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -218,7 +218,7 @@ class AlarmEvaluator(
             }
         }
 
-        // Evaluate Consumable Lifecycle (Catheter / Patch change reminders)
+        // Evaluate Consumable Lifecycle (Catheter / Patch expiration safety alarms)
         evaluatePumpConsumables(
             lifecycleState = input.pumpStatus?.lifecycleState,
             warningTime = input.catheterPatchWarningTime,
@@ -299,21 +299,14 @@ class AlarmEvaluator(
         when (lifecycleState) {
             is PumpLifecycleState.Durable -> {
                 val expirationDate = lifecycleState.approximateCatheterExpiration ?: return
-                val infoTriggerDateTime = expirationDate.minusDays(1).atTime(warningTime)
                 val warnTriggerDateTime = expirationDate.atTime(warningTime)
 
                 if (currentZoneDateTime >= warnTriggerDateTime) {
                     activeSet.add(AlarmType.PUMP_CATHETER_CHANGE_WARN)
-                } else if (currentZoneDateTime >= infoTriggerDateTime) {
-                    activeSet.add(AlarmType.PUMP_CATHETER_CHANGE_INFO)
+                } else {
                     val warnMs = warnTriggerDateTime.atZone(zoneId).toInstant().toEpochMilli()
                     if (warnMs > effectiveNow.ms) {
                         nextWakeups.add(warnMs)
-                    }
-                } else {
-                    val infoMs = infoTriggerDateTime.atZone(zoneId).toInstant().toEpochMilli()
-                    if (infoMs > effectiveNow.ms) {
-                        nextWakeups.add(infoMs)
                     }
                 }
             }
@@ -329,22 +322,10 @@ class AlarmEvaluator(
 
                 val activeUntil = lifecycleState.activeUntil
                 if (lifecycleState.phase == PatchPhase.ACTIVE && activeUntil.isValid() && activeUntil.ms > 0) {
-                    val activeUntilZoneDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(activeUntil.ms), zoneId)
-                    val activeUntilDate = activeUntilZoneDateTime.toLocalDate()
-                    val infoTriggerDateTime = activeUntilDate.minusDays(1).atTime(warningTime)
-
                     if (effectiveNow >= activeUntil) {
                         activeSet.add(AlarmType.PUMP_PATCH_CHANGE_WARN)
-                    } else if (currentZoneDateTime >= infoTriggerDateTime) {
-                        activeSet.add(AlarmType.PUMP_PATCH_CHANGE_INFO)
-                        if (activeUntil.ms > effectiveNow.ms) {
-                            nextWakeups.add(activeUntil.ms)
-                        }
-                    } else {
-                        val infoMs = infoTriggerDateTime.atZone(zoneId).toInstant().toEpochMilli()
-                        if (infoMs > effectiveNow.ms) {
-                            nextWakeups.add(infoMs)
-                        }
+                    } else if (activeUntil.ms > effectiveNow.ms) {
+                        nextWakeups.add(activeUntil.ms)
                     }
                 }
             }
