@@ -291,7 +291,10 @@ class AlarmEvaluator(
         if (lifecycleState == null) return
 
         val zoneId = ZoneId.systemDefault()
-        val currentZoneDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(now.ms), zoneId)
+        // Add a 1-second tolerance margin so Android AlarmManager wakeups arriving a few ms early
+        // still evaluate as having reached the scheduled reminder time.
+        val effectiveNow = now.plusMs(CONSUMABLE_REMINDER_TOLERANCE_MS)
+        val currentZoneDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(effectiveNow.ms), zoneId)
 
         when (lifecycleState) {
             is PumpLifecycleState.Durable -> {
@@ -304,12 +307,12 @@ class AlarmEvaluator(
                 } else if (currentZoneDateTime >= infoTriggerDateTime) {
                     activeSet.add(AlarmType.PUMP_CATHETER_CHANGE_INFO)
                     val warnMs = warnTriggerDateTime.atZone(zoneId).toInstant().toEpochMilli()
-                    if (warnMs > now.ms) {
+                    if (warnMs > effectiveNow.ms) {
                         nextWakeups.add(warnMs)
                     }
                 } else {
                     val infoMs = infoTriggerDateTime.atZone(zoneId).toInstant().toEpochMilli()
-                    if (infoMs > now.ms) {
+                    if (infoMs > effectiveNow.ms) {
                         nextWakeups.add(infoMs)
                     }
                 }
@@ -330,16 +333,16 @@ class AlarmEvaluator(
                     val activeUntilDate = activeUntilZoneDateTime.toLocalDate()
                     val infoTriggerDateTime = activeUntilDate.minusDays(1).atTime(warningTime)
 
-                    if (now >= activeUntil) {
+                    if (effectiveNow >= activeUntil) {
                         activeSet.add(AlarmType.PUMP_PATCH_CHANGE_WARN)
                     } else if (currentZoneDateTime >= infoTriggerDateTime) {
                         activeSet.add(AlarmType.PUMP_PATCH_CHANGE_INFO)
-                        if (activeUntil.ms > now.ms) {
+                        if (activeUntil.ms > effectiveNow.ms) {
                             nextWakeups.add(activeUntil.ms)
                         }
                     } else {
                         val infoMs = infoTriggerDateTime.atZone(zoneId).toInstant().toEpochMilli()
-                        if (infoMs > now.ms) {
+                        if (infoMs > effectiveNow.ms) {
                             nextWakeups.add(infoMs)
                         }
                     }
@@ -372,6 +375,7 @@ class AlarmEvaluator(
         const val LOW_THRESHOLD_MGDL = 70.0
         const val HIGH_THRESHOLD_MGDL = 250.0
         const val PUMP_RESUME_GRACE_PERIOD_MS = 10_000L
+        const val CONSUMABLE_REMINDER_TOLERANCE_MS = 1_000L
 
         const val WAKE_TAG_ALARM_EVALUATOR = "AlarmEvaluator"
         val WAKEUP_ID_ALARM_EVALUATOR: UInt = 600u
