@@ -1,6 +1,7 @@
 package de.dh.daps.core.orchestration
 
 import android.app.Notification
+import android.content.Context
 import android.content.Intent
 import de.dh.daps.AppPreferencesRepository
 import de.dh.daps.common.model.ApsMode
@@ -179,6 +180,7 @@ interface SystemOrchestrator {
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class SystemOrchestratorImpl(
+    private val context: Context,
     private val glucoseSourceManager: GlucoseSourceManager,
     private val pumpManager: PumpManager,
     private val glucoseRepository: GlucoseRepository,
@@ -195,7 +197,7 @@ class SystemOrchestratorImpl(
         scope = scope
     ),
     private val issueAggregator: ApsIssueAggregator = ApsIssueAggregator(),
-    private val consumableTracker: ConsumableTracker = ConsumableTracker(),
+    private val consumableTracker: ConsumableTracker = ConsumableTracker(context),
     private val notificationController: SystemNotificationController = SystemNotificationController(
         androidNotifications = androidNotifications
     )

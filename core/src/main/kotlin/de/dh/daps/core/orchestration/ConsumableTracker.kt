@@ -1,5 +1,7 @@
 package de.dh.daps.core.orchestration
 
+import android.content.Context
+import de.dh.daps.common.R as CommonR
 import de.dh.daps.common.model.InsulinPumpStatus
 import de.dh.daps.common.model.PatchPhase
 import de.dh.daps.common.model.PumpLifecycleState
@@ -23,7 +25,9 @@ import java.time.ZoneId
  * Tracks consumable lifecycles (catheters, patch pumps), evaluates warnings,
  * syncs advance reminders, and manages wakeups.
  */
-class ConsumableTracker {
+class ConsumableTracker(
+    private val context: Context
+) {
     private val _consumableIssues = MutableStateFlow<Set<ApsIssue>>(emptySet())
     val consumableIssues: StateFlow<Set<ApsIssue>> = _consumableIssues.asStateFlow()
 
@@ -122,8 +126,8 @@ class ConsumableTracker {
                     manager.syncConsumableReminder(
                         sourceId = REMINDER_SOURCE_CATHETER_CHANGE,
                         reminderTimestamp = Timestamp(triggerMs),
-                        title = "Katheterwechsel bevorstehend",
-                        description = "Katheterwechsel steht morgen bevor."
+                        title = context.getString(CommonR.string.notification_catheter_change_title),
+                        description = context.getString(CommonR.string.notification_catheter_change_description)
                     )
                 } else {
                     manager.clearConsumableReminder(REMINDER_SOURCE_CATHETER_CHANGE)
@@ -141,8 +145,8 @@ class ConsumableTracker {
                     manager.syncConsumableReminder(
                         sourceId = REMINDER_SOURCE_PATCH_CHANGE,
                         reminderTimestamp = Timestamp(triggerMs),
-                        title = "Patch-Wechsel bevorstehend",
-                        description = "Patch-Wechsel steht morgen bevor."
+                        title = context.getString(CommonR.string.notification_patch_change_title),
+                        description = context.getString(CommonR.string.notification_patch_change_description)
                     )
                 } else {
                     manager.clearConsumableReminder(REMINDER_SOURCE_PATCH_CHANGE)

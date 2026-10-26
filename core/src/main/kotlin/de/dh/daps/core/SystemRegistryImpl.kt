@@ -331,6 +331,7 @@ class SystemRegistryImpl(
             val carbsInsulinCalculator = CarbsInsulinCalculator(timeService.tickInterval)
 
             val systemOrchestrator = SystemOrchestratorImpl(
+                context = application,
                 glucoseSourceManager = glucoseSourceManager,
                 pumpManager = pumpManager,
                 glucoseRepository = glucoseRepository,
