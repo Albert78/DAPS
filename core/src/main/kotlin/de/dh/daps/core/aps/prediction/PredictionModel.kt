@@ -13,7 +13,7 @@ import de.dh.daps.common.model.data.Tick
 import de.dh.daps.common.model.data.Timeline
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.aps.ApsAlgorithmImpl.Companion.DEVIATION_DECAY_FACTOR_PER_TICK
-import de.dh.daps.core.aps.TherapyManager
+import de.dh.daps.core.therapy.TherapyManager
 
 /**
  * Predicts future blood glucose levels based on current blood glucose, treatment history

@@ -55,8 +55,8 @@ import de.dh.daps.common.model.MealType
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.common.model.getDefaultMealTypes
-import de.dh.daps.core.aps.TherapyManager
-import de.dh.daps.core.aps.TreatmentLock
+import de.dh.daps.core.therapy.TherapyManager
+import de.dh.daps.core.therapy.TreatmentLock
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.AbsoluteTimeStepper
 import de.dh.daps.ui.common.composables.CarbsValueStepper

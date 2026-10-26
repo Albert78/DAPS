@@ -16,8 +16,8 @@ import de.dh.daps.common.model.reminder.ReminderType
 import de.dh.daps.common.model.toActiveDoses
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.orchestration.ApsRecommendation
-import de.dh.daps.core.aps.LockResult
-import de.dh.daps.core.aps.TreatmentLock
+import de.dh.daps.core.therapy.LockResult
+import de.dh.daps.core.therapy.TreatmentLock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow

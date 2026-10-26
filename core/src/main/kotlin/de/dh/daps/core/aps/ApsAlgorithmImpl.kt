@@ -24,6 +24,7 @@ import de.dh.daps.core.aps.prediction.PredictionModel
 import de.dh.daps.core.aps.prediction.RecentBgReadingsHistory
 import de.dh.daps.core.aps.prediction.SampledBgReadings
 import de.dh.daps.core.repository.GlucoseRepository
+import de.dh.daps.core.therapy.TherapyManager
 import de.dh.daps.core.repository.TreatmentRepository
 import kotlin.math.abs
 import kotlin.math.ceil

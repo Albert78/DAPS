@@ -25,7 +25,7 @@ import de.dh.daps.core.cgm.GlucoseSourceIssue
 import de.dh.daps.core.cgm.GlucoseSourceManager
 import de.dh.daps.core.aps.NoopAlgorithm
 import de.dh.daps.core.aps.SimpleBolusCorrectionCalculator
-import de.dh.daps.core.aps.TherapyManager
+import de.dh.daps.core.therapy.TherapyManager
 import de.dh.daps.core.pump.PumpIssue
 import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.repository.DeviceStatusRepository

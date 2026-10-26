@@ -25,7 +25,7 @@ import de.dh.daps.common.service.createMealReminder
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.aps.BolusCalculationMath
 import de.dh.daps.core.aps.BolusProjections
-import de.dh.daps.core.aps.TreatmentLock
+import de.dh.daps.core.therapy.TreatmentLock
 import de.dh.daps.ui.common.time
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow

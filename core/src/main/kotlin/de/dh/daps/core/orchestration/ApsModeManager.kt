@@ -4,7 +4,7 @@ import android.util.Log
 import de.dh.daps.common.model.ApsMode
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.cgm.GlucoseSourceManager
-import de.dh.daps.core.aps.TherapyManager
+import de.dh.daps.core.therapy.TherapyManager
 import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.repository.SettingsRepository
 import kotlinx.coroutines.CoroutineScope

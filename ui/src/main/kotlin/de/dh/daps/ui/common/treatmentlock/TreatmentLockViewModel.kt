@@ -4,9 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import de.dh.daps.core.aps.LockResult
-import de.dh.daps.core.aps.TherapyManager
-import de.dh.daps.core.aps.TreatmentLock
+import de.dh.daps.core.therapy.LockResult
+import de.dh.daps.core.therapy.TherapyManager
+import de.dh.daps.core.therapy.TreatmentLock
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay

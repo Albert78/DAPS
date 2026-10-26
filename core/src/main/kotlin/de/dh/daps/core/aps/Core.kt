@@ -15,6 +15,9 @@ import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.repository.GlucoseRepository
 import de.dh.daps.core.repository.SystemMetricsRepository
 import de.dh.daps.core.repository.TreatmentRepository
+import de.dh.daps.core.therapy.LockResult
+import de.dh.daps.core.therapy.TherapyManager
+import de.dh.daps.core.therapy.TreatmentLock
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -15,7 +15,7 @@ import de.dh.daps.core.cgm.GlucoseSourceDriverManager
 import de.dh.daps.core.cgm.GlucoseSourceManager
 import de.dh.daps.core.orchestration.RecommendationManager
 import de.dh.daps.core.orchestration.SystemOrchestrator
-import de.dh.daps.core.aps.TherapyManager
+import de.dh.daps.core.therapy.TherapyManager
 import de.dh.daps.core.backup.AppDataManagementRepository
 import de.dh.daps.core.device.DeviceConnectionManager
 import de.dh.daps.core.pump.PumpDriverManager

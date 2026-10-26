@@ -1,4 +1,4 @@
-package de.dh.daps.core.aps
+package de.dh.daps.core.therapy
 
 import android.content.Intent
 import android.util.Log
@@ -22,6 +22,7 @@ import de.dh.daps.common.model.data.getAmountForMinute
 import de.dh.daps.common.model.data.getBgForMinute
 import de.dh.daps.common.service.SystemWakeService
 import de.dh.daps.common.service.WakeupHandler
+import de.dh.daps.core.aps.DeferredBolusUpdate
 import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.repository.TherapyRepository
 import de.dh.daps.core.repository.TreatmentRepository

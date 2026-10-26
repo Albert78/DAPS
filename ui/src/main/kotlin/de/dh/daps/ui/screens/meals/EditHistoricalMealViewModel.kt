@@ -19,7 +19,7 @@ import de.dh.daps.common.model.reminder.ReminderType
 import de.dh.daps.common.service.createMealReminder
 import de.dh.daps.common.service.deleteMealReminders
 import de.dh.daps.core.SystemRegistry
-import de.dh.daps.core.aps.TreatmentLock
+import de.dh.daps.core.therapy.TreatmentLock
 import de.dh.daps.ui.controls.meal.PlannedBolusUiModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

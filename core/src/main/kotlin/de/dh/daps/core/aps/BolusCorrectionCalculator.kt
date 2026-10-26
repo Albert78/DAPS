@@ -11,6 +11,7 @@ import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Timestamp
 import de.dh.daps.core.repository.GlucoseRepository
+import de.dh.daps.core.therapy.TherapyManager
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.max
