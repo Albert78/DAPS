@@ -49,6 +49,16 @@ sealed interface PumpIssue {
     data object Expired : PumpIssue
 
     /**
+     * Catheter change is due or expired (durable pump).
+     */
+    data object CatheterChangeWarn : PumpIssue
+
+    /**
+     * Patch pod change is due or expired (patch pump).
+     */
+    data object PatchChangeWarn : PumpIssue
+
+    /**
      * Communication or command execution with the pump is blocked on software level
      * (e.g. driver in maintenance/blocked mode or coordinator in error state).
      */

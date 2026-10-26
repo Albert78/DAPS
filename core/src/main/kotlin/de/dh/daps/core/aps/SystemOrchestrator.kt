@@ -4,20 +4,28 @@ import android.app.Notification
 import android.content.Intent
 import android.util.Log
 import de.dh.daps.AppPreferencesRepository
+import de.dh.daps.catheterPatchWarningTime
 import de.dh.daps.common.model.ApsMode
+import de.dh.daps.common.model.InsulinPumpStatus
 import de.dh.daps.common.model.MealEntry
+import de.dh.daps.common.model.PatchPhase
+import de.dh.daps.common.model.PumpLifecycleState
 import de.dh.daps.common.model.calculation.CarbsInsulinCalculator
 import de.dh.daps.common.model.data.BgReadingsInterval
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.Minutes
 import de.dh.daps.common.model.data.Tick
 import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.service.REMINDER_SOURCE_CATHETER_CHANGE
+import de.dh.daps.common.service.REMINDER_SOURCE_PATCH_CHANGE
 import de.dh.daps.common.service.ReminderManager
 import de.dh.daps.common.service.SystemWakeService
 import de.dh.daps.common.service.TickHandler
 import de.dh.daps.common.service.TickPriority
 import de.dh.daps.common.service.TimeService
 import de.dh.daps.common.service.WakeupHandler
+import de.dh.daps.common.service.clearConsumableReminder
+import de.dh.daps.common.service.syncConsumableReminder
 import de.dh.daps.core.pump.PumpIssue
 import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.repository.BluetoothStatus
@@ -41,10 +49,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneId
 import java.util.concurrent.Executors
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -232,6 +246,10 @@ class SystemOrchestratorImpl(
     private val _resumeRequestedAt = MutableStateFlow<Timestamp?>(null)
     override val resumeRequestedAt: StateFlow<Timestamp?> = _resumeRequestedAt.asStateFlow()
 
+    private val _consumableIssues = MutableStateFlow<Set<ApsIssue>>(emptySet())
+    private var lastPumpStatus: InsulinPumpStatus? = null
+    private var lastWarningTime: LocalTime? = null
+
     // Computation Core: Pure logic and state, completely thread-agnostic
     private lateinit var core: Core
 
@@ -251,6 +269,7 @@ class SystemOrchestratorImpl(
             when (wakeupId) {
                 WAKEUP_STALE_CHECK -> staleCheck()
                 WAKEUP_DAILY_MAINTENANCE -> performDailyMaintenance()
+                WAKEUP_CONSUMABLE_CHECK -> reevaluateConsumables()
             }
         }
     }
@@ -307,8 +326,19 @@ class SystemOrchestratorImpl(
                 coreState,
                 pumpManager.pumpIssues,
                 glucoseSourceManager.glucoseSourceIssues,
-                deviceStatusRepository.observeBluetoothStatus()
-            ) { stale, state, pIssues, gIssues, btStatus ->
+                deviceStatusRepository.observeBluetoothStatus(),
+                _consumableIssues
+            ) { flows ->
+                val stale = flows[0] as Boolean
+                val state = flows[1] as CoreState
+                @Suppress("UNCHECKED_CAST")
+                val pIssues = flows[2] as Set<PumpIssue>
+                @Suppress("UNCHECKED_CAST")
+                val gIssues = flows[3] as Set<GlucoseSourceIssue>
+                val btStatus = flows[4] as BluetoothStatus
+                @Suppress("UNCHECKED_CAST")
+                val cIssues = flows[5] as Set<ApsIssue>
+
                 val issues = mutableSetOf<ApsIssue>()
                 if (btStatus == BluetoothStatus.DISABLED || btStatus == BluetoothStatus.UNAVAILABLE) {
                     issues.add(ApsIssue.BluetoothDisabled)
@@ -321,6 +351,7 @@ class SystemOrchestratorImpl(
                 }
                 pIssues.forEach { issues.add(ApsIssue.Pump(it)) }
                 gIssues.forEach { issues.add(ApsIssue.GlucoseSource(it)) }
+                cIssues.forEach { issues.add(it) }
 
                 // TODO: Depending on severity, switch APS mode to manual and issue alarm
                 issues
@@ -453,6 +484,18 @@ class SystemOrchestratorImpl(
         newInitScope.launch {
             reminderManager.dueReminders.collect { reminder ->
                 androidNotifications.showReminderNotification(reminder)
+            }
+        }
+
+        newInitScope.launch {
+            pumpManager.activeInsulinPump.flatMapLatest { pump ->
+                pump?.pumpStatus ?: flowOf(null)
+            }.combine(appPreferencesRepository.catheterPatchWarningTime) { status, warningTime ->
+                Pair(status, warningTime)
+            }.collect { (status, warningTime) ->
+                lastPumpStatus = status
+                lastWarningTime = warningTime
+                evaluateConsumableLifecycle(status?.lifecycleState, warningTime)
             }
         }
 
@@ -607,9 +650,13 @@ class SystemOrchestratorImpl(
 
         wakeService.cancelWakeup(WAKE_TAG, WAKEUP_STALE_CHECK)
         wakeService.cancelWakeup(WAKE_TAG, WAKEUP_DAILY_MAINTENANCE)
+        wakeService.cancelWakeup(WAKE_TAG, WAKEUP_CONSUMABLE_CHECK)
         wakeService.unregisterHandler(WAKE_TAG)
 
         _apsIssues.value = emptySet()
+        _consumableIssues.value = emptySet()
+        lastPumpStatus = null
+        lastWarningTime = null
         _isBgStale.value = false
         _coreState.value = CoreState.Uninitialized
         _apsMode.value = ApsMode.Suspend
@@ -701,11 +748,125 @@ class SystemOrchestratorImpl(
         return lastDataTime.ifValidOrNow() + STALE_BG_THRESHOLD
     }
 
+    private fun reevaluateConsumables() {
+        val status = lastPumpStatus
+        val warningTime = lastWarningTime ?: return
+        initScope?.launch {
+            evaluateConsumableLifecycle(status?.lifecycleState, warningTime)
+        }
+    }
+
+    private suspend fun evaluateConsumableLifecycle(lifecycleState: PumpLifecycleState?, warningTime: LocalTime) {
+        if (lifecycleState == null) {
+            _consumableIssues.value = emptySet()
+            reminderManager?.clearConsumableReminder(REMINDER_SOURCE_CATHETER_CHANGE)
+            reminderManager?.clearConsumableReminder(REMINDER_SOURCE_PATCH_CHANGE)
+            wakeService.cancelWakeup(WAKE_TAG, WAKEUP_CONSUMABLE_CHECK)
+            return
+        }
+
+        // 1. Sync advance reminder (1 day before)
+        syncConsumableReminder(lifecycleState, warningTime)
+
+        // 2. Evaluate active warning issue & next wakeup timestamp
+        val now = Timestamp.now()
+        val zoneId = ZoneId.systemDefault()
+        val effectiveNow = now.plusMs(CONSUMABLE_REMINDER_TOLERANCE_MS)
+        val currentZoneDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(effectiveNow.ms), zoneId)
+
+        val newIssues = mutableSetOf<ApsIssue>()
+        var nextWakeupMs: Long? = null
+
+        when (lifecycleState) {
+            is PumpLifecycleState.Durable -> {
+                val expirationDate = lifecycleState.approximateCatheterExpiration
+                if (expirationDate != null) {
+                    val warnTriggerDateTime = expirationDate.atTime(warningTime)
+                    if (currentZoneDateTime >= warnTriggerDateTime) {
+                        newIssues.add(ApsIssue.Pump(PumpIssue.CatheterChangeWarn))
+                    } else {
+                        val warnMs = warnTriggerDateTime.atZone(zoneId).toInstant().toEpochMilli()
+                        if (warnMs > effectiveNow.ms) {
+                            nextWakeupMs = warnMs
+                        }
+                    }
+                }
+            }
+            is PumpLifecycleState.Patch -> {
+                if (lifecycleState.phase == PatchPhase.IN_GRACE_PERIOD || lifecycleState.phase == PatchPhase.EXPIRED) {
+                    newIssues.add(ApsIssue.Pump(PumpIssue.PatchChangeWarn))
+                } else if (lifecycleState.phase == PatchPhase.ACTIVE) {
+                    val activeUntil = lifecycleState.activeUntil
+                    if (activeUntil.isValid() && activeUntil.ms > 0) {
+                        if (effectiveNow >= activeUntil) {
+                            newIssues.add(ApsIssue.Pump(PumpIssue.PatchChangeWarn))
+                        } else if (activeUntil.ms > effectiveNow.ms) {
+                            nextWakeupMs = activeUntil.ms
+                        }
+                    }
+                }
+            }
+        }
+
+        _consumableIssues.value = newIssues
+
+        if (nextWakeupMs != null && nextWakeupMs > now.ms) {
+            wakeService.scheduleWakeup(WAKE_TAG, WAKEUP_CONSUMABLE_CHECK, Timestamp(nextWakeupMs))
+        } else {
+            wakeService.cancelWakeup(WAKE_TAG, WAKEUP_CONSUMABLE_CHECK)
+        }
+    }
+
+    private suspend fun syncConsumableReminder(lifecycleState: PumpLifecycleState, warningTime: LocalTime) {
+        val reminderManager = this.reminderManager ?: return
+        val zoneId = ZoneId.systemDefault()
+        when (lifecycleState) {
+            is PumpLifecycleState.Durable -> {
+                val expirationDate = lifecycleState.approximateCatheterExpiration
+                if (expirationDate != null) {
+                    val triggerDateTime = expirationDate.minusDays(1).atTime(warningTime)
+                    val triggerMs = triggerDateTime.atZone(zoneId).toInstant().toEpochMilli()
+
+                    reminderManager.syncConsumableReminder(
+                        sourceId = REMINDER_SOURCE_CATHETER_CHANGE,
+                        reminderTimestamp = Timestamp(triggerMs),
+                        title = "Katheterwechsel bevorstehend",
+                        description = "Katheterwechsel steht morgen bevor."
+                    )
+                } else {
+                    reminderManager.clearConsumableReminder(REMINDER_SOURCE_CATHETER_CHANGE)
+                }
+                reminderManager.clearConsumableReminder(REMINDER_SOURCE_PATCH_CHANGE)
+            }
+            is PumpLifecycleState.Patch -> {
+                val activeUntil = lifecycleState.activeUntil
+                if (lifecycleState.phase == PatchPhase.ACTIVE && activeUntil.isValid() && activeUntil.ms > 0) {
+                    val activeUntilZoneDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(activeUntil.ms), zoneId)
+                    val activeUntilDate = activeUntilZoneDateTime.toLocalDate()
+                    val triggerDateTime = activeUntilDate.minusDays(1).atTime(warningTime)
+                    val triggerMs = triggerDateTime.atZone(zoneId).toInstant().toEpochMilli()
+
+                    reminderManager.syncConsumableReminder(
+                        sourceId = REMINDER_SOURCE_PATCH_CHANGE,
+                        reminderTimestamp = Timestamp(triggerMs),
+                        title = "Patch-Wechsel bevorstehend",
+                        description = "Patch-Wechsel steht morgen bevor."
+                    )
+                } else {
+                    reminderManager.clearConsumableReminder(REMINDER_SOURCE_PATCH_CHANGE)
+                }
+                reminderManager.clearConsumableReminder(REMINDER_SOURCE_CATHETER_CHANGE)
+            }
+        }
+    }
+
     companion object {
         private val TAG = SystemOrchestratorImpl::class.simpleName
         const val WAKE_TAG = "SystemOrchestrator"
         const val WAKEUP_STALE_CHECK = 0u
         const val WAKEUP_DAILY_MAINTENANCE = 1u
+        const val WAKEUP_CONSUMABLE_CHECK = 2u
+        const val CONSUMABLE_REMINDER_TOLERANCE_MS = 1_000L
         const val DEVICE_INITIALIZATION_TIMEOUT_MS = 1000L
         val AUTOMATED_BOLUS_EXPIRATION = Minutes(4)
     }

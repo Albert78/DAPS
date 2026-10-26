@@ -4,7 +4,6 @@ import android.content.Intent
 import android.util.Log
 import de.dh.daps.common.model.ApsMode
 import de.dh.daps.common.model.InsulinPumpStatus
-import de.dh.daps.common.model.PatchPhase
 import de.dh.daps.common.model.PumpLifecycleState
 import de.dh.daps.common.model.data.AlarmProfile
 import de.dh.daps.common.model.data.AlarmSeverity
@@ -14,7 +13,6 @@ import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgValue
 import de.dh.daps.common.model.data.CurrentTherapySettings
 import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.common.service.SystemWakeService
 import de.dh.daps.common.service.WakeupHandler
 import de.dh.daps.core.aps.ApsIssue
 import de.dh.daps.core.aps.GlucoseSourceIssue
@@ -35,11 +33,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
-import de.dh.daps.AppPreferencesRepository
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.ZoneId
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
@@ -54,8 +47,6 @@ class AlarmEvaluator(
     private val alarmSnoozeManager: AlarmSnoozeManager,
     private val androidNotifications: AndroidNotifications,
     private val pumpManager: PumpManager,
-    private val appPreferencesRepository: AppPreferencesRepository,
-    private val wakeService: SystemWakeService,
     private val scope: CoroutineScope
 ) : WakeupHandler {
     private val _activeAlarms = MutableStateFlow<Set<AlarmType>>(emptySet())
@@ -76,7 +67,6 @@ class AlarmEvaluator(
     @OptIn(ExperimentalCoroutinesApi::class)
     fun start() {
         stop()
-        wakeService.registerHandler(WAKE_TAG_ALARM_EVALUATOR, this)
 
         val pumpStatusFlow = pumpManager.activeInsulinPump.flatMapLatest { pump ->
             pump?.pumpStatus ?: flowOf(null)
@@ -90,8 +80,7 @@ class AlarmEvaluator(
                 alarmSnoozeManager.snoozedAlarms,
                 systemOrchestrator.apsMode,
                 systemOrchestrator.resumeRequestedAt,
-                pumpStatusFlow,
-                appPreferencesRepository.catheterPatchWarningTime
+                pumpStatusFlow
             ) { flows ->
                 val therapySettings = flows[2] as CurrentTherapySettings?
                 @Suppress("UNCHECKED_CAST")
@@ -103,8 +92,7 @@ class AlarmEvaluator(
                     snoozedMap = flows[3] as Map<AlarmType, AlarmSnoozeState>,
                     apsMode = flows[4] as ApsMode,
                     resumeRequestedAt = flows[5] as Timestamp?,
-                    pumpStatus = flows[6] as InsulinPumpStatus?,
-                    catheterPatchWarningTime = flows[7] as LocalTime
+                    pumpStatus = flows[6] as InsulinPumpStatus?
                 )
             }.collect { input ->
                 evaluate(input)
@@ -113,8 +101,6 @@ class AlarmEvaluator(
     }
 
     fun stop() {
-        wakeService.unregisterHandler(WAKE_TAG_ALARM_EVALUATOR)
-        wakeService.cancelWakeup(WAKE_TAG_ALARM_EVALUATOR, WAKEUP_ID_ALARM_EVALUATOR)
         evaluationJob?.cancel()
         evaluationJob = null
         gracePeriodJob?.cancel()
@@ -140,7 +126,6 @@ class AlarmEvaluator(
         gracePeriodJob = null
 
         val activeSet = mutableSetOf<AlarmType>()
-        val nextWakeups = mutableListOf<Long>()
 
         // Evaluate Therapy Settings
         if (input.currentTherapySettings == null) {
@@ -196,6 +181,8 @@ class AlarmEvaluator(
                         is PumpIssue.LowInsulin -> activeSet.add(AlarmType.PUMP_LOW_INSULIN)
                         is PumpIssue.LowBattery -> activeSet.add(AlarmType.PUMP_LOW_BATTERY)
                         is PumpIssue.StaleBluetoothBond -> activeSet.add(AlarmType.PUMP_STALE_BOND)
+                        is PumpIssue.CatheterChangeWarn -> activeSet.add(AlarmType.PUMP_CATHETER_CHANGE_WARN)
+                        is PumpIssue.PatchChangeWarn -> activeSet.add(AlarmType.PUMP_PATCH_CHANGE_WARN)
                         is PumpIssue.Expired -> {
                             if (input.pumpStatus?.lifecycleState is PumpLifecycleState.Durable) {
                                 activeSet.add(AlarmType.PUMP_CATHETER_CHANGE_WARN)
@@ -216,23 +203,6 @@ class AlarmEvaluator(
                 }
                 else -> {}
             }
-        }
-
-        // Evaluate Consumable Lifecycle (Catheter / Patch expiration safety alarms)
-        evaluatePumpConsumables(
-            lifecycleState = input.pumpStatus?.lifecycleState,
-            warningTime = input.catheterPatchWarningTime,
-            activeSet = activeSet,
-            now = now,
-            nextWakeups = nextWakeups
-        )
-
-        // Schedule next system wakeup if future transition timestamps exist
-        val nextWakeupMs = nextWakeups.minOrNull()
-        if (nextWakeupMs != null && nextWakeupMs > now.ms) {
-            wakeService.scheduleWakeup(WAKE_TAG_ALARM_EVALUATOR, WAKEUP_ID_ALARM_EVALUATOR, Timestamp(nextWakeupMs))
-        } else {
-            wakeService.cancelWakeup(WAKE_TAG_ALARM_EVALUATOR, WAKEUP_ID_ALARM_EVALUATOR)
         }
 
         _activeAlarms.value = activeSet
@@ -281,57 +251,6 @@ class AlarmEvaluator(
         }
     }
 
-    private fun evaluatePumpConsumables(
-        lifecycleState: PumpLifecycleState?,
-        warningTime: LocalTime,
-        activeSet: MutableSet<AlarmType>,
-        now: Timestamp,
-        nextWakeups: MutableList<Long>
-    ) {
-        if (lifecycleState == null) return
-
-        val zoneId = ZoneId.systemDefault()
-        // Add a 1-second tolerance margin so Android AlarmManager wakeups arriving a few ms early
-        // still evaluate as having reached the scheduled reminder time.
-        val effectiveNow = now.plusMs(CONSUMABLE_REMINDER_TOLERANCE_MS)
-        val currentZoneDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(effectiveNow.ms), zoneId)
-
-        when (lifecycleState) {
-            is PumpLifecycleState.Durable -> {
-                val expirationDate = lifecycleState.approximateCatheterExpiration ?: return
-                val warnTriggerDateTime = expirationDate.atTime(warningTime)
-
-                if (currentZoneDateTime >= warnTriggerDateTime) {
-                    activeSet.add(AlarmType.PUMP_CATHETER_CHANGE_WARN)
-                } else {
-                    val warnMs = warnTriggerDateTime.atZone(zoneId).toInstant().toEpochMilli()
-                    if (warnMs > effectiveNow.ms) {
-                        nextWakeups.add(warnMs)
-                    }
-                }
-            }
-            is PumpLifecycleState.Patch -> {
-                if (lifecycleState.phase == PatchPhase.PRIMING) {
-                    return
-                }
-
-                if (lifecycleState.phase == PatchPhase.IN_GRACE_PERIOD || lifecycleState.phase == PatchPhase.EXPIRED) {
-                    activeSet.add(AlarmType.PUMP_PATCH_CHANGE_WARN)
-                    return
-                }
-
-                val activeUntil = lifecycleState.activeUntil
-                if (lifecycleState.phase == PatchPhase.ACTIVE && activeUntil.isValid() && activeUntil.ms > 0) {
-                    if (effectiveNow >= activeUntil) {
-                        activeSet.add(AlarmType.PUMP_PATCH_CHANGE_WARN)
-                    } else if (activeUntil.ms > effectiveNow.ms) {
-                        nextWakeups.add(activeUntil.ms)
-                    }
-                }
-            }
-        }
-    }
-
     private fun severityRank(severity: AlarmSeverity): Int = when (severity) {
         AlarmSeverity.CRITICAL -> 3
         AlarmSeverity.WARNING -> 2
@@ -346,8 +265,7 @@ class AlarmEvaluator(
         val snoozedMap: Map<AlarmType, AlarmSnoozeState>,
         val apsMode: ApsMode = ApsMode.Suspend,
         val resumeRequestedAt: Timestamp? = null,
-        val pumpStatus: InsulinPumpStatus? = null,
-        val catheterPatchWarningTime: LocalTime = LocalTime.of(19, 0)
+        val pumpStatus: InsulinPumpStatus? = null
     )
 
     companion object {
@@ -356,7 +274,6 @@ class AlarmEvaluator(
         const val LOW_THRESHOLD_MGDL = 70.0
         const val HIGH_THRESHOLD_MGDL = 250.0
         const val PUMP_RESUME_GRACE_PERIOD_MS = 10_000L
-        const val CONSUMABLE_REMINDER_TOLERANCE_MS = 1_000L
 
         const val WAKE_TAG_ALARM_EVALUATOR = "AlarmEvaluator"
         val WAKEUP_ID_ALARM_EVALUATOR: UInt = 600u
