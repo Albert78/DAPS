@@ -1,5 +1,6 @@
 package de.dh.daps.ui.screens.preferences
 
+import android.app.TimePickerDialog
 import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -15,10 +16,12 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.icons.Icon_Carbs_Unit
-import de.dh.daps.ui.common.icons.Icon_Navigate_Next
 import de.dh.daps.ui.common.icons.Icon_Glucose_Unit
+import de.dh.daps.ui.common.icons.Icon_Navigate_Next
+import de.dh.daps.ui.common.icons.Icon_Reminders
 import de.dh.daps.ui.common.icons.Icon_Ui
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -57,9 +60,10 @@ import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.icons.Icon_Screen_Back
 import de.dh.daps.ui.common.theme.AppPreview
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import de.dh.daps.common.R as CommonR
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PreferencesScreen(
     viewModel: PreferencesViewModel,
@@ -78,6 +82,9 @@ fun PreferencesScreen(
         },
         onCarbsUnitSelected = { newValue ->
             viewModel.setCarbsUnit(newValue)
+        },
+        onCatheterPatchWarningTimeSelected = { newValue ->
+            viewModel.setCatheterPatchWarningTime(newValue)
         }
     )
 }
@@ -90,7 +97,9 @@ fun PreferencesContent(
     onThemeSelected: (ThemeMode) -> Unit,
     onGlucoseUnitSelected: (GlucoseUnit) -> Unit,
     onCarbsUnitSelected: (CarbsUnit) -> Unit,
+    onCatheterPatchWarningTimeSelected: (LocalTime) -> Unit,
 ) {
+    val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val scrollState = rememberScrollState()
     var showThemeDialog by remember { mutableStateOf(false) }
@@ -151,6 +160,24 @@ fun PreferencesContent(
                 summary = carbsUnitLabel(uiState.carbsUnit),
                 icon = Icon_Carbs_Unit,
                 onClick = { showCarbsUnitDialog = true }
+            )
+
+            val formattedTime = uiState.catheterPatchWarningTime.format(DateTimeFormatter.ofPattern("HH:mm"))
+            PreferenceItem(
+                title = stringResource(R.string.pref_catheter_change_warning_title),
+                summary = stringResource(R.string.pref_catheter_change_warning_time_format, formattedTime),
+                icon = Icon_Reminders,
+                onClick = {
+                    TimePickerDialog(
+                        context,
+                        { _, hourOfDay, minute ->
+                            onCatheterPatchWarningTimeSelected(LocalTime.of(hourOfDay, minute))
+                        },
+                        uiState.catheterPatchWarningTime.hour,
+                        uiState.catheterPatchWarningTime.minute,
+                        true
+                    ).show()
+                }
             )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
@@ -446,6 +473,7 @@ fun PreferencesContentPreview() {
             onThemeSelected = {},
             onGlucoseUnitSelected = {},
             onCarbsUnitSelected = {},
+            onCatheterPatchWarningTimeSelected = {},
         )
     }
 }

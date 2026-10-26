@@ -6,11 +6,14 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import de.dh.daps.carbsUnit
+import de.dh.daps.catheterPatchWarningTime
+import de.dh.daps.common.DEFAULT_CATHETER_PATCH_WARNING_TIME
 import de.dh.daps.common.model.data.CarbsUnit
 import de.dh.daps.common.model.data.GlucoseUnit
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.glucoseUnit
 import de.dh.daps.setCarbsUnit
+import de.dh.daps.setCatheterPatchWarningTime
 import de.dh.daps.setGlucoseUnit
 import de.dh.daps.ui.common.ThemeMode
 import de.dh.daps.ui.common.setThemeMode
@@ -20,6 +23,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalTime
 
 /**
  * Represents the UI state for the preferences screen.
@@ -30,6 +34,7 @@ data class PreferencesUiState(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val glucoseUnit: GlucoseUnit = GlucoseUnit.MG_DL,
     val carbsUnit: CarbsUnit = CarbsUnit.GRAMS,
+    val catheterPatchWarningTime: LocalTime = DEFAULT_CATHETER_PATCH_WARNING_TIME,
 )
 
 /**
@@ -66,6 +71,7 @@ class PreferencesViewModel(
         val themeMode = preferences.themeMode
         val glucoseUnit = preferences.glucoseUnit
         val carbsUnit = preferences.carbsUnit
+        val catheterPatchWarningTime = preferences.catheterPatchWarningTime
 
         _uiState.update { PreferencesUiState(
             isLoading = false,
@@ -73,6 +79,7 @@ class PreferencesViewModel(
             themeMode = themeMode,
             glucoseUnit = glucoseUnit,
             carbsUnit = carbsUnit,
+            catheterPatchWarningTime = catheterPatchWarningTime,
         ) }
     }
 
@@ -101,6 +108,15 @@ class PreferencesViewModel(
     fun setCarbsUnit(newUnit: CarbsUnit) {
         viewModelScope.launch {
             appPreferencesRepository.setCarbsUnit(newUnit)
+        }
+    }
+
+    /**
+     * Updates the catheter/patch change warning time in the repository.
+     */
+    fun setCatheterPatchWarningTime(newTime: LocalTime) {
+        viewModelScope.launch {
+            appPreferencesRepository.setCatheterPatchWarningTime(newTime)
         }
     }
 

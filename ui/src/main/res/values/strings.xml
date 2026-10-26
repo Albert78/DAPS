@@ -168,6 +168,8 @@
     <string name="pref_carbs_unit_dialog_title">Kohlenhydrate-Einheit wählen</string>
     <string name="carbs_unit_grams_label">Gramm (g)</string>
     <string name="carbs_unit_ke_label">Kohlenhydrateinheiten (KE)</string>
+    <string name="pref_catheter_change_warning_title">Katheter/Patch Wechselwarnung</string>
+    <string name="pref_catheter_change_warning_time_format">%1$s Uhr</string>
 
     <string name="aps_service_notification_channel_name">DAPS Service</string>
     <string name="aps_service_notification_content_no_value_yet">Kein Glukosewert</string>

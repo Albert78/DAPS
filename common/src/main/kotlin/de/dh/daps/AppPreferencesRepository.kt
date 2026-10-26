@@ -8,8 +8,10 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import de.dh.daps.common.DEFAULT_CATHETER_PATCH_WARNING_TIME
 import de.dh.daps.common.model.data.CarbsUnit
 import de.dh.daps.common.model.data.GlucoseUnit
+import java.time.LocalTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -46,6 +48,21 @@ suspend fun AppPreferencesRepository.setCarbsUnit(value: CarbsUnit) {
     }
 }
 
+val Preferences?.catheterPatchWarningTime: LocalTime
+    get() = this?.get(CATHETER_PATCH_WARNING_TIME_KEY)?.let {
+        try {
+            LocalTime.parse(it)
+        } catch (_: Exception) {
+            DEFAULT_CATHETER_PATCH_WARNING_TIME
+        }
+    } ?: DEFAULT_CATHETER_PATCH_WARNING_TIME
+
+suspend fun AppPreferencesRepository.setCatheterPatchWarningTime(value: LocalTime) {
+    editPreferences { mutablePreferences ->
+        mutablePreferences[CATHETER_PATCH_WARNING_TIME_KEY] = value.toString()
+    }
+}
+
 val Preferences?.backupDirectoryUri: String?
     get() = this?.get(BACKUP_DIRECTORY_URI_KEY)
 
@@ -62,6 +79,7 @@ suspend fun AppPreferencesRepository.setBackupDirectoryUri(uriString: String?) {
 val USER_DECLINED_PERMISSIONS_KEY = booleanPreferencesKey("user_declined_permissions")
 val GLUCOSE_UNIT_KEY = stringPreferencesKey("glucose_unit")
 val CARBS_UNIT_KEY = stringPreferencesKey("carbs_unit")
+val CATHETER_PATCH_WARNING_TIME_KEY = stringPreferencesKey("catheter_patch_warning_time")
 val BACKUP_DIRECTORY_URI_KEY = stringPreferencesKey("backup_directory_uri")
 
 class AppPreferencesRepository(private val context: Context, private val scope: CoroutineScope) {
@@ -93,6 +111,14 @@ class AppPreferencesRepository(private val context: Context, private val scope: 
             scope = scope,
             started = SharingStarted.Eagerly,
             initialValue = CarbsUnit.GRAMS
+        )
+
+    val catheterPatchWarningTime: StateFlow<LocalTime> = cachedPreferences
+        .map { it.catheterPatchWarningTime }
+        .stateIn(
+            scope = scope,
+            started = SharingStarted.Eagerly,
+            initialValue = DEFAULT_CATHETER_PATCH_WARNING_TIME
         )
 
     val backupDirectoryUri: StateFlow<String?> = cachedPreferences

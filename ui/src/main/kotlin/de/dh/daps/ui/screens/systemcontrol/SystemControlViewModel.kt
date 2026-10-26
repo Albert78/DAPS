@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import de.dh.daps.common.BG_READING_BAD_THRESHOLD_MINUTES
 import de.dh.daps.common.BG_READING_WARNING_THRESHOLD_MINUTES
-import de.dh.daps.common.CATHETER_CHANGE_WARNING_THRESHOLD_HOURS
+import de.dh.daps.common.CATHETER_PATCH_CHANGE_WARNING_THRESHOLD_HOURS
 import de.dh.daps.common.CONNECTION_BAD_THRESHOLD_MINUTES
 import de.dh.daps.common.CONNECTION_WARNING_THRESHOLD_MINUTES
 import de.dh.daps.common.CORE_CALCULATION_BAD_THRESHOLD_MINUTES
@@ -29,10 +29,10 @@ import de.dh.daps.common.model.InsulinConcentration
 import de.dh.daps.common.model.InsulinPump
 import de.dh.daps.common.model.InsulinPumpDriver
 import de.dh.daps.common.model.InsulinPumpStatus
-import de.dh.daps.common.model.PumpLifecycleState
-import de.dh.daps.common.model.PumpReplaceableComponent
 import de.dh.daps.common.model.InsulinStatus
 import de.dh.daps.common.model.PumpHardwareInformation
+import de.dh.daps.common.model.PumpLifecycleState
+import de.dh.daps.common.model.PumpReplaceableComponent
 import de.dh.daps.common.model.SourceHardwareInformation
 import de.dh.daps.common.model.data.BgReading
 import de.dh.daps.common.model.data.BgReadingsInterval
@@ -550,7 +550,7 @@ class SystemControlViewModel(
                     when {
                         ts.isInvalid() -> ValueStatus.GOOD
                         ts <= Timestamp.now() -> ValueStatus.BAD
-                        ts < Timestamp.now().plusHours(CATHETER_CHANGE_WARNING_THRESHOLD_HOURS) -> ValueStatus.WARNING
+                        ts < Timestamp.now().plusHours(CATHETER_PATCH_CHANGE_WARNING_THRESHOLD_HOURS) -> ValueStatus.WARNING
                         else -> ValueStatus.GOOD
                     }
                 }

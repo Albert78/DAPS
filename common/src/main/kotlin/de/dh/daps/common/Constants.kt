@@ -1,6 +1,7 @@
 package de.dh.daps.common
 
 import de.dh.daps.common.model.InsulinAmount
+import java.time.LocalTime
 
 // Phone Battery Thresholds (%)
 const val PHONE_BATTERY_LOW_THRESHOLD = 15
@@ -37,11 +38,14 @@ const val CORE_CALCULATION_BAD_THRESHOLD_MINUTES = 20
 const val BG_READING_WARNING_THRESHOLD_MINUTES = 10
 const val BG_READING_BAD_THRESHOLD_MINUTES = 20
 
-// Sensor Expiration Thresholds (Hours)
+// Sensor Expiration Threshold (Hours)
 const val SENSOR_EXPIRATION_WARNING_THRESHOLD_HOURS = 24
 
-// Catheter Change Thresholds (Hours)
-const val CATHETER_CHANGE_WARNING_THRESHOLD_HOURS = 24
+// Catheter/Patch Change Threshold (Hours)
+const val CATHETER_PATCH_CHANGE_WARNING_THRESHOLD_HOURS = 24
+
+// Catheter/Patch Change Warning Time
+val DEFAULT_CATHETER_PATCH_WARNING_TIME: LocalTime = LocalTime.of(19, 0)
 
 const val ID_INSULIN_NOVORAPID = "9d860e7e-8c88-466d-a7f4-3e91851e3c88"
 const val ID_INSULIN_FIASP = "4e0e9803-0c48-433b-8f7d-2b4f2c96791a"
