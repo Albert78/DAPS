@@ -6,9 +6,7 @@ import de.dh.daps.common.BASAL_MAX
 import de.dh.daps.common.BASAL_MIN
 import de.dh.daps.common.BG_DELTA_MAX
 import de.dh.daps.common.BOLUS_MAX
-import de.dh.daps.common.BOLUS_MIN
 import de.dh.daps.common.CARBS_GRAMS_MAX
-import de.dh.daps.common.CARBS_GRAMS_MIN
 import de.dh.daps.common.CR_MAX
 import de.dh.daps.common.CR_MIN
 import de.dh.daps.common.ISF_MAX
@@ -54,9 +52,9 @@ fun validateBgDelta(delta: Double) {
 }
 
 fun validateInsulin(iu: Double) {
-    require(iu in BOLUS_MIN..BOLUS_MAX) { "Insulin out of range: $iu" }
+    require(iu in 0.0..BOLUS_MAX) { "Insulin out of range: $iu" }
 }
 
 fun validateCarbs(carbs: Double) {
-    require(carbs in CARBS_GRAMS_MIN..CARBS_GRAMS_MAX) { "Carbs out of range: $carbs" }
+    require(carbs in 0.0..CARBS_GRAMS_MAX) { "Carbs out of range: $carbs" }
 }
