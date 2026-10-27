@@ -84,8 +84,6 @@ const val CARBS_GRAMS_MAX = CARBS_KE_MAX * 10.0
 const val BOLUS_MIN = 0.05
 const val BOLUS_MAX = 50.0
 
-const val BG_DELTA_MAX = 1000.0
-
 const val DEFAULT_BASAL_UNITS_PER_HOUR = 0.5
 const val DEFAULT_ISF_MGDL_PER_UNIT = 50.0
 const val DEFAULT_CR_GRAM_PER_UNIT = 10.0
