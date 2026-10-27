@@ -1,4 +1,4 @@
-package de.dh.daps.core.alarms
+package de.dh.daps.core.alerts
 
 import android.annotation.SuppressLint
 import android.content.Context

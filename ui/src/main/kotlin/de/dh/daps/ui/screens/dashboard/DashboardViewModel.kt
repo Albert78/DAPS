@@ -7,10 +7,10 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import de.dh.daps.common.domain.model.alarm.AlarmSignalConfig
 import de.dh.daps.common.domain.model.alarm.AlarmType
 import de.dh.daps.common.domain.model.cgm.GlucoseSource
-import de.dh.daps.common.domain.pump.InsulinPump
 import de.dh.daps.common.domain.model.engine.ApsMode
+import de.dh.daps.common.domain.pump.InsulinPump
 import de.dh.daps.core.SystemRegistry
-import de.dh.daps.core.alarms.AlarmSnoozeState
+import de.dh.daps.core.alerts.AlarmSnoozeState
 import de.dh.daps.core.orchestration.ApsRecommendation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted

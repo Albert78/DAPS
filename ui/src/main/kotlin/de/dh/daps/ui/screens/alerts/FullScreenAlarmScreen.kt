@@ -1,4 +1,4 @@
-package de.dh.daps.ui.screens.alarm
+package de.dh.daps.ui.screens.alerts
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

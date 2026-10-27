@@ -15,10 +15,10 @@ import de.dh.daps.common.infrastructure.ScopedPluginPreferences
 import de.dh.daps.common.infrastructure.SystemWakeService
 import de.dh.daps.common.infrastructure.TimeService
 import de.dh.daps.common.repository.AppPreferencesRepository
-import de.dh.daps.core.alarms.AlarmEvaluator
-import de.dh.daps.core.alarms.AlarmPlayerManager
-import de.dh.daps.core.alarms.AlarmPlayerManagerImpl
-import de.dh.daps.core.alarms.AlarmSnoozeManager
+import de.dh.daps.core.alerts.AlarmEvaluator
+import de.dh.daps.core.alerts.AlarmPlayerManager
+import de.dh.daps.core.alerts.AlarmPlayerManagerImpl
+import de.dh.daps.core.alerts.AlarmSnoozeManager
 import de.dh.daps.core.backup.AppDataManagementRepository
 import de.dh.daps.core.backup.AppDataManagementRepositoryImpl
 import de.dh.daps.core.backup.BackupOptions

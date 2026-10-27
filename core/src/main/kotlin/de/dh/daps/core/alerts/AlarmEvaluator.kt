@@ -1,4 +1,4 @@
-package de.dh.daps.core.alarms
+package de.dh.daps.core.alerts
 
 import android.content.Intent
 import android.util.Log
@@ -9,10 +9,10 @@ import de.dh.daps.common.domain.model.alarm.AlarmType
 import de.dh.daps.common.domain.model.data.BgReading
 import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.data.Timestamp
-import de.dh.daps.common.domain.pump.InsulinPumpStatus
-import de.dh.daps.common.domain.pump.PumpLifecycleState
 import de.dh.daps.common.domain.model.engine.ApsMode
 import de.dh.daps.common.domain.model.therapy.CurrentTherapySettings
+import de.dh.daps.common.domain.pump.InsulinPumpStatus
+import de.dh.daps.common.domain.pump.PumpLifecycleState
 import de.dh.daps.common.infrastructure.WakeupHandler
 import de.dh.daps.core.glucosesource.GlucoseSourceIssue
 import de.dh.daps.core.infrastructure.AndroidNotifications

@@ -1,4 +1,4 @@
-package de.dh.daps.core.alarms
+package de.dh.daps.core.alerts
 
 import de.dh.daps.common.domain.model.alarm.AlarmType
 import org.junit.Assert.assertFalse
