@@ -1,7 +1,7 @@
 package de.dh.daps.common.domain.model.reminder
 
 import de.dh.daps.common.ID_UNDEFINED
-import de.dh.daps.common.domain.model.therapy.Timestamp
+import de.dh.daps.common.domain.model.data.Timestamp
 
 /**
  * Type of reminder.

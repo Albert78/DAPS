@@ -1,4 +1,4 @@
-package de.dh.daps.common.domain.model.therapy
+package de.dh.daps.common.domain.model.data
 
 import java.util.Locale
 import kotlin.math.roundToInt

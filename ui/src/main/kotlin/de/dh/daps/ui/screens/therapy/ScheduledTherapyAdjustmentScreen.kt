@@ -57,9 +57,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.domain.model.alarm.AlarmProfile
-import de.dh.daps.common.domain.model.therapy.BgValue
+import de.dh.daps.common.domain.model.data.BgValue
+import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.therapy.TherapyAdjustment
-import de.dh.daps.common.domain.model.therapy.Timestamp
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator

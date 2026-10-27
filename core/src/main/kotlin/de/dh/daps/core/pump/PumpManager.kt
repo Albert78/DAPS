@@ -1,11 +1,11 @@
 package de.dh.daps.core.pump
 
-import de.dh.daps.common.domain.model.therapy.BolusStatus
+import de.dh.daps.common.domain.model.data.Timestamp
+import de.dh.daps.common.domain.pump.BolusStatus
+import de.dh.daps.common.domain.pump.InsulinPump
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.common.domain.model.therapy.InsulinHistory
-import de.dh.daps.common.domain.model.therapy.InsulinPump
 import de.dh.daps.common.domain.model.therapy.InsulinProfile
-import de.dh.daps.common.domain.model.therapy.Timestamp
 import kotlinx.coroutines.flow.StateFlow
 import kotlin.time.Duration
 

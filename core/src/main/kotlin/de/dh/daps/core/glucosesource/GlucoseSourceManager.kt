@@ -1,11 +1,11 @@
 package de.dh.daps.core.glucosesource
 
 import android.util.Log
-import de.dh.daps.common.domain.model.therapy.GlucoseSource
-import de.dh.daps.common.domain.model.therapy.GlucoseSourceStatus
-import de.dh.daps.common.domain.model.therapy.BgReadingsInterval
-import de.dh.daps.common.domain.model.therapy.Minutes
-import de.dh.daps.common.domain.model.therapy.Timestamp
+import de.dh.daps.common.domain.model.data.Minutes
+import de.dh.daps.common.domain.model.data.Timestamp
+import de.dh.daps.common.domain.model.cgm.GlucoseSource
+import de.dh.daps.common.domain.model.cgm.GlucoseSourceStatus
+import de.dh.daps.common.domain.model.data.BgReadingsInterval
 import de.dh.daps.core.repository.GlucoseRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

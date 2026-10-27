@@ -32,9 +32,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -74,12 +71,12 @@ import de.dh.daps.common.CR_MIN
 import de.dh.daps.common.ID_UNDEFINED
 import de.dh.daps.common.ISF_MAX
 import de.dh.daps.common.ISF_MIN
-import de.dh.daps.common.domain.model.therapy.InsulinType
-import de.dh.daps.common.domain.model.therapy.BgDelta
-import de.dh.daps.common.domain.model.therapy.Block
-import de.dh.daps.common.domain.model.therapy.GlucoseUnit
+import de.dh.daps.common.domain.model.data.GlucoseUnit
+import de.dh.daps.common.domain.model.data.Minutes
+import de.dh.daps.common.domain.model.data.BgDelta
+import de.dh.daps.common.domain.model.data.Block
 import de.dh.daps.common.domain.model.therapy.InsulinProfile
-import de.dh.daps.common.domain.model.therapy.Minutes
+import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.common.domain.model.therapy.ProfileInsulinSetting
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.DefaultSteppingStrategy

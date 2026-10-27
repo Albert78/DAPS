@@ -1,7 +1,7 @@
 package de.dh.daps.core.repository
 
-import de.dh.daps.common.domain.model.therapy.Tick
-import de.dh.daps.common.domain.model.therapy.Timestamp
+import de.dh.daps.common.domain.model.data.Tick
+import de.dh.daps.common.domain.model.data.Timestamp
 
 data class WakeupMetric(
     val tag: String,

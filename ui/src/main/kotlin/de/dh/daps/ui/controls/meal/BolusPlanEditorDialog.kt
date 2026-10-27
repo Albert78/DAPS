@@ -36,7 +36,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -47,8 +46,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import de.dh.daps.common.BOLUS_MAX
 import de.dh.daps.common.BOLUS_MIN
+import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
-import de.dh.daps.common.domain.model.therapy.Timestamp
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.InsulinAmountStepper
@@ -60,6 +59,7 @@ import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.daps.ui.common.time
+import kotlinx.coroutines.delay
 import kotlin.math.round
 import de.dh.daps.common.R as CommonR
 

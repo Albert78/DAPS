@@ -1,8 +1,8 @@
 package de.dh.daps.common.domain.calculation
 
+import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.therapy.CarbCurveComponentData
 import de.dh.daps.common.domain.model.therapy.MealType
-import de.dh.daps.common.domain.model.therapy.Minutes
 import org.junit.Assert.assertTrue
 import org.junit.Test
 

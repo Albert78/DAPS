@@ -1,13 +1,13 @@
 package de.dh.daps.core.repository.db.mappers
 
-import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.common.domain.model.alarm.AlarmProfile
-import de.dh.daps.common.domain.model.therapy.BgBlock
-import de.dh.daps.common.domain.model.therapy.BgValue
-import de.dh.daps.common.domain.model.therapy.Block
+import de.dh.daps.common.domain.model.data.BgValue
+import de.dh.daps.common.domain.model.data.Minutes
+import de.dh.daps.common.domain.model.data.BgBlock
+import de.dh.daps.common.domain.model.data.Block
 import de.dh.daps.common.domain.model.therapy.CurrentTherapySettings
 import de.dh.daps.common.domain.model.therapy.InsulinProfile
-import de.dh.daps.common.domain.model.therapy.Minutes
+import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.common.domain.model.therapy.ProfileInsulinSetting
 import de.dh.daps.common.domain.model.therapy.ScheduledTherapyAdjustment
 import de.dh.daps.common.domain.model.therapy.TherapyAdjustment

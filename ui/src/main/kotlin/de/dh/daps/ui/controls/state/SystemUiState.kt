@@ -1,12 +1,12 @@
 package de.dh.daps.ui.controls.state
 
-import de.dh.daps.common.domain.model.therapy.BgDelta
-import de.dh.daps.common.domain.model.therapy.BgValue
-import de.dh.daps.common.domain.model.therapy.GlucoseUnit
-import de.dh.daps.common.domain.model.therapy.Minutes
-import de.dh.daps.common.domain.model.therapy.Timestamp
-import de.dh.daps.core.orchestration.ApsIssue
+import de.dh.daps.common.domain.model.data.BgDelta
+import de.dh.daps.common.domain.model.data.BgValue
+import de.dh.daps.common.domain.model.data.GlucoseUnit
+import de.dh.daps.common.domain.model.data.Minutes
+import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.core.aps.CoreState
+import de.dh.daps.core.orchestration.ApsIssue
 
 enum class BgTrend {
     DoubleUp,

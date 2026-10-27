@@ -1,8 +1,8 @@
 package de.dh.daps.core.glucosesource
 
-import de.dh.daps.common.device.state.DeviceLifecycleState
-import de.dh.daps.common.domain.model.therapy.GlucoseSource
 import de.dh.daps.common.device.driver.GlucoseSourceDriver
+import de.dh.daps.common.device.state.DeviceLifecycleState
+import de.dh.daps.common.domain.model.cgm.GlucoseSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

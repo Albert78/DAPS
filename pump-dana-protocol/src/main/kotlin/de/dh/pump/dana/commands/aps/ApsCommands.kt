@@ -1,6 +1,7 @@
 package de.dh.pump.dana.commands.aps
 
 import de.dh.pump.PumpStatus
+import de.dh.pump.PumpTimestamp
 import de.dh.pump.client.singleframe.PumpStreamCommand
 import de.dh.pump.dana.commands.DanaRsAckPacketCommand
 import de.dh.pump.dana.commands.DanaRsPacketCommand
@@ -11,7 +12,6 @@ import de.dh.pump.dana.commands.le16
 import de.dh.pump.protocol.ByteReader
 import de.dh.pump.protocol.ByteWriter
 import de.dh.pump.protocol.ProtocolException
-import de.dh.daps.common.domain.model.therapy.PumpTimestamp
 import java.time.DateTimeException
 import java.time.Instant
 import java.time.LocalDateTime

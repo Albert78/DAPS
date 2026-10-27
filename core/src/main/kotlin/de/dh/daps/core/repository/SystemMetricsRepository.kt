@@ -1,6 +1,6 @@
 package de.dh.daps.core.repository
 
-import de.dh.daps.common.domain.model.therapy.Timestamp
+import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.core.aps.CoreInsight
 import de.dh.daps.core.repository.db.AppDatabase
 import de.dh.daps.core.repository.db.mappers.toDomain

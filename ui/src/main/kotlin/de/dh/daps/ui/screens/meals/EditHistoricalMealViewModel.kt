@@ -9,13 +9,13 @@ import de.dh.daps.common.ID_UNDEFINED
 import de.dh.daps.common.MEAL_ADD_THRESHOLD_HOURS
 import de.dh.daps.common.MEAL_EDIT_THRESHOLD_HOURS
 import de.dh.daps.common.MEAL_REMINDER_MIN_FUTURE_MINUTES
+import de.dh.daps.common.domain.model.data.Minutes
+import de.dh.daps.common.domain.model.data.Timestamp
+import de.dh.daps.common.domain.model.reminder.ReminderType
 import de.dh.daps.common.domain.model.therapy.DeferredBolus
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.common.domain.model.therapy.MealEntry
 import de.dh.daps.common.domain.model.therapy.MealType
-import de.dh.daps.common.domain.model.therapy.Minutes
-import de.dh.daps.common.domain.model.therapy.Timestamp
-import de.dh.daps.common.domain.model.reminder.ReminderType
 import de.dh.daps.common.infrastructure.createMealReminder
 import de.dh.daps.common.infrastructure.deleteMealReminders
 import de.dh.daps.core.SystemRegistry

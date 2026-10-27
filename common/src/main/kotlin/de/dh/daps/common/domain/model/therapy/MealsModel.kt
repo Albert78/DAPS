@@ -1,6 +1,8 @@
 package de.dh.daps.common.domain.model.therapy
 
 import de.dh.daps.common.ID_UNDEFINED
+import de.dh.daps.common.domain.model.data.Minutes
+import de.dh.daps.common.domain.model.data.Timestamp
 import java.util.UUID
 import kotlin.math.abs
 

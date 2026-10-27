@@ -30,10 +30,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import de.dh.daps.common.domain.model.therapy.BgDelta
-import de.dh.daps.common.domain.model.therapy.BgValue
-import de.dh.daps.common.domain.model.therapy.GlucoseUnit
-import de.dh.daps.common.domain.model.therapy.Timestamp
+import de.dh.daps.common.domain.model.data.BgDelta
+import de.dh.daps.common.domain.model.data.BgValue
+import de.dh.daps.common.domain.model.data.GlucoseUnit
+import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.deltaValue
 import de.dh.daps.ui.common.glucoseValue

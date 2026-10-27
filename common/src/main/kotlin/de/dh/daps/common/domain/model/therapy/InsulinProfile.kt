@@ -1,6 +1,8 @@
 package de.dh.daps.common.domain.model.therapy
 
 import de.dh.daps.common.ID_UNDEFINED
+import de.dh.daps.common.domain.model.data.Block
+import de.dh.daps.common.domain.model.data.Minutes
 
 /**
  * Specific DIA and Peak settings for an [InsulinType] within an [InsulinProfile].

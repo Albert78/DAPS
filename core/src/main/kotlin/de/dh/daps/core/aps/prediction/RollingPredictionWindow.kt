@@ -1,7 +1,7 @@
 package de.dh.daps.core.aps.prediction
 
-import de.dh.daps.common.domain.model.therapy.Tick
-import de.dh.daps.common.domain.model.therapy.Timeline
+import de.dh.daps.common.domain.model.data.Tick
+import de.dh.daps.common.domain.model.engine.Timeline
 
 class RollingPredictionWindow(
     val predictionWindowHours: Int,

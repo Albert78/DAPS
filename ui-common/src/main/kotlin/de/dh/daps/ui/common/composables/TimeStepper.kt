@@ -22,8 +22,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.domain.model.therapy.Minutes
-import de.dh.daps.common.domain.model.therapy.Timestamp
+import de.dh.daps.common.domain.model.data.Minutes
+import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.ui.common.icons.Icon_Minus
 import de.dh.daps.ui.common.icons.Icon_Plus
 import de.dh.daps.ui.common.relativeTimeMinutes

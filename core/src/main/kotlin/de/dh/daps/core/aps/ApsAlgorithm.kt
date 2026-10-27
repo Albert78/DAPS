@@ -1,14 +1,14 @@
 package de.dh.daps.core.aps
 
+import de.dh.daps.common.domain.model.data.BgDelta
+import de.dh.daps.common.domain.model.data.BgReading
+import de.dh.daps.common.domain.model.data.BgValue
+import de.dh.daps.common.domain.model.data.Minutes
+import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.therapy.DeferredBolus
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.common.domain.model.therapy.MealType
 import de.dh.daps.common.domain.model.therapy.PlannedInsulin
-import de.dh.daps.common.domain.model.therapy.BgDelta
-import de.dh.daps.common.domain.model.therapy.BgReading
-import de.dh.daps.common.domain.model.therapy.BgValue
-import de.dh.daps.common.domain.model.therapy.Minutes
-import de.dh.daps.common.domain.model.therapy.Timestamp
 
 sealed class CoreIssue {
     data class NoRecentValues(val minutes: Int) : CoreIssue()

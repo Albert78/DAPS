@@ -1,7 +1,7 @@
 package de.dh.daps.core.infrastructure
 
 import android.content.Intent
-import de.dh.daps.common.domain.model.therapy.Timestamp
+import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.reminder.Reminder
 import de.dh.daps.common.domain.model.reminder.ReminderStatus
 import de.dh.daps.common.domain.model.reminder.ReminderType

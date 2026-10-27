@@ -1,7 +1,8 @@
 package de.dh.daps.plugin.simbody.repository
 
-import de.dh.daps.common.domain.model.therapy.Block
-import de.dh.daps.common.domain.model.therapy.Timestamp
+import de.dh.daps.common.domain.model.data.Minutes
+import de.dh.daps.common.domain.model.data.Timestamp
+import de.dh.daps.common.domain.model.data.Block
 import de.dh.daps.plugin.simbody.model.BodyProfile
 import de.dh.daps.plugin.simbody.repository.db.BodyProfileEntity
 import de.dh.daps.plugin.simbody.repository.db.SimBodyDao
@@ -44,7 +45,7 @@ class SimBodyRepository(private val simBodyDao: SimBodyDao) {
         for (i in 0 until array.length()) {
             val obj = array.getJSONObject(i)
             list.add(Block(
-                duration = de.dh.daps.common.domain.model.therapy.Minutes(obj.getInt("duration").toShort()),
+                duration = Minutes(obj.getInt("duration").toShort()),
                 amount = obj.getDouble("amount")
             ))
         }

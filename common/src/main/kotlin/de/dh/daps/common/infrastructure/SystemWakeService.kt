@@ -1,7 +1,7 @@
 package de.dh.daps.common.infrastructure
 
 import android.content.Intent
-import de.dh.daps.common.domain.model.therapy.Timestamp
+import de.dh.daps.common.domain.model.data.Timestamp
 
 /**
  * Interface for components that want to be notified when a system wakeup occurs.

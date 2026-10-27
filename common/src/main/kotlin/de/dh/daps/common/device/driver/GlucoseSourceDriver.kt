@@ -2,7 +2,7 @@ package de.dh.daps.common.device.driver
 
 import androidx.compose.runtime.Composable
 import de.dh.daps.common.device.state.DeviceLifecycleState
-import de.dh.daps.common.domain.model.therapy.GlucoseSource
+import de.dh.daps.common.domain.model.cgm.GlucoseSource
 import de.dh.daps.common.ui.UiText
 import kotlinx.coroutines.flow.StateFlow
 

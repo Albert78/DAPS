@@ -2,17 +2,17 @@ package de.dh.daps.plugin.simbody
 
 import android.content.Context
 import androidx.compose.runtime.mutableStateListOf
+import de.dh.daps.common.domain.calculation.CarbCurveComponent
+import de.dh.daps.common.domain.calculation.InsulinCurve
+import de.dh.daps.common.domain.model.data.Minutes
+import de.dh.daps.common.domain.model.data.Timestamp
+import de.dh.daps.common.domain.model.data.Block
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.common.domain.model.therapy.InsulinOrigin
 import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.common.domain.model.therapy.MealEntry
 import de.dh.daps.common.domain.model.therapy.MealType
-import de.dh.daps.common.domain.calculation.CarbCurveComponent
-import de.dh.daps.common.domain.calculation.InsulinCurve
-import de.dh.daps.common.domain.model.therapy.Block
-import de.dh.daps.common.domain.model.therapy.Minutes
-import de.dh.daps.common.domain.model.therapy.Timestamp
-import de.dh.daps.common.domain.model.therapy.getAmountForMinute
+import de.dh.daps.common.domain.model.data.getAmountForMinute
 import de.dh.daps.common.domain.model.therapy.getDefaultMealTypes
 import de.dh.daps.common.domain.model.therapy.getDefaultStandardMealType
 import de.dh.daps.plugin.simbody.SimBodyInsulinPump.Companion.SIM_PUMP_MIN_BOLUS_INCREMENT

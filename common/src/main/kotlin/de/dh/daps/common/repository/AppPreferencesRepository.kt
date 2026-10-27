@@ -9,15 +9,15 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import de.dh.daps.common.DEFAULT_CATHETER_PATCH_WARNING_TIME
-import de.dh.daps.common.domain.model.therapy.CarbsUnit
-import de.dh.daps.common.domain.model.therapy.GlucoseUnit
-import java.time.LocalTime
+import de.dh.daps.common.domain.model.data.CarbsUnit
+import de.dh.daps.common.domain.model.data.GlucoseUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import java.time.LocalTime
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 

@@ -1,9 +1,8 @@
 package de.dh.daps.core.alarms
 
 import de.dh.daps.common.domain.model.alarm.AlarmType
-import de.dh.daps.common.domain.model.therapy.Minutes
-import de.dh.daps.common.domain.model.therapy.Timestamp
-import de.dh.daps.core.alarms.AlarmSnoozeManager.Companion.MAX_SAFETY_CRITICAL_SNOOZE_MINUTES
+import de.dh.daps.common.domain.model.data.Minutes
+import de.dh.daps.common.domain.model.data.Timestamp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

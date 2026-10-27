@@ -5,7 +5,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import de.dh.daps.common.ID_UNDEFINED
-import de.dh.daps.common.domain.model.therapy.Timestamp
+import de.dh.daps.common.domain.model.data.Timestamp
 
 data class DBInsulinSetting(
     val insulinTypeId: String,

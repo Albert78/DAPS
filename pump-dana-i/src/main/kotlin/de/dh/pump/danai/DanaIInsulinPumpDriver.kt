@@ -22,9 +22,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.device.state.DeviceLifecycleState
-import de.dh.daps.common.domain.model.therapy.InsulinPump
 import de.dh.daps.common.device.driver.InsulinPumpDriver
+import de.dh.daps.common.device.state.DeviceLifecycleState
+import de.dh.daps.common.domain.pump.InsulinPump
 import de.dh.daps.common.infrastructure.Plugin
 import de.dh.daps.common.infrastructure.PluginContext
 import de.dh.daps.common.ui.UiText

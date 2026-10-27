@@ -19,9 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.device.state.DeviceLifecycleState
-import de.dh.daps.common.domain.model.therapy.GlucoseSource
 import de.dh.daps.common.device.driver.GlucoseSourceDriver
+import de.dh.daps.common.device.state.DeviceLifecycleState
+import de.dh.daps.common.domain.model.cgm.GlucoseSource
 import de.dh.daps.common.infrastructure.Plugin
 import de.dh.daps.common.infrastructure.PluginContext
 import de.dh.daps.common.ui.UiText

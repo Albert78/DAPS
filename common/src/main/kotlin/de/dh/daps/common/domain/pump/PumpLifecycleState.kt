@@ -1,5 +1,6 @@
-package de.dh.daps.common.domain.model.therapy
+package de.dh.daps.common.domain.pump
 
+import de.dh.daps.common.domain.model.data.Timestamp
 import java.time.LocalDate
 
 /**

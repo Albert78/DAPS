@@ -6,8 +6,8 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.RoomWarnings
 import de.dh.daps.common.ID_UNDEFINED
-import de.dh.daps.common.domain.model.therapy.BgSampleKind
-import de.dh.daps.common.domain.model.therapy.Timestamp
+import de.dh.daps.common.domain.model.data.BgSampleKind
+import de.dh.daps.common.domain.model.data.Timestamp
 
 /**
  * Types of glucose sensors like "Libre3", "Dexcom G6", ...

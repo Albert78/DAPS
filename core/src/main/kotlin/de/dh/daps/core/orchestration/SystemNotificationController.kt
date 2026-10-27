@@ -1,14 +1,14 @@
 package de.dh.daps.core.orchestration
 
 import android.app.Notification
-import de.dh.daps.common.repository.AppPreferencesRepository
-import de.dh.daps.common.domain.model.therapy.Tick
+import de.dh.daps.common.domain.model.data.Tick
 import de.dh.daps.common.infrastructure.ReminderManager
 import de.dh.daps.common.infrastructure.TickHandler
 import de.dh.daps.common.infrastructure.TickPriority
 import de.dh.daps.common.infrastructure.TimeService
-import de.dh.daps.core.repository.GlucoseRepository
+import de.dh.daps.common.repository.AppPreferencesRepository
 import de.dh.daps.core.infrastructure.AndroidNotifications
+import de.dh.daps.core.repository.GlucoseRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch

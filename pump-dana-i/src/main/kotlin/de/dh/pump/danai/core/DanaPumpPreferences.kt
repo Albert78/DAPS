@@ -1,8 +1,8 @@
 package de.dh.pump.danai.core
 
+import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.therapy.InsulinConcentration
 import de.dh.daps.common.infrastructure.PluginPreferences
-import de.dh.daps.common.domain.model.therapy.Timestamp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map

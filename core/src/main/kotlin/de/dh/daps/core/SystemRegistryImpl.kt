@@ -2,19 +2,19 @@ package de.dh.daps.core
 
 import android.app.Application
 import android.content.Context
-import de.dh.daps.common.repository.AppPreferencesRepository
 import de.dh.daps.common.METABOLIC_EVENTS_HISTORY_HOURS
 import de.dh.daps.common.device.driver.GlucoseSourceDriver
 import de.dh.daps.common.device.driver.InsulinPumpDriver
+import de.dh.daps.common.domain.calculation.CarbsInsulinCalculator
+import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.infrastructure.Plugin
 import de.dh.daps.common.infrastructure.PluginContext
 import de.dh.daps.common.infrastructure.PluginManager
-import de.dh.daps.common.infrastructure.ScopedPluginPreferences
-import de.dh.daps.common.domain.calculation.CarbsInsulinCalculator
-import de.dh.daps.common.domain.model.therapy.Minutes
 import de.dh.daps.common.infrastructure.ReminderManager
+import de.dh.daps.common.infrastructure.ScopedPluginPreferences
 import de.dh.daps.common.infrastructure.SystemWakeService
 import de.dh.daps.common.infrastructure.TimeService
+import de.dh.daps.common.repository.AppPreferencesRepository
 import de.dh.daps.core.alarms.AlarmEvaluator
 import de.dh.daps.core.alarms.AlarmPlayerManager
 import de.dh.daps.core.alarms.AlarmPlayerManagerImpl

@@ -2,9 +2,9 @@ package de.dh.daps.plugin.simbody.repository.db
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.common.domain.model.therapy.InsulinOrigin
-import de.dh.daps.common.domain.model.therapy.Timestamp
 
 @Entity(tableName = "sim_history")
 data class SimHistoryEntity(

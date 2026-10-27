@@ -1,12 +1,12 @@
 package de.dh.daps.common.domain.calculation
 
+import de.dh.daps.common.domain.model.data.Minutes
+import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.common.domain.model.therapy.InsulinDose
 import de.dh.daps.common.domain.model.therapy.InsulinProfile
 import de.dh.daps.common.domain.model.therapy.InsulinType
-import de.dh.daps.common.domain.model.therapy.Minutes
 import de.dh.daps.common.domain.model.therapy.ProfileInsulinSetting
-import de.dh.daps.common.domain.model.therapy.Timestamp
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

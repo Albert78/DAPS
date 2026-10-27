@@ -39,8 +39,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -49,9 +47,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.TARGET_MAX
 import de.dh.daps.common.TARGET_MIN
-import de.dh.daps.common.domain.model.therapy.BgBlock
-import de.dh.daps.common.domain.model.therapy.BgValue
-import de.dh.daps.common.domain.model.therapy.Minutes
+import de.dh.daps.common.domain.model.data.Minutes
+import de.dh.daps.common.domain.model.data.BgBlock
+import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.DefaultSteppingStrategy
 import de.dh.daps.ui.common.composables.EditableValueStepper
@@ -62,6 +60,8 @@ import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.screens.insulinprofile.InsertButton
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import de.dh.daps.common.R as CommonR
 

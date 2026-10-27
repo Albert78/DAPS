@@ -4,13 +4,13 @@ import android.content.Intent
 import android.util.Log
 import de.dh.daps.common.PUMP_BATTERY_LOW_THRESHOLD
 import de.dh.daps.common.PUMP_RESERVOIR_LOW_THRESHOLD
-import de.dh.daps.common.domain.model.therapy.BolusStatus
+import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.common.domain.model.therapy.InsulinHistory
-import de.dh.daps.common.domain.model.therapy.InsulinPump
-import de.dh.daps.common.domain.model.therapy.PumpLifecycleState
 import de.dh.daps.common.domain.model.therapy.InsulinProfile
-import de.dh.daps.common.domain.model.therapy.Timestamp
+import de.dh.daps.common.domain.pump.BolusStatus
+import de.dh.daps.common.domain.pump.InsulinPump
+import de.dh.daps.common.domain.pump.PumpLifecycleState
 import de.dh.daps.common.infrastructure.SystemWakeService
 import de.dh.daps.common.infrastructure.WakeupHandler
 import kotlinx.coroutines.CoroutineScope

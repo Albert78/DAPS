@@ -1,9 +1,9 @@
 package de.dh.daps.core.aps.prediction
 
+import de.dh.daps.common.domain.model.data.BgDelta
+import de.dh.daps.common.domain.model.data.BgValue
+import de.dh.daps.common.domain.model.data.Tick
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
-import de.dh.daps.common.domain.model.therapy.BgDelta
-import de.dh.daps.common.domain.model.therapy.BgValue
-import de.dh.daps.common.domain.model.therapy.Tick
 
 /**
  * Read-only view of the prediction data for a specific time tick.

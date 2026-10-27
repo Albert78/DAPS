@@ -17,6 +17,7 @@ import de.dh.daps.common.LOW_THRESHOLD_MAX
 import de.dh.daps.common.LOW_THRESHOLD_MIN
 import de.dh.daps.common.TARGET_MAX
 import de.dh.daps.common.TARGET_MIN
+import de.dh.daps.common.domain.model.data.Block
 import kotlin.math.abs
 
 fun isValidBasal(rate: Double): Boolean = rate in BASAL_MIN..BASAL_MAX

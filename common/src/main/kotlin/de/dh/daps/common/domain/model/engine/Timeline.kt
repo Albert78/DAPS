@@ -1,7 +1,11 @@
-package de.dh.daps.common.domain.model.therapy
+package de.dh.daps.common.domain.model.engine
+
+import de.dh.daps.common.domain.model.data.Minutes
+import de.dh.daps.common.domain.model.data.Tick
+import de.dh.daps.common.domain.model.data.Timestamp
 
 /**
- * Manages the conversion between absolute [Timestamp]s and discrete [Tick]s
+ * Manages the conversion between absolute [de.dh.daps.common.domain.model.data.Timestamp]s and discrete [de.dh.daps.common.domain.model.data.Tick]s
  * based on a fixed interval and an optional [offsetMs].
  *
  * The [offsetMs] allows the timeline grid to be shifted relative to the Unix Epoch.
@@ -13,7 +17,7 @@ class Timeline(
     val tickSizeMs: Long = tickDuration.value.toLong() * 60 * 1000
 
     /**
-     * Converts a [Timestamp] to a [Tick].
+     * Converts a [de.dh.daps.common.domain.model.data.Timestamp] to a [de.dh.daps.common.domain.model.data.Tick].
      */
     fun tick(timestamp: Timestamp): Tick {
         return Tick(((timestamp.ms - offsetMs) / tickSizeMs).toInt())

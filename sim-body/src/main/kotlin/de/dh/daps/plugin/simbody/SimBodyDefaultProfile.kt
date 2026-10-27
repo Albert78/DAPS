@@ -1,9 +1,9 @@
 package de.dh.daps.plugin.simbody
 
-import de.dh.daps.common.domain.model.therapy.InsulinType
-import de.dh.daps.common.domain.model.therapy.Block
+import de.dh.daps.common.domain.model.data.Minutes
+import de.dh.daps.common.domain.model.data.Block
 import de.dh.daps.common.domain.model.therapy.InsulinProfile
-import de.dh.daps.common.domain.model.therapy.Minutes
+import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.common.domain.model.therapy.ProfileInsulinSetting
 import de.dh.daps.plugin.simbody.model.BodyProfile
 

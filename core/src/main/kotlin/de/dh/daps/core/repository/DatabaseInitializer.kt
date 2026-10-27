@@ -4,11 +4,11 @@ import android.content.Context
 import de.dh.daps.common.DEFAULT_BG_LOW_THRESHOLD_MGDL
 import de.dh.daps.common.DEFAULT_BG_TARGET_MGDL
 import de.dh.daps.common.ID_INSULIN_NOVORAPID
-import de.dh.daps.common.domain.model.therapy.BgBlock
-import de.dh.daps.common.domain.model.therapy.BgValue
-import de.dh.daps.common.domain.model.system.CurrentSettings
-import de.dh.daps.common.domain.model.therapy.Minutes
 import de.dh.daps.common.domain.model.alarm.getDefaultAlarmProfiles
+import de.dh.daps.common.domain.model.data.BgValue
+import de.dh.daps.common.domain.model.data.Minutes
+import de.dh.daps.common.domain.model.engine.CurrentSettings
+import de.dh.daps.common.domain.model.data.BgBlock
 import de.dh.daps.common.domain.model.therapy.getDefaultInsulinProfile
 import de.dh.daps.common.domain.model.therapy.getDefaultInsulinTypes
 import de.dh.daps.common.domain.model.therapy.getDefaultMealTypes

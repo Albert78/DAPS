@@ -1,7 +1,7 @@
 package de.dh.daps.core.alarms
 
 import de.dh.daps.common.domain.model.alarm.AlarmType
-import de.dh.daps.common.domain.model.therapy.Timestamp
+import de.dh.daps.common.domain.model.data.Timestamp
 
 /**
  * Encapsulates the active snooze state of a specific [AlarmType].

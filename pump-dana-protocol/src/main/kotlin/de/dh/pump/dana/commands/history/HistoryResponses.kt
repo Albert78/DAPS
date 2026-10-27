@@ -1,8 +1,8 @@
 package de.dh.pump.dana.commands.history
 
 import de.dh.pump.PumpStatus
+import de.dh.pump.PumpTimestamp
 import de.dh.pump.dana.commands.DanaRsResponse
-import de.dh.daps.common.domain.model.therapy.PumpTimestamp
 
 /**
  * Base type for one packet returned by a classic Dana history command.

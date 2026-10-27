@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import de.dh.daps.common.domain.model.therapy.InsulinPump
 import de.dh.daps.common.device.driver.InsulinPumpDriver
+import de.dh.daps.common.domain.pump.InsulinPump
 import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

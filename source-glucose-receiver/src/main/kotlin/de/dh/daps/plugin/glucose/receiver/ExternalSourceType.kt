@@ -1,8 +1,8 @@
 package de.dh.daps.plugin.glucose.receiver
 
 import androidx.annotation.StringRes
-import de.dh.daps.common.domain.model.therapy.BgReadingsInterval
-import de.dh.daps.common.domain.model.therapy.Minutes
+import de.dh.daps.common.domain.model.data.Minutes
+import de.dh.daps.common.domain.model.data.BgReadingsInterval
 
 /**
  * Enum which determines a type of external glucose source.

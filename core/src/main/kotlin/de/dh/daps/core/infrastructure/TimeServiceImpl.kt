@@ -2,10 +2,10 @@ package de.dh.daps.core.infrastructure
 
 import android.content.Intent
 import android.util.Log
-import de.dh.daps.common.domain.model.therapy.Minutes
-import de.dh.daps.common.domain.model.therapy.Tick
-import de.dh.daps.common.domain.model.therapy.Timeline
-import de.dh.daps.common.domain.model.therapy.Timestamp
+import de.dh.daps.common.domain.model.data.Minutes
+import de.dh.daps.common.domain.model.data.Tick
+import de.dh.daps.common.domain.model.data.Timestamp
+import de.dh.daps.common.domain.model.engine.Timeline
 import de.dh.daps.common.infrastructure.SystemWakeService
 import de.dh.daps.common.infrastructure.TickHandler
 import de.dh.daps.common.infrastructure.TimeService

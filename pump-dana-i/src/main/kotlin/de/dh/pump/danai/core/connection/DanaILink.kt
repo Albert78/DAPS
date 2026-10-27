@@ -2,8 +2,8 @@ package de.dh.pump.danai.core.connection
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
+import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.infrastructure.PluginPreferences
-import de.dh.daps.common.domain.model.therapy.Timestamp
 import de.dh.pump.PumpConnectionException
 import de.dh.pump.client.singleframe.PumpClient
 import de.dh.pump.client.singleframe.PumpCommand

@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import de.dh.daps.ui.common.composables.contentScrollIndicator
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
@@ -34,13 +33,14 @@ import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.domain.model.data.GlucoseUnit
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
-import de.dh.daps.common.domain.model.therapy.GlucoseUnit
 import de.dh.daps.core.aps.CoreInsight
 import de.dh.daps.core.aps.CoreReasoning
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.carbsValue
+import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.crValue
 import de.dh.daps.ui.common.glucoseValue

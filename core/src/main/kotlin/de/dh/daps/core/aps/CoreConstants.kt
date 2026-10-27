@@ -1,7 +1,7 @@
 package de.dh.daps.core.aps
 
-import de.dh.daps.common.domain.model.therapy.BgDelta
-import de.dh.daps.common.domain.model.therapy.Minutes
+import de.dh.daps.common.domain.model.data.BgDelta
+import de.dh.daps.common.domain.model.data.Minutes
 
 /**
  * Timespan until last BG value when the Core will mark the BG as stale.

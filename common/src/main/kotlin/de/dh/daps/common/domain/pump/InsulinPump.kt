@@ -1,5 +1,10 @@
-package de.dh.daps.common.domain.model.therapy
+package de.dh.daps.common.domain.pump
 
+import de.dh.daps.common.domain.model.data.Timestamp
+import de.dh.daps.common.domain.model.therapy.InsulinAmount
+import de.dh.daps.common.domain.model.therapy.InsulinConcentration
+import de.dh.daps.common.domain.model.therapy.InsulinHistory
+import de.dh.daps.common.domain.model.therapy.InsulinProfile
 import de.dh.daps.common.ui.UiText
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -237,7 +242,7 @@ interface InsulinPump {
         get() = MutableStateFlow(null)
 
     /**
-     * Concentration of the insulin loaded in the pump. Default is [InsulinConcentration.U100].
+     * Concentration of the insulin loaded in the pump. Default is [InsulinConcentration.Companion.U100].
      * Needed to convert [InsulinAmount] to pump units and vice versa.
      */
     val insulinConcentration: StateFlow<InsulinConcentration>

@@ -2,16 +2,16 @@ package de.dh.daps.core.infrastructure
 
 import android.content.Intent
 import androidx.room.InvalidationTracker
-import de.dh.daps.common.domain.model.therapy.Minutes
-import de.dh.daps.common.domain.model.therapy.Timestamp
+import de.dh.daps.common.domain.model.data.Timestamp
+import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.infrastructure.SystemWakeService
 import de.dh.daps.common.infrastructure.WakeupHandler
 import de.dh.daps.core.repository.SystemMetricsRepository
 import de.dh.daps.core.repository.db.AppDatabase
 import de.dh.daps.core.repository.db.dao.AlarmProfileDao
-import de.dh.daps.core.repository.db.dao.ReminderDao
 import de.dh.daps.core.repository.db.dao.MetabolicEventsDao
 import de.dh.daps.core.repository.db.dao.ProviderDao
+import de.dh.daps.core.repository.db.dao.ReminderDao
 import de.dh.daps.core.repository.db.dao.SettingsDao
 import de.dh.daps.core.repository.db.dao.SystemMetricsDao
 import de.dh.daps.core.repository.db.dao.TherapyDao

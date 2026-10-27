@@ -1,6 +1,6 @@
 package de.dh.daps.core.repository.db.mappers
 
-import de.dh.daps.common.domain.model.system.CurrentSettings
+import de.dh.daps.common.domain.model.engine.CurrentSettings
 import de.dh.daps.core.repository.db.entities.CurrentSettingsEntity
 
 // Settings Converters

@@ -36,9 +36,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.therapy.CarbCurveComponentData
 import de.dh.daps.common.domain.model.therapy.MealType
-import de.dh.daps.common.domain.model.therapy.Minutes
 import de.dh.daps.common.domain.model.therapy.getDefaultFastMealType
 import de.dh.daps.common.domain.model.therapy.getDefaultSlowMealType
 import de.dh.daps.common.domain.model.therapy.getDefaultStandardMealType

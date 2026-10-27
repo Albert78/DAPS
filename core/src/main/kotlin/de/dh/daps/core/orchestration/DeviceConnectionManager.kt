@@ -1,8 +1,8 @@
 package de.dh.daps.core.orchestration
 
 import android.util.Log
-import de.dh.daps.common.domain.model.therapy.GlucoseSource
-import de.dh.daps.common.domain.model.therapy.InsulinPump
+import de.dh.daps.common.domain.model.cgm.GlucoseSource
+import de.dh.daps.common.domain.pump.InsulinPump
 import de.dh.daps.core.glucosesource.GlucoseSourceDriverManager
 import de.dh.daps.core.glucosesource.GlucoseSourceManager
 import de.dh.daps.core.pump.PumpDriverManager

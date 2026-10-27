@@ -3,11 +3,11 @@ package de.dh.daps.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
+import de.dh.daps.common.domain.model.data.CarbsUnit
+import de.dh.daps.common.domain.model.data.GlucoseUnit
 import de.dh.daps.common.repository.carbsUnit
-import de.dh.daps.common.domain.model.therapy.CarbsUnit
-import de.dh.daps.common.domain.model.therapy.GlucoseUnit
-import de.dh.daps.core.SystemRegistry
 import de.dh.daps.common.repository.glucoseUnit
+import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

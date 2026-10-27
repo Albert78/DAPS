@@ -1,4 +1,4 @@
-package de.dh.daps.common.domain.model.therapy
+package de.dh.daps.common.domain.model.data
 
 import de.dh.daps.common.DEFAULT_BG_LOW_THRESHOLD_MGDL
 import de.dh.daps.common.DEFAULT_BG_TARGET_MGDL

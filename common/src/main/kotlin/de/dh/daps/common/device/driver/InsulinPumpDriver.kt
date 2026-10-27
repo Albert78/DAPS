@@ -2,7 +2,7 @@ package de.dh.daps.common.device.driver
 
 import androidx.compose.runtime.Composable
 import de.dh.daps.common.device.state.DeviceLifecycleState
-import de.dh.daps.common.domain.model.therapy.InsulinPump
+import de.dh.daps.common.domain.pump.InsulinPump
 import de.dh.daps.common.ui.UiText
 import kotlinx.coroutines.flow.StateFlow
 

@@ -1,10 +1,10 @@
 package de.dh.daps.plugin.simbody
 
 import androidx.compose.runtime.Composable
-import de.dh.daps.common.device.state.DeviceLifecycleState
-import de.dh.daps.common.domain.model.therapy.InsulinConcentration
-import de.dh.daps.common.domain.model.therapy.InsulinPump
 import de.dh.daps.common.device.driver.InsulinPumpDriver
+import de.dh.daps.common.device.state.DeviceLifecycleState
+import de.dh.daps.common.domain.pump.InsulinPump
+import de.dh.daps.common.domain.model.therapy.InsulinConcentration
 import de.dh.daps.common.infrastructure.Plugin
 import de.dh.daps.common.infrastructure.PluginContext
 import de.dh.daps.common.ui.UiText

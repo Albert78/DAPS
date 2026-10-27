@@ -1,7 +1,7 @@
 package de.dh.daps.common.domain.calculation
 
+import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
-import de.dh.daps.common.domain.model.therapy.Minutes
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.exp
 

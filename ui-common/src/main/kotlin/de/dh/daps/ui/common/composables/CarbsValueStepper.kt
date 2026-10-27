@@ -6,7 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import de.dh.daps.common.CARBS_GRAMS_MAX
 import de.dh.daps.common.CARBS_GRAMS_MIN
-import de.dh.daps.common.domain.model.therapy.CarbsUnit
+import de.dh.daps.common.domain.model.data.CarbsUnit
 import de.dh.daps.ui.common.LocalCarbsUnit
 import de.dh.daps.ui.common.ValueDisplayStrategy
 import de.dh.daps.ui.common.carbsGramsSteppingStrategy

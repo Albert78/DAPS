@@ -2,6 +2,8 @@ package de.dh.daps.common.domain.model.therapy
 
 import de.dh.daps.common.ID_UNDEFINED
 import de.dh.daps.common.domain.model.alarm.AlarmProfile
+import de.dh.daps.common.domain.model.data.BgValue
+import de.dh.daps.common.domain.model.data.Timestamp
 
 /**
  * Represents a planned/scheduled therapy adjustment for a future activity or time window.

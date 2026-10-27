@@ -1,11 +1,10 @@
 package de.dh.daps.core.orchestration
 
 import android.content.Context
-import de.dh.daps.common.R as CommonR
-import de.dh.daps.common.domain.model.therapy.InsulinPumpStatus
-import de.dh.daps.common.domain.model.therapy.PatchPhase
-import de.dh.daps.common.domain.model.therapy.PumpLifecycleState
-import de.dh.daps.common.domain.model.therapy.Timestamp
+import de.dh.daps.common.domain.model.data.Timestamp
+import de.dh.daps.common.domain.pump.InsulinPumpStatus
+import de.dh.daps.common.domain.pump.PatchPhase
+import de.dh.daps.common.domain.pump.PumpLifecycleState
 import de.dh.daps.common.infrastructure.REMINDER_SOURCE_CATHETER_CHANGE
 import de.dh.daps.common.infrastructure.REMINDER_SOURCE_PATCH_CHANGE
 import de.dh.daps.common.infrastructure.ReminderManager
@@ -20,6 +19,7 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
+import de.dh.daps.common.R as CommonR
 
 /**
  * Tracks consumable lifecycles (catheters, patch pumps), evaluates warnings,

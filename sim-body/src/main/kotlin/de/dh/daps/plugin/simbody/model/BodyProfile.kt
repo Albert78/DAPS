@@ -1,6 +1,6 @@
 package de.dh.daps.plugin.simbody.model
 
-import de.dh.daps.common.domain.model.therapy.Block
+import de.dh.daps.common.domain.model.data.Block
 
 /**
  * Metabolic profile of a body for simulation.

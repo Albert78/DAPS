@@ -1,8 +1,8 @@
 package de.dh.pump.omnipod.protocol.util
 
+import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.therapy.InsulinProfile
-import de.dh.daps.common.domain.model.therapy.Minutes
-import de.dh.daps.common.domain.model.therapy.getAmountForMinute
+import de.dh.daps.common.domain.model.data.getAmountForMinute
 
 object ProfileToBasalScheduleConverter {
     const val SEGMENTS_PER_DAY = 48

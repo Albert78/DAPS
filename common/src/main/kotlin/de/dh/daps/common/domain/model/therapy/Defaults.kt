@@ -14,6 +14,8 @@ import de.dh.daps.common.ID_MEAL_HIGH_FAT
 import de.dh.daps.common.ID_MEAL_SLOW
 import de.dh.daps.common.ID_MEAL_STANDARD
 import de.dh.daps.common.R
+import de.dh.daps.common.domain.model.data.Block
+import de.dh.daps.common.domain.model.data.Minutes
 
 val FAST_KE_DEFAULT_PEAK = Minutes(25)
 

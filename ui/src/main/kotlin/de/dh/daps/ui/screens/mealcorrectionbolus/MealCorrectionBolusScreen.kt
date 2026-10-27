@@ -56,12 +56,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.BOLUS_MAX
+import de.dh.daps.common.domain.model.data.BgDelta
+import de.dh.daps.common.domain.model.data.BgValue
+import de.dh.daps.common.domain.model.data.Minutes
+import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.common.domain.model.therapy.MealType
-import de.dh.daps.common.domain.model.therapy.BgDelta
-import de.dh.daps.common.domain.model.therapy.BgValue
-import de.dh.daps.common.domain.model.therapy.Minutes
-import de.dh.daps.common.domain.model.therapy.Timestamp
 import de.dh.daps.common.domain.model.therapy.getDefaultMealTypes
 import de.dh.daps.core.aps.BolusProjections
 import de.dh.daps.core.aps.ProjectedBg
@@ -69,6 +69,7 @@ import de.dh.daps.core.therapy.TreatmentLock
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.composables.CarbsValueStepper
+import de.dh.daps.ui.common.composables.FoodTypeSelector
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.ImageCaptionWithSwitch
 import de.dh.daps.ui.common.composables.InsulinAmountStepper
@@ -87,7 +88,6 @@ import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.daps.ui.common.time
 import de.dh.daps.ui.common.withinTimeDescription
 import de.dh.daps.ui.controls.meal.BolusPlanEditorDialog
-import de.dh.daps.ui.common.composables.FoodTypeSelector
 import de.dh.daps.ui.controls.meal.PlannedBolusUiModel
 import kotlin.math.abs
 import de.dh.daps.common.R as CommonR

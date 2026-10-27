@@ -1,4 +1,4 @@
-package de.dh.daps.common.domain.model.system
+package de.dh.daps.common.domain.model.engine
 
 enum class ApsMode {
     /**

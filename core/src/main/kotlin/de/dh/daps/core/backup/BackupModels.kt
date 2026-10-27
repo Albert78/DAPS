@@ -1,14 +1,16 @@
 package de.dh.daps.core.backup
 
-import de.dh.daps.common.domain.model.system.ApsMode
+import de.dh.daps.common.domain.model.data.BgDelta
+import de.dh.daps.common.domain.model.data.BgSampleKind
+import de.dh.daps.common.domain.model.data.BgValue
+import de.dh.daps.common.domain.model.data.Minutes
+import de.dh.daps.common.domain.model.data.Timestamp
+import de.dh.daps.common.domain.model.reminder.ReminderStatus
+import de.dh.daps.common.domain.model.reminder.ReminderType
+import de.dh.daps.common.domain.model.engine.ApsMode
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.common.domain.model.therapy.InsulinOrigin
 import de.dh.daps.common.domain.model.therapy.InsulinStatus
-import de.dh.daps.common.domain.model.therapy.BgDelta
-import de.dh.daps.common.domain.model.therapy.BgSampleKind
-import de.dh.daps.common.domain.model.therapy.BgValue
-import de.dh.daps.common.domain.model.therapy.Minutes
-import de.dh.daps.common.domain.model.therapy.Timestamp
 import de.dh.daps.core.aps.CoreReasoning
 import de.dh.daps.core.repository.db.entities.AlarmProfileEntity
 import de.dh.daps.core.repository.db.entities.CoreInsightEntity
@@ -24,10 +26,8 @@ import de.dh.daps.core.repository.db.entities.InsulinEntity
 import de.dh.daps.core.repository.db.entities.InsulinProfileEntity
 import de.dh.daps.core.repository.db.entities.InsulinTypeEntity
 import de.dh.daps.core.repository.db.entities.MealEntity
-import de.dh.daps.common.domain.model.reminder.ReminderStatus
-import de.dh.daps.common.domain.model.reminder.ReminderType
-import de.dh.daps.core.repository.db.entities.ReminderEntity
 import de.dh.daps.core.repository.db.entities.MealTypeEntity
+import de.dh.daps.core.repository.db.entities.ReminderEntity
 import de.dh.daps.core.repository.db.entities.ScheduledTherapyAdjustmentEntity
 import de.dh.daps.core.repository.db.entities.SensorTypeEntity
 import de.dh.daps.core.repository.db.entities.TherapyAdjustmentEntity

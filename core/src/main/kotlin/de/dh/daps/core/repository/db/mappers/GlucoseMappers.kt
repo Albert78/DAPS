@@ -1,9 +1,9 @@
 package de.dh.daps.core.repository.db.mappers
 
-import de.dh.daps.common.domain.model.therapy.DataProvider
-import de.dh.daps.common.domain.model.therapy.BgReading
-import de.dh.daps.common.domain.model.therapy.BgValue
-import de.dh.daps.common.domain.model.therapy.SensorType
+import de.dh.daps.common.domain.model.data.BgReading
+import de.dh.daps.common.domain.model.data.BgValue
+import de.dh.daps.common.domain.model.cgm.DataProvider
+import de.dh.daps.common.domain.model.cgm.SensorType
 import de.dh.daps.core.repository.db.entities.DataProviderEntity
 import de.dh.daps.core.repository.db.entities.GlucoseReadingEntity
 import de.dh.daps.core.repository.db.entities.SensorTypeEntity

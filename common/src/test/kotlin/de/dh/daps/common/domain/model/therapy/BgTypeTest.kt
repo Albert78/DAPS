@@ -1,5 +1,7 @@
 package de.dh.daps.common.domain.model.therapy
 
+import de.dh.daps.common.domain.model.data.BgDelta
+import de.dh.daps.common.domain.model.data.BgValue
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

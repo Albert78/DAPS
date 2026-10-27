@@ -1,6 +1,6 @@
 package de.dh.daps.ui.screens.therapy
 
-import de.dh.daps.common.domain.model.therapy.BgValue
+import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.therapy.TherapyAdjustment
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -1,4 +1,4 @@
-package de.dh.daps.common.domain.model.therapy
+package de.dh.daps.common.domain.model.data
 
 /**
  * A memory-efficient representation of a discrete point in time on a fixed grid.

@@ -1,5 +1,9 @@
-package de.dh.daps.common.domain.model.therapy
+package de.dh.daps.common.domain.model.cgm
 
+import de.dh.daps.common.domain.model.data.BgReading
+import de.dh.daps.common.domain.model.data.Minutes
+import de.dh.daps.common.domain.model.data.Timestamp
+import de.dh.daps.common.domain.model.data.BgReadingsInterval
 import de.dh.daps.common.ui.UiText
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow

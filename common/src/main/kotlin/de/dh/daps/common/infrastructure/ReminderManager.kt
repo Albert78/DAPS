@@ -1,9 +1,9 @@
 package de.dh.daps.common.infrastructure
 
+import de.dh.daps.common.domain.model.data.Minutes
+import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.reminder.Reminder
 import de.dh.daps.common.domain.model.reminder.ReminderType
-import de.dh.daps.common.domain.model.therapy.Minutes
-import de.dh.daps.common.domain.model.therapy.Timestamp
 import de.dh.daps.common.navigation.AppDeepLinks
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow

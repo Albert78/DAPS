@@ -2,6 +2,9 @@ package de.dh.daps.common.domain.model.therapy
 
 import de.dh.daps.common.ID_UNDEFINED
 import de.dh.daps.common.domain.model.alarm.AlarmProfile
+import de.dh.daps.common.domain.model.data.BgBlock
+import de.dh.daps.common.domain.model.data.BgValue
+import de.dh.daps.common.domain.model.data.Timestamp
 
 /**
  * Represents the current active therapy settings of the app.
