@@ -25,6 +25,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.domain.model.alarm.ActiveAlarmGroup
+import de.dh.daps.common.domain.model.alarm.AlarmCategory
 import de.dh.daps.common.domain.model.alarm.AlarmSeverity
 import de.dh.daps.common.domain.model.alarm.AlarmType
 import de.dh.daps.common.domain.model.data.BgValue
@@ -42,7 +44,28 @@ fun FullScreenAlarmScreen(
     glucoseUnit: GlucoseUnit,
     onSnooze: (minutes: Int) -> Unit
 ) {
-    val isCritical = alarmType.defaultSeverity == AlarmSeverity.CRITICAL
+    val group = ActiveAlarmGroup(
+        heroAlarms = listOf(alarmType),
+        otherAlarms = emptyList(),
+        highestSeverity = alarmType.defaultSeverity,
+        primaryAlarm = alarmType
+    )
+    FullScreenAlarmScreen(
+        alarmGroup = group,
+        bgValue = bgValue,
+        glucoseUnit = glucoseUnit,
+        onSnoozeAll = onSnooze
+    )
+}
+
+@Composable
+fun FullScreenAlarmScreen(
+    alarmGroup: ActiveAlarmGroup,
+    bgValue: BgValue?,
+    glucoseUnit: GlucoseUnit,
+    onSnoozeAll: (minutes: Int) -> Unit
+) {
+    val isCritical = alarmGroup.highestSeverity == AlarmSeverity.CRITICAL
     val backgroundColor = if (isCritical) {
         MaterialTheme.colorScheme.errorContainer
     } else {
@@ -85,54 +108,108 @@ fun FullScreenAlarmScreen(
                     modifier = Modifier.size(72.dp)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = getAlarmTypeTitle(alarmType),
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = contentColor,
-                    fontWeight = FontWeight.ExtraBold,
-                    textAlign = TextAlign.Center
-                )
             }
 
-            // Central Data Card (Glucose value or status)
-            FramedCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                shape = RoundedCornerShape(24.dp),
-                containerColor = MaterialTheme.colorScheme.surface
+            // Hero Alarms Section
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(32.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    if (bgValue != null && bgValue.isValid()) {
-                        Text(
-                            text = bgValue.toString(glucoseUnit),
-                            style = MaterialTheme.typography.displayLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = when (glucoseUnit) {
-                                GlucoseUnit.MG_DL -> "mg/dL"
-                                GlucoseUnit.MMOL -> "mmol/L"
-                            },
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    } else {
-                        Text(
-                            text = getAlarmTypeDescription(alarmType),
-                            style = MaterialTheme.typography.bodyLarge,
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
+                alarmGroup.heroAlarms.forEach { heroAlarm ->
+                    Text(
+                        text = getAlarmTypeTitle(heroAlarm),
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = contentColor,
+                        fontWeight = FontWeight.ExtraBold,
+                        textAlign = TextAlign.Center
+                    )
+
+                    FramedCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(24.dp),
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            if (heroAlarm.category == AlarmCategory.GLUCOSE && bgValue != null && bgValue.isValid()) {
+                                Text(
+                                    text = bgValue.toString(glucoseUnit),
+                                    style = MaterialTheme.typography.displayLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = when (glucoseUnit) {
+                                        GlucoseUnit.MG_DL -> "mg/dL"
+                                        GlucoseUnit.MMOL -> "mmol/L"
+                                    },
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            } else {
+                                Text(
+                                    text = getAlarmTypeDescription(heroAlarm),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
                     }
                 }
             }
+
+            // Other Alarms Section (if present)
+            if (alarmGroup.otherAlarms.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.full_screen_other_alarms_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = contentColor,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    alarmGroup.otherAlarms.forEach { otherAlarm ->
+                        FramedCard(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
+                            ) {
+                                Text(
+                                    text = getAlarmTypeTitle(otherAlarm),
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = getAlarmTypeDescription(otherAlarm),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Action Buttons
             Column(
@@ -140,7 +217,7 @@ fun FullScreenAlarmScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = stringResource(id = R.string.alarm_action_snooze),
+                    text = stringResource(id = R.string.alarm_action_snooze_all),
                     style = MaterialTheme.typography.titleMedium,
                     color = contentColor,
                     fontWeight = FontWeight.Bold,
@@ -148,7 +225,7 @@ fun FullScreenAlarmScreen(
                 )
 
                 PrimaryButton(
-                    onClick = { onSnooze(15) },
+                    onClick = { onSnoozeAll(15) },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
@@ -158,7 +235,7 @@ fun FullScreenAlarmScreen(
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 PrimaryButton(
-                    onClick = { onSnooze(30) },
+                    onClick = { onSnoozeAll(30) },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
@@ -168,7 +245,7 @@ fun FullScreenAlarmScreen(
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 PrimaryButton(
-                    onClick = { onSnooze(60) },
+                    onClick = { onSnoozeAll(60) },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
@@ -236,15 +313,21 @@ fun FullScreenAlarmScreenCriticalPreview() {
     }
 }
 
-@Preview(showBackground = true, name = "High BG Alarm")
+@Preview(showBackground = true, name = "Multi Alarm Preview")
 @Composable
-fun FullScreenAlarmScreenHighBgPreview() {
+fun FullScreenAlarmScreenMultiPreview() {
     AppPreview {
+        val group = ActiveAlarmGroup(
+            heroAlarms = listOf(AlarmType.PUMP_OCCLUSION, AlarmType.HIGH_BG),
+            otherAlarms = listOf(AlarmType.PUMP_LOW_BATTERY),
+            highestSeverity = AlarmSeverity.CRITICAL,
+            primaryAlarm = AlarmType.PUMP_OCCLUSION
+        )
         FullScreenAlarmScreen(
-            alarmType = AlarmType.HIGH_BG,
-            bgValue = BgValue.fromMgDl(240),
+            alarmGroup = group,
+            bgValue = BgValue.fromMgDl(280),
             glucoseUnit = GlucoseUnit.MG_DL,
-            onSnooze = {}
+            onSnoozeAll = {}
         )
     }
 }

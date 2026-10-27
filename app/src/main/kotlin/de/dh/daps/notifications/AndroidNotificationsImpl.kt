@@ -7,11 +7,12 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
-import android.net.Uri
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
+import androidx.core.net.toUri
 import de.dh.daps.R
+import de.dh.daps.common.domain.model.alarm.ActiveAlarmGroup
 import de.dh.daps.common.domain.model.alarm.AlarmType
 import de.dh.daps.common.domain.model.data.BgDelta
 import de.dh.daps.common.domain.model.data.BgValue
@@ -197,7 +198,7 @@ class AndroidNotificationsImpl(
         val text = reminder.description.ifBlank { context.getString(CommonR.string.notification_meal_reminder_text_default) }
 
         val pendingIntent = if (reminder.targetRoute.isNotBlank()) {
-            val routeIntent = Intent(Intent.ACTION_VIEW, Uri.parse(reminder.targetRoute)).apply {
+            val routeIntent = Intent(Intent.ACTION_VIEW, reminder.targetRoute.toUri()).apply {
                 setClass(context, MainActivity::class.java)
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             }
@@ -256,39 +257,70 @@ class AndroidNotificationsImpl(
     }
 
     override fun showAlarmNotification(alarmType: AlarmType, bgValue: BgValue?, isFullScreen: Boolean) {
-        val unit = getGlucoseUnit()
-        val title = getAlarmTitle(alarmType)
-        val contentText = getAlarmContentText(alarmType, bgValue, unit)
-
-        val dashboardIntent = MainActivity.createStartDashboardIntent(context)
-        val pendingIntent = PendingIntent.getActivity(
-            context, 0,
-            dashboardIntent, PendingIntent.FLAG_IMMUTABLE
+        val group = ActiveAlarmGroup(
+            heroAlarms = listOf(alarmType),
+            otherAlarms = emptyList(),
+            highestSeverity = alarmType.defaultSeverity,
+            primaryAlarm = alarmType
         )
+        showAlarmNotification(group, bgValue, isFullScreen)
+    }
+
+    override fun showAlarmNotification(
+        alarmGroup: ActiveAlarmGroup,
+        bgValue: BgValue?,
+        isFullScreen: Boolean
+    ) {
+        val unit = getGlucoseUnit()
+        val heroTitles = alarmGroup.heroAlarms.joinToString(", ") { getAlarmTitle(it) }
+        val title = if (alarmGroup.otherAlarms.isNotEmpty()) {
+            "$heroTitles (+${alarmGroup.otherAlarms.size})"
+        } else {
+            heroTitles
+        }
+
+        val primaryContentText = getAlarmContentText(alarmGroup.primaryAlarm, bgValue, unit)
 
         val alarmActivityIntent = Intent(context, AlarmActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
+        val contentPendingIntent = PendingIntent.getActivity(
+            context, 0,
+            alarmActivityIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
         val fullScreenPendingIntent = PendingIntent.getActivity(
             context, 0,
             alarmActivityIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        val snooze15Intent = AlarmBroadcastReceiver.createSnoozeIntent(context, alarmType, 15)
+        // Snooze all active alarms when snooze action is selected from notification
+        val snooze15Intent = AlarmBroadcastReceiver.createSnoozeIntent(context, null, 15)
         val snooze15PendingIntent = PendingIntent.getBroadcast(
             context, 15, snooze15Intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val snooze30Intent = AlarmBroadcastReceiver.createSnoozeIntent(context, alarmType, 30)
+        val snooze30Intent = AlarmBroadcastReceiver.createSnoozeIntent(context, null, 30)
         val snooze30PendingIntent = PendingIntent.getBroadcast(
             context, 30, snooze30Intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        val inboxStyle = NotificationCompat.InboxStyle()
+        alarmGroup.heroAlarms.forEach { hero ->
+            val desc = getAlarmContentText(hero, bgValue, unit)
+            val lineText = if (desc.isNotBlank()) "${getAlarmTitle(hero)}: $desc" else getAlarmTitle(hero)
+            inboxStyle.addLine(lineText)
+        }
+        if (alarmGroup.otherAlarms.isNotEmpty()) {
+            inboxStyle.addLine("+ ${alarmGroup.otherAlarms.size} weitere Alarme")
+        }
+
         val builder = NotificationCompat.Builder(context, ALGORITHM_ISSUE_CHANNEL_ID)
             .setContentTitle(title)
-            .setContentText(contentText)
+            .setContentText(primaryContentText)
+            .setStyle(inboxStyle)
             .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentIntent(pendingIntent)
+            .setContentIntent(contentPendingIntent)
             .addAction(
                 R.mipmap.ic_launcher,
                 context.getString(UiR.string.alarm_action_snooze_15),

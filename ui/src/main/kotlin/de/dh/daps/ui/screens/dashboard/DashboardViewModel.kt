@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import de.dh.daps.common.domain.model.alarm.ActiveAlarmGroup
 import de.dh.daps.common.domain.model.alarm.AlarmSignalConfig
 import de.dh.daps.common.domain.model.alarm.AlarmType
 import de.dh.daps.common.domain.model.cgm.GlucoseSource
@@ -27,7 +28,7 @@ data class DashboardUiState(
     val availableApsModes: List<ApsMode> = ApsMode.entries,
     val recommendations: List<ApsRecommendation> = emptyList(),
     val isMealCorrectionBolusAllowed: Boolean = false,
-    val activeFiringAlarm: AlarmType? = null,
+    val activeAlarmGroup: ActiveAlarmGroup? = null,
     val activeFiringConfig: AlarmSignalConfig? = null,
     val snoozedAlarms: Map<AlarmType, AlarmSnoozeState> = emptyMap(),
     val isGlucoseSourceConfigured: Boolean = true,
@@ -50,7 +51,7 @@ class DashboardViewModel(
         systemOrchestrator.apsMode,
         systemOrchestrator.availableApsModes,
         systemRegistry.recommendationManager.recommendations,
-        alarmEvaluator.activeFiringAlarm,
+        alarmEvaluator.activeAlarmGroup,
         alarmEvaluator.activeFiringConfig,
         alarmSnoozeManager.snoozedAlarms,
         systemRegistry.glucoseSourceManager.activeGlucoseSource,
@@ -62,7 +63,7 @@ class DashboardViewModel(
         val availableModes = flows[2] as List<ApsMode>
         @Suppress("UNCHECKED_CAST")
         val recommendations = flows[3] as List<ApsRecommendation>
-        val activeFiring = flows[4] as AlarmType?
+        val activeAlarmGroup = flows[4] as ActiveAlarmGroup?
         val config = flows[5] as AlarmSignalConfig?
         @Suppress("UNCHECKED_CAST")
         val snoozedMap = flows[6] as Map<AlarmType, AlarmSnoozeState>
@@ -74,7 +75,7 @@ class DashboardViewModel(
             availableApsModes = availableModes,
             recommendations = recommendations,
             isMealCorrectionBolusAllowed = systemOrchestrator.canOpenMealCorrectionBolus(),
-            activeFiringAlarm = activeFiring,
+            activeAlarmGroup = activeAlarmGroup,
             activeFiringConfig = config,
             snoozedAlarms = snoozedMap,
             isGlucoseSourceConfigured = activeGlucoseSource != null,
@@ -86,8 +87,11 @@ class DashboardViewModel(
         reload()
     }
 
-    fun snoozeAlarm(alarmType: AlarmType, minutes: Int) {
-        alarmSnoozeManager.snoozeAlarm(alarmType, minutes)
+    fun snoozeAllAlarms(minutes: Int) {
+        val activeGroup = uiState.value.activeAlarmGroup
+        if (activeGroup != null) {
+            alarmSnoozeManager.snoozeAlarms(activeGroup.allAlarms, minutes)
+        }
         systemRegistry.alarmPlayerManager.stopAlarm()
     }
 

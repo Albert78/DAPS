@@ -2,6 +2,7 @@ package de.dh.daps.core.alerts
 
 import android.content.Intent
 import android.util.Log
+import de.dh.daps.common.domain.model.alarm.ActiveAlarmGroup
 import de.dh.daps.common.domain.model.alarm.AlarmCategory
 import de.dh.daps.common.domain.model.alarm.AlarmProfile
 import de.dh.daps.common.domain.model.alarm.AlarmSeverity
@@ -53,8 +54,8 @@ class AlarmEvaluator(
     private val _activeAlarms = MutableStateFlow<Set<AlarmType>>(emptySet())
     val activeAlarms: StateFlow<Set<AlarmType>> = _activeAlarms.asStateFlow()
 
-    private val _activeFiringAlarm = MutableStateFlow<AlarmType?>(null)
-    val activeFiringAlarm: StateFlow<AlarmType?> = _activeFiringAlarm.asStateFlow()
+    private val _activeAlarmGroup = MutableStateFlow<ActiveAlarmGroup?>(null)
+    val activeAlarmGroup: StateFlow<ActiveAlarmGroup?> = _activeAlarmGroup.asStateFlow()
 
     private val _activeFiringConfig = MutableStateFlow<AlarmSignalConfig?>(null)
     val activeFiringConfig: StateFlow<AlarmSignalConfig?> = _activeFiringConfig.asStateFlow()
@@ -107,7 +108,7 @@ class AlarmEvaluator(
         gracePeriodJob?.cancel()
         gracePeriodJob = null
         _activeAlarms.value = emptySet()
-        _activeFiringAlarm.value = null
+        _activeAlarmGroup.value = null
         _activeFiringConfig.value = null
         lastEvaluatedBgValue = null
         lastInput = null
@@ -217,40 +218,60 @@ class AlarmEvaluator(
         }
 
         if (unsnoozedActiveAlarms.isNotEmpty()) {
-            // Priority sort: Severity CRITICAL > WARNING > INFO, then safety critical
-            val primaryAlarm = unsnoozedActiveAlarms.maxWithOrNull(
-                compareBy<AlarmType> { severityRank(it.defaultSeverity) }
-                    .thenBy { if (it.isSafetyCritical) 1 else 0 }
-            ) ?: unsnoozedActiveAlarms.first()
+            val highestSeverity = unsnoozedActiveAlarms.maxByOrNull { severityRank(it.defaultSeverity) }?.defaultSeverity
+                ?: AlarmSeverity.INFO
+
+            val heroAlarms = unsnoozedActiveAlarms
+                .filter { it.defaultSeverity == highestSeverity }
+                .sortedWith(
+                    compareByDescending<AlarmType> { if (it.isSafetyCritical) 1 else 0 }
+                        .thenBy { it.name }
+                )
+
+            val otherAlarms = unsnoozedActiveAlarms
+                .filter { it.defaultSeverity != highestSeverity }
+                .sortedWith(
+                    compareByDescending<AlarmType> { severityRank(it.defaultSeverity) }
+                        .thenByDescending { if (it.isSafetyCritical) 1 else 0 }
+                        .thenBy { it.name }
+                )
+
+            val primaryAlarm = heroAlarms.first()
+            val alarmGroup = ActiveAlarmGroup(
+                heroAlarms = heroAlarms,
+                otherAlarms = otherAlarms,
+                highestSeverity = highestSeverity,
+                primaryAlarm = primaryAlarm
+            )
 
             val activeProfile = input.activeProfile
             val config = activeProfile?.getConfigFor(primaryAlarm) ?: AlarmSignalConfig()
 
             val bgValue = input.bgReading?.value
-            val isGlucoseAlarm = primaryAlarm.category == AlarmCategory.GLUCOSE
-            val effectiveBgValue = if (isGlucoseAlarm) bgValue else null
+            val isGlucoseAlarmActive = alarmGroup.allAlarms.any { it.category == AlarmCategory.GLUCOSE }
+            val effectiveBgValue = if (isGlucoseAlarmActive) bgValue else null
 
-            val previousAlarm = _activeFiringAlarm.value
+            val previousGroup = _activeAlarmGroup.value
             val previousConfig = _activeFiringConfig.value
             val previousBgValue = lastEvaluatedBgValue
 
-            _activeFiringAlarm.value = primaryAlarm
+            _activeAlarmGroup.value = alarmGroup
             _activeFiringConfig.value = config
-            lastEvaluatedBgValue = if (isGlucoseAlarm) bgValue else null
+            lastEvaluatedBgValue = if (isGlucoseAlarmActive) bgValue else null
 
-            // Only re-post notification if active firing alarm, signal config, or BG reading (if glucose alarm) actually changed
-            val bgChanged = isGlucoseAlarm && (bgValue != previousBgValue)
-            if (primaryAlarm != previousAlarm || config != previousConfig || bgChanged) {
-                Log.d(TAG, "Posting notification for active alarm $primaryAlarm (isFullScreen=${config.isFullScreen})")
-                androidNotifications.showAlarmNotification(primaryAlarm, effectiveBgValue, isFullScreen = config.isFullScreen)
+            // Only re-post notification if active alarm group, signal config, or BG reading (if glucose alarm) actually changed
+            val bgChanged = isGlucoseAlarmActive && (bgValue != previousBgValue)
+            if (alarmGroup != previousGroup || config != previousConfig || bgChanged) {
+                Log.d(TAG, "Posting notification for active alarm group $alarmGroup (isFullScreen=${config.isFullScreen})")
+                androidNotifications.showAlarmNotification(alarmGroup, effectiveBgValue, isFullScreen = config.isFullScreen)
             }
         } else {
             // No unsnoozed alarms active
-            if (_activeFiringAlarm.value != null) {
+            if (_activeAlarmGroup.value != null) {
                 Log.d(TAG, "Cancelling alarm notification: all alarms cleared or snoozed")
                 androidNotifications.cancelAlarmNotification()
             }
-            _activeFiringAlarm.value = null
+            _activeAlarmGroup.value = null
             _activeFiringConfig.value = null
             lastEvaluatedBgValue = null
         }

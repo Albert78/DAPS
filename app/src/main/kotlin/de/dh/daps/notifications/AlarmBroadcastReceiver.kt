@@ -14,7 +14,7 @@ class AlarmBroadcastReceiver : BroadcastReceiver() {
         val alarmType = alarmTypeName?.let {
             try {
                 AlarmType.valueOf(it)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 null
             }
         }
@@ -27,19 +27,10 @@ class AlarmBroadcastReceiver : BroadcastReceiver() {
                     registry.alarmSnoozeManager.snoozeAlarm(alarmType, minutes)
                 } else {
                     // Snooze all active firing alarms
-                    val activeFiring = registry.alarmEvaluator.activeFiringAlarm.value
-                    if (activeFiring != null) {
-                        registry.alarmSnoozeManager.snoozeAlarm(activeFiring, minutes)
+                    val activeGroup = registry.alarmEvaluator.activeAlarmGroup.value
+                    if (activeGroup != null) {
+                        registry.alarmSnoozeManager.snoozeAlarms(activeGroup.allAlarms, minutes)
                     }
-                }
-                registry.alarmPlayerManager.stopAlarm()
-            }
-
-            ACTION_DISMISS_ALARM -> {
-                Log.d(TAG, "Dismiss action received for $alarmType")
-                if (alarmType != null) {
-                    // Default to 15 min snooze on dismiss action if issue persists
-                    registry.alarmSnoozeManager.snoozeAlarm(alarmType, 15)
                 }
                 registry.alarmPlayerManager.stopAlarm()
             }
@@ -49,7 +40,6 @@ class AlarmBroadcastReceiver : BroadcastReceiver() {
     companion object {
         private const val TAG = "AlarmBroadcastReceiver"
         const val ACTION_SNOOZE_ALARM = "de.dh.daps.ACTION_SNOOZE_ALARM"
-        const val ACTION_DISMISS_ALARM = "de.dh.daps.ACTION_DISMISS_ALARM"
         const val EXTRA_ALARM_TYPE = "extra_alarm_type"
         const val EXTRA_SNOOZE_MINUTES = "extra_snooze_minutes"
 
@@ -60,15 +50,6 @@ class AlarmBroadcastReceiver : BroadcastReceiver() {
                     putExtra(EXTRA_ALARM_TYPE, alarmType.name)
                 }
                 putExtra(EXTRA_SNOOZE_MINUTES, minutes)
-            }
-        }
-
-        fun createDismissIntent(context: Context, alarmType: AlarmType?): Intent {
-            return Intent(context, AlarmBroadcastReceiver::class.java).apply {
-                action = ACTION_DISMISS_ALARM
-                if (alarmType != null) {
-                    putExtra(EXTRA_ALARM_TYPE, alarmType.name)
-                }
             }
         }
     }

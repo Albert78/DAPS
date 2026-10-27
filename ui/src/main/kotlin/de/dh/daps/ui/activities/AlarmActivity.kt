@@ -20,23 +20,23 @@ class AlarmActivity : ComponentActivity() {
         val registry = (application as RegistryProvider).registry
 
         setContent {
-            val activeFiringAlarm by registry.alarmEvaluator.activeFiringAlarm.collectAsState()
+            val activeAlarmGroup by registry.alarmEvaluator.activeAlarmGroup.collectAsState()
             val currentBgReading by registry.glucoseRepository.currentBg.collectAsState()
             val glucoseUnit by registry.appPreferencesRepository.glucoseUnit.collectAsState()
 
-            val alarmType = activeFiringAlarm
-            if (alarmType == null) {
+            val group = activeAlarmGroup
+            if (group == null) {
                 finish()
                 return@setContent
             }
 
             AppTheme(darkTheme = true) {
                 FullScreenAlarmScreen(
-                    alarmType = alarmType,
+                    alarmGroup = group,
                     bgValue = currentBgReading?.value,
                     glucoseUnit = glucoseUnit,
-                    onSnooze = { minutes ->
-                        registry.alarmSnoozeManager.snoozeAlarm(alarmType, minutes)
+                    onSnoozeAll = { minutes ->
+                        registry.alarmSnoozeManager.snoozeAlarms(group.allAlarms, minutes)
                         finish()
                     }
                 )
@@ -47,10 +47,11 @@ class AlarmActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         val registry = (application as RegistryProvider).registry
-        val activeAlarm = registry.alarmEvaluator.activeFiringAlarm.value
+        val activeGroup = registry.alarmEvaluator.activeAlarmGroup.value
         val activeConfig = registry.alarmEvaluator.activeFiringConfig.value
-        if (activeAlarm != null && activeConfig != null) {
-            registry.alarmPlayerManager.playAlarm(activeConfig, isSafetyCritical = activeAlarm.isSafetyCritical)
+        if (activeGroup != null && activeConfig != null) {
+            val primaryAlarm = activeGroup.primaryAlarm
+            registry.alarmPlayerManager.playAlarm(activeConfig, isSafetyCritical = primaryAlarm.isSafetyCritical)
         }
     }
 

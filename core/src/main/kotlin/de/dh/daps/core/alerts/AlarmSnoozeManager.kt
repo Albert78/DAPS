@@ -21,16 +21,28 @@ class AlarmSnoozeManager {
      * For safety-critical alarms, the duration is capped to [MAX_SAFETY_CRITICAL_SNOOZE_MINUTES].
      */
     fun snoozeAlarm(alarmType: AlarmType, minutes: Int) {
-        val actualMinutes = if (alarmType.isSafetyCritical) {
-            minutes.coerceAtMost(MAX_SAFETY_CRITICAL_SNOOZE_MINUTES)
-        } else {
-            minutes
-        }
-        val snoozedUntil = Timestamp.now() + Minutes(actualMinutes.toShort())
+        snoozeAlarms(listOf(alarmType), minutes)
+    }
+
+    /**
+     * Snoozes multiple alarms at once for [minutes].
+     */
+    fun snoozeAlarms(alarmTypes: Collection<AlarmType>, minutes: Int) {
+        if (alarmTypes.isEmpty()) return
+        val now = Timestamp.now()
         _snoozedAlarms.update { current ->
-            var updatedMap = current + (alarmType to AlarmSnoozeState(alarmType, snoozedUntil, actualMinutes))
-            for (subsumed in alarmType.subsumedAlarms) {
-                updatedMap += (subsumed to AlarmSnoozeState(subsumed, snoozedUntil, actualMinutes))
+            var updatedMap = current
+            for (type in alarmTypes) {
+                val actualMinutes = if (type.isSafetyCritical) {
+                    minutes.coerceAtMost(MAX_SAFETY_CRITICAL_SNOOZE_MINUTES)
+                } else {
+                    minutes
+                }
+                val snoozedUntil = now + Minutes(actualMinutes.toShort())
+                updatedMap = updatedMap + (type to AlarmSnoozeState(type, snoozedUntil, actualMinutes))
+                for (subsumed in type.subsumedAlarms) {
+                    updatedMap = updatedMap + (subsumed to AlarmSnoozeState(subsumed, snoozedUntil, actualMinutes))
+                }
             }
             updatedMap
         }

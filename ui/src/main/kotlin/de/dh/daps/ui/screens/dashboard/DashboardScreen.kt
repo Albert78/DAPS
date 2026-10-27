@@ -1,5 +1,6 @@
 package de.dh.daps.ui.screens.dashboard
 
+import android.content.Intent
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -36,13 +38,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.domain.model.alarm.ActiveAlarmGroup
 import de.dh.daps.common.domain.model.alarm.AlarmSeverity
 import de.dh.daps.common.domain.model.alarm.AlarmType
+import de.dh.daps.ui.activities.AlarmActivity
 import de.dh.daps.common.domain.model.data.BgDelta
 import de.dh.daps.common.domain.model.data.BgReading
 import de.dh.daps.common.domain.model.data.BgSampleKind
@@ -136,7 +141,7 @@ fun DashboardScreen(
         onHistoryChartClick = onHistoryChartClick,
         onApsModeSelect = { viewModel.setApsMode(it) },
         onAdjustmentClick = onAdjustmentClick,
-        onSnoozeAlarm = { type, min -> viewModel.snoozeAlarm(type, min) },
+        onSnoozeAllAlarms = { min -> viewModel.snoozeAllAlarms(min) },
         onCancelSnooze = { type -> viewModel.cancelSnooze(type) },
         onNavigateToGlucoseSourceSetup = onNavigateToGlucoseSourceSetup,
         onNavigateToPumpSetup = onNavigateToPumpSetup,
@@ -163,7 +168,7 @@ fun DashboardContent(
     onHistoryChartClick: (() -> Unit)?,
     onApsModeSelect: (ApsMode) -> Unit,
     onAdjustmentClick: () -> Unit,
-    onSnoozeAlarm: (AlarmType, Int) -> Unit = { _, _ -> },
+    onSnoozeAllAlarms: (Int) -> Unit = {},
     onCancelSnooze: (AlarmType) -> Unit = {},
     onNavigateToGlucoseSourceSetup: () -> Unit = {},
     onNavigateToPumpSetup: () -> Unit = {},
@@ -220,10 +225,17 @@ fun DashboardContent(
             }
 
             // Active firing alarm banner
-            dashboardUiState.activeFiringAlarm?.let { firingAlarm ->
-                ActiveFiringAlarmBanner(
-                    alarmType = firingAlarm,
-                    onSnooze = { minutes -> onSnoozeAlarm(firingAlarm, minutes) }
+            dashboardUiState.activeAlarmGroup?.let { activeGroup ->
+                val context = LocalContext.current
+                ActiveAlarmGroupBanner(
+                    alarmGroup = activeGroup,
+                    onSnoozeAll = onSnoozeAllAlarms,
+                    onBannerClick = {
+                        val intent = Intent(context, AlarmActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        }
+                        context.startActivity(intent)
+                    }
                 )
             }
 
@@ -362,19 +374,37 @@ fun DashboardContent(
 }
 
 @Composable
-fun ActiveFiringAlarmBanner(
-    alarmType: AlarmType,
-    onSnooze: (Int) -> Unit
+fun getAlarmGroupHeroTitles(heroAlarms: List<AlarmType>): String {
+    val titles = mutableListOf<String>()
+    for (alarm in heroAlarms) {
+        titles.add(getAlarmTypeTitle(alarm))
+    }
+    return titles.joinToString(", ")
+}
+
+@Composable
+fun ActiveAlarmGroupBanner(
+    alarmGroup: ActiveAlarmGroup,
+    onSnoozeAll: (Int) -> Unit,
+    onBannerClick: () -> Unit
 ) {
-    val isCritical = alarmType.defaultSeverity == AlarmSeverity.CRITICAL
+    val isCritical = alarmGroup.highestSeverity == AlarmSeverity.CRITICAL
     val containerColor = if (isCritical) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.tertiaryContainer
     val contentColor = if (isCritical) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onTertiaryContainer
+
+    val heroTitles = getAlarmGroupHeroTitles(alarmGroup.heroAlarms)
+    val titleText = if (alarmGroup.otherAlarms.isNotEmpty()) {
+        "$heroTitles (+${alarmGroup.otherAlarms.size} weitere Alarme)"
+    } else {
+        heroTitles
+    }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 12.dp),
-        colors = CardDefaults.cardColors(containerColor = containerColor)
+        colors = CardDefaults.cardColors(containerColor = containerColor),
+        onClick = onBannerClick
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -390,7 +420,7 @@ fun ActiveFiringAlarmBanner(
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    text = getAlarmTypeTitle(alarmType),
+                    text = titleText,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = contentColor
@@ -401,11 +431,17 @@ fun ActiveFiringAlarmBanner(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                OutlinedButton(onClick = { onSnooze(15) }) {
+                OutlinedButton(
+                    onClick = { onSnoozeAll(15) },
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = contentColor)
+                ) {
                     Text(stringResource(R.string.alarm_action_snooze_15))
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                OutlinedButton(onClick = { onSnooze(30) }) {
+                OutlinedButton(
+                    onClick = { onSnoozeAll(30) },
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = contentColor)
+                ) {
                     Text(stringResource(R.string.alarm_action_snooze_30))
                 }
             }

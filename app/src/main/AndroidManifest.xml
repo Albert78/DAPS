@@ -113,7 +113,6 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="de.dh.daps.ACTION_SNOOZE_ALARM" />
-                <action android:name="de.dh.daps.ACTION_DISMISS_ALARM" />
             </intent-filter>
         </receiver>
 

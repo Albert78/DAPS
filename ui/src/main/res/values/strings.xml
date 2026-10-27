@@ -726,6 +726,8 @@
     <string name="alarm_type_system_therapy_settings_missing_desc">Die Therapieeinstellungen wurden noch nicht vorgenommen oder fehlen in der Datenbank.</string>
     <string name="alarm_snoozed_until_format">%1$s stummgeschaltet bis %2$s</string>
     <string name="full_screen_alarm_title">DAPS</string>
+    <string name="full_screen_other_alarms_title">Weitere aktive Alarme</string>
+    <string name="alarm_action_snooze_all">Alle Alarme stummschalten</string>
 
     <!-- Manual Control Screen -->
     <string name="manual_control_screen_title">Manuelle Steuerung</string>
