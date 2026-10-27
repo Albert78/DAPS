@@ -8,7 +8,6 @@ import de.dh.daps.common.domain.model.alarm.AlarmType
 import de.dh.daps.core.infrastructure.RegistryProvider
 
 class AlarmBroadcastReceiver : BroadcastReceiver() {
-
     override fun onReceive(context: Context, intent: Intent) {
         val registry = (context.applicationContext as? RegistryProvider)?.registry ?: return
         val alarmTypeName = intent.getStringExtra(EXTRA_ALARM_TYPE)

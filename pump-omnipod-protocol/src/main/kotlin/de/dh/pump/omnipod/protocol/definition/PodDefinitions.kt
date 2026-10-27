@@ -1,13 +1,12 @@
 package de.dh.pump.omnipod.protocol.definition
 
 import kotlinx.serialization.Serializable
-import java.io.Serializable as JavaSerializable
 import java.nio.ByteBuffer
 import java.time.Duration
 import java.util.Calendar
-import java.util.Collections
 import kotlin.experimental.and
 import kotlin.experimental.or
+import java.io.Serializable as JavaSerializable
 
 interface HasValue {
     val value: Byte
@@ -190,7 +189,6 @@ class AlertConfiguration(
     val beepType: BeepType,
     val beepRepetition: BeepRepetitionType
 ) : Encodable {
-
     override val encoded: ByteArray
         get() {
             var firstByte = (type.index.toInt() shl 4).toByte()

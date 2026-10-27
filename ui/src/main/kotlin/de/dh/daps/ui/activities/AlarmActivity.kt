@@ -12,7 +12,6 @@ import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.screens.alerts.FullScreenAlarmScreen
 
 class AlarmActivity : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
