@@ -2,6 +2,7 @@ package de.dh.daps.core.alerts
 
 import android.content.Intent
 import android.util.Log
+import de.dh.daps.common.domain.model.alarm.AlarmCategory
 import de.dh.daps.common.domain.model.alarm.AlarmProfile
 import de.dh.daps.common.domain.model.alarm.AlarmSeverity
 import de.dh.daps.common.domain.model.alarm.AlarmSignalConfig
@@ -226,18 +227,22 @@ class AlarmEvaluator(
             val config = activeProfile?.getConfigFor(primaryAlarm) ?: AlarmSignalConfig()
 
             val bgValue = input.bgReading?.value
+            val isGlucoseAlarm = primaryAlarm.category == AlarmCategory.GLUCOSE
+            val effectiveBgValue = if (isGlucoseAlarm) bgValue else null
+
             val previousAlarm = _activeFiringAlarm.value
             val previousConfig = _activeFiringConfig.value
             val previousBgValue = lastEvaluatedBgValue
 
             _activeFiringAlarm.value = primaryAlarm
             _activeFiringConfig.value = config
-            lastEvaluatedBgValue = bgValue
+            lastEvaluatedBgValue = if (isGlucoseAlarm) bgValue else null
 
-            // Only re-post notification if active firing alarm, signal config, or BG reading actually changed
-            if (primaryAlarm != previousAlarm || config != previousConfig || bgValue != previousBgValue) {
+            // Only re-post notification if active firing alarm, signal config, or BG reading (if glucose alarm) actually changed
+            val bgChanged = isGlucoseAlarm && (bgValue != previousBgValue)
+            if (primaryAlarm != previousAlarm || config != previousConfig || bgChanged) {
                 Log.d(TAG, "Posting notification for active alarm $primaryAlarm (isFullScreen=${config.isFullScreen})")
-                androidNotifications.showAlarmNotification(primaryAlarm, bgValue, isFullScreen = config.isFullScreen)
+                androidNotifications.showAlarmNotification(primaryAlarm, effectiveBgValue, isFullScreen = config.isFullScreen)
             }
         } else {
             // No unsnoozed alarms active
