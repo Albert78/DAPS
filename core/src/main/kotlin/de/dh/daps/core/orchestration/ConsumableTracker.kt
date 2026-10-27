@@ -1,6 +1,5 @@
 package de.dh.daps.core.orchestration
 
-import android.content.Context
 import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.pump.InsulinPumpStatus
 import de.dh.daps.common.domain.pump.PatchPhase
@@ -10,7 +9,6 @@ import de.dh.daps.common.infrastructure.REMINDER_SOURCE_PATCH_CHANGE
 import de.dh.daps.common.infrastructure.ReminderManager
 import de.dh.daps.common.infrastructure.SystemWakeService
 import de.dh.daps.common.infrastructure.clearConsumableReminder
-import de.dh.daps.common.infrastructure.syncConsumableReminder
 import de.dh.daps.core.pump.PumpIssue
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,15 +17,12 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
-import de.dh.daps.common.R as CommonR
 
 /**
  * Tracks consumable lifecycles (catheters, patch pumps), evaluates warnings,
  * syncs advance reminders, and manages wakeups.
  */
-class ConsumableTracker(
-    private val context: Context
-) {
+class ConsumableTracker {
     private val _consumableIssues = MutableStateFlow<Set<ApsIssue>>(emptySet())
     val consumableIssues: StateFlow<Set<ApsIssue>> = _consumableIssues.asStateFlow()
 
@@ -125,9 +120,7 @@ class ConsumableTracker(
 
                     manager.syncConsumableReminder(
                         sourceId = REMINDER_SOURCE_CATHETER_CHANGE,
-                        reminderTimestamp = Timestamp(triggerMs),
-                        title = context.getString(CommonR.string.notification_catheter_change_title),
-                        description = context.getString(CommonR.string.notification_catheter_change_description)
+                        reminderTimestamp = Timestamp(triggerMs)
                     )
                 } else {
                     manager.clearConsumableReminder(REMINDER_SOURCE_CATHETER_CHANGE)
@@ -144,9 +137,7 @@ class ConsumableTracker(
 
                     manager.syncConsumableReminder(
                         sourceId = REMINDER_SOURCE_PATCH_CHANGE,
-                        reminderTimestamp = Timestamp(triggerMs),
-                        title = context.getString(CommonR.string.notification_patch_change_title),
-                        description = context.getString(CommonR.string.notification_patch_change_description)
+                        reminderTimestamp = Timestamp(triggerMs)
                     )
                 } else {
                     manager.clearConsumableReminder(REMINDER_SOURCE_PATCH_CHANGE)

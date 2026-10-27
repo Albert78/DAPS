@@ -1,14 +1,21 @@
 package de.dh.daps.core.infrastructure
 
+import android.content.Context
 import android.content.Intent
+import de.dh.daps.common.ID_UNDEFINED
+import de.dh.daps.common.R as CommonR
+import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.reminder.Reminder
 import de.dh.daps.common.domain.model.reminder.ReminderStatus
 import de.dh.daps.common.domain.model.reminder.ReminderType
+import de.dh.daps.common.infrastructure.REMINDER_SOURCE_CATHETER_CHANGE
+import de.dh.daps.common.infrastructure.REMINDER_SOURCE_PATCH_CHANGE
 import de.dh.daps.common.infrastructure.ReminderManager
 import de.dh.daps.common.infrastructure.SystemWakeService
 import de.dh.daps.common.infrastructure.TimeService
 import de.dh.daps.common.infrastructure.WakeupHandler
+import de.dh.daps.common.navigation.AppDeepLinks
 import de.dh.daps.core.repository.db.dao.ReminderDao
 import de.dh.daps.core.repository.db.mappers.toEntity
 import de.dh.daps.core.repository.db.mappers.toModel
@@ -30,6 +37,7 @@ import kotlinx.coroutines.sync.withLock
  * and dispatching due reminders.
  */
 class ReminderManagerImpl(
+    private val context: Context,
     private val reminderDao: ReminderDao,
     private val wakeService: SystemWakeService,
     private val timeService: TimeService,
@@ -168,6 +176,61 @@ class ReminderManagerImpl(
     override suspend fun purgeAllPastReminders() {
         reminderDao.deleteAllPastReminders()
         checkAndProcessReminders()
+    }
+
+    override suspend fun createMealReminder(
+        mealTimestamp: Timestamp,
+        reminderTimestamp: Timestamp,
+        mealId: Long?,
+        title: String,
+        description: String
+    ): Reminder {
+        val sourceId = mealId?.toString() ?: ""
+        val route = if (mealId != null && mealId != ID_UNDEFINED) AppDeepLinks.meal(mealId) else ""
+        val resolvedTitle = title.ifBlank { context.getString(CommonR.string.notification_meal_reminder_title) }
+        val resolvedDescription = description.ifBlank { context.getString(CommonR.string.notification_meal_reminder_text_default) }
+        val reminder = Reminder(
+            type = ReminderType.MEAL,
+            sourceId = sourceId,
+            title = resolvedTitle,
+            description = resolvedDescription,
+            reminderTimestamp = reminderTimestamp,
+            expirationTimestamp = reminderTimestamp + Minutes(120),
+            targetRoute = route
+        )
+        return scheduleReminder(reminder)
+    }
+
+    override suspend fun syncConsumableReminder(
+        sourceId: String,
+        reminderTimestamp: Timestamp,
+        title: String,
+        description: String
+    ): Reminder? {
+        cancelRemindersForSource(sourceId)
+        if (reminderTimestamp.ms > System.currentTimeMillis()) {
+            val defaultTitle = when (sourceId) {
+                REMINDER_SOURCE_CATHETER_CHANGE -> context.getString(CommonR.string.notification_catheter_change_title)
+                REMINDER_SOURCE_PATCH_CHANGE -> context.getString(CommonR.string.notification_patch_change_title)
+                else -> ""
+            }
+            val defaultDescription = when (sourceId) {
+                REMINDER_SOURCE_CATHETER_CHANGE -> context.getString(CommonR.string.notification_catheter_change_description)
+                REMINDER_SOURCE_PATCH_CHANGE -> context.getString(CommonR.string.notification_patch_change_description)
+                else -> ""
+            }
+            val reminder = Reminder(
+                type = ReminderType.PUMP,
+                sourceId = sourceId,
+                title = title.ifBlank { defaultTitle },
+                description = description.ifBlank { defaultDescription },
+                reminderTimestamp = reminderTimestamp,
+                expirationTimestamp = reminderTimestamp + Minutes(180),
+                targetRoute = AppDeepLinks.SYSTEM_CONTROL_PUMP
+            )
+            return scheduleReminder(reminder)
+        }
+        return null
     }
 
     companion object {

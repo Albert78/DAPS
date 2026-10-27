@@ -1,11 +1,8 @@
 package de.dh.daps.common.infrastructure
 
-import de.dh.daps.common.ID_UNDEFINED
-import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.reminder.Reminder
 import de.dh.daps.common.domain.model.reminder.ReminderType
-import de.dh.daps.common.navigation.AppDeepLinks
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -93,30 +90,27 @@ interface ReminderManager {
      * Stops monitoring and cancels scheduled wake-ups.
      */
     fun stop()
-}
 
-/**
- * Convenience extension for creating a meal reminder.
- */
-suspend fun ReminderManager.createMealReminder(
-    mealTimestamp: Timestamp,
-    reminderTimestamp: Timestamp = mealTimestamp,
-    mealId: Long? = null,
-    title: String = "",
-    description: String = ""
-): Reminder {
-    val sourceId = mealId?.toString() ?: ""
-    val route = if (mealId != null && mealId != ID_UNDEFINED) AppDeepLinks.meal(mealId) else ""
-    val reminder = Reminder(
-        type = ReminderType.MEAL,
-        sourceId = sourceId,
-        title = title,
-        description = description,
-        reminderTimestamp = reminderTimestamp,
-        expirationTimestamp = reminderTimestamp + Minutes(120),
-        targetRoute = route
-    )
-    return scheduleReminder(reminder)
+    /**
+     * Creates and schedules a meal reminder.
+     */
+    suspend fun createMealReminder(
+        mealTimestamp: Timestamp,
+        reminderTimestamp: Timestamp = mealTimestamp,
+        mealId: Long? = null,
+        title: String = "",
+        description: String = ""
+    ): Reminder
+
+    /**
+     * Syncs a consumable reminder (catheter / patch change).
+     */
+    suspend fun syncConsumableReminder(
+        sourceId: String,
+        reminderTimestamp: Timestamp,
+        title: String = "",
+        description: String = ""
+    ): Reminder?
 }
 
 /**
@@ -128,31 +122,6 @@ suspend fun ReminderManager.deleteMealReminders(mealId: Long) {
 
 const val REMINDER_SOURCE_CATHETER_CHANGE = "catheter_change"
 const val REMINDER_SOURCE_PATCH_CHANGE = "patch_change"
-
-/**
- * Convenience extension for syncing a consumable reminder (catheter / patch change).
- */
-suspend fun ReminderManager.syncConsumableReminder(
-    sourceId: String,
-    reminderTimestamp: Timestamp,
-    title: String,
-    description: String
-): Reminder? {
-    cancelRemindersForSource(sourceId)
-    if (reminderTimestamp.ms > System.currentTimeMillis()) {
-        val reminder = Reminder(
-            type = ReminderType.PUMP,
-            sourceId = sourceId,
-            title = title,
-            description = description,
-            reminderTimestamp = reminderTimestamp,
-            expirationTimestamp = reminderTimestamp + Minutes(180),
-            targetRoute = AppDeepLinks.SYSTEM_CONTROL_PUMP
-        )
-        return scheduleReminder(reminder)
-    }
-    return null
-}
 
 /**
  * Convenience extension for clearing a consumable reminder (catheter / patch change).

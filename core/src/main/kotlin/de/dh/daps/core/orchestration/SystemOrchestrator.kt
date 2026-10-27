@@ -1,7 +1,6 @@
 package de.dh.daps.core.orchestration
 
 import android.app.Notification
-import android.content.Context
 import android.content.Intent
 import de.dh.daps.common.domain.calculation.CarbsInsulinCalculator
 import de.dh.daps.common.domain.model.data.BgValue
@@ -171,7 +170,6 @@ interface SystemOrchestrator {
 @OptIn(ExperimentalCoroutinesApi::class)
 class SystemOrchestratorImpl(
     // Infrastructure & System Services
-    private val context: Context,
     private val scope: CoroutineScope,
     private val timeService: TimeService,
     private val wakeService: SystemWakeService,
@@ -201,7 +199,7 @@ class SystemOrchestratorImpl(
         scope = scope
     ),
     private val issueAggregator: ApsIssueAggregator = ApsIssueAggregator(),
-    private val consumableTracker: ConsumableTracker = ConsumableTracker(context),
+    private val consumableTracker: ConsumableTracker = ConsumableTracker(),
     private val notificationController: SystemNotificationController = SystemNotificationController(
         androidNotifications = androidNotifications
     )

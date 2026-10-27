@@ -21,8 +21,6 @@ import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.common.domain.model.therapy.MealEntry
 import de.dh.daps.common.domain.model.therapy.MealType
 import de.dh.daps.common.domain.model.therapy.getDefaultStandardMealType
-import de.dh.daps.common.infrastructure.createMealReminder
-import de.dh.daps.common.R as CommonR
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.aps.BolusCalculationMath
 import de.dh.daps.core.aps.BolusProjections
@@ -514,12 +512,9 @@ class MealCorrectionBolusViewModel(
 
                     // Schedule reminder
                     if (state.isMealReminderEnabled) {
-                        val appContext = registry.appContext
                         reminderManager.createMealReminder(
                             mealTimestamp = state.input.mealTimestamp,
-                            mealId = mealEntry.id,
-                            title = appContext.getString(CommonR.string.notification_meal_reminder_title),
-                            description = appContext.getString(CommonR.string.notification_meal_reminder_text_default)
+                            mealId = mealEntry.id
                         )
                     }
                 }

@@ -303,6 +303,7 @@ class SystemRegistryImpl(
             )
 
             val reminderManager = ReminderManagerImpl(
+                context = application,
                 reminderDao = appDatabase.reminderDao(),
                 wakeService = wakeService,
                 timeService = timeService,
@@ -322,7 +323,6 @@ class SystemRegistryImpl(
 
             val systemOrchestrator = SystemOrchestratorImpl(
                 // Infrastructure & System Services
-                context = application,
                 scope = scope,
                 timeService = timeService,
                 wakeService = wakeService,
