@@ -18,6 +18,7 @@ import de.dh.daps.common.domain.model.therapy.MealEntry
 import de.dh.daps.common.domain.model.therapy.MealType
 import de.dh.daps.common.infrastructure.createMealReminder
 import de.dh.daps.common.infrastructure.deleteMealReminders
+import de.dh.daps.common.R as CommonR
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.therapy.TreatmentLock
 import de.dh.daps.ui.controls.meal.PlannedBolusUiModel
@@ -54,6 +55,7 @@ class EditHistoricalMealViewModel(
     private val treatmentRepository = registry.treatmentRepository
     val therapyManager = registry.therapyManager
     private val reminderManager = registry.reminderManager
+    private val appContext = registry.appContext
     private val isAddMode = mealId == ID_UNDEFINED
     private var originalDeferredBoluses: List<DeferredBolus> = emptyList()
 
@@ -280,7 +282,9 @@ class EditHistoricalMealViewModel(
             if (state.isMealReminderEnabled) {
                 reminderManager.createMealReminder(
                     mealTimestamp = state.editedTimestamp,
-                    mealId = savedMealId
+                    mealId = savedMealId,
+                    title = appContext.getString(CommonR.string.notification_meal_reminder_title),
+                    description = appContext.getString(CommonR.string.notification_meal_reminder_text_default)
                 )
             }
 

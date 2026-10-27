@@ -215,7 +215,7 @@ fun RemindersContent(
     }
 
     reminderToDelete?.let { reminder ->
-        val titleText = reminder.title.ifBlank { stringResource(CommonR.string.notification_meal_reminder_title) }
+        val titleText = reminder.title.ifBlank { stringResource(CommonR.string.notification_reminder_title) }
         AlertDialog(
             onDismissRequest = { reminderToDelete = null },
             title = {
@@ -261,7 +261,7 @@ fun ReminderCard(
         ReminderType.CUSTOM -> Icon_Reminders
     }
 
-    val titleText = reminder.title.ifBlank { stringResource(CommonR.string.notification_meal_reminder_title) }
+    val titleText = reminder.title.ifBlank { stringResource(CommonR.string.notification_reminder_title) }
     val formattedTime = shortDateTime(reminder.reminderTimestamp)
     val relativeTime = shortRelativeTimeUntil(reminder.reminderTimestamp)
 

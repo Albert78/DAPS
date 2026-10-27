@@ -1,5 +1,6 @@
 package de.dh.daps.common.infrastructure
 
+import de.dh.daps.common.ID_UNDEFINED
 import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.reminder.Reminder
@@ -105,7 +106,7 @@ suspend fun ReminderManager.createMealReminder(
     description: String = ""
 ): Reminder {
     val sourceId = mealId?.toString() ?: ""
-    val route = if (mealId != null && mealId != de.dh.daps.common.ID_UNDEFINED) AppDeepLinks.meal(mealId) else ""
+    val route = if (mealId != null && mealId != ID_UNDEFINED) AppDeepLinks.meal(mealId) else ""
     val reminder = Reminder(
         type = ReminderType.MEAL,
         sourceId = sourceId,

@@ -243,8 +243,8 @@ class AndroidNotificationsImpl(
     }
 
     override fun showReminderNotification(reminder: Reminder) {
-        val title = reminder.title.ifBlank { context.getString(CommonR.string.notification_meal_reminder_title) }
-        val text = reminder.description.ifBlank { context.getString(CommonR.string.notification_meal_reminder_text_default) }
+        val title = reminder.title.ifBlank { context.getString(CommonR.string.notification_reminder_title) }
+        val text = reminder.description
 
         val pendingIntent = if (reminder.targetRoute.isNotBlank()) {
             val routeIntent = Intent(Intent.ACTION_VIEW, reminder.targetRoute.toUri()).apply {
@@ -277,7 +277,7 @@ class AndroidNotificationsImpl(
             .setCategory(NotificationCompat.CATEGORY_EVENT)
             .build()
 
-        val notificationId = MEAL_REMINDER_NOTIFICATION_ID + (reminder.id % 10000).toInt()
+        val notificationId = REMINDER_NOTIFICATION_ID + (reminder.id % 10000).toInt()
         notify(notificationId, notification)
     }
 
@@ -438,7 +438,7 @@ class AndroidNotificationsImpl(
         const val RECOMMENDATION_BOLUS_NOTIFICATION_ID = 3
         const val RECOMMENDATION_TEMP_BASAL_NOTIFICATION_ID = 4
         const val ALGORITHM_ISSUE_NOTIFICATION_ID = 5
-        const val MEAL_REMINDER_NOTIFICATION_ID = 6
+        const val REMINDER_NOTIFICATION_ID = 6
         const val SERVICE_CHANNEL_ID = "aps_service_channel"
         const val RECOMMENDATION_CHANNEL_ID = "aps_recommendation_channel"
         const val ALGORITHM_ISSUE_CHANNEL_ID = "aps_algorithm_issue_channel"
