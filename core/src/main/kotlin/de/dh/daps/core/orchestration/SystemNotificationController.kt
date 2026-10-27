@@ -63,16 +63,14 @@ class SystemNotificationController(
 
         scope.launch {
             recommendationManager.recommendations.collect { recommendations ->
-                val carbRec = recommendations.filterIsInstance<ApsRecommendation.Carbs>().firstOrNull()
+                val carbRec = recommendations.carbs
                 if (carbRec != null) {
                     androidNotifications.showRecommendationNotification(carbRec)
                 } else {
                     androidNotifications.cancelRecommendationNotification()
                 }
 
-                val dueDeferredBoluses = recommendations
-                    .filterIsInstance<ApsRecommendation.Bolus>()
-                    .flatMap { it.includedDeferredBoluses.orEmpty() }
+                val dueDeferredBoluses = recommendations.bolus?.includedDeferredBoluses.orEmpty()
 
                 if (dueDeferredBoluses.isNotEmpty()) {
                     androidNotifications.showDeferredBolusRecommendationNotification(dueDeferredBoluses)

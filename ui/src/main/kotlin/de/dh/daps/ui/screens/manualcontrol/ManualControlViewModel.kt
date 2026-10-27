@@ -158,7 +158,7 @@ class ManualControlViewModel(
             }
         } else false
 
-        val filteredRecommendations = recommendations.filter { rec ->
+        val filteredRecommendations = recommendations.all.filter { rec ->
             when (rec) {
                 is ApsRecommendation.TempBasal -> rec.shouldDisplayForManualControl(pump.basalStatus)
                 else -> true

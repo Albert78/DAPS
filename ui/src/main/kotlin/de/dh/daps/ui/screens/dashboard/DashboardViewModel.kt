@@ -12,6 +12,7 @@ import de.dh.daps.common.domain.model.engine.ApsMode
 import de.dh.daps.common.domain.pump.InsulinPump
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.alerts.AlarmSnoozeState
+import de.dh.daps.core.orchestration.ActiveRecommendations
 import de.dh.daps.core.orchestration.ApsRecommendation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -61,8 +62,7 @@ class DashboardViewModel(
         val mode = flows[1] as ApsMode
         @Suppress("UNCHECKED_CAST")
         val availableModes = flows[2] as List<ApsMode>
-        @Suppress("UNCHECKED_CAST")
-        val recommendations = flows[3] as List<ApsRecommendation>
+        val recommendations = flows[3] as ActiveRecommendations
         val activeAlarmGroup = flows[4] as ActiveAlarmGroup?
         val config = flows[5] as AlarmSignalConfig?
         @Suppress("UNCHECKED_CAST")
@@ -73,7 +73,7 @@ class DashboardViewModel(
         state.copy(
             apsMode = mode,
             availableApsModes = availableModes,
-            recommendations = recommendations,
+            recommendations = recommendations.all,
             isMealCorrectionBolusAllowed = systemOrchestrator.canOpenMealCorrectionBolus(),
             activeAlarmGroup = activeAlarmGroup,
             activeFiringConfig = config,
