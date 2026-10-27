@@ -13,5 +13,5 @@ data class BgReading(
     var id: Long = ID_UNDEFINED,
     val value: BgValue,
     val sampleKind: BgSampleKind,
-    override val timestamp: Timestamp
-): HistoricalValue
+    val timestamp: Timestamp
+)

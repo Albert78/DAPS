@@ -9,5 +9,5 @@ package de.dh.daps.common.domain.model.data
  */
 data class RawBg(
     val value: BgValue,
-    override val timestamp: Timestamp
-): HistoricalValue
+    val timestamp: Timestamp
+)
