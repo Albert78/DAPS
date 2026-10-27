@@ -19,10 +19,10 @@ import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.data.CarbsUnit
 import de.dh.daps.common.domain.model.data.GlucoseUnit
 import de.dh.daps.common.domain.model.reminder.Reminder
-import de.dh.daps.common.domain.model.therapy.DeferredBolus
 import de.dh.daps.common.navigation.ManualControlInitialDialog
 import de.dh.daps.core.infrastructure.AndroidNotifications
 import de.dh.daps.core.infrastructure.RegistryProvider
+import de.dh.daps.core.orchestration.ActiveRecommendations
 import de.dh.daps.core.orchestration.ApsRecommendation
 import de.dh.daps.core.repository.GlucoseRepository
 import de.dh.daps.ui.activities.AlarmActivity
@@ -134,47 +134,42 @@ class AndroidNotificationsImpl(
         notify(AndroidNotifications.FOREGROUND_NOTIFICATION_ID, notification)
     }
 
-    override fun showRecommendationNotification(recommendation: ApsRecommendation) {
-        val title = when (recommendation) {
-            is ApsRecommendation.Carbs -> context.getString(UiR.string.recommendation_title_carbs)
-            is ApsRecommendation.Bolus -> context.getString(UiR.string.recommendation_title_bolus)
-            is ApsRecommendation.TempBasal -> context.getString(UiR.string.recommendation_title_temp_basal)
-        }
-        val text = when (recommendation) {
-            is ApsRecommendation.Carbs -> context.getString(
-                UiR.string.recommendation_text_carbs,
-                formatCarbsValue(recommendation.amountInGram.toDouble(), getCarbsUnit(), context)
-            )
-            is ApsRecommendation.Bolus -> context.getString(
-                UiR.string.recommendation_text_bolus,
-                recommendation.amount.iu
-            )
-            is ApsRecommendation.TempBasal -> context.getString(
-                UiR.string.recommendation_text_temp_basal,
-                recommendation.percent,
-                recommendation.durationInHours
-            )
+    override fun updateRecommendationNotifications(recommendations: ActiveRecommendations) {
+        val carbs = recommendations.carbs
+        if (carbs != null) {
+            showCarbsRecommendationNotification(carbs)
+        } else {
+            manager.cancel(RECOMMENDATION_CARBS_NOTIFICATION_ID)
         }
 
-        val intent = when (recommendation) {
-            is ApsRecommendation.Carbs -> {
-                MainActivity.createMealCorrectionBolusIntent(context, recommendation.amountInGram.toDouble())
-            }
-            is ApsRecommendation.Bolus -> {
-                MainActivity.createManualControlIntent(context, ManualControlInitialDialog.BOLUS)
-            }
-            is ApsRecommendation.TempBasal -> {
-                MainActivity.createManualControlIntent(context, ManualControlInitialDialog.TEMP_BASAL)
-            }
+        val bolus = recommendations.bolus
+        if (bolus != null) {
+            showBolusRecommendationNotification(bolus)
+        } else {
+            manager.cancel(RECOMMENDATION_BOLUS_NOTIFICATION_ID)
         }
 
+        val tempBasal = recommendations.tempBasal
+        if (tempBasal != null) {
+            showTempBasalRecommendationNotification(tempBasal)
+        } else {
+            manager.cancel(RECOMMENDATION_TEMP_BASAL_NOTIFICATION_ID)
+        }
+    }
+
+    private fun showCarbsRecommendationNotification(carbs: ApsRecommendation.Carbs) {
+        val title = context.getString(UiR.string.recommendation_title_carbs)
+        val text = context.getString(
+            UiR.string.recommendation_text_carbs,
+            formatCarbsValue(carbs.amountInGram.toDouble(), getCarbsUnit(), context)
+        )
+        val intent = MainActivity.createMealCorrectionBolusIntent(context, carbs.amountInGram.toDouble())
         val pendingIntent = PendingIntent.getActivity(
             context,
-            RECOMMENDATION_NOTIFICATION_ID,
+            RECOMMENDATION_CARBS_NOTIFICATION_ID,
             intent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
-
         val notification = NotificationCompat.Builder(context, RECOMMENDATION_CHANNEL_ID)
             .setContentTitle(title)
             .setContentText(text)
@@ -185,12 +180,66 @@ class AndroidNotificationsImpl(
             .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
             .build()
 
-        // Use the same ID for all recommendations, we only support one at a time
-        notify(RECOMMENDATION_NOTIFICATION_ID, notification)
+        notify(RECOMMENDATION_CARBS_NOTIFICATION_ID, notification)
     }
 
-    override fun cancelRecommendationNotification() {
-        manager.cancel(RECOMMENDATION_NOTIFICATION_ID)
+    private fun showBolusRecommendationNotification(bolus: ApsRecommendation.Bolus) {
+        val hasDeferredPart = !bolus.includedDeferredBoluses.isNullOrEmpty()
+        val title = if (hasDeferredPart) {
+            context.getString(UiR.string.notification_deferred_bolus_title)
+        } else {
+            context.getString(UiR.string.recommendation_title_bolus)
+        }
+        val text = if (hasDeferredPart) {
+            context.getString(UiR.string.notification_deferred_bolus_text, bolus.amount.iu)
+        } else {
+            context.getString(UiR.string.recommendation_text_bolus, bolus.amount.iu)
+        }
+        val intent = MainActivity.createManualControlIntent(context, ManualControlInitialDialog.BOLUS)
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            RECOMMENDATION_BOLUS_NOTIFICATION_ID,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        val notification = NotificationCompat.Builder(context, RECOMMENDATION_CHANNEL_ID)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
+            .build()
+
+        notify(RECOMMENDATION_BOLUS_NOTIFICATION_ID, notification)
+    }
+
+    private fun showTempBasalRecommendationNotification(tempBasal: ApsRecommendation.TempBasal) {
+        val title = context.getString(UiR.string.recommendation_title_temp_basal)
+        val text = context.getString(
+            UiR.string.recommendation_text_temp_basal,
+            tempBasal.percent,
+            tempBasal.durationInHours
+        )
+        val intent = MainActivity.createManualControlIntent(context, ManualControlInitialDialog.TEMP_BASAL)
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            RECOMMENDATION_TEMP_BASAL_NOTIFICATION_ID,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        val notification = NotificationCompat.Builder(context, RECOMMENDATION_CHANNEL_ID)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
+            .build()
+
+        notify(RECOMMENDATION_TEMP_BASAL_NOTIFICATION_ID, notification)
     }
 
     override fun showReminderNotification(reminder: Reminder) {
@@ -230,30 +279,6 @@ class AndroidNotificationsImpl(
 
         val notificationId = MEAL_REMINDER_NOTIFICATION_ID + (reminder.id % 10000).toInt()
         notify(notificationId, notification)
-    }
-
-    override fun showDeferredBolusRecommendationNotification(dueDeferredBoluses: List<DeferredBolus>) {
-        val totalAmount = dueDeferredBoluses.sumOf { it.amount.iu }
-        val title = context.getString(UiR.string.notification_deferred_bolus_title)
-        val text = context.getString(UiR.string.notification_deferred_bolus_text, totalAmount)
-
-        val dashboardIntent = MainActivity.createStartDashboardIntent(context)
-        val pendingIntent = PendingIntent.getActivity(
-            context, 0,
-            dashboardIntent, PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val notification = NotificationCompat.Builder(context, RECOMMENDATION_CHANNEL_ID)
-            .setContentTitle(title)
-            .setContentText(text)
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentIntent(pendingIntent)
-            .setAutoCancel(true)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
-            .build()
-
-        notify(DEFERRED_BOLUS_NOTIFICATION_ID, notification)
     }
 
     override fun showAlarmNotification(alarmType: AlarmType, bgValue: BgValue?, isFullScreen: Boolean) {
@@ -409,10 +434,11 @@ class AndroidNotificationsImpl(
 
     companion object {
         val TAG = AndroidNotificationsImpl::class.simpleName
-        const val RECOMMENDATION_NOTIFICATION_ID = 2
-        const val ALGORITHM_ISSUE_NOTIFICATION_ID = 3
-        const val MEAL_REMINDER_NOTIFICATION_ID = 4
-        const val DEFERRED_BOLUS_NOTIFICATION_ID = 5
+        const val RECOMMENDATION_CARBS_NOTIFICATION_ID = 2
+        const val RECOMMENDATION_BOLUS_NOTIFICATION_ID = 3
+        const val RECOMMENDATION_TEMP_BASAL_NOTIFICATION_ID = 4
+        const val ALGORITHM_ISSUE_NOTIFICATION_ID = 5
+        const val MEAL_REMINDER_NOTIFICATION_ID = 6
         const val SERVICE_CHANNEL_ID = "aps_service_channel"
         const val RECOMMENDATION_CHANNEL_ID = "aps_recommendation_channel"
         const val ALGORITHM_ISSUE_CHANNEL_ID = "aps_algorithm_issue_channel"

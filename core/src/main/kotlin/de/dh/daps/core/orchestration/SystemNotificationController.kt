@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
  * and reminder alerts.
  */
 class SystemNotificationController(
-    private val androidNotifications: AndroidNotifications
+    private val androidNotifications: AndroidNotifications,
 ) {
     fun createNotificationChannels() {
         androidNotifications.createNotificationChannels()
@@ -63,18 +63,7 @@ class SystemNotificationController(
 
         scope.launch {
             recommendationManager.recommendations.collect { recommendations ->
-                val carbRec = recommendations.carbs
-                if (carbRec != null) {
-                    androidNotifications.showRecommendationNotification(carbRec)
-                } else {
-                    androidNotifications.cancelRecommendationNotification()
-                }
-
-                val dueDeferredBoluses = recommendations.bolus?.includedDeferredBoluses.orEmpty()
-
-                if (dueDeferredBoluses.isNotEmpty()) {
-                    androidNotifications.showDeferredBolusRecommendationNotification(dueDeferredBoluses)
-                }
+                androidNotifications.updateRecommendationNotifications(recommendations)
             }
         }
 
