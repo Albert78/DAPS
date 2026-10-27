@@ -41,6 +41,7 @@ fun ExpandableInfoCard(
     detailText: String,
     infoTextColor: Color = MaterialTheme.colorScheme.onSurface,
     imageVector: ImageVector = Icon_Info,
+    iconTint: Color = MaterialTheme.colorScheme.onSurface,
     actionButtonText: String? = null,
     onActionButtonClick: (() -> Unit)? = null,
     initiallyExpanded: Boolean = false,
@@ -63,7 +64,7 @@ fun ExpandableInfoCard(
                 Icon(
                     imageVector = imageVector,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurface
+                    tint = iconTint
                 )
                 Spacer(Modifier.width(10.dp))
                 Text(

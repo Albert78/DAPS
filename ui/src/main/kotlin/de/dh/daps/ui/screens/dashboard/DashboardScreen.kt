@@ -69,6 +69,7 @@ import de.dh.daps.ui.common.LocalCarbsUnit
 import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.composables.ExpandableInfoCard
+import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.WarningBanner
 import de.dh.daps.ui.common.composables.screenTitle
@@ -298,6 +299,7 @@ fun DashboardContent(
                     infoText = infoText,
                     detailText = detailText,
                     imageVector = Icons.Default.Lightbulb,
+                    iconTint = ExtendedTheme.semanticColors.warning,
                     actionButtonText = stringResource(R.string.manual_control_apply_recommendation),
                     onActionButtonClick = actionClick,
                     initiallyExpanded = false,
