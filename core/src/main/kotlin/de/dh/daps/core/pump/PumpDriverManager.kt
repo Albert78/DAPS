@@ -1,8 +1,8 @@
 package de.dh.daps.core.pump
 
-import de.dh.daps.common.model.DeviceLifecycleState
-import de.dh.daps.common.model.InsulinPump
-import de.dh.daps.common.model.InsulinPumpDriver
+import de.dh.daps.common.device.state.DeviceLifecycleState
+import de.dh.daps.common.domain.model.therapy.InsulinPump
+import de.dh.daps.common.device.driver.InsulinPumpDriver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

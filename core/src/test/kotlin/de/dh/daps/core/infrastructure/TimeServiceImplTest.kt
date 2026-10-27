@@ -2,10 +2,10 @@ package de.dh.daps.core.infrastructure
 
 import android.content.Intent
 import androidx.room.InvalidationTracker
-import de.dh.daps.common.model.data.Minutes
-import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.common.service.SystemWakeService
-import de.dh.daps.common.service.WakeupHandler
+import de.dh.daps.common.domain.model.therapy.Minutes
+import de.dh.daps.common.domain.model.therapy.Timestamp
+import de.dh.daps.common.infrastructure.SystemWakeService
+import de.dh.daps.common.infrastructure.WakeupHandler
 import de.dh.daps.core.repository.SystemMetricsRepository
 import de.dh.daps.core.repository.db.AppDatabase
 import de.dh.daps.core.repository.db.dao.AlarmProfileDao

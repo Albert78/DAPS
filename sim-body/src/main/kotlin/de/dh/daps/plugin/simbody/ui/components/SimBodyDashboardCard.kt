@@ -27,8 +27,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.model.data.Block
-import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.domain.model.therapy.Block
+import de.dh.daps.common.domain.model.therapy.Minutes
 import de.dh.daps.plugin.simbody.BodyModel
 import de.dh.daps.plugin.simbody.R
 import de.dh.daps.plugin.simbody.model.BodyProfile

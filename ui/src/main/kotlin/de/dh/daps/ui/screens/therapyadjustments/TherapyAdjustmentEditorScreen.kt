@@ -55,8 +55,8 @@ import de.dh.daps.common.LOW_THRESHOLD_MAX
 import de.dh.daps.common.LOW_THRESHOLD_MIN
 import de.dh.daps.common.TARGET_MAX
 import de.dh.daps.common.TARGET_MIN
-import de.dh.daps.common.model.data.AlarmProfile
-import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.domain.model.alarm.AlarmProfile
+import de.dh.daps.common.domain.model.therapy.BgValue
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
 import de.dh.daps.ui.common.LocalGlucoseUnit

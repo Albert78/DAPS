@@ -1,6 +1,6 @@
 package de.dh.daps.core.repository
 
-import de.dh.daps.common.model.data.AlarmProfile
+import de.dh.daps.common.domain.model.alarm.AlarmProfile
 import de.dh.daps.core.repository.db.dao.AlarmProfileDao
 import de.dh.daps.core.repository.db.mappers.toEntity
 import de.dh.daps.core.repository.db.mappers.toModel

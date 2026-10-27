@@ -1,15 +1,15 @@
 package de.dh.daps.plugin.glucose
 
-import de.dh.daps.common.model.GlucoseSource
-import de.dh.daps.common.model.GlucoseSourceStatus
-import de.dh.daps.common.model.SourceHardwareInformation
-import de.dh.daps.common.model.data.BgReading
-import de.dh.daps.common.model.data.BgReadingsInterval
-import de.dh.daps.common.model.data.BgSampleKind
-import de.dh.daps.common.model.data.BgValue
-import de.dh.daps.common.model.data.Minutes
-import de.dh.daps.common.model.data.RawBg
-import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.domain.model.therapy.GlucoseSource
+import de.dh.daps.common.domain.model.therapy.GlucoseSourceStatus
+import de.dh.daps.common.domain.model.therapy.SourceHardwareInformation
+import de.dh.daps.common.domain.model.therapy.BgReading
+import de.dh.daps.common.domain.model.therapy.BgReadingsInterval
+import de.dh.daps.common.domain.model.therapy.BgSampleKind
+import de.dh.daps.common.domain.model.therapy.BgValue
+import de.dh.daps.common.domain.model.therapy.Minutes
+import de.dh.daps.common.domain.model.therapy.RawBg
+import de.dh.daps.common.domain.model.therapy.Timestamp
 import de.dh.daps.common.ui.UiText
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow

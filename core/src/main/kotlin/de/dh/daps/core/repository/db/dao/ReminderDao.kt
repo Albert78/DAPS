@@ -5,8 +5,8 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import de.dh.daps.common.model.reminder.ReminderStatus
-import de.dh.daps.common.model.reminder.ReminderType
+import de.dh.daps.common.domain.model.reminder.ReminderStatus
+import de.dh.daps.common.domain.model.reminder.ReminderType
 import de.dh.daps.core.repository.db.entities.ReminderEntity
 import kotlinx.coroutines.flow.Flow
 

@@ -2,7 +2,7 @@ package de.dh.pump.dana.commands.aps
 
 import de.dh.pump.PumpStatus
 import de.dh.pump.dana.commands.DanaRsResponse
-import de.dh.daps.common.model.data.PumpTimestamp
+import de.dh.daps.common.domain.model.therapy.PumpTimestamp
 
 sealed interface ApsHistoryEventsChunk : DanaRsResponse
 

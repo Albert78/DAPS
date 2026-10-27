@@ -1,6 +1,6 @@
 package de.dh.daps.core.orchestration
 
-import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.domain.model.therapy.Timestamp
 import de.dh.daps.core.aps.CoreState
 import de.dh.daps.core.aps.STALE_BG_THRESHOLD
 import de.dh.daps.core.glucosesource.GlucoseSourceIssue

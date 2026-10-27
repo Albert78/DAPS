@@ -16,9 +16,9 @@ import android.os.Vibrator
 import android.os.VibratorManager
 import android.util.Log
 import androidx.core.net.toUri
-import de.dh.daps.common.model.data.AlarmSignalConfig
-import de.dh.daps.common.model.data.SoundConfig
-import de.dh.daps.common.model.data.VibrationMode
+import de.dh.daps.common.domain.model.alarm.AlarmSignalConfig
+import de.dh.daps.common.domain.model.alarm.SoundConfig
+import de.dh.daps.common.domain.model.alarm.VibrationMode
 
 /**
  * Central engine for audio playback, haptics/vibration, and safety audio focus handling in DAPS.

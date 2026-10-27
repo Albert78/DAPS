@@ -1,17 +1,17 @@
 package de.dh.daps.core.aps.prediction
 
-import de.dh.daps.common.model.InsulinAmount
-import de.dh.daps.common.model.InsulinDose
-import de.dh.daps.common.model.MealEntry
-import de.dh.daps.common.model.calculation.CarbsInsulinCalculator
-import de.dh.daps.common.model.convertToBgDeltaFromUnits
-import de.dh.daps.common.model.convertToInsulinAmountFromCarbs
-import de.dh.daps.common.model.data.BgDelta
-import de.dh.daps.common.model.data.BgValue
-import de.dh.daps.common.model.data.Minutes
-import de.dh.daps.common.model.data.Tick
-import de.dh.daps.common.model.data.Timeline
-import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.domain.model.therapy.InsulinAmount
+import de.dh.daps.common.domain.model.therapy.InsulinDose
+import de.dh.daps.common.domain.model.therapy.MealEntry
+import de.dh.daps.common.domain.calculation.CarbsInsulinCalculator
+import de.dh.daps.common.domain.model.therapy.convertToBgDeltaFromUnits
+import de.dh.daps.common.domain.model.therapy.convertToInsulinAmountFromCarbs
+import de.dh.daps.common.domain.model.therapy.BgDelta
+import de.dh.daps.common.domain.model.therapy.BgValue
+import de.dh.daps.common.domain.model.therapy.Minutes
+import de.dh.daps.common.domain.model.therapy.Tick
+import de.dh.daps.common.domain.model.therapy.Timeline
+import de.dh.daps.common.domain.model.therapy.Timestamp
 import de.dh.daps.core.aps.ApsAlgorithmImpl.Companion.DEVIATION_DECAY_FACTOR_PER_TICK
 import de.dh.daps.core.therapy.TherapyManager
 

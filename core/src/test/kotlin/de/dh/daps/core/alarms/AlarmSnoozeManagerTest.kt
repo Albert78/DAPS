@@ -1,6 +1,6 @@
 package de.dh.daps.core.alarms
 
-import de.dh.daps.common.model.data.AlarmType
+import de.dh.daps.common.domain.model.alarm.AlarmType
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before

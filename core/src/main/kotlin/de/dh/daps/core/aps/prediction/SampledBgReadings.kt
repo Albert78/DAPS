@@ -1,9 +1,9 @@
 package de.dh.daps.core.aps.prediction
 
-import de.dh.daps.common.model.data.BgReading
-import de.dh.daps.common.model.data.BgValue
-import de.dh.daps.common.model.data.Tick
-import de.dh.daps.common.model.data.Timeline
+import de.dh.daps.common.domain.model.therapy.BgReading
+import de.dh.daps.common.domain.model.therapy.BgValue
+import de.dh.daps.common.domain.model.therapy.Tick
+import de.dh.daps.common.domain.model.therapy.Timeline
 
 /**
  * Provides a sampled view of the blood glucose history, aligned to discrete time ticks.

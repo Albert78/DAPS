@@ -1,0 +1,319 @@
+package de.dh.daps.common.domain.model.therapy
+
+import de.dh.daps.common.ui.UiText
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+
+/**
+ * Manufacturer and hardware information about a pump.
+ */
+data class PumpHardwareInformation(
+    val manufacturer: String,
+    val model: String,
+    val serialNumber: String
+)
+
+/**
+ * Technical specification and hardware characteristics.
+ */
+data class PumpCapabilities(
+    val minBasalRate: InsulinAmount,
+    val supportsZeroBasal: Boolean,
+    val minBasalIncrement: InsulinAmount,
+    val minBolusAmount: InsulinAmount,
+    val minBolusIncrement: InsulinAmount,
+    val maxBolusSize: InsulinAmount,
+    // TODO: Continue list for sensible capability values
+//    val supportsTempBasal: Boolean,
+//    val audibleTempBasalReminder: Boolean,
+//    val deliversBasalWhileBolusing: Boolean
+)
+
+/**
+ * Generic data representing the general status of an insulin pump.
+ */
+interface InsulinPumpStatus {
+    val pumpSuspended: Boolean
+    val batteryRemainingPercent: Int
+    val reservoirRemainingUnits: InsulinAmount
+    val lastSyncTimestamp: Timestamp
+
+    /**
+     * Structured lifecycle state of the pump hardware or its consumables.
+     */
+    val lifecycleState: PumpLifecycleState
+}
+
+/**
+ * Normalized state of pump-related alerts.
+ */
+data class PumpAlerts(
+    val batteryLow: Boolean = false,
+    val reservoirLow: Boolean = false,
+    val occlusion: Boolean = false,
+    val other: Boolean = false
+)
+
+/**
+ * Normalized state of the basal insulin delivery.
+ */
+data class BasalStatus(
+    /**
+     * The absolute amount of insulin in Units per Hour (U/h) that the pump is currently delivering.
+     * This value is inclusive of any temporary basal rate or suspension.
+     * If the pump is suspended, this value is always 0.0.
+     */
+    val activeRate: InsulinAmount = InsulinAmount.ZERO,
+
+    val isTempBasal: Boolean = false,
+
+    /**
+     * The relative amount of insulin in percent (%) compared to the profile basal rate.
+     * Only set if [isTempBasal] is true.
+     */
+    val tempBasalPercent: Int? = null,
+
+    /**
+     * Timestamp when the active temporary basal rate expires.
+     * Only set if [isTempBasal] is true and an expiry time is known.
+     */
+    val tempBasalExpiry: Timestamp? = null,
+
+    /**
+     * True if insulin delivery is globally suspended on the hardware level.
+     * While suspended, [activeRate] is always 0.0. This state is distinct
+     * from a 0% temporary basal rate as it usually requires a manual 'resume' action.
+     */
+    val isSuspended: Boolean = false,
+)
+
+/**
+ * Delivery state of an active or recent bolus.
+ */
+enum class BolusDeliveryState {
+    IDLE,
+    DELIVERING,
+    COMPLETED,
+    STOPPED
+}
+
+/**
+ * Status snapshot of bolus delivery.
+ */
+data class BolusStatus(
+    val state: BolusDeliveryState = BolusDeliveryState.IDLE,
+    val bolusId: String? = null,
+    val targetAmount: InsulinAmount = InsulinAmount.ZERO,
+    val deliveredAmount: InsulinAmount = InsulinAmount.ZERO,
+    val timestamp: Timestamp = Timestamp.INVALID,
+) {
+    /**
+     * Delivery progress in percent (0 to 100).
+     */
+    val progressPercent: Int
+        get() = if (targetAmount > InsulinAmount.ZERO) ((deliveredAmount / targetAmount) * 100).coerceIn(0.0, 100.0).toInt() else 0
+}
+
+/**
+ * Real-time event for bolus delivery lifecycle updates.
+ */
+sealed interface BolusEvent {
+    val bolusId: String?
+    val timestamp: Timestamp
+
+    data class Started(
+        override val bolusId: String?,
+        val targetAmount: InsulinAmount,
+        override val timestamp: Timestamp = Timestamp.now(),
+    ) : BolusEvent
+
+    data class Progress(
+        override val bolusId: String?,
+        val targetAmount: InsulinAmount,
+        val deliveredAmount: InsulinAmount,
+        override val timestamp: Timestamp = Timestamp.now(),
+    ) : BolusEvent
+
+    data class Completed(
+        override val bolusId: String?,
+        val targetAmount: InsulinAmount,
+        val deliveredAmount: InsulinAmount,
+        override val timestamp: Timestamp = Timestamp.now(),
+    ) : BolusEvent
+
+    data class Stopped(
+        override val bolusId: String?,
+        val targetAmount: InsulinAmount,
+        val deliveredAmount: InsulinAmount,
+        override val timestamp: Timestamp = Timestamp.now(),
+    ) : BolusEvent
+}
+
+/**
+ * Generic interface for an insulin pump.
+ */
+interface InsulinPump {
+    /**
+     * Gets a stable, technical name for the insulin pump provider (e.g. "de.dh.daps.plugin.dana").
+     * This is used to identify the insulin pump provider in the system/database.
+     */
+    val insulinPumpId: String
+
+    /**
+     * Human-readable display name of the insulin pump.
+     */
+    val insulinPumpDisplayName: UiText
+
+    /**
+     * Pump hardware information. Null if not yet retrieved.
+     */
+    val hardwareInformation: StateFlow<PumpHardwareInformation?>
+
+    /**
+     * Pump capabilities information.
+     */
+    val pumpCapabilities: StateFlow<PumpCapabilities>
+
+    val isConnected: StateFlow<Boolean>
+
+    /**
+     * Flag indicating whether communication or command execution with the pump is currently blocked
+     * on the driver or software side (e.g. driver maintenance mode or software blockade).
+     */
+    val isBlocked: StateFlow<Boolean>
+        get() = MutableStateFlow(false)
+
+    /**
+     * Flag indicating whether the connection failed due to a stale OS Bluetooth bond
+     * requiring manual unbonding in Android settings.
+     */
+    val requiresStaleBondRemoval: StateFlow<Boolean>
+        get() = MutableStateFlow(false)
+
+    /**
+     * General status and data of the pump (Battery, Reservoir, etc.).
+     * Can be updated by calling [refreshStatus].
+     */
+    val pumpStatus: StateFlow<InsulinPumpStatus>
+
+    /**
+     * Current status of normalized pump alerts. If one or more alerts are set, the user should check the pump.
+     * Can be updated by calling [syncHistory].
+     */
+    val alerts: StateFlow<PumpAlerts>
+
+    /**
+     * Current status of the basal insulin delivery.
+     */
+    val basalStatus: StateFlow<BasalStatus>
+
+    /**
+     * History of insulin deliveries (Basal and Bolus) from the pump.
+     */
+    val bolusStatus: StateFlow<BolusStatus>
+
+    /**
+     * Event stream for bolus delivery lifecycle events.
+     */
+    val bolusEvents: SharedFlow<BolusEvent>
+
+    /**
+     * StateFlow exposing the history of actual insulin deliveries (Basal and Bolus) from the pump.
+     *
+     * ### Driver Implementation Requirements:
+     * - **Coverage Expectation:** The DAPS system assumes that the delivered [InsulinHistory] spans a time
+     *   range extending into the past AT LEAST up to the start timestamp passed to [syncHistory].
+     * - **Updating:** The driver MUST update this StateFlow during or after [syncHistory] completes.
+     */
+    val history: StateFlow<InsulinHistory?>
+
+    /**
+     * ID of the insulin type loaded in the pump (e.g. Novorapid, Fiasp).
+     * The ID refers to the entity in the database.
+     * Optional / nullable if not configured.
+     */
+    val insulinTypeId: StateFlow<String?>
+        get() = MutableStateFlow(null)
+
+    /**
+     * Concentration of the insulin loaded in the pump. Default is [InsulinConcentration.U100].
+     * Needed to convert [InsulinAmount] to pump units and vice versa.
+     */
+    val insulinConcentration: StateFlow<InsulinConcentration>
+        get() = MutableStateFlow(InsulinConcentration.U100)
+
+    /**
+     * Initiates a bolus delivery with an optional tracking [bolusId].
+     * @param amount The amount of insulin to deliver.
+     * @param bolusId Optional tracking ID for the bolus. This ID will be used
+     * in [bolusEvents] and [bolusStatus] for the duration of this bolus delivery.
+     * @throws PumpConnectionException if the technical connection fails.
+     * @throws PumpCommandException if the command is rejected by the pump hardware.
+     */
+    suspend fun bolus(amount: InsulinAmount, bolusId: String? = null)
+
+    /**
+     * Immediately stops any currently running bolus delivery.
+     *
+     * @throws PumpConnectionException if the technical connection fails.
+     * @throws PumpCommandException if the command is rejected by the pump hardware.
+     */
+    suspend fun stopBolus()
+
+    /**
+     * Starts a temporary basal rate.
+     *
+     * @throws PumpConnectionException if the technical connection fails.
+     * @throws PumpCommandException if the command is rejected by the pump hardware.
+     */
+    suspend fun tempBasal(percent: Int, durationHours: Int)
+
+    /**
+     * Cancels the currently active temporary basal rate and switches back to the normal basal rate.
+     *
+     * @throws PumpConnectionException if the technical connection fails.
+     * @throws PumpCommandException if the command is rejected by the pump hardware.
+     */
+    suspend fun cancelTempBasal()
+
+    /**
+     * Sets the suspend state of the insulin pump.
+     *
+     * @param suspended True to suspend insulin delivery, false to resume.
+     * @throws PumpConnectionException if the technical connection fails.
+     * @throws PumpCommandException if the command is rejected by the pump hardware.
+     */
+    suspend fun setSuspend(suspended: Boolean)
+
+    /**
+     * Sets the active therapy profile on the pump.
+     *
+     * @throws PumpConnectionException if the technical connection fails.
+     */
+    suspend fun setProfile(profile: InsulinProfile)
+
+    /**
+     * Performs a synchronization of the pump's history events from [start] timestamp onwards.
+     *
+     * @param start The earliest timestamp in the past from which history events are requested.
+     * @throws PumpConnectionException if the technical connection fails.
+     */
+    suspend fun syncHistory(start: Timestamp)
+
+    /**
+     * Refreshes the last known data and status from the pump.
+     *
+     * @throws PumpConnectionException if the technical connection fails.
+     */
+    suspend fun refreshStatus()
+
+    /**
+     * Stops this insulin pump connection.
+     */
+    fun stop()
+
+    companion object {
+        const val DEFAULT_REQUESTED_HISTORY_HOURS = 24
+    }
+}

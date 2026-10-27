@@ -3,7 +3,7 @@ package de.dh.daps.ui.screens.therapyadjustments
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import de.dh.daps.common.model.data.TherapyAdjustment
+import de.dh.daps.common.domain.model.therapy.TherapyAdjustment
 import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

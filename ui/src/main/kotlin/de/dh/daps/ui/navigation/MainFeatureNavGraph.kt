@@ -18,7 +18,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import de.dh.daps.common.ID_UNDEFINED
-import de.dh.daps.common.model.getDefaultInsulinTypes
+import de.dh.daps.common.domain.model.therapy.getDefaultInsulinTypes
 import de.dh.daps.common.navigation.AlarmProfileEditorRoute
 import de.dh.daps.common.navigation.AlarmProfilesRoute
 import de.dh.daps.common.navigation.AppDataRoute
@@ -64,7 +64,7 @@ import de.dh.daps.common.navigation.TherapyAdjustmentEditorRoute
 import de.dh.daps.common.navigation.TherapyAdjustmentPresetsRoute
 import de.dh.daps.common.navigation.TherapyAdjustmentRoute
 import de.dh.daps.core.SystemRegistry
-import de.dh.daps.setUserDeclinedPermissions
+import de.dh.daps.common.repository.setUserDeclinedPermissions
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.treatmentlock.TreatmentLockScreen
 import de.dh.daps.ui.common.treatmentlock.TreatmentLockViewModel

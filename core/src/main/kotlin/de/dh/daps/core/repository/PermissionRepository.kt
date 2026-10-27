@@ -7,7 +7,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.PowerManager
 import androidx.core.content.ContextCompat
-import de.dh.daps.common.model.PluginManager
+import de.dh.daps.common.infrastructure.PluginManager
 import de.dh.daps.common.ui.UiText
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

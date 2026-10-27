@@ -1,13 +1,13 @@
 package de.dh.daps.core.infrastructure
 
 import android.content.Context
-import de.dh.daps.common.model.PluginContext
-import de.dh.daps.common.model.PluginManager
-import de.dh.daps.common.model.PluginPreferences
-import de.dh.daps.common.model.calculation.CarbsInsulinCalculator
-import de.dh.daps.common.service.ReminderManager
-import de.dh.daps.common.service.SystemWakeService
-import de.dh.daps.common.service.TimeService
+import de.dh.daps.common.infrastructure.PluginContext
+import de.dh.daps.common.infrastructure.PluginManager
+import de.dh.daps.common.infrastructure.PluginPreferences
+import de.dh.daps.common.domain.calculation.CarbsInsulinCalculator
+import de.dh.daps.common.infrastructure.ReminderManager
+import de.dh.daps.common.infrastructure.SystemWakeService
+import de.dh.daps.common.infrastructure.TimeService
 
 /**
  * Concrete implementation of [PluginContext] passed to individual plugins.

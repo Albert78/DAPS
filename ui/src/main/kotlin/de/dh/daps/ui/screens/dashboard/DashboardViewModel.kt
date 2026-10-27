@@ -4,11 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import de.dh.daps.common.model.ApsMode
-import de.dh.daps.common.model.GlucoseSource
-import de.dh.daps.common.model.InsulinPump
-import de.dh.daps.common.model.data.AlarmSignalConfig
-import de.dh.daps.common.model.data.AlarmType
+import de.dh.daps.common.domain.model.system.ApsMode
+import de.dh.daps.common.domain.model.therapy.GlucoseSource
+import de.dh.daps.common.domain.model.therapy.InsulinPump
+import de.dh.daps.common.domain.model.alarm.AlarmSignalConfig
+import de.dh.daps.common.domain.model.alarm.AlarmType
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.alarms.AlarmSnoozeState
 import de.dh.daps.core.orchestration.ApsRecommendation

@@ -3,7 +3,7 @@ package de.dh.daps.ui.screens.mealtypes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import de.dh.daps.common.model.MealType
+import de.dh.daps.common.domain.model.therapy.MealType
 import de.dh.daps.ui.common.composables.isStandardMealType
 import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.flow.SharingStarted

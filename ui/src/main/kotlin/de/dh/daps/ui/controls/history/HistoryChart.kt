@@ -62,10 +62,10 @@ import com.patrykandpatrick.vico.compose.common.component.rememberShapeComponent
 import com.patrykandpatrick.vico.compose.common.data.ExtraStore
 import de.dh.daps.common.MS_PER_HOUR
 import de.dh.daps.common.MS_PER_MINUTE
-import de.dh.daps.common.model.data.BgReading
-import de.dh.daps.common.model.data.BgSampleKind
-import de.dh.daps.common.model.data.GlucoseUnit
-import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.domain.model.therapy.BgReading
+import de.dh.daps.common.domain.model.therapy.BgSampleKind
+import de.dh.daps.common.domain.model.therapy.GlucoseUnit
+import de.dh.daps.common.domain.model.therapy.Timestamp
 import de.dh.daps.ui.common.composables.BlueA200
 import de.dh.daps.ui.common.composables.DeepOrangeA700
 import de.dh.daps.ui.common.composables.RedA700

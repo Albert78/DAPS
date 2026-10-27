@@ -10,8 +10,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import de.dh.daps.common.model.DeviceLifecycleState
-import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.device.state.DeviceLifecycleState
+import de.dh.daps.common.domain.model.therapy.Timestamp
 import de.dh.pump.danai.DanaIInsulinPumpDriver
 import de.dh.pump.danai.core.DanaIPumpAdapter
 import kotlinx.coroutines.launch

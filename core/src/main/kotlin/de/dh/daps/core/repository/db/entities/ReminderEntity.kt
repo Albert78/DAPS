@@ -3,9 +3,9 @@ package de.dh.daps.core.repository.db.entities
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import de.dh.daps.common.ID_UNDEFINED
-import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.common.model.reminder.ReminderStatus
-import de.dh.daps.common.model.reminder.ReminderType
+import de.dh.daps.common.domain.model.therapy.Timestamp
+import de.dh.daps.common.domain.model.reminder.ReminderStatus
+import de.dh.daps.common.domain.model.reminder.ReminderType
 
 /**
  * Room entity for a generic reminder.

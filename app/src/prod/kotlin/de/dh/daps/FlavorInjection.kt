@@ -1,7 +1,7 @@
 package de.dh.daps
 
 import android.app.Application
-import de.dh.daps.common.model.PluginManager
+import de.dh.daps.common.infrastructure.PluginManager
 import de.dh.daps.common.navigation.FeatureNavGraph
 import de.dh.daps.common.navigation.NavigationViewModel
 import de.dh.daps.plugin.glucose.receiver.ReceiverGlucosePlugin

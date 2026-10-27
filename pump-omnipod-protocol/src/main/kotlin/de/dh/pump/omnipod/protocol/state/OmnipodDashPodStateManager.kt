@@ -1,7 +1,7 @@
 package de.dh.pump.omnipod.protocol.state
 
-import de.dh.daps.common.model.InsulinConcentration
-import de.dh.daps.common.model.PluginPreferences
+import de.dh.daps.common.domain.model.therapy.InsulinConcentration
+import de.dh.daps.common.infrastructure.PluginPreferences
 import de.dh.pump.omnipod.protocol.definition.ActivationProgress
 import de.dh.pump.omnipod.protocol.definition.AlarmType
 import de.dh.pump.omnipod.protocol.definition.AlertType

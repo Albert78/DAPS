@@ -47,7 +47,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import de.dh.daps.common.model.DeviceLifecycleState
+import de.dh.daps.common.device.state.DeviceLifecycleState
 import de.dh.daps.common.R as CommonR
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.common.composables.FramedCard

@@ -1,14 +1,14 @@
 package de.dh.daps.core.repository.db
 
 import androidx.room.TypeConverter
-import de.dh.daps.common.model.ApsMode
-import de.dh.daps.common.model.InsulinStatus
-import de.dh.daps.common.model.data.BgDelta
-import de.dh.daps.common.model.data.BgValue
-import de.dh.daps.common.model.data.Minutes
-import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.common.model.reminder.ReminderStatus
-import de.dh.daps.common.model.reminder.ReminderType
+import de.dh.daps.common.domain.model.system.ApsMode
+import de.dh.daps.common.domain.model.therapy.InsulinStatus
+import de.dh.daps.common.domain.model.therapy.BgDelta
+import de.dh.daps.common.domain.model.therapy.BgValue
+import de.dh.daps.common.domain.model.therapy.Minutes
+import de.dh.daps.common.domain.model.therapy.Timestamp
+import de.dh.daps.common.domain.model.reminder.ReminderStatus
+import de.dh.daps.common.domain.model.reminder.ReminderType
 import de.dh.daps.core.aps.CoreReasoning
 import de.dh.daps.core.repository.db.entities.DBBgBlock
 import de.dh.daps.core.repository.db.entities.DBBlock

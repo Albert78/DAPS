@@ -1,6 +1,6 @@
 package de.dh.daps.core.orchestration
 
-import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

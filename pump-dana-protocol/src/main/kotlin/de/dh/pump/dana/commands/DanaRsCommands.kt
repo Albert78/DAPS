@@ -1,6 +1,6 @@
 package de.dh.pump.dana.commands
 
-import de.dh.daps.common.model.data.PumpTimestamp
+import de.dh.daps.common.domain.model.therapy.PumpTimestamp
 import de.dh.pump.dana.commands.aps.ApsBasalSetTemporaryBasalCommand
 import de.dh.pump.dana.commands.aps.ApsHistoryEventsCommand
 import de.dh.pump.dana.commands.aps.ApsSetEventHistoryCommand

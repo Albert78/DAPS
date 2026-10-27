@@ -6,8 +6,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import de.dh.daps.common.DEFAULT_DIA_MINUTES
 import de.dh.daps.common.DEFAULT_PEAK_MINUTES
-import de.dh.daps.common.model.InsulinType
-import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.domain.model.therapy.InsulinType
+import de.dh.daps.common.domain.model.therapy.Minutes
 import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

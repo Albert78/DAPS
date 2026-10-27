@@ -4,9 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import de.dh.daps.common.model.CarbCurveComponentData
-import de.dh.daps.common.model.MealType
-import de.dh.daps.common.model.data.Minutes
+import de.dh.daps.common.domain.model.therapy.CarbCurveComponentData
+import de.dh.daps.common.domain.model.therapy.MealType
+import de.dh.daps.common.domain.model.therapy.Minutes
 import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

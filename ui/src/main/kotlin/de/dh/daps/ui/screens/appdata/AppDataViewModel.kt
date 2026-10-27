@@ -6,13 +6,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import de.dh.daps.AppPreferencesRepository
-import de.dh.daps.backupDirectoryUri
+import de.dh.daps.common.repository.AppPreferencesRepository
+import de.dh.daps.common.repository.backupDirectoryUri
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.backup.BackupOptions
 import de.dh.daps.core.backup.AppDataManagementRepository
 import de.dh.daps.core.backup.BackupResult
-import de.dh.daps.setBackupDirectoryUri
+import de.dh.daps.common.repository.setBackupDirectoryUri
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

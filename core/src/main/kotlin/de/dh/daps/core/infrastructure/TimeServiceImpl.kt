@@ -2,14 +2,14 @@ package de.dh.daps.core.infrastructure
 
 import android.content.Intent
 import android.util.Log
-import de.dh.daps.common.model.data.Minutes
-import de.dh.daps.common.model.data.Tick
-import de.dh.daps.common.model.data.Timeline
-import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.common.service.SystemWakeService
-import de.dh.daps.common.service.TickHandler
-import de.dh.daps.common.service.TimeService
-import de.dh.daps.common.service.WakeupHandler
+import de.dh.daps.common.domain.model.therapy.Minutes
+import de.dh.daps.common.domain.model.therapy.Tick
+import de.dh.daps.common.domain.model.therapy.Timeline
+import de.dh.daps.common.domain.model.therapy.Timestamp
+import de.dh.daps.common.infrastructure.SystemWakeService
+import de.dh.daps.common.infrastructure.TickHandler
+import de.dh.daps.common.infrastructure.TimeService
+import de.dh.daps.common.infrastructure.WakeupHandler
 import de.dh.daps.core.repository.SystemMetricsRepository
 import de.dh.daps.core.repository.TickHandlerMetric
 import kotlinx.coroutines.CoroutineScope

@@ -3,8 +3,8 @@ package de.dh.daps.pluginmanager
 import android.content.Context
 import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
-import de.dh.daps.common.model.Plugin
-import de.dh.daps.common.model.PluginManager
+import de.dh.daps.common.infrastructure.Plugin
+import de.dh.daps.common.infrastructure.PluginManager
 
 class PluginManagerImpl(
     val context: Context

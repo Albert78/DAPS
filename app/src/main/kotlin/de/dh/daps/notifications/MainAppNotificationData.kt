@@ -1,8 +1,8 @@
 package de.dh.daps.notifications
 
-import de.dh.daps.common.model.data.BgReading
-import de.dh.daps.common.model.data.BgSampleKind
-import de.dh.daps.common.model.data.BgValue
+import de.dh.daps.common.domain.model.therapy.BgReading
+import de.dh.daps.common.domain.model.therapy.BgSampleKind
+import de.dh.daps.common.domain.model.therapy.BgValue
 import de.dh.daps.core.repository.GlucoseRepository
 
 data class MainAppNotificationData(

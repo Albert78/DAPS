@@ -34,8 +34,8 @@ import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.model.InsulinAmount
-import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.common.domain.model.therapy.InsulinAmount
+import de.dh.daps.common.domain.model.therapy.GlucoseUnit
 import de.dh.daps.core.aps.CoreInsight
 import de.dh.daps.core.aps.CoreReasoning
 import de.dh.daps.ui.R

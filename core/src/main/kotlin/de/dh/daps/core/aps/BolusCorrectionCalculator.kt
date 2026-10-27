@@ -1,15 +1,15 @@
 package de.dh.daps.core.aps
 
-import de.dh.daps.common.model.InsulinAmount
-import de.dh.daps.common.model.MealType
-import de.dh.daps.common.model.PlannedInsulin
-import de.dh.daps.common.model.convertToCarbsFromBgDelta
-import de.dh.daps.common.model.convertToInsulinAmountFromBgDelta
-import de.dh.daps.common.model.convertToInsulinAmountFromCarbs
-import de.dh.daps.common.model.data.BgDelta
-import de.dh.daps.common.model.data.BgValue
-import de.dh.daps.common.model.data.Minutes
-import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.domain.model.therapy.InsulinAmount
+import de.dh.daps.common.domain.model.therapy.MealType
+import de.dh.daps.common.domain.model.therapy.PlannedInsulin
+import de.dh.daps.common.domain.model.therapy.convertToCarbsFromBgDelta
+import de.dh.daps.common.domain.model.therapy.convertToInsulinAmountFromBgDelta
+import de.dh.daps.common.domain.model.therapy.convertToInsulinAmountFromCarbs
+import de.dh.daps.common.domain.model.therapy.BgDelta
+import de.dh.daps.common.domain.model.therapy.BgValue
+import de.dh.daps.common.domain.model.therapy.Minutes
+import de.dh.daps.common.domain.model.therapy.Timestamp
 import de.dh.daps.core.repository.GlucoseRepository
 import de.dh.daps.core.therapy.TherapyManager
 import kotlin.math.abs

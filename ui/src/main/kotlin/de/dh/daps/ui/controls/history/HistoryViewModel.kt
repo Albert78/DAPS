@@ -5,10 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import de.dh.daps.common.model.InsulinApplication
-import de.dh.daps.common.model.MealEntry
-import de.dh.daps.common.model.data.BgReading
-import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.domain.model.therapy.InsulinApplication
+import de.dh.daps.common.domain.model.therapy.MealEntry
+import de.dh.daps.common.domain.model.therapy.BgReading
+import de.dh.daps.common.domain.model.therapy.Timestamp
 import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview

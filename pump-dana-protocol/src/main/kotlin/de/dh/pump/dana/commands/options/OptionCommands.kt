@@ -13,7 +13,7 @@ import de.dh.pump.dana.commands.readSignedInt8
 import de.dh.pump.dana.commands.requireRemainingAtLeast
 import de.dh.pump.protocol.ByteReader
 import de.dh.pump.protocol.ByteWriter
-import de.dh.daps.common.model.data.PumpTimestamp
+import de.dh.daps.common.domain.model.therapy.PumpTimestamp
 import java.time.ZoneId
 
 /**

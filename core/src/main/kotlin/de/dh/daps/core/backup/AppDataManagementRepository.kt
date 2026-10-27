@@ -2,11 +2,14 @@ package de.dh.daps.core.backup
 
 import android.content.Context
 import androidx.room.withTransaction
-import de.dh.daps.AppPreferencesRepository
-import de.dh.daps.carbsUnit
-import de.dh.daps.common.model.PluginManager
-import de.dh.daps.common.model.data.CarbsUnit
-import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.common.repository.AppPreferencesRepository
+import de.dh.daps.common.repository.carbsUnit
+import de.dh.daps.common.repository.glucoseUnit
+import de.dh.daps.common.repository.setCarbsUnit
+import de.dh.daps.common.repository.setGlucoseUnit
+import de.dh.daps.common.infrastructure.PluginManager
+import de.dh.daps.common.domain.model.therapy.CarbsUnit
+import de.dh.daps.common.domain.model.therapy.GlucoseUnit
 import de.dh.daps.core.repository.AlarmRepository
 import de.dh.daps.core.repository.DatabaseInitializer
 import de.dh.daps.core.repository.GlucoseRepository
@@ -14,9 +17,6 @@ import de.dh.daps.core.repository.SettingsRepository
 import de.dh.daps.core.repository.TherapyRepository
 import de.dh.daps.core.repository.TreatmentRepository
 import de.dh.daps.core.repository.db.AppDatabase
-import de.dh.daps.glucoseUnit
-import de.dh.daps.setCarbsUnit
-import de.dh.daps.setGlucoseUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json

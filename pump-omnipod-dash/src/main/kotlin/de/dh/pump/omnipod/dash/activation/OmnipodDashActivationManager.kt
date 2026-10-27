@@ -1,6 +1,6 @@
 package de.dh.pump.omnipod.dash.activation
 
-import de.dh.daps.common.model.data.InsulinProfile
+import de.dh.daps.common.domain.model.therapy.InsulinProfile
 import de.dh.pump.omnipod.dash.db.OmnipodHistoryDao
 import de.dh.pump.omnipod.dash.db.OmnipodHistoryEntity
 import de.dh.pump.omnipod.dash.db.OmnipodHistoryEventType

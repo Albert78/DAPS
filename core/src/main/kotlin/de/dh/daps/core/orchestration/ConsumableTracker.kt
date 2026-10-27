@@ -2,16 +2,16 @@ package de.dh.daps.core.orchestration
 
 import android.content.Context
 import de.dh.daps.common.R as CommonR
-import de.dh.daps.common.model.InsulinPumpStatus
-import de.dh.daps.common.model.PatchPhase
-import de.dh.daps.common.model.PumpLifecycleState
-import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.common.service.REMINDER_SOURCE_CATHETER_CHANGE
-import de.dh.daps.common.service.REMINDER_SOURCE_PATCH_CHANGE
-import de.dh.daps.common.service.ReminderManager
-import de.dh.daps.common.service.SystemWakeService
-import de.dh.daps.common.service.clearConsumableReminder
-import de.dh.daps.common.service.syncConsumableReminder
+import de.dh.daps.common.domain.model.therapy.InsulinPumpStatus
+import de.dh.daps.common.domain.model.therapy.PatchPhase
+import de.dh.daps.common.domain.model.therapy.PumpLifecycleState
+import de.dh.daps.common.domain.model.therapy.Timestamp
+import de.dh.daps.common.infrastructure.REMINDER_SOURCE_CATHETER_CHANGE
+import de.dh.daps.common.infrastructure.REMINDER_SOURCE_PATCH_CHANGE
+import de.dh.daps.common.infrastructure.ReminderManager
+import de.dh.daps.common.infrastructure.SystemWakeService
+import de.dh.daps.common.infrastructure.clearConsumableReminder
+import de.dh.daps.common.infrastructure.syncConsumableReminder
 import de.dh.daps.core.pump.PumpIssue
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

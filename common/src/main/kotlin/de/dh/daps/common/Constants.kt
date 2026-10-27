@@ -1,6 +1,6 @@
 package de.dh.daps.common
 
-import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import java.time.LocalTime
 
 // Phone Battery Thresholds (%)

@@ -1,14 +1,14 @@
 package de.dh.daps.core.infrastructure
 
 import android.content.Intent
-import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.common.model.reminder.Reminder
-import de.dh.daps.common.model.reminder.ReminderStatus
-import de.dh.daps.common.model.reminder.ReminderType
-import de.dh.daps.common.service.ReminderManager
-import de.dh.daps.common.service.SystemWakeService
-import de.dh.daps.common.service.TimeService
-import de.dh.daps.common.service.WakeupHandler
+import de.dh.daps.common.domain.model.therapy.Timestamp
+import de.dh.daps.common.domain.model.reminder.Reminder
+import de.dh.daps.common.domain.model.reminder.ReminderStatus
+import de.dh.daps.common.domain.model.reminder.ReminderType
+import de.dh.daps.common.infrastructure.ReminderManager
+import de.dh.daps.common.infrastructure.SystemWakeService
+import de.dh.daps.common.infrastructure.TimeService
+import de.dh.daps.common.infrastructure.WakeupHandler
 import de.dh.daps.core.repository.db.dao.ReminderDao
 import de.dh.daps.core.repository.db.mappers.toEntity
 import de.dh.daps.core.repository.db.mappers.toModel

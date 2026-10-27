@@ -2,14 +2,14 @@ package de.dh.daps.plugin.simbody
 
 import android.app.Application
 import androidx.room.withTransaction
-import de.dh.daps.common.model.GlucoseSource
-import de.dh.daps.common.model.InsulinAmount
-import de.dh.daps.common.model.InsulinOrigin
-import de.dh.daps.common.model.InsulinPump
-import de.dh.daps.common.model.Plugin
-import de.dh.daps.common.model.PluginContext
-import de.dh.daps.common.model.data.BgReading
-import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.domain.model.therapy.GlucoseSource
+import de.dh.daps.common.domain.model.therapy.InsulinAmount
+import de.dh.daps.common.domain.model.therapy.InsulinOrigin
+import de.dh.daps.common.domain.model.therapy.InsulinPump
+import de.dh.daps.common.infrastructure.Plugin
+import de.dh.daps.common.infrastructure.PluginContext
+import de.dh.daps.common.domain.model.therapy.BgReading
+import de.dh.daps.common.domain.model.therapy.Timestamp
 import de.dh.daps.plugin.simbody.backup.BodyProfileBackupDto
 import de.dh.daps.plugin.simbody.backup.PumpHistoryBackupDto
 import de.dh.daps.plugin.simbody.backup.PumpStateBackupDto

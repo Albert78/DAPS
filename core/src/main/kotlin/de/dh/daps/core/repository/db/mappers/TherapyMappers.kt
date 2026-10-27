@@ -1,16 +1,16 @@
 package de.dh.daps.core.repository.db.mappers
 
-import de.dh.daps.common.model.InsulinType
-import de.dh.daps.common.model.data.AlarmProfile
-import de.dh.daps.common.model.data.BgBlock
-import de.dh.daps.common.model.data.BgValue
-import de.dh.daps.common.model.data.Block
-import de.dh.daps.common.model.data.CurrentTherapySettings
-import de.dh.daps.common.model.data.InsulinProfile
-import de.dh.daps.common.model.data.Minutes
-import de.dh.daps.common.model.data.ProfileInsulinSetting
-import de.dh.daps.common.model.data.ScheduledTherapyAdjustment
-import de.dh.daps.common.model.data.TherapyAdjustment
+import de.dh.daps.common.domain.model.therapy.InsulinType
+import de.dh.daps.common.domain.model.alarm.AlarmProfile
+import de.dh.daps.common.domain.model.therapy.BgBlock
+import de.dh.daps.common.domain.model.therapy.BgValue
+import de.dh.daps.common.domain.model.therapy.Block
+import de.dh.daps.common.domain.model.therapy.CurrentTherapySettings
+import de.dh.daps.common.domain.model.therapy.InsulinProfile
+import de.dh.daps.common.domain.model.therapy.Minutes
+import de.dh.daps.common.domain.model.therapy.ProfileInsulinSetting
+import de.dh.daps.common.domain.model.therapy.ScheduledTherapyAdjustment
+import de.dh.daps.common.domain.model.therapy.TherapyAdjustment
 import de.dh.daps.core.repository.db.entities.CurrentTherapySettingsEntity
 import de.dh.daps.core.repository.db.entities.DBBgBlock
 import de.dh.daps.core.repository.db.entities.DBBlock

@@ -1,6 +1,6 @@
 package de.dh.pump.dana.commands
 
-import de.dh.daps.common.model.data.PumpTimestamp
+import de.dh.daps.common.domain.model.therapy.PumpTimestamp
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZoneOffset

@@ -12,7 +12,7 @@ import de.dh.pump.dana.commands.requireRemainingAtLeast
 import de.dh.pump.protocol.ByteReader
 import de.dh.pump.protocol.ByteWriter
 import de.dh.pump.protocol.ProtocolException
-import de.dh.daps.common.model.data.PumpTimestamp
+import de.dh.daps.common.domain.model.therapy.PumpTimestamp
 import java.time.DateTimeException
 import java.time.LocalDateTime
 import java.time.ZoneId

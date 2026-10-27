@@ -1,10 +1,10 @@
 package de.dh.daps.core.aps.prediction
 
-import de.dh.daps.common.model.data.BgReading
-import de.dh.daps.common.model.data.BgSampleKind
-import de.dh.daps.common.model.data.BgValue
-import de.dh.daps.common.model.data.Minutes
-import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.domain.model.therapy.BgReading
+import de.dh.daps.common.domain.model.therapy.BgSampleKind
+import de.dh.daps.common.domain.model.therapy.BgValue
+import de.dh.daps.common.domain.model.therapy.Minutes
+import de.dh.daps.common.domain.model.therapy.Timestamp
 
 /**
  * Stores a limited history of blood glucose readings.

@@ -1,9 +1,9 @@
 package de.dh.daps.ui.controls.history
 
-import de.dh.daps.common.model.data.BgReading
-import de.dh.daps.common.model.data.BgSampleKind
-import de.dh.daps.common.model.data.BgValue
-import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.domain.model.therapy.BgReading
+import de.dh.daps.common.domain.model.therapy.BgSampleKind
+import de.dh.daps.common.domain.model.therapy.BgValue
+import de.dh.daps.common.domain.model.therapy.Timestamp
 import kotlin.math.sin
 import kotlin.random.Random
 

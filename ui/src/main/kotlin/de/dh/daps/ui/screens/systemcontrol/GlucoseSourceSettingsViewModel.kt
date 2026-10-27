@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import de.dh.daps.common.model.GlucoseSource
-import de.dh.daps.common.model.GlucoseSourceDriver
+import de.dh.daps.common.domain.model.therapy.GlucoseSource
+import de.dh.daps.common.device.driver.GlucoseSourceDriver
 import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

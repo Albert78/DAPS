@@ -47,11 +47,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import de.dh.daps.common.model.data.AlarmSeverity
-import de.dh.daps.common.model.data.AlarmSignalConfig
-import de.dh.daps.common.model.data.AlertDisplayMode
-import de.dh.daps.common.model.data.SoundConfig
-import de.dh.daps.common.model.data.VibrationMode
+import de.dh.daps.common.domain.model.alarm.AlarmSeverity
+import de.dh.daps.common.domain.model.alarm.AlarmSignalConfig
+import de.dh.daps.common.domain.model.alarm.AlertDisplayMode
+import de.dh.daps.common.domain.model.alarm.SoundConfig
+import de.dh.daps.common.domain.model.alarm.VibrationMode
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalTextButton

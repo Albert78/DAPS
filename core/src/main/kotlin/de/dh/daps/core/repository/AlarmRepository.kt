@@ -1,6 +1,6 @@
 package de.dh.daps.core.repository
 
-import de.dh.daps.common.model.data.AlarmProfile
+import de.dh.daps.common.domain.model.alarm.AlarmProfile
 import kotlinx.coroutines.flow.Flow
 
 interface AlarmRepository {

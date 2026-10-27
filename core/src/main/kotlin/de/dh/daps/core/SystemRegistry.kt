@@ -2,12 +2,12 @@ package de.dh.daps.core
 
 import android.content.Context
 import android.net.Uri
-import de.dh.daps.AppPreferencesRepository
-import de.dh.daps.common.model.PluginManager
-import de.dh.daps.common.model.calculation.CarbsInsulinCalculator
-import de.dh.daps.common.service.ReminderManager
-import de.dh.daps.common.service.SystemWakeService
-import de.dh.daps.common.service.TimeService
+import de.dh.daps.common.repository.AppPreferencesRepository
+import de.dh.daps.common.infrastructure.PluginManager
+import de.dh.daps.common.domain.calculation.CarbsInsulinCalculator
+import de.dh.daps.common.infrastructure.ReminderManager
+import de.dh.daps.common.infrastructure.SystemWakeService
+import de.dh.daps.common.infrastructure.TimeService
 import de.dh.daps.core.alarms.AlarmEvaluator
 import de.dh.daps.core.alarms.AlarmPlayerManager
 import de.dh.daps.core.alarms.AlarmSnoozeManager

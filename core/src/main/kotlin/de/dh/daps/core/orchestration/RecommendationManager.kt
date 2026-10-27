@@ -1,8 +1,8 @@
 package de.dh.daps.core.orchestration
 
-import de.dh.daps.common.model.DeferredBolus
-import de.dh.daps.common.model.InsulinAmount
-import de.dh.daps.common.model.MealEntry
+import de.dh.daps.common.domain.model.therapy.DeferredBolus
+import de.dh.daps.common.domain.model.therapy.InsulinAmount
+import de.dh.daps.common.domain.model.therapy.MealEntry
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

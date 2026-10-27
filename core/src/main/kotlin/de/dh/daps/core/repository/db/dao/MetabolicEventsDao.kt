@@ -7,7 +7,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import androidx.room.Upsert
-import de.dh.daps.common.model.InsulinOrigin
+import de.dh.daps.common.domain.model.therapy.InsulinOrigin
 import de.dh.daps.core.repository.db.entities.DeferredBolusEntity
 import de.dh.daps.core.repository.db.entities.InsulinEntity
 import de.dh.daps.core.repository.db.entities.InsulinTypeEntity

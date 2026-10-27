@@ -10,7 +10,7 @@ import de.dh.daps.common.ID_MEAL_FAST
 import de.dh.daps.common.ID_MEAL_HIGH_FAT
 import de.dh.daps.common.ID_MEAL_SLOW
 import de.dh.daps.common.ID_MEAL_STANDARD
-import de.dh.daps.common.model.MealType
+import de.dh.daps.common.domain.model.therapy.MealType
 import de.dh.daps.ui.common.R
 import de.dh.daps.ui.common.icons.BadgedStarIcon
 import de.dh.daps.ui.common.icons.Icon_Meal_Custom

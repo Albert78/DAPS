@@ -1,9 +1,9 @@
 package de.dh.daps.plugin.simbody.repository.db
 
 import androidx.room.TypeConverter
-import de.dh.daps.common.model.InsulinAmount
-import de.dh.daps.common.model.InsulinOrigin
-import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.domain.model.therapy.InsulinAmount
+import de.dh.daps.common.domain.model.therapy.InsulinOrigin
+import de.dh.daps.common.domain.model.therapy.Timestamp
 
 class SimBodyTypeConverters {
     @TypeConverter

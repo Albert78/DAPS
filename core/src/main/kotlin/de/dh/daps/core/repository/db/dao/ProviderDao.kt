@@ -4,7 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.domain.model.therapy.Timestamp
 import de.dh.daps.core.repository.db.entities.DataProviderEntity
 import de.dh.daps.core.repository.db.entities.GlucoseReadingEntity
 import de.dh.daps.core.repository.db.entities.SensorTypeEntity

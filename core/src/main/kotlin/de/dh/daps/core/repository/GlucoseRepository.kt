@@ -1,10 +1,10 @@
 package de.dh.daps.core.repository
 
-import de.dh.daps.common.model.DataProvider
-import de.dh.daps.common.model.data.BgReading
-import de.dh.daps.common.model.data.Minutes
-import de.dh.daps.common.model.data.SensorType
-import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.domain.model.therapy.DataProvider
+import de.dh.daps.common.domain.model.therapy.BgReading
+import de.dh.daps.common.domain.model.therapy.Minutes
+import de.dh.daps.common.domain.model.therapy.SensorType
+import de.dh.daps.common.domain.model.therapy.Timestamp
 import de.dh.daps.core.repository.db.AppDatabase
 import de.dh.daps.core.repository.db.dao.ProviderDao
 import de.dh.daps.core.repository.db.entities.DataProviderEntity

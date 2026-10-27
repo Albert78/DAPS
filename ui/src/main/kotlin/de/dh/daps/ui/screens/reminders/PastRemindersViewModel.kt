@@ -4,9 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.common.model.reminder.Reminder
-import de.dh.daps.common.model.reminder.ReminderStatus
+import de.dh.daps.common.domain.model.therapy.Timestamp
+import de.dh.daps.common.domain.model.reminder.Reminder
+import de.dh.daps.common.domain.model.reminder.ReminderStatus
 import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

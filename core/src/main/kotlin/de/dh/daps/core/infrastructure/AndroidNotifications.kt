@@ -1,10 +1,10 @@
 package de.dh.daps.core.infrastructure
 
 import android.app.Notification
-import de.dh.daps.common.model.DeferredBolus
-import de.dh.daps.common.model.data.AlarmType
-import de.dh.daps.common.model.data.BgValue
-import de.dh.daps.common.model.reminder.Reminder
+import de.dh.daps.common.domain.model.therapy.DeferredBolus
+import de.dh.daps.common.domain.model.alarm.AlarmType
+import de.dh.daps.common.domain.model.therapy.BgValue
+import de.dh.daps.common.domain.model.reminder.Reminder
 import de.dh.daps.core.orchestration.ApsRecommendation
 import de.dh.daps.core.repository.GlucoseRepository
 

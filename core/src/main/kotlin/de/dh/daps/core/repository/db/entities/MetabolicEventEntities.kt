@@ -7,11 +7,11 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.RoomWarnings
 import de.dh.daps.common.ID_UNDEFINED
-import de.dh.daps.common.model.InsulinAmount
-import de.dh.daps.common.model.InsulinOrigin
-import de.dh.daps.common.model.InsulinStatus
-import de.dh.daps.common.model.data.Minutes
-import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.domain.model.therapy.InsulinAmount
+import de.dh.daps.common.domain.model.therapy.InsulinOrigin
+import de.dh.daps.common.domain.model.therapy.InsulinStatus
+import de.dh.daps.common.domain.model.therapy.Minutes
+import de.dh.daps.common.domain.model.therapy.Timestamp
 
 @Entity(
     tableName = "meal_type"

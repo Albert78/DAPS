@@ -25,11 +25,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.model.InsulinAmount
-import de.dh.daps.common.model.MealEntry
-import de.dh.daps.common.model.data.Timestamp
-import de.dh.daps.common.model.getDefaultSlowMealType
-import de.dh.daps.common.model.getDefaultStandardMealType
+import de.dh.daps.common.domain.model.therapy.InsulinAmount
+import de.dh.daps.common.domain.model.therapy.MealEntry
+import de.dh.daps.common.domain.model.therapy.Timestamp
+import de.dh.daps.common.domain.model.therapy.getDefaultSlowMealType
+import de.dh.daps.common.domain.model.therapy.getDefaultStandardMealType
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.composables.FramedCard

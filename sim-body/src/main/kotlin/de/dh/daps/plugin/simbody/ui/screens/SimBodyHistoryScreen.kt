@@ -30,7 +30,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.plugin.simbody.BodyModel
 import de.dh.daps.plugin.simbody.DEFAULT_SIM_BODY_PROFILE
 import de.dh.daps.plugin.simbody.R

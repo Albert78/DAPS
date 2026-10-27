@@ -33,9 +33,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.model.InsulinConcentration
-import de.dh.daps.common.model.InsulinType
-import de.dh.daps.common.model.getDefaultInsulinTypes
+import de.dh.daps.common.domain.model.therapy.InsulinConcentration
+import de.dh.daps.common.domain.model.therapy.InsulinType
+import de.dh.daps.common.domain.model.therapy.getDefaultInsulinTypes
 import de.dh.daps.ui.common.R
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.common.R as CommonR

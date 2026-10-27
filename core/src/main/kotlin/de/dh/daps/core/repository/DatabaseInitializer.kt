@@ -4,15 +4,15 @@ import android.content.Context
 import de.dh.daps.common.DEFAULT_BG_LOW_THRESHOLD_MGDL
 import de.dh.daps.common.DEFAULT_BG_TARGET_MGDL
 import de.dh.daps.common.ID_INSULIN_NOVORAPID
-import de.dh.daps.common.model.data.BgBlock
-import de.dh.daps.common.model.data.BgValue
-import de.dh.daps.common.model.data.CurrentSettings
-import de.dh.daps.common.model.data.Minutes
-import de.dh.daps.common.model.getDefaultAlarmProfiles
-import de.dh.daps.common.model.getDefaultInsulinProfile
-import de.dh.daps.common.model.getDefaultInsulinTypes
-import de.dh.daps.common.model.getDefaultMealTypes
-import de.dh.daps.common.model.getDefaultTherapyAdjustments
+import de.dh.daps.common.domain.model.therapy.BgBlock
+import de.dh.daps.common.domain.model.therapy.BgValue
+import de.dh.daps.common.domain.model.system.CurrentSettings
+import de.dh.daps.common.domain.model.therapy.Minutes
+import de.dh.daps.common.domain.model.alarm.getDefaultAlarmProfiles
+import de.dh.daps.common.domain.model.therapy.getDefaultInsulinProfile
+import de.dh.daps.common.domain.model.therapy.getDefaultInsulinTypes
+import de.dh.daps.common.domain.model.therapy.getDefaultMealTypes
+import de.dh.daps.common.domain.model.therapy.getDefaultTherapyAdjustments
 
 object DatabaseInitializer {
     suspend fun isInitialized(

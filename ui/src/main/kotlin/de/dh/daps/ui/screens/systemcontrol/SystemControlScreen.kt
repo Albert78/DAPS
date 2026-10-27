@@ -41,7 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import de.dh.daps.common.model.ApsMode
+import de.dh.daps.common.domain.model.system.ApsMode
 import de.dh.daps.common.navigation.SystemControlTab
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.contentScrollIndicator

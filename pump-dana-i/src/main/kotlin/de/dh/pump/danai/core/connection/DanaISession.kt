@@ -3,7 +3,7 @@ package de.dh.pump.danai.core.connection
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.content.Context
-import de.dh.daps.common.model.PluginPreferences
+import de.dh.daps.common.infrastructure.PluginPreferences
 import de.dh.pump.client.singleframe.PumpClient
 import de.dh.pump.dana.DanaBleProfiles
 import de.dh.pump.dana.protocol.DanaRsHandshake

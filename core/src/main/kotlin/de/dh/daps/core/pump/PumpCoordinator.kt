@@ -1,11 +1,11 @@
 package de.dh.daps.core.pump
 
 import android.util.Log
-import de.dh.daps.common.model.InsulinAmount
-import de.dh.daps.common.model.InsulinPump
-import de.dh.daps.common.model.data.InsulinProfile
-import de.dh.daps.common.model.data.Minutes
-import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.domain.model.therapy.InsulinAmount
+import de.dh.daps.common.domain.model.therapy.InsulinPump
+import de.dh.daps.common.domain.model.therapy.InsulinProfile
+import de.dh.daps.common.domain.model.therapy.Minutes
+import de.dh.daps.common.domain.model.therapy.Timestamp
 import de.dh.daps.core.pump.PumpCoordinator.Companion.BUSY_RETRY_DELAYS_MS
 import de.dh.daps.core.pump.PumpCoordinator.Companion.MAX_CONNECTION_RETRIES
 import de.dh.daps.core.pump.PumpCoordinator.Companion.RETRY_INTERVAL_MS

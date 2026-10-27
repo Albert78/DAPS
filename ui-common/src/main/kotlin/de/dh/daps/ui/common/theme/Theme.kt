@@ -11,8 +11,8 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import de.dh.daps.common.model.data.CarbsUnit
-import de.dh.daps.common.model.data.GlucoseUnit
+import de.dh.daps.common.domain.model.therapy.CarbsUnit
+import de.dh.daps.common.domain.model.therapy.GlucoseUnit
 import de.dh.daps.ui.common.LocalAppFormatters
 import de.dh.daps.ui.common.LocalCarbsUnit
 import de.dh.daps.ui.common.LocalGlucoseUnit

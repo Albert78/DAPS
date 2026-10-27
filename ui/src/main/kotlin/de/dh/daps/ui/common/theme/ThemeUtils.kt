@@ -4,7 +4,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import de.dh.daps.AppPreferencesRepository
+import de.dh.daps.common.repository.AppPreferencesRepository
 import de.dh.daps.ui.common.ThemeMode
 import de.dh.daps.ui.common.themeMode
 

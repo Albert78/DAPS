@@ -1,8 +1,8 @@
 package de.dh.daps.core.orchestration
 
 import android.util.Log
-import de.dh.daps.common.model.ApsMode
-import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.domain.model.system.ApsMode
+import de.dh.daps.common.domain.model.therapy.Timestamp
 import de.dh.daps.core.glucosesource.GlucoseSourceManager
 import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.repository.SettingsRepository

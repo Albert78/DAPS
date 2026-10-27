@@ -2,7 +2,7 @@ package de.dh.daps.ui.common
 
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.stringPreferencesKey
-import de.dh.daps.AppPreferencesRepository
+import de.dh.daps.common.repository.AppPreferencesRepository
 
 val THEME_MODE_KEY = stringPreferencesKey("theme_mode")
 

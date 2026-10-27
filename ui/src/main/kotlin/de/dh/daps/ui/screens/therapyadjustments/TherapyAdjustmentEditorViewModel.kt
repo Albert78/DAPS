@@ -7,11 +7,11 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import de.dh.daps.common.ADJUSTMENT_PERCENTAGE_MAX
 import de.dh.daps.common.ADJUSTMENT_PERCENTAGE_MIN
 import de.dh.daps.common.ID_UNDEFINED
-import de.dh.daps.common.model.data.AlarmProfile
-import de.dh.daps.common.model.data.GlucoseUnit
-import de.dh.daps.common.model.data.TherapyAdjustment
+import de.dh.daps.common.domain.model.alarm.AlarmProfile
+import de.dh.daps.common.domain.model.therapy.GlucoseUnit
+import de.dh.daps.common.domain.model.therapy.TherapyAdjustment
 import de.dh.daps.core.SystemRegistry
-import de.dh.daps.glucoseUnit
+import de.dh.daps.common.repository.glucoseUnit
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

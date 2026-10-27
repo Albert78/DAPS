@@ -41,8 +41,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.model.MealType
-import de.dh.daps.common.model.getDefaultMealTypes
+import de.dh.daps.common.domain.model.therapy.MealType
+import de.dh.daps.common.domain.model.therapy.getDefaultMealTypes
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.MealTypeIcon
 import de.dh.daps.ui.common.composables.NormalTextButton

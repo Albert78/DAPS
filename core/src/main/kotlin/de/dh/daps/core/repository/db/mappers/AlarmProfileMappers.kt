@@ -1,12 +1,12 @@
 package de.dh.daps.core.repository.db.mappers
 
-import de.dh.daps.common.model.data.AlarmProfile
-import de.dh.daps.common.model.data.AlarmSeverity
-import de.dh.daps.common.model.data.AlarmSignalConfig
-import de.dh.daps.common.model.data.AlarmType
-import de.dh.daps.common.model.data.AlertDisplayMode
-import de.dh.daps.common.model.data.SoundConfig
-import de.dh.daps.common.model.data.VibrationMode
+import de.dh.daps.common.domain.model.alarm.AlarmProfile
+import de.dh.daps.common.domain.model.alarm.AlarmSeverity
+import de.dh.daps.common.domain.model.alarm.AlarmSignalConfig
+import de.dh.daps.common.domain.model.alarm.AlarmType
+import de.dh.daps.common.domain.model.alarm.AlertDisplayMode
+import de.dh.daps.common.domain.model.alarm.SoundConfig
+import de.dh.daps.common.domain.model.alarm.VibrationMode
 import de.dh.daps.core.repository.db.entities.AlarmProfileEntity
 import org.json.JSONObject
 

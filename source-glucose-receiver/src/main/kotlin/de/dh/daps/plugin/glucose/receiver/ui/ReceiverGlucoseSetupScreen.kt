@@ -28,7 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.model.DeviceLifecycleState
+import de.dh.daps.common.device.state.DeviceLifecycleState
 import de.dh.daps.plugin.glucose.receiver.ExternalSourceType
 import de.dh.daps.plugin.glucose.receiver.R
 import de.dh.daps.ui.common.composables.FramedCard

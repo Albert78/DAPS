@@ -27,7 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import de.dh.daps.common.model.DeviceLifecycleState
+import de.dh.daps.common.device.state.DeviceLifecycleState
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.plugin.simbody.R
 import de.dh.daps.plugin.simbody.SimBodyGlucoseSourceDriver

@@ -1,6 +1,6 @@
 package de.dh.daps.core.repository.db.mappers
 
-import de.dh.daps.common.model.reminder.Reminder
+import de.dh.daps.common.domain.model.reminder.Reminder
 import de.dh.daps.core.repository.db.entities.ReminderEntity
 
 fun Reminder.toEntity() = ReminderEntity(

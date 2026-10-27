@@ -3,8 +3,8 @@ package de.dh.daps.core.repository.db.entities
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import de.dh.daps.common.ID_UNDEFINED
-import de.dh.daps.common.model.data.Tick
-import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.domain.model.therapy.Tick
+import de.dh.daps.common.domain.model.therapy.Timestamp
 
 @Entity(tableName = "tick_metrics")
 data class TickMetricEntity(

@@ -3,11 +3,11 @@ package de.dh.daps.plugin.glucose.receiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import de.dh.daps.common.model.data.BgReading
-import de.dh.daps.common.model.data.BgSampleKind
-import de.dh.daps.common.model.data.BgValue
-import de.dh.daps.common.model.data.RawBg
-import de.dh.daps.common.model.data.Timestamp
+import de.dh.daps.common.domain.model.therapy.BgReading
+import de.dh.daps.common.domain.model.therapy.BgSampleKind
+import de.dh.daps.common.domain.model.therapy.BgValue
+import de.dh.daps.common.domain.model.therapy.RawBg
+import de.dh.daps.common.domain.model.therapy.Timestamp
 import kotlin.math.round
 import kotlin.time.Duration.Companion.days
 

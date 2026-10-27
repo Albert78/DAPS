@@ -28,11 +28,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import de.dh.daps.common.model.DeviceLifecycleState
-import de.dh.daps.common.model.GlucoseSource
-import de.dh.daps.common.model.GlucoseSourceDriver
-import de.dh.daps.common.model.Plugin
-import de.dh.daps.common.model.PluginContext
+import de.dh.daps.common.device.state.DeviceLifecycleState
+import de.dh.daps.common.domain.model.therapy.GlucoseSource
+import de.dh.daps.common.device.driver.GlucoseSourceDriver
+import de.dh.daps.common.infrastructure.Plugin
+import de.dh.daps.common.infrastructure.PluginContext
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalButton

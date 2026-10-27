@@ -1,6 +1,6 @@
 package de.dh.pump.danai.core
 
-import de.dh.daps.common.model.InsulinAmount
+import de.dh.daps.common.domain.model.therapy.InsulinAmount
 
 const val WARNING_THRESHOLD_BATTERY_REMAINING_PERCENT = 20
 val WARNING_THRESHOLD_RESERVOIR_REMAINING_UNITS = InsulinAmount(20.0)

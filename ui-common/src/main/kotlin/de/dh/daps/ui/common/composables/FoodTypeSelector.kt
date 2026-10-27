@@ -36,12 +36,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.model.CarbCurveComponentData
-import de.dh.daps.common.model.MealType
-import de.dh.daps.common.model.data.Minutes
-import de.dh.daps.common.model.getDefaultFastMealType
-import de.dh.daps.common.model.getDefaultSlowMealType
-import de.dh.daps.common.model.getDefaultStandardMealType
+import de.dh.daps.common.domain.model.therapy.CarbCurveComponentData
+import de.dh.daps.common.domain.model.therapy.MealType
+import de.dh.daps.common.domain.model.therapy.Minutes
+import de.dh.daps.common.domain.model.therapy.getDefaultFastMealType
+import de.dh.daps.common.domain.model.therapy.getDefaultSlowMealType
+import de.dh.daps.common.domain.model.therapy.getDefaultStandardMealType
 import de.dh.daps.ui.common.R
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.common.R as CommonR

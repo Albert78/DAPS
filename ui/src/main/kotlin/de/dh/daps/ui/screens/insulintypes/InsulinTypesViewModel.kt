@@ -3,7 +3,7 @@ package de.dh.daps.ui.screens.insulintypes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import de.dh.daps.common.model.InsulinType
+import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
