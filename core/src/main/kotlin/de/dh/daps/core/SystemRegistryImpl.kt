@@ -25,15 +25,15 @@ import de.dh.daps.core.backup.BackupOptions
 import de.dh.daps.core.backup.BackupResult
 import de.dh.daps.core.glucosesource.GlucoseSourceDriverManager
 import de.dh.daps.core.glucosesource.GlucoseSourceManager
-import de.dh.daps.core.orchestration.DeviceConnectionManager
-import de.dh.daps.core.orchestration.RecommendationManager
-import de.dh.daps.core.orchestration.SystemOrchestrator
-import de.dh.daps.core.orchestration.SystemOrchestratorImpl
 import de.dh.daps.core.infrastructure.AndroidNotifications
 import de.dh.daps.core.infrastructure.PluginContextImpl
 import de.dh.daps.core.infrastructure.ReminderManagerImpl
 import de.dh.daps.core.infrastructure.SystemWakeServiceImpl
 import de.dh.daps.core.infrastructure.TimeServiceImpl
+import de.dh.daps.core.orchestration.DeviceConnectionManager
+import de.dh.daps.core.orchestration.RecommendationManager
+import de.dh.daps.core.orchestration.SystemOrchestrator
+import de.dh.daps.core.orchestration.SystemOrchestratorImpl
 import de.dh.daps.core.pump.PumpDriverManager
 import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.pump.PumpManagerImpl
@@ -223,16 +223,7 @@ class SystemRegistryImpl(
         therapyManager.startInitialization()
         reminderManager.start()
 
-        systemOrchestrator.startInitialization(
-            treatmentRepository = treatmentRepository,
-            therapyManager = therapyManager,
-            recommendationManager = recommendationManager,
-            reminderManager = reminderManager,
-            pumpManager = pumpManager,
-            appPreferencesRepository = appPreferencesRepository,
-            carbsInsulinCalculator = carbsInsulinCalculator,
-            systemMetricsRepository = systemMetricsRepository
-        )
+        systemOrchestrator.startInitialization()
 
         alarmEvaluator.start()
 
@@ -256,7 +247,6 @@ class SystemRegistryImpl(
             onPermissionsChanged: () -> Unit,
         ): SystemRegistry {
             // Phase 1: Create all repositories and managers
-
             val appPreferencesRepository = AppPreferencesRepository(context = application, scope = scope)
             val appDatabase = AppDatabase.getInstance(application)
 
@@ -331,16 +321,28 @@ class SystemRegistryImpl(
             val carbsInsulinCalculator = CarbsInsulinCalculator(timeService.tickInterval)
 
             val systemOrchestrator = SystemOrchestratorImpl(
+                // Infrastructure & System Services
                 context = application,
+                scope = scope,
+                timeService = timeService,
+                wakeService = wakeService,
+                androidNotifications = androidNotifications,
+
+                // Repositories (Data & Persistence Layer)
+                glucoseRepository = glucoseRepository,
+                treatmentRepository = treatmentRepository,
+                settingsRepository = settingsRepository,
+                deviceStatusRepository = deviceStatusRepository,
+                systemMetricsRepository = systemMetricsRepository,
+                appPreferencesRepository = appPreferencesRepository,
+
+                // Domain Managers & Calculators
                 glucoseSourceManager = glucoseSourceManager,
                 pumpManager = pumpManager,
-                glucoseRepository = glucoseRepository,
-                wakeService = wakeService,
-                settingsRepository = settingsRepository,
-                timeService = timeService,
-                androidNotifications = androidNotifications,
-                deviceStatusRepository = deviceStatusRepository,
-                scope = scope
+                therapyManager = therapyManager,
+                recommendationManager = recommendationManager,
+                reminderManager = reminderManager,
+                carbsInsulinCalculator = carbsInsulinCalculator
             )
 
             val alarmSnoozeManager = AlarmSnoozeManager()

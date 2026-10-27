@@ -22,7 +22,6 @@ import de.dh.daps.core.aps.BolusCorrectionCalculator
 import de.dh.daps.core.aps.Core
 import de.dh.daps.core.aps.CoreIssue
 import de.dh.daps.core.aps.CoreState
-import de.dh.daps.core.aps.NoopAlgorithm
 import de.dh.daps.core.aps.SimpleBolusCorrectionCalculator
 import de.dh.daps.core.glucosesource.GlucoseSourceIssue
 import de.dh.daps.core.glucosesource.GlucoseSourceManager
@@ -134,16 +133,7 @@ interface SystemOrchestrator {
     /**
      * Starts the initialization of the system core.
      */
-    suspend fun startInitialization(
-        treatmentRepository: TreatmentRepository,
-        therapyManager: TherapyManager,
-        recommendationManager: RecommendationManager,
-        reminderManager: ReminderManager,
-        pumpManager: PumpManager,
-        appPreferencesRepository: AppPreferencesRepository,
-        carbsInsulinCalculator: CarbsInsulinCalculator,
-        systemMetricsRepository: SystemMetricsRepository
-    )
+    suspend fun startInitialization()
 
     /**
      * Creates a notification for the foreground service.
@@ -180,16 +170,30 @@ interface SystemOrchestrator {
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class SystemOrchestratorImpl(
+    // Infrastructure & System Services
     private val context: Context,
+    private val scope: CoroutineScope,
+    private val timeService: TimeService,
+    private val wakeService: SystemWakeService,
+    private val androidNotifications: AndroidNotifications,
+
+    // Repositories (Data & Persistence Layer)
+    private val glucoseRepository: GlucoseRepository,
+    private val treatmentRepository: TreatmentRepository,
+    private val settingsRepository: SettingsRepository,
+    private val deviceStatusRepository: DeviceStatusRepository,
+    private val systemMetricsRepository: SystemMetricsRepository,
+    private val appPreferencesRepository: AppPreferencesRepository,
+
+    // Domain Managers & Calculators
     private val glucoseSourceManager: GlucoseSourceManager,
     private val pumpManager: PumpManager,
-    private val glucoseRepository: GlucoseRepository,
-    private val wakeService: SystemWakeService,
-    private val settingsRepository: SettingsRepository,
-    private val timeService: TimeService,
-    private val androidNotifications: AndroidNotifications,
-    private val deviceStatusRepository: DeviceStatusRepository,
-    private val scope: CoroutineScope,
+    private val therapyManager: TherapyManager,
+    private val recommendationManager: RecommendationManager,
+    private val reminderManager: ReminderManager,
+    private val carbsInsulinCalculator: CarbsInsulinCalculator,
+
+    // Internal Helper Components (with Default Values)
     private val modeManager: ApsModeManager = ApsModeManager(
         glucoseSourceManager = glucoseSourceManager,
         pumpManager = pumpManager,
@@ -224,11 +228,6 @@ class SystemOrchestratorImpl(
 
     private lateinit var core: Core
 
-    private var therapyManager: TherapyManager? = null
-    private var treatmentRepository: TreatmentRepository? = null
-    private var carbsInsulinCalculator: CarbsInsulinCalculator? = null
-    private var reminderManager: ReminderManager? = null
-
     private inner class SystemWakeupHandler : WakeupHandler {
         override fun onWakeup(wakeupId: UInt?, intent: Intent?) {
             when (wakeupId) {
@@ -252,16 +251,7 @@ class SystemOrchestratorImpl(
         }
     }
 
-    override suspend fun startInitialization(
-        treatmentRepository: TreatmentRepository,
-        therapyManager: TherapyManager,
-        recommendationManager: RecommendationManager,
-        reminderManager: ReminderManager,
-        pumpManager: PumpManager,
-        appPreferencesRepository: AppPreferencesRepository,
-        carbsInsulinCalculator: CarbsInsulinCalculator,
-        systemMetricsRepository: SystemMetricsRepository
-    ) {
+    override suspend fun startInitialization() {
         stop()
 
         val newInitScope = CoroutineScope(scope.coroutineContext + SupervisorJob())
@@ -271,11 +261,6 @@ class SystemOrchestratorImpl(
         coreDispatcher = dispatcher
         val newCoreScope = CoroutineScope(dispatcher + SupervisorJob())
         coreScope = newCoreScope
-
-        this.therapyManager = therapyManager
-        this.treatmentRepository = treatmentRepository
-        this.carbsInsulinCalculator = carbsInsulinCalculator
-        this.reminderManager = reminderManager
 
         performDailyMaintenance()
 
@@ -512,16 +497,10 @@ class SystemOrchestratorImpl(
     }
 
     override fun getBolusCorrectionCalculator(): BolusCorrectionCalculator {
-        val tm = therapyManager
-        val tr = treatmentRepository
-        val cic = carbsInsulinCalculator
-
         return if (::core.isInitialized && coreScope != null) {
             core.getBolusCorrectionCalculator()
-        } else if (tm != null && tr != null && cic != null) {
-            SimpleBolusCorrectionCalculator(tm, glucoseRepository)
         } else {
-            NoopAlgorithm().getBolusCorrectionCalculator()
+            SimpleBolusCorrectionCalculator(therapyManager, glucoseRepository)
         }
     }
 
@@ -536,7 +515,7 @@ class SystemOrchestratorImpl(
 
     private fun performDailyMaintenance() {
         scope.launch {
-            reminderManager?.purgeOldReminders(3)
+            reminderManager.purgeOldReminders(3)
         }
         scheduleDailyMaintenance()
     }
