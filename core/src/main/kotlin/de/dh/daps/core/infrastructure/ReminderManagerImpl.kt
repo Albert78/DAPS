@@ -18,6 +18,11 @@ import de.dh.daps.common.infrastructure.WakeupHandler
 import de.dh.daps.common.navigation.AppDeepLinks
 import de.dh.daps.core.repository.db.dao.ReminderDao
 import de.dh.daps.core.repository.db.mappers.toEntity
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneId
 import de.dh.daps.core.repository.db.mappers.toModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -201,34 +206,56 @@ class ReminderManagerImpl(
         return scheduleReminder(reminder)
     }
 
-    override suspend fun syncConsumableReminder(
-        sourceId: String,
-        reminderTimestamp: Timestamp,
-        title: String,
-        description: String
+    override suspend fun syncCatheterChangeReminder(
+        expirationDate: LocalDate?,
+        warningTime: LocalTime
     ): Reminder? {
-        cancelRemindersForSource(sourceId)
-        if (reminderTimestamp.ms > System.currentTimeMillis()) {
-            val defaultTitle = when (sourceId) {
-                REMINDER_SOURCE_CATHETER_CHANGE -> context.getString(CommonR.string.notification_catheter_change_title)
-                REMINDER_SOURCE_PATCH_CHANGE -> context.getString(CommonR.string.notification_patch_change_title)
-                else -> ""
+        cancelRemindersForSource(REMINDER_SOURCE_CATHETER_CHANGE)
+        cancelRemindersForSource(REMINDER_SOURCE_PATCH_CHANGE)
+        if (expirationDate != null) {
+            val zoneId = ZoneId.systemDefault()
+            val triggerDateTime = expirationDate.minusDays(1).atTime(warningTime)
+            val triggerMs = triggerDateTime.atZone(zoneId).toInstant().toEpochMilli()
+            if (triggerMs > System.currentTimeMillis()) {
+                val reminder = Reminder(
+                    type = ReminderType.PUMP,
+                    sourceId = REMINDER_SOURCE_CATHETER_CHANGE,
+                    title = context.getString(CommonR.string.notification_catheter_change_title),
+                    description = context.getString(CommonR.string.notification_catheter_change_description),
+                    reminderTimestamp = Timestamp(triggerMs),
+                    expirationTimestamp = Timestamp(triggerMs) + Minutes(180),
+                    targetRoute = AppDeepLinks.SYSTEM_CONTROL_PUMP
+                )
+                return scheduleReminder(reminder)
             }
-            val defaultDescription = when (sourceId) {
-                REMINDER_SOURCE_CATHETER_CHANGE -> context.getString(CommonR.string.notification_catheter_change_description)
-                REMINDER_SOURCE_PATCH_CHANGE -> context.getString(CommonR.string.notification_patch_change_description)
-                else -> ""
+        }
+        return null
+    }
+
+    override suspend fun syncPatchChangeReminder(
+        activeUntil: Timestamp?,
+        warningTime: LocalTime
+    ): Reminder? {
+        cancelRemindersForSource(REMINDER_SOURCE_PATCH_CHANGE)
+        cancelRemindersForSource(REMINDER_SOURCE_CATHETER_CHANGE)
+        if (activeUntil != null && activeUntil.isValid() && activeUntil.ms > 0) {
+            val zoneId = ZoneId.systemDefault()
+            val activeUntilZoneDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(activeUntil.ms), zoneId)
+            val activeUntilDate = activeUntilZoneDateTime.toLocalDate()
+            val triggerDateTime = activeUntilDate.minusDays(1).atTime(warningTime)
+            val triggerMs = triggerDateTime.atZone(zoneId).toInstant().toEpochMilli()
+            if (triggerMs > System.currentTimeMillis()) {
+                val reminder = Reminder(
+                    type = ReminderType.PUMP,
+                    sourceId = REMINDER_SOURCE_PATCH_CHANGE,
+                    title = context.getString(CommonR.string.notification_patch_change_title),
+                    description = context.getString(CommonR.string.notification_patch_change_description),
+                    reminderTimestamp = Timestamp(triggerMs),
+                    expirationTimestamp = Timestamp(triggerMs) + Minutes(180),
+                    targetRoute = AppDeepLinks.SYSTEM_CONTROL_PUMP
+                )
+                return scheduleReminder(reminder)
             }
-            val reminder = Reminder(
-                type = ReminderType.PUMP,
-                sourceId = sourceId,
-                title = title.ifBlank { defaultTitle },
-                description = description.ifBlank { defaultDescription },
-                reminderTimestamp = reminderTimestamp,
-                expirationTimestamp = reminderTimestamp + Minutes(180),
-                targetRoute = AppDeepLinks.SYSTEM_CONTROL_PUMP
-            )
-            return scheduleReminder(reminder)
         }
         return null
     }

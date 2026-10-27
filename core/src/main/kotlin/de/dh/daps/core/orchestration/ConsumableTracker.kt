@@ -4,11 +4,8 @@ import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.pump.InsulinPumpStatus
 import de.dh.daps.common.domain.pump.PatchPhase
 import de.dh.daps.common.domain.pump.PumpLifecycleState
-import de.dh.daps.common.infrastructure.REMINDER_SOURCE_CATHETER_CHANGE
-import de.dh.daps.common.infrastructure.REMINDER_SOURCE_PATCH_CHANGE
 import de.dh.daps.common.infrastructure.ReminderManager
 import de.dh.daps.common.infrastructure.SystemWakeService
-import de.dh.daps.common.infrastructure.clearConsumableReminder
 import de.dh.daps.core.pump.PumpIssue
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -44,16 +41,14 @@ class ConsumableTracker {
         wakeTag: String,
         wakeupConsumableCheckId: UInt
     ) {
+        // 1. Sync advance reminder
+        syncConsumableReminder(lifecycleState, warningTime, reminderManager)
+
         if (lifecycleState == null) {
             _consumableIssues.value = emptySet()
-            reminderManager?.clearConsumableReminder(REMINDER_SOURCE_CATHETER_CHANGE)
-            reminderManager?.clearConsumableReminder(REMINDER_SOURCE_PATCH_CHANGE)
             wakeService.cancelWakeup(wakeTag, wakeupConsumableCheckId)
             return
         }
-
-        // 1. Sync advance reminder (1 day before)
-        syncConsumableReminder(lifecycleState, warningTime, reminderManager)
 
         // 2. Evaluate active warning issue & next wakeup timestamp
         val now = Timestamp.now()
@@ -105,44 +100,28 @@ class ConsumableTracker {
     }
 
     private suspend fun syncConsumableReminder(
-        lifecycleState: PumpLifecycleState,
+        lifecycleState: PumpLifecycleState?,
         warningTime: LocalTime,
         reminderManager: ReminderManager?
     ) {
         val manager = reminderManager ?: return
-        val zoneId = ZoneId.systemDefault()
         when (lifecycleState) {
             is PumpLifecycleState.Durable -> {
-                val expirationDate = lifecycleState.approximateCatheterExpiration
-                if (expirationDate != null) {
-                    val triggerDateTime = expirationDate.minusDays(1).atTime(warningTime)
-                    val triggerMs = triggerDateTime.atZone(zoneId).toInstant().toEpochMilli()
-
-                    manager.syncConsumableReminder(
-                        sourceId = REMINDER_SOURCE_CATHETER_CHANGE,
-                        reminderTimestamp = Timestamp(triggerMs)
-                    )
-                } else {
-                    manager.clearConsumableReminder(REMINDER_SOURCE_CATHETER_CHANGE)
-                }
-                manager.clearConsumableReminder(REMINDER_SOURCE_PATCH_CHANGE)
+                manager.syncCatheterChangeReminder(
+                    expirationDate = lifecycleState.approximateCatheterExpiration,
+                    warningTime = warningTime
+                )
             }
             is PumpLifecycleState.Patch -> {
-                val activeUntil = lifecycleState.activeUntil
-                if (lifecycleState.phase == PatchPhase.ACTIVE && activeUntil.isValid() && activeUntil.ms > 0) {
-                    val activeUntilZoneDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(activeUntil.ms), zoneId)
-                    val activeUntilDate = activeUntilZoneDateTime.toLocalDate()
-                    val triggerDateTime = activeUntilDate.minusDays(1).atTime(warningTime)
-                    val triggerMs = triggerDateTime.atZone(zoneId).toInstant().toEpochMilli()
-
-                    manager.syncConsumableReminder(
-                        sourceId = REMINDER_SOURCE_PATCH_CHANGE,
-                        reminderTimestamp = Timestamp(triggerMs)
-                    )
-                } else {
-                    manager.clearConsumableReminder(REMINDER_SOURCE_PATCH_CHANGE)
-                }
-                manager.clearConsumableReminder(REMINDER_SOURCE_CATHETER_CHANGE)
+                val activeUntil = if (lifecycleState.phase == PatchPhase.ACTIVE) lifecycleState.activeUntil else null
+                manager.syncPatchChangeReminder(
+                    activeUntil = activeUntil,
+                    warningTime = warningTime
+                )
+            }
+            null -> {
+                manager.syncCatheterChangeReminder(null, warningTime)
+                manager.syncPatchChangeReminder(null, warningTime)
             }
         }
     }

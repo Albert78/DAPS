@@ -5,6 +5,8 @@ import de.dh.daps.common.domain.model.reminder.Reminder
 import de.dh.daps.common.domain.model.reminder.ReminderType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import java.time.LocalDate
+import java.time.LocalTime
 
 /**
  * App-wide service for managing reminders, scheduling background wakeups,
@@ -103,13 +105,19 @@ interface ReminderManager {
     ): Reminder
 
     /**
-     * Syncs a consumable reminder (catheter / patch change).
+     * Synchronizes the catheter change advance reminder based on catheter expiration date.
      */
-    suspend fun syncConsumableReminder(
-        sourceId: String,
-        reminderTimestamp: Timestamp,
-        title: String = "",
-        description: String = ""
+    suspend fun syncCatheterChangeReminder(
+        expirationDate: LocalDate?,
+        warningTime: LocalTime
+    ): Reminder?
+
+    /**
+     * Synchronizes the patch change advance reminder based on patch expiration timestamp.
+     */
+    suspend fun syncPatchChangeReminder(
+        activeUntil: Timestamp?,
+        warningTime: LocalTime
     ): Reminder?
 }
 
