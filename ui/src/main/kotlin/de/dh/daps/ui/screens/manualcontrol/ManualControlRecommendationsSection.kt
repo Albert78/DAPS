@@ -271,13 +271,7 @@ fun RecommendationCard(
                         PrimaryButton(
                             onClick = {
                                 onOpenBolusDialog(
-                                    ManualControlDialog.Bolus(
-                                        initialAmount = recommendation.amount,
-                                        includedDeferredBoluses = recommendation.includedDeferredBoluses,
-                                        correctionPart = recommendation.correctionPart,
-                                        basalPart = recommendation.basalPart,
-                                        recommendationToDismiss = recommendation
-                                    )
+                                    ManualControlDialog.Bolus.create(recommendation)
                                 )
                             }
                         ) {
@@ -342,11 +336,7 @@ fun RecommendationCard(
                         SecondaryButton(
                             onClick = {
                                 onOpenTempBasalDialog(
-                                    ManualControlDialog.TempBasal(
-                                        initialPercent = recommendation.percent,
-                                        initialDurationHours = recommendation.durationInHours,
-                                        recommendationToDismiss = recommendation
-                                    )
+                                    ManualControlDialog.TempBasal.create(recommendation)
                                 )
                             }
                         ) {

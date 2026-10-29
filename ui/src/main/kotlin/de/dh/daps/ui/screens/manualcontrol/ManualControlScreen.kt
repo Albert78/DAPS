@@ -130,23 +130,18 @@ fun ManualControlContent(
         if (!handledInitialDialog && uiState.pump.isConfigured) {
             when (initialDialog) {
                 ManualControlInitialDialog.BOLUS -> {
-                    val bolusRec = uiState.activeRecommendations.bolus
-                    activeDialog = ManualControlDialog.Bolus(
-                        initialAmount = bolusRec?.amount ?: InsulinAmount.ZERO,
-                        includedDeferredBoluses = bolusRec?.includedDeferredBoluses,
-                        correctionPart = bolusRec?.correctionPart ?: InsulinAmount.ZERO,
-                        basalPart = bolusRec?.basalPart ?: InsulinAmount.ZERO,
-                        recommendationToDismiss = bolusRec
+                    activeDialog = ManualControlDialog.Bolus.create(
+                        recommendation = uiState.activeRecommendations.bolus,
+                        defaultAmount = InsulinAmount.ZERO
                     )
                     handledInitialDialog = true
                 }
                 ManualControlInitialDialog.TEMP_BASAL -> {
-                    val tempBasalRec = uiState.activeRecommendations.tempBasal
                     val currentPercent = uiState.pump.basalStatus?.tempBasalPercent ?: 100
-                    activeDialog = ManualControlDialog.TempBasal(
-                        initialPercent = tempBasalRec?.percent ?: currentPercent,
-                        initialDurationHours = tempBasalRec?.durationInHours ?: 1,
-                        recommendationToDismiss = tempBasalRec
+                    activeDialog = ManualControlDialog.TempBasal.create(
+                        recommendation = uiState.activeRecommendations.tempBasal,
+                        defaultPercent = currentPercent,
+                        defaultDurationHours = 1
                     )
                     handledInitialDialog = true
                 }
@@ -212,6 +207,7 @@ fun ManualControlContent(
                     // Manual Pump Control
                     ManualControlPumpControlsSection(
                         pump = uiState.pump,
+                        recommendations = uiState.activeRecommendations,
                         lastBolus = uiState.contextInfo.lastBolus,
                         onOpenBolusDialog = { activeDialog = it },
                         onCancelBolus = onCancelBolus,

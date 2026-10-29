@@ -40,6 +40,7 @@ import de.dh.daps.common.domain.model.therapy.InsulinOrigin
 import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.common.domain.pump.BasalStatus
 import de.dh.daps.common.domain.pump.BolusDeliveryState
+import de.dh.daps.core.orchestration.ActiveRecommendations
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalButton
@@ -58,6 +59,7 @@ import java.util.Locale
 @Composable
 fun ManualControlPumpControlsSection(
     pump: ManualControlPumpUiModel,
+    recommendations: ActiveRecommendations = ActiveRecommendations(),
     lastBolus: InsulinApplication? = null,
     onOpenBolusDialog: (ManualControlDialog.Bolus) -> Unit,
     onCancelBolus: () -> Unit,
@@ -175,8 +177,9 @@ fun ManualControlPumpControlsSection(
                     PrimaryButton(
                         onClick = {
                             onOpenBolusDialog(
-                                ManualControlDialog.Bolus(
-                                    initialAmount = pump.minBolusAmount.coerceAtLeast(InsulinAmount(1.0))
+                                ManualControlDialog.Bolus.create(
+                                    recommendation = recommendations.bolus,
+                                    defaultAmount = pump.minBolusAmount.coerceAtLeast(InsulinAmount(1.0))
                                 )
                             )
                         },
@@ -266,9 +269,10 @@ fun ManualControlPumpControlsSection(
                         PrimaryButton(
                             onClick = {
                                 onOpenTempBasalDialog(
-                                    ManualControlDialog.TempBasal(
-                                        initialPercent = 100,
-                                        initialDurationHours = 1
+                                    ManualControlDialog.TempBasal.create(
+                                        recommendation = recommendations.tempBasal,
+                                        defaultPercent = 100,
+                                        defaultDurationHours = 1
                                     )
                                 )
                             },
@@ -343,9 +347,10 @@ fun ManualControlPumpControlsSection(
                         PrimaryButton(
                             onClick = {
                                 onOpenTempBasalDialog(
-                                    ManualControlDialog.TempBasal(
-                                        initialPercent = 100,
-                                        initialDurationHours = 1
+                                    ManualControlDialog.TempBasal.create(
+                                        recommendation = recommendations.tempBasal,
+                                        defaultPercent = 100,
+                                        defaultDurationHours = 1
                                     )
                                 )
                             },
@@ -372,9 +377,10 @@ fun ManualControlPumpControlsSection(
                     PrimaryButton(
                         onClick = {
                             onOpenTempBasalDialog(
-                                ManualControlDialog.TempBasal(
-                                    initialPercent = 100,
-                                    initialDurationHours = 1
+                                ManualControlDialog.TempBasal.create(
+                                    recommendation = recommendations.tempBasal,
+                                    defaultPercent = 100,
+                                    defaultDurationHours = 1
                                 )
                             )
                         },

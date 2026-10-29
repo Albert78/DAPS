@@ -45,13 +45,55 @@ sealed interface ManualControlDialog {
         val correctionPart: InsulinAmount = InsulinAmount.ZERO,
         val basalPart: InsulinAmount = InsulinAmount.ZERO,
         val recommendationToDismiss: ApsRecommendation.Bolus? = null,
-    ) : ManualControlDialog
+    ) : ManualControlDialog {
+        companion object {
+            fun create(
+                recommendation: ApsRecommendation.Bolus?,
+                defaultAmount: InsulinAmount = InsulinAmount.ZERO
+            ): Bolus {
+                return if (recommendation != null) {
+                    Bolus(
+                        initialAmount = recommendation.amount,
+                        includedDeferredBoluses = recommendation.includedDeferredBoluses,
+                        correctionPart = recommendation.correctionPart,
+                        basalPart = recommendation.basalPart,
+                        recommendationToDismiss = recommendation
+                    )
+                } else {
+                    Bolus(
+                        initialAmount = defaultAmount
+                    )
+                }
+            }
+        }
+    }
 
     data class TempBasal(
         val initialPercent: Int,
         val initialDurationHours: Int,
         val recommendationToDismiss: ApsRecommendation.TempBasal? = null
-    ) : ManualControlDialog
+    ) : ManualControlDialog {
+        companion object {
+            fun create(
+                recommendation: ApsRecommendation.TempBasal?,
+                defaultPercent: Int = 100,
+                defaultDurationHours: Int = 1
+            ): TempBasal {
+                return if (recommendation != null) {
+                    TempBasal(
+                        initialPercent = recommendation.percent,
+                        initialDurationHours = recommendation.durationInHours,
+                        recommendationToDismiss = recommendation
+                    )
+                } else {
+                    TempBasal(
+                        initialPercent = defaultPercent,
+                        initialDurationHours = defaultDurationHours
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Composable
