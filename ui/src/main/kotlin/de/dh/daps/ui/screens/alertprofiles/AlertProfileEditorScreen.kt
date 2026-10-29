@@ -250,52 +250,52 @@ fun AlertProfileEditorContent(
             PrimaryTabRow(selectedTabIndex = selectedTabIndex) {
                 Tab(
                     selected = selectedTabIndex == 0,
-                    onClick = { selectedTabIndex = 0 },
-                    text = {
-                        Text(
-                            text = stringResource(id = R.string.alert_profile_section_alarms),
-                            textAlign = TextAlign.Center,
-                            maxLines = 2,
-                            softWrap = true,
-                            style = MaterialTheme.typography.labelLarge.copy(
-                                hyphens = Hyphens.Auto,
-                                lineBreak = LineBreak.Heading
-                            )
+                    onClick = { selectedTabIndex = 0 }
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.alert_profile_section_alarms),
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 12.dp),
+                        textAlign = TextAlign.Center,
+                        maxLines = 2,
+                        softWrap = true,
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            hyphens = Hyphens.Auto,
+                            lineBreak = LineBreak.Heading
                         )
-                    }
-                )
+                    )
+                }
                 Tab(
                     selected = selectedTabIndex == 1,
-                    onClick = { selectedTabIndex = 1 },
-                    text = {
-                        Text(
-                            text = stringResource(id = R.string.alert_profile_section_recommendations),
-                            textAlign = TextAlign.Center,
-                            maxLines = 2,
-                            softWrap = true,
-                            style = MaterialTheme.typography.labelLarge.copy(
-                                hyphens = Hyphens.Auto,
-                                lineBreak = LineBreak.Heading
-                            )
+                    onClick = { selectedTabIndex = 1 }
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.alert_profile_section_recommendations),
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 12.dp),
+                        textAlign = TextAlign.Center,
+                        maxLines = 2,
+                        softWrap = true,
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            hyphens = Hyphens.Auto,
+                            lineBreak = LineBreak.Heading
                         )
-                    }
-                )
+                    )
+                }
                 Tab(
                     selected = selectedTabIndex == 2,
-                    onClick = { selectedTabIndex = 2 },
-                    text = {
-                        Text(
-                            text = stringResource(id = R.string.alert_profile_section_reminders),
-                            textAlign = TextAlign.Center,
-                            maxLines = 2,
-                            softWrap = true,
-                            style = MaterialTheme.typography.labelLarge.copy(
-                                hyphens = Hyphens.Auto,
-                                lineBreak = LineBreak.Heading
-                            )
+                    onClick = { selectedTabIndex = 2 }
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.alert_profile_section_reminders),
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 12.dp),
+                        textAlign = TextAlign.Center,
+                        maxLines = 2,
+                        softWrap = true,
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            hyphens = Hyphens.Auto,
+                            lineBreak = LineBreak.Heading
                         )
-                    }
-                )
+                    )
+                }
             }
 
             val listState = rememberLazyListState()
@@ -397,13 +397,15 @@ fun AlertProfileEditorContent(
 }
 
 @Composable
-private fun AddAlarmOverrideButton(
-    existingOverrides: Set<AlarmType>,
-    onAdd: (AlarmType) -> Unit
+private fun <T> AddOverrideButton(
+    allEntries: List<T>,
+    existingOverrides: Set<T>,
+    typeLabel: @Composable (T) -> String,
+    onAdd: (T) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val availableTypes = remember(existingOverrides) {
-        AlarmType.entries.filterNot { existingOverrides.contains(it) }
+    val availableTypes = remember(allEntries, existingOverrides) {
+        allEntries.filterNot { existingOverrides.contains(it) }
     }
 
     if (availableTypes.isNotEmpty()) {
@@ -422,83 +424,7 @@ private fun AddAlarmOverrideButton(
             ) {
                 availableTypes.forEach { type ->
                     DropdownMenuItem(
-                        text = { Text(getAlarmTypeLabel(type)) },
-                        onClick = {
-                            expanded = false
-                            onAdd(type)
-                        }
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun AddRecommendationOverrideButton(
-    existingOverrides: Set<RecommendationType>,
-    onAdd: (RecommendationType) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-    val availableTypes = remember(existingOverrides) {
-        RecommendationType.entries.filterNot { existingOverrides.contains(it) }
-    }
-
-    if (availableTypes.isNotEmpty()) {
-        Box {
-            NormalButton(onClick = { expanded = true }) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = null,
-                    modifier = Modifier.padding(end = 4.dp)
-                )
-                Text(stringResource(id = R.string.alert_profile_add_override))
-            }
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
-                availableTypes.forEach { type ->
-                    DropdownMenuItem(
-                        text = { Text(getRecommendationTypeLabel(type)) },
-                        onClick = {
-                            expanded = false
-                            onAdd(type)
-                        }
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun AddReminderOverrideButton(
-    existingOverrides: Set<ReminderType>,
-    onAdd: (ReminderType) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-    val availableTypes = remember(existingOverrides) {
-        ReminderType.entries.filterNot { existingOverrides.contains(it) }
-    }
-
-    if (availableTypes.isNotEmpty()) {
-        Box {
-            NormalButton(onClick = { expanded = true }) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = null,
-                    modifier = Modifier.padding(end = 4.dp)
-                )
-                Text(stringResource(id = R.string.alert_profile_add_override))
-            }
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
-                availableTypes.forEach { type ->
-                    DropdownMenuItem(
-                        text = { Text(getReminderTypeLabel(type)) },
+                        text = { Text(typeLabel(type)) },
                         onClick = {
                             expanded = false
                             onAdd(type)
@@ -549,7 +475,7 @@ private fun AlarmsTabContent(
                 subtitle = "🔴 $defaultSubtitle",
                 config = alarmDefaults[AlarmSeverity.CRITICAL] ?: AlertSignalConfig(),
                 onConfigChanged = { onAlarmDefaultChange(AlarmSeverity.CRITICAL, it) },
-                showEnabledToggle = false,
+                showEnabledToggle = true,
                 onPlayPreview = { onPlayPreview(alarmDefaults[AlarmSeverity.CRITICAL] ?: AlertSignalConfig()) },
                 onSelectSound = { onSelectSound(SoundPickerTarget.AlarmDefault(AlarmSeverity.CRITICAL)) },
                 onUpdateVolume = onUpdateVolume
@@ -562,7 +488,7 @@ private fun AlarmsTabContent(
                 subtitle = "🟡 $defaultSubtitle",
                 config = alarmDefaults[AlarmSeverity.WARNING] ?: AlertSignalConfig(),
                 onConfigChanged = { onAlarmDefaultChange(AlarmSeverity.WARNING, it) },
-                showEnabledToggle = false,
+                showEnabledToggle = true,
                 onPlayPreview = { onPlayPreview(alarmDefaults[AlarmSeverity.WARNING] ?: AlertSignalConfig()) },
                 onSelectSound = { onSelectSound(SoundPickerTarget.AlarmDefault(AlarmSeverity.WARNING)) },
                 onUpdateVolume = onUpdateVolume
@@ -575,7 +501,7 @@ private fun AlarmsTabContent(
                 subtitle = "🔵 $defaultSubtitle",
                 config = alarmDefaults[AlarmSeverity.INFO] ?: AlertSignalConfig(),
                 onConfigChanged = { onAlarmDefaultChange(AlarmSeverity.INFO, it) },
-                showEnabledToggle = false,
+                showEnabledToggle = true,
                 onPlayPreview = { onPlayPreview(alarmDefaults[AlarmSeverity.INFO] ?: AlertSignalConfig()) },
                 onSelectSound = { onSelectSound(SoundPickerTarget.AlarmDefault(AlarmSeverity.INFO)) },
                 onUpdateVolume = onUpdateVolume
@@ -596,8 +522,10 @@ private fun AlarmsTabContent(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
-                AddAlarmOverrideButton(
+                AddOverrideButton(
+                    allEntries = AlarmType.entries,
                     existingOverrides = alarmOverrides.keys,
+                    typeLabel = { getAlarmTypeLabel(it) },
                     onAdd = { onAlarmOverrideAdd(it, AlertSignalConfig()) }
                 )
             }
@@ -676,8 +604,10 @@ private fun RecommendationsTabContent(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
-                AddRecommendationOverrideButton(
+                AddOverrideButton(
+                    allEntries = RecommendationType.entries,
                     existingOverrides = recommendationOverrides.keys,
+                    typeLabel = { getRecommendationTypeLabel(it) },
                     onAdd = { onRecommendationOverrideAdd(it, AlertSignalConfig()) }
                 )
             }
@@ -756,8 +686,10 @@ private fun RemindersTabContent(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
-                AddReminderOverrideButton(
+                AddOverrideButton(
+                    allEntries = ReminderType.entries,
                     existingOverrides = reminderOverrides.keys,
+                    typeLabel = { getReminderTypeLabel(it) },
                     onAdd = { onReminderOverrideAdd(it, AlertSignalConfig()) }
                 )
             }

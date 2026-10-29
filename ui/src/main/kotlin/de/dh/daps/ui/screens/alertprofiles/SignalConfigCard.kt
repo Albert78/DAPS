@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.Hyphens
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -50,7 +51,7 @@ fun SignalConfigCard(
     onConfigChanged: (AlertSignalConfig) -> Unit,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
-    showEnabledToggle: Boolean = false,
+    showEnabledToggle: Boolean = true,
     onDelete: (() -> Unit)? = null,
     onPlayPreview: (() -> Unit)? = null,
     onSelectSound: (() -> Unit)? = null,
@@ -93,13 +94,17 @@ fun SignalConfigCard(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            hyphens = Hyphens.Auto
+                        )
                     )
                     if (!subtitle.isNullOrBlank()) {
                         Text(
                             text = subtitle,
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                hyphens = Hyphens.Auto
+                            ),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -142,7 +147,9 @@ fun SignalConfigCard(
                 ) {
                     Text(
                         text = stringResource(id = R.string.alert_profile_signal_enabled),
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            hyphens = Hyphens.Auto
+                        )
                     )
                     Switch(
                         checked = config.enabled,
@@ -163,7 +170,9 @@ fun SignalConfigCard(
                 ) {
                     Text(
                         text = stringResource(id = R.string.alert_profile_show_full_screen),
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            hyphens = Hyphens.Auto
+                        )
                     )
                     Switch(
                         checked = config.isFullScreen,
@@ -188,7 +197,9 @@ fun SignalConfigCard(
                     ) {
                         Text(
                             text = stringResource(id = R.string.alert_profile_play_sound),
-                            style = MaterialTheme.typography.bodyMedium
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                hyphens = Hyphens.Auto
+                            )
                         )
                         Switch(
                             checked = sound != null,
@@ -213,11 +224,15 @@ fun SignalConfigCard(
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = stringResource(id = R.string.alert_profile_sound_label),
-                                    style = MaterialTheme.typography.bodyMedium
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        hyphens = Hyphens.Auto
+                                    )
                                 )
                                 Text(
                                     text = soundTitle,
-                                    style = MaterialTheme.typography.bodySmall,
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        hyphens = Hyphens.Auto
+                                    ),
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
@@ -240,7 +255,12 @@ fun SignalConfigCard(
                                 }
                                 if (onSelectSound != null) {
                                     NormalTextButton(onClick = onSelectSound) {
-                                        Text(text = stringResource(id = R.string.alert_profile_sound_select))
+                                        Text(
+                                            text = stringResource(id = R.string.alert_profile_sound_select),
+                                            style = MaterialTheme.typography.labelLarge.copy(
+                                                hyphens = Hyphens.Auto
+                                            )
+                                        )
                                     }
                                 }
                             }
@@ -254,7 +274,9 @@ fun SignalConfigCard(
                         ) {
                             Text(
                                 text = stringResource(id = R.string.alert_profile_volume_label, sound.volume),
-                                style = MaterialTheme.typography.bodyMedium
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    hyphens = Hyphens.Auto
+                                )
                             )
                         }
                         Slider(
@@ -274,7 +296,9 @@ fun SignalConfigCard(
                 // Vibration Mode
                 Text(
                     text = stringResource(id = R.string.alert_profile_vibration_label),
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        hyphens = Hyphens.Auto
+                    )
                 )
                 FlowRow(
                     modifier = Modifier.fillMaxWidth(),
@@ -288,7 +312,9 @@ fun SignalConfigCard(
                             label = {
                                 Text(
                                     text = vibrationModeLabel(mode),
-                                    style = MaterialTheme.typography.labelSmall
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        hyphens = Hyphens.Auto
+                                    )
                                 )
                             }
                         )
@@ -303,7 +329,9 @@ fun SignalConfigCard(
                 ) {
                     Text(
                         text = stringResource(id = R.string.alert_profile_override_dnd),
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            hyphens = Hyphens.Auto
+                        )
                     )
                     Switch(
                         checked = config.overrideDnd,
