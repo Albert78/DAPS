@@ -206,10 +206,10 @@ class MealCorrectionBolusViewModel(
                 targetBg = targetBg,
                 lowThreshold = lowThreshold
             )
-            val suggestedCarbsGrams = BolusCalculationMath.calculateSuggestedCarbsGrams(projectedBg, targetBg, isf, cr, projections.futureCarbs)
+            val calculatedSuggestedCarbs = BolusCalculationMath.calculateSuggestedCarbsGrams(projectedBg, targetBg, isf, cr, projections.futureCarbs)
 
             val activeCarbsRec = recommendationManager.recommendations.value.carbs?.amountInGram?.toDouble()
-            val initialCarbsGrams = activeCarbsRec ?: suggestedCarbsGrams
+            val initialSuggestedCarbsGrams = activeCarbsRec ?: calculatedSuggestedCarbs
 
             _uiState.update {
                 val mealTimeFromNow = max(Minutes.ZERO, suggestedImi ?: Minutes.ZERO)
@@ -217,12 +217,12 @@ class MealCorrectionBolusViewModel(
                 val isReminderAllowed = initialMealTimestamp >= now + Minutes(MEAL_REMINDER_MIN_FUTURE_MINUTES.toShort())
                 it.copy(
                     isLoading = false,
-                    suggestedCarbsGrams = suggestedCarbsGrams,
+                    suggestedCarbsGrams = initialSuggestedCarbsGrams,
                     suggestedImi = suggestedImi,
                     input = MealInput(
                         mealTimestamp = initialMealTimestamp,
                         mealTimeFromNow = mealTimeFromNow,
-                        carbsGrams = initialCarbsGrams,
+                        carbsGrams = initialSuggestedCarbsGrams,
                     ),
                     mealTypes = mealTypes,
                     projections = projections,
@@ -244,15 +244,8 @@ class MealCorrectionBolusViewModel(
             recommendationManager.recommendations.collect { activeRecs ->
                 activeRecs.carbs?.let { carbsRec ->
                     val recAmount = carbsRec.amountInGram.toDouble()
-                    var updated = false
                     _uiState.update { state ->
-                        if (state.input.carbsGrams == 0.0 || state.input.carbsGrams == state.suggestedCarbsGrams) {
-                            updated = true
-                            state.copy(input = state.input.copy(carbsGrams = recAmount))
-                        } else state
-                    }
-                    if (updated) {
-                        calculateBolus()
+                        state.copy(suggestedCarbsGrams = recAmount)
                     }
                 }
             }
