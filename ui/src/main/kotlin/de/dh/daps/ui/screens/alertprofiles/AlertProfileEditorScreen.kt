@@ -53,6 +53,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.domain.model.alarm.AlarmSeverity
 import de.dh.daps.common.domain.model.alarm.AlarmType
+import de.dh.daps.ui.common.titleResId
 import de.dh.daps.common.domain.model.alarm.AlertDisplayMode
 import de.dh.daps.common.domain.model.alarm.AlertSignalConfig
 import de.dh.daps.common.domain.model.alarm.RecommendationType
@@ -738,25 +739,7 @@ private fun DiscardChangesDialog(
 }
 
 @Composable
-fun getAlarmTypeLabel(type: AlarmType): String = when (type) {
-    AlarmType.CRITICAL_LOW_BG -> stringResource(id = R.string.alarm_type_critical_low_bg)
-    AlarmType.LOW_BG -> stringResource(id = R.string.alarm_type_low_bg)
-    AlarmType.HIGH_BG -> stringResource(id = R.string.alarm_type_high_bg)
-    AlarmType.PUMP_OCCLUSION -> stringResource(id = R.string.alarm_type_pump_occlusion)
-    AlarmType.PUMP_SUSPENDED -> stringResource(id = R.string.alarm_type_pump_suspended)
-    AlarmType.PUMP_LOW_INSULIN -> stringResource(id = R.string.alarm_type_pump_low_insulin)
-    AlarmType.PUMP_LOW_BATTERY -> stringResource(id = R.string.alarm_type_pump_low_battery)
-    AlarmType.PUMP_STALE_BOND -> stringResource(id = R.string.alarm_type_pump_stale_bond)
-    AlarmType.PUMP_CATHETER_CHANGE_WARN -> stringResource(id = R.string.alarm_type_pump_catheter_change_warn)
-    AlarmType.PUMP_PATCH_CHANGE_WARN -> stringResource(id = R.string.alarm_type_pump_patch_change_warn)
-    AlarmType.CGM_SIGNAL_LOSS -> stringResource(id = R.string.alarm_type_cgm_signal_loss)
-    AlarmType.CGM_EXPIRED -> stringResource(id = R.string.alarm_type_cgm_expired)
-    AlarmType.CGM_SENSOR_ERROR -> stringResource(id = R.string.alarm_type_cgm_sensor_error)
-    AlarmType.CGM_STALE_BOND -> stringResource(id = R.string.alarm_type_cgm_stale_bond)
-    AlarmType.SYSTEM_BATTERY_LOW -> stringResource(id = R.string.alarm_type_system_battery_low)
-    AlarmType.SYSTEM_BLUETOOTH_OFF -> stringResource(id = R.string.alarm_type_system_bluetooth_off)
-    AlarmType.SYSTEM_THERAPY_SETTINGS_MISSING -> stringResource(id = R.string.alarm_type_system_therapy_settings_missing)
-}
+fun getAlarmTypeLabel(type: AlarmType): String = stringResource(id = type.titleResId)
 
 @Composable
 fun getRecommendationTypeLabel(type: RecommendationType): String = when (type) {

@@ -349,7 +349,7 @@ private fun formatApsIssue(issue: ApsIssue): String = when (issue) {
         is GlucoseSourceIssue.StaleBluetoothBond -> stringResource(id = R.string.glucose_source_issue_stale_bluetooth_bond)
         is GlucoseSourceIssue.Other -> gsIssue.message ?: stringResource(id = R.string.glucose_source_issue_other)
     }
-    is ApsIssue.Other -> issue.message ?: stringResource(id = R.string.pump_issue_other)
+    is ApsIssue.Other -> issue.message ?: stringResource(id = R.string.aps_issue_other)
 }
 
 @Composable

@@ -36,7 +36,9 @@ import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
+import de.dh.daps.ui.common.descriptionResId
 import de.dh.daps.ui.common.theme.AppPreview
+import de.dh.daps.ui.common.titleResId
 
 @Composable
 fun FullScreenAlarmScreen(
@@ -266,45 +268,12 @@ fun FullScreenAlarmScreen(
 }
 
 @Composable
-fun getAlarmTypeTitle(alarmType: AlarmType): String = when (alarmType) {
-    AlarmType.CRITICAL_LOW_BG -> stringResource(id = R.string.alarm_type_critical_low_bg)
-    AlarmType.LOW_BG -> stringResource(id = R.string.alarm_type_low_bg)
-    AlarmType.HIGH_BG -> stringResource(id = R.string.alarm_type_high_bg)
-    AlarmType.PUMP_OCCLUSION -> stringResource(id = R.string.alarm_type_pump_occlusion)
-    AlarmType.PUMP_SUSPENDED -> stringResource(id = R.string.alarm_type_pump_suspended)
-    AlarmType.PUMP_LOW_INSULIN -> stringResource(id = R.string.alarm_type_pump_low_insulin)
-    AlarmType.PUMP_LOW_BATTERY -> stringResource(id = R.string.alarm_type_pump_low_battery)
-    AlarmType.PUMP_STALE_BOND -> stringResource(id = R.string.alarm_type_pump_stale_bond)
-    AlarmType.PUMP_CATHETER_CHANGE_WARN -> stringResource(id = R.string.alarm_type_pump_catheter_change_warn)
-    AlarmType.PUMP_PATCH_CHANGE_WARN -> stringResource(id = R.string.alarm_type_pump_patch_change_warn)
-    AlarmType.CGM_SIGNAL_LOSS -> stringResource(id = R.string.alarm_type_cgm_signal_loss)
-    AlarmType.CGM_EXPIRED -> stringResource(id = R.string.alarm_type_cgm_expired)
-    AlarmType.CGM_SENSOR_ERROR -> stringResource(id = R.string.alarm_type_cgm_sensor_error)
-    AlarmType.CGM_STALE_BOND -> stringResource(id = R.string.alarm_type_cgm_stale_bond)
-    AlarmType.SYSTEM_BATTERY_LOW -> stringResource(id = R.string.alarm_type_system_battery_low)
-    AlarmType.SYSTEM_BLUETOOTH_OFF -> stringResource(id = R.string.alarm_type_system_bluetooth_off)
-    AlarmType.SYSTEM_THERAPY_SETTINGS_MISSING -> stringResource(id = R.string.alarm_type_system_therapy_settings_missing)
-}
+fun getAlarmTypeTitle(alarmType: AlarmType): String = stringResource(id = alarmType.titleResId)
 
 @Composable
 fun getAlarmTypeDescription(alarmType: AlarmType): String = when (alarmType) {
-    AlarmType.CRITICAL_LOW_BG -> stringResource(id = R.string.alarm_type_critical_low_bg)
-    AlarmType.LOW_BG -> stringResource(id = R.string.alarm_type_low_bg)
-    AlarmType.HIGH_BG -> stringResource(id = R.string.alarm_type_high_bg)
-    AlarmType.PUMP_OCCLUSION -> stringResource(id = R.string.pump_issue_occlusion)
-    AlarmType.PUMP_SUSPENDED -> stringResource(id = R.string.pump_issue_suspended)
-    AlarmType.PUMP_LOW_INSULIN -> stringResource(id = R.string.pump_issue_low_insulin)
-    AlarmType.PUMP_LOW_BATTERY -> stringResource(id = R.string.pump_issue_low_battery)
-    AlarmType.PUMP_STALE_BOND -> stringResource(id = R.string.pump_issue_stale_bluetooth_bond)
-    AlarmType.PUMP_CATHETER_CHANGE_WARN -> stringResource(id = R.string.pump_issue_catheter_change_warn)
-    AlarmType.PUMP_PATCH_CHANGE_WARN -> stringResource(id = R.string.pump_issue_patch_change_warn)
     AlarmType.CGM_SIGNAL_LOSS -> stringResource(id = R.string.core_issue_no_recent_values, 15)
-    AlarmType.CGM_EXPIRED -> stringResource(id = R.string.glucose_source_issue_expired)
-    AlarmType.CGM_SENSOR_ERROR -> stringResource(id = R.string.glucose_source_issue_sensor_error)
-    AlarmType.CGM_STALE_BOND -> stringResource(id = R.string.glucose_source_issue_stale_bluetooth_bond)
-    AlarmType.SYSTEM_BATTERY_LOW -> stringResource(id = R.string.alarm_type_system_battery_low)
-    AlarmType.SYSTEM_BLUETOOTH_OFF -> stringResource(id = R.string.alarm_type_system_bluetooth_off_desc)
-    AlarmType.SYSTEM_THERAPY_SETTINGS_MISSING -> stringResource(id = R.string.alarm_type_system_therapy_settings_missing_desc)
+    else -> alarmType.descriptionResId?.let { stringResource(id = it) } ?: stringResource(id = alarmType.titleResId)
 }
 
 @Preview(showBackground = true, name = "Critical Low BG Alarm")

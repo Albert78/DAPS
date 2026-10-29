@@ -33,7 +33,9 @@ import de.dh.daps.ui.activities.AlarmActivity
 import de.dh.daps.ui.activities.MainActivity
 import de.dh.daps.ui.activities.RecommendationActivity
 import de.dh.daps.ui.activities.ReminderActivity
+import de.dh.daps.ui.common.descriptionResId
 import de.dh.daps.ui.common.formatCarbsValue
+import de.dh.daps.ui.common.titleResId
 import de.dh.daps.ui.screens.permissions.canPostNotifications
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
@@ -474,25 +476,8 @@ class AndroidNotificationsImpl(
         notify(ALGORITHM_ISSUE_NOTIFICATION_ID, notification)
     }
 
-    private fun getAlarmTitle(alarmType: AlarmType): String = when (alarmType) {
-        AlarmType.CRITICAL_LOW_BG -> context.getString(UiR.string.alarm_type_critical_low_bg)
-        AlarmType.LOW_BG -> context.getString(UiR.string.alarm_type_low_bg)
-        AlarmType.HIGH_BG -> context.getString(UiR.string.alarm_type_high_bg)
-        AlarmType.PUMP_OCCLUSION -> context.getString(UiR.string.alarm_type_pump_occlusion)
-        AlarmType.PUMP_SUSPENDED -> context.getString(UiR.string.alarm_type_pump_suspended)
-        AlarmType.PUMP_LOW_INSULIN -> context.getString(UiR.string.alarm_type_pump_low_insulin)
-        AlarmType.PUMP_LOW_BATTERY -> context.getString(UiR.string.alarm_type_pump_low_battery)
-        AlarmType.PUMP_STALE_BOND -> context.getString(UiR.string.alarm_type_pump_stale_bond)
-        AlarmType.PUMP_CATHETER_CHANGE_WARN -> context.getString(UiR.string.alarm_type_pump_catheter_change_warn)
-        AlarmType.PUMP_PATCH_CHANGE_WARN -> context.getString(UiR.string.alarm_type_pump_patch_change_warn)
-        AlarmType.CGM_SIGNAL_LOSS -> context.getString(UiR.string.alarm_type_cgm_signal_loss)
-        AlarmType.CGM_EXPIRED -> context.getString(UiR.string.alarm_type_cgm_expired)
-        AlarmType.CGM_SENSOR_ERROR -> context.getString(UiR.string.alarm_type_cgm_sensor_error)
-        AlarmType.CGM_STALE_BOND -> context.getString(UiR.string.alarm_type_cgm_stale_bond)
-        AlarmType.SYSTEM_BATTERY_LOW -> context.getString(UiR.string.alarm_type_system_battery_low)
-        AlarmType.SYSTEM_BLUETOOTH_OFF -> context.getString(UiR.string.alarm_type_system_bluetooth_off)
-        AlarmType.SYSTEM_THERAPY_SETTINGS_MISSING -> context.getString(UiR.string.alarm_type_system_therapy_settings_missing)
-    }
+    private fun getAlarmTitle(alarmType: AlarmType): String =
+        context.getString(alarmType.titleResId)
 
     private fun getAlarmContentText(alarmType: AlarmType, bgValue: BgValue?, unit: GlucoseUnit): String = when (alarmType) {
         AlarmType.CRITICAL_LOW_BG, AlarmType.LOW_BG, AlarmType.HIGH_BG -> {
@@ -503,19 +488,7 @@ class AndroidNotificationsImpl(
             }
         }
         AlarmType.CGM_SIGNAL_LOSS -> context.getString(UiR.string.core_issue_no_recent_values, 15)
-        AlarmType.CGM_EXPIRED -> context.getString(UiR.string.glucose_source_issue_expired)
-        AlarmType.CGM_SENSOR_ERROR -> context.getString(UiR.string.glucose_source_issue_sensor_error)
-        AlarmType.CGM_STALE_BOND -> context.getString(UiR.string.glucose_source_issue_stale_bluetooth_bond)
-        AlarmType.PUMP_OCCLUSION -> context.getString(UiR.string.pump_issue_occlusion)
-        AlarmType.PUMP_SUSPENDED -> context.getString(UiR.string.pump_issue_suspended)
-        AlarmType.PUMP_LOW_INSULIN -> context.getString(UiR.string.pump_issue_low_insulin)
-        AlarmType.PUMP_LOW_BATTERY -> context.getString(UiR.string.pump_issue_low_battery)
-        AlarmType.PUMP_STALE_BOND -> context.getString(UiR.string.pump_issue_stale_bluetooth_bond)
-        AlarmType.PUMP_CATHETER_CHANGE_WARN -> context.getString(UiR.string.pump_issue_catheter_change_warn)
-        AlarmType.PUMP_PATCH_CHANGE_WARN -> context.getString(UiR.string.pump_issue_patch_change_warn)
-        AlarmType.SYSTEM_BATTERY_LOW -> context.getString(UiR.string.alarm_type_system_battery_low)
-        AlarmType.SYSTEM_BLUETOOTH_OFF -> context.getString(UiR.string.alarm_type_system_bluetooth_off_desc)
-        AlarmType.SYSTEM_THERAPY_SETTINGS_MISSING -> context.getString(UiR.string.alarm_type_system_therapy_settings_missing_desc)
+        else -> alarmType.descriptionResId?.let { context.getString(it) } ?: ""
     }
 
     override fun cancelAlarmNotification() {
