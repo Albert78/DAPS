@@ -70,7 +70,7 @@ fun getDefaultAlertProfiles(context: Context): List<AlertProfile> {
     return listOf(
         AlertProfile(
             id = ID_UNDEFINED,
-            name = context.getString(R.string.alarm_profile_default_standard_name),
+            name = context.getString(R.string.alert_profile_default_standard_name),
             isDefault = true,
             alarmDefaults = standardAlarmDefaults,
             recommendationDefault = AlertSignalConfig(
@@ -84,7 +84,7 @@ fun getDefaultAlertProfiles(context: Context): List<AlertProfile> {
         ),
         AlertProfile(
             id = ID_UNDEFINED,
-            name = context.getString(R.string.alarm_profile_default_quiet_name),
+            name = context.getString(R.string.alert_profile_default_quiet_name),
             isDefault = false,
             alarmDefaults = quietAlarmDefaults,
             recommendationDefault = AlertSignalConfig(
@@ -98,7 +98,7 @@ fun getDefaultAlertProfiles(context: Context): List<AlertProfile> {
         ),
         AlertProfile(
             id = ID_UNDEFINED,
-            name = context.getString(R.string.alarm_profile_default_loud_name),
+            name = context.getString(R.string.alert_profile_default_loud_name),
             isDefault = false,
             alarmDefaults = loudAlarmDefaults,
             recommendationDefault = AlertSignalConfig(
@@ -112,7 +112,7 @@ fun getDefaultAlertProfiles(context: Context): List<AlertProfile> {
         ),
         AlertProfile(
             id = ID_UNDEFINED,
-            name = context.getString(R.string.alarm_profile_default_silent_name),
+            name = context.getString(R.string.alert_profile_default_silent_name),
             isDefault = false,
             alarmDefaults = silentAlarmDefaults,
             recommendationDefault = AlertSignalConfig(enabled = false),

@@ -267,7 +267,7 @@
     <string name="therapy_settings_help_bg_title">Ziel-BZ &amp; Niedrig-Schwelle</string>
     <string name="therapy_settings_help_bg_desc">Hier definierst du deinen gewünschten Blutzucker-Bereich über den gesamten Tag. Das System versucht, dich im Zielbereich zu halten und warnt, wenn die Niedrig-Schwelle unterschritten wird.</string>
     <string name="therapy_settings_help_adjustment_title">Therapie-Anpassung</string>
-    <string name="therapy_settings_help_adjustment_desc">Ermöglicht es dir, die Therapie kurzfristig an besondere Situationen wie Sport, Schlaf, Alkohol oder Stress anzupassen, indem Insulinmengen prozentual verändert, Zielwerte verschoben oder das Alarmprofil angepasst werden.</string>
+    <string name="therapy_settings_help_adjustment_desc">Ermöglicht es dir, die Therapie kurzfristig an besondere Situationen wie Sport, Schlaf, Alkohol oder Stress anzupassen, indem Insulinmengen prozentual verändert, Zielwerte verschoben oder das Benachrichtigungsprofil angepasst werden.</string>
 
     <string name="therapy_adjustment_label">Therapie-Anpassung</string>
     <string name="therapy_adjustment_title">Therapie-Anpassung</string>
@@ -652,26 +652,61 @@
     <string name="core_insight_action_bolus">Aktion: Bolus %1$s</string>
     <string name="core_insight_action_temp_basal">Aktion: Temp-Basal %1$d%% für %2$d h</string>
 
-    <!-- Alarm Profiles -->
+    <!-- Alert Profiles -->
+    <string name="alert_profile_short_label">Benachrichtigungen</string>
     <string name="alert_profile_active_label">Aktiv</string>
     <string name="alert_profile_default_label">Standard-Profil</string>
     <string name="alert_profile_set_default">Als Standard-Profil festlegen</string>
-    <string name="alert_profile_is_default_description">Dieses Profil wird als Standard für Alarme verwendet.</string>
-    <string name="alert_profile_editor_title_new">Neues Alarmprofil</string>
-    <string name="alert_profile_editor_title_edit">Alarmprofil bearbeiten</string>
+    <string name="alert_profile_is_default_description">Dieses Profil wird als Standard für Benachrichtigungen verwendet.</string>
+    <string name="alert_profile_editor_title_new">Neues Benachrichtigungsprofil</string>
+    <string name="alert_profile_editor_title_edit">Benachrichtigungsprofil bearbeiten</string>
     <string name="alert_profile_editor_discard_title">Änderungen speichern?</string>
-    <string name="alert_profile_editor_discard_message">Du hast Änderungen am Alarmprofil vorgenommen. Möchtest du die Änderungen speichern oder verwerfen?</string>
+    <string name="alert_profile_editor_discard_message">Du hast Änderungen am Benachrichtigungsprofil vorgenommen. Möchtest du die Änderungen speichern oder verwerfen?</string>
     <string name="alert_profile_name_label">Name des Profils</string>
+
+    <!-- Sections in Editor -->
+    <string name="alert_profile_section_alarms">Alarme</string>
+    <string name="alert_profile_section_recommendations">APS-Empfehlungen</string>
+    <string name="alert_profile_section_reminders">Erinnerungen</string>
+
+    <!-- Signal Configurations & Overrides -->
+    <string name="alert_profile_default_signal_config">Standard-Signalisierung</string>
+    <string name="alert_profile_specific_overrides">Spezifische Ausnahmen</string>
+    <string name="alert_profile_add_override">Ausnahme hinzufügen</string>
+    <string name="alert_profile_delete_override">Ausnahme löschen</string>
+    <string name="alert_profile_signal_enabled">Signalisierung aktiv</string>
+
+    <!-- Alarm Severities -->
     <string name="alert_profile_severity_critical">Kritische Alarme</string>
     <string name="alert_profile_severity_warning">Warnungen</string>
     <string name="alert_profile_severity_info">Hinweise</string>
+
+    <!-- Recommendation Types -->
+    <string name="alert_profile_recommendation_carbs">Kohlenhydrat-Empfehlung</string>
+    <string name="alert_profile_recommendation_bolus">Bolus-Empfehlung</string>
+    <string name="alert_profile_recommendation_temp_basal">Temp-Basal-Empfehlung</string>
+
+    <!-- Reminder Types -->
+    <string name="alert_profile_reminder_bg_check">Blutzuckermessung</string>
+    <string name="alert_profile_reminder_site_change">Katheterwechsel</string>
+    <string name="alert_profile_reminder_sensor_change">Sensorwechsel</string>
+    <string name="alert_profile_reminder_reservoir_change">Ampullenwechsel</string>
+    <string name="alert_profile_reminder_battery_change">Batteriewechsel</string>
+    <string name="alert_profile_reminder_custom">Benutzerdefinierte Erinnerung</string>
+
+    <!-- Display Modes -->
+    <string name="alert_profile_display_mode">Anzeigemodus</string>
+    <string name="alert_profile_display_mode_notification_only">Nur Benachrichtigung</string>
+    <string name="alert_profile_display_mode_full_screen">Vollbild-Anzeige</string>
+
+    <!-- Sound, Volume & Vibration -->
     <string name="alert_profile_volume_label">Lautstärke: %1$d%%</string>
-    <string name="alert_profile_sound_label">Alarmton</string>
-    <string name="alert_profile_sound_default">Standard System-Alarmton</string>
+    <string name="alert_profile_sound_label">Signalton</string>
+    <string name="alert_profile_sound_default">Standard System-Ton</string>
     <string name="alert_profile_sound_custom">Benutzerdefinierter Ton</string>
     <string name="alert_profile_sound_select">Auswählen</string>
     <string name="alert_profile_sound_reset">Auf Standard zurücksetzen</string>
-    <string name="alert_profile_sound_picker_title">Alarmton auswählen</string>
+    <string name="alert_profile_sound_picker_title">Signalton auswählen</string>
     <string name="alert_profile_sound_select_custom_file">Eigene Audio-Datei auswählen…</string>
     <string name="alert_profile_vibration_label">Vibration</string>
     <string name="alert_profile_vibration_off">Aus</string>
@@ -679,13 +714,13 @@
     <string name="alert_profile_vibration_long">Lang</string>
     <string name="alert_profile_vibration_continuous">Kontinuierlich</string>
     <string name="alert_profile_override_dnd">„Bitte nicht stören“ umgehen</string>
-    <string name="alert_profile_show_full_screen">Als Vollbildalarm anzeigen</string>
-    <string name="alert_profile_play_sound">Alarmton abspielen</string>
-    <string name="alert_profile_delete_title">Alarmprofil löschen</string>
-    <string name="alert_profile_delete_message">Möchtest du das Alarmprofil „%1$s“ wirklich löschen?</string>
-    <string name="cd_add_alert_profile">Benachrichtigungs-Profil hinzufügen</string>
-    <string name="cd_test_alarm_sound_and_vibration">Alarmton und Vibration testen</string>
-    <string name="cd_test_alarm_sound">Alarmton testen</string>
+    <string name="alert_profile_show_full_screen">Als Vollbildanzeige öffnen</string>
+    <string name="alert_profile_play_sound">Ton abspielen</string>
+    <string name="alert_profile_delete_title">Benachrichtigungsprofil löschen</string>
+    <string name="alert_profile_delete_message">Möchtest du das Benachrichtigungsprofil „%1$s“ wirklich löschen?</string>
+    <string name="cd_add_alert_profile">Benachrichtigungsprofil hinzufügen</string>
+    <string name="cd_test_alarm_sound_and_vibration">Signalton und Vibration testen</string>
+    <string name="cd_test_alarm_sound">Signalton testen</string>
     <string name="cd_test_alarm_vibration">Vibration testen</string>
     <string name="cd_alarm_sound_and_vibration_off">Signalisierung ausgeschaltet</string>
     <string name="action_set_active">Aktivieren</string>
