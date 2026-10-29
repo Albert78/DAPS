@@ -11,5 +11,5 @@ data class TherapyAdjustment(
     val percentage: Int = 0,
     val targetBgMgDl: Short? = null,
     val lowThresholdMgDl: Short? = null,
-    val alarmProfileOverrideId: Long? = null
+    val alertProfileOverrideId: Long? = null
 )

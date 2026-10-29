@@ -8,7 +8,7 @@ import de.dh.daps.common.infrastructure.SystemWakeService
 import de.dh.daps.common.infrastructure.WakeupHandler
 import de.dh.daps.core.repository.SystemMetricsRepository
 import de.dh.daps.core.repository.db.AppDatabase
-import de.dh.daps.core.repository.db.dao.AlarmProfileDao
+import de.dh.daps.core.repository.db.dao.AlertProfileDao
 import de.dh.daps.core.repository.db.dao.MetabolicEventsDao
 import de.dh.daps.core.repository.db.dao.ProviderDao
 import de.dh.daps.core.repository.db.dao.ReminderDao
@@ -65,7 +65,7 @@ class TimeServiceImplTest {
         override fun therapyDao(): TherapyDao = throw NotImplementedError()
         override fun metabolicEventsDao(): MetabolicEventsDao = throw NotImplementedError()
         override fun settingsDao(): SettingsDao = throw NotImplementedError()
-        override fun alarmProfileDao(): AlarmProfileDao = throw NotImplementedError()
+        override fun alertProfileDao(): AlertProfileDao = throw NotImplementedError()
         override fun reminderDao(): ReminderDao = throw NotImplementedError()
         override fun clearAllTables() {}
         override fun createInvalidationTracker(): InvalidationTracker = InvalidationTracker(this, emptyMap(), emptyMap())

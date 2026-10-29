@@ -4,7 +4,7 @@ import android.content.Context
 import de.dh.daps.common.DEFAULT_BG_LOW_THRESHOLD_MGDL
 import de.dh.daps.common.DEFAULT_BG_TARGET_MGDL
 import de.dh.daps.common.ID_INSULIN_NOVORAPID
-import de.dh.daps.common.domain.model.alarm.getDefaultAlarmProfiles
+import de.dh.daps.common.domain.model.alarm.getDefaultAlertProfiles
 import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.engine.CurrentSettings
@@ -29,9 +29,9 @@ object DatabaseInitializer {
         treatmentRepository: TreatmentRepository,
         therapyRepository: TherapyRepository,
         settingsRepository: SettingsRepository,
-        alarmRepository: AlarmRepository
+        alertProfileRepository: AlertProfileRepository
     ) {
-        initializeDefaultData(context, treatmentRepository, therapyRepository, settingsRepository, alarmRepository)
+        initializeDefaultData(context, treatmentRepository, therapyRepository, settingsRepository, alertProfileRepository)
     }
 
     suspend fun initializeDefaultData(
@@ -39,13 +39,13 @@ object DatabaseInitializer {
         treatmentRepository: TreatmentRepository,
         therapyRepository: TherapyRepository,
         settingsRepository: SettingsRepository,
-        alarmRepository: AlarmRepository
+        alertProfileRepository: AlertProfileRepository
     ) {
         initializeInsulinTypes(context, treatmentRepository)
         initializeMealTypes(context, treatmentRepository)
         initializeDefaultInsulinProfileAndCurrentTherapy(context, therapyRepository)
         initializeSettings(settingsRepository)
-        initializeDefaultAlarmProfiles(context, alarmRepository)
+        initializeDefaultAlertProfiles(context, alertProfileRepository)
         initializeDefaultTherapyAdjustments(context, therapyRepository)
     }
 
@@ -54,12 +54,12 @@ object DatabaseInitializer {
         treatmentRepository: TreatmentRepository,
         therapyRepository: TherapyRepository,
         settingsRepository: SettingsRepository,
-        alarmRepository: AlarmRepository
+        alertProfileRepository: AlertProfileRepository
     ) {
         initializeInsulinTypes(context, treatmentRepository)
         initializeMealTypes(context, treatmentRepository)
         initializeSettings(settingsRepository)
-        initializeDefaultAlarmProfiles(context, alarmRepository)
+        initializeDefaultAlertProfiles(context, alertProfileRepository)
         initializeDefaultTherapyAdjustments(context, therapyRepository)
     }
 
@@ -116,14 +116,14 @@ object DatabaseInitializer {
         }
     }
 
-    private suspend fun initializeDefaultAlarmProfiles(context: Context, repository: AlarmRepository) {
-        if (repository.getAllAlarmProfiles().isNotEmpty()) {
+    private suspend fun initializeDefaultAlertProfiles(context: Context, repository: AlertProfileRepository) {
+        if (repository.getAllAlertProfiles().isNotEmpty()) {
             return
         }
-        getDefaultAlarmProfiles(context).forEach { profile ->
-            val id = repository.insertAlarmProfile(profile)
+        getDefaultAlertProfiles(context).forEach { profile ->
+            val id = repository.insertAlertProfile(profile)
             if (profile.isDefault) {
-                repository.setActiveAlarmProfile(id)
+                repository.setActiveAlertProfile(id)
             }
         }
     }

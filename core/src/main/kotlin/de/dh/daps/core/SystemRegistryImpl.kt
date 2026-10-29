@@ -37,8 +37,8 @@ import de.dh.daps.core.orchestration.SystemOrchestratorImpl
 import de.dh.daps.core.pump.PumpDriverManager
 import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.pump.PumpManagerImpl
-import de.dh.daps.core.repository.AlarmRepository
-import de.dh.daps.core.repository.AlarmRepositoryImpl
+import de.dh.daps.core.repository.AlertProfileRepository
+import de.dh.daps.core.repository.AlertProfileRepositoryImpl
 import de.dh.daps.core.repository.DatabaseInitializer
 import de.dh.daps.core.repository.DeviceStatusRepository
 import de.dh.daps.core.repository.FoodRepository
@@ -67,7 +67,7 @@ class SystemRegistryImpl(
     override val appContext: Context,
     override val glucoseRepository: GlucoseRepository,
     override val therapyRepository: TherapyRepository,
-    override val alarmRepository: AlarmRepository,
+    override val alertProfileRepository: AlertProfileRepository,
     override val alarmPlayerManager: AlarmPlayerManager,
     override val alarmSnoozeManager: AlarmSnoozeManager,
     override val alarmEvaluator: AlarmEvaluator,
@@ -128,7 +128,7 @@ class SystemRegistryImpl(
                             treatmentRepository,
                             therapyRepository,
                             settingsRepository,
-                            alarmRepository
+                            alertProfileRepository
                         )
                         pluginManager.getPlugins().forEach { plugin ->
                             runCatching { plugin.onSeedDefaultData() }
@@ -140,12 +140,12 @@ class SystemRegistryImpl(
                             treatmentRepository,
                             therapyRepository,
                             settingsRepository,
-                            alarmRepository
+                            alertProfileRepository
                         )
                     }
                     is SetupOption.ImportBackup -> {
                         val inputStream = appContext.contentResolver.openInputStream(option.uri)
-                            ?: throw IllegalStateException("Unable to open the selected file '$option.uri'")
+                            ?: throw IllegalStateException("Unable to open the selected file '${option.uri}'")
                         val result = inputStream.use { stream ->
                             appDataManagementRepository.importBackup(
                                 stream,
@@ -164,7 +164,7 @@ class SystemRegistryImpl(
                             treatmentRepository,
                             therapyRepository,
                             settingsRepository,
-                            alarmRepository
+                            alertProfileRepository
                         )
                     }
                 }
@@ -253,7 +253,7 @@ class SystemRegistryImpl(
             // Repositories
             val glucoseRepository = GlucoseRepository(appDatabase)
             val therapyRepository = TherapyRepository(appDatabase)
-            val alarmRepository = AlarmRepositoryImpl(appDatabase.alarmProfileDao())
+            val alertProfileRepository = AlertProfileRepositoryImpl(appDatabase.alertProfileDao())
             val alarmPlayerManager = AlarmPlayerManagerImpl(application)
             val treatmentRepository = TreatmentRepository(
                 historySize = Minutes.ofHours(METABOLIC_EVENTS_HISTORY_HOURS),
@@ -369,7 +369,7 @@ class SystemRegistryImpl(
                 treatmentRepository = treatmentRepository,
                 therapyRepository = therapyRepository,
                 settingsRepository = settingsRepository,
-                alarmRepository = alarmRepository,
+                alertProfileRepository = alertProfileRepository,
                 glucoseRepository = glucoseRepository,
                 pluginManager = pluginManager
             )
@@ -379,7 +379,7 @@ class SystemRegistryImpl(
                 appContext = application,
                 glucoseRepository = glucoseRepository,
                 therapyRepository = therapyRepository,
-                alarmRepository = alarmRepository,
+                alertProfileRepository = alertProfileRepository,
                 alarmPlayerManager = alarmPlayerManager,
                 alarmSnoozeManager = alarmSnoozeManager,
                 alarmEvaluator = alarmEvaluator,

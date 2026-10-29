@@ -19,7 +19,7 @@ import de.dh.daps.core.orchestration.RecommendationManager
 import de.dh.daps.core.orchestration.SystemOrchestrator
 import de.dh.daps.core.pump.PumpDriverManager
 import de.dh.daps.core.pump.PumpManager
-import de.dh.daps.core.repository.AlarmRepository
+import de.dh.daps.core.repository.AlertProfileRepository
 import de.dh.daps.core.repository.DeviceStatusRepository
 import de.dh.daps.core.repository.FoodRepository
 import de.dh.daps.core.repository.GlucoseRepository
@@ -92,7 +92,7 @@ interface SystemRegistry {
     /**
      * Repository for alarm configurations and active alarm profile.
      */
-    val alarmRepository: AlarmRepository
+    val alertProfileRepository: AlertProfileRepository
 
     /**
      * Central engine for audio playback, haptics/vibration, and safety audio focus handling.

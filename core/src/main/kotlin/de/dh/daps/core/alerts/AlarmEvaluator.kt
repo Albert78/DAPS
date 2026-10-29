@@ -4,9 +4,9 @@ import android.content.Intent
 import android.util.Log
 import de.dh.daps.common.domain.model.alarm.ActiveAlarmGroup
 import de.dh.daps.common.domain.model.alarm.AlarmCategory
-import de.dh.daps.common.domain.model.alarm.AlarmProfile
+import de.dh.daps.common.domain.model.alarm.AlertProfile
 import de.dh.daps.common.domain.model.alarm.AlarmSeverity
-import de.dh.daps.common.domain.model.alarm.AlarmSignalConfig
+import de.dh.daps.common.domain.model.alarm.AlertSignalConfig
 import de.dh.daps.common.domain.model.alarm.AlarmType
 import de.dh.daps.common.domain.model.data.BgReading
 import de.dh.daps.common.domain.model.data.BgValue
@@ -38,7 +38,7 @@ import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
- * Continuously evaluates glucose values, pump/system issues, active alarm profile settings,
+ * Continuously evaluates glucose values, pump/system issues, active alert profile settings,
  * consumable lifecycle state (catheter/patch changes), and snooze states to trigger audio/haptics,
  * notification updates, and full-screen alarm screens.
  */
@@ -57,8 +57,8 @@ class AlarmEvaluator(
     private val _activeAlarmGroup = MutableStateFlow<ActiveAlarmGroup?>(null)
     val activeAlarmGroup: StateFlow<ActiveAlarmGroup?> = _activeAlarmGroup.asStateFlow()
 
-    private val _activeFiringConfig = MutableStateFlow<AlarmSignalConfig?>(null)
-    val activeFiringConfig: StateFlow<AlarmSignalConfig?> = _activeFiringConfig.asStateFlow()
+    private val _activeFiringConfig = MutableStateFlow<AlertSignalConfig?>(null)
+    val activeFiringConfig: StateFlow<AlertSignalConfig?> = _activeFiringConfig.asStateFlow()
 
     private var lastEvaluatedBgValue: BgValue? = null
     private var lastInput: EvaluationInput? = null
@@ -90,7 +90,7 @@ class AlarmEvaluator(
                     bgReading = flows[0] as BgReading?,
                     apsIssues = flows[1] as Set<ApsIssue>,
                     currentTherapySettings = therapySettings,
-                    activeProfile = therapySettings?.effectiveAlarmProfile,
+                    activeProfile = therapySettings?.effectiveAlertProfile,
                     snoozedMap = flows[3] as Map<AlarmType, AlarmSnoozeState>,
                     apsMode = flows[4] as ApsMode,
                     resumeRequestedAt = flows[5] as Timestamp?,
@@ -249,7 +249,7 @@ class AlarmEvaluator(
             )
 
             val activeProfile = input.activeProfile
-            val config = activeProfile?.getConfigFor(primaryAlarm) ?: AlarmSignalConfig()
+            val config = activeProfile?.getConfigFor(primaryAlarm) ?: AlertSignalConfig()
 
             val bgValue = input.bgReading?.value
             val isGlucoseAlarmActive = alarmGroup.allAlarms.any { it.category == AlarmCategory.GLUCOSE }
@@ -291,7 +291,7 @@ class AlarmEvaluator(
         val bgReading: BgReading?,
         val apsIssues: Set<ApsIssue>,
         val currentTherapySettings: CurrentTherapySettings?,
-        val activeProfile: AlarmProfile?,
+        val activeProfile: AlertProfile?,
         val snoozedMap: Map<AlarmType, AlarmSnoozeState>,
         val apsMode: ApsMode = ApsMode.Suspend,
         val resumeRequestedAt: Timestamp? = null,

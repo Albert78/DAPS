@@ -10,7 +10,7 @@ import de.dh.daps.common.repository.carbsUnit
 import de.dh.daps.common.repository.glucoseUnit
 import de.dh.daps.common.repository.setCarbsUnit
 import de.dh.daps.common.repository.setGlucoseUnit
-import de.dh.daps.core.repository.AlarmRepository
+import de.dh.daps.core.repository.AlertProfileRepository
 import de.dh.daps.core.repository.DatabaseInitializer
 import de.dh.daps.core.repository.GlucoseRepository
 import de.dh.daps.core.repository.SettingsRepository
@@ -49,7 +49,7 @@ class AppDataManagementRepositoryImpl(
     private val treatmentRepository: TreatmentRepository,
     private val therapyRepository: TherapyRepository,
     private val settingsRepository: SettingsRepository,
-    private val alarmRepository: AlarmRepository,
+    private val alertProfileRepository: AlertProfileRepository,
     private val glucoseRepository: GlucoseRepository? = null,
     private val pluginManager: PluginManager? = null,
 ) : AppDataManagementRepository {
@@ -75,7 +75,7 @@ class AppDataManagementRepositoryImpl(
             val therapyDao = appDatabase.therapyDao()
             val providerDao = appDatabase.providerDao()
             val settingsDao = appDatabase.settingsDao()
-            val alarmDao = appDatabase.alarmProfileDao()
+            val alertDao = appDatabase.alertProfileDao()
             val metabolicDao = appDatabase.metabolicEventsDao()
 
             val therapyConfigDto = TherapyConfigDto(
@@ -83,7 +83,7 @@ class AppDataManagementRepositoryImpl(
                 currentTherapySettings = therapyDao.getCurrentTherapySettings()?.toDto(),
                 therapyAdjustments = therapyDao.getAllTherapyAdjustments().map { it.toDto() },
                 currentSettings = settingsDao.getCurrentSettings()?.toDto(),
-                alarmProfiles = alarmDao.getAllAlarmProfiles().map { it.toDto() },
+                alertProfiles = alertDao.getAllAlertProfiles().map { it.toDto() },
                 mealTypes = metabolicDao.getAllMealTypes().map { it.toDto() },
                 insulinTypes = metabolicDao.getAllInsulinTypes().map { it.toDto() },
                 sensorTypes = providerDao.getAllSensorTypes().map { it.toDto() },
@@ -247,7 +247,7 @@ class AppDataManagementRepositoryImpl(
                 val therapyDao = appDatabase.therapyDao()
                 val providerDao = appDatabase.providerDao()
                 val settingsDao = appDatabase.settingsDao()
-                val alarmDao = appDatabase.alarmProfileDao()
+                val alertDao = appDatabase.alertProfileDao()
                 val metabolicDao = appDatabase.metabolicEventsDao()
                 val reminderDao = appDatabase.reminderDao()
 
@@ -266,7 +266,7 @@ class AppDataManagementRepositoryImpl(
                 therapyDao.deleteAllCurrentTherapySettings()
                 therapyDao.deleteAllTherapyAdjustments()
                 settingsDao.deleteAllCurrentSettings()
-                alarmDao.deleteAllAlarmProfiles()
+                alertDao.deleteAllAlertProfiles()
                 therapyDao.deleteAllInsulinProfiles()
 
                 // Types metadata
@@ -292,8 +292,8 @@ class AppDataManagementRepositoryImpl(
                 if (therapyConfig.insulinProfiles.isNotEmpty()) {
                     therapyDao.insertInsulinProfiles(therapyConfig.insulinProfiles.map { it.toEntity() })
                 }
-                if (therapyConfig.alarmProfiles.isNotEmpty()) {
-                    alarmDao.insertAlarmProfiles(therapyConfig.alarmProfiles.map { it.toEntity() })
+                if (therapyConfig.alertProfiles.isNotEmpty()) {
+                    alertDao.insertAlertProfiles(therapyConfig.alertProfiles.map { it.toEntity() })
                 }
                 therapyConfig.currentSettings?.let {
                     settingsDao.insertCurrentSettingsList(listOf(it.toEntity()))
@@ -377,7 +377,7 @@ class AppDataManagementRepositoryImpl(
             treatmentRepository = treatmentRepository,
             therapyRepository = therapyRepository,
             settingsRepository = settingsRepository,
-            alarmRepository = alarmRepository
+            alertProfileRepository = alertProfileRepository
         )
 
         // Reload in-memory state after initialization
@@ -396,7 +396,7 @@ class AppDataManagementRepositoryImpl(
             val therapyDao = appDatabase.therapyDao()
             val providerDao = appDatabase.providerDao()
             val settingsDao = appDatabase.settingsDao()
-            val alarmDao = appDatabase.alarmProfileDao()
+            val alertDao = appDatabase.alertProfileDao()
             val metabolicDao = appDatabase.metabolicEventsDao()
             val reminderDao = appDatabase.reminderDao()
 
@@ -410,7 +410,7 @@ class AppDataManagementRepositoryImpl(
             therapyDao.deleteAllScheduledTherapyAdjustments()
             therapyDao.deleteAllTherapyAdjustments()
             settingsDao.deleteAllCurrentSettings()
-            alarmDao.deleteAllAlarmProfiles()
+            alertDao.deleteAllAlertProfiles()
             therapyDao.deleteAllInsulinProfiles()
             providerDao.deleteAllSensorTypes()
             providerDao.deleteAllDataProviders()

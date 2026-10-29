@@ -1,7 +1,7 @@
 package de.dh.daps.common.domain.model.therapy
 
 import de.dh.daps.common.ID_UNDEFINED
-import de.dh.daps.common.domain.model.alarm.AlarmProfile
+import de.dh.daps.common.domain.model.alarm.AlertProfile
 import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.data.Timestamp
 
@@ -15,13 +15,13 @@ data class ScheduledTherapyAdjustment(
     val percentage: Int = 0,
     val targetBgOverride: BgValue? = null,
     val lowThresholdOverride: BgValue? = null,
-    val alarmProfileOverrideId: Long? = null,
-    val alarmProfileOverride: AlarmProfile? = null,
+    val alertProfileOverrideId: Long? = null,
+    val alertProfileOverride: AlertProfile? = null,
     val adjustmentHint: String? = null
 ) {
     /**
-     * Resolves the alarm profile override ID for this scheduled adjustment.
+     * Resolves the alert profile override ID for this scheduled adjustment.
      */
-    val effectiveAlarmProfileOverrideId: Long?
-        get() = alarmProfileOverrideId ?: alarmProfileOverride?.id
+    val effectiveAlertProfileOverrideId: Long?
+        get() = alertProfileOverrideId ?: alertProfileOverride?.id
 }

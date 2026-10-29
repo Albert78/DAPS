@@ -16,7 +16,7 @@ import android.os.Vibrator
 import android.os.VibratorManager
 import android.util.Log
 import androidx.core.net.toUri
-import de.dh.daps.common.domain.model.alarm.AlarmSignalConfig
+import de.dh.daps.common.domain.model.alarm.AlertSignalConfig
 import de.dh.daps.common.domain.model.alarm.SoundConfig
 import de.dh.daps.common.domain.model.alarm.VibrationMode
 
@@ -24,9 +24,9 @@ import de.dh.daps.common.domain.model.alarm.VibrationMode
  * Central engine for audio playback, haptics/vibration, and safety audio focus handling in DAPS.
  */
 interface AlarmPlayerManager {
-    fun playAlarm(signalConfig: AlarmSignalConfig, isSafetyCritical: Boolean = false)
+    fun playAlarm(signalConfig: AlertSignalConfig, isSafetyCritical: Boolean = false)
     fun playAlarm(soundConfig: SoundConfig?, vibrationMode: VibrationMode = VibrationMode.SHORT, overrideDnd: Boolean = false, isSafetyCritical: Boolean = false)
-    fun playPreview(signalConfig: AlarmSignalConfig, durationMs: Long = 3000L)
+    fun playPreview(signalConfig: AlertSignalConfig, durationMs: Long = 3000L)
     fun playPreview(soundConfig: SoundConfig?, vibrationMode: VibrationMode = VibrationMode.SHORT, durationMs: Long = 3000L)
     fun updateVolume(volume: Int)
     fun stopAlarm()
@@ -99,7 +99,7 @@ class AlarmPlayerManagerImpl(
         }
     }
 
-    override fun playAlarm(signalConfig: AlarmSignalConfig, isSafetyCritical: Boolean) {
+    override fun playAlarm(signalConfig: AlertSignalConfig, isSafetyCritical: Boolean) {
         playAlarm(
             soundConfig = signalConfig.soundConfig,
             vibrationMode = signalConfig.vibrationMode,
@@ -125,7 +125,7 @@ class AlarmPlayerManagerImpl(
         }
     }
 
-    override fun playPreview(signalConfig: AlarmSignalConfig, durationMs: Long) {
+    override fun playPreview(signalConfig: AlertSignalConfig, durationMs: Long) {
         playPreview(
             soundConfig = signalConfig.soundConfig,
             vibrationMode = signalConfig.vibrationMode,

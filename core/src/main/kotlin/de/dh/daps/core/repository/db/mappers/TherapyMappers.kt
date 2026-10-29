@@ -1,6 +1,6 @@
 package de.dh.daps.core.repository.db.mappers
 
-import de.dh.daps.common.domain.model.alarm.AlarmProfile
+import de.dh.daps.common.domain.model.alarm.AlertProfile
 import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.data.BgBlock
@@ -86,15 +86,15 @@ fun CurrentTherapySettings.toEntity() = CurrentTherapySettingsEntity(
     insulin_adjustment_percentage = this.insulinAdjustmentPercentage,
     target_bg_override = this.targetBgOverride?.mgdlInt?.toShort(),
     low_threshold_override = this.lowThresholdOverride?.mgdlInt?.toShort(),
-    alarm_profile_override_id = this.alarmProfileOverrideId,
+    alarm_profile_override_id = this.alertProfileOverrideId,
     adjustment_hint = this.adjustmentHint,
     adjustment_end_time = this.adjustmentEndTime
 )
 
 fun CurrentTherapySettingsEntity.toModel(
     profile: InsulinProfile,
-    defaultAlarmProfile: AlarmProfile? = null,
-    alarmProfileOverride: AlarmProfile? = null
+    defaultAlertProfile: AlertProfile? = null,
+    alertProfileOverride: AlertProfile? = null
 ): CurrentTherapySettings {
     return CurrentTherapySettings(
         id = this.id,
@@ -103,8 +103,8 @@ fun CurrentTherapySettingsEntity.toModel(
         insulinAdjustmentPercentage = this.insulin_adjustment_percentage,
         targetBgOverride = this.target_bg_override?.let { BgValue.fromMgDl(it) },
         lowThresholdOverride = this.low_threshold_override?.let { BgValue.fromMgDl(it) },
-        defaultAlarmProfile = defaultAlarmProfile,
-        alarmProfileOverride = alarmProfileOverride,
+        defaultAlertProfile = defaultAlertProfile,
+        alertProfileOverride = alertProfileOverride,
         adjustmentHint = this.adjustment_hint,
         adjustmentEndTime = this.adjustment_end_time
     )
@@ -117,19 +117,19 @@ fun ScheduledTherapyAdjustment.toEntity() = ScheduledTherapyAdjustmentEntity(
     insulin_adjustment_percentage = this.percentage,
     target_bg_override = this.targetBgOverride?.mgdlInt?.toShort(),
     low_threshold_override = this.lowThresholdOverride?.mgdlInt?.toShort(),
-    alarm_profile_override_id = this.effectiveAlarmProfileOverrideId,
+    alarm_profile_override_id = this.effectiveAlertProfileOverrideId,
     adjustment_hint = this.adjustmentHint
 )
 
-fun ScheduledTherapyAdjustmentEntity.toModel(alarmProfile: AlarmProfile? = null) = ScheduledTherapyAdjustment(
+fun ScheduledTherapyAdjustmentEntity.toModel(alertProfile: AlertProfile? = null) = ScheduledTherapyAdjustment(
     id = this.id,
     startTime = this.start_time,
     endTime = this.end_time,
     percentage = this.insulin_adjustment_percentage,
     targetBgOverride = this.target_bg_override?.let { BgValue.fromMgDl(it) },
     lowThresholdOverride = this.low_threshold_override?.let { BgValue.fromMgDl(it) },
-    alarmProfileOverrideId = this.alarm_profile_override_id,
-    alarmProfileOverride = alarmProfile,
+    alertProfileOverrideId = this.alarm_profile_override_id,
+    alertProfileOverride = alertProfile,
     adjustmentHint = this.adjustment_hint
 )
 
@@ -139,7 +139,7 @@ fun TherapyAdjustment.toEntity() = TherapyAdjustmentEntity(
     percentage = this.percentage,
     target_bg_override = this.targetBgMgDl,
     low_threshold_override = this.lowThresholdMgDl,
-    alarm_profile_override_id = this.alarmProfileOverrideId
+    alarm_profile_override_id = this.alertProfileOverrideId
 )
 
 fun TherapyAdjustmentEntity.toModel() = TherapyAdjustment(
@@ -148,5 +148,5 @@ fun TherapyAdjustmentEntity.toModel() = TherapyAdjustment(
     percentage = this.percentage,
     targetBgMgDl = this.target_bg_override,
     lowThresholdMgDl = this.low_threshold_override,
-    alarmProfileOverrideId = this.alarm_profile_override_id
+    alertProfileOverrideId = this.alarm_profile_override_id
 )

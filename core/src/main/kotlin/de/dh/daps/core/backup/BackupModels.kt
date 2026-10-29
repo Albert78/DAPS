@@ -12,7 +12,7 @@ import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.common.domain.model.therapy.InsulinOrigin
 import de.dh.daps.common.domain.model.therapy.InsulinStatus
 import de.dh.daps.core.aps.CoreReasoning
-import de.dh.daps.core.repository.db.entities.AlarmProfileEntity
+import de.dh.daps.core.repository.db.entities.AlertProfileEntity
 import de.dh.daps.core.repository.db.entities.CoreInsightEntity
 import de.dh.daps.core.repository.db.entities.CurrentSettingsEntity
 import de.dh.daps.core.repository.db.entities.CurrentTherapySettingsEntity
@@ -112,13 +112,17 @@ data class CurrentSettingsDto(
 )
 
 @Serializable
-data class AlarmProfileDto(
+data class AlertProfileDto(
     val id: Long,
     val name: String,
     val isDefault: Boolean,
     val isActive: Boolean,
-    val severityDefaultsJson: String,
-    val customOverridesJson: String
+    val alarmDefaultsJson: String,
+    val alarmOverridesJson: String = "{}",
+    val recommendationDefaultJson: String,
+    val recommendationOverridesJson: String = "{}",
+    val reminderDefaultJson: String,
+    val reminderOverridesJson: String = "{}"
 )
 
 @Serializable
@@ -152,7 +156,7 @@ data class TherapyConfigDto(
     val currentTherapySettings: CurrentTherapySettingsDto? = null,
     val therapyAdjustments: List<TherapyAdjustmentPresetDto> = emptyList(),
     val currentSettings: CurrentSettingsDto? = null,
-    val alarmProfiles: List<AlarmProfileDto> = emptyList(),
+    val alertProfiles: List<AlertProfileDto> = emptyList(),
     val mealTypes: List<MealTypeDto> = emptyList(),
     val insulinTypes: List<InsulinTypeDto> = emptyList(),
     val sensorTypes: List<SensorTypeDto> = emptyList(),
@@ -369,22 +373,30 @@ fun CurrentSettingsDto.toEntity() = CurrentSettingsEntity(
     aps_mode = runCatching { ApsMode.valueOf(apsMode) }.getOrDefault(ApsMode.Manual)
 )
 
-fun AlarmProfileEntity.toDto() = AlarmProfileDto(
+fun AlertProfileEntity.toDto() = AlertProfileDto(
     id = id,
     name = name,
-    isDefault = is_default,
-    isActive = is_active,
-    severityDefaultsJson = severity_defaults_json,
-    customOverridesJson = custom_overrides_json
+    isDefault = isDefault,
+    isActive = isActive,
+    alarmDefaultsJson = alarmDefaultsJson,
+    alarmOverridesJson = alarmOverridesJson,
+    recommendationDefaultJson = recommendationDefaultJson,
+    recommendationOverridesJson = recommendationOverridesJson,
+    reminderDefaultJson = reminderDefaultJson,
+    reminderOverridesJson = reminderOverridesJson
 )
 
-fun AlarmProfileDto.toEntity() = AlarmProfileEntity(
+fun AlertProfileDto.toEntity() = AlertProfileEntity(
     id = id,
     name = name,
-    is_default = isDefault,
-    is_active = isActive,
-    severity_defaults_json = severityDefaultsJson,
-    custom_overrides_json = customOverridesJson
+    isDefault = isDefault,
+    isActive = isActive,
+    alarmDefaultsJson = alarmDefaultsJson,
+    alarmOverridesJson = alarmOverridesJson,
+    recommendationDefaultJson = recommendationDefaultJson,
+    recommendationOverridesJson = recommendationOverridesJson,
+    reminderDefaultJson = reminderDefaultJson,
+    reminderOverridesJson = reminderOverridesJson
 )
 
 fun MealTypeEntity.toDto() = MealTypeDto(

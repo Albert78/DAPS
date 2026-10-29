@@ -5,14 +5,14 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import de.dh.daps.core.repository.db.dao.AlarmProfileDao
+import de.dh.daps.core.repository.db.dao.AlertProfileDao
 import de.dh.daps.core.repository.db.dao.MetabolicEventsDao
 import de.dh.daps.core.repository.db.dao.ProviderDao
 import de.dh.daps.core.repository.db.dao.ReminderDao
 import de.dh.daps.core.repository.db.dao.SettingsDao
 import de.dh.daps.core.repository.db.dao.SystemMetricsDao
 import de.dh.daps.core.repository.db.dao.TherapyDao
-import de.dh.daps.core.repository.db.entities.AlarmProfileEntity
+import de.dh.daps.core.repository.db.entities.AlertProfileEntity
 import de.dh.daps.core.repository.db.entities.CoreInsightEntity
 import de.dh.daps.core.repository.db.entities.CurrentSettingsEntity
 import de.dh.daps.core.repository.db.entities.CurrentTherapySettingsEntity
@@ -44,7 +44,7 @@ import java.util.concurrent.Executors
     ScheduledTherapyAdjustmentEntity::class,
     TherapyAdjustmentEntity::class,
     CurrentSettingsEntity::class,
-    AlarmProfileEntity::class,
+    AlertProfileEntity::class,
 
     // Metabolic events
     MealTypeEntity::class,
@@ -66,7 +66,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun metabolicEventsDao(): MetabolicEventsDao
     abstract fun settingsDao(): SettingsDao
     abstract fun systemMetricsDao(): SystemMetricsDao
-    abstract fun alarmProfileDao(): AlarmProfileDao
+    abstract fun alertProfileDao(): AlertProfileDao
     abstract fun reminderDao(): ReminderDao
 
     companion object {

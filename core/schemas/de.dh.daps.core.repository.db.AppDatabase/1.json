@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "9ea47cc0308846f2d18c0c7eac555247",
+    "identityHash": "a10b4b01573300311a537de5d210395f",
     "entities": [
       {
         "tableName": "sensor_type",
@@ -394,8 +394,8 @@
         }
       },
       {
-        "tableName": "alarm_profiles",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `is_default` INTEGER NOT NULL, `is_active` INTEGER NOT NULL, `severity_defaults_json` TEXT NOT NULL, `custom_overrides_json` TEXT NOT NULL)",
+        "tableName": "alert_profiles",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `is_default` INTEGER NOT NULL, `is_active` INTEGER NOT NULL, `alarm_defaults_json` TEXT NOT NULL, `alarm_overrides_json` TEXT NOT NULL, `recommendation_default_json` TEXT NOT NULL, `recommendation_overrides_json` TEXT NOT NULL, `reminder_default_json` TEXT NOT NULL, `reminder_overrides_json` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -410,26 +410,50 @@
             "notNull": true
           },
           {
-            "fieldPath": "is_default",
+            "fieldPath": "isDefault",
             "columnName": "is_default",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "is_active",
+            "fieldPath": "isActive",
             "columnName": "is_active",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "severity_defaults_json",
-            "columnName": "severity_defaults_json",
+            "fieldPath": "alarmDefaultsJson",
+            "columnName": "alarm_defaults_json",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "custom_overrides_json",
-            "columnName": "custom_overrides_json",
+            "fieldPath": "alarmOverridesJson",
+            "columnName": "alarm_overrides_json",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recommendationDefaultJson",
+            "columnName": "recommendation_default_json",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recommendationOverridesJson",
+            "columnName": "recommendation_overrides_json",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reminderDefaultJson",
+            "columnName": "reminder_default_json",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reminderOverridesJson",
+            "columnName": "reminder_overrides_json",
             "affinity": "TEXT",
             "notNull": true
           }
@@ -1009,7 +1033,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9ea47cc0308846f2d18c0c7eac555247')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a10b4b01573300311a537de5d210395f')"
     ]
   }
 }
