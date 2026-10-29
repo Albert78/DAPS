@@ -3,12 +3,12 @@ package de.dh.daps.core.orchestration
 import android.app.Notification
 import android.content.Intent
 import de.dh.daps.common.domain.calculation.CarbsInsulinCalculator
+import de.dh.daps.common.domain.model.data.BgReadingsInterval
 import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.data.Tick
 import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.engine.ApsMode
-import de.dh.daps.common.domain.model.data.BgReadingsInterval
 import de.dh.daps.common.domain.model.therapy.MealEntry
 import de.dh.daps.common.infrastructure.ReminderManager
 import de.dh.daps.common.infrastructure.SystemWakeService
@@ -383,8 +383,28 @@ class SystemOrchestratorImpl(
             onApplyDeferredBolusUpdates = { treatmentLock, updates -> therapyManager.applyDeferredBolusUpdates(treatmentLock, updates) },
             onSetTempBasal = { treatmentLock, durationInHours, percent ->
                 when (apsMode.value) {
-                    ApsMode.AutoCorrection -> therapyManager.setTempBasal(treatmentLock, durationInHours, percent)
-                    else -> recommendationManager.addTempBasalRecommendation(durationInHours, percent)
+                    ApsMode.AutoCorrection -> {
+                        therapyManager.setTempBasal(treatmentLock, durationInHours, percent)
+                    }
+                    else -> {
+                        val basalStatus = pumpManager.activeInsulinPump.value?.basalStatus?.value
+                        val currentPercent = if (basalStatus != null && basalStatus.isTempBasal) {
+                            basalStatus.tempBasalPercent ?: 100
+                        } else {
+                            100
+                        }
+
+                        val isExpiringSoon = basalStatus?.takeIf { it.isTempBasal }?.tempBasalExpiry?.let { expiry ->
+                            val remainingMinutes = Minutes.timeDifference(Timestamp.now(), expiry)
+                            remainingMinutes < TEMP_BASAL_EXPIRING_SOON_THRESHOLD
+                        } ?: false
+
+                        if (percent != currentPercent || isExpiringSoon) {
+                            recommendationManager.addTempBasalRecommendation(durationInHours, percent)
+                        } else {
+                            recommendationManager.clearTempBasalRecommendation()
+                        }
+                    }
                 }
             },
             onClearTempBasal = { treatmentLock ->
@@ -545,5 +565,6 @@ class SystemOrchestratorImpl(
         const val WAKEUP_CONSUMABLE_CHECK = 2u
         const val DEVICE_INITIALIZATION_TIMEOUT_MS = 1000L
         val AUTOMATED_BOLUS_EXPIRATION = Minutes(4)
+        val TEMP_BASAL_EXPIRING_SOON_THRESHOLD = Minutes(15)
     }
 }

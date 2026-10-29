@@ -167,16 +167,9 @@ class ManualControlViewModel(
             }
         } else false
 
-        val filteredRecommendations = recommendations.all.filter { rec ->
-            when (rec) {
-                is ApsRecommendation.TempBasal -> rec.shouldDisplayForManualControl(pump.basalStatus)
-                else -> true
-            }
-        }
-
         ManualControlUiState(
             contextInfo = contextInfo.copy(hasNextPlannedMealReminder = hasNextPlannedMealReminder),
-            recommendations = filteredRecommendations,
+            recommendations = recommendations.all,
             pump = pump,
             showLockError = lockErrorOwner != null,
             lockErrorOwner = lockErrorOwner
@@ -293,13 +286,4 @@ class ManualControlViewModel(
             }
         }
     }
-}
-
-private fun ApsRecommendation.TempBasal.shouldDisplayForManualControl(
-    basalStatus: BasalStatus?
-): Boolean {
-    val currentPercent = if (basalStatus != null && basalStatus.isTempBasal) (basalStatus.tempBasalPercent ?: 100) else 100
-    val proposedPercent = this.percent
-
-    return proposedPercent != currentPercent
 }
