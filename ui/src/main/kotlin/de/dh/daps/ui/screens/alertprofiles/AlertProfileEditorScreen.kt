@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -219,7 +220,7 @@ fun AlertProfileEditorContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(12.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
@@ -299,242 +300,58 @@ fun AlertProfileEditorContent(
 
             val listState = rememberLazyListState()
 
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .contentScrollIndicator(listState)
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                when (selectedTabIndex) {
-                    0 -> {
-                        // 1. Alarms Tab: Severity Defaults & Overrides
-                        item {
-                            Text(
-                                text = stringResource(id = R.string.alert_profile_default_signal_config),
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-
-                        item {
-                            SignalConfigCard(
-                                title = stringResource(id = R.string.alert_profile_severity_critical),
-                                subtitle = "🔴 Default",
-                                config = uiState.alarmDefaults[AlarmSeverity.CRITICAL] ?: AlertSignalConfig(),
-                                onConfigChanged = { onAlarmDefaultChange(AlarmSeverity.CRITICAL, it) },
-                                showEnabledToggle = false,
-                                onPlayPreview = { onPlayPreview(uiState.alarmDefaults[AlarmSeverity.CRITICAL] ?: AlertSignalConfig()) },
-                                onSelectSound = { activeSoundPickerTarget = SoundPickerTarget.AlarmDefault(AlarmSeverity.CRITICAL) },
-                                onUpdateVolume = onUpdateVolume
-                            )
-                        }
-
-                        item {
-                            SignalConfigCard(
-                                title = stringResource(id = R.string.alert_profile_severity_warning),
-                                subtitle = "🟡 Default",
-                                config = uiState.alarmDefaults[AlarmSeverity.WARNING] ?: AlertSignalConfig(),
-                                onConfigChanged = { onAlarmDefaultChange(AlarmSeverity.WARNING, it) },
-                                showEnabledToggle = false,
-                                onPlayPreview = { onPlayPreview(uiState.alarmDefaults[AlarmSeverity.WARNING] ?: AlertSignalConfig()) },
-                                onSelectSound = { activeSoundPickerTarget = SoundPickerTarget.AlarmDefault(AlarmSeverity.WARNING) },
-                                onUpdateVolume = onUpdateVolume
-                            )
-                        }
-
-                        item {
-                            SignalConfigCard(
-                                title = stringResource(id = R.string.alert_profile_severity_info),
-                                subtitle = "🔵 Default",
-                                config = uiState.alarmDefaults[AlarmSeverity.INFO] ?: AlertSignalConfig(),
-                                onConfigChanged = { onAlarmDefaultChange(AlarmSeverity.INFO, it) },
-                                showEnabledToggle = false,
-                                onPlayPreview = { onPlayPreview(uiState.alarmDefaults[AlarmSeverity.INFO] ?: AlertSignalConfig()) },
-                                onSelectSound = { activeSoundPickerTarget = SoundPickerTarget.AlarmDefault(AlarmSeverity.INFO) },
-                                onUpdateVolume = onUpdateVolume
-                            )
-                        }
-
-                        item {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = stringResource(id = R.string.alert_profile_specific_overrides),
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                AddAlarmOverrideButton(
-                                    existingOverrides = uiState.alarmOverrides.keys,
-                                    onAdd = { onAlarmOverrideAdd(it, AlertSignalConfig()) }
-                                )
-                            }
-                        }
-
-                        items(uiState.alarmOverrides.toList(), key = { it.first.name }) { (alarmType, config) ->
-                            SignalConfigCard(
-                                title = getAlarmTypeLabel(alarmType),
-                                config = config,
-                                onConfigChanged = { onAlarmOverrideChange(alarmType, it) },
-                                showEnabledToggle = true,
-                                onDelete = { onAlarmOverrideRemove(alarmType) },
-                                onPlayPreview = { onPlayPreview(config) },
-                                onSelectSound = { activeSoundPickerTarget = SoundPickerTarget.AlarmOverride(alarmType) },
-                                onUpdateVolume = onUpdateVolume
-                            )
-                        }
-                    }
-
-                    1 -> {
-                        // 2. Recommendations Tab: Default & Overrides
-                        item {
-                            Text(
-                                text = stringResource(id = R.string.alert_profile_default_signal_config),
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-
-                        item {
-                            SignalConfigCard(
-                                title = stringResource(id = R.string.alert_profile_section_recommendations),
-                                subtitle = stringResource(id = R.string.alert_profile_default_signal_config),
-                                config = uiState.recommendationDefault,
-                                onConfigChanged = onRecommendationDefaultChange,
-                                showEnabledToggle = true,
-                                onPlayPreview = { onPlayPreview(uiState.recommendationDefault) },
-                                onSelectSound = { activeSoundPickerTarget = SoundPickerTarget.RecommendationDefault },
-                                onUpdateVolume = onUpdateVolume
-                            )
-                        }
-
-                        item {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = stringResource(id = R.string.alert_profile_specific_overrides),
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                AddRecommendationOverrideButton(
-                                    existingOverrides = uiState.recommendationOverrides.keys,
-                                    onAdd = { onRecommendationOverrideAdd(it, AlertSignalConfig()) }
-                                )
-                            }
-                        }
-
-                        items(uiState.recommendationOverrides.toList(), key = { it.first.name }) { (recType, config) ->
-                            SignalConfigCard(
-                                title = getRecommendationTypeLabel(recType),
-                                config = config,
-                                onConfigChanged = { onRecommendationOverrideChange(recType, it) },
-                                showEnabledToggle = true,
-                                onDelete = { onRecommendationOverrideRemove(recType) },
-                                onPlayPreview = { onPlayPreview(config) },
-                                onSelectSound = { activeSoundPickerTarget = SoundPickerTarget.RecommendationOverride(recType) },
-                                onUpdateVolume = onUpdateVolume
-                            )
-                        }
-                    }
-
-                    2 -> {
-                        // 3. Reminders Tab: Default & Overrides
-                        item {
-                            Text(
-                                text = stringResource(id = R.string.alert_profile_default_signal_config),
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-
-                        item {
-                            SignalConfigCard(
-                                title = stringResource(id = R.string.alert_profile_section_reminders),
-                                subtitle = stringResource(id = R.string.alert_profile_default_signal_config),
-                                config = uiState.reminderDefault,
-                                onConfigChanged = onReminderDefaultChange,
-                                showEnabledToggle = true,
-                                onPlayPreview = { onPlayPreview(uiState.reminderDefault) },
-                                onSelectSound = { activeSoundPickerTarget = SoundPickerTarget.ReminderDefault },
-                                onUpdateVolume = onUpdateVolume
-                            )
-                        }
-
-                        item {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = stringResource(id = R.string.alert_profile_specific_overrides),
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                AddReminderOverrideButton(
-                                    existingOverrides = uiState.reminderOverrides.keys,
-                                    onAdd = { onReminderOverrideAdd(it, AlertSignalConfig()) }
-                                )
-                            }
-                        }
-
-                        items(uiState.reminderOverrides.toList(), key = { it.first.name }) { (reminderType, config) ->
-                            SignalConfigCard(
-                                title = getReminderTypeLabel(reminderType),
-                                config = config,
-                                onConfigChanged = { onReminderOverrideChange(reminderType, it) },
-                                showEnabledToggle = true,
-                                onDelete = { onReminderOverrideRemove(reminderType) },
-                                onPlayPreview = { onPlayPreview(config) },
-                                onSelectSound = { activeSoundPickerTarget = SoundPickerTarget.ReminderOverride(reminderType) },
-                                onUpdateVolume = onUpdateVolume
-                            )
-                        }
-                    }
-                }
+            when (selectedTabIndex) {
+                0 -> AlarmsTabContent(
+                    alarmDefaults = uiState.alarmDefaults,
+                    alarmOverrides = uiState.alarmOverrides,
+                    onAlarmDefaultChange = onAlarmDefaultChange,
+                    onAlarmOverrideChange = onAlarmOverrideChange,
+                    onAlarmOverrideRemove = onAlarmOverrideRemove,
+                    onAlarmOverrideAdd = onAlarmOverrideAdd,
+                    onPlayPreview = onPlayPreview,
+                    onSelectSound = { activeSoundPickerTarget = it },
+                    onUpdateVolume = onUpdateVolume,
+                    listState = listState
+                )
+                1 -> RecommendationsTabContent(
+                    recommendationDefault = uiState.recommendationDefault,
+                    recommendationOverrides = uiState.recommendationOverrides,
+                    onRecommendationDefaultChange = onRecommendationDefaultChange,
+                    onRecommendationOverrideChange = onRecommendationOverrideChange,
+                    onRecommendationOverrideRemove = onRecommendationOverrideRemove,
+                    onRecommendationOverrideAdd = onRecommendationOverrideAdd,
+                    onPlayPreview = onPlayPreview,
+                    onSelectSound = { activeSoundPickerTarget = it },
+                    onUpdateVolume = onUpdateVolume,
+                    listState = listState
+                )
+                2 -> RemindersTabContent(
+                    reminderDefault = uiState.reminderDefault,
+                    reminderOverrides = uiState.reminderOverrides,
+                    onReminderDefaultChange = onReminderDefaultChange,
+                    onReminderOverrideChange = onReminderOverrideChange,
+                    onReminderOverrideRemove = onReminderOverrideRemove,
+                    onReminderOverrideAdd = onReminderOverrideAdd,
+                    onPlayPreview = onPlayPreview,
+                    onSelectSound = { activeSoundPickerTarget = it },
+                    onUpdateVolume = onUpdateVolume,
+                    listState = listState
+                )
             }
         }
     }
 
     if (showDiscardConfirmation) {
-        AlertDialog(
+        DiscardChangesDialog(
+            isSaveEnabled = uiState.isValid && !uiState.isSaving,
             onDismissRequest = { showDiscardConfirmation = false },
-            title = { Text(stringResource(id = R.string.alert_profile_editor_discard_title)) },
-            text = { Text(stringResource(id = R.string.alert_profile_editor_discard_message)) },
-            confirmButton = {
-                NormalTextButton(
-                    onClick = {
-                        showDiscardConfirmation = false
-                        onSave()
-                    },
-                    enabled = uiState.isValid && !uiState.isSaving
-                ) {
-                    Text(stringResource(id = CommonR.string.action_save))
-                }
+            onSave = {
+                showDiscardConfirmation = false
+                onSave()
             },
-            dismissButton = {
-                NormalTextButton(onClick = {
-                    showDiscardConfirmation = false
-                    onNavigateUp()
-                }) {
-                    Text(stringResource(id = R.string.discard_confirm_button))
-                }
+            onDiscard = {
+                showDiscardConfirmation = false
+                onNavigateUp()
             }
         )
     }
@@ -694,6 +511,301 @@ private fun AddReminderOverrideButton(
 }
 
 @Composable
+private fun AlarmsTabContent(
+    alarmDefaults: Map<AlarmSeverity, AlertSignalConfig>,
+    alarmOverrides: Map<AlarmType, AlertSignalConfig>,
+    onAlarmDefaultChange: (AlarmSeverity, AlertSignalConfig) -> Unit,
+    onAlarmOverrideChange: (AlarmType, AlertSignalConfig) -> Unit,
+    onAlarmOverrideRemove: (AlarmType) -> Unit,
+    onAlarmOverrideAdd: (AlarmType, AlertSignalConfig) -> Unit,
+    onPlayPreview: (AlertSignalConfig) -> Unit,
+    onSelectSound: (SoundPickerTarget) -> Unit,
+    onUpdateVolume: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    listState: LazyListState = rememberLazyListState()
+) {
+    val defaultSubtitle = stringResource(id = R.string.alert_profile_default_subtitle)
+
+    LazyColumn(
+        state = listState,
+        modifier = modifier
+            .fillMaxSize()
+            .contentScrollIndicator(listState)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            Text(
+                text = stringResource(id = R.string.alert_profile_default_signal_config),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+
+        item {
+            SignalConfigCard(
+                title = stringResource(id = R.string.alert_profile_severity_critical),
+                subtitle = "🔴 $defaultSubtitle",
+                config = alarmDefaults[AlarmSeverity.CRITICAL] ?: AlertSignalConfig(),
+                onConfigChanged = { onAlarmDefaultChange(AlarmSeverity.CRITICAL, it) },
+                showEnabledToggle = false,
+                onPlayPreview = { onPlayPreview(alarmDefaults[AlarmSeverity.CRITICAL] ?: AlertSignalConfig()) },
+                onSelectSound = { onSelectSound(SoundPickerTarget.AlarmDefault(AlarmSeverity.CRITICAL)) },
+                onUpdateVolume = onUpdateVolume
+            )
+        }
+
+        item {
+            SignalConfigCard(
+                title = stringResource(id = R.string.alert_profile_severity_warning),
+                subtitle = "🟡 $defaultSubtitle",
+                config = alarmDefaults[AlarmSeverity.WARNING] ?: AlertSignalConfig(),
+                onConfigChanged = { onAlarmDefaultChange(AlarmSeverity.WARNING, it) },
+                showEnabledToggle = false,
+                onPlayPreview = { onPlayPreview(alarmDefaults[AlarmSeverity.WARNING] ?: AlertSignalConfig()) },
+                onSelectSound = { onSelectSound(SoundPickerTarget.AlarmDefault(AlarmSeverity.WARNING)) },
+                onUpdateVolume = onUpdateVolume
+            )
+        }
+
+        item {
+            SignalConfigCard(
+                title = stringResource(id = R.string.alert_profile_severity_info),
+                subtitle = "🔵 $defaultSubtitle",
+                config = alarmDefaults[AlarmSeverity.INFO] ?: AlertSignalConfig(),
+                onConfigChanged = { onAlarmDefaultChange(AlarmSeverity.INFO, it) },
+                showEnabledToggle = false,
+                onPlayPreview = { onPlayPreview(alarmDefaults[AlarmSeverity.INFO] ?: AlertSignalConfig()) },
+                onSelectSound = { onSelectSound(SoundPickerTarget.AlarmDefault(AlarmSeverity.INFO)) },
+                onUpdateVolume = onUpdateVolume
+            )
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(id = R.string.alert_profile_specific_overrides),
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                AddAlarmOverrideButton(
+                    existingOverrides = alarmOverrides.keys,
+                    onAdd = { onAlarmOverrideAdd(it, AlertSignalConfig()) }
+                )
+            }
+        }
+
+        items(alarmOverrides.toList(), key = { it.first.name }) { (alarmType, config) ->
+            SignalConfigCard(
+                title = getAlarmTypeLabel(alarmType),
+                config = config,
+                onConfigChanged = { onAlarmOverrideChange(alarmType, it) },
+                showEnabledToggle = true,
+                onDelete = { onAlarmOverrideRemove(alarmType) },
+                onPlayPreview = { onPlayPreview(config) },
+                onSelectSound = { onSelectSound(SoundPickerTarget.AlarmOverride(alarmType)) },
+                onUpdateVolume = onUpdateVolume
+            )
+        }
+    }
+}
+
+@Composable
+private fun RecommendationsTabContent(
+    recommendationDefault: AlertSignalConfig,
+    recommendationOverrides: Map<RecommendationType, AlertSignalConfig>,
+    onRecommendationDefaultChange: (AlertSignalConfig) -> Unit,
+    onRecommendationOverrideChange: (RecommendationType, AlertSignalConfig) -> Unit,
+    onRecommendationOverrideRemove: (RecommendationType) -> Unit,
+    onRecommendationOverrideAdd: (RecommendationType, AlertSignalConfig) -> Unit,
+    onPlayPreview: (AlertSignalConfig) -> Unit,
+    onSelectSound: (SoundPickerTarget) -> Unit,
+    onUpdateVolume: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    listState: LazyListState = rememberLazyListState()
+) {
+    LazyColumn(
+        state = listState,
+        modifier = modifier
+            .fillMaxSize()
+            .contentScrollIndicator(listState)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            Text(
+                text = stringResource(id = R.string.alert_profile_default_signal_config),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+
+        item {
+            SignalConfigCard(
+                title = stringResource(id = R.string.alert_profile_section_recommendations),
+                subtitle = stringResource(id = R.string.alert_profile_default_subtitle),
+                config = recommendationDefault,
+                onConfigChanged = onRecommendationDefaultChange,
+                showEnabledToggle = true,
+                onPlayPreview = { onPlayPreview(recommendationDefault) },
+                onSelectSound = { onSelectSound(SoundPickerTarget.RecommendationDefault) },
+                onUpdateVolume = onUpdateVolume
+            )
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(id = R.string.alert_profile_specific_overrides),
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                AddRecommendationOverrideButton(
+                    existingOverrides = recommendationOverrides.keys,
+                    onAdd = { onRecommendationOverrideAdd(it, AlertSignalConfig()) }
+                )
+            }
+        }
+
+        items(recommendationOverrides.toList(), key = { it.first.name }) { (recType, config) ->
+            SignalConfigCard(
+                title = getRecommendationTypeLabel(recType),
+                config = config,
+                onConfigChanged = { onRecommendationOverrideChange(recType, it) },
+                showEnabledToggle = true,
+                onDelete = { onRecommendationOverrideRemove(recType) },
+                onPlayPreview = { onPlayPreview(config) },
+                onSelectSound = { onSelectSound(SoundPickerTarget.RecommendationOverride(recType)) },
+                onUpdateVolume = onUpdateVolume
+            )
+        }
+    }
+}
+
+@Composable
+private fun RemindersTabContent(
+    reminderDefault: AlertSignalConfig,
+    reminderOverrides: Map<ReminderType, AlertSignalConfig>,
+    onReminderDefaultChange: (AlertSignalConfig) -> Unit,
+    onReminderOverrideChange: (ReminderType, AlertSignalConfig) -> Unit,
+    onReminderOverrideRemove: (ReminderType) -> Unit,
+    onReminderOverrideAdd: (ReminderType, AlertSignalConfig) -> Unit,
+    onPlayPreview: (AlertSignalConfig) -> Unit,
+    onSelectSound: (SoundPickerTarget) -> Unit,
+    onUpdateVolume: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    listState: LazyListState = rememberLazyListState()
+) {
+    LazyColumn(
+        state = listState,
+        modifier = modifier
+            .fillMaxSize()
+            .contentScrollIndicator(listState)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            Text(
+                text = stringResource(id = R.string.alert_profile_default_signal_config),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+
+        item {
+            SignalConfigCard(
+                title = stringResource(id = R.string.alert_profile_section_reminders),
+                subtitle = stringResource(id = R.string.alert_profile_default_subtitle),
+                config = reminderDefault,
+                onConfigChanged = onReminderDefaultChange,
+                showEnabledToggle = true,
+                onPlayPreview = { onPlayPreview(reminderDefault) },
+                onSelectSound = { onSelectSound(SoundPickerTarget.ReminderDefault) },
+                onUpdateVolume = onUpdateVolume
+            )
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(id = R.string.alert_profile_specific_overrides),
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                AddReminderOverrideButton(
+                    existingOverrides = reminderOverrides.keys,
+                    onAdd = { onReminderOverrideAdd(it, AlertSignalConfig()) }
+                )
+            }
+        }
+
+        items(reminderOverrides.toList(), key = { it.first.name }) { (reminderType, config) ->
+            SignalConfigCard(
+                title = getReminderTypeLabel(reminderType),
+                config = config,
+                onConfigChanged = { onReminderOverrideChange(reminderType, it) },
+                showEnabledToggle = true,
+                onDelete = { onReminderOverrideRemove(reminderType) },
+                onPlayPreview = { onPlayPreview(config) },
+                onSelectSound = { onSelectSound(SoundPickerTarget.ReminderOverride(reminderType)) },
+                onUpdateVolume = onUpdateVolume
+            )
+        }
+    }
+}
+
+@Composable
+private fun DiscardChangesDialog(
+    isSaveEnabled: Boolean,
+    onDismissRequest: () -> Unit,
+    onSave: () -> Unit,
+    onDiscard: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = { Text(stringResource(id = R.string.alert_profile_editor_discard_title)) },
+        text = { Text(stringResource(id = R.string.alert_profile_editor_discard_message)) },
+        confirmButton = {
+            NormalTextButton(
+                onClick = onSave,
+                enabled = isSaveEnabled
+            ) {
+                Text(stringResource(id = CommonR.string.action_save))
+            }
+        },
+        dismissButton = {
+            NormalTextButton(onClick = onDiscard) {
+                Text(stringResource(id = R.string.discard_confirm_button))
+            }
+        }
+    )
+}
+
+@Composable
 fun getAlarmTypeLabel(type: AlarmType): String = when (type) {
     AlarmType.CRITICAL_LOW_BG -> stringResource(id = R.string.alarm_type_critical_low_bg)
     AlarmType.LOW_BG -> stringResource(id = R.string.alarm_type_low_bg)
@@ -812,6 +924,123 @@ fun AlertProfileEditorPreview() {
             onStopPreview = {},
             onSave = {},
             onNavigateUp = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, heightDp = 1000, name = "Alarms Tab Light")
+@Preview(showBackground = true, heightDp = 1000, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Alarms Tab Dark")
+@Composable
+private fun AlarmsTabContentPreview() {
+    AppPreview {
+        AlarmsTabContent(
+            alarmDefaults = mapOf(
+                AlarmSeverity.CRITICAL to AlertSignalConfig(
+                    displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 100)),
+                    vibrationMode = VibrationMode.CONTINUOUS,
+                    overrideDnd = true
+                ),
+                AlarmSeverity.WARNING to AlertSignalConfig(
+                    displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 80)),
+                    vibrationMode = VibrationMode.LONG,
+                    overrideDnd = false
+                ),
+                AlarmSeverity.INFO to AlertSignalConfig(
+                    displayMode = AlertDisplayMode.NotificationOnly,
+                    vibrationMode = VibrationMode.SHORT,
+                    overrideDnd = false
+                )
+            ),
+            alarmOverrides = mapOf(
+                AlarmType.CRITICAL_LOW_BG to AlertSignalConfig(
+                    displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 100)),
+                    vibrationMode = VibrationMode.CONTINUOUS,
+                    overrideDnd = true
+                )
+            ),
+            onAlarmDefaultChange = { _, _ -> },
+            onAlarmOverrideChange = { _, _ -> },
+            onAlarmOverrideRemove = {},
+            onAlarmOverrideAdd = { _, _ -> },
+            onPlayPreview = {},
+            onSelectSound = {},
+            onUpdateVolume = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, heightDp = 800, name = "Recommendations Tab Light")
+@Preview(showBackground = true, heightDp = 800, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Recommendations Tab Dark")
+@Composable
+private fun RecommendationsTabContentPreview() {
+    AppPreview {
+        RecommendationsTabContent(
+            recommendationDefault = AlertSignalConfig(
+                enabled = true,
+                displayMode = AlertDisplayMode.NotificationOnly,
+                vibrationMode = VibrationMode.SHORT,
+                overrideDnd = false
+            ),
+            recommendationOverrides = mapOf(
+                RecommendationType.BOLUS to AlertSignalConfig(
+                    enabled = true,
+                    displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 70)),
+                    vibrationMode = VibrationMode.LONG,
+                    overrideDnd = false
+                )
+            ),
+            onRecommendationDefaultChange = {},
+            onRecommendationOverrideChange = { _, _ -> },
+            onRecommendationOverrideRemove = {},
+            onRecommendationOverrideAdd = { _, _ -> },
+            onPlayPreview = {},
+            onSelectSound = {},
+            onUpdateVolume = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, heightDp = 800, name = "Reminders Tab Light")
+@Preview(showBackground = true, heightDp = 800, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Reminders Tab Dark")
+@Composable
+private fun RemindersTabContentPreview() {
+    AppPreview {
+        RemindersTabContent(
+            reminderDefault = AlertSignalConfig(
+                enabled = true,
+                displayMode = AlertDisplayMode.NotificationOnly,
+                vibrationMode = VibrationMode.SHORT,
+                overrideDnd = false
+            ),
+            reminderOverrides = mapOf(
+                ReminderType.MEAL to AlertSignalConfig(
+                    enabled = true,
+                    displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 60)),
+                    vibrationMode = VibrationMode.SHORT,
+                    overrideDnd = false
+                )
+            ),
+            onReminderDefaultChange = {},
+            onReminderOverrideChange = { _, _ -> },
+            onReminderOverrideRemove = {},
+            onReminderOverrideAdd = { _, _ -> },
+            onPlayPreview = {},
+            onSelectSound = {},
+            onUpdateVolume = {}
+        )
+    }
+}
+
+@Preview(showSystemUi = true, name = "Discard Changes Dialog Light")
+@Preview(showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Discard Changes Dialog Dark")
+@Composable
+private fun DiscardChangesDialogPreview() {
+    AppPreview {
+        DiscardChangesDialog(
+            isSaveEnabled = true,
+            onDismissRequest = {},
+            onSave = {},
+            onDiscard = {}
         )
     }
 }

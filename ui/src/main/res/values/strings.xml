@@ -671,6 +671,7 @@
 
     <!-- Signal Configurations & Overrides -->
     <string name="alert_profile_default_signal_config">Standard-Signalisierung</string>
+    <string name="alert_profile_default_subtitle">Standard</string>
     <string name="alert_profile_specific_overrides">Spezifische Ausnahmen</string>
     <string name="alert_profile_add_override">Ausnahme hinzufügen</string>
     <string name="alert_profile_delete_override">Ausnahme löschen</string>
