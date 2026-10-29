@@ -18,6 +18,7 @@ import kotlinx.serialization.Serializable
 @Serializable object InsulinHistoryRoute : NavKey
 @Serializable object RemindersRoute : NavKey
 @Serializable object PastRemindersRoute : NavKey
+@Serializable data class ReminderEditorRoute(val reminderId: Long? = null) : NavKey
 @Serializable object FoodDatabaseRoute : NavKey
 @Serializable object BgEditorRoute : NavKey
 @Serializable object TherapyAdjustmentRoute : NavKey

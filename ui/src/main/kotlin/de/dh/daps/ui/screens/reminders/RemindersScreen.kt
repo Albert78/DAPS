@@ -1,6 +1,7 @@
 package de.dh.daps.ui.screens.reminders
 
 import android.content.res.Configuration
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
@@ -22,6 +24,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -70,7 +73,9 @@ import de.dh.daps.common.R as CommonR
 fun RemindersScreen(
     viewModel: RemindersViewModel,
     onNavigateUp: () -> Unit,
-    onNavigateToPastReminders: () -> Unit
+    onNavigateToPastReminders: () -> Unit,
+    onAddReminder: () -> Unit,
+    onEditReminder: (Long) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -81,7 +86,9 @@ fun RemindersScreen(
         onDelete = { id -> viewModel.deleteReminder(id) },
         onUndo = { viewModel.restoreLastRemovedReminder() },
         onNavigateUp = onNavigateUp,
-        onNavigateToPastReminders = onNavigateToPastReminders
+        onNavigateToPastReminders = onNavigateToPastReminders,
+        onAddReminder = onAddReminder,
+        onEditReminder = onEditReminder
     )
 }
 
@@ -94,7 +101,9 @@ fun RemindersContent(
     onDelete: (Long) -> Unit,
     onUndo: () -> Unit,
     onNavigateUp: () -> Unit,
-    onNavigateToPastReminders: () -> Unit
+    onNavigateToPastReminders: () -> Unit,
+    onAddReminder: () -> Unit,
+    onEditReminder: (Long) -> Unit
 ) {
     var reminderToDelete by remember { mutableStateOf<Reminder?>(null) }
     var showMenu by remember { mutableStateOf(false) }
@@ -154,6 +163,18 @@ fun RemindersContent(
                 }
             )
         },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onAddReminder,
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = stringResource(R.string.cd_add_reminder)
+                )
+            }
+        },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { innerPadding ->
         Box(
@@ -201,6 +222,7 @@ fun RemindersContent(
                     ) { reminder ->
                         ReminderCard(
                             reminder = reminder,
+                            onEdit = { onEditReminder(reminder.id) },
                             onSnooze = { minutes -> onSnooze(reminder.id, minutes) },
                             onDismiss = {
                                 onDismiss(reminder.id)
@@ -249,6 +271,7 @@ fun RemindersContent(
 @Composable
 fun ReminderCard(
     reminder: Reminder,
+    onEdit: () -> Unit,
     onSnooze: (Int) -> Unit,
     onDismiss: () -> Unit,
     onDelete: () -> Unit
@@ -266,7 +289,9 @@ fun ReminderCard(
     val relativeTime = shortRelativeTimeUntil(reminder.reminderTimestamp)
 
     FramedCard(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onEdit)
     ) {
         Column(
             modifier = Modifier
@@ -362,7 +387,9 @@ fun RemindersEmptyPreview() {
             onDelete = {},
             onUndo = {},
             onNavigateUp = {},
-            onNavigateToPastReminders = {}
+            onNavigateToPastReminders = {},
+            onAddReminder = {},
+            onEditReminder = {}
         )
     }
 }
@@ -403,7 +430,9 @@ fun RemindersWithDataPreview() {
             onDelete = {},
             onUndo = {},
             onNavigateUp = {},
-            onNavigateToPastReminders = {}
+            onNavigateToPastReminders = {},
+            onAddReminder = {},
+            onEditReminder = {}
         )
     }
 }

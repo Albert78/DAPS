@@ -445,6 +445,14 @@
     <string name="reminders_snooze_30m">+30 Min</string>
     <string name="reminders_snooze_1h">+1 Std</string>
     <string name="reminders_snooze_2h">+2 Std</string>
+    <string name="reminder_editor_title_new">Erinnerung hinzufügen</string>
+    <string name="reminder_editor_title_edit">Erinnerung bearbeiten</string>
+    <string name="reminder_editor_label_title">Titel</string>
+    <string name="reminder_editor_label_description">Beschreibung (optional)</string>
+    <string name="reminder_editor_label_time">Fälligkeit</string>
+    <string name="reminder_editor_discard_title">Änderungen verwerfen?</string>
+    <string name="reminder_editor_discard_message">Du hast ungespeicherte Änderungen vorgenommen. Möchtest du sie wirklich verwerfen?</string>
+    <string name="cd_add_reminder">Erinnerung hinzufügen</string>
     <string name="reminders_menu_past_reminders">Vergangene Erinnerungen</string>
     <string name="past_reminders_screen_title">Vergangene Erinnerungen</string>
     <string name="past_reminders_empty_state_title">Keine vergangenen Erinnerungen</string>

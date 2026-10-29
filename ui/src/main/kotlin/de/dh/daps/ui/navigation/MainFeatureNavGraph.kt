@@ -25,6 +25,7 @@ import de.dh.daps.common.navigation.AppDataRoute
 import de.dh.daps.common.navigation.BgEditorRoute
 import de.dh.daps.common.navigation.InsulinHistoryRoute
 import de.dh.daps.common.navigation.RemindersRoute
+import de.dh.daps.common.navigation.ReminderEditorRoute
 import de.dh.daps.common.navigation.CoreDecisionsRoute
 import de.dh.daps.common.navigation.CurrentTherapySettingsRoute
 import de.dh.daps.common.navigation.DashboardRoute
@@ -119,6 +120,8 @@ import de.dh.daps.ui.screens.reminders.PastRemindersScreen
 import de.dh.daps.ui.screens.reminders.PastRemindersViewModel
 import de.dh.daps.ui.screens.reminders.RemindersScreen
 import de.dh.daps.ui.screens.reminders.RemindersViewModel
+import de.dh.daps.ui.screens.reminders.ReminderEditorScreen
+import de.dh.daps.ui.screens.reminders.ReminderEditorViewModel
 import de.dh.daps.ui.screens.systemcontrol.CoreDecisionsScreen
 import de.dh.daps.ui.screens.systemcontrol.CoreDecisionsViewModel
 import de.dh.daps.ui.screens.systemcontrol.SystemControlScreen
@@ -437,7 +440,19 @@ class MainFeatureNavGraph(
                 RemindersScreen(
                     viewModel = vm,
                     onNavigateUp = { navViewModel.pop() },
-                    onNavigateToPastReminders = { navViewModel.push(PastRemindersRoute) }
+                    onNavigateToPastReminders = { navViewModel.push(PastRemindersRoute) },
+                    onAddReminder = { navViewModel.push(ReminderEditorRoute()) },
+                    onEditReminder = { id -> navViewModel.push(ReminderEditorRoute(reminderId = id)) }
+                )
+            }
+
+            is ReminderEditorRoute -> NavEntry(key) {
+                val vm: ReminderEditorViewModel = viewModel(
+                    factory = ReminderEditorViewModel.Companion.Factory(registry, key.reminderId)
+                )
+                ReminderEditorScreen(
+                    viewModel = vm,
+                    onNavigateUp = { navViewModel.pop() }
                 )
             }
 
