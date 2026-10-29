@@ -17,6 +17,7 @@ import de.dh.daps.common.domain.model.therapy.toActiveDoses
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.orchestration.ApsRecommendation
 import de.dh.daps.core.therapy.LockResult
+import de.dh.daps.core.orchestration.ActiveRecommendations
 import de.dh.daps.core.therapy.TreatmentLock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -61,20 +62,11 @@ data class ManualControlPumpUiModel(
  */
 data class ManualControlUiState(
     val contextInfo: ManualControlContextInfoUiModel = ManualControlContextInfoUiModel(),
-    val recommendations: List<ApsRecommendation> = emptyList(),
+    val activeRecommendations: ActiveRecommendations = ActiveRecommendations(),
     val pump: ManualControlPumpUiModel = ManualControlPumpUiModel(),
     val showLockError: Boolean = false,
     val lockErrorOwner: String? = null
-) {
-    val activeBolusRecommendation: ApsRecommendation.Bolus?
-        get() = recommendations.filterIsInstance<ApsRecommendation.Bolus>().firstOrNull()
-
-    val activeTempBasalRecommendation: ApsRecommendation.TempBasal?
-        get() = recommendations.filterIsInstance<ApsRecommendation.TempBasal>().firstOrNull()
-
-    val activeCarbsRecommendation: ApsRecommendation.Carbs?
-        get() = recommendations.filterIsInstance<ApsRecommendation.Carbs>().firstOrNull()
-}
+)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ManualControlViewModel(
@@ -169,7 +161,7 @@ class ManualControlViewModel(
 
         ManualControlUiState(
             contextInfo = contextInfo.copy(hasNextPlannedMealReminder = hasNextPlannedMealReminder),
-            recommendations = recommendations.all,
+            activeRecommendations = recommendations,
             pump = pump,
             showLockError = lockErrorOwner != null,
             lockErrorOwner = lockErrorOwner

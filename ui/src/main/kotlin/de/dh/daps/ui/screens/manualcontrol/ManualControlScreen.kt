@@ -49,6 +49,7 @@ import de.dh.daps.common.domain.model.therapy.MealEntry
 import de.dh.daps.common.domain.model.therapy.getDefaultSlowMealType
 import de.dh.daps.common.domain.model.therapy.getDefaultStandardMealType
 import de.dh.daps.common.navigation.ManualControlInitialDialog
+import de.dh.daps.core.orchestration.ActiveRecommendations
 import de.dh.daps.core.orchestration.ApsRecommendation
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.PrimaryButton
@@ -129,7 +130,7 @@ fun ManualControlContent(
         if (!handledInitialDialog && uiState.pump.isConfigured) {
             when (initialDialog) {
                 ManualControlInitialDialog.BOLUS -> {
-                    val bolusRec = uiState.activeBolusRecommendation
+                    val bolusRec = uiState.activeRecommendations.bolus
                     activeDialog = ManualControlDialog.Bolus(
                         initialAmount = bolusRec?.amount ?: InsulinAmount.ZERO,
                         includedDeferredBoluses = bolusRec?.includedDeferredBoluses,
@@ -140,7 +141,7 @@ fun ManualControlContent(
                     handledInitialDialog = true
                 }
                 ManualControlInitialDialog.TEMP_BASAL -> {
-                    val tempBasalRec = uiState.activeTempBasalRecommendation
+                    val tempBasalRec = uiState.activeRecommendations.tempBasal
                     val currentPercent = uiState.pump.basalStatus?.tempBasalPercent ?: 100
                     activeDialog = ManualControlDialog.TempBasal(
                         initialPercent = tempBasalRec?.percent ?: currentPercent,
@@ -201,7 +202,7 @@ fun ManualControlContent(
 
                     // Recommendations
                     ManualControlRecommendationsSection(
-                        recommendations = uiState.recommendations,
+                        recommendations = uiState.activeRecommendations,
                         onOpenBolusDialog = { activeDialog = it },
                         onOpenTempBasalDialog = { activeDialog = it },
                         onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus,
@@ -318,14 +319,14 @@ fun ManualControlScreenPreview() {
                         origin = InsulinOrigin.Pump
                     )
                 ),
-                recommendations = listOf(
-                    ApsRecommendation.Carbs(amountInGram = 20),
-                    ApsRecommendation.Bolus(
+                activeRecommendations = ActiveRecommendations(
+                    carbs = ApsRecommendation.Carbs(amountInGram = 20),
+                    bolus = ApsRecommendation.Bolus(
                         amount = InsulinAmount(1.5),
                         correctionPart = InsulinAmount(1.0),
                         basalPart = InsulinAmount(0.0)
                     ),
-                    ApsRecommendation.TempBasal(durationInHours = 2, percent = 80)
+                    tempBasal = ApsRecommendation.TempBasal(durationInHours = 2, percent = 80)
                 ),
                 pump = ManualControlPumpUiModel(
                     isConfigured = true,
@@ -393,8 +394,8 @@ fun ManualControlCarbRecommendationPreview() {
                         origin = InsulinOrigin.Pump
                     )
                 ),
-                recommendations = listOf(
-                    ApsRecommendation.Carbs(amountInGram = 10)
+                activeRecommendations = ActiveRecommendations(
+                    carbs = ApsRecommendation.Carbs(amountInGram = 10)
                 ),
                 pump = ManualControlPumpUiModel(
                     isConfigured = true,

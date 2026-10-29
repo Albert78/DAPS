@@ -38,6 +38,7 @@ import de.dh.daps.common.domain.model.therapy.DeferredBolus
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.common.domain.model.therapy.MealEntry
 import de.dh.daps.common.domain.model.therapy.getDefaultStandardMealType
+import de.dh.daps.core.orchestration.ActiveRecommendations
 import de.dh.daps.core.orchestration.ApsRecommendation
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.carbsValue
@@ -51,7 +52,7 @@ import de.dh.daps.ui.common.theme.AppPreview
 
 @Composable
 fun ManualControlRecommendationsSection(
-    recommendations: List<ApsRecommendation>,
+    recommendations: ActiveRecommendations,
     onOpenBolusDialog: (ManualControlDialog.Bolus) -> Unit,
     onOpenTempBasalDialog: (ManualControlDialog.TempBasal) -> Unit,
     onNavigateToMealCorrectionBolus: (Double?) -> Unit,
@@ -67,13 +68,13 @@ fun ManualControlRecommendationsSection(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
-            if (recommendations.isNotEmpty()) {
+            if (recommendations.isNotEmpty) {
                 Surface(
                     shape = RoundedCornerShape(12.dp),
                     color = MaterialTheme.colorScheme.primaryContainer
                 ) {
                     Text(
-                        text = recommendations.size.toString(),
+                        text = recommendations.all.size.toString(),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                         fontWeight = FontWeight.Bold,
@@ -83,7 +84,7 @@ fun ManualControlRecommendationsSection(
             }
         }
 
-        if (recommendations.isEmpty()) {
+        if (recommendations.isEmpty) {
             OutlinedCard(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.outlinedCardColors(
@@ -99,9 +100,27 @@ fun ManualControlRecommendationsSection(
                 )
             }
         } else {
-            recommendations.forEach { recommendation ->
+            recommendations.carbs?.let { carbRec ->
                 RecommendationCard(
-                    recommendation = recommendation,
+                    recommendation = carbRec,
+                    onOpenBolusDialog = onOpenBolusDialog,
+                    onOpenTempBasalDialog = onOpenTempBasalDialog,
+                    onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus,
+                    onDismissRecommendation = onDismissRecommendation
+                )
+            }
+            recommendations.bolus?.let { bolusRec ->
+                RecommendationCard(
+                    recommendation = bolusRec,
+                    onOpenBolusDialog = onOpenBolusDialog,
+                    onOpenTempBasalDialog = onOpenTempBasalDialog,
+                    onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus,
+                    onDismissRecommendation = onDismissRecommendation
+                )
+            }
+            recommendations.tempBasal?.let { tempBasalRec ->
+                RecommendationCard(
+                    recommendation = tempBasalRec,
                     onOpenBolusDialog = onOpenBolusDialog,
                     onOpenTempBasalDialog = onOpenTempBasalDialog,
                     onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus,
@@ -342,14 +361,14 @@ fun RecommendationCard(
 fun ManualControlRecommendationsPreview() {
     AppPreview(modifier = Modifier.padding(16.dp)) {
         ManualControlRecommendationsSection(
-            recommendations = listOf(
-                ApsRecommendation.Carbs(amountInGram = 20),
-                ApsRecommendation.Bolus(
+            recommendations = ActiveRecommendations(
+                carbs = ApsRecommendation.Carbs(amountInGram = 20),
+                bolus = ApsRecommendation.Bolus(
                     amount = InsulinAmount(2.5),
                     correctionPart = InsulinAmount(1.5),
                     basalPart = InsulinAmount(1.0)
                 ),
-                ApsRecommendation.TempBasal(durationInHours = 2, percent = 150)
+                tempBasal = ApsRecommendation.TempBasal(durationInHours = 2, percent = 150)
             ),
             onOpenBolusDialog = {},
             onOpenTempBasalDialog = {},
