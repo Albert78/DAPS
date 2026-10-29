@@ -1,4 +1,4 @@
-package de.dh.daps.ui.screens.alarmprofiles
+package de.dh.daps.ui.screens.alertprofiles
 
 import android.content.Context
 import android.content.res.Configuration

@@ -1,22 +1,43 @@
 package de.dh.daps.ui.screens.recommendations
 
-import androidx.compose.foundation.layout.*
+import android.content.res.Configuration
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.domain.model.data.CarbsUnit
+import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.core.orchestration.ActiveRecommendations
 import de.dh.daps.core.orchestration.ApsRecommendation
-import de.dh.daps.ui.R as UiR
-import de.dh.daps.common.R as CommonR
 import de.dh.daps.ui.common.formatCarbsValue
+import de.dh.daps.ui.common.theme.AppPreview
+import de.dh.daps.common.R as CommonR
+import de.dh.daps.ui.R as UiR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -174,5 +195,45 @@ private fun RecommendationCard(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Recommendations - All - Light")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Recommendations - All - Dark")
+@Composable
+fun RecommendationScreenAllPreview() {
+    val sampleRecommendations = ActiveRecommendations(
+        carbs = ApsRecommendation.Carbs(amountInGram = 20),
+        bolus = ApsRecommendation.Bolus(amount = InsulinAmount(1.5)),
+        tempBasal = ApsRecommendation.TempBasal(durationInHours = 1, percent = 130)
+    )
+
+    AppPreview {
+        RecommendationScreen(
+            recommendations = sampleRecommendations,
+            carbsUnit = CarbsUnit.GRAMS,
+            onApplyRecommendation = {},
+            onDismissRecommendation = {},
+            onDismissAll = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Recommendations - Bolus Only - Light")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Recommendations - Bolus Only - Dark")
+@Composable
+fun RecommendationScreenBolusPreview() {
+    val sampleRecommendations = ActiveRecommendations(
+        bolus = ApsRecommendation.Bolus(amount = InsulinAmount(2.0))
+    )
+
+    AppPreview {
+        RecommendationScreen(
+            recommendations = sampleRecommendations,
+            carbsUnit = CarbsUnit.GRAMS,
+            onApplyRecommendation = {},
+            onDismissRecommendation = {},
+            onDismissAll = {}
+        )
     }
 }

@@ -692,6 +692,10 @@
     <string name="alert_profile_reminder_sensor_change">Sensorwechsel</string>
     <string name="alert_profile_reminder_reservoir_change">Ampullenwechsel</string>
     <string name="alert_profile_reminder_battery_change">Batteriewechsel</string>
+    <string name="alert_profile_reminder_meal">Mahlzeiten-Erinnerung</string>
+    <string name="alert_profile_reminder_pump">Pumpen-Erinnerung</string>
+    <string name="alert_profile_reminder_cgm">CGM-Erinnerung</string>
+    <string name="alert_profile_reminder_plugin">Plugin-Erinnerung</string>
     <string name="alert_profile_reminder_custom">Benutzerdefinierte Erinnerung</string>
 
     <!-- Display Modes -->

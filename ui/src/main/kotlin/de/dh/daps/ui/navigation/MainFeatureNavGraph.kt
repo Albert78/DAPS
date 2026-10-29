@@ -70,10 +70,10 @@ import de.dh.daps.ui.common.treatmentlock.TreatmentLockScreen
 import de.dh.daps.ui.common.treatmentlock.TreatmentLockViewModel
 import de.dh.daps.ui.controls.history.HistoryViewModel
 import de.dh.daps.ui.controls.state.SystemViewModel
-import de.dh.daps.ui.screens.alarmprofiles.AlarmProfileEditorScreen
-import de.dh.daps.ui.screens.alarmprofiles.AlarmProfileEditorViewModel
-import de.dh.daps.ui.screens.alarmprofiles.AlertProfilesScreen
-import de.dh.daps.ui.screens.alarmprofiles.AlertProfilesViewModel
+import de.dh.daps.ui.screens.alertprofiles.AlertProfileEditorScreen
+import de.dh.daps.ui.screens.alertprofiles.AlertProfileEditorViewModel
+import de.dh.daps.ui.screens.alertprofiles.AlertProfilesScreen
+import de.dh.daps.ui.screens.alertprofiles.AlertProfilesViewModel
 import de.dh.daps.ui.screens.appdata.AppDataScreen
 import de.dh.daps.ui.screens.appdata.AppDataViewModel
 import de.dh.daps.ui.screens.insulinhistory.InsulinHistoryScreen
@@ -641,10 +641,10 @@ class MainFeatureNavGraph(
             }
 
             is AlertProfileEditorRoute -> NavEntry(key) {
-                val vm: AlarmProfileEditorViewModel = viewModel(
-                    factory = AlarmProfileEditorViewModel.Companion.Factory(registry, key.profileId)
+                val vm: AlertProfileEditorViewModel = viewModel(
+                    factory = AlertProfileEditorViewModel.Companion.Factory(registry, key.profileId)
                 )
-                AlarmProfileEditorScreen(
+                AlertProfileEditorScreen(
                     viewModel = vm,
                     onNavigateUp = { navViewModel.pop() }
                 )

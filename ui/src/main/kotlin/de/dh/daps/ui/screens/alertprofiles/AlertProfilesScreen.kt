@@ -1,4 +1,4 @@
-package de.dh.daps.ui.screens.alarmprofiles
+package de.dh.daps.ui.screens.alertprofiles
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
@@ -48,8 +48,10 @@ import de.dh.daps.common.domain.model.alarm.AlarmSeverity
 import de.dh.daps.common.domain.model.alarm.AlertDisplayMode
 import de.dh.daps.common.domain.model.alarm.AlertProfile
 import de.dh.daps.common.domain.model.alarm.AlertSignalConfig
+import de.dh.daps.common.domain.model.alarm.RecommendationType
 import de.dh.daps.common.domain.model.alarm.SoundConfig
 import de.dh.daps.common.domain.model.alarm.VibrationMode
+import de.dh.daps.common.domain.model.reminder.ReminderType
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalTextButton
@@ -461,6 +463,34 @@ fun AlertProfilesPreview() {
             ),
             AlarmSeverity.INFO to AlertSignalConfig(
                 displayMode = AlertDisplayMode.NotificationOnly,
+                vibrationMode = VibrationMode.SHORT,
+                overrideDnd = false
+            )
+        ),
+        recommendationDefault = AlertSignalConfig(
+            enabled = true,
+            displayMode = AlertDisplayMode.NotificationOnly,
+            vibrationMode = VibrationMode.SHORT,
+            overrideDnd = false
+        ),
+        recommendationOverrides = mapOf(
+            RecommendationType.BOLUS to AlertSignalConfig(
+                enabled = true,
+                displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 70)),
+                vibrationMode = VibrationMode.LONG,
+                overrideDnd = false
+            )
+        ),
+        reminderDefault = AlertSignalConfig(
+            enabled = true,
+            displayMode = AlertDisplayMode.NotificationOnly,
+            vibrationMode = VibrationMode.SHORT,
+            overrideDnd = false
+        ),
+        reminderOverrides = mapOf(
+            ReminderType.MEAL to AlertSignalConfig(
+                enabled = true,
+                displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 60)),
                 vibrationMode = VibrationMode.SHORT,
                 overrideDnd = false
             )

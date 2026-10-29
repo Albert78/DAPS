@@ -1,4 +1,4 @@
-package de.dh.daps.ui.screens.alarmprofiles
+package de.dh.daps.ui.screens.alertprofiles
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
