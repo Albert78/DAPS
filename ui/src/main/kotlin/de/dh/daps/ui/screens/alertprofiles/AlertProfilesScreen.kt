@@ -35,7 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -63,6 +63,7 @@ import de.dh.daps.ui.common.icons.Icon_Sound_Vibration
 import de.dh.daps.ui.common.icons.Icon_Vibration_Only
 import de.dh.daps.ui.common.theme.AppPreview
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 import de.dh.daps.common.R as CommonR
 
 @Composable
@@ -133,11 +134,11 @@ fun AlertProfilesContent(
         } else {
             val listState = rememberLazyListState()
 
-            var previousSize by remember { mutableStateOf(uiState.profiles.size) }
+            var previousSize by remember { mutableIntStateOf(uiState.profiles.size) }
 
             LaunchedEffect(uiState.profiles.size) {
                 if (uiState.profiles.size > previousSize) {
-                    delay(100)
+                    delay(100.milliseconds)
                     val targetIndex = (listState.layoutInfo.totalItemsCount - 1).coerceAtLeast(0)
                     listState.animateScrollToItem(targetIndex)
                 }
@@ -452,6 +453,57 @@ fun AlertProfilesPreview() {
         isDefault = true,
         alarmDefaults = mapOf(
             AlarmSeverity.CRITICAL to AlertSignalConfig(
+                displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 80)),
+                vibrationMode = VibrationMode.CONTINUOUS,
+                overrideDnd = true
+            ),
+            AlarmSeverity.WARNING to AlertSignalConfig(
+                displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 50)),
+                vibrationMode = VibrationMode.LONG,
+                overrideDnd = false
+            ),
+            AlarmSeverity.INFO to AlertSignalConfig(
+                displayMode = AlertDisplayMode.NotificationOnly,
+                vibrationMode = VibrationMode.SHORT,
+                overrideDnd = false
+            )
+        ),
+        recommendationDefault = AlertSignalConfig(
+            enabled = true,
+            displayMode = AlertDisplayMode.NotificationOnly,
+            vibrationMode = VibrationMode.SHORT,
+            overrideDnd = false
+        ),
+        recommendationOverrides = mapOf(
+            RecommendationType.BOLUS to AlertSignalConfig(
+                enabled = true,
+                displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 70)),
+                vibrationMode = VibrationMode.LONG,
+                overrideDnd = false
+            )
+        ),
+        reminderDefault = AlertSignalConfig(
+            enabled = true,
+            displayMode = AlertDisplayMode.NotificationOnly,
+            vibrationMode = VibrationMode.SHORT,
+            overrideDnd = false
+        ),
+        reminderOverrides = mapOf(
+            ReminderType.MEAL to AlertSignalConfig(
+                enabled = true,
+                displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 60)),
+                vibrationMode = VibrationMode.SHORT,
+                overrideDnd = false
+            )
+        )
+    )
+
+    val sampleOutdoor = AlertProfile(
+        id = 2L,
+        name = "Draußen / Laut",
+        isDefault = true,
+        alarmDefaults = mapOf(
+            AlarmSeverity.CRITICAL to AlertSignalConfig(
                 displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 100)),
                 vibrationMode = VibrationMode.CONTINUOUS,
                 overrideDnd = true
@@ -497,10 +549,61 @@ fun AlertProfilesPreview() {
         )
     )
 
+    val sampleSilent = AlertProfile(
+        id = 3L,
+        name = "Stumm",
+        isDefault = true,
+        alarmDefaults = mapOf(
+            AlarmSeverity.CRITICAL to AlertSignalConfig(
+                displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 10)),
+                vibrationMode = VibrationMode.CONTINUOUS,
+                overrideDnd = true
+            ),
+            AlarmSeverity.WARNING to AlertSignalConfig(
+                displayMode = AlertDisplayMode.NotificationOnly,
+                vibrationMode = VibrationMode.LONG,
+                overrideDnd = false
+            ),
+            AlarmSeverity.INFO to AlertSignalConfig(
+                displayMode = AlertDisplayMode.NotificationOnly,
+                vibrationMode = VibrationMode.SHORT,
+                overrideDnd = false
+            )
+        ),
+        recommendationDefault = AlertSignalConfig(
+            enabled = true,
+            displayMode = AlertDisplayMode.NotificationOnly,
+            vibrationMode = VibrationMode.SHORT,
+            overrideDnd = false
+        ),
+        recommendationOverrides = mapOf(
+            RecommendationType.BOLUS to AlertSignalConfig(
+                enabled = true,
+                displayMode = AlertDisplayMode.NotificationOnly,
+                vibrationMode = VibrationMode.LONG,
+                overrideDnd = false
+            )
+        ),
+        reminderDefault = AlertSignalConfig(
+            enabled = true,
+            displayMode = AlertDisplayMode.NotificationOnly,
+            vibrationMode = VibrationMode.SHORT,
+            overrideDnd = false
+        ),
+        reminderOverrides = mapOf(
+            ReminderType.MEAL to AlertSignalConfig(
+                enabled = true,
+                displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 60)),
+                vibrationMode = VibrationMode.SHORT,
+                overrideDnd = false
+            )
+        )
+    )
+
     AppPreview {
         AlertProfilesContent(
             uiState = AlertProfilesUiState(
-                profiles = listOf(sampleStandard),
+                profiles = listOf(sampleStandard, sampleOutdoor, sampleSilent),
                 defaultProfile = sampleStandard,
                 isLoading = false
             ),

@@ -30,7 +30,7 @@ $items = @(
     # --- LAYER 1: FAR BACK / TOP CORNERS & BACKGROUND ---
     # Left background:
     [PSCustomObject]@{ File="permissions.png";                 X=210;  Y=500;  W=420; Angle=-12; Layer=1.0 },
-    [PSCustomObject]@{ File="alarm_profiles.png";             X=610;  Y=480;  W=420; Angle=-10; Layer=1.0 },
+    [PSCustomObject]@{ File="alert_profiles.png";             X=610;  Y=480;  W=420; Angle=-10; Layer=1.0 },
 
     # Top-center background:
     [PSCustomObject]@{ File="insulin_types.png";              X=1850; Y=520;  W=430; Angle=-4;  Layer=1.0 },
@@ -42,7 +42,7 @@ $items = @(
 
     # --- LAYER 2: MID BACK ---
     [PSCustomObject]@{ File="manual_control.png";              X=300;  Y=1320; W=430; Angle=-12; Layer=2.0 },
-    [PSCustomObject]@{ File="alarm_profile_editor.png";        X=960;  Y=600;  W=450; Angle=-6;  Layer=2.0 },
+    [PSCustomObject]@{ File="alert_profile_editor.png";        X=960;  Y=600;  W=450; Angle=-6;  Layer=2.0 },
     [PSCustomObject]@{ File="setup_units_step.png";           X=740;  Y=1160; W=470; Angle=-9;  Layer=2.0 },
     [PSCustomObject]@{ File="insulin_type_editor.png";         X=1450; Y=460;  W=450; Angle=-7;  Layer=2.0 },
     [PSCustomObject]@{ File="setup_glucose_source.png";        X=2630; Y=600;  W=450; Angle=9;   Layer=2.0 },
