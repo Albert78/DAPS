@@ -54,11 +54,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.data.BgBlock
 import de.dh.daps.common.domain.model.data.BgDelta
 import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.data.Block
+import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.common.domain.model.therapy.InsulinProfile
 import de.dh.daps.common.domain.model.therapy.InsulinType
@@ -836,14 +836,19 @@ private fun AdjustmentItem(
                 text = value,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = valueColor
+                color = valueColor,
+                modifier = Modifier.weight(1f, fill = false),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
             if (unit != null) {
                 Text(
                     text = unit,
                     style = MaterialTheme.typography.labelSmall,
                     color = valueColor.copy(alpha = 0.7f),
-                    fontWeight = FontWeight.Normal
+                    fontWeight = FontWeight.Normal,
+                    maxLines = 1,
+                    softWrap = false
                 )
             }
         }
