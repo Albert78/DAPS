@@ -63,6 +63,7 @@ import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.common.domain.model.therapy.MealEntry
 import de.dh.daps.common.domain.model.therapy.MealType
 import de.dh.daps.common.navigation.ManualControlInitialDialog
+import de.dh.daps.core.orchestration.ActiveRecommendations
 import de.dh.daps.core.orchestration.ApsRecommendation
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.LocalCarbsUnit
@@ -266,46 +267,11 @@ fun DashboardContent(
                 onSystemClick = onNavigateToSystemControl
             )
 
-            dashboardUiState.recommendations.forEach { recommendation ->
-                Spacer(modifier = Modifier.height(8.dp))
-                val (infoText, detailText, actionClick) = when (recommendation) {
-                    is ApsRecommendation.Carbs -> {
-                        val carbsGrams = recommendation.amountInGram.toDouble()
-                        val carbsText = carbsValue(carbsGrams)
-                        Triple(
-                            stringResource(R.string.recommendation_carbs_info_title, carbsText),
-                            stringResource(R.string.recommendation_carbs_info_text, carbsText),
-                            { onNavigateToMealCorrectionBolus(carbsGrams) }
-                        )
-                    }
-
-                    is ApsRecommendation.Bolus -> {
-                        Triple(
-                            stringResource(R.string.recommendation_bolus_info_title, recommendation.amount.iu),
-                            getBolusRecommendationText(recommendation),
-                            { onNavigateToManualControl(ManualControlInitialDialog.BOLUS) }
-                        )
-                    }
-
-                    is ApsRecommendation.TempBasal -> {
-                        Triple(
-                            stringResource(R.string.recommendation_temp_basal_info_title, recommendation.percent),
-                            stringResource(R.string.recommendation_temp_basal_info_text, recommendation.percent, recommendation.durationInHours),
-                            { onNavigateToManualControl(ManualControlInitialDialog.TEMP_BASAL) }
-                        )
-                    }
-                }
-                ExpandableInfoCard(
-                    infoText = infoText,
-                    detailText = detailText,
-                    imageVector = Icons.Default.Lightbulb,
-                    iconTint = ExtendedTheme.semanticColors.warning,
-                    actionButtonText = stringResource(R.string.manual_control_apply_recommendation),
-                    onActionButtonClick = actionClick,
-                    initiallyExpanded = false,
-                    expandable = true
-                )
-            }
+            DashboardRecommendationsSection(
+                activeRecommendations = dashboardUiState.activeRecommendations,
+                onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus,
+                onNavigateToManualControl = onNavigateToManualControl
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -489,6 +455,88 @@ fun SnoozedAlarmBanner(
             }
         }
     }
+}
+
+@Composable
+fun DashboardRecommendationsSection(
+    activeRecommendations: ActiveRecommendations,
+    onNavigateToMealCorrectionBolus: (Double) -> Unit,
+    onNavigateToManualControl: (ManualControlInitialDialog) -> Unit
+) {
+    activeRecommendations.carbs?.let { carbRec ->
+        Spacer(modifier = Modifier.height(8.dp))
+        DashboardCarbRecommendationCard(
+            recommendation = carbRec,
+            onApply = onNavigateToMealCorrectionBolus
+        )
+    }
+    activeRecommendations.bolus?.let { bolusRec ->
+        Spacer(modifier = Modifier.height(8.dp))
+        DashboardBolusRecommendationCard(
+            recommendation = bolusRec,
+            onApply = { onNavigateToManualControl(ManualControlInitialDialog.BOLUS) }
+        )
+    }
+    activeRecommendations.tempBasal?.let { tempBasalRec ->
+        Spacer(modifier = Modifier.height(8.dp))
+        DashboardTempBasalRecommendationCard(
+            recommendation = tempBasalRec,
+            onApply = { onNavigateToManualControl(ManualControlInitialDialog.TEMP_BASAL) }
+        )
+    }
+}
+
+@Composable
+fun DashboardCarbRecommendationCard(
+    recommendation: ApsRecommendation.Carbs,
+    onApply: (Double) -> Unit
+) {
+    val carbsGrams = recommendation.amountInGram.toDouble()
+    val carbsText = carbsValue(carbsGrams)
+    ExpandableInfoCard(
+        infoText = stringResource(R.string.recommendation_carbs_info_title, carbsText),
+        detailText = stringResource(R.string.recommendation_carbs_info_text, carbsText),
+        imageVector = Icons.Default.Lightbulb,
+        iconTint = ExtendedTheme.semanticColors.warning,
+        actionButtonText = stringResource(R.string.manual_control_apply_recommendation),
+        onActionButtonClick = { onApply(carbsGrams) },
+        initiallyExpanded = false,
+        expandable = true
+    )
+}
+
+@Composable
+fun DashboardBolusRecommendationCard(
+    recommendation: ApsRecommendation.Bolus,
+    onApply: () -> Unit
+) {
+    ExpandableInfoCard(
+        infoText = stringResource(R.string.recommendation_bolus_info_title, recommendation.amount.iu),
+        detailText = getBolusRecommendationText(recommendation),
+        imageVector = Icons.Default.Lightbulb,
+        iconTint = ExtendedTheme.semanticColors.warning,
+        actionButtonText = stringResource(R.string.manual_control_apply_recommendation),
+        onActionButtonClick = onApply,
+        initiallyExpanded = false,
+        expandable = true
+    )
+}
+
+@Composable
+fun DashboardTempBasalRecommendationCard(
+    recommendation: ApsRecommendation.TempBasal,
+    onApply: () -> Unit
+) {
+    ExpandableInfoCard(
+        infoText = stringResource(R.string.recommendation_temp_basal_info_title, recommendation.percent),
+        detailText = stringResource(R.string.recommendation_temp_basal_info_text, recommendation.percent, recommendation.durationInHours),
+        imageVector = Icons.Default.Lightbulb,
+        iconTint = ExtendedTheme.semanticColors.warning,
+        actionButtonText = stringResource(R.string.manual_control_apply_recommendation),
+        onActionButtonClick = onApply,
+        initiallyExpanded = false,
+        expandable = true
+    )
 }
 
 fun createSampleHistoryUiState(
@@ -725,5 +773,96 @@ fun DashboardPermissionsWarningPreview() {
                 onNavigateToMealCorrectionBolus = {},
                 isMealCorrectionBolusAllowed = true
             )
+    }
+}
+
+@Preview(showBackground = true, name = "Recommendations - All Types")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Recommendations - Dark")
+@Composable
+fun DashboardRecommendationsPreview() {
+    AppPreview {
+        Box(modifier = Modifier.padding(16.dp)) {
+            DashboardRecommendationsSection(
+                activeRecommendations = ActiveRecommendations(
+                    carbs = ApsRecommendation.Carbs(amountInGram = 20),
+                    bolus = ApsRecommendation.Bolus(
+                        amount = InsulinAmount(2.5),
+                        correctionPart = InsulinAmount(1.5),
+                        basalPart = InsulinAmount(1.0)
+                    ),
+                    tempBasal = ApsRecommendation.TempBasal(durationInHours = 2, percent = 150)
+                ),
+                onNavigateToMealCorrectionBolus = {},
+                onNavigateToManualControl = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Recommendations - Carbs Only")
+@Composable
+fun DashboardCarbRecommendationPreview() {
+    AppPreview {
+        Box(modifier = Modifier.padding(16.dp)) {
+            DashboardRecommendationsSection(
+                activeRecommendations = ActiveRecommendations(
+                    carbs = ApsRecommendation.Carbs(amountInGram = 15)
+                ),
+                onNavigateToMealCorrectionBolus = {},
+                onNavigateToManualControl = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Active Alarm Banner - Critical")
+@Composable
+fun ActiveAlarmGroupBannerCriticalPreview() {
+    AppPreview {
+        Box(modifier = Modifier.padding(16.dp)) {
+            ActiveAlarmGroupBanner(
+                alarmGroup = ActiveAlarmGroup(
+                    heroAlarms = listOf(AlarmType.CRITICAL_LOW_BG),
+                    otherAlarms = emptyList(),
+                    highestSeverity = AlarmSeverity.CRITICAL,
+                    primaryAlarm = AlarmType.CRITICAL_LOW_BG
+                ),
+                onSnoozeAll = {},
+                onBannerClick = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Active Alarm Banner - Warning")
+@Composable
+fun ActiveAlarmGroupBannerWarningPreview() {
+    AppPreview {
+        Box(modifier = Modifier.padding(16.dp)) {
+            ActiveAlarmGroupBanner(
+                alarmGroup = ActiveAlarmGroup(
+                    heroAlarms = listOf(AlarmType.LOW_BG),
+                    otherAlarms = listOf(AlarmType.HIGH_BG),
+                    highestSeverity = AlarmSeverity.WARNING,
+                    primaryAlarm = AlarmType.LOW_BG
+                ),
+                onSnoozeAll = {},
+                onBannerClick = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Snoozed Alarm Banner")
+@Composable
+fun SnoozedAlarmBannerPreview() {
+    AppPreview {
+        Box(modifier = Modifier.padding(16.dp)) {
+            SnoozedAlarmBanner(
+                alarmType = AlarmType.HIGH_BG,
+                snoozedUntil = Timestamp.now().plusMinutes(30),
+                onCancelSnooze = {}
+            )
+        }
     }
 }

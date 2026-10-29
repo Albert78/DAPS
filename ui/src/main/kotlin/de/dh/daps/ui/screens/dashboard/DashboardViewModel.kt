@@ -13,7 +13,6 @@ import de.dh.daps.common.domain.pump.InsulinPump
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.alerts.AlarmSnoozeState
 import de.dh.daps.core.orchestration.ActiveRecommendations
-import de.dh.daps.core.orchestration.ApsRecommendation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -27,7 +26,7 @@ data class DashboardUiState(
     val isError: Boolean = false,
     val apsMode: ApsMode = ApsMode.Suspend,
     val availableApsModes: List<ApsMode> = ApsMode.entries,
-    val recommendations: List<ApsRecommendation> = emptyList(),
+    val activeRecommendations: ActiveRecommendations = ActiveRecommendations(),
     val isMealCorrectionBolusAllowed: Boolean = false,
     val activeAlarmGroup: ActiveAlarmGroup? = null,
     val activeFiringConfig: AlarmSignalConfig? = null,
@@ -73,7 +72,7 @@ class DashboardViewModel(
         state.copy(
             apsMode = mode,
             availableApsModes = availableModes,
-            recommendations = recommendations.all,
+            activeRecommendations = recommendations,
             isMealCorrectionBolusAllowed = systemOrchestrator.canOpenMealCorrectionBolus(),
             activeAlarmGroup = activeAlarmGroup,
             activeFiringConfig = config,
