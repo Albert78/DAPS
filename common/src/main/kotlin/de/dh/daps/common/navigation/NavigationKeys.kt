@@ -41,8 +41,8 @@ enum class SystemControlTab {
 @Serializable object MasterDataRoute : NavKey
 @Serializable object InsulinTypesRoute : NavKey
 @Serializable data class InsulinTypeEditorRoute(val insulinTypeId: String? = null) : NavKey
-@Serializable object AlarmProfilesRoute : NavKey
-@Serializable data class AlarmProfileEditorRoute(val profileId: Long? = null) : NavKey
+@Serializable object AlertProfilesRoute : NavKey
+@Serializable data class AlertProfileEditorRoute(val profileId: Long? = null) : NavKey
 enum class ManualControlInitialDialog { NONE, BOLUS, TEMP_BASAL }
 
 @Serializable data class ManualControlRoute(

@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -63,14 +64,14 @@ import kotlinx.coroutines.delay
 import de.dh.daps.common.R as CommonR
 
 @Composable
-fun AlarmProfilesScreen(
-    viewModel: AlarmProfilesViewModel,
+fun AlertProfilesScreen(
+    viewModel: AlertProfilesViewModel,
     onNavigateToEditor: (Long?) -> Unit,
     onNavigateUp: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    AlarmProfilesContent(
+    AlertProfilesContent(
         uiState = uiState,
         onAddProfile = { onNavigateToEditor(null) },
         onEditProfile = { profile -> onNavigateToEditor(profile.id) },
@@ -83,8 +84,8 @@ fun AlarmProfilesScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AlarmProfilesContent(
-    uiState: AlarmProfilesUiState,
+fun AlertProfilesContent(
+    uiState: AlertProfilesUiState,
     onAddProfile: () -> Unit,
     onEditProfile: (AlertProfile) -> Unit,
     onDeleteProfile: (AlertProfile) -> Unit,
@@ -123,7 +124,7 @@ fun AlarmProfilesContent(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Keine Benachrichtigungsprofile vorhanden",
+                    text = stringResource(id = R.string.alert_profile_short_label),
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
@@ -153,7 +154,7 @@ fun AlarmProfilesContent(
                 items(uiState.profiles, key = { it.id }) { profile ->
                     val isDefault = profile.isDefault || uiState.defaultProfile?.id == profile.id
                     val isActive = uiState.activeProfile?.id == profile.id
-                    AlarmProfileCard(
+                    AlertProfileCard(
                         profile = profile,
                         isDefault = isDefault,
                         isActive = isActive,
@@ -188,7 +189,7 @@ fun AlarmProfilesContent(
 }
 
 @Composable
-fun AlarmProfileCard(
+fun AlertProfileCard(
     profile: AlertProfile,
     isDefault: Boolean,
     isActive: Boolean,
@@ -287,7 +288,15 @@ fun AlarmProfileCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Severity summaries
+            // 1. Alarms Section
+            Text(
+                text = stringResource(id = R.string.alert_profile_section_alarms),
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+
             val criticalConfig = profile.alarmDefaults[AlarmSeverity.CRITICAL] ?: AlertSignalConfig()
             val warningConfig = profile.alarmDefaults[AlarmSeverity.WARNING] ?: AlertSignalConfig()
             val infoConfig = profile.alarmDefaults[AlarmSeverity.INFO] ?: AlertSignalConfig()
@@ -298,18 +307,39 @@ fun AlarmProfileCard(
             ) {
                 SeveritySummaryItem(
                     dot = "🔴",
-                    name = "Kritisch",
+                    name = stringResource(id = R.string.alert_profile_severity_critical),
                     config = criticalConfig
                 )
                 SeveritySummaryItem(
                     dot = "🟡",
-                    name = "Warnung",
+                    name = stringResource(id = R.string.alert_profile_severity_warning),
                     config = warningConfig
                 )
                 SeveritySummaryItem(
                     dot = "🔵",
-                    name = "Info",
+                    name = stringResource(id = R.string.alert_profile_severity_info),
                     config = infoConfig
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // 2. APS Recommendations & Reminders Section
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                SignalSummaryItem(
+                    label = stringResource(id = R.string.alert_profile_section_recommendations),
+                    config = profile.recommendationDefault,
+                    overridesCount = profile.recommendationOverrides.size
+                )
+                SignalSummaryItem(
+                    label = stringResource(id = R.string.alert_profile_section_reminders),
+                    config = profile.reminderDefault,
+                    overridesCount = profile.reminderOverrides.size
                 )
             }
         }
@@ -360,10 +390,60 @@ fun SeveritySummaryItem(
     }
 }
 
+@Composable
+fun SignalSummaryItem(
+    label: String,
+    config: AlertSignalConfig,
+    overridesCount: Int = 0
+) {
+    val sound = config.soundConfig
+    val hasSound = config.enabled && sound != null && sound.volume > 0
+    val hasVibration = config.enabled && config.vibrationMode != VibrationMode.OFF
+
+    val icon = when {
+        !config.enabled -> Icon_Sound_Off
+        hasSound && hasVibration -> Icon_Sound_Vibration
+        hasSound -> Icon_Sound_Only
+        hasVibration -> Icon_Vibration_Only
+        else -> Icon_Sound_Off
+    }
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            if (overridesCount > 0) {
+                Text(
+                    text = "+$overridesCount",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.secondary,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+}
+
 @Preview(showBackground = true, name = "Light Mode")
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
-fun AlarmProfilesPreview() {
+fun AlertProfilesPreview() {
     val sampleStandard = AlertProfile(
         id = 1L,
         name = "Standard",
@@ -387,87 +467,18 @@ fun AlarmProfilesPreview() {
         )
     )
 
-    val sampleQuiet = AlertProfile(
-        id = 2L,
-        name = "Kino / Diskret",
-        isDefault = false,
-        alarmDefaults = mapOf(
-            AlarmSeverity.CRITICAL to AlertSignalConfig(
-                displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 100)),
-                vibrationMode = VibrationMode.CONTINUOUS,
-                overrideDnd = true
-            ),
-            AlarmSeverity.WARNING to AlertSignalConfig(
-                displayMode = AlertDisplayMode.NotificationOnly,
-                vibrationMode = VibrationMode.SHORT,
-                overrideDnd = false
-            ),
-            AlarmSeverity.INFO to AlertSignalConfig(
-                displayMode = AlertDisplayMode.NotificationOnly,
-                vibrationMode = VibrationMode.OFF,
-                overrideDnd = false
-            )
-        )
-    )
-
-    val sampleLoud = AlertProfile(
-        id = 3L,
-        name = "Laut / Draußen",
-        isDefault = false,
-        alarmDefaults = mapOf(
-            AlarmSeverity.CRITICAL to AlertSignalConfig(
-                displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 100)),
-                vibrationMode = VibrationMode.CONTINUOUS,
-                overrideDnd = true
-            ),
-            AlarmSeverity.WARNING to AlertSignalConfig(
-                displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 100)),
-                vibrationMode = VibrationMode.LONG,
-                overrideDnd = true
-            ),
-            AlarmSeverity.INFO to AlertSignalConfig(
-                displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 80)),
-                vibrationMode = VibrationMode.SHORT,
-                overrideDnd = false
-            )
-        )
-    )
-
-    val sampleSilent = AlertProfile(
-        id = 4L,
-        name = "Komplett stumm",
-        isDefault = false,
-        alarmDefaults = mapOf(
-            AlarmSeverity.CRITICAL to AlertSignalConfig(
-                displayMode = AlertDisplayMode.NotificationOnly,
-                vibrationMode = VibrationMode.OFF,
-                overrideDnd = false
-            ),
-            AlarmSeverity.WARNING to AlertSignalConfig(
-                displayMode = AlertDisplayMode.NotificationOnly,
-                vibrationMode = VibrationMode.OFF,
-                overrideDnd = false
-            ),
-            AlarmSeverity.INFO to AlertSignalConfig(
-                displayMode = AlertDisplayMode.NotificationOnly,
-                vibrationMode = VibrationMode.OFF,
-                overrideDnd = false
-            )
-        )
-    )
-
     AppPreview {
-        AlarmProfilesContent(
-            uiState = AlarmProfilesUiState(
-                profiles = listOf(sampleStandard, sampleQuiet, sampleLoud, sampleSilent),
+        AlertProfilesContent(
+            uiState = AlertProfilesUiState(
+                profiles = listOf(sampleStandard),
                 defaultProfile = sampleStandard,
                 isLoading = false
             ),
             onAddProfile = {},
             onEditProfile = {},
             onDeleteProfile = {},
-            onConfirmDelete = {},
             onCancelDelete = {},
+            onConfirmDelete = {},
             onNavigateUp = {}
         )
     }

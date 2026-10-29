@@ -42,7 +42,7 @@ fun MasterDataScreen(
     onNavigateToInsulinProfileEditor: () -> Unit,
     onNavigateToBgEditor: () -> Unit,
     onNavigateToMealTypes: () -> Unit,
-    onNavigateToAlarmProfiles: () -> Unit,
+    onNavigateToAlertProfiles: () -> Unit,
     onNavigateToTherapyAdjustments: () -> Unit,
     onNavigateUp: () -> Unit
 ) {
@@ -186,7 +186,7 @@ fun MasterDataScreen(
                         contentDescription = null
                     )
                 },
-                modifier = Modifier.clickable(onClick = onNavigateToAlarmProfiles)
+                modifier = Modifier.clickable(onClick = onNavigateToAlertProfiles)
             )
             HorizontalDivider()
         }
@@ -203,7 +203,7 @@ fun MasterDataScreenPreview() {
             onNavigateToInsulinProfileEditor = {},
             onNavigateToBgEditor = {},
             onNavigateToMealTypes = {},
-            onNavigateToAlarmProfiles = {},
+            onNavigateToAlertProfiles = {},
             onNavigateToTherapyAdjustments = {},
             onNavigateUp = {}
         )

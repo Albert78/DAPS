@@ -19,8 +19,8 @@ import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import de.dh.daps.common.ID_UNDEFINED
 import de.dh.daps.common.domain.model.therapy.getDefaultInsulinTypes
-import de.dh.daps.common.navigation.AlarmProfileEditorRoute
-import de.dh.daps.common.navigation.AlarmProfilesRoute
+import de.dh.daps.common.navigation.AlertProfileEditorRoute
+import de.dh.daps.common.navigation.AlertProfilesRoute
 import de.dh.daps.common.navigation.AppDataRoute
 import de.dh.daps.common.navigation.BgEditorRoute
 import de.dh.daps.common.navigation.InsulinHistoryRoute
@@ -72,8 +72,8 @@ import de.dh.daps.ui.controls.history.HistoryViewModel
 import de.dh.daps.ui.controls.state.SystemViewModel
 import de.dh.daps.ui.screens.alarmprofiles.AlarmProfileEditorScreen
 import de.dh.daps.ui.screens.alarmprofiles.AlarmProfileEditorViewModel
-import de.dh.daps.ui.screens.alarmprofiles.AlarmProfilesScreen
-import de.dh.daps.ui.screens.alarmprofiles.AlarmProfilesViewModel
+import de.dh.daps.ui.screens.alarmprofiles.AlertProfilesScreen
+import de.dh.daps.ui.screens.alarmprofiles.AlertProfilesViewModel
 import de.dh.daps.ui.screens.appdata.AppDataScreen
 import de.dh.daps.ui.screens.appdata.AppDataViewModel
 import de.dh.daps.ui.screens.insulinhistory.InsulinHistoryScreen
@@ -579,7 +579,7 @@ class MainFeatureNavGraph(
                     onNavigateToInsulinProfileEditor = { navViewModel.push(InsulinProfileEditorRoute) },
                     onNavigateToBgEditor = { navViewModel.push(BgEditorRoute) },
                     onNavigateToMealTypes = { navViewModel.push(MealTypesRoute) },
-                    onNavigateToAlarmProfiles = { navViewModel.push(AlarmProfilesRoute) },
+                    onNavigateToAlertProfiles = { navViewModel.push(AlertProfilesRoute) },
                     onNavigateToTherapyAdjustments = { navViewModel.push(TherapyAdjustmentPresetsRoute) },
                     onNavigateUp = { navViewModel.pop() }
                 )
@@ -629,18 +629,18 @@ class MainFeatureNavGraph(
                 )
             }
 
-            is AlarmProfilesRoute -> NavEntry(key) {
-                val vm: AlarmProfilesViewModel = viewModel(
-                    factory = AlarmProfilesViewModel.Companion.Factory(registry)
+            is AlertProfilesRoute -> NavEntry(key) {
+                val vm: AlertProfilesViewModel = viewModel(
+                    factory = AlertProfilesViewModel.Companion.Factory(registry)
                 )
-                AlarmProfilesScreen(
+                AlertProfilesScreen(
                     viewModel = vm,
-                    onNavigateToEditor = { id -> navViewModel.push(AlarmProfileEditorRoute(profileId = id)) },
+                    onNavigateToEditor = { id -> navViewModel.push(AlertProfileEditorRoute(profileId = id)) },
                     onNavigateUp = { navViewModel.pop() }
                 )
             }
 
-            is AlarmProfileEditorRoute -> NavEntry(key) {
+            is AlertProfileEditorRoute -> NavEntry(key) {
                 val vm: AlarmProfileEditorViewModel = viewModel(
                     factory = AlarmProfileEditorViewModel.Companion.Factory(registry, key.profileId)
                 )

@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class AlarmProfilesUiState(
+data class AlertProfilesUiState(
     val profiles: List<AlertProfile> = emptyList(),
     val defaultProfile: AlertProfile? = null,
     val alertProfileOverride: AlertProfile? = null,
@@ -23,11 +23,11 @@ data class AlarmProfilesUiState(
         get() = alertProfileOverride ?: defaultProfile
 }
 
-class AlarmProfilesViewModel(
+class AlertProfilesViewModel(
     systemRegistry: SystemRegistry
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(AlarmProfilesUiState(isLoading = true))
+    private val _uiState = MutableStateFlow(AlertProfilesUiState(isLoading = true))
     val uiState = _uiState.asStateFlow()
 
     private val alertProfileRepository = systemRegistry.alertProfileRepository
@@ -77,7 +77,7 @@ class AlarmProfilesViewModel(
         class Factory(private val registry: SystemRegistry) : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
-                return AlarmProfilesViewModel(registry) as T
+                return AlertProfilesViewModel(registry) as T
             }
         }
     }
