@@ -217,18 +217,22 @@ class AlarmEvaluator(
             !alarmSnoozeManager.isSnoozed(alarmType)
         }
 
-        if (unsnoozedActiveAlarms.isNotEmpty()) {
-            val highestSeverity = unsnoozedActiveAlarms.maxByOrNull { severityRank(it.defaultSeverity) }?.defaultSeverity
+        // Exclude alarms that are subsumed by another active unsnoozed alarm
+        val subsumedByActive = unsnoozedActiveAlarms.flatMap { it.subsumedAlarms }.toSet()
+        val effectiveAlarms = unsnoozedActiveAlarms.filter { it !in subsumedByActive }
+
+        if (effectiveAlarms.isNotEmpty()) {
+            val highestSeverity = effectiveAlarms.maxByOrNull { severityRank(it.defaultSeverity) }?.defaultSeverity
                 ?: AlarmSeverity.INFO
 
-            val heroAlarms = unsnoozedActiveAlarms
+            val heroAlarms = effectiveAlarms
                 .filter { it.defaultSeverity == highestSeverity }
                 .sortedWith(
                     compareByDescending<AlarmType> { if (it.isSafetyCritical) 1 else 0 }
                         .thenBy { it.name }
                 )
 
-            val otherAlarms = unsnoozedActiveAlarms
+            val otherAlarms = effectiveAlarms
                 .filter { it.defaultSeverity != highestSeverity }
                 .sortedWith(
                     compareByDescending<AlarmType> { severityRank(it.defaultSeverity) }
