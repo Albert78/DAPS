@@ -25,7 +25,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
@@ -46,6 +45,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.style.Hyphens
+import androidx.compose.ui.text.style.LineBreak
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.domain.model.alarm.AlarmSeverity
@@ -58,6 +60,7 @@ import de.dh.daps.common.domain.model.alarm.VibrationMode
 import de.dh.daps.common.domain.model.reminder.ReminderType
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
+import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
@@ -247,17 +250,50 @@ fun AlertProfileEditorContent(
                 Tab(
                     selected = selectedTabIndex == 0,
                     onClick = { selectedTabIndex = 0 },
-                    text = { Text(stringResource(id = R.string.alert_profile_section_alarms)) }
+                    text = {
+                        Text(
+                            text = stringResource(id = R.string.alert_profile_section_alarms),
+                            textAlign = TextAlign.Center,
+                            maxLines = 2,
+                            softWrap = true,
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                hyphens = Hyphens.Auto,
+                                lineBreak = LineBreak.Heading
+                            )
+                        )
+                    }
                 )
                 Tab(
                     selected = selectedTabIndex == 1,
                     onClick = { selectedTabIndex = 1 },
-                    text = { Text(stringResource(id = R.string.alert_profile_section_recommendations)) }
+                    text = {
+                        Text(
+                            text = stringResource(id = R.string.alert_profile_section_recommendations),
+                            textAlign = TextAlign.Center,
+                            maxLines = 2,
+                            softWrap = true,
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                hyphens = Hyphens.Auto,
+                                lineBreak = LineBreak.Heading
+                            )
+                        )
+                    }
                 )
                 Tab(
                     selected = selectedTabIndex == 2,
                     onClick = { selectedTabIndex = 2 },
-                    text = { Text(stringResource(id = R.string.alert_profile_section_reminders)) }
+                    text = {
+                        Text(
+                            text = stringResource(id = R.string.alert_profile_section_reminders),
+                            textAlign = TextAlign.Center,
+                            maxLines = 2,
+                            softWrap = true,
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                hyphens = Hyphens.Auto,
+                                lineBreak = LineBreak.Heading
+                            )
+                        )
+                    }
                 )
             }
 
@@ -555,7 +591,7 @@ private fun AddAlarmOverrideButton(
 
     if (availableTypes.isNotEmpty()) {
         Box {
-            OutlinedButton(onClick = { expanded = true }) {
+            NormalButton(onClick = { expanded = true }) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = null,
@@ -593,7 +629,7 @@ private fun AddRecommendationOverrideButton(
 
     if (availableTypes.isNotEmpty()) {
         Box {
-            OutlinedButton(onClick = { expanded = true }) {
+            NormalButton(onClick = { expanded = true }) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = null,
@@ -631,7 +667,7 @@ private fun AddReminderOverrideButton(
 
     if (availableTypes.isNotEmpty()) {
         Box {
-            OutlinedButton(onClick = { expanded = true }) {
+            NormalButton(onClick = { expanded = true }) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = null,

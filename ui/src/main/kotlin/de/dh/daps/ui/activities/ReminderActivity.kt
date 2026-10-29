@@ -16,7 +16,7 @@ import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.reminder.Reminder
 import de.dh.daps.core.infrastructure.RegistryProvider
 import de.dh.daps.ui.common.theme.AppTheme
-import de.dh.daps.ui.screens.reminders.ReminderScreen
+import de.dh.daps.ui.screens.fullscreenalerts.ReminderScreen
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.minutes
 

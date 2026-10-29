@@ -15,7 +15,7 @@ import de.dh.daps.common.domain.model.data.CarbsUnit
 import de.dh.daps.core.alerts.getConfigFor
 import de.dh.daps.core.infrastructure.RegistryProvider
 import de.dh.daps.ui.common.theme.AppTheme
-import de.dh.daps.ui.screens.recommendations.RecommendationScreen
+import de.dh.daps.ui.screens.fullscreenalerts.RecommendationScreen
 import kotlinx.coroutines.launch
 
 class RecommendationActivity : ComponentActivity() {

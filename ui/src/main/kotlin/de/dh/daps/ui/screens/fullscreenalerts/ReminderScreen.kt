@@ -1,9 +1,10 @@
-package de.dh.daps.ui.screens.reminders
+package de.dh.daps.ui.screens.fullscreenalerts
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,12 +13,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -32,6 +34,8 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.reminder.Reminder
 import de.dh.daps.common.domain.model.reminder.ReminderType
+import de.dh.daps.ui.common.composables.NormalButton
+import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.common.R as CommonR
 import de.dh.daps.ui.R as UiR
@@ -67,7 +71,7 @@ fun ReminderScreen(
                         .padding(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    OutlinedButton(
+                    NormalButton(
                         onClick = onClose,
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -108,23 +112,39 @@ private fun ReminderCard(
     onDismiss: () -> Unit,
     onOpen: () -> Unit
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
-    ) {
+    val hasTargetRoute = reminder.targetRoute.isNotBlank()
+    val cardColors = CardDefaults.cardColors(
+        containerColor = MaterialTheme.colorScheme.surfaceVariant
+    )
+
+    val cardContent: @Composable ColumnScope.() -> Unit = {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            val title = reminder.title.ifBlank { stringResource(CommonR.string.notification_reminder_title) }
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val title = reminder.title.ifBlank { stringResource(CommonR.string.notification_reminder_title) }
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f)
+                )
+
+                if (hasTargetRoute) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
+            }
 
             if (reminder.description.isNotBlank()) {
                 Text(
@@ -139,29 +159,35 @@ private fun ReminderCard(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                OutlinedButton(
+                NormalButton(
                     onClick = onSnooze,
                     modifier = Modifier.padding(end = 8.dp)
                 ) {
                     Text(stringResource(UiR.string.reminders_action_snooze))
                 }
 
-                if (reminder.targetRoute.isNotBlank()) {
-                    Button(
-                        onClick = onOpen,
-                        modifier = Modifier.padding(end = 8.dp)
-                    ) {
-                        Text(stringResource(CommonR.string.cd_expand))
-                    }
-                }
-
-                Button(
+                PrimaryButton(
                     onClick = onDismiss
                 ) {
                     Text(stringResource(UiR.string.cd_reminders_action_dismiss))
                 }
             }
         }
+    }
+
+    if (hasTargetRoute) {
+        Card(
+            onClick = onOpen,
+            modifier = Modifier.fillMaxWidth(),
+            colors = cardColors,
+            content = cardContent
+        )
+    } else {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = cardColors,
+            content = cardContent
+        )
     }
 }
 

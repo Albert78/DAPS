@@ -1,4 +1,4 @@
-package de.dh.daps.ui.screens.recommendations
+package de.dh.daps.ui.screens.fullscreenalerts
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
@@ -12,12 +12,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -34,6 +32,8 @@ import de.dh.daps.common.domain.model.data.CarbsUnit
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.core.orchestration.ActiveRecommendations
 import de.dh.daps.core.orchestration.ApsRecommendation
+import de.dh.daps.ui.common.composables.NormalButton
+import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.formatCarbsValue
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.common.R as CommonR
@@ -75,7 +75,7 @@ fun RecommendationScreen(
                         .padding(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    OutlinedButton(
+                    NormalButton(
                         onClick = onDismissAll,
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -181,14 +181,14 @@ private fun RecommendationCard(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                OutlinedButton(
+                NormalButton(
                     onClick = onDismiss,
                     modifier = Modifier.padding(end = 8.dp)
                 ) {
                     Text(stringResource(CommonR.string.action_cancel))
                 }
 
-                Button(
+                PrimaryButton(
                     onClick = onApply
                 ) {
                     Text(stringResource(UiR.string.manual_control_apply_recommendation))

@@ -88,7 +88,7 @@ import de.dh.daps.ui.controls.state.CurrentBgUiState
 import de.dh.daps.ui.controls.state.CurrentStateView
 import de.dh.daps.ui.controls.state.SystemViewModel
 import de.dh.daps.ui.controls.state.createSampleGoodBgUiState
-import de.dh.daps.ui.screens.alerts.getAlarmTypeTitle
+import de.dh.daps.ui.screens.fullscreenalerts.getAlarmTypeTitle
 import de.dh.daps.ui.screens.permissions.PermissionStatus
 import de.dh.daps.ui.screens.permissions.PermissionsUiModel
 import de.dh.daps.ui.screens.permissions.PermissionsViewModel

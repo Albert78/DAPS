@@ -9,7 +9,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import de.dh.daps.core.infrastructure.RegistryProvider
 import de.dh.daps.ui.common.theme.AppTheme
-import de.dh.daps.ui.screens.alerts.FullScreenAlarmScreen
+import de.dh.daps.ui.screens.fullscreenalerts.FullScreenAlarmScreen
 
 class AlarmActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

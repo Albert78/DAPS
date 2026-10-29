@@ -61,6 +61,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.Hyphens
+import androidx.compose.ui.text.style.LineBreak
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -321,7 +324,18 @@ fun InsulinProfileEditorContent(
                         internalSelectedTab = index
                         onTabSelected?.invoke(index)
                     },
-                    text = { Text(title) }
+                    text = {
+                        Text(
+                            text = title,
+                            textAlign = TextAlign.Center,
+                            maxLines = 2,
+                            softWrap = true,
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                hyphens = Hyphens.Auto,
+                                lineBreak = LineBreak.Heading
+                            )
+                        )
+                    }
                 )
             }
         }

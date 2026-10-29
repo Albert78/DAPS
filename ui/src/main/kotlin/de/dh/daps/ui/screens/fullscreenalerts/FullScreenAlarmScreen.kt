@@ -1,4 +1,4 @@
-package de.dh.daps.ui.screens.alerts
+package de.dh.daps.ui.screens.fullscreenalerts
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
