@@ -44,6 +44,7 @@ import de.dh.daps.ui.R
 import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.SecondaryButton
+import de.dh.daps.ui.common.executeRecommendationAction
 import de.dh.daps.ui.common.getBolusRecommendationText
 import de.dh.daps.ui.common.icons.Icon_Meal_Fast
 import de.dh.daps.ui.common.icons.Icon_Temp_Basal
@@ -55,7 +56,7 @@ fun ManualControlRecommendationsSection(
     recommendations: ActiveRecommendations,
     onOpenBolusDialog: (ManualControlDialog.Bolus) -> Unit,
     onOpenTempBasalDialog: (ManualControlDialog.TempBasal) -> Unit,
-    onNavigateToMealCorrectionBolus: (Double?) -> Unit,
+    onNavigateToMealCorrectionBolus: () -> Unit,
     onDismissRecommendation: (ApsRecommendation) -> Unit = {}
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -136,7 +137,7 @@ fun RecommendationCard(
     recommendation: ApsRecommendation,
     onOpenBolusDialog: (ManualControlDialog.Bolus) -> Unit,
     onOpenTempBasalDialog: (ManualControlDialog.TempBasal) -> Unit,
-    onNavigateToMealCorrectionBolus: (Double?) -> Unit,
+    onNavigateToMealCorrectionBolus: () -> Unit,
     onDismissRecommendation: (ApsRecommendation) -> Unit = {}
 ) {
     Card(
@@ -202,8 +203,11 @@ fun RecommendationCard(
                     ) {
                         PrimaryButton(
                             onClick = {
-                                val carbsInG = recommendation.amountInGram.toDouble()
-                                onNavigateToMealCorrectionBolus(carbsInG)
+                                executeRecommendationAction(
+                                    recommendation = recommendation,
+                                    onNavigateToMealCorrectionBolus = onNavigateToMealCorrectionBolus,
+                                    onNavigateToManualControl = {}
+                                )
                             }
                         ) {
                             Text(stringResource(id = R.string.manual_control_apply_recommendation))

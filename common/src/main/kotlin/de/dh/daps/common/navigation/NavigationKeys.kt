@@ -10,9 +10,7 @@ import kotlinx.serialization.Serializable
 @Serializable object AppDataRoute : NavKey
 @Serializable object InsulinProfileEditorRoute : NavKey
 @Serializable object CurrentTherapySettingsRoute : NavKey
-@Serializable data class MealCorrectionBolusRoute(
-    val prefilledCarbsInG: Double? = null
-) : NavKey
+@Serializable object MealCorrectionBolusRoute : NavKey
 @Serializable data class HistoricalMealRoute(val mealId: Long) : NavKey
 @Serializable object MealsRoute : NavKey
 @Serializable object MealTypesRoute : NavKey

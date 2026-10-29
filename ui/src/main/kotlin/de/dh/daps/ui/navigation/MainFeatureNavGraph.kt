@@ -170,7 +170,7 @@ class MainFeatureNavGraph(
                     permissionsViewModel = permissionsViewModel,
                     onFixPermissions = { navViewModel.push(PermissionsRoute) },
                     onNavigateToTherapySettings = { navViewModel.push(CurrentTherapySettingsRoute) },
-                    onNavigateToMealCorrectionBolus = { carbsInG -> navViewModel.push(MealCorrectionBolusRoute(prefilledCarbsInG = carbsInG)) },
+                    onNavigateToMealCorrectionBolus = { navViewModel.push(MealCorrectionBolusRoute) },
                     onNavigateToSystemControl = { navViewModel.push(SystemControlRoute()) },
                     onNavigateToManualControl = { initialDialog -> navViewModel.push(ManualControlRoute(initialDialog = initialDialog)) },
                     onAdjustmentClick = { navViewModel.push(TherapyAdjustmentRoute) },
@@ -249,8 +249,7 @@ class MainFeatureNavGraph(
             is MealCorrectionBolusRoute -> NavEntry(key) {
                 val vm: MealCorrectionBolusViewModel = viewModel(
                     factory = MealCorrectionBolusViewModel.Companion.Factory(
-                        registry = registry,
-                        prefilledCarbsInG = key.prefilledCarbsInG
+                        registry = registry
                     )
                 )
                 val lockViewModel: TreatmentLockViewModel = viewModel(
@@ -307,8 +306,8 @@ class MainFeatureNavGraph(
                     viewModel = vm,
                     initialDialog = key.initialDialog,
                     onNavigateUp = { navViewModel.pop() },
-                    onNavigateToMealCorrectionBolus = { carbsInG ->
-                        navViewModel.replaceTop(MealCorrectionBolusRoute(prefilledCarbsInG = carbsInG))
+                    onNavigateToMealCorrectionBolus = {
+                        navViewModel.replaceTop(MealCorrectionBolusRoute)
                     },
                     onEditMeal = { mealId ->
                         navViewModel.push(HistoricalMealRoute(mealId = mealId))

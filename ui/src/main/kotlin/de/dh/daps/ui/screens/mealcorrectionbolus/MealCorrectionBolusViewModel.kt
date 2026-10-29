@@ -174,8 +174,7 @@ data class MealCorrectionBolusUiState(
 )
 
 class MealCorrectionBolusViewModel(
-    private val registry: SystemRegistry,
-    private val prefilledCarbsInG: Double? = null
+    private val registry: SystemRegistry
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MealCorrectionBolusUiState())
     val uiState: StateFlow<MealCorrectionBolusUiState> = _uiState.asStateFlow()
@@ -209,7 +208,8 @@ class MealCorrectionBolusViewModel(
             )
             val suggestedCarbsGrams = BolusCalculationMath.calculateSuggestedCarbsGrams(projectedBg, targetBg, isf, cr, projections.futureCarbs)
 
-            val initialCarbsGrams = maxOf(prefilledCarbsInG?.coerceAtLeast(0.0) ?: 0.0, suggestedCarbsGrams)
+            val activeCarbsRec = recommendationManager.recommendations.value.carbs?.amountInGram?.toDouble()
+            val initialCarbsGrams = activeCarbsRec ?: suggestedCarbsGrams
 
             _uiState.update {
                 val mealTimeFromNow = max(Minutes.ZERO, suggestedImi ?: Minutes.ZERO)
@@ -238,6 +238,24 @@ class MealCorrectionBolusViewModel(
             calculateBolus()
             startTicker()
             startCloseBannerTimer()
+        }
+
+        viewModelScope.launch {
+            recommendationManager.recommendations.collect { activeRecs ->
+                activeRecs.carbs?.let { carbsRec ->
+                    val recAmount = carbsRec.amountInGram.toDouble()
+                    var updated = false
+                    _uiState.update { state ->
+                        if (state.input.carbsGrams == 0.0 || state.input.carbsGrams == state.suggestedCarbsGrams) {
+                            updated = true
+                            state.copy(input = state.input.copy(carbsGrams = recAmount))
+                        } else state
+                    }
+                    if (updated) {
+                        calculateBolus()
+                    }
+                }
+            }
         }
     }
 
@@ -544,6 +562,10 @@ class MealCorrectionBolusViewModel(
                     therapyManager.waitForPumpSync(treatmentLock = lock)
                 }
 
+                recommendationManager.recommendations.value.carbs?.let {
+                    recommendationManager.removeRecommendation(it)
+                }
+
                 _uiState.update { it.copy(submissionStatus = SubmissionStatus.Success) }
                 onSuccess()
             } catch (_: Exception) {
@@ -599,12 +621,11 @@ class MealCorrectionBolusViewModel(
 
     companion object {
         class Factory(
-            private val registry: SystemRegistry,
-            private val prefilledCarbsInG: Double? = null
+            private val registry: SystemRegistry
         ) : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
-                return MealCorrectionBolusViewModel(registry, prefilledCarbsInG) as T
+                return MealCorrectionBolusViewModel(registry) as T
             }
         }
     }

@@ -6,7 +6,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -56,50 +55,40 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import de.dh.daps.common.navigation.AlarmProfilesRoute
 import de.dh.daps.common.navigation.AppDataRoute
 import de.dh.daps.common.navigation.AppDeepLinks
-import de.dh.daps.common.navigation.BgEditorRoute
-import de.dh.daps.common.navigation.CoreDecisionsRoute
 import de.dh.daps.common.navigation.DashboardRoute
 import de.dh.daps.common.navigation.FeatureNavGraph
 import de.dh.daps.common.navigation.FoodDatabaseRoute
-import de.dh.daps.common.navigation.GlucoseSourceSettingsRoute
-import de.dh.daps.common.navigation.GlucoseSourceSetupRoute
 import de.dh.daps.common.navigation.HistoricalMealRoute
-import de.dh.daps.common.navigation.HistoryRoute
 import de.dh.daps.common.navigation.InsulinHistoryRoute
 import de.dh.daps.common.navigation.ManualControlInitialDialog
 import de.dh.daps.common.navigation.ManualControlRoute
 import de.dh.daps.common.navigation.MasterDataRoute
 import de.dh.daps.common.navigation.MealCorrectionBolusRoute
 import de.dh.daps.common.navigation.MealsRoute
-import de.dh.daps.common.navigation.MealTypesRoute
 import de.dh.daps.common.navigation.NavigationViewModel
-import de.dh.daps.common.navigation.PastRemindersRoute
 import de.dh.daps.common.navigation.PermissionsRoute
 import de.dh.daps.common.navigation.PreferencesMainRoute
-import de.dh.daps.common.navigation.PumpSettingsRoute
-import de.dh.daps.common.navigation.PumpSetupRoute
 import de.dh.daps.common.navigation.RemindersRoute
 import de.dh.daps.common.navigation.SystemControlRoute
 import de.dh.daps.common.navigation.SystemControlTab
-import de.dh.daps.common.navigation.TherapyAdjustmentRoute
 import de.dh.daps.common.navigation.combineEntryProviders
 import de.dh.daps.core.InitializationState
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.infrastructure.RegistryProvider
+import de.dh.daps.core.orchestration.ApsRecommendation
+import de.dh.daps.core.orchestration.RecommendationTargetAction
+import de.dh.daps.core.orchestration.toTargetAction
 import de.dh.daps.ui.GlobalViewModel
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.EdgeToEdgeHandler
 import de.dh.daps.ui.common.composables.LoadingScreen
-import de.dh.daps.ui.screens.setupwizard.SetupWizardScreen
-import de.dh.daps.ui.screens.setupwizard.SetupWizardViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import de.dh.daps.ui.common.icons.Icon_App_Data
 import de.dh.daps.ui.common.icons.Icon_Bolus
 import de.dh.daps.ui.common.icons.Icon_Food_Database
@@ -114,6 +103,8 @@ import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.rememberUseDarkTheme
 import de.dh.daps.ui.navigation.MainFeatureNavGraph
+import de.dh.daps.ui.screens.setupwizard.SetupWizardScreen
+import de.dh.daps.ui.screens.setupwizard.SetupWizardViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
@@ -302,8 +293,7 @@ class MainActivity : ComponentActivity() {
                         if (mealId != null) listOf(DashboardRoute, HistoricalMealRoute(mealId)) else null
                     }
                     path == AppDeepLinks.PATH_MEAL_CORRECTION_BOLUS -> {
-                        val carbsInG = data.getQueryParameter("carbsInG")?.toDoubleOrNull()
-                        listOf(DashboardRoute, MealCorrectionBolusRoute(prefilledCarbsInG = carbsInG))
+                        listOf(DashboardRoute, MealCorrectionBolusRoute)
                     }
                     path == AppDeepLinks.PATH_MANUAL_CONTROL -> {
                         val dialogStr = data.getQueryParameter("dialog")
@@ -340,14 +330,23 @@ class MainActivity : ComponentActivity() {
                 createIntent(context, AppDeepLinks.meal(mealId))
 
             fun createMealCorrectionBolusIntent(
-                context: Context,
-                carbsInG: Double? = null
+                context: Context
             ): Intent {
-                val uriBuilder = AppDeepLinks.MEAL_CORRECTION_BOLUS.toUri().buildUpon()
-                if (carbsInG != null) {
-                    uriBuilder.appendQueryParameter("carbsInG", carbsInG.toString())
+                return createIntent(context, AppDeepLinks.MEAL_CORRECTION_BOLUS)
+            }
+
+            fun createRecommendationIntent(
+                context: Context,
+                recommendation: ApsRecommendation
+            ): Intent {
+                return when (recommendation.toTargetAction()) {
+                    RecommendationTargetAction.OpenMealScreen ->
+                        createMealCorrectionBolusIntent(context)
+                    RecommendationTargetAction.OpenBolusDialog ->
+                        createManualControlIntent(context, ManualControlInitialDialog.BOLUS)
+                    RecommendationTargetAction.OpenTempBasalDialog ->
+                        createManualControlIntent(context, ManualControlInitialDialog.TEMP_BASAL)
                 }
-                return createIntent(context, uriBuilder.build().toString())
             }
 
             fun createManualControlIntent(
@@ -398,9 +397,13 @@ class MainActivity : ComponentActivity() {
             IntentHandler.createEditMealIntent(context, mealId)
 
         fun createMealCorrectionBolusIntent(
+            context: Context
+        ): Intent = IntentHandler.createMealCorrectionBolusIntent(context)
+
+        fun createRecommendationIntent(
             context: Context,
-            carbsInG: Double? = null
-        ): Intent = IntentHandler.createMealCorrectionBolusIntent(context, carbsInG)
+            recommendation: ApsRecommendation
+        ): Intent = IntentHandler.createRecommendationIntent(context, recommendation)
 
         fun createManualControlIntent(
             context: Context,

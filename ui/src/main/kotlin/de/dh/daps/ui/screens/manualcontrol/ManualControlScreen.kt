@@ -64,7 +64,7 @@ fun ManualControlScreen(
     viewModel: ManualControlViewModel,
     initialDialog: ManualControlInitialDialog = ManualControlInitialDialog.NONE,
     onNavigateUp: () -> Unit,
-    onNavigateToMealCorrectionBolus: (Double?) -> Unit = {},
+    onNavigateToMealCorrectionBolus: () -> Unit = {},
     onEditMeal: (Long) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -104,7 +104,7 @@ fun ManualControlContent(
     uiState: ManualControlUiState,
     initialDialog: ManualControlInitialDialog = ManualControlInitialDialog.NONE,
     onNavigateUp: () -> Unit = {},
-    onNavigateToMealCorrectionBolus: (Double?) -> Unit = {},
+    onNavigateToMealCorrectionBolus: () -> Unit = {},
     onEditMeal: (Long) -> Unit = {},
     onDeliverBolus: (
         amount: InsulinAmount,

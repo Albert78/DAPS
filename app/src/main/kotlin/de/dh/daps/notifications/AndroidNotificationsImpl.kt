@@ -19,7 +19,6 @@ import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.data.CarbsUnit
 import de.dh.daps.common.domain.model.data.GlucoseUnit
 import de.dh.daps.common.domain.model.reminder.Reminder
-import de.dh.daps.common.navigation.ManualControlInitialDialog
 import de.dh.daps.core.infrastructure.AndroidNotifications
 import de.dh.daps.core.infrastructure.RegistryProvider
 import de.dh.daps.core.orchestration.ActiveRecommendations
@@ -163,7 +162,7 @@ class AndroidNotificationsImpl(
             UiR.string.recommendation_text_carbs,
             formatCarbsValue(carbs.amountInGram.toDouble(), getCarbsUnit(), context)
         )
-        val intent = MainActivity.createMealCorrectionBolusIntent(context, carbs.amountInGram.toDouble())
+        val intent = MainActivity.createRecommendationIntent(context, carbs)
         val pendingIntent = PendingIntent.getActivity(
             context,
             RECOMMENDATION_CARBS_NOTIFICATION_ID,
@@ -195,7 +194,7 @@ class AndroidNotificationsImpl(
         } else {
             context.getString(UiR.string.recommendation_text_bolus, bolus.amount.iu)
         }
-        val intent = MainActivity.createManualControlIntent(context, ManualControlInitialDialog.BOLUS)
+        val intent = MainActivity.createRecommendationIntent(context, bolus)
         val pendingIntent = PendingIntent.getActivity(
             context,
             RECOMMENDATION_BOLUS_NOTIFICATION_ID,
@@ -222,7 +221,7 @@ class AndroidNotificationsImpl(
             tempBasal.percent,
             tempBasal.durationInHours
         )
-        val intent = MainActivity.createManualControlIntent(context, ManualControlInitialDialog.TEMP_BASAL)
+        val intent = MainActivity.createRecommendationIntent(context, tempBasal)
         val pendingIntent = PendingIntent.getActivity(
             context,
             RECOMMENDATION_TEMP_BASAL_NOTIFICATION_ID,

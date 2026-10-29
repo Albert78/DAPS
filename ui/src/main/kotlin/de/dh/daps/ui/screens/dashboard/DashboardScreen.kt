@@ -74,6 +74,7 @@ import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.WarningBanner
 import de.dh.daps.ui.common.composables.screenTitle
+import de.dh.daps.ui.common.executeRecommendationAction
 import de.dh.daps.ui.common.getBolusRecommendationText
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.controls.apscontrol.ApsControlCard
@@ -109,7 +110,7 @@ fun DashboardScreen(
     permissionsViewModel: PermissionsViewModel,
     onFixPermissions: () -> Unit,
     onNavigateToTherapySettings: () -> Unit,
-    onNavigateToMealCorrectionBolus: (Double?) -> Unit = {},
+    onNavigateToMealCorrectionBolus: () -> Unit = {},
     onNavigateToSystemControl: () -> Unit,
     onNavigateToManualControl: (ManualControlInitialDialog) -> Unit = {},
     onAdjustmentClick: () -> Unit,
@@ -163,7 +164,7 @@ fun DashboardContent(
     permissionsUiState: PermissionsUiModel,
     onFixPermissionsClick: () -> Unit,
     onNavigateToTherapySettings: () -> Unit,
-    onNavigateToMealCorrectionBolus: (Double?) -> Unit = {},
+    onNavigateToMealCorrectionBolus: () -> Unit = {},
     isMealCorrectionBolusAllowed: Boolean,
     onNavigateToSystemControl: () -> Unit,
     onNavigateToManualControl: (ManualControlInitialDialog) -> Unit = {},
@@ -324,7 +325,7 @@ fun DashboardContent(
             Spacer(modifier = Modifier.height(16.dp))
 
             PrimaryButton(
-                onClick = { onNavigateToMealCorrectionBolus(null) },
+                onClick = { onNavigateToMealCorrectionBolus() },
                 enabled = isMealCorrectionBolusAllowed,
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -460,36 +461,41 @@ fun SnoozedAlarmBanner(
 @Composable
 fun DashboardRecommendationsSection(
     activeRecommendations: ActiveRecommendations,
-    onNavigateToMealCorrectionBolus: (Double) -> Unit,
-    onNavigateToManualControl: (ManualControlInitialDialog) -> Unit
+    onNavigateToMealCorrectionBolus: () -> Unit,
+    onNavigateToManualControl: (ManualControlInitialDialog) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    activeRecommendations.carbs?.let { carbRec ->
-        Spacer(modifier = Modifier.height(8.dp))
-        DashboardCarbRecommendationCard(
-            recommendation = carbRec,
-            onApply = onNavigateToMealCorrectionBolus
-        )
-    }
-    activeRecommendations.bolus?.let { bolusRec ->
-        Spacer(modifier = Modifier.height(8.dp))
-        DashboardBolusRecommendationCard(
-            recommendation = bolusRec,
-            onApply = { onNavigateToManualControl(ManualControlInitialDialog.BOLUS) }
-        )
-    }
-    activeRecommendations.tempBasal?.let { tempBasalRec ->
-        Spacer(modifier = Modifier.height(8.dp))
-        DashboardTempBasalRecommendationCard(
-            recommendation = tempBasalRec,
-            onApply = { onNavigateToManualControl(ManualControlInitialDialog.TEMP_BASAL) }
-        )
+    if (activeRecommendations.isNotEmpty) {
+        Column(
+            modifier = modifier,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            activeRecommendations.carbs?.let { carbRec ->
+                DashboardCarbRecommendationCard(
+                    recommendation = carbRec,
+                    onApply = { executeRecommendationAction(carbRec, onNavigateToMealCorrectionBolus, onNavigateToManualControl) }
+                )
+            }
+            activeRecommendations.bolus?.let { bolusRec ->
+                DashboardBolusRecommendationCard(
+                    recommendation = bolusRec,
+                    onApply = { executeRecommendationAction(bolusRec, onNavigateToMealCorrectionBolus, onNavigateToManualControl) }
+                )
+            }
+            activeRecommendations.tempBasal?.let { tempBasalRec ->
+                DashboardTempBasalRecommendationCard(
+                    recommendation = tempBasalRec,
+                    onApply = { executeRecommendationAction(tempBasalRec, onNavigateToMealCorrectionBolus, onNavigateToManualControl) }
+                )
+            }
+        }
     }
 }
 
 @Composable
 fun DashboardCarbRecommendationCard(
     recommendation: ApsRecommendation.Carbs,
-    onApply: (Double) -> Unit
+    onApply: () -> Unit
 ) {
     val carbsGrams = recommendation.amountInGram.toDouble()
     val carbsText = carbsValue(carbsGrams)
@@ -499,7 +505,7 @@ fun DashboardCarbRecommendationCard(
         imageVector = Icons.Default.Lightbulb,
         iconTint = ExtendedTheme.semanticColors.warning,
         actionButtonText = stringResource(R.string.manual_control_apply_recommendation),
-        onActionButtonClick = { onApply(carbsGrams) },
+        onActionButtonClick = onApply,
         initiallyExpanded = false,
         expandable = true
     )
@@ -781,7 +787,7 @@ fun DashboardPermissionsWarningPreview() {
 @Composable
 fun DashboardRecommendationsPreview() {
     AppPreview {
-        Box(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(16.dp)) {
             DashboardRecommendationsSection(
                 activeRecommendations = ActiveRecommendations(
                     carbs = ApsRecommendation.Carbs(amountInGram = 20),
@@ -803,7 +809,7 @@ fun DashboardRecommendationsPreview() {
 @Composable
 fun DashboardCarbRecommendationPreview() {
     AppPreview {
-        Box(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(16.dp)) {
             DashboardRecommendationsSection(
                 activeRecommendations = ActiveRecommendations(
                     carbs = ApsRecommendation.Carbs(amountInGram = 15)
