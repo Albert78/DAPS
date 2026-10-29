@@ -467,7 +467,7 @@ fun DashboardRecommendationsSection(
 ) {
     if (activeRecommendations.isNotEmpty) {
         Column(
-            modifier = modifier,
+            modifier = modifier.padding(top = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             activeRecommendations.carbs?.let { carbRec ->

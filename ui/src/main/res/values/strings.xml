@@ -199,7 +199,7 @@
     <string name="recommendation_text_bolus">Verabreiche dir %1$.2f I.E. Insulin zur Korrektur des Blutzuckerspiegels.</string>
     <string name="recommendation_text_temp_basal">Empfohlener Temp-Basal: %1$d%% für %2$dh</string>
 
-    <string name="recommendation_carbs_info_title">Nimm %1$s</string>
+    <string name="recommendation_carbs_info_title">Nimm %1$s Kohlenhydrate</string>
     <string name="recommendation_bolus_info_title">Spritze %1$.2f I.E. Insulin</string>
     <string name="recommendation_temp_basal_info_title">Setze Temp-Basal (%1$d%%)</string>
     <string name="recommendation_carbs_info_text">Nimm %1$s zu dir, um den Blutzucker zu korrigieren.</string>
