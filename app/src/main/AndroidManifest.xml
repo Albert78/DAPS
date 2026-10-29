@@ -109,6 +109,22 @@
             android:launchMode="singleTop"
             android:theme="@style/AppTheme" />
 
+        <activity
+            android:name="de.dh.daps.ui.activities.RecommendationActivity"
+            android:exported="false"
+            android:showOnLockScreen="true"
+            android:turnScreenOn="true"
+            android:launchMode="singleTop"
+            android:theme="@style/AppTheme" />
+
+        <activity
+            android:name="de.dh.daps.ui.activities.ReminderActivity"
+            android:exported="false"
+            android:showOnLockScreen="true"
+            android:turnScreenOn="true"
+            android:launchMode="singleTop"
+            android:theme="@style/AppTheme" />
+
         <receiver android:name="de.dh.daps.notifications.AlarmBroadcastReceiver"
             android:exported="false">
             <intent-filter>

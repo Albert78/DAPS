@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import de.dh.daps.common.ID_UNDEFINED
-import de.dh.daps.common.domain.model.alarm.AlarmProfile
+import de.dh.daps.common.domain.model.alarm.AlertProfile
 import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.data.GlucoseUnit
 import de.dh.daps.common.domain.model.data.Timestamp
@@ -28,7 +28,7 @@ data class ScheduledTherapyUiState(
     val baseTarget: BgValue = BgValue.fromMgDl(100),
     val baseLow: BgValue = BgValue.fromMgDl(70),
     val glucoseUnit: GlucoseUnit = GlucoseUnit.MG_DL,
-    val availableAlarmProfiles: List<AlarmProfile> = emptyList(),
+    val availableAlertProfiles: List<AlertProfile> = emptyList(),
     val therapyAdjustmentPresets: List<TherapyAdjustment> = emptyList(),
     val existingScheduledAdjustment: ScheduledTherapyAdjustment? = null
 )
@@ -61,11 +61,11 @@ class ScheduledTherapyViewModel(
         val glucoseUnitFlow = appPreferencesRepository.cachedPreferences.map { it.glucoseUnit }
         combine(
             therapyManager.currentTherapySettingsFlow,
-            systemRegistry.alarmRepository.observeAllAlarmProfiles(),
+            systemRegistry.alertProfileRepository.observeAllAlertProfiles(),
             glucoseUnitFlow,
             therapyManager.observeScheduledTherapyAdjustment(),
             therapyManager.observeAllTherapyAdjustments()
-        ) { currentSettings, alarmProfiles, unit, existingScheduled, presets ->
+        ) { currentSettings, alertProfiles, unit, existingScheduled, presets ->
             val now = Timestamp.now()
             val baseBg = currentSettings.defaultBgBlocks.getBgForMinute(now.minutesSinceMidnight())
 
@@ -73,14 +73,14 @@ class ScheduledTherapyViewModel(
                 isInitializedFromExisting = true
                 _startTime.value = existingScheduled.startTime
                 _endTime.value = existingScheduled.endTime
-                val alarmProfileName = alarmProfiles.find { it.id == existingScheduled.alarmProfileOverrideId }?.name
+                val alertProfileName = alertProfiles.find { it.id == existingScheduled.alertProfileOverrideId }?.name
                 formStateHolder.initFormState(
                     TherapyAdjustmentFormState(
                         percentage = existingScheduled.percentage,
                         targetBgOverride = existingScheduled.targetBgOverride,
                         lowThresholdOverride = existingScheduled.lowThresholdOverride,
-                        alarmProfileOverrideId = existingScheduled.alarmProfileOverrideId,
-                        alarmProfileOverrideName = alarmProfileName,
+                        alertProfileOverrideId = existingScheduled.alertProfileOverrideId,
+                        alertProfileOverrideName = alertProfileName,
                         adjustmentHint = existingScheduled.adjustmentHint
                     )
                 )
@@ -92,7 +92,7 @@ class ScheduledTherapyViewModel(
                     baseTarget = baseBg.first,
                     baseLow = baseBg.second,
                     glucoseUnit = unit,
-                    availableAlarmProfiles = alarmProfiles,
+                    availableAlertProfiles = alertProfiles,
                     therapyAdjustmentPresets = presets,
                     existingScheduledAdjustment = existingScheduled
                 )
@@ -120,17 +120,17 @@ class ScheduledTherapyViewModel(
         percentage: Int,
         targetBg: BgValue?,
         lowThreshold: BgValue?,
-        alarmProfileOverrideId: Long?,
+        alertProfileOverrideId: Long?,
         hint: String? = null
     ) {
-        val alarmProfiles = _uiState.value.availableAlarmProfiles
-        val alarmProfileName = alarmProfiles.find { it.id == alarmProfileOverrideId }?.name
+        val alertProfiles = _uiState.value.availableAlertProfiles
+        val alertProfileName = alertProfiles.find { it.id == alertProfileOverrideId }?.name
         formStateHolder.updateValues(
             percentage = percentage,
             targetBg = targetBg,
             lowThreshold = lowThreshold,
-            alarmProfileOverrideId = alarmProfileOverrideId,
-            alarmProfileName = alarmProfileName,
+            alertProfileOverrideId = alertProfileOverrideId,
+            alertProfileName = alertProfileName,
             hint = hint
         )
     }
@@ -150,7 +150,7 @@ class ScheduledTherapyViewModel(
                 percentage = form.percentage,
                 targetBgOverride = form.targetBgOverride,
                 lowThresholdOverride = form.lowThresholdOverride,
-                alarmProfileOverrideId = form.alarmProfileOverrideId,
+                alertProfileOverrideId = form.alertProfileOverrideId,
                 adjustmentHint = form.adjustmentHint
             )
             therapyManager.saveScheduledTherapyAdjustment(adjustment)

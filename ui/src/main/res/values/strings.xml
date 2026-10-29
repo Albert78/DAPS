@@ -15,8 +15,8 @@
     <string name="master_data_item_bg_targets_desc">Zielbereiche und Hypo-Schwellen über den Tag festlegen</string>
     <string name="master_data_item_meal_types_title">Mahlzeitentypen</string>
     <string name="master_data_item_meal_types_desc">Absorptionskurven und Wirkzeiten</string>
-    <string name="master_data_item_alarm_profiles_title">Alarmprofile</string>
-    <string name="master_data_item_alarm_profiles_desc">Vibrations- und Alarm-Einstellungen</string>
+    <string name="master_data_item_alert_profiles_title">Benachrichtigungs-Profile</string>
+    <string name="master_data_item_alert_profiles_desc">Vibrations- und Alarm-Ton-Einstellungen</string>
     <string name="master_data_item_therapy_adjustments_title">Therapie-Anpassungen</string>
     <string name="master_data_item_therapy_adjustments_desc">Vordefinierte Presets für Aktivitäten und Zustände</string>
 
@@ -32,7 +32,7 @@
     <string name="therapy_adjustment_percentage_label">Insulin-Anpassung (%)</string>
     <string name="therapy_adjustment_target_bg_override_label">Zielwert</string>
     <string name="therapy_adjustment_low_threshold_override_label">Low-Schwelle</string>
-    <string name="therapy_adjustment_alarm_profile_override_label">Alarmprofil</string>
+    <string name="therapy_adjustment_alert_profile_override_label">Benachrichtigungen</string>
     <string name="therapy_adjustment_override_none">Keine Übersteuerung</string>
     <string name="therapy_adjustment_editor_discard_title">Änderungen verwerfen?</string>
     <string name="therapy_adjustment_editor_discard_message">Du hast ungespeicherte Änderungen. Möchtest du diese verwerfen oder speichern?</string>
@@ -53,7 +53,7 @@
     <string name="delete_insulin_type_title">Insulintyp löschen</string>
     <string name="delete_insulin_type_message">Möchtest du den Insulintyp \"%1$s\" wirklich löschen?</string>
 
-    <string name="alarm_profiles_screen_title">Alarmprofile</string>
+    <string name="alert_profiles_screen_title">Benachrichtigungs-Profile</string>
 
     <string name="insulin_profiles_screen_title">Insulin-Profile verwalten</string>
     <string name="insulin_profile_editor_new_profile">Neues Insulin-Profil</string>
@@ -276,8 +276,8 @@
     <string name="therapy_adjustment_insulin_adjustment_description">Passt die abgegebene Insulinmenge für einen begrenzten Zeitraum prozentual an.</string>
     <string name="therapy_adjustment_bg_adjustment_label">Werte-Anpassung</string>
     <string name="therapy_adjustment_bg_adjustment_description">Überschreibt Zielwert und Niedrig-&#173;Schwelle für einen begrenzten Zeitraum.</string>
-    <string name="therapy_adjustment_alarm_profile_label">Alarmprofil</string>
-    <string name="therapy_adjustment_alarm_profile_description">Schaltet während dieser Therapie-Anpassung automatisch auf das gewählte Alarmprofil um.</string>
+    <string name="therapy_adjustment_alert_profile_label">Benachrichtigungen</string>
+    <string name="therapy_adjustment_alert_profile_description">Schaltet während dieser Therapie-Anpassung automatisch auf das gewählte Benachrichtigungs-Profil um.</string>
     <string name="therapy_adjustment_description_label">Beschreibung</string>
     <string name="therapy_adjustment_description_description">Optionale, kurze Beschreibung oder Grund für diese Therapie-Anpassung.</string>
     <string name="therapy_adjustment_description_placeholder">z. B. Sport, Spaziergang, Stress…</string>
@@ -653,45 +653,41 @@
     <string name="core_insight_action_temp_basal">Aktion: Temp-Basal %1$d%% für %2$d h</string>
 
     <!-- Alarm Profiles -->
-    <string name="alarm_profile_active_label">Aktiv</string>
-    <string name="alarm_profile_default_label">Standard-Profil</string>
-    <string name="alarm_profile_override_active_label">Aktiv (Anpassung)</string>
-    <string name="alarm_profile_set_active">Als Standard-Profil festlegen</string>
-    <string name="alarm_profile_set_default">Als Standard-Profil festlegen</string>
-    <string name="alarm_profile_is_default_description">Dieses Profil wird als Standard für Alarme verwendet.</string>
-    <string name="alarm_profile_editor_title_new">Neues Alarmprofil</string>
-    <string name="alarm_profile_editor_title_edit">Alarmprofil bearbeiten</string>
-    <string name="alarm_profile_editor_discard_title">Änderungen speichern?</string>
-    <string name="alarm_profile_editor_discard_message">Du hast Änderungen am Alarmprofil vorgenommen. Möchtest du die Änderungen speichern oder verwerfen?</string>
-    <string name="alarm_profile_name_label">Name des Profils</string>
-    <string name="alarm_profile_severity_critical">Kritische Alarme</string>
-    <string name="alarm_profile_severity_warning">Warnungen</string>
-    <string name="alarm_profile_severity_info">Hinweise</string>
-    <string name="alarm_profile_volume_label">Lautstärke: %1$d%%</string>
-    <string name="alarm_profile_sound_label">Alarmton</string>
-    <string name="alarm_profile_sound_default">Standard System-Alarmton</string>
-    <string name="alarm_profile_sound_custom">Benutzerdefinierter Ton</string>
-    <string name="alarm_profile_sound_select">Auswählen</string>
-    <string name="alarm_profile_sound_reset">Auf Standard zurücksetzen</string>
-    <string name="alarm_profile_sound_picker_title">Alarmton auswählen</string>
-    <string name="alarm_profile_sound_select_custom_file">Eigene Audio-Datei auswählen…</string>
-    <string name="alarm_profile_vibration_label">Vibration</string>
-    <string name="alarm_profile_vibration_off">Aus</string>
-    <string name="alarm_profile_vibration_short">Kurz</string>
-    <string name="alarm_profile_vibration_long">Lang</string>
-    <string name="alarm_profile_vibration_continuous">Kontinuierlich</string>
-    <string name="alarm_profile_override_dnd">„Bitte nicht stören“ umgehen</string>
-    <string name="alarm_profile_show_full_screen">Als Vollbildalarm anzeigen</string>
-    <string name="alarm_profile_play_sound">Alarmton abspielen</string>
-    <string name="alarm_profile_test_sound">Probe-Hören</string>
+    <string name="alert_profile_active_label">Aktiv</string>
+    <string name="alert_profile_default_label">Standard-Profil</string>
+    <string name="alert_profile_set_default">Als Standard-Profil festlegen</string>
+    <string name="alert_profile_is_default_description">Dieses Profil wird als Standard für Alarme verwendet.</string>
+    <string name="alert_profile_editor_title_new">Neues Alarmprofil</string>
+    <string name="alert_profile_editor_title_edit">Alarmprofil bearbeiten</string>
+    <string name="alert_profile_editor_discard_title">Änderungen speichern?</string>
+    <string name="alert_profile_editor_discard_message">Du hast Änderungen am Alarmprofil vorgenommen. Möchtest du die Änderungen speichern oder verwerfen?</string>
+    <string name="alert_profile_name_label">Name des Profils</string>
+    <string name="alert_profile_severity_critical">Kritische Alarme</string>
+    <string name="alert_profile_severity_warning">Warnungen</string>
+    <string name="alert_profile_severity_info">Hinweise</string>
+    <string name="alert_profile_volume_label">Lautstärke: %1$d%%</string>
+    <string name="alert_profile_sound_label">Alarmton</string>
+    <string name="alert_profile_sound_default">Standard System-Alarmton</string>
+    <string name="alert_profile_sound_custom">Benutzerdefinierter Ton</string>
+    <string name="alert_profile_sound_select">Auswählen</string>
+    <string name="alert_profile_sound_reset">Auf Standard zurücksetzen</string>
+    <string name="alert_profile_sound_picker_title">Alarmton auswählen</string>
+    <string name="alert_profile_sound_select_custom_file">Eigene Audio-Datei auswählen…</string>
+    <string name="alert_profile_vibration_label">Vibration</string>
+    <string name="alert_profile_vibration_off">Aus</string>
+    <string name="alert_profile_vibration_short">Kurz</string>
+    <string name="alert_profile_vibration_long">Lang</string>
+    <string name="alert_profile_vibration_continuous">Kontinuierlich</string>
+    <string name="alert_profile_override_dnd">„Bitte nicht stören“ umgehen</string>
+    <string name="alert_profile_show_full_screen">Als Vollbildalarm anzeigen</string>
+    <string name="alert_profile_play_sound">Alarmton abspielen</string>
+    <string name="alert_profile_delete_title">Alarmprofil löschen</string>
+    <string name="alert_profile_delete_message">Möchtest du das Alarmprofil „%1$s“ wirklich löschen?</string>
+    <string name="cd_add_alert_profile">Benachrichtigungs-Profil hinzufügen</string>
     <string name="cd_test_alarm_sound_and_vibration">Alarmton und Vibration testen</string>
     <string name="cd_test_alarm_sound">Alarmton testen</string>
     <string name="cd_test_alarm_vibration">Vibration testen</string>
     <string name="cd_alarm_sound_and_vibration_off">Signalisierung ausgeschaltet</string>
-    <string name="alarm_profile_delete_title">Alarmprofil löschen</string>
-    <string name="alarm_profile_delete_message">Möchtest du das Alarmprofil „%1$s“ wirklich löschen?</string>
-    <string name="alarm_profile_cannot_delete_default">Das Standard-Profil kann nicht gelöscht werden.</string>
-    <string name="cd_add_alarm_profile">Alarmprofil hinzufügen</string>
     <string name="action_set_active">Aktivieren</string>
 
     <!-- Alarm Trigger & Snooze -->

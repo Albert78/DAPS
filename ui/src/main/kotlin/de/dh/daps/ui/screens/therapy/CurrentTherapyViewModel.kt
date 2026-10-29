@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import de.dh.daps.common.domain.model.alarm.AlarmProfile
+import de.dh.daps.common.domain.model.alarm.AlertProfile
 import de.dh.daps.common.domain.model.data.BgBlock
 import de.dh.daps.common.domain.model.data.BgDelta
 import de.dh.daps.common.domain.model.data.BgValue
@@ -46,8 +46,8 @@ data class TherapyAdjustmentUiState(
     val percentage: Int = 0,
     val targetBgOverride: BgValue? = null,
     val lowThresholdOverride: BgValue? = null,
-    val alarmProfileOverrideId: Long? = null,
-    val alarmProfileOverrideName: String? = null,
+    val alertProfileOverrideId: Long? = null,
+    val alertProfileOverrideName: String? = null,
     val adjustmentHint: String? = null,
     val adjustmentEndTime: Timestamp? = null
 ) {
@@ -55,7 +55,7 @@ data class TherapyAdjustmentUiState(
         get() = percentage != 0 ||
                 targetBgOverride != null ||
                 lowThresholdOverride != null ||
-                alarmProfileOverrideId != null
+                alertProfileOverrideId != null
 }
 
 data class ActiveTherapyStatusUiState(
@@ -65,7 +65,7 @@ data class ActiveTherapyStatusUiState(
     val currentCr: Double = 0.0,
     val currentBasal: InsulinAmount = InsulinAmount.ZERO,
     val basalStatus: BasalStatus? = null,
-    val activeAlarmProfileName: String? = null,
+    val activeAlertProfileName: String? = null,
     val target: BgValue = BgValue.INVALID,
     val lowThreshold: BgValue = BgValue.INVALID,
     val baseTarget: BgValue = BgValue.INVALID,
@@ -78,7 +78,7 @@ data class CurrentTherapyUiState(
     val scheduledTherapyAdjustment: ScheduledTherapyAdjustment? = null,
     val glucoseUnit: GlucoseUnit = GlucoseUnit.MG_DL,
     val availableInsulinProfiles: List<InsulinProfile> = emptyList(),
-    val availableAlarmProfiles: List<AlarmProfile> = emptyList(),
+    val availableAlertProfiles: List<AlertProfile> = emptyList(),
     val defaultBgBlocks: List<BgBlock> = emptyList(),
     val therapyAdjustmentPresets: List<TherapyAdjustment> = emptyList()
 )
@@ -104,7 +104,7 @@ class CurrentTherapyViewModel(
         combine(
             therapyManager.currentTherapySettingsFlow,
             therapyManager.observeAllInsulinProfiles(),
-            systemRegistry.alarmRepository.observeAllAlarmProfiles(),
+            systemRegistry.alertProfileRepository.observeAllAlertProfiles(),
             glucoseUnitFlow,
             therapyManager.observeScheduledTherapyAdjustment(),
             therapyManager.observeAllTherapyAdjustments(),
@@ -114,7 +114,7 @@ class CurrentTherapyViewModel(
             updateState(
                 currentSettings = flows[0] as CurrentTherapySettings,
                 profiles = flows[1] as List<InsulinProfile>,
-                alarmProfiles = flows[2] as List<AlarmProfile>,
+                alertProfiles = flows[2] as List<AlertProfile>,
                 unit = flows[3] as GlucoseUnit,
                 scheduledAdjustment = flows[4] as ScheduledTherapyAdjustment?,
                 presets = flows[5] as List<TherapyAdjustment>,
@@ -126,7 +126,7 @@ class CurrentTherapyViewModel(
     private suspend fun updateState(
         currentSettings: CurrentTherapySettings,
         profiles: List<InsulinProfile>,
-        alarmProfiles: List<AlarmProfile>,
+        alertProfiles: List<AlertProfile>,
         unit: GlucoseUnit,
         scheduledAdjustment: ScheduledTherapyAdjustment?,
         presets: List<TherapyAdjustment>,
@@ -158,8 +158,8 @@ class CurrentTherapyViewModel(
             percentage = currentSettings.insulinAdjustmentPercentage,
             targetBgOverride = currentSettings.targetBgOverride,
             lowThresholdOverride = currentSettings.lowThresholdOverride,
-            alarmProfileOverrideId = currentSettings.alarmProfileOverrideId,
-            alarmProfileOverrideName = currentSettings.alarmProfileOverride?.name,
+            alertProfileOverrideId = currentSettings.alertProfileOverrideId,
+            alertProfileOverrideName = currentSettings.alertProfileOverride?.name,
             adjustmentHint = currentSettings.adjustmentHint,
             adjustmentEndTime = currentSettings.adjustmentEndTime
         )
@@ -171,7 +171,7 @@ class CurrentTherapyViewModel(
             currentCr = cr,
             currentBasal = basal,
             basalStatus = basalStatus,
-            activeAlarmProfileName = currentSettings.effectiveAlarmProfile?.name,
+            activeAlertProfileName = currentSettings.effectiveAlertProfile?.name,
             target = bgSettings.first,
             lowThreshold = bgSettings.second,
             baseTarget = baseBg.first,
@@ -187,7 +187,7 @@ class CurrentTherapyViewModel(
                 scheduledTherapyAdjustment = scheduledAdjustment,
                 glucoseUnit = unit,
                 availableInsulinProfiles = profiles,
-                availableAlarmProfiles = alarmProfiles,
+                availableAlertProfiles = alertProfiles,
                 defaultBgBlocks = currentSettings.defaultBgBlocks,
                 therapyAdjustmentPresets = presets
             )
@@ -244,8 +244,8 @@ class CurrentTherapyViewModel(
             percentage = form.percentage,
             targetBgOverride = form.targetBgOverride,
             lowThresholdOverride = form.lowThresholdOverride,
-            alarmProfileOverrideId = form.alarmProfileOverrideId,
-            alarmProfileOverrideName = form.alarmProfileOverrideName,
+            alertProfileOverrideId = form.alertProfileOverrideId,
+            alertProfileOverrideName = form.alertProfileOverrideName,
             adjustmentHint = form.adjustmentHint,
             adjustmentEndTime = endTime
         )
@@ -259,8 +259,8 @@ class CurrentTherapyViewModel(
                 percentage = active.percentage,
                 targetBgOverride = active.targetBgOverride,
                 lowThresholdOverride = active.lowThresholdOverride,
-                alarmProfileOverrideId = active.alarmProfileOverrideId,
-                alarmProfileOverrideName = active.alarmProfileOverrideName,
+                alertProfileOverrideId = active.alertProfileOverrideId,
+                alertProfileOverrideName = active.alertProfileOverrideName,
                 adjustmentHint = active.adjustmentHint
             )
         )
@@ -270,18 +270,18 @@ class CurrentTherapyViewModel(
         percentage: Int,
         targetBg: BgValue?,
         lowThreshold: BgValue?,
-        alarmProfileOverrideId: Long?,
+        alertProfileOverrideId: Long?,
         adjustmentHint: String? = null,
         adjustmentEndTime: Timestamp? = null
     ) {
-        val alarmProfiles = _uiState.value.availableAlarmProfiles
-        val alarmProfileName = alarmProfiles.find { it.id == alarmProfileOverrideId }?.name
+        val alertProfiles = _uiState.value.availableAlertProfiles
+        val alertProfileName = alertProfiles.find { it.id == alertProfileOverrideId }?.name
         formStateHolder.updateValues(
             percentage = percentage,
             targetBg = targetBg,
             lowThreshold = lowThreshold,
-            alarmProfileOverrideId = alarmProfileOverrideId,
-            alarmProfileName = alarmProfileName,
+            alertProfileOverrideId = alertProfileOverrideId,
+            alertProfileName = alertProfileName,
             hint = adjustmentHint
         )
         if (adjustmentEndTime != null) {
@@ -305,7 +305,7 @@ class CurrentTherapyViewModel(
                 percentage = form.percentage,
                 targetBg = form.targetBgOverride,
                 lowThreshold = form.lowThresholdOverride,
-                alarmProfileOverrideId = form.alarmProfileOverrideId,
+                alertProfileOverrideId = form.alertProfileOverrideId,
                 adjustmentHint = form.adjustmentHint,
                 adjustmentEndTime = endTime
             )
@@ -326,7 +326,7 @@ class CurrentTherapyViewModel(
         percentage: Int,
         targetBg: BgValue?,
         lowThreshold: BgValue?,
-        alarmProfileOverrideId: Long? = null,
+        alertProfileOverrideId: Long? = null,
         adjustmentHint: String? = null,
         adjustmentEndTime: Timestamp? = null
     ) {
@@ -335,7 +335,7 @@ class CurrentTherapyViewModel(
                 percentage = percentage,
                 targetBg = targetBg,
                 lowThreshold = lowThreshold,
-                alarmProfileOverrideId = alarmProfileOverrideId,
+                alertProfileOverrideId = alertProfileOverrideId,
                 adjustmentHint = adjustmentHint,
                 adjustmentEndTime = adjustmentEndTime
             )

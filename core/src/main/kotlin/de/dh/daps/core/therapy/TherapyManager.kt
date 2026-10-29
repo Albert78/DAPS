@@ -155,7 +155,7 @@ class TherapyManager(
                     insulinAdjustmentPercentage = 0,
                     targetBgOverride = null,
                     lowThresholdOverride = null,
-                    alarmProfileOverrideId = null,
+                    alertProfileOverrideId = null,
                     adjustmentHint = null,
                     adjustmentEndTime = null
                 )
@@ -182,7 +182,7 @@ class TherapyManager(
                         insulinAdjustmentPercentage = scheduled.percentage,
                         targetBgOverride = scheduled.targetBgOverride,
                         lowThresholdOverride = scheduled.lowThresholdOverride,
-                        alarmProfileOverrideId = scheduled.alertProfileOverrideId,
+                        alertProfileOverrideId = scheduled.alertProfileOverrideId,
                         adjustmentHint = scheduled.adjustmentHint,
                         adjustmentEndTime = scheduled.endTime
                     )
@@ -253,7 +253,7 @@ class TherapyManager(
                 insulinAdjustmentPercentage = currentSettings.insulinAdjustmentPercentage,
                 targetBgOverride = currentSettings.targetBgOverride,
                 lowThresholdOverride = currentSettings.lowThresholdOverride,
-                alarmProfileOverrideId = currentSettings.alertProfileOverrideId,
+                alertProfileOverrideId = currentSettings.alertProfileOverrideId,
                 adjustmentHint = currentSettings.adjustmentHint
             )
         }
@@ -384,7 +384,7 @@ class TherapyManager(
                 insulinAdjustmentPercentage = currentSettings.insulinAdjustmentPercentage,
                 targetBgOverride = currentSettings.targetBgOverride,
                 lowThresholdOverride = currentSettings.lowThresholdOverride,
-                alarmProfileOverrideId = currentSettings.alertProfileOverrideId,
+                alertProfileOverrideId = currentSettings.alertProfileOverrideId,
                 adjustmentHint = currentSettings.adjustmentHint
             )
         }
@@ -394,7 +394,7 @@ class TherapyManager(
         percentage: Int,
         targetBg: BgValue?,
         lowThreshold: BgValue?,
-        alarmProfileOverrideId: Long? = null,
+        alertProfileOverrideId: Long? = null,
         adjustmentHint: String? = null,
         adjustmentEndTime: Timestamp? = null
     ) {
@@ -407,7 +407,7 @@ class TherapyManager(
                 insulinAdjustmentPercentage = percentage,
                 targetBgOverride = targetBg,
                 lowThresholdOverride = lowThreshold,
-                alarmProfileOverrideId = alarmProfileOverrideId,
+                alertProfileOverrideId = alertProfileOverrideId,
                 adjustmentHint = adjustmentHint,
                 adjustmentEndTime = adjustmentEndTime
             )
@@ -430,7 +430,7 @@ class TherapyManager(
                 insulinAdjustmentPercentage = percentage,
                 targetBgOverride = currentSettings.targetBgOverride,
                 lowThresholdOverride = currentSettings.lowThresholdOverride,
-                alarmProfileOverrideId = currentSettings.alertProfileOverrideId,
+                alertProfileOverrideId = currentSettings.alertProfileOverrideId,
                 adjustmentHint = currentSettings.adjustmentHint
             )
         }
@@ -445,7 +445,7 @@ class TherapyManager(
                 insulinAdjustmentPercentage = currentSettings.insulinAdjustmentPercentage,
                 targetBgOverride = target,
                 lowThresholdOverride = currentSettings.lowThresholdOverride,
-                alarmProfileOverrideId = currentSettings.alertProfileOverrideId,
+                alertProfileOverrideId = currentSettings.alertProfileOverrideId,
                 adjustmentHint = currentSettings.adjustmentHint
             )
         }
@@ -460,7 +460,7 @@ class TherapyManager(
                 insulinAdjustmentPercentage = currentSettings.insulinAdjustmentPercentage,
                 targetBgOverride = currentSettings.targetBgOverride,
                 lowThresholdOverride = threshold,
-                alarmProfileOverrideId = currentSettings.alertProfileOverrideId,
+                alertProfileOverrideId = currentSettings.alertProfileOverrideId,
                 adjustmentHint = currentSettings.adjustmentHint
             )
         }

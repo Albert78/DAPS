@@ -26,7 +26,6 @@ import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -59,6 +58,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.milliseconds
 import de.dh.daps.common.R as CommonR
 
 data class RingtoneItem(
@@ -93,8 +93,8 @@ fun RingtonePickerDialog(
         }
     }
 
-    val defaultTitle = stringResource(id = R.string.alarm_profile_sound_default)
-    val customFileTitle = stringResource(id = R.string.alarm_profile_sound_select_custom_file)
+    val defaultTitle = stringResource(id = R.string.alert_profile_sound_default)
+    val customFileTitle = stringResource(id = R.string.alert_profile_sound_select_custom_file)
 
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
@@ -174,7 +174,6 @@ fun RingtonePickerDialog(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RingtonePickerDialogContent(
     selectedUri: String?,
@@ -198,7 +197,7 @@ fun RingtonePickerDialogContent(
         },
         title = {
             Text(
-                text = stringResource(id = R.string.alarm_profile_sound_picker_title),
+                text = stringResource(id = R.string.alert_profile_sound_picker_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -257,12 +256,12 @@ fun RingtonePickerContent(
         ) {
             val listState = rememberLazyListState()
 
-            var previousSize by remember { mutableStateOf(ringtones.size) }
+            var previousSize by remember { mutableIntStateOf(ringtones.size) }
 
             LaunchedEffect(ringtones.size) {
                 if (ringtones.size > previousSize) {
                     listState.animateScrollToItem(ringtones.size - 1)
-                    delay(100)
+                    delay(100.milliseconds)
                     val targetIndex = (listState.layoutInfo.totalItemsCount - 1).coerceAtLeast(0)
                     listState.animateScrollToItem(targetIndex)
                 }
@@ -376,7 +375,7 @@ fun RingtonePickerContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = stringResource(id = R.string.alarm_profile_volume_label, selectedVolume),
+                        text = stringResource(id = R.string.alert_profile_volume_label, selectedVolume),
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -397,15 +396,15 @@ fun RingtonePickerContent(
 
 private fun getRingtoneTitle(context: Context, soundUriString: String?): String {
     if (soundUriString.isNullOrEmpty()) {
-        return context.getString(R.string.alarm_profile_sound_default)
+        return context.getString(R.string.alert_profile_sound_default)
     }
     return try {
         val uri = soundUriString.toUri()
         val ringtone = RingtoneManager.getRingtone(context, uri)
         val title = ringtone?.getTitle(context)
-        if (!title.isNullOrEmpty()) title else context.getString(R.string.alarm_profile_sound_custom)
+        if (!title.isNullOrEmpty()) title else context.getString(R.string.alert_profile_sound_custom)
     } catch (_: Exception) {
-        context.getString(R.string.alarm_profile_sound_custom)
+        context.getString(R.string.alert_profile_sound_custom)
     }
 }
 
@@ -431,7 +430,7 @@ fun RingtonePickerDialogPreview() {
                     tint = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = stringResource(id = R.string.alarm_profile_sound_picker_title),
+                    text = stringResource(id = R.string.alert_profile_sound_picker_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )

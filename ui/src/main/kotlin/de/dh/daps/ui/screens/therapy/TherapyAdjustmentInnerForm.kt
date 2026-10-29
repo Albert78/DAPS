@@ -52,7 +52,7 @@ import de.dh.daps.common.LOW_THRESHOLD_MAX
 import de.dh.daps.common.LOW_THRESHOLD_MIN
 import de.dh.daps.common.TARGET_MAX
 import de.dh.daps.common.TARGET_MIN
-import de.dh.daps.common.domain.model.alarm.AlarmProfile
+import de.dh.daps.common.domain.model.alarm.AlertProfile
 import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
@@ -83,7 +83,7 @@ fun TherapyAdjustmentInnerForm(
     formState: TherapyAdjustmentFormState,
     baseTarget: BgValue,
     baseLow: BgValue,
-    availableAlarmProfiles: List<AlarmProfile>,
+    availableAlarmProfiles: List<AlertProfile>,
     onValuesChange: (percentage: Int, targetBg: BgValue?, lowThreshold: BgValue?, alarmProfileId: Long?, adjustmentHint: String?) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -101,7 +101,7 @@ fun TherapyAdjustmentInnerForm(
     val currentPercentage = formState.percentage
     val currentTarget = formState.targetBgOverride
     val currentLow = formState.lowThresholdOverride
-    val currentAlarmProfileId = formState.alarmProfileOverrideId
+    val currentAlarmProfileId = formState.alertProfileOverrideId
     val currentHint = formState.adjustmentHint
 
     Column(
@@ -164,7 +164,7 @@ fun TherapyAdjustmentInnerForm(
             )
         }
 
-HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
         // BG Override Section
         val bgOverrideActive = currentTarget != null || currentLow != null
@@ -262,8 +262,8 @@ HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
         val alarmProfileActive = currentAlarmProfileId != null
         AdjustmentSection(
             icon = Icon_Alarms,
-            title = stringResource(R.string.therapy_adjustment_alarm_profile_label),
-            description = stringResource(R.string.therapy_adjustment_alarm_profile_description),
+            title = stringResource(R.string.therapy_adjustment_alert_profile_label),
+            description = stringResource(R.string.therapy_adjustment_alert_profile_description),
             isActive = alarmProfileActive,
             onClear = {
                 onValuesChange(currentPercentage, currentTarget, currentLow, null, currentHint)
@@ -480,14 +480,14 @@ private fun TherapyAdjustmentInnerFormPreview() {
                 percentage = -15,
                 targetBgOverride = BgValue.fromMgDl(130),
                 lowThresholdOverride = BgValue.fromMgDl(85),
-                alarmProfileOverrideId = 1L,
+                alertProfileOverrideId = 1L,
                 adjustmentHint = "Fahrrad fahren"
             ),
             baseTarget = BgValue.fromMgDl(100),
             baseLow = BgValue.fromMgDl(70),
             availableAlarmProfiles = listOf(
-                AlarmProfile(id = 1L, name = "Sport"),
-                AlarmProfile(id = 2L, name = "Schlafen")
+                AlertProfile(id = 1L, name = "Sport"),
+                AlertProfile(id = 2L, name = "Schlafen")
             ),
             onValuesChange = { _, _, _, _, _ -> }
         )
@@ -503,13 +503,13 @@ private fun TherapyAdjustmentInnerFormCollapsedPreview() {
                 percentage = 0,
                 targetBgOverride = null,
                 lowThresholdOverride = null,
-                alarmProfileOverrideId = null,
+                alertProfileOverrideId = null,
                 adjustmentHint = null
             ),
             baseTarget = BgValue.fromMgDl(100),
             baseLow = BgValue.fromMgDl(70),
             availableAlarmProfiles = listOf(
-                AlarmProfile(id = 1L, name = "Sport")
+                AlertProfile(id = 1L, name = "Sport")
             ),
             onValuesChange = { _, _, _, _, _ -> }
         )

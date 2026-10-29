@@ -15,8 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
@@ -44,12 +42,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import de.dh.daps.common.domain.model.alarm.AlarmSeverity
-import de.dh.daps.common.domain.model.alarm.AlarmSignalConfig
 import de.dh.daps.common.domain.model.alarm.AlertDisplayMode
+import de.dh.daps.common.domain.model.alarm.AlertSignalConfig
 import de.dh.daps.common.domain.model.alarm.SoundConfig
 import de.dh.daps.common.domain.model.alarm.VibrationMode
 import de.dh.daps.ui.R
@@ -68,7 +68,7 @@ import de.dh.daps.common.R as CommonR
 private data class InitialAlarmProfileValues(
     val name: String,
     val isDefault: Boolean,
-    val severityDefaults: Map<AlarmSeverity, AlarmSignalConfig>
+    val severityDefaults: Map<AlarmSeverity, AlertSignalConfig>
 )
 
 @Composable
@@ -99,8 +99,8 @@ fun AlarmProfileEditorContent(
     uiState: AlarmProfileEditorUiState,
     onNameChange: (String) -> Unit,
     onIsDefaultChange: (Boolean) -> Unit,
-    onSeverityConfigChange: (AlarmSeverity, AlarmSignalConfig) -> Unit,
-    onPlayPreview: (AlarmSignalConfig) -> Unit,
+    onSeverityConfigChange: (AlarmSeverity, AlertSignalConfig) -> Unit,
+    onPlayPreview: (AlertSignalConfig) -> Unit,
     onUpdateVolume: (Int) -> Unit,
     onStopPreview: () -> Unit,
     onSave: () -> Unit,
@@ -150,15 +150,15 @@ fun AlarmProfileEditorContent(
     BackHandler(onBack = ::handleBack)
 
     val titleRes = if (uiState.profileId == null) {
-        R.string.alarm_profile_editor_title_new
+        R.string.alert_profile_editor_title_new
     } else {
-        R.string.alarm_profile_editor_title_edit
+        R.string.alert_profile_editor_title_edit
     }
 
     val severityTitles = listOf(
-        AlarmSeverity.CRITICAL to ("🔴 " + stringResource(id = R.string.alarm_profile_severity_critical)),
-        AlarmSeverity.WARNING to ("🟡 " + stringResource(id = R.string.alarm_profile_severity_warning)),
-        AlarmSeverity.INFO to ("🔵 " + stringResource(id = R.string.alarm_profile_severity_info))
+        AlarmSeverity.CRITICAL to ("🔴 " + stringResource(id = R.string.alert_profile_severity_critical)),
+        AlarmSeverity.WARNING to ("🟡 " + stringResource(id = R.string.alert_profile_severity_warning)),
+        AlarmSeverity.INFO to ("🔵 " + stringResource(id = R.string.alert_profile_severity_info))
     )
 
     Scaffold(
@@ -205,7 +205,7 @@ fun AlarmProfileEditorContent(
                 OutlinedTextField(
                     value = uiState.name,
                     onValueChange = onNameChange,
-                    label = { Text(stringResource(id = R.string.alarm_profile_name_label)) },
+                    label = { Text(stringResource(id = R.string.alert_profile_name_label)) },
                     isError = uiState.name.isNotBlank() && !uiState.isValid,
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
@@ -231,13 +231,13 @@ fun AlarmProfileEditorContent(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = stringResource(id = R.string.alarm_profile_set_default),
+                                text = stringResource(id = R.string.alert_profile_set_default),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.SemiBold
                             )
                             if (uiState.isDefault) {
                                 Text(
-                                    text = stringResource(id = R.string.alarm_profile_is_default_description),
+                                    text = stringResource(id = R.string.alert_profile_is_default_description),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.primary
                                 )
@@ -254,7 +254,7 @@ fun AlarmProfileEditorContent(
 
             // Severity Sections
             items(severityTitles) { (severity, title) ->
-                val currentConfig = uiState.severityDefaults[severity] ?: AlarmSignalConfig()
+                val currentConfig = uiState.severityDefaults[severity] ?: AlertSignalConfig()
                 SeverityEditorSectionCard(
                     title = title,
                     config = currentConfig,
@@ -276,8 +276,8 @@ fun AlarmProfileEditorContent(
     if (showDiscardConfirmation) {
         AlertDialog(
             onDismissRequest = { showDiscardConfirmation = false },
-            title = { Text(stringResource(id = R.string.alarm_profile_editor_discard_title)) },
-            text = { Text(stringResource(id = R.string.alarm_profile_editor_discard_message)) },
+            title = { Text(stringResource(id = R.string.alert_profile_editor_discard_title)) },
+            text = { Text(stringResource(id = R.string.alert_profile_editor_discard_message)) },
             confirmButton = {
                 NormalTextButton(
                     onClick = {
@@ -302,13 +302,13 @@ fun AlarmProfileEditorContent(
 
     val targetSeverity = activeSeverityForSoundPicker
     if (showRingtonePickerDialog && targetSeverity != null) {
-        val currentConfig = uiState.severityDefaults[targetSeverity] ?: AlarmSignalConfig()
+        val currentConfig = uiState.severityDefaults[targetSeverity] ?: AlertSignalConfig()
         val currentSound = currentConfig.soundConfig ?: SoundConfig()
         RingtonePickerDialog(
             currentUri = currentSound.soundUri,
             currentVolume = currentSound.volume,
             onSoundSelected = { selectedUri, selectedVolume ->
-                val updatedSound = currentSound.copy(soundUri = selectedUri, volume = selectedVolume)
+                val updatedSound = (currentSound).copy(soundUri = selectedUri, volume = selectedVolume)
                 onSeverityConfigChange(
                     targetSeverity,
                     currentConfig.copy(displayMode = AlertDisplayMode.FullScreen(updatedSound))
@@ -331,8 +331,8 @@ fun AlarmProfileEditorContent(
 @Composable
 fun SeverityEditorSectionCard(
     title: String,
-    config: AlarmSignalConfig,
-    onConfigChanged: (AlarmSignalConfig) -> Unit,
+    config: AlertSignalConfig,
+    onConfigChanged: (AlertSignalConfig) -> Unit,
     onPlayPreview: () -> Unit,
     onSelectSound: () -> Unit,
     onUpdateVolume: (Int) -> Unit
@@ -389,7 +389,7 @@ fun SeverityEditorSectionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = stringResource(id = R.string.alarm_profile_show_full_screen),
+                    text = stringResource(id = R.string.alert_profile_show_full_screen),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Switch(
@@ -414,7 +414,7 @@ fun SeverityEditorSectionCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = stringResource(id = R.string.alarm_profile_play_sound),
+                        text = stringResource(id = R.string.alert_profile_play_sound),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Switch(
@@ -439,7 +439,7 @@ fun SeverityEditorSectionCard(
                     ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = stringResource(id = R.string.alarm_profile_sound_label),
+                            text = stringResource(id = R.string.alert_profile_sound_label),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Text(
@@ -461,12 +461,12 @@ fun SeverityEditorSectionCard(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Close,
-                                    contentDescription = stringResource(id = R.string.alarm_profile_sound_reset)
+                                    contentDescription = stringResource(id = R.string.alert_profile_sound_reset)
                                 )
                             }
                         }
                         NormalTextButton(onClick = onSelectSound) {
-                            Text(text = stringResource(id = R.string.alarm_profile_sound_select))
+                            Text(text = stringResource(id = R.string.alert_profile_sound_select))
                         }
                     }
                 }
@@ -478,7 +478,7 @@ fun SeverityEditorSectionCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = stringResource(id = R.string.alarm_profile_volume_label, sound.volume),
+                        text = stringResource(id = R.string.alert_profile_volume_label, sound.volume),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -498,7 +498,7 @@ fun SeverityEditorSectionCard(
 
             // Vibration Mode
             Text(
-                text = stringResource(id = R.string.alarm_profile_vibration_label),
+                text = stringResource(id = R.string.alert_profile_vibration_label),
                 style = MaterialTheme.typography.bodyMedium
             )
             FlowRow(
@@ -527,7 +527,7 @@ fun SeverityEditorSectionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = stringResource(id = R.string.alarm_profile_override_dnd),
+                    text = stringResource(id = R.string.alert_profile_override_dnd),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Switch(
@@ -539,17 +539,27 @@ fun SeverityEditorSectionCard(
     }
 }
 
+@Composable
+private fun vibrationModeLabel(mode: VibrationMode): String {
+    return when (mode) {
+        VibrationMode.OFF -> stringResource(id = R.string.alert_profile_vibration_off)
+        VibrationMode.SHORT -> stringResource(id = R.string.alert_profile_vibration_short)
+        VibrationMode.LONG -> stringResource(id = R.string.alert_profile_vibration_long)
+        VibrationMode.CONTINUOUS -> stringResource(id = R.string.alert_profile_vibration_continuous)
+    }
+}
+
 private fun getRingtoneTitle(context: Context, soundUriString: String?): String {
     if (soundUriString.isNullOrEmpty()) {
-        return context.getString(R.string.alarm_profile_sound_default)
+        return context.getString(R.string.alert_profile_sound_default)
     }
     return try {
         val uri = soundUriString.toUri()
         val ringtone = RingtoneManager.getRingtone(context, uri)
         val title = ringtone?.getTitle(context)
-        if (!title.isNullOrEmpty()) title else context.getString(R.string.alarm_profile_sound_custom)
+        if (!title.isNullOrEmpty()) title else context.getString(R.string.alert_profile_sound_custom)
     } catch (_: Exception) {
-        context.getString(R.string.alarm_profile_sound_custom)
+        context.getString(R.string.alert_profile_sound_custom)
     }
 }
 
@@ -564,17 +574,17 @@ fun AlarmProfileEditorPreview() {
                 name = "Standard",
                 isDefault = true,
                 severityDefaults = mapOf(
-                    AlarmSeverity.CRITICAL to AlarmSignalConfig(
+                    AlarmSeverity.CRITICAL to AlertSignalConfig(
                         displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 100)),
                         vibrationMode = VibrationMode.CONTINUOUS,
                         overrideDnd = true
                     ),
-                    AlarmSeverity.WARNING to AlarmSignalConfig(
+                    AlarmSeverity.WARNING to AlertSignalConfig(
                         displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 80)),
                         vibrationMode = VibrationMode.LONG,
                         overrideDnd = false
                     ),
-                    AlarmSeverity.INFO to AlarmSignalConfig(
+                    AlarmSeverity.INFO to AlertSignalConfig(
                         displayMode = AlertDisplayMode.NotificationOnly,
                         vibrationMode = VibrationMode.SHORT,
                         overrideDnd = false

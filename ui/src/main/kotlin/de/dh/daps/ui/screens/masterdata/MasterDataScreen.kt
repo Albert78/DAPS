@@ -171,8 +171,8 @@ fun MasterDataScreen(
             HorizontalDivider()
 
             ListItem(
-                headlineContent = { Text(stringResource(id = R.string.master_data_item_alarm_profiles_title)) },
-                supportingContent = { Text(stringResource(id = R.string.master_data_item_alarm_profiles_desc)) },
+                headlineContent = { Text(stringResource(id = R.string.master_data_item_alert_profiles_title)) },
+                supportingContent = { Text(stringResource(id = R.string.master_data_item_alert_profiles_desc)) },
                 leadingContent = {
                     Icon(
                         imageVector = Icon_Alarms,

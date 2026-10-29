@@ -767,16 +767,16 @@ private fun TemporaryAdjustmentCard(
                         null
                 )
 
-                // Alarm Profile Override
+                // Alert Profile Override
                 AdjustmentItem(
                     icon = Icons.Default.Notifications,
-                    label = stringResource(R.string.therapy_adjustment_alarm_profile_label),
-                    value = adjustment.alarmProfileOverrideName ?: stringResource(R.string.aps_control_adjustment_standard),
-                    valueColor = if (adjustment.alarmProfileOverrideId != null)
+                    label = stringResource(R.string.therapy_adjustment_alert_profile_label),
+                    value = adjustment.alertProfileOverrideName ?: stringResource(R.string.aps_control_adjustment_standard),
+                    valueColor = if (adjustment.alertProfileOverrideId != null)
                         MaterialTheme.colorScheme.primary
                     else
                         MaterialTheme.colorScheme.onSurfaceVariant,
-                    status = if (adjustment.alarmProfileOverrideId != null) stringResource(R.string.label_active) else null
+                    status = if (adjustment.alertProfileOverrideId != null) stringResource(R.string.label_active) else null
                 )
             }
         }
@@ -852,19 +852,6 @@ private fun AdjustmentItem(
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun formatMinutes(minutes: Minutes): String {
-    val total = minutes.value.toInt()
-    if (total <= 0) return stringResource(id = CommonR.string.duration_minutes_format, 0)
-    val hours = total / 60
-    val mins = total % 60
-    return when {
-        hours > 0 && mins > 0 -> stringResource(id = CommonR.string.duration_hours_and_minutes_format, hours, mins)
-        hours > 0 -> stringResource(id = CommonR.string.duration_hours_format, hours)
-        else -> stringResource(id = CommonR.string.duration_minutes_format, mins)
     }
 }
 

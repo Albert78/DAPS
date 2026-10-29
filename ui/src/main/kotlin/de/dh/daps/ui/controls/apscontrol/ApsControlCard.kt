@@ -189,8 +189,8 @@ fun ApsControlCard(
                     }
                 }
 
-                // 4. Active alarm profile
-                val alarmProfileName = activeTherapyStatus.activeAlarmProfileName
+                // 4. Active alert profile
+                val alertProfileName = activeTherapyStatus.activeAlertProfileName
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -202,7 +202,7 @@ fun ApsControlCard(
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = alarmProfileName ?: "-",
+                        text = alertProfileName ?: "-",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
@@ -338,7 +338,7 @@ private fun createSampleTherapyStatus() = ActiveTherapyStatusUiState(
     currentIsf = BgDelta.fromMgDl(50),
     currentCr = 12.0,
     currentBasal = InsulinAmount(0.8),
-    activeAlarmProfileName = "Kino / Diskret",
+    activeAlertProfileName = "Kino / Diskret",
     target = BgValue.fromMgDl(100),
     lowThreshold = BgValue.fromMgDl(70),
     baseTarget = BgValue.fromMgDl(110),

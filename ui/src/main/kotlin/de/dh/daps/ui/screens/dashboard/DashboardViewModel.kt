@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import de.dh.daps.common.domain.model.alarm.ActiveAlarmGroup
-import de.dh.daps.common.domain.model.alarm.AlarmSignalConfig
+import de.dh.daps.common.domain.model.alarm.AlertSignalConfig
 import de.dh.daps.common.domain.model.alarm.AlarmType
 import de.dh.daps.common.domain.model.cgm.GlucoseSource
 import de.dh.daps.common.domain.model.engine.ApsMode
@@ -29,7 +29,7 @@ data class DashboardUiState(
     val activeRecommendations: ActiveRecommendations = ActiveRecommendations(),
     val isMealCorrectionBolusAllowed: Boolean = false,
     val activeAlarmGroup: ActiveAlarmGroup? = null,
-    val activeFiringConfig: AlarmSignalConfig? = null,
+    val activeFiringConfig: AlertSignalConfig? = null,
     val snoozedAlarms: Map<AlarmType, AlarmSnoozeState> = emptyMap(),
     val isGlucoseSourceConfigured: Boolean = true,
     val isPumpConfigured: Boolean = true
@@ -63,7 +63,7 @@ class DashboardViewModel(
         val availableModes = flows[2] as List<ApsMode>
         val recommendations = flows[3] as ActiveRecommendations
         val activeAlarmGroup = flows[4] as ActiveAlarmGroup?
-        val config = flows[5] as AlarmSignalConfig?
+        val config = flows[5] as AlertSignalConfig?
         @Suppress("UNCHECKED_CAST")
         val snoozedMap = flows[6] as Map<AlarmType, AlarmSnoozeState>
         val activeGlucoseSource = flows[7] as GlucoseSource?

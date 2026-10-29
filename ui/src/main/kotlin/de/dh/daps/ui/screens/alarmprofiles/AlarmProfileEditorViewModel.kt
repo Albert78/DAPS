@@ -5,9 +5,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import de.dh.daps.common.ID_UNDEFINED
-import de.dh.daps.common.domain.model.alarm.AlarmProfile
+import de.dh.daps.common.domain.model.alarm.AlertProfile
 import de.dh.daps.common.domain.model.alarm.AlarmSeverity
-import de.dh.daps.common.domain.model.alarm.AlarmSignalConfig
+import de.dh.daps.common.domain.model.alarm.AlertSignalConfig
 import de.dh.daps.common.domain.model.alarm.AlertDisplayMode
 import de.dh.daps.common.domain.model.alarm.SoundConfig
 import de.dh.daps.common.domain.model.alarm.VibrationMode
@@ -21,18 +21,18 @@ import kotlinx.coroutines.launch
 data class AlarmProfileEditorUiState(
     val profileId: Long? = null,
     val name: String = "",
-    val severityDefaults: Map<AlarmSeverity, AlarmSignalConfig> = mapOf(
-        AlarmSeverity.CRITICAL to AlarmSignalConfig(
+    val severityDefaults: Map<AlarmSeverity, AlertSignalConfig> = mapOf(
+        AlarmSeverity.CRITICAL to AlertSignalConfig(
             displayMode = AlertDisplayMode.FullScreen(SoundConfig(volume = 100)),
             vibrationMode = VibrationMode.CONTINUOUS,
             overrideDnd = true
         ),
-        AlarmSeverity.WARNING to AlarmSignalConfig(
+        AlarmSeverity.WARNING to AlertSignalConfig(
             displayMode = AlertDisplayMode.NotificationOnly,
             vibrationMode = VibrationMode.LONG,
             overrideDnd = false
         ),
-        AlarmSeverity.INFO to AlarmSignalConfig(
+        AlarmSeverity.INFO to AlertSignalConfig(
             displayMode = AlertDisplayMode.NotificationOnly,
             vibrationMode = VibrationMode.SHORT,
             overrideDnd = false
@@ -57,7 +57,7 @@ class AlarmProfileEditorViewModel(
     private val profileId: Long?
 ) : ViewModel() {
 
-    private val alarmRepository = registry.alarmRepository
+    private val alertProfileRepository = registry.alertProfileRepository
     private val alarmPlayerManager = registry.alarmPlayerManager
     private val _uiState = MutableStateFlow(AlarmProfileEditorUiState(profileId = profileId))
     val uiState: StateFlow<AlarmProfileEditorUiState> = _uiState.asStateFlow()
@@ -69,20 +69,20 @@ class AlarmProfileEditorViewModel(
     private fun loadData() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            val allProfiles = alarmRepository.getAllAlarmProfiles()
+            val allProfiles = alertProfileRepository.getAllAlertProfiles()
             val otherNames = allProfiles
                 .filter { it.id != profileId }
                 .map { it.name.trim() }
 
             val targetProfile = if (profileId != null && profileId != ID_UNDEFINED) {
-                alarmRepository.getAlarmProfileById(profileId)
+                alertProfileRepository.getAlertProfileById(profileId)
             } else null
 
             if (targetProfile != null) {
                 _uiState.update {
                     it.copy(
                         name = targetProfile.name,
-                        severityDefaults = targetProfile.severityDefaults,
+                        severityDefaults = targetProfile.alarmDefaults,
                         isDefault = targetProfile.isDefault,
                         existingNames = otherNames,
                         isLoading = false
@@ -107,7 +107,7 @@ class AlarmProfileEditorViewModel(
         _uiState.update { it.copy(isDefault = isDefault) }
     }
 
-    fun onSeverityConfigChange(severity: AlarmSeverity, config: AlarmSignalConfig) {
+    fun onSeverityConfigChange(severity: AlarmSeverity, config: AlertSignalConfig) {
         _uiState.update { state ->
             val updatedMap = state.severityDefaults.toMutableMap().apply {
                 put(severity, config)
@@ -122,29 +122,29 @@ class AlarmProfileEditorViewModel(
 
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
-            val profile = AlarmProfile(
+            val profile = AlertProfile(
                 id = state.profileId ?: ID_UNDEFINED,
                 name = state.name.trim(),
                 isDefault = state.isDefault,
-                severityDefaults = state.severityDefaults
+                alarmDefaults = state.severityDefaults
             )
 
             val savedId = if (profile.id == ID_UNDEFINED) {
-                alarmRepository.insertAlarmProfile(profile)
+                alertProfileRepository.insertAlertProfile(profile)
             } else {
-                alarmRepository.updateAlarmProfile(profile)
+                alertProfileRepository.updateAlertProfile(profile)
                 profile.id
             }
 
             if (state.isDefault) {
-                alarmRepository.setDefaultAlarmProfile(savedId)
+                alertProfileRepository.setDefaultAlertProfile(savedId)
             }
 
             onSuccess()
         }
     }
 
-    fun playPreviewSound(config: AlarmSignalConfig) {
+    fun playPreviewSound(config: AlertSignalConfig) {
         alarmPlayerManager.playPreview(config, durationMs = 3000L)
     }
 

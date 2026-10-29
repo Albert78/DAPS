@@ -86,7 +86,7 @@ fun CurrentTherapySettings.toEntity() = CurrentTherapySettingsEntity(
     insulin_adjustment_percentage = this.insulinAdjustmentPercentage,
     target_bg_override = this.targetBgOverride?.mgdlInt?.toShort(),
     low_threshold_override = this.lowThresholdOverride?.mgdlInt?.toShort(),
-    alarm_profile_override_id = this.alertProfileOverrideId,
+    alert_profile_override_id = this.alertProfileOverrideId,
     adjustment_hint = this.adjustmentHint,
     adjustment_end_time = this.adjustmentEndTime
 )
@@ -117,7 +117,7 @@ fun ScheduledTherapyAdjustment.toEntity() = ScheduledTherapyAdjustmentEntity(
     insulin_adjustment_percentage = this.percentage,
     target_bg_override = this.targetBgOverride?.mgdlInt?.toShort(),
     low_threshold_override = this.lowThresholdOverride?.mgdlInt?.toShort(),
-    alarm_profile_override_id = this.effectiveAlertProfileOverrideId,
+    alert_profile_override_id = this.effectiveAlertProfileOverrideId,
     adjustment_hint = this.adjustmentHint
 )
 
@@ -128,7 +128,7 @@ fun ScheduledTherapyAdjustmentEntity.toModel(alertProfile: AlertProfile? = null)
     percentage = this.insulin_adjustment_percentage,
     targetBgOverride = this.target_bg_override?.let { BgValue.fromMgDl(it) },
     lowThresholdOverride = this.low_threshold_override?.let { BgValue.fromMgDl(it) },
-    alertProfileOverrideId = this.alarm_profile_override_id,
+    alertProfileOverrideId = this.alert_profile_override_id,
     alertProfileOverride = alertProfile,
     adjustmentHint = this.adjustment_hint
 )
@@ -139,7 +139,7 @@ fun TherapyAdjustment.toEntity() = TherapyAdjustmentEntity(
     percentage = this.percentage,
     target_bg_override = this.targetBgMgDl,
     low_threshold_override = this.lowThresholdMgDl,
-    alarm_profile_override_id = this.alertProfileOverrideId
+    alert_profile_override_id = this.alertProfileOverrideId
 )
 
 fun TherapyAdjustmentEntity.toModel() = TherapyAdjustment(
@@ -148,5 +148,5 @@ fun TherapyAdjustmentEntity.toModel() = TherapyAdjustment(
     percentage = this.percentage,
     targetBgMgDl = this.target_bg_override,
     lowThresholdMgDl = this.low_threshold_override,
-    alertProfileOverrideId = this.alarm_profile_override_id
+    alertProfileOverrideId = this.alert_profile_override_id
 )

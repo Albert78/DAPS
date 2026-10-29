@@ -306,7 +306,7 @@ fun CurrentTherapySettingsEntity.toDto() = CurrentTherapySettingsDto(
     insulinAdjustmentPercentage = insulin_adjustment_percentage,
     targetBgOverride = target_bg_override,
     lowThresholdOverride = low_threshold_override,
-    alarmProfileOverrideId = alarm_profile_override_id,
+    alarmProfileOverrideId = alert_profile_override_id,
     adjustmentHint = adjustment_hint,
     adjustmentEndTimeMs = adjustment_end_time?.ms
 )
@@ -318,7 +318,7 @@ fun CurrentTherapySettingsDto.toEntity() = CurrentTherapySettingsEntity(
     insulin_adjustment_percentage = insulinAdjustmentPercentage,
     target_bg_override = targetBgOverride,
     low_threshold_override = lowThresholdOverride,
-    alarm_profile_override_id = alarmProfileOverrideId,
+    alert_profile_override_id = alarmProfileOverrideId,
     adjustment_hint = adjustmentHint,
     adjustment_end_time = adjustmentEndTimeMs?.let { Timestamp(it) }
 )
@@ -330,7 +330,7 @@ fun ScheduledTherapyAdjustmentEntity.toDto() = ScheduledTherapyAdjustmentDto(
     insulinAdjustmentPercentage = insulin_adjustment_percentage,
     targetBgOverride = target_bg_override,
     lowThresholdOverride = low_threshold_override,
-    alarmProfileOverrideId = alarm_profile_override_id,
+    alarmProfileOverrideId = alert_profile_override_id,
     adjustmentHint = adjustment_hint
 )
 
@@ -341,7 +341,7 @@ fun ScheduledTherapyAdjustmentDto.toEntity() = ScheduledTherapyAdjustmentEntity(
     insulin_adjustment_percentage = insulinAdjustmentPercentage,
     target_bg_override = targetBgOverride,
     low_threshold_override = lowThresholdOverride,
-    alarm_profile_override_id = alarmProfileOverrideId,
+    alert_profile_override_id = alarmProfileOverrideId,
     adjustment_hint = adjustmentHint
 )
 
@@ -351,7 +351,7 @@ fun TherapyAdjustmentEntity.toDto() = TherapyAdjustmentPresetDto(
     percentage = percentage,
     targetBgOverride = target_bg_override,
     lowThresholdOverride = low_threshold_override,
-    alarmProfileOverrideId = alarm_profile_override_id
+    alarmProfileOverrideId = alert_profile_override_id
 )
 
 fun TherapyAdjustmentPresetDto.toEntity() = TherapyAdjustmentEntity(
@@ -360,7 +360,7 @@ fun TherapyAdjustmentPresetDto.toEntity() = TherapyAdjustmentEntity(
     percentage = percentage,
     target_bg_override = targetBgOverride,
     low_threshold_override = lowThresholdOverride,
-    alarm_profile_override_id = alarmProfileOverrideId
+    alert_profile_override_id = alarmProfileOverrideId
 )
 
 fun CurrentSettingsEntity.toDto() = CurrentSettingsDto(

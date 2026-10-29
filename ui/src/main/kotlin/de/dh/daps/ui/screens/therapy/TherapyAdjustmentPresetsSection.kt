@@ -82,7 +82,7 @@ fun TherapyAdjustmentPresetsSection(
                 val isNeutral = preset.percentage == 0 &&
                         preset.targetBgMgDl == null &&
                         preset.lowThresholdMgDl == null &&
-                        preset.alarmProfileOverrideId == null
+                        preset.alertProfileOverrideId == null
 
                 SuggestionChip(
                     onClick = { onPresetApplied(preset) },

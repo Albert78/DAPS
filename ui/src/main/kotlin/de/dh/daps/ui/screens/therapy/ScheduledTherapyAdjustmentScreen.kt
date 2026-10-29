@@ -9,7 +9,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -56,7 +55,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.domain.model.alarm.AlarmProfile
+import de.dh.daps.common.domain.model.alarm.AlertProfile
 import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.therapy.TherapyAdjustment
@@ -70,7 +69,6 @@ import java.util.Calendar
 import java.util.Locale
 import de.dh.daps.common.R as CommonR
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduledTherapyAdjustmentScreen(
     viewModel: ScheduledTherapyViewModel,
@@ -115,12 +113,12 @@ fun ScheduledTherapyAdjustmentScreen(
             onNavigateUp()
         },
         onNavigateUp = onNavigateUp,
-        availableAlarmProfiles = uiState.availableAlarmProfiles,
+        availableAlarmProfiles = uiState.availableAlertProfiles,
         presets = uiState.therapyAdjustmentPresets
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduledTherapyAdjustmentContent(
     formState: TherapyAdjustmentFormState,
@@ -138,7 +136,7 @@ fun ScheduledTherapyAdjustmentContent(
     onDeleteClicked: () -> Unit = {},
     onDiscardClicked: () -> Unit,
     onNavigateUp: () -> Unit,
-    availableAlarmProfiles: List<AlarmProfile> = emptyList(),
+    availableAlarmProfiles: List<AlertProfile> = emptyList(),
     presets: List<TherapyAdjustment> = emptyList()
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()

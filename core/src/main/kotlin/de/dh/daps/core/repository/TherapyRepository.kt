@@ -137,7 +137,7 @@ class TherapyRepository(
         val profile = getInsulinProfileById(entity.insulin_profile_id) ?: return null
         val defaultAlertProfile = alertProfileDao.getDefaultAlertProfile()?.toModel()
             ?: alertProfileDao.getAllAlertProfiles().firstOrNull()?.toModel()
-        val alertProfileOverride = entity.alarm_profile_override_id?.let { alertProfileId ->
+        val alertProfileOverride = entity.alert_profile_override_id?.let { alertProfileId ->
             alertProfileDao.getAlertProfileById(alertProfileId)?.toModel()
         }
         val settings = entity.toModel(
@@ -167,7 +167,7 @@ class TherapyRepository(
         insulinAdjustmentPercentage: Int = 0,
         targetBgOverride: BgValue? = null,
         lowThresholdOverride: BgValue? = null,
-        alarmProfileOverrideId: Long? = null,
+        alertProfileOverrideId: Long? = null,
         adjustmentHint: String? = null,
         adjustmentEndTime: Timestamp? = null
     ) {
@@ -179,7 +179,7 @@ class TherapyRepository(
             insulin_adjustment_percentage = insulinAdjustmentPercentage,
             target_bg_override = targetBgOverride?.mgdlInt?.toShort(),
             low_threshold_override = lowThresholdOverride?.mgdlInt?.toShort(),
-            alarm_profile_override_id = alarmProfileOverrideId,
+            alert_profile_override_id = alertProfileOverrideId,
             adjustment_hint = adjustmentHint,
             adjustment_end_time = adjustmentEndTime
         )
@@ -196,7 +196,7 @@ class TherapyRepository(
     suspend fun getAllScheduledTherapyAdjustments(): List<ScheduledTherapyAdjustment> {
         val alertProfiles = alertProfileDao.getAllAlertProfiles().associateBy { it.id }
         return therapyDao.getAllScheduledTherapyAdjustments().map { entity ->
-            val alertProfile = entity.alarm_profile_override_id?.let { alertProfiles[it]?.toModel() }
+            val alertProfile = entity.alert_profile_override_id?.let { alertProfiles[it]?.toModel() }
             entity.toModel(alertProfile)
         }
     }
@@ -207,14 +207,14 @@ class TherapyRepository(
     ) { entities, alertProfiles ->
         val alertProfileMap = alertProfiles.associateBy { it.id }
         entities.map { entity ->
-            val alertProfile = entity.alarm_profile_override_id?.let { alertProfileMap[it]?.toModel() }
+            val alertProfile = entity.alert_profile_override_id?.let { alertProfileMap[it]?.toModel() }
             entity.toModel(alertProfile)
         }
     }
 
     suspend fun getScheduledTherapyAdjustmentById(id: Long): ScheduledTherapyAdjustment? {
         val entity = therapyDao.getScheduledTherapyAdjustmentById(id) ?: return null
-        val alertProfile = entity.alarm_profile_override_id?.let { alertProfileId ->
+        val alertProfile = entity.alert_profile_override_id?.let { alertProfileId ->
             alertProfileDao.getAlertProfileById(alertProfileId)?.toModel()
         }
         return entity.toModel(alertProfile)

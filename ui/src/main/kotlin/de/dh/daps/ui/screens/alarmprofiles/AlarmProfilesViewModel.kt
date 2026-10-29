@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import de.dh.daps.common.domain.model.alarm.AlarmProfile
+import de.dh.daps.common.domain.model.alarm.AlertProfile
 import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,14 +13,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class AlarmProfilesUiState(
-    val profiles: List<AlarmProfile> = emptyList(),
-    val defaultProfile: AlarmProfile? = null,
-    val alarmProfileOverride: AlarmProfile? = null,
+    val profiles: List<AlertProfile> = emptyList(),
+    val defaultProfile: AlertProfile? = null,
+    val alertProfileOverride: AlertProfile? = null,
     val isLoading: Boolean = false,
-    val showDeleteConfirmation: AlarmProfile? = null
+    val showDeleteConfirmation: AlertProfile? = null
 ) {
-    val activeProfile: AlarmProfile?
-        get() = alarmProfileOverride ?: defaultProfile
+    val activeProfile: AlertProfile?
+        get() = alertProfileOverride ?: defaultProfile
 }
 
 class AlarmProfilesViewModel(
@@ -30,7 +30,7 @@ class AlarmProfilesViewModel(
     private val _uiState = MutableStateFlow(AlarmProfilesUiState(isLoading = true))
     val uiState = _uiState.asStateFlow()
 
-    private val alarmRepository = systemRegistry.alarmRepository
+    private val alertProfileRepository = systemRegistry.alertProfileRepository
     private val therapyManager = systemRegistry.therapyManager
 
     init {
@@ -40,17 +40,17 @@ class AlarmProfilesViewModel(
     private fun observeData() {
         viewModelScope.launch {
             combine(
-                alarmRepository.observeAllAlarmProfiles(),
-                alarmRepository.observeDefaultAlarmProfile(),
+                alertProfileRepository.observeAllAlertProfiles(),
+                alertProfileRepository.observeDefaultAlertProfile(),
                 therapyManager.currentTherapySettingsFlow
             ) { profiles, defaultProf, currentSettings ->
-                Triple(profiles, defaultProf, currentSettings.alarmProfileOverride)
+                Triple(profiles, defaultProf, currentSettings.alertProfileOverride)
             }.collect { (profiles, defaultProf, overrideProf) ->
                 _uiState.update {
                     it.copy(
                         profiles = profiles,
                         defaultProfile = defaultProf,
-                        alarmProfileOverride = overrideProf,
+                        alertProfileOverride = overrideProf,
                         isLoading = false
                     )
                 }
@@ -58,7 +58,7 @@ class AlarmProfilesViewModel(
         }
     }
 
-    fun confirmDelete(profile: AlarmProfile) {
+    fun confirmDelete(profile: AlertProfile) {
         _uiState.update { it.copy(showDeleteConfirmation = profile) }
     }
 
@@ -66,9 +66,9 @@ class AlarmProfilesViewModel(
         _uiState.update { it.copy(showDeleteConfirmation = null) }
     }
 
-    fun deleteProfile(profile: AlarmProfile) {
+    fun deleteProfile(profile: AlertProfile) {
         viewModelScope.launch {
-            alarmRepository.deleteAlarmProfile(profile.id)
+            alertProfileRepository.deleteAlertProfile(profile.id)
             cancelDelete()
         }
     }

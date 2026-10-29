@@ -48,7 +48,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.domain.model.alarm.AlarmProfile
+import de.dh.daps.common.domain.model.alarm.AlertProfile
 import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.therapy.TherapyAdjustment
@@ -61,7 +61,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import de.dh.daps.common.R as CommonR
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TherapyAdjustmentScreen(
     viewModel: CurrentTherapyViewModel,
@@ -78,8 +77,8 @@ fun TherapyAdjustmentScreen(
         percentage = currentDraft.percentage,
         targetBgOverride = currentDraft.targetBgOverride,
         lowThresholdOverride = currentDraft.lowThresholdOverride,
-        alarmProfileOverrideId = currentDraft.alarmProfileOverrideId,
-        alarmProfileOverrideName = currentDraft.alarmProfileOverrideName,
+        alertProfileOverrideId = currentDraft.alertProfileOverrideId,
+        alertProfileOverrideName = currentDraft.alertProfileOverrideName,
         adjustmentHint = currentDraft.adjustmentHint
     )
 
@@ -95,7 +94,7 @@ fun TherapyAdjustmentScreen(
         onEndTimeChange = { endTime ->
             viewModel.setDraftEndTime(endTime)
         },
-        availableAlarmProfiles = uiState.availableAlarmProfiles,
+        availableAlarmProfiles = uiState.availableAlertProfiles,
         presets = uiState.therapyAdjustmentPresets,
         onPresetApplied = { preset ->
             viewModel.applyPreset(preset)
@@ -126,7 +125,7 @@ fun TherapyAdjustmentContent(
     onApplyClicked: () -> Unit,
     onDiscardClicked: () -> Unit,
     onNavigateUp: () -> Unit,
-    availableAlarmProfiles: List<AlarmProfile> = emptyList(),
+    availableAlarmProfiles: List<AlertProfile> = emptyList(),
     presets: List<TherapyAdjustment> = emptyList()
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()

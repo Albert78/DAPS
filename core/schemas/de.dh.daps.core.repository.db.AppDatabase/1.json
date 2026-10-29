@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "a10b4b01573300311a537de5d210395f",
+    "identityHash": "b09aaec4ff7cc88b2016814730b77406",
     "entities": [
       {
         "tableName": "sensor_type",
@@ -185,7 +185,7 @@
       },
       {
         "tableName": "current_therapy_settings",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `insulin_profile_id` INTEGER NOT NULL, `default_bg_blocks` TEXT NOT NULL, `insulin_adjustment_percentage` INTEGER NOT NULL, `target_bg_override` INTEGER, `low_threshold_override` INTEGER, `alarm_profile_override_id` INTEGER, `adjustment_hint` TEXT, `adjustment_end_time` INTEGER, FOREIGN KEY(`insulin_profile_id`) REFERENCES `insulin_profiles`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `insulin_profile_id` INTEGER NOT NULL, `default_bg_blocks` TEXT NOT NULL, `insulin_adjustment_percentage` INTEGER NOT NULL, `target_bg_override` INTEGER, `low_threshold_override` INTEGER, `alert_profile_override_id` INTEGER, `adjustment_hint` TEXT, `adjustment_end_time` INTEGER, FOREIGN KEY(`insulin_profile_id`) REFERENCES `insulin_profiles`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL )",
         "fields": [
           {
             "fieldPath": "id",
@@ -222,8 +222,8 @@
             "affinity": "INTEGER"
           },
           {
-            "fieldPath": "alarm_profile_override_id",
-            "columnName": "alarm_profile_override_id",
+            "fieldPath": "alert_profile_override_id",
+            "columnName": "alert_profile_override_id",
             "affinity": "INTEGER"
           },
           {
@@ -270,7 +270,7 @@
       },
       {
         "tableName": "scheduled_therapy_adjustments",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `start_time` INTEGER NOT NULL, `end_time` INTEGER NOT NULL, `insulin_adjustment_percentage` INTEGER NOT NULL, `target_bg_override` INTEGER, `low_threshold_override` INTEGER, `alarm_profile_override_id` INTEGER, `adjustment_hint` TEXT)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `start_time` INTEGER NOT NULL, `end_time` INTEGER NOT NULL, `insulin_adjustment_percentage` INTEGER NOT NULL, `target_bg_override` INTEGER, `low_threshold_override` INTEGER, `alert_profile_override_id` INTEGER, `adjustment_hint` TEXT)",
         "fields": [
           {
             "fieldPath": "id",
@@ -307,8 +307,8 @@
             "affinity": "INTEGER"
           },
           {
-            "fieldPath": "alarm_profile_override_id",
-            "columnName": "alarm_profile_override_id",
+            "fieldPath": "alert_profile_override_id",
+            "columnName": "alert_profile_override_id",
             "affinity": "INTEGER"
           },
           {
@@ -326,7 +326,7 @@
       },
       {
         "tableName": "therapy_adjustments",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `percentage` INTEGER NOT NULL, `target_bg_override` INTEGER, `low_threshold_override` INTEGER, `alarm_profile_override_id` INTEGER)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `percentage` INTEGER NOT NULL, `target_bg_override` INTEGER, `low_threshold_override` INTEGER, `alert_profile_override_id` INTEGER)",
         "fields": [
           {
             "fieldPath": "id",
@@ -357,8 +357,8 @@
             "affinity": "INTEGER"
           },
           {
-            "fieldPath": "alarm_profile_override_id",
-            "columnName": "alarm_profile_override_id",
+            "fieldPath": "alert_profile_override_id",
+            "columnName": "alert_profile_override_id",
             "affinity": "INTEGER"
           }
         ],
@@ -1033,7 +1033,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a10b4b01573300311a537de5d210395f')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b09aaec4ff7cc88b2016814730b77406')"
     ]
   }
 }

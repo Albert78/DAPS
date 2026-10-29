@@ -7,7 +7,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import de.dh.daps.common.ADJUSTMENT_PERCENTAGE_MAX
 import de.dh.daps.common.ADJUSTMENT_PERCENTAGE_MIN
 import de.dh.daps.common.ID_UNDEFINED
-import de.dh.daps.common.domain.model.alarm.AlarmProfile
+import de.dh.daps.common.domain.model.alarm.AlertProfile
 import de.dh.daps.common.domain.model.data.GlucoseUnit
 import de.dh.daps.common.domain.model.therapy.TherapyAdjustment
 import de.dh.daps.common.repository.glucoseUnit
@@ -24,8 +24,8 @@ data class TherapyAdjustmentEditorUiState(
     val percentage: Int = 0,
     val targetBgMgDl: Short? = null,
     val lowThresholdMgDl: Short? = null,
-    val alarmProfileOverrideId: Long? = null,
-    val availableAlarmProfiles: List<AlarmProfile> = emptyList(),
+    val alertProfileOverrideId: Long? = null,
+    val availableAlertProfiles: List<AlertProfile> = emptyList(),
     val glucoseUnit: GlucoseUnit = GlucoseUnit.MG_DL,
     val isSaving: Boolean = false,
     val isLoading: Boolean = false
@@ -47,7 +47,7 @@ class TherapyAdjustmentEditorViewModel(
 ) : ViewModel() {
 
     private val therapyManager = registry.therapyManager
-    private val alarmRepository = registry.alarmRepository
+    private val alertProfileRepository = registry.alertProfileRepository
     private val appPreferencesRepository = registry.appPreferencesRepository
 
     private val _uiState = MutableStateFlow(TherapyAdjustmentEditorUiState())
@@ -55,11 +55,11 @@ class TherapyAdjustmentEditorViewModel(
 
     init {
         viewModelScope.launch {
-            val alarmProfiles = alarmRepository.getAllAlarmProfiles()
+            val alertProfiles = alertProfileRepository.getAllAlertProfiles()
             val glucoseUnit = appPreferencesRepository.cachedPreferences.value.glucoseUnit
             _uiState.update {
                 it.copy(
-                    availableAlarmProfiles = alarmProfiles,
+                    availableAlertProfiles = alertProfiles,
                     glucoseUnit = glucoseUnit
                 )
             }
@@ -81,7 +81,7 @@ class TherapyAdjustmentEditorViewModel(
                         percentage = adjustment.percentage,
                         targetBgMgDl = adjustment.targetBgMgDl,
                         lowThresholdMgDl = adjustment.lowThresholdMgDl,
-                        alarmProfileOverrideId = adjustment.alarmProfileOverrideId,
+                        alertProfileOverrideId = adjustment.alertProfileOverrideId,
                         isLoading = false
                     )
                 }
@@ -107,8 +107,8 @@ class TherapyAdjustmentEditorViewModel(
         _uiState.update { it.copy(lowThresholdMgDl = lowThresholdMgDl) }
     }
 
-    fun onAlarmProfileOverrideChange(alarmProfileId: Long?) {
-        _uiState.update { it.copy(alarmProfileOverrideId = alarmProfileId) }
+    fun onAlertProfileOverrideChange(alertProfileId: Long?) {
+        _uiState.update { it.copy(alertProfileOverrideId = alertProfileId) }
     }
 
     fun save(onSuccess: () -> Unit) {
@@ -123,7 +123,7 @@ class TherapyAdjustmentEditorViewModel(
                 percentage = state.percentage,
                 targetBgMgDl = state.targetBgMgDl,
                 lowThresholdMgDl = state.lowThresholdMgDl,
-                alarmProfileOverrideId = state.alarmProfileOverrideId
+                alertProfileOverrideId = state.alertProfileOverrideId
             )
             therapyManager.saveTherapyAdjustment(adjustment)
             onSuccess()

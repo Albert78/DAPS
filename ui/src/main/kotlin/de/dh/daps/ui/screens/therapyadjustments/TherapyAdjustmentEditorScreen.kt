@@ -55,7 +55,7 @@ import de.dh.daps.common.LOW_THRESHOLD_MAX
 import de.dh.daps.common.LOW_THRESHOLD_MIN
 import de.dh.daps.common.TARGET_MAX
 import de.dh.daps.common.TARGET_MIN
-import de.dh.daps.common.domain.model.alarm.AlarmProfile
+import de.dh.daps.common.domain.model.alarm.AlertProfile
 import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
@@ -85,7 +85,7 @@ private data class InitialTherapyAdjustmentValues(
     val percentage: Int,
     val targetBgMgDl: Short?,
     val lowThresholdMgDl: Short?,
-    val alarmProfileOverrideId: Long?
+    val alertProfileOverrideId: Long?
 )
 
 @Composable
@@ -101,7 +101,7 @@ fun TherapyAdjustmentEditorScreen(
         onPercentageChange = viewModel::onPercentageChange,
         onTargetBgChange = viewModel::onTargetBgChange,
         onLowThresholdChange = viewModel::onLowThresholdChange,
-        onAlarmProfileOverrideChange = viewModel::onAlarmProfileOverrideChange,
+        onAlertProfileOverrideChange = viewModel::onAlertProfileOverrideChange,
         onSave = { viewModel.save(onNavigateUp) },
         onNavigateUp = onNavigateUp
     )
@@ -115,7 +115,7 @@ fun TherapyAdjustmentEditorContent(
     onPercentageChange: (Int) -> Unit,
     onTargetBgChange: (Short?) -> Unit,
     onLowThresholdChange: (Short?) -> Unit,
-    onAlarmProfileOverrideChange: (Long?) -> Unit,
+    onAlertProfileOverrideChange: (Long?) -> Unit,
     onSave: () -> Unit,
     onNavigateUp: () -> Unit
 ) {
@@ -129,7 +129,7 @@ fun TherapyAdjustmentEditorContent(
                 percentage = uiState.percentage,
                 targetBgMgDl = uiState.targetBgMgDl,
                 lowThresholdMgDl = uiState.lowThresholdMgDl,
-                alarmProfileOverrideId = uiState.alarmProfileOverrideId
+                alertProfileOverrideId = uiState.alertProfileOverrideId
             )
         } else null
     }
@@ -139,7 +139,7 @@ fun TherapyAdjustmentEditorContent(
         uiState.percentage,
         uiState.targetBgMgDl,
         uiState.lowThresholdMgDl,
-        uiState.alarmProfileOverrideId,
+        uiState.alertProfileOverrideId,
         initialValues
     ) {
         if (initialValues == null) false
@@ -148,7 +148,7 @@ fun TherapyAdjustmentEditorContent(
                     uiState.percentage != initialValues.percentage ||
                     uiState.targetBgMgDl != initialValues.targetBgMgDl ||
                     uiState.lowThresholdMgDl != initialValues.lowThresholdMgDl ||
-                    uiState.alarmProfileOverrideId != initialValues.alarmProfileOverrideId
+                    uiState.alertProfileOverrideId != initialValues.alertProfileOverrideId
         }
     }
 
@@ -406,7 +406,7 @@ fun TherapyAdjustmentEditorContent(
                 }
 
                 // Alarm Profile Override
-                if (uiState.availableAlarmProfiles.isNotEmpty()) {
+                if (uiState.availableAlertProfiles.isNotEmpty()) {
                     item {
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Row(
@@ -419,7 +419,7 @@ fun TherapyAdjustmentEditorContent(
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                                 Text(
-                                    text = stringResource(R.string.therapy_adjustment_alarm_profile_override_label),
+                                    text = stringResource(R.string.therapy_adjustment_alert_profile_override_label),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -430,15 +430,15 @@ fun TherapyAdjustmentEditorContent(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 FilterChip(
-                                    selected = uiState.alarmProfileOverrideId == null,
-                                    onClick = { onAlarmProfileOverrideChange(null) },
+                                    selected = uiState.alertProfileOverrideId == null,
+                                    onClick = { onAlertProfileOverrideChange(null) },
                                     label = { Text(stringResource(R.string.therapy_adjustment_override_none)) }
                                 )
 
-                                uiState.availableAlarmProfiles.forEach { profile ->
+                                uiState.availableAlertProfiles.forEach { profile ->
                                     FilterChip(
-                                        selected = uiState.alarmProfileOverrideId == profile.id,
-                                        onClick = { onAlarmProfileOverrideChange(profile.id) },
+                                        selected = uiState.alertProfileOverrideId == profile.id,
+                                        onClick = { onAlertProfileOverrideChange(profile.id) },
                                         label = { Text(profile.name) }
                                     )
                                 }
@@ -489,16 +489,16 @@ fun TherapyAdjustmentEditorPreview() {
                 percentage = -30,
                 targetBgMgDl = 150,
                 lowThresholdMgDl = 100,
-                availableAlarmProfiles = listOf(
-                    AlarmProfile(id = 1L, name = "Standard"),
-                    AlarmProfile(id = 2L, name = "Kino / Diskret")
+                availableAlertProfiles = listOf(
+                    AlertProfile(id = 1L, name = "Standard"),
+                    AlertProfile(id = 2L, name = "Kino / Diskret")
                 )
             ),
             onNameChange = {},
             onPercentageChange = {},
             onTargetBgChange = {},
             onLowThresholdChange = {},
-            onAlarmProfileOverrideChange = {},
+            onAlertProfileOverrideChange = {},
             onSave = {},
             onNavigateUp = {}
         )
