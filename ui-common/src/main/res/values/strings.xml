@@ -7,4 +7,7 @@
     <string name="pump_config_insulin_type_subtitle">Wähle den Typ des in der Pumpe geladenen Insulins.</string>
     <string name="pump_config_concentration_title">Insulinkonzentration</string>
     <string name="pump_config_concentration_subtitle">Wähle die Konzentration des in der Pumpe geladenen Insulins. Der Standardwert ist U100.</string>
+
+    <string name="date_time_picker_dialog_date_button">Datum</string>
+    <string name="date_time_picker_dialog_time_button">Zeit</string>
 </resources>

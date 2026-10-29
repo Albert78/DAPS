@@ -2,9 +2,10 @@ package de.dh.daps.ui.screens.reminders
 
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,11 +14,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
@@ -38,6 +42,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -49,12 +54,17 @@ import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.reminder.ReminderType
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.AbsoluteTimeStepper
+import de.dh.daps.ui.common.composables.DateTimePickerDialog
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.ScreenTitle
 import de.dh.daps.ui.common.shortDateTime
 import de.dh.daps.ui.common.shortRelativeTimeUntil
 import de.dh.daps.ui.common.theme.AppPreview
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.util.Calendar
 import de.dh.daps.common.R as CommonR
 
 private data class InitialReminderValues(
@@ -93,6 +103,7 @@ fun ReminderEditorContent(
     onNavigateUp: () -> Unit
 ) {
     var showDiscardConfirmation by remember { mutableStateOf(false) }
+    var showDateTimePickerDialog by remember { mutableStateOf(false) }
 
     val initialValues = remember(uiState.isLoading) {
         if (!uiState.isLoading) {
@@ -222,33 +233,54 @@ fun ReminderEditorContent(
                             val formattedTime = shortDateTime(uiState.reminderTimestamp)
                             val relativeTime = shortRelativeTimeUntil(uiState.reminderTimestamp)
 
-                            Text(
-                                text = formattedTime,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = "($relativeTime)",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable { showDateTimePickerDialog = true }
+                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.CalendarToday,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(
+                                        text = formattedTime,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        text = "($relativeTime)",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
 
                             Spacer(modifier = Modifier.height(12.dp))
 
                             val now = Timestamp.now()
+                            val (minTime, maxTime) = remember(uiState.reminderTimestamp) {
+                                getMinAndMaxTimeForDate(uiState.reminderTimestamp)
+                            }
+
                             AbsoluteTimeStepper(
                                 currentTime = uiState.reminderTimestamp,
                                 onTimeChange = onReminderTimestampChange,
-                                minTime = now,
-                                maxTime = now + Minutes((1440 * 20).toShort())
+                                minTime = minTime,
+                                maxTime = maxTime
                             )
 
                             Spacer(modifier = Modifier.height(12.dp))
 
-                            Row(
+                            FlowRow(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .horizontalScroll(rememberScrollState()),
+                                    .fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
                                 AssistChip(
@@ -279,6 +311,26 @@ fun ReminderEditorContent(
         }
     }
 
+    if (showDateTimePickerDialog) {
+        val initialDateTime = Instant.ofEpochMilli(uiState.reminderTimestamp.ms)
+            .atZone(ZoneId.systemDefault())
+            .toLocalDateTime()
+
+        DateTimePickerDialog(
+            dialogTitle = stringResource(R.string.reminder_editor_label_time),
+            initialDateTime = initialDateTime,
+            minDate = LocalDate.now(),
+            onDismissRequest = { showDateTimePickerDialog = false },
+            onDateTimeSelected = { selectedDateTime ->
+                val selectedInstant = selectedDateTime.atZone(ZoneId.systemDefault()).toInstant()
+                val selectedTimestamp = Timestamp(selectedInstant.toEpochMilli())
+                val now = Timestamp.now()
+                onReminderTimestampChange(if (selectedTimestamp < now) now else selectedTimestamp)
+                showDateTimePickerDialog = false
+            }
+        )
+    }
+
     if (showDiscardConfirmation) {
         AlertDialog(
             onDismissRequest = { showDiscardConfirmation = false },
@@ -306,6 +358,40 @@ fun ReminderEditorContent(
         )
     }
 }
+
+private fun getMinAndMaxTimeForDate(reminderTimestamp: Timestamp): Pair<Timestamp, Timestamp> {
+    val now = Timestamp.now()
+    val localNow = Calendar.getInstance().apply { timeInMillis = now.ms }
+    val localReminder = Calendar.getInstance().apply { timeInMillis = reminderTimestamp.ms }
+
+    val isSameDay = localNow.get(Calendar.YEAR) == localReminder.get(Calendar.YEAR) &&
+            localNow.get(Calendar.DAY_OF_YEAR) == localReminder.get(Calendar.DAY_OF_YEAR)
+
+    val endOfDay = Calendar.getInstance().apply {
+        timeInMillis = reminderTimestamp.ms
+        set(Calendar.HOUR_OF_DAY, 23)
+        set(Calendar.MINUTE, 59)
+        set(Calendar.SECOND, 59)
+        set(Calendar.MILLISECOND, 999)
+    }
+
+    val minTime = if (isSameDay || reminderTimestamp < now) {
+        now
+    } else {
+        val startOfDay = Calendar.getInstance().apply {
+            timeInMillis = reminderTimestamp.ms
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        Timestamp(startOfDay.timeInMillis)
+    }
+
+    return Pair(minTime, Timestamp(endOfDay.timeInMillis))
+}
+
+
 
 @Preview(showBackground = true, name = "New Reminder - Light Mode")
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "New Reminder - Dark Mode")

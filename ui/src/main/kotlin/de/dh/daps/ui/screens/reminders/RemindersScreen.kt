@@ -316,7 +316,12 @@ fun ReminderCard(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "$formattedTime ($relativeTime)",
+                        text = formattedTime,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "($relativeTime)",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
