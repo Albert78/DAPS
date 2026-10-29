@@ -55,9 +55,7 @@ import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppPreview
-import kotlinx.coroutines.delay
 import java.util.Calendar
-import kotlin.time.Duration.Companion.milliseconds
 import de.dh.daps.common.R as CommonR
 
 @Composable
@@ -127,58 +125,29 @@ fun ManualControlContent(
     var activeDialog by remember { mutableStateOf<ManualControlDialog?>(null) }
     var handledInitialDialog by rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(initialDialog, uiState.recommendations, uiState.pump.isConfigured) {
+    LaunchedEffect(initialDialog, uiState.pump.isConfigured) {
         if (!handledInitialDialog && uiState.pump.isConfigured) {
-            val bolusRec = uiState.recommendations.filterIsInstance<ApsRecommendation.Bolus>().firstOrNull()
-            val tempBasalRec = uiState.recommendations.filterIsInstance<ApsRecommendation.TempBasal>().firstOrNull()
-
             when (initialDialog) {
                 ManualControlInitialDialog.BOLUS -> {
-                    if (bolusRec != null) {
-                        activeDialog = ManualControlDialog.Bolus(
-                            initialAmount = bolusRec.amount,
-                            includedDeferredBoluses = bolusRec.includedDeferredBoluses,
-                            correctionPart = bolusRec.correctionPart,
-                            basalPart = bolusRec.basalPart,
-                            recommendationToDismiss = bolusRec
-                        )
-                        handledInitialDialog = true
-                    } else {
-                        delay(200L.milliseconds)
-                        if (!handledInitialDialog) {
-                            val retryBolusRec = uiState.recommendations.filterIsInstance<ApsRecommendation.Bolus>().firstOrNull()
-                            activeDialog = ManualControlDialog.Bolus(
-                                initialAmount = retryBolusRec?.amount ?: InsulinAmount.ZERO,
-                                includedDeferredBoluses = retryBolusRec?.includedDeferredBoluses,
-                                correctionPart = retryBolusRec?.correctionPart ?: InsulinAmount.ZERO,
-                                basalPart = retryBolusRec?.basalPart ?: InsulinAmount.ZERO,
-                                recommendationToDismiss = retryBolusRec
-                            )
-                            handledInitialDialog = true
-                        }
-                    }
+                    val bolusRec = uiState.activeBolusRecommendation
+                    activeDialog = ManualControlDialog.Bolus(
+                        initialAmount = bolusRec?.amount ?: InsulinAmount.ZERO,
+                        includedDeferredBoluses = bolusRec?.includedDeferredBoluses,
+                        correctionPart = bolusRec?.correctionPart ?: InsulinAmount.ZERO,
+                        basalPart = bolusRec?.basalPart ?: InsulinAmount.ZERO,
+                        recommendationToDismiss = bolusRec
+                    )
+                    handledInitialDialog = true
                 }
                 ManualControlInitialDialog.TEMP_BASAL -> {
-                    if (tempBasalRec != null) {
-                        activeDialog = ManualControlDialog.TempBasal(
-                            initialPercent = tempBasalRec.percent,
-                            initialDurationHours = tempBasalRec.durationInHours,
-                            recommendationToDismiss = tempBasalRec
-                        )
-                        handledInitialDialog = true
-                    } else {
-                        delay(200L.milliseconds)
-                        if (!handledInitialDialog) {
-                            val retryTempBasalRec = uiState.recommendations.filterIsInstance<ApsRecommendation.TempBasal>().firstOrNull()
-                            val currentPercent = uiState.pump.basalStatus?.tempBasalPercent ?: 100
-                            activeDialog = ManualControlDialog.TempBasal(
-                                initialPercent = retryTempBasalRec?.percent ?: currentPercent,
-                                initialDurationHours = retryTempBasalRec?.durationInHours ?: 1,
-                                recommendationToDismiss = retryTempBasalRec
-                            )
-                            handledInitialDialog = true
-                        }
-                    }
+                    val tempBasalRec = uiState.activeTempBasalRecommendation
+                    val currentPercent = uiState.pump.basalStatus?.tempBasalPercent ?: 100
+                    activeDialog = ManualControlDialog.TempBasal(
+                        initialPercent = tempBasalRec?.percent ?: currentPercent,
+                        initialDurationHours = tempBasalRec?.durationInHours ?: 1,
+                        recommendationToDismiss = tempBasalRec
+                    )
+                    handledInitialDialog = true
                 }
                 ManualControlInitialDialog.NONE -> {}
             }

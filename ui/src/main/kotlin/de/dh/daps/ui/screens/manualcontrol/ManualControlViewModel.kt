@@ -65,7 +65,16 @@ data class ManualControlUiState(
     val pump: ManualControlPumpUiModel = ManualControlPumpUiModel(),
     val showLockError: Boolean = false,
     val lockErrorOwner: String? = null
-)
+) {
+    val activeBolusRecommendation: ApsRecommendation.Bolus?
+        get() = recommendations.filterIsInstance<ApsRecommendation.Bolus>().firstOrNull()
+
+    val activeTempBasalRecommendation: ApsRecommendation.TempBasal?
+        get() = recommendations.filterIsInstance<ApsRecommendation.TempBasal>().firstOrNull()
+
+    val activeCarbsRecommendation: ApsRecommendation.Carbs?
+        get() = recommendations.filterIsInstance<ApsRecommendation.Carbs>().firstOrNull()
+}
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ManualControlViewModel(
