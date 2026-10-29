@@ -14,6 +14,7 @@ import de.dh.daps.core.alerts.AlarmSnoozeManager
 import de.dh.daps.core.backup.AppDataManagementRepository
 import de.dh.daps.core.glucosesource.GlucoseSourceDriverManager
 import de.dh.daps.core.glucosesource.GlucoseSourceManager
+import de.dh.daps.core.infrastructure.AndroidNotifications
 import de.dh.daps.core.orchestration.DeviceConnectionManager
 import de.dh.daps.core.orchestration.RecommendationManager
 import de.dh.daps.core.orchestration.SystemOrchestrator
@@ -217,6 +218,11 @@ interface SystemRegistry {
      * Manages the overall application state, including the active APS mode and system-wide issues.
      */
     val systemOrchestrator: SystemOrchestrator
+
+    /**
+     * Low-level notification manager for communicating with the Android system.
+     */
+    val androidNotifications: AndroidNotifications
 
     // Other stuff
 

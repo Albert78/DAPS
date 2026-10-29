@@ -14,20 +14,31 @@ import androidx.core.net.toUri
 import de.dh.daps.R
 import de.dh.daps.common.domain.model.alarm.ActiveAlarmGroup
 import de.dh.daps.common.domain.model.alarm.AlarmType
+import de.dh.daps.common.domain.model.alarm.AlertProfile
+import de.dh.daps.common.domain.model.alarm.getDefaultAlertProfiles
 import de.dh.daps.common.domain.model.data.BgDelta
 import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.data.CarbsUnit
 import de.dh.daps.common.domain.model.data.GlucoseUnit
 import de.dh.daps.common.domain.model.reminder.Reminder
+import de.dh.daps.common.domain.model.therapy.CurrentTherapySettings
+import de.dh.daps.common.repository.AppPreferencesRepository
+import de.dh.daps.core.alerts.getConfigFor
 import de.dh.daps.core.infrastructure.AndroidNotifications
-import de.dh.daps.core.infrastructure.RegistryProvider
 import de.dh.daps.core.orchestration.ActiveRecommendations
 import de.dh.daps.core.orchestration.ApsRecommendation
 import de.dh.daps.core.repository.GlucoseRepository
+import de.dh.daps.core.repository.TherapyRepository
 import de.dh.daps.ui.activities.AlarmActivity
 import de.dh.daps.ui.activities.MainActivity
+import de.dh.daps.ui.activities.RecommendationActivity
+import de.dh.daps.ui.activities.ReminderActivity
 import de.dh.daps.ui.common.formatCarbsValue
 import de.dh.daps.ui.screens.permissions.canPostNotifications
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import de.dh.daps.common.R as CommonR
 import de.dh.daps.ui.R as UiR
 
@@ -35,9 +46,20 @@ import de.dh.daps.ui.R as UiR
  * Low-level notification manager for communicating with the Android system.
  */
 class AndroidNotificationsImpl(
-    val context: Context
+    val context: Context,
+    private val therapyRepository: TherapyRepository,
+    private val appPreferencesRepository: AppPreferencesRepository,
+    private val scope: CoroutineScope
 ): AndroidNotifications {
     private val manager = context.getSystemService<NotificationManager>()!!
+
+    private val currentTherapySettings: StateFlow<CurrentTherapySettings?> =
+        therapyRepository.observeCurrentTherapySettingsOrNull()
+            .stateIn(
+                scope = scope,
+                started = SharingStarted.Eagerly,
+                initialValue = null
+            )
 
     override fun createNotificationChannels() {
         // Channel for the foreground service (BG values)
@@ -66,14 +88,17 @@ class AndroidNotificationsImpl(
         notificationManager.createNotificationChannel(issueChannel)
     }
 
+    private fun getActiveAlertProfile(): AlertProfile {
+        return currentTherapySettings.value?.effectiveAlertProfile
+            ?: getDefaultAlertProfiles(context).first { it.isDefault }
+    }
+
     private fun getGlucoseUnit(): GlucoseUnit {
-        val registry = (context.applicationContext as? RegistryProvider)?.registry
-        return registry?.appPreferencesRepository?.glucoseUnit?.value ?: GlucoseUnit.MG_DL
+        return appPreferencesRepository.glucoseUnit.value
     }
 
     private fun getCarbsUnit(): CarbsUnit {
-        val registry = (context.applicationContext as? RegistryProvider)?.registry
-        return registry?.appPreferencesRepository?.carbsUnit?.value ?: CarbsUnit.GRAMS
+        return appPreferencesRepository.carbsUnit.value
     }
 
     fun getBgValueString(sample: BgValue?, unit: GlucoseUnit, forceSign: Boolean): String? {
@@ -134,29 +159,49 @@ class AndroidNotificationsImpl(
     }
 
     override fun updateRecommendationNotifications(recommendations: ActiveRecommendations) {
+        val activeProfile = getActiveAlertProfile()
+
         val carbs = recommendations.carbs
         if (carbs != null) {
-            showCarbsRecommendationNotification(carbs)
+            val config = activeProfile.getConfigFor(carbs)
+            if (config.enabled) {
+                showCarbsRecommendationNotification(carbs, isFullScreen = config.isFullScreen)
+            } else {
+                manager.cancel(RECOMMENDATION_CARBS_NOTIFICATION_ID)
+            }
         } else {
             manager.cancel(RECOMMENDATION_CARBS_NOTIFICATION_ID)
         }
 
         val bolus = recommendations.bolus
         if (bolus != null) {
-            showBolusRecommendationNotification(bolus)
+            val config = activeProfile.getConfigFor(bolus)
+            if (config.enabled) {
+                showBolusRecommendationNotification(bolus, isFullScreen = config.isFullScreen)
+            } else {
+                manager.cancel(RECOMMENDATION_BOLUS_NOTIFICATION_ID)
+            }
         } else {
             manager.cancel(RECOMMENDATION_BOLUS_NOTIFICATION_ID)
         }
 
         val tempBasal = recommendations.tempBasal
         if (tempBasal != null) {
-            showTempBasalRecommendationNotification(tempBasal)
+            val config = activeProfile.getConfigFor(tempBasal)
+            if (config.enabled) {
+                showTempBasalRecommendationNotification(tempBasal, isFullScreen = config.isFullScreen)
+            } else {
+                manager.cancel(RECOMMENDATION_TEMP_BASAL_NOTIFICATION_ID)
+            }
         } else {
             manager.cancel(RECOMMENDATION_TEMP_BASAL_NOTIFICATION_ID)
         }
     }
 
-    private fun showCarbsRecommendationNotification(carbs: ApsRecommendation.Carbs) {
+    private fun showCarbsRecommendationNotification(
+        carbs: ApsRecommendation.Carbs,
+        isFullScreen: Boolean
+    ) {
         val title = context.getString(UiR.string.recommendation_title_carbs)
         val text = context.getString(
             UiR.string.recommendation_text_carbs,
@@ -169,7 +214,7 @@ class AndroidNotificationsImpl(
             intent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
-        val notification = NotificationCompat.Builder(context, RECOMMENDATION_CHANNEL_ID)
+        val builder = NotificationCompat.Builder(context, RECOMMENDATION_CHANNEL_ID)
             .setContentTitle(title)
             .setContentText(text)
             .setSmallIcon(R.mipmap.ic_launcher)
@@ -177,12 +222,25 @@ class AndroidNotificationsImpl(
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
-            .build()
 
-        notify(RECOMMENDATION_CARBS_NOTIFICATION_ID, notification)
+        if (isFullScreen) {
+            val fullScreenIntent = RecommendationActivity.createStartIntent(context)
+            val fullScreenPendingIntent = PendingIntent.getActivity(
+                context,
+                RECOMMENDATION_CARBS_NOTIFICATION_ID,
+                fullScreenIntent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+            builder.setFullScreenIntent(fullScreenPendingIntent, true)
+        }
+
+        notify(RECOMMENDATION_CARBS_NOTIFICATION_ID, builder.build())
     }
 
-    private fun showBolusRecommendationNotification(bolus: ApsRecommendation.Bolus) {
+    private fun showBolusRecommendationNotification(
+        bolus: ApsRecommendation.Bolus,
+        isFullScreen: Boolean
+    ) {
         val hasDeferredPart = !bolus.includedDeferredBoluses.isNullOrEmpty()
         val title = if (hasDeferredPart) {
             context.getString(UiR.string.notification_deferred_bolus_title)
@@ -201,7 +259,7 @@ class AndroidNotificationsImpl(
             intent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
-        val notification = NotificationCompat.Builder(context, RECOMMENDATION_CHANNEL_ID)
+        val builder = NotificationCompat.Builder(context, RECOMMENDATION_CHANNEL_ID)
             .setContentTitle(title)
             .setContentText(text)
             .setSmallIcon(R.mipmap.ic_launcher)
@@ -209,12 +267,25 @@ class AndroidNotificationsImpl(
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
-            .build()
 
-        notify(RECOMMENDATION_BOLUS_NOTIFICATION_ID, notification)
+        if (isFullScreen) {
+            val fullScreenIntent = RecommendationActivity.createStartIntent(context)
+            val fullScreenPendingIntent = PendingIntent.getActivity(
+                context,
+                RECOMMENDATION_BOLUS_NOTIFICATION_ID,
+                fullScreenIntent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+            builder.setFullScreenIntent(fullScreenPendingIntent, true)
+        }
+
+        notify(RECOMMENDATION_BOLUS_NOTIFICATION_ID, builder.build())
     }
 
-    private fun showTempBasalRecommendationNotification(tempBasal: ApsRecommendation.TempBasal) {
+    private fun showTempBasalRecommendationNotification(
+        tempBasal: ApsRecommendation.TempBasal,
+        isFullScreen: Boolean
+    ) {
         val title = context.getString(UiR.string.recommendation_title_temp_basal)
         val text = context.getString(
             UiR.string.recommendation_text_temp_basal,
@@ -228,7 +299,7 @@ class AndroidNotificationsImpl(
             intent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
-        val notification = NotificationCompat.Builder(context, RECOMMENDATION_CHANNEL_ID)
+        val builder = NotificationCompat.Builder(context, RECOMMENDATION_CHANNEL_ID)
             .setContentTitle(title)
             .setContentText(text)
             .setSmallIcon(R.mipmap.ic_launcher)
@@ -236,12 +307,26 @@ class AndroidNotificationsImpl(
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
-            .build()
 
-        notify(RECOMMENDATION_TEMP_BASAL_NOTIFICATION_ID, notification)
+        if (isFullScreen) {
+            val fullScreenIntent = RecommendationActivity.createStartIntent(context)
+            val fullScreenPendingIntent = PendingIntent.getActivity(
+                context,
+                RECOMMENDATION_TEMP_BASAL_NOTIFICATION_ID,
+                fullScreenIntent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+            builder.setFullScreenIntent(fullScreenPendingIntent, true)
+        }
+
+        notify(RECOMMENDATION_TEMP_BASAL_NOTIFICATION_ID, builder.build())
     }
 
     override fun showReminderNotification(reminder: Reminder) {
+        val activeProfile = getActiveAlertProfile()
+        val config = activeProfile.getConfigFor(reminder)
+        if (!config.enabled) return
+
         val title = reminder.title.ifBlank { context.getString(CommonR.string.notification_reminder_title) }
         val text = reminder.description
 
@@ -257,16 +342,16 @@ class AndroidNotificationsImpl(
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
         } else {
-            val dashboardIntent = MainActivity.createStartDashboardIntent(context)
+            val intent = ReminderActivity.createStartIntent(context, reminder)
             PendingIntent.getActivity(
                 context,
                 reminder.id.hashCode(),
-                dashboardIntent,
+                intent,
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
         }
 
-        val notification = NotificationCompat.Builder(context, RECOMMENDATION_CHANNEL_ID)
+        val builder = NotificationCompat.Builder(context, RECOMMENDATION_CHANNEL_ID)
             .setContentTitle(title)
             .setContentText(text)
             .setSmallIcon(R.mipmap.ic_launcher)
@@ -274,10 +359,22 @@ class AndroidNotificationsImpl(
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_EVENT)
-            .build()
+
+        if (config.isFullScreen) {
+            val fullScreenIntent = ReminderActivity.createStartIntent(context, reminder).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+            val fullScreenPendingIntent = PendingIntent.getActivity(
+                context,
+                reminder.id.hashCode(),
+                fullScreenIntent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+            builder.setFullScreenIntent(fullScreenPendingIntent, true)
+        }
 
         val notificationId = REMINDER_NOTIFICATION_ID + (reminder.id % 10000).toInt()
-        notify(notificationId, notification)
+        notify(notificationId, builder.build())
     }
 
     override fun showAlarmNotification(alarmType: AlarmType, bgValue: BgValue?, isFullScreen: Boolean) {
@@ -295,6 +392,12 @@ class AndroidNotificationsImpl(
         bgValue: BgValue?,
         isFullScreen: Boolean
     ) {
+        val activeProfile = getActiveAlertProfile()
+        val config = activeProfile.getConfigFor(alarmGroup.primaryAlarm)
+        if (!config.enabled) {
+            return
+        }
+
         val unit = getGlucoseUnit()
         val heroTitles = alarmGroup.heroAlarms.joinToString(", ") { getAlarmTitle(it) }
         val title = if (alarmGroup.otherAlarms.isNotEmpty()) {
@@ -362,7 +465,7 @@ class AndroidNotificationsImpl(
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
 
-        if (isFullScreen) {
+        if (isFullScreen && config.isFullScreen) {
             builder.setFullScreenIntent(fullScreenPendingIntent, true)
         }
 

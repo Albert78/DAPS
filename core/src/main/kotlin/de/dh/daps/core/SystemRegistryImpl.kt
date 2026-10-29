@@ -93,6 +93,7 @@ class SystemRegistryImpl(
     override val deviceConnectionManager: DeviceConnectionManager,
     override val carbsInsulinCalculator: CarbsInsulinCalculator,
     override val permissionsChangedHandler: PermissionsChangedHandler,
+    override val androidNotifications: AndroidNotifications,
 ) : SystemRegistry {
     private val pluginContexts = ConcurrentHashMap<String, PluginContext>()
 
@@ -243,7 +244,7 @@ class SystemRegistryImpl(
             application: Application,
             scope: CoroutineScope,
             pluginManager: PluginManager,
-            androidNotifications: AndroidNotifications,
+            androidNotificationsFactory: (TherapyRepository, AppPreferencesRepository) -> AndroidNotifications,
             onPermissionsChanged: () -> Unit,
         ): SystemRegistry {
             // Phase 1: Create all repositories and managers
@@ -253,6 +254,9 @@ class SystemRegistryImpl(
             // Repositories
             val glucoseRepository = GlucoseRepository(appDatabase)
             val therapyRepository = TherapyRepository(appDatabase)
+
+            val androidNotifications = androidNotificationsFactory(therapyRepository, appPreferencesRepository)
+
             val alertProfileRepository = AlertProfileRepositoryImpl(appDatabase.alertProfileDao())
             val alarmPlayerManager = AlarmPlayerManagerImpl(application)
             val treatmentRepository = TreatmentRepository(
@@ -404,7 +408,8 @@ class SystemRegistryImpl(
                 pumpDriverManager = pumpDriverManager,
                 deviceConnectionManager = deviceConnectionManager,
                 carbsInsulinCalculator = carbsInsulinCalculator,
-                permissionsChangedHandler = permissionsHandler
+                permissionsChangedHandler = permissionsHandler,
+                androidNotifications = androidNotifications
             )
 
             // Provide PluginContext to all registered plugins early (setup)

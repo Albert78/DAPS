@@ -103,11 +103,14 @@ class RecommendationActivity : ComponentActivity() {
     }
 
     companion object {
-        fun start(context: Context) {
-            val intent = Intent(context, RecommendationActivity::class.java).apply {
+        fun createStartIntent(context: Context): Intent {
+            return Intent(context, RecommendationActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
             }
-            context.startActivity(intent)
+        }
+
+        fun start(context: Context) {
+            context.startActivity(createStartIntent(context))
         }
     }
 }

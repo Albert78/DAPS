@@ -53,8 +53,6 @@ class MainApplication : Application(), RegistryProvider {
             override fun onActivityDestroyed(activity: Activity) {}
         })
 
-        androidNotifications = AndroidNotificationsImpl(this)
-
         val pluginManager = PluginManagerImpl(this)
 
         // Dynamic plugin registration - function depends on chosen flavor
@@ -64,7 +62,14 @@ class MainApplication : Application(), RegistryProvider {
             application = this,
             scope = applicationScope,
             pluginManager = pluginManager,
-            androidNotifications = androidNotifications,
+            androidNotificationsFactory = { therapyRepo, prefsRepo ->
+                AndroidNotificationsImpl(
+                    context = this,
+                    therapyRepository = therapyRepo,
+                    appPreferencesRepository = prefsRepo,
+                    scope = applicationScope
+                ).also { androidNotifications = it }
+            },
             onPermissionsChanged = { startApsService() }
         )
 
