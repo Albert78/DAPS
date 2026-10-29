@@ -230,6 +230,10 @@
     <string name="pump_issue_blocked">Kommunikation mit der Insulinpumpe ist App-seitig blockiert (Wartung/Fehler).</string>
     <string name="pump_issue_stale_bluetooth_bond">Bluetooth-Kopplung ungültig. Bitte entkoppele die Pumpe in den Android-Einstellungen.</string>
     <string name="pump_issue_other">Fehler bei der Kommunikation mit der Insulinpumpe.</string>
+    <string name="pump_issue_low_insulin">Wenig Insulin in der Pumpe.</string>
+    <string name="pump_issue_low_battery">Akku der Insulinpumpe ist schwach.</string>
+    <string name="pump_issue_catheter_change_warn">Katheter abgelaufen. Bitte Katheter wechseln.</string>
+    <string name="pump_issue_patch_change_warn">Patch ist abgelaufen. Bitte Patch wechseln.</string>
 
     <string name="glucose_source_issue_no_source_bound">Keine Blutzucker-Quelle (CGM) gebunden.</string>
     <string name="glucose_source_issue_expired">Der Glukosesensor ist abgelaufen.</string>
@@ -731,26 +735,22 @@
     <string name="action_set_active">Aktivieren</string>
 
     <!-- Alarm Trigger & Snooze -->
-    <string name="pump_issue_low_insulin">Wenig Insulin in der Pumpe.</string>
-    <string name="pump_issue_low_battery">Akku der Insulinpumpe ist schwach.</string>
     <string name="alarm_action_snooze">Stummschalten</string>
     <string name="alarm_action_snooze_15">15 Min stumm</string>
     <string name="alarm_action_snooze_30">30 Min stumm</string>
     <string name="alarm_action_snooze_60">60 Min stumm</string>
     <string name="alarm_action_dismiss">Quittieren</string>
     <string name="alarm_action_unsnooze">Aktivieren</string>
-    <string name="alarm_type_critical_low_bg">KRITISCH NIEDRIGER BLUTZUCKER!</string>
+    <string name="alarm_type_critical_low_bg">Kritisch niedriger Blutzucker</string>
     <string name="alarm_type_low_bg">Niedriger Blutzucker</string>
     <string name="alarm_type_high_bg">Hoher Blutzucker</string>
-    <string name="alarm_type_pump_occlusion">PUMPEN-VERSTOPFUNG (OKKLUSION)</string>
-    <string name="alarm_type_pump_suspended">PUMPE PAUSIERT / UNTERBROCHEN</string>
+    <string name="alarm_type_pump_occlusion">Pumpen-Verstopfung (Okklusion)</string>
+    <string name="alarm_type_pump_suspended">Pumpe pausiert / unterbrochen</string>
     <string name="alarm_type_pump_low_insulin">Wenig Insulin in der Pumpe</string>
     <string name="alarm_type_pump_low_battery">Pumpen-Akku schwach</string>
     <string name="alarm_type_pump_stale_bond">Pumpen-Bluetooth-Kopplung ungültig</string>
     <string name="alarm_type_pump_catheter_change_warn">Katheterwechsel fällig</string>
     <string name="alarm_type_pump_patch_change_warn">Patch abgelaufen / Wechsel fällig</string>
-    <string name="pump_issue_catheter_change_warn">Katheter abgelaufen. Bitte Katheter wechseln.</string>
-    <string name="pump_issue_patch_change_warn">Patch ist abgelaufen. Bitte Patch wechseln.</string>
     <string name="alarm_type_cgm_signal_loss">CGM-Signal verloren</string>
     <string name="alarm_type_cgm_expired">Glukosesensor abgelaufen</string>
     <string name="alarm_type_cgm_sensor_error">Glukosesensor-Fehler</string>

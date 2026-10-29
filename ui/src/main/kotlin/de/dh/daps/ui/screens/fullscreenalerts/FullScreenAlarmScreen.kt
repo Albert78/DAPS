@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -79,6 +80,8 @@ fun FullScreenAlarmScreen(
 
     val scrollState = rememberScrollState()
 
+    val locale = LocalConfiguration.current.locales[0]
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = backgroundColor
@@ -117,8 +120,10 @@ fun FullScreenAlarmScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 alarmGroup.heroAlarms.forEach { heroAlarm ->
+                    val rawTitle = getAlarmTypeTitle(heroAlarm)
+                    val displayTitle = if (heroAlarm.isSafetyCritical) rawTitle.uppercase(locale) else rawTitle
                     Text(
-                        text = getAlarmTypeTitle(heroAlarm),
+                        text = displayTitle,
                         style = MaterialTheme.typography.headlineMedium,
                         color = contentColor,
                         fontWeight = FontWeight.ExtraBold,
@@ -191,8 +196,10 @@ fun FullScreenAlarmScreen(
                                     .fillMaxWidth()
                                     .padding(16.dp)
                             ) {
+                                val rawTitle = getAlarmTypeTitle(otherAlarm)
+                                val displayTitle = if (otherAlarm.isSafetyCritical) rawTitle.uppercase(locale) else rawTitle
                                 Text(
-                                    text = getAlarmTypeTitle(otherAlarm),
+                                    text = displayTitle,
                                     style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
