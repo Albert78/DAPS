@@ -28,13 +28,13 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import de.dh.daps.ui.common.composables.RoundOutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -43,7 +43,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -89,6 +88,7 @@ import de.dh.daps.ui.common.ValueDisplayStrategy
 import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.EditableValueStepper
 import de.dh.daps.ui.common.composables.NormalTextButton
+import de.dh.daps.ui.common.composables.RoundOutlinedButton
 import de.dh.daps.ui.common.composables.StepperDefaults
 import de.dh.daps.ui.common.composables.TimeHourSelector
 import de.dh.daps.ui.common.composables.contentScrollIndicator
@@ -759,20 +759,22 @@ fun TherapyBlockListEditor(
 @Composable
 fun InsulinProfileHelpDialog(onDismiss: () -> Unit) {
     AppAlertDialog(
-        onDismissRequest = onDismiss,
         titleText = stringResource(id = R.string.insulin_profile_editor_help_title),
         content = {
+            val scrollState = rememberScrollState()
             Text(
                 stringResource(id = R.string.help_24h_profile_general) +
-                        "\n\n" +
-                        stringResource(id = R.string.insulin_profile_editor_help_specific)
+                    "\n\n" +
+                    stringResource(id = R.string.insulin_profile_editor_help_specific),
+                modifier = Modifier
+                    .contentScrollIndicator(scrollState)
+                    .verticalScroll(scrollState)
             )
         },
-        confirmButton = {
-            NormalTextButton(onClick = onDismiss) {
-                Text(stringResource(id = android.R.string.ok))
-            }
-        }
+        confirmButtonText = stringResource(id = android.R.string.ok),
+        onConfirm = onDismiss,
+        dismissButtonText = null,
+        onDismissRequest = onDismiss
     )
 }
 

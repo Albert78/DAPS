@@ -1,5 +1,6 @@
 package de.dh.daps.ui.common.composables
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -99,7 +100,9 @@ fun AppAlertDialog(
 
                 if (content != null) {
                     Spacer(modifier = Modifier.height(16.dp))
-                    content()
+                    Box(modifier = Modifier.weight(1f, fill = false)) {
+                        content()
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))

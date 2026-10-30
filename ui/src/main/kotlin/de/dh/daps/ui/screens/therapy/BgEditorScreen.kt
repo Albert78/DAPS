@@ -13,7 +13,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
@@ -63,9 +65,9 @@ import de.dh.daps.ui.screens.insulinprofile.InsertButton
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.milliseconds
 import de.dh.daps.common.R as CommonR
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BgEditorScreen(
     viewModel: BgEditorViewModel,
@@ -221,20 +223,24 @@ fun BgEditorFormContent(
 @Composable
 fun BgEditorHelpDialog(onDismiss: () -> Unit) {
     AppAlertDialog(
-        onDismissRequest = onDismiss,
         titleText = stringResource(id = R.string.bg_editor_help_title),
         content = {
+            val scrollState = rememberScrollState()
             Text(
-                stringResource(id = R.string.help_24h_profile_general) +
-                        "\n\n" +
-                        stringResource(id = R.string.bg_editor_help_specific)
+                stringResource(
+                    R.string.help_24h_profile_general) +
+                    "\n\n" +
+                    stringResource(id = R.string.bg_editor_help_specific
+                ),
+                modifier = Modifier
+                    .contentScrollIndicator(scrollState)
+                    .verticalScroll(scrollState)
             )
         },
-        confirmButton = {
-            NormalTextButton(onClick = onDismiss) {
-                Text(stringResource(id = android.R.string.ok))
-            }
-        }
+        confirmButtonText = stringResource(id = android.R.string.ok),
+        onConfirm = onDismiss,
+        dismissButtonText = null,
+        onDismissRequest = onDismiss,
     )
 }
 
@@ -258,8 +264,8 @@ private fun BgBlockList(
         newHours[index] = newHour
 
         val newBlocks = mutableListOf<BgBlock>()
-        for (i in 0 until newHours.size) {
-            val durationHours = if (i < newHours.size - 1) newHours[i+1] - newHours[i] else 24 - newHours[i]
+        for ((i, element) in newHours.withIndex()) {
+            val durationHours = if (i < newHours.size - 1) newHours[i+1] - element else 24 - element
             newBlocks.add(blocks[i].copy(duration = Minutes.ofHours(durationHours)))
         }
         onBlocksChanged(newBlocks)
@@ -283,7 +289,7 @@ private fun BgBlockList(
 
         if (isAddingAtEnd) {
             coroutineScope.launch {
-                delay(100)
+                delay(100.milliseconds)
                 val targetIndex = (listState.layoutInfo.totalItemsCount - 1).coerceAtLeast(0)
                 listState.animateScrollToItem(targetIndex)
             }
