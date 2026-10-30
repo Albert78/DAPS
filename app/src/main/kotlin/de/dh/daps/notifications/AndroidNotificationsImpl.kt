@@ -64,6 +64,11 @@ class AndroidNotificationsImpl(
             )
 
     override fun createNotificationChannels() {
+        val notificationManager = context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+
+        // Clean up legacy channel if present
+        notificationManager.deleteNotificationChannel("aps_algorithm_issue_channel")
+
         // Channel for the foreground service (BG values)
         val serviceName = context.getString(UiR.string.aps_service_notification_channel_name)
         val serviceImportance = NotificationManager.IMPORTANCE_LOW
@@ -77,17 +82,24 @@ class AndroidNotificationsImpl(
         recChannel.enableVibration(true)
         recChannel.setShowBadge(true)
 
-        // Channel for algorithm issues (Manual intervention required)
-        val issueName = context.getString(UiR.string.algorithm_issue_notification_channel_name)
-        val issueImportance = NotificationManager.IMPORTANCE_HIGH
-        val issueChannel = NotificationChannel(ALGORITHM_ISSUE_CHANNEL_ID, issueName, issueImportance)
-        issueChannel.enableVibration(true)
-        issueChannel.setShowBadge(true)
+        // Channel for reminders (Katheter/Patch change, custom reminders)
+        val reminderName = context.getString(UiR.string.reminder_notification_channel_name)
+        val reminderImportance = NotificationManager.IMPORTANCE_HIGH
+        val reminderChannel = NotificationChannel(REMINDER_CHANNEL_ID, reminderName, reminderImportance)
+        reminderChannel.enableVibration(true)
+        reminderChannel.setShowBadge(true)
 
-        val notificationManager = context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        // Channel for glucose and safety alarms
+        val alarmName = context.getString(UiR.string.alarm_notification_channel_name)
+        val alarmImportance = NotificationManager.IMPORTANCE_HIGH
+        val alarmChannel = NotificationChannel(ALARM_CHANNEL_ID, alarmName, alarmImportance)
+        alarmChannel.enableVibration(true)
+        alarmChannel.setShowBadge(true)
+
         notificationManager.createNotificationChannel(serviceChannel)
         notificationManager.createNotificationChannel(recChannel)
-        notificationManager.createNotificationChannel(issueChannel)
+        notificationManager.createNotificationChannel(reminderChannel)
+        notificationManager.createNotificationChannel(alarmChannel)
     }
 
     private fun getActiveAlertProfile(): AlertProfile {
@@ -353,7 +365,7 @@ class AndroidNotificationsImpl(
             )
         }
 
-        val builder = NotificationCompat.Builder(context, RECOMMENDATION_CHANNEL_ID)
+        val builder = NotificationCompat.Builder(context, REMINDER_CHANNEL_ID)
             .setContentTitle(title)
             .setContentText(text)
             .setSmallIcon(R.mipmap.ic_launcher)
@@ -444,7 +456,7 @@ class AndroidNotificationsImpl(
             inboxStyle.addLine("+ ${alarmGroup.otherAlarms.size} weitere Alarme")
         }
 
-        val builder = NotificationCompat.Builder(context, ALGORITHM_ISSUE_CHANNEL_ID)
+        val builder = NotificationCompat.Builder(context, ALARM_CHANNEL_ID)
             .setContentTitle(title)
             .setContentText(primaryContentText)
             .setStyle(inboxStyle)
@@ -473,7 +485,7 @@ class AndroidNotificationsImpl(
 
         val notification = builder.build()
 
-        notify(ALGORITHM_ISSUE_NOTIFICATION_ID, notification)
+        notify(ALARM_NOTIFICATION_ID, notification)
     }
 
     private fun getAlarmTitle(alarmType: AlarmType): String =
@@ -492,7 +504,7 @@ class AndroidNotificationsImpl(
     }
 
     override fun cancelAlarmNotification() {
-        manager.cancel(ALGORITHM_ISSUE_NOTIFICATION_ID)
+        manager.cancel(ALARM_NOTIFICATION_ID)
     }
 
     private fun notify(notificationId: Int, notification: Notification) {
@@ -512,10 +524,16 @@ class AndroidNotificationsImpl(
         const val RECOMMENDATION_CARBS_NOTIFICATION_ID = 2
         const val RECOMMENDATION_BOLUS_NOTIFICATION_ID = 3
         const val RECOMMENDATION_TEMP_BASAL_NOTIFICATION_ID = 4
-        const val ALGORITHM_ISSUE_NOTIFICATION_ID = 5
+        const val ALARM_NOTIFICATION_ID = 5
+        @Deprecated("Use ALARM_NOTIFICATION_ID instead")
+        const val ALGORITHM_ISSUE_NOTIFICATION_ID = ALARM_NOTIFICATION_ID
         const val REMINDER_NOTIFICATION_ID = 6
+
         const val SERVICE_CHANNEL_ID = "aps_service_channel"
         const val RECOMMENDATION_CHANNEL_ID = "aps_recommendation_channel"
-        const val ALGORITHM_ISSUE_CHANNEL_ID = "aps_algorithm_issue_channel"
+        const val REMINDER_CHANNEL_ID = "aps_reminder_channel"
+        const val ALARM_CHANNEL_ID = "aps_alarm_channel"
+        @Deprecated("Use ALARM_CHANNEL_ID instead")
+        const val ALGORITHM_ISSUE_CHANNEL_ID = ALARM_CHANNEL_ID
     }
 }
