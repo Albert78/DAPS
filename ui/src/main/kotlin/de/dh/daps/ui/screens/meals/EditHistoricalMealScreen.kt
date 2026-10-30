@@ -360,7 +360,7 @@ fun EditHistoricalMealContent(
     if (showDiscardConfirmation) {
         AppAlertDialog(
             onDismissRequest = { showDiscardConfirmation = false },
-            title = { Text(stringResource(id = R.string.edit_historical_meal_discard_title)) },
+            titleText = stringResource(id = R.string.edit_historical_meal_discard_title),
             content = { Text(stringResource(id = R.string.edit_historical_meal_discard_message)) },
             confirmButton = {
                 NormalTextButton(
@@ -387,7 +387,7 @@ fun EditHistoricalMealContent(
     if (showDeleteConfirmation) {
         AppAlertDialog(
             onDismissRequest = { showDeleteConfirmation = false },
-            title = { Text(stringResource(id = R.string.delete_meal_title)) },
+            titleText = stringResource(id = R.string.delete_meal_title),
             content = { Text(stringResource(id = R.string.delete_meal_message)) },
             confirmButton = {
                 NormalTextButton(onClick = {

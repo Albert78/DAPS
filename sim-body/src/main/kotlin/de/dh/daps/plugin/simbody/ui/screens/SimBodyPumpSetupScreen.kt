@@ -160,7 +160,7 @@ fun SimBodyPumpSetupContent(
     if (showUnbindDialog) {
         AppAlertDialog(
             onDismissRequest = { showUnbindDialog = false },
-            title = { Text(stringResource(R.string.sim_body_pump_unbind_dialog_title)) },
+            titleText = stringResource(R.string.sim_body_pump_unbind_dialog_title),
             content = { Text(stringResource(R.string.sim_body_pump_unbind_dialog_message)) },
             confirmButton = {
                 PrimaryButton(
@@ -178,7 +178,7 @@ fun SimBodyPumpSetupContent(
             },
             dismissButton = {
                 NormalTextButton(onClick = { showUnbindDialog = false }) {
-                    Text(stringResource(R.string.btn_cancel))
+                    Text(stringResource(android.R.string.cancel))
                 }
             },
         )

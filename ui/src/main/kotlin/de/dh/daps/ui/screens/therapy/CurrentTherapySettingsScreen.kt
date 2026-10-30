@@ -265,9 +265,7 @@ private fun TherapySettingsHelpDialog(
                 Text(text = stringResource(id = android.R.string.ok))
             }
         },
-        title = {
-            Text(text = stringResource(id = R.string.therapy_settings_help_title))
-        },
+        titleText = stringResource(id = R.string.therapy_settings_help_title),
         content = {
             val scrollState = rememberScrollState()
             Column(

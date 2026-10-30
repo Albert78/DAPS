@@ -54,7 +54,6 @@ import de.dh.daps.common.domain.model.reminder.ReminderType
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.FramedCard
-import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.icons.Icon_Sound_Off
@@ -172,22 +171,14 @@ fun AlertProfilesContent(
     val deletingProfile = uiState.showDeleteConfirmation
     if (deletingProfile != null) {
         AppAlertDialog(
+            titleText = stringResource(id = R.string.alert_profile_delete_title),
             onDismissRequest = onCancelDelete,
-            title = { Text(stringResource(id = R.string.alert_profile_delete_title)) },
-            content = {
-                Text(stringResource(id = R.string.alert_profile_delete_message, deletingProfile.name))
-            },
-            confirmButton = {
-                NormalTextButton(onClick = { onConfirmDelete(deletingProfile) }) {
-                    Text(stringResource(id = CommonR.string.action_delete))
-                }
-            },
-            dismissButton = {
-                NormalTextButton(onClick = onCancelDelete) {
-                    Text(stringResource(id = android.R.string.cancel))
-                }
-            }
-        )
+            confirmButtonText = stringResource(id = CommonR.string.action_delete),
+            onConfirm = { onConfirmDelete(deletingProfile) },
+            dismissButtonText = stringResource(id = android.R.string.cancel),
+        ) {
+            Text(stringResource(id = R.string.alert_profile_delete_message, deletingProfile.name))
+        }
     }
 }
 

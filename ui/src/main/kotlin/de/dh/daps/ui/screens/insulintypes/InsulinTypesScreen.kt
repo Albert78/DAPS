@@ -204,7 +204,7 @@ fun InsulinTypesContent(
     if (targetInsulinType != null) {
         AppAlertDialog(
             onDismissRequest = { insulinTypeToDelete = null },
-            title = { Text(stringResource(id = R.string.delete_insulin_type_title)) },
+            titleText = stringResource(id = R.string.delete_insulin_type_title),
             content = { Text(stringResource(id = R.string.delete_insulin_type_message, targetInsulinType.name)) },
             confirmButton = {
                 NormalTextButton(onClick = {

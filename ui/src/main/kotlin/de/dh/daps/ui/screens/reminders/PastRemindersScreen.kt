@@ -186,9 +186,7 @@ fun PastRemindersContent(
         val titleText = reminder.title.ifBlank { stringResource(CommonR.string.notification_reminder_title) }
         AppAlertDialog(
             onDismissRequest = { reminderToDelete = null },
-            title = {
-                Text(text = stringResource(R.string.delete_reminder_title))
-            },
+            titleText = stringResource(R.string.delete_reminder_title),
             content = {
                 Text(text = stringResource(R.string.delete_reminder_message, titleText))
             },
@@ -207,7 +205,7 @@ fun PastRemindersContent(
             },
             dismissButton = {
                 NormalTextButton(onClick = { reminderToDelete = null }) {
-                    Text(text = stringResource(CommonR.string.action_cancel))
+                    Text(text = stringResource(android.R.string.cancel))
                 }
             }
         )
@@ -216,9 +214,7 @@ fun PastRemindersContent(
     if (showClearAllDialog) {
         AppAlertDialog(
             onDismissRequest = { showClearAllDialog = false },
-            title = {
-                Text(text = stringResource(R.string.past_reminders_clear_dialog_title))
-            },
+            titleText = stringResource(R.string.past_reminders_clear_dialog_title),
             content = {
                 Text(text = stringResource(R.string.past_reminders_clear_dialog_message))
             },
@@ -237,7 +233,7 @@ fun PastRemindersContent(
             },
             dismissButton = {
                 NormalTextButton(onClick = { showClearAllDialog = false }) {
-                    Text(text = stringResource(CommonR.string.action_cancel))
+                    Text(text = stringResource(android.R.string.cancel))
                 }
             }
         )

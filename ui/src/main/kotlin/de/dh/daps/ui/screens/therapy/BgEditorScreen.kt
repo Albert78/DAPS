@@ -150,7 +150,7 @@ fun BgEditorContent(
     if (showDiscardConfirmation) {
         AppAlertDialog(
             onDismissRequest = { showDiscardConfirmation = false },
-            title = { Text(stringResource(id = R.string.bg_editor_discard_title)) },
+            titleText = stringResource(id = R.string.bg_editor_discard_title),
             content = { Text(stringResource(id = R.string.bg_editor_discard_message)) },
             confirmButton = {
                 NormalTextButton(onClick = {
@@ -222,7 +222,7 @@ fun BgEditorFormContent(
 fun BgEditorHelpDialog(onDismiss: () -> Unit) {
     AppAlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(id = R.string.bg_editor_help_title)) },
+        titleText = stringResource(id = R.string.bg_editor_help_title),
         content = {
             Text(
                 stringResource(id = R.string.help_24h_profile_general) +

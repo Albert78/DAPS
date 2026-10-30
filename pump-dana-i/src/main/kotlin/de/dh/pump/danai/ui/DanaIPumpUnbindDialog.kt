@@ -55,7 +55,7 @@ fun DanaIPumpUnbindDialog(
 
     AppAlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.danai_unbind_dialog_title)) },
+        titleText = stringResource(R.string.danai_unbind_dialog_title),
         content = {
             DanaIPumpUnbindDialogContent(
                 isLoading = isLoading,

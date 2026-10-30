@@ -334,7 +334,7 @@ fun ReminderEditorContent(
     if (showDiscardConfirmation) {
         AppAlertDialog(
             onDismissRequest = { showDiscardConfirmation = false },
-            title = { Text(stringResource(id = R.string.reminder_editor_discard_title)) },
+            titleText = stringResource(id = R.string.reminder_editor_discard_title),
             content = { Text(stringResource(id = R.string.reminder_editor_discard_message)) },
             confirmButton = {
                 NormalTextButton(

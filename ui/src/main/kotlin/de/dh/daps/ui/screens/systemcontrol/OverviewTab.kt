@@ -249,12 +249,7 @@ private fun ApsIssuesDialog(
 
     AppAlertDialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = stringResource(id = R.string.overview_aps_issues_dialog_title),
-                style = MaterialTheme.typography.titleLarge
-            )
-        },
+        titleText = stringResource(id = R.string.overview_aps_issues_dialog_title),
         content = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp),

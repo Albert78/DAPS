@@ -185,7 +185,7 @@ private fun RecommendationCard(
                     onClick = onDismiss,
                     modifier = Modifier.padding(end = 8.dp)
                 ) {
-                    Text(stringResource(CommonR.string.action_cancel))
+                    Text(stringResource(android.R.string.cancel))
                 }
 
                 PrimaryButton(

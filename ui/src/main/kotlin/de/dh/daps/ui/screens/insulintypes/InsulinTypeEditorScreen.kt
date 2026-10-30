@@ -191,7 +191,7 @@ private fun DiscardChangesDialog(
 ) {
     AppAlertDialog(
         onDismissRequest = onDismissRequest,
-        title = { Text(stringResource(id = R.string.insulin_type_editor_discard_title)) },
+        titleText = stringResource(id = R.string.insulin_type_editor_discard_title),
         content = { Text(stringResource(id = R.string.insulin_type_editor_discard_message)) },
         confirmButton = {
             NormalTextButton(

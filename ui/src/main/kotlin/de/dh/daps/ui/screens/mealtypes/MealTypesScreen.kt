@@ -158,7 +158,7 @@ fun MealTypesContent(
     if (targetMealType != null) {
         AppAlertDialog(
             onDismissRequest = { mealTypeToDelete = null },
-            title = { Text(stringResource(id = R.string.delete_meal_type_title)) },
+            titleText = stringResource(id = R.string.delete_meal_type_title),
             content = { Text(stringResource(id = R.string.delete_meal_type_message, targetMealType.name)) },
             confirmButton = {
                 NormalTextButton(onClick = {

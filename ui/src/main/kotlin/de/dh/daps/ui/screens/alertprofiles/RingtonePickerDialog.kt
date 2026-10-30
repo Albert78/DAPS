@@ -187,7 +187,7 @@ fun RingtonePickerDialogContent(
     onDismiss: () -> Unit
 ) {
     AppAlertDialog(
-        onDismissRequest = onDismiss,
+        titleText = stringResource(id = R.string.alert_profile_sound_picker_title),
         icon = {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.VolumeUp,
@@ -195,38 +195,21 @@ fun RingtonePickerDialogContent(
                 tint = MaterialTheme.colorScheme.primary
             )
         },
-        title = {
-            Text(
-                text = stringResource(id = R.string.alert_profile_sound_picker_title),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-        },
-        content = {
-            RingtonePickerContent(
-                selectedUri = selectedUri,
-                selectedVolume = selectedVolume,
-                ringtones = ringtones,
-                isLoading = isLoading,
-                onSelectUri = onSelectUri,
-                onVolumeChanged = onVolumeChanged,
-                onPickCustomFile = onPickCustomFile
-            )
-        },
-        confirmButton = {
-            NormalTextButton(onClick = onConfirm) {
-                Text(
-                    text = stringResource(id = CommonR.string.action_save),
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        },
-        dismissButton = {
-            NormalTextButton(onClick = onDismiss) {
-                Text(stringResource(id = CommonR.string.action_cancel))
-            }
-        }
-    )
+        onDismissRequest = onDismiss,
+        confirmButtonText = stringResource(id = CommonR.string.action_save),
+        onConfirm = onConfirm,
+        dismissButtonText = stringResource(id = android.R.string.cancel),
+    ) {
+        RingtonePickerContent(
+            selectedUri = selectedUri,
+            selectedVolume = selectedVolume,
+            ringtones = ringtones,
+            isLoading = isLoading,
+            onSelectUri = onSelectUri,
+            onVolumeChanged = onVolumeChanged,
+            onPickCustomFile = onPickCustomFile
+        )
+    }
 }
 
 @Composable
@@ -454,7 +437,7 @@ fun RingtonePickerDialogPreview() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     NormalTextButton(onClick = {}) {
-                        Text(stringResource(id = CommonR.string.action_cancel))
+                        Text(stringResource(id = android.R.string.cancel))
                     }
                     NormalTextButton(onClick = {}) {
                         Text(

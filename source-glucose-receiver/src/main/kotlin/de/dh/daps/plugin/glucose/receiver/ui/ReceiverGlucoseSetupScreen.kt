@@ -35,7 +35,6 @@ import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
-import de.dh.daps.common.R as CommonR
 
 @Composable
 fun ReceiverGlucoseSetupScreen(
@@ -180,7 +179,7 @@ fun ReceiverGlucoseSetupScreen(
     if (showUnbindDialog) {
         AppAlertDialog(
             onDismissRequest = { showUnbindDialog = false },
-            title = { Text(stringResource(R.string.receiver_unbind_dialog_title)) },
+            titleText = stringResource(R.string.receiver_unbind_dialog_title),
             content = { Text(stringResource(R.string.receiver_unbind_dialog_message)) },
             confirmButton = {
                 PrimaryButton(
@@ -198,7 +197,7 @@ fun ReceiverGlucoseSetupScreen(
             },
             dismissButton = {
                 NormalTextButton(onClick = { showUnbindDialog = false }) {
-                    Text(stringResource(CommonR.string.action_cancel))
+                    Text(stringResource(android.R.string.cancel))
                 }
             }
         )

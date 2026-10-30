@@ -240,9 +240,7 @@ fun RemindersContent(
         val titleText = reminder.title.ifBlank { stringResource(CommonR.string.notification_reminder_title) }
         AppAlertDialog(
             onDismissRequest = { reminderToDelete = null },
-            title = {
-                Text(text = stringResource(R.string.delete_reminder_title))
-            },
+            titleText = stringResource(R.string.delete_reminder_title),
             content = {
                 Text(text = stringResource(R.string.delete_reminder_message, titleText))
             },
@@ -261,7 +259,7 @@ fun RemindersContent(
             },
             dismissButton = {
                 NormalTextButton(onClick = { reminderToDelete = null }) {
-                    Text(text = stringResource(CommonR.string.action_cancel))
+                    Text(text = stringResource(android.R.string.cancel))
                 }
             }
         )

@@ -114,7 +114,7 @@ fun DeliverBolusDialog(
 
     AppAlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(id = R.string.manual_control_dialog_deliver_bolus_title)) },
+        titleText = stringResource(id = R.string.manual_control_dialog_deliver_bolus_title),
         content = {
             DeliverBolusDialogContent(
                 amountState = amountState,
@@ -201,7 +201,7 @@ fun SetTempBasalDialog(
 
     AppAlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(id = R.string.manual_control_dialog_set_temp_basal_title)) },
+        titleText = stringResource(id = R.string.manual_control_dialog_set_temp_basal_title),
         content = {
             SetTempBasalDialogContent(
                 percent = percent,

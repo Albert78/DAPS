@@ -440,9 +440,7 @@ fun ScheduledTherapyAdjustmentContent(
     if (showDiscardDialog) {
         AppAlertDialog(
             onDismissRequest = { showDiscardDialog = false },
-            title = {
-                Text(text = stringResource(R.string.therapy_adjustment_discard_dialog_title))
-            },
+            titleText = stringResource(R.string.therapy_adjustment_discard_dialog_title),
             content = {
                 Text(text = stringResource(R.string.therapy_adjustment_discard_dialog_message))
             },

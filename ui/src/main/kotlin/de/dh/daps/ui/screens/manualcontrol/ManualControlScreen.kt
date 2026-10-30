@@ -260,7 +260,7 @@ fun ManualControlContent(
     if (uiState.showLockError) {
         AppAlertDialog(
             onDismissRequest = onDismissLockError,
-            title = { Text(stringResource(id = R.string.core_issue_title)) },
+            titleText = stringResource(id = R.string.core_issue_title),
             content = {
                 Text(
                     text = stringResource(

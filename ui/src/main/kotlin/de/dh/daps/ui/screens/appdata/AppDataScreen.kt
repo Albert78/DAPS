@@ -451,7 +451,7 @@ fun AppDataContent(
                     tint = MaterialTheme.colorScheme.error
                 )
             },
-            title = { Text(stringResource(R.string.app_data_dialog_import_title)) },
+            titleText = stringResource(R.string.app_data_dialog_import_title),
             content = { Text(stringResource(R.string.app_data_dialog_import_message)) },
             confirmButton = {
                 NormalTextButton(
@@ -464,7 +464,7 @@ fun AppDataContent(
                 NormalTextButton(
                     onClick = onImportDismiss
                 ) {
-                    Text(stringResource(CommonR.string.action_cancel))
+                    Text(stringResource(android.R.string.cancel))
                 }
             }
         )
@@ -650,7 +650,7 @@ fun ResetConfirmationFullscreenDialogContent(
                     )
                 ) {
                     Text(
-                        text = stringResource(CommonR.string.action_cancel),
+                        text = stringResource(android.R.string.cancel),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )

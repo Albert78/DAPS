@@ -108,7 +108,7 @@ fun InsulinProfilesContent(
     uiState.showDeleteConfirmation?.let { profile ->
         AppAlertDialog(
             onDismissRequest = onCancelDeleteDialog,
-            title = { Text(stringResource(id = R.string.delete_insulin_profile_title)) },
+            titleText = stringResource(id = R.string.delete_insulin_profile_title),
             content = { Text(stringResource(id = R.string.delete_insulin_profile_message, profile.name)) },
             confirmButton = {
                 NormalTextButton(onClick = { onConfirmDeleteProfile(profile) }) {

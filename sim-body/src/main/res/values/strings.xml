@@ -47,8 +47,6 @@
     <string name="dialog_title_edit_illness">Krankheitsfaktor (>= 1.0)</string>
     <string name="dialog_title_edit_stress">Stresslevel (0–1)</string>
     <string name="dialog_title_edit_noise">Rauschfaktor (>= 0)</string>
-    <string name="btn_ok">OK</string>
-    <string name="btn_cancel">Abbrechen</string>
     <string name="sim_body_pump_unbind_dialog_title">Bindung verwerfen?</string>
     <string name="sim_body_pump_unbind_dialog_message">Möchtest du die Bindung zu dieser virtuellen SimBody-Insulinpumpe wirklich verwerfen?</string>
     <string name="sim_body_cgm_unbind_dialog_title">Bindung verwerfen?</string>

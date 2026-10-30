@@ -555,7 +555,7 @@ fun OmnipodDashUnbindDialog(
 ) {
     AppAlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.omnipod_dash_unbind_dialog_title)) },
+        titleText = stringResource(R.string.omnipod_dash_unbind_dialog_title),
         content = { Text(stringResource(R.string.omnipod_dash_unbind_dialog_message)) },
         confirmButton = {
             PrimaryButton(
@@ -570,7 +570,7 @@ fun OmnipodDashUnbindDialog(
         },
         dismissButton = {
             NormalTextButton(onClick = onDismiss) {
-                Text(stringResource(CommonR.string.action_cancel))
+                Text(stringResource(android.R.string.cancel))
             }
         },
         modifier = modifier

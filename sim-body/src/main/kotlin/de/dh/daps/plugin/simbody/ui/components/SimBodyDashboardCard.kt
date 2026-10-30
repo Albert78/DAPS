@@ -35,7 +35,6 @@ import de.dh.daps.ui.common.carbsUnitLabel
 import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.FramedCard
-import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.crValue
 import de.dh.daps.ui.common.glucoseUnitLabel
@@ -170,34 +169,24 @@ private fun EditDoubleDialog(
 ) {
     var textValue by remember { mutableStateOf(if (initialValue == 0.0) "" else initialValue.toString()) }
     AppAlertDialog(
+        titleText = stringResource(R.string.dialog_title_edit_param, title),
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.dialog_title_edit_param, title)) },
-        content = {
-            OutlinedTextField(
-                value = textValue,
-                onValueChange = { textValue = it },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                    imeAction = ImeAction.Done
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
+        onConfirm = {
+            textValue.toDoubleOrNull()?.let { onConfirm(it) }
+            onDismiss()
         },
-        confirmButton = {
-            NormalTextButton(onClick = {
-                textValue.toDoubleOrNull()?.let { onConfirm(it) }
-                onDismiss()
-            }) {
-                Text(stringResource(R.string.btn_ok))
-            }
-        },
-        dismissButton = {
-            NormalTextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.btn_cancel))
-            }
-        }
-    )
+    ) {
+        OutlinedTextField(
+            value = textValue,
+            onValueChange = { textValue = it },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Done
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
 }
 
 @Preview(showBackground = true)

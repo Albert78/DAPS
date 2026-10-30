@@ -212,7 +212,7 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
         if (showUnbindDialog) {
             AppAlertDialog(
                 onDismissRequest = { showUnbindDialog = false },
-                title = { Text(stringResource(R.string.sample_cgm_unbind_dialog_title)) },
+                titleText = stringResource(R.string.sample_cgm_unbind_dialog_title),
                 content = { Text(stringResource(R.string.sample_cgm_unbind_dialog_message)) },
                 confirmButton = {
                     PrimaryButton(
@@ -230,7 +230,7 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
                 },
                 dismissButton = {
                     NormalTextButton(onClick = { showUnbindDialog = false }) {
-                        Text(stringResource(de.dh.daps.common.R.string.action_cancel))
+                        Text(stringResource(android.R.string.cancel))
                     }
                 }
             )

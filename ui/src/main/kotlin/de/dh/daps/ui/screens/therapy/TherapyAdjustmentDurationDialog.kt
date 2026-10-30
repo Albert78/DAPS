@@ -85,9 +85,7 @@ fun TherapyAdjustmentDurationDialog(
                 Text(text = stringResource(id = android.R.string.cancel))
             }
         },
-        title = {
-            Text(text = stringResource(id = R.string.therapy_adjustment_duration_dialog_title))
-        },
+        titleText = stringResource(id = R.string.therapy_adjustment_duration_dialog_title),
         content = {
             val scrollState = rememberScrollState()
             Column(

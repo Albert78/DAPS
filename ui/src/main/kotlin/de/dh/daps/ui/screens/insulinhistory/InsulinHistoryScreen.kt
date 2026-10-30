@@ -171,9 +171,7 @@ fun InsulinHistoryContent(
         deletingInsulin?.let { insulin ->
             AppAlertDialog(
                 onDismissRequest = { deletingInsulin = null },
-                title = {
-                    Text(text = stringResource(id = R.string.delete_insulin_title))
-                },
+                titleText = stringResource(id = R.string.delete_insulin_title),
                 content = {
                     Text(text = stringResource(id = R.string.delete_insulin_message))
                 },
@@ -491,12 +489,8 @@ fun AddManualInsulinDialog(
 
     AppAlertDialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = if (isEditMode) stringResource(id = R.string.insulin_history_edit_manual_title)
-                else stringResource(id = R.string.insulin_history_add_manual_title)
-            )
-        },
+        titleText = if (isEditMode) stringResource(id = R.string.insulin_history_edit_manual_title)
+        else stringResource(id = R.string.insulin_history_add_manual_title),
         content = {
             Column {
                 Text(

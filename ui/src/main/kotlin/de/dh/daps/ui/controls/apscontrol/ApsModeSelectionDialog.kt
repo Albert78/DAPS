@@ -37,22 +37,33 @@ fun ApsModeSelectionDialog(
 ) {
     AppAlertDialog(
         onDismissRequest = onDismissRequest,
-        title = {
-            Text(
-                text = stringResource(R.string.aps_mode_dialog_title), // reusing theme dialog title or generic select
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
-        },
+        titleText = stringResource(R.string.aps_mode_dialog_title),
         content = {
-            ApsModeSelectionContent(
-                selectedMode = selectedMode,
-                availableModes = availableModes,
-                onModeChange = {
-                    onModeChange(it)
-                    onDismissRequest()
+            val modes = ApsMode.entries
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                modes.forEachIndexed { index, mode ->
+                    val isAvailable = mode in availableModes
+                    ModeOption(
+                        mode = mode,
+                        isSelected = mode == selectedMode,
+                        isAvailable = isAvailable,
+                        onClick = {
+                            onModeChange(mode)
+                            onDismissRequest()
+                        }
+                    )
+                    if (index < modes.size - 1) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(top = 8.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                        )
+                    }
                 }
-            )
+            }
         },
         confirmButton = {
             NormalTextButton(onClick = onDismissRequest) {
@@ -60,37 +71,6 @@ fun ApsModeSelectionDialog(
             }
         }
     )
-}
-
-@Composable
-private fun ApsModeSelectionContent(
-    selectedMode: ApsMode,
-    availableModes: List<ApsMode>,
-    onModeChange: (ApsMode) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val modes = ApsMode.entries
-    Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.fillMaxWidth()
-    ) {
-        modes.forEachIndexed { index, mode ->
-            val isAvailable = mode in availableModes
-            ModeOption(
-                mode = mode,
-                isSelected = mode == selectedMode,
-                isAvailable = isAvailable,
-                onClick = { onModeChange(mode) }
-            )
-            if (index < modes.size - 1) {
-                HorizontalDivider(
-                    modifier = Modifier.padding(top = 8.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                )
-            }
-        }
-    }
 }
 
 @Composable
@@ -159,15 +139,16 @@ private fun ApsMode.toDescriptionString(): String = stringResource(id = when (th
     ApsMode.AutoCorrection -> R.string.aps_mode_auto_correction_desc
 })
 
-@Preview(showBackground = true)
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(showBackground = true, showSystemUi = true)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, showSystemUi = true)
 @Composable
 private fun PreviewApsModeSelectionContent() {
     AppPreview(modifier = Modifier.padding(16.dp)) {
-        ApsModeSelectionContent(
+        ApsModeSelectionDialog(
             selectedMode = ApsMode.AutoCorrection,
             availableModes = ApsMode.entries,
-            onModeChange = {}
+            onModeChange = {},
+            onDismissRequest = {}
         )
     }
 }

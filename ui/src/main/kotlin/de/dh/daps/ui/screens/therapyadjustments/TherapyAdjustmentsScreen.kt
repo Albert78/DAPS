@@ -154,7 +154,7 @@ fun TherapyAdjustmentsContent(
     if (targetAdjustment != null) {
         AppAlertDialog(
             onDismissRequest = { adjustmentToDelete = null },
-            title = { Text(stringResource(id = R.string.delete_therapy_adjustment_title)) },
+            titleText = stringResource(id = R.string.delete_therapy_adjustment_title),
             content = { Text(stringResource(id = R.string.delete_therapy_adjustment_message, targetAdjustment.name)) },
             confirmButton = {
                 NormalTextButton(onClick = {

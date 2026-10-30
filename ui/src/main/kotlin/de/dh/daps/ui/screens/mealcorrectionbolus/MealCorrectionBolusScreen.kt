@@ -597,13 +597,7 @@ fun CalculationDetailsDialog(
 ) {
     AppAlertDialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = stringResource(R.string.meal_correction_bolus_calculation_title),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-        },
+        titleText = stringResource(R.string.meal_correction_bolus_calculation_title),
         content = {
             Column(
                 modifier = Modifier.fillMaxWidth(),

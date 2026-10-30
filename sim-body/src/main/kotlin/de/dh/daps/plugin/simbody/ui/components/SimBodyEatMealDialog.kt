@@ -25,7 +25,6 @@ import de.dh.daps.ui.common.carbsUnitLabel
 import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.CarbsValueStepper
 import de.dh.daps.ui.common.composables.FoodTypeSelector
-import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.theme.AppPreview
 
 @Composable
@@ -39,74 +38,41 @@ fun SimBodyEatMealDialog(
     var selectedType by remember { mutableStateOf(mealTypes.find { it.id == ID_MEAL_STANDARD } ?: mealTypes.first()) }
 
     AppAlertDialog(
+        titleText = stringResource(R.string.dialog_title_eat_meal),
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.dialog_title_eat_meal)) },
-        content = {
-            SimBodyEatMealDialogContent(
-                carbs = carbs,
-                onCarbsChange = { carbs = it },
+        onConfirm = {
+            if (carbs > 0) onConfirm(carbs, selectedType)
+            onDismiss()
+        },
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.label_carbs_g, carbsUnitLabel()), style = MaterialTheme.typography.bodyMedium)
+            Spacer(modifier = Modifier.height(16.dp))
+            CarbsValueStepper(
+                carbsGrams = carbs,
+                onValueChange = { carbs = it },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(stringResource(R.string.label_meal_type), style = MaterialTheme.typography.bodyMedium)
+            Spacer(modifier = Modifier.height(8.dp))
+            FoodTypeSelector(
                 mealTypes = mealTypes,
                 selectedType = selectedType,
                 onTypeSelected = { selectedType = it }
             )
-        },
-        confirmButton = {
-            NormalTextButton(onClick = {
-                if (carbs > 0) onConfirm(carbs, selectedType)
-                onDismiss()
-            }) {
-                Text(stringResource(R.string.btn_ok))
-            }
-        },
-        dismissButton = {
-            NormalTextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.btn_cancel))
-            }
         }
-    )
-}
-
-@Composable
-fun SimBodyEatMealDialogContent(
-    carbs: Double,
-    onCarbsChange: (Double) -> Unit,
-    mealTypes: List<MealType>,
-    selectedType: MealType,
-    onTypeSelected: (MealType) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        Text(stringResource(R.string.label_carbs_g, carbsUnitLabel()), style = MaterialTheme.typography.bodyMedium)
-        Spacer(modifier = Modifier.height(16.dp))
-        CarbsValueStepper(
-            carbsGrams = carbs,
-            onValueChange = onCarbsChange,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-        Text(stringResource(R.string.label_meal_type), style = MaterialTheme.typography.bodyMedium)
-        Spacer(modifier = Modifier.height(8.dp))
-        FoodTypeSelector(
-            mealTypes = mealTypes,
-            selectedType = selectedType,
-            onTypeSelected = onTypeSelected
-        )
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun SimBodyEatMealDialogPreview() {
-    val context = LocalContext.current
-    val mealTypes = remember(context) { BodyModel.getSimMealTypes(context) }
     AppPreview {
-        SimBodyEatMealDialogContent(
-            carbs = 30.0,
-            onCarbsChange = {},
-            mealTypes = mealTypes,
-            selectedType = mealTypes.first(),
-            onTypeSelected = {}
+        SimBodyEatMealDialog(
+            onDismiss = {},
+            onConfirm = { _, _ -> }
         )
     }
 }

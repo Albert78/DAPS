@@ -1,14 +1,15 @@
 package de.dh.daps.ui.common.composables
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -39,12 +40,51 @@ fun AppAlertDialog(
     isConfirmEnabled: Boolean = true,
     dismissButtonText: String? = stringResource(id = android.R.string.cancel),
     onDismissRequest: () -> Unit,
-    properties: DialogProperties = DialogProperties(),
     content: @Composable () -> Unit,
+) {
+    AppAlertDialog(
+        titleText = titleText,
+        modifier = modifier,
+        icon = icon,
+        onDismissRequest = onDismissRequest,
+        confirmButton = {
+            NormalTextButton(
+                onClick = onConfirm,
+                enabled = isConfirmEnabled,
+            ) {
+                Text(confirmButtonText)
+            }
+        },
+        dismissButton = if (dismissButtonText == null) {
+            null
+        } else {
+            {
+                NormalTextButton(
+                    onClick = onDismissRequest,
+                ) {
+                    Text(dismissButtonText)
+                }
+            }
+        },
+        content = content,
+    )
+}
+
+/**
+ * Alert dialog with custom buttons.
+ */
+@Composable
+fun AppAlertDialog(
+    titleText: String,
+    modifier: Modifier = Modifier,
+    icon: @Composable (() -> Unit)? = null,
+    onDismissRequest: () -> Unit = {},
+    confirmButton: @Composable () -> Unit,
+    dismissButton: @Composable (() -> Unit)? = null,
+    content: @Composable (() -> Unit)? = null,
 ) {
     Dialog(
         onDismissRequest = onDismissRequest,
-        properties = properties,
     ) {
         DialogSurface(
             modifier = modifier.semantics {
@@ -57,54 +97,28 @@ fun AppAlertDialog(
             ) {
                 DialogTitle(text = titleText, icon = icon)
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                content()
+                if (content != null) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    content()
+                }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                if (dismissButtonText == null) {
-                    DialogConfirmButton(
-                        onConfirm = onConfirm,
-                        confirmButtonText = confirmButtonText,
-                        isConfirmEnabled = isConfirmEnabled,
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Spacer(
+                        modifier = Modifier.weight(1f)
                     )
-                } else {
-                    DialogConfirmDismissButtons(
-                        onConfirm = onConfirm,
-                        onDismiss = onDismissRequest,
-                        confirmButtonText = confirmButtonText,
-                        dismissButtonText = dismissButtonText,
-                        isConfirmEnabled = isConfirmEnabled,
-                    )
+                    if (dismissButton != null) {
+                        dismissButton()
+                        Spacer(modifier = Modifier.padding(start = 8.dp))
+                    }
+                    confirmButton()
                 }
             }
         }
     }
-}
-
-/**
- * Alert dialog with custom buttons.
- */
-@Composable
-fun AppAlertDialog(
-    title: @Composable (() -> Unit),
-    modifier: Modifier = Modifier,
-    icon: @Composable (() -> Unit)? = null,
-    onDismissRequest: () -> Unit = {},
-    confirmButton: @Composable () -> Unit,
-    dismissButton: @Composable (() -> Unit)? = null,
-    content: @Composable (() -> Unit)? = null,
-) {
-    AlertDialog(
-        modifier = modifier,
-        onDismissRequest = onDismissRequest,
-        confirmButton = confirmButton,
-        dismissButton = dismissButton,
-        icon = icon,
-        title = title,
-        text = content,
-    )
 }
 
 /**

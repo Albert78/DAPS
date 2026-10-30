@@ -720,7 +720,7 @@ private fun DiscardChangesDialog(
 ) {
     AppAlertDialog(
         onDismissRequest = onDismissRequest,
-        title = { Text(stringResource(id = R.string.alert_profile_editor_discard_title)) },
+        titleText = stringResource(id = R.string.alert_profile_editor_discard_title),
         content = { Text(stringResource(id = R.string.alert_profile_editor_discard_message)) },
         confirmButton = {
             NormalTextButton(

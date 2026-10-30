@@ -369,7 +369,7 @@ fun MealTypeEditorContent(
     if (showDiscardConfirmation) {
         AppAlertDialog(
             onDismissRequest = { showDiscardConfirmation = false },
-            title = { Text(stringResource(id = R.string.meal_type_editor_discard_title)) },
+            titleText = stringResource(id = R.string.meal_type_editor_discard_title),
             content = { Text(stringResource(id = R.string.meal_type_editor_discard_message)) },
             confirmButton = {
                 NormalTextButton(
