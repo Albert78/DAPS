@@ -42,7 +42,7 @@ $items = @(
 
     # --- LAYER 2: MID BACK ---
     [PSCustomObject]@{ File="manual_control.png";              X=300;  Y=1320; W=430; Angle=-12; Layer=2.0 },
-    [PSCustomObject]@{ File="alert_profile_editor.png";        X=960;  Y=600;  W=450; Angle=-6;  Layer=2.0 },
+    [PSCustomObject]@{ File="alert_profile_editor.png";        X=960;  Y=1100;  W=450; Angle=-6;  Layer=2.0 },
     [PSCustomObject]@{ File="setup_units_step.png";           X=740;  Y=1160; W=470; Angle=-9;  Layer=2.0 },
     [PSCustomObject]@{ File="insulin_type_editor.png";         X=1450; Y=460;  W=450; Angle=-7;  Layer=2.0 },
     [PSCustomObject]@{ File="setup_glucose_source.png";        X=2630; Y=600;  W=450; Angle=9;   Layer=2.0 },
