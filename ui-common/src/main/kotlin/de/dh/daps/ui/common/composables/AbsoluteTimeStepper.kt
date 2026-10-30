@@ -41,11 +41,11 @@ fun AbsoluteTimeStepper(
 ) {
     var showPickerDialog by remember { mutableStateOf(false) }
 
-    val now = Timestamp.now()
+    val now = remember { Timestamp.now() }
     val effectiveMinTime = minTime ?: (now - Minutes(120))
     val effectiveMaxTime = maxTime ?: (now + Minutes(30))
 
-    val allowedTimestamps = remember(now, effectiveMinTime, effectiveMaxTime) {
+    val allowedTimestamps = remember(effectiveMinTime.ms, effectiveMaxTime.ms, stepMinutes) {
         val stepMs = stepMinutes * 60000L
         val baseStart = (effectiveMinTime.ms / stepMs) * stepMs
         val baseEnd = (effectiveMaxTime.ms / stepMs) * stepMs
