@@ -42,6 +42,7 @@ import de.dh.daps.common.navigation.GlucoseSourceSetupRoute
 import de.dh.daps.common.navigation.HistoricalMealRoute
 import de.dh.daps.common.navigation.HistoryRoute
 import de.dh.daps.common.navigation.InsulinProfileEditorRoute
+import de.dh.daps.common.navigation.InsulinProfilesRoute
 import de.dh.daps.common.navigation.InsulinTypeEditorRoute
 import de.dh.daps.common.navigation.InsulinTypesRoute
 import de.dh.daps.common.navigation.ManualControlRoute
@@ -61,6 +62,8 @@ import de.dh.daps.ui.screens.systemcontrol.GlucoseSourceSettingsUiState
 import de.dh.daps.ui.screens.systemcontrol.GlucoseSourceSettingsViewModel
 import de.dh.daps.ui.screens.systemcontrol.PumpSettingsUiState
 import de.dh.daps.ui.screens.systemcontrol.PumpSettingsViewModel
+import de.dh.daps.ui.screens.insulinprofile.InsulinProfileEditorScreen
+import de.dh.daps.ui.screens.insulinprofile.InsulinProfileEditorViewModel
 import de.dh.daps.common.navigation.TherapyAdjustmentEditorRoute
 import de.dh.daps.common.navigation.TherapyAdjustmentPresetsRoute
 import de.dh.daps.common.navigation.TherapyAdjustmentRoute
@@ -86,7 +89,7 @@ import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupScreen
 import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupViewModel
 import de.dh.daps.ui.screens.history.HistoryScreen
 import de.dh.daps.ui.screens.insulinprofile.InsulinProfilesScreen
-import de.dh.daps.ui.screens.insulinprofile.InsulinProfileSettingsViewModel
+import de.dh.daps.ui.screens.insulinprofile.InsulinProfilesViewModel
 import de.dh.daps.ui.screens.insulintypes.InsulinTypeEditorScreen
 import de.dh.daps.ui.screens.insulintypes.InsulinTypeEditorViewModel
 import de.dh.daps.ui.screens.insulintypes.InsulinTypesScreen
@@ -184,14 +187,30 @@ class MainFeatureNavGraph(
                 )
             }
 
-            is InsulinProfileEditorRoute -> NavEntry(key) {
-                val vm: InsulinProfileSettingsViewModel = viewModel(
-                    factory = InsulinProfileSettingsViewModel.Companion.Factory(registry)
+            is InsulinProfilesRoute -> NavEntry(key) {
+                val vm: InsulinProfilesViewModel = viewModel(
+                    factory = InsulinProfilesViewModel.Companion.Factory(registry)
                 )
 
                 InsulinProfilesScreen(
                     viewModel = vm,
-                    title = stringResource(id = R.string.insulin_profiles_screen_title),
+                    onNavigateUp = { navViewModel.pop() },
+                    onNavigateToEditor = { profileId ->
+                        navViewModel.push(InsulinProfileEditorRoute(profileId = profileId))
+                    },
+                    onNavigateToCopy = { profileId ->
+                        navViewModel.push(InsulinProfileEditorRoute(profileId = profileId, isCopy = true))
+                    }
+                )
+            }
+
+            is InsulinProfileEditorRoute -> NavEntry(key) {
+                val vm: InsulinProfileEditorViewModel = viewModel(
+                    factory = InsulinProfileEditorViewModel.Companion.Factory(registry, key.profileId, key.isCopy)
+                )
+
+                InsulinProfileEditorScreen(
+                    viewModel = vm,
                     onNavigateUp = { navViewModel.pop() }
                 )
             }
@@ -203,7 +222,7 @@ class MainFeatureNavGraph(
                 CurrentTherapySettingsScreen(
                     viewModel = currentTherapyVM,
                     onNavigateUp = { navViewModel.pop() },
-                    onNavigateToInsulinProfileEditor = { navViewModel.push(InsulinProfileEditorRoute) },
+                    onNavigateToInsulinProfileEditor = { navViewModel.push(InsulinProfilesRoute) },
                     onNavigateToBgEditor = { navViewModel.push(BgEditorRoute) },
                     onNavigateToTherapyAdjustment = { navViewModel.push(TherapyAdjustmentRoute) },
                     onNavigateToScheduledTherapyAdjustment = { navViewModel.push(ScheduledTherapyAdjustmentRoute) }
@@ -591,7 +610,7 @@ class MainFeatureNavGraph(
             is MasterDataRoute -> NavEntry(key) {
                 MasterDataScreen(
                     onNavigateToInsulinTypes = { navViewModel.push(InsulinTypesRoute) },
-                    onNavigateToInsulinProfileEditor = { navViewModel.push(InsulinProfileEditorRoute) },
+                    onNavigateToInsulinProfileEditor = { navViewModel.push(InsulinProfilesRoute) },
                     onNavigateToBgEditor = { navViewModel.push(BgEditorRoute) },
                     onNavigateToMealTypes = { navViewModel.push(MealTypesRoute) },
                     onNavigateToAlertProfiles = { navViewModel.push(AlertProfilesRoute) },

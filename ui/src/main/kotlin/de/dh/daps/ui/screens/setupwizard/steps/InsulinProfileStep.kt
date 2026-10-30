@@ -20,7 +20,7 @@ import de.dh.daps.common.domain.model.therapy.ProfileInsulinSetting
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.screens.insulinprofile.EditableInsulinSettingState
-import de.dh.daps.ui.screens.insulinprofile.InsulinProfileEditorContent
+import de.dh.daps.ui.screens.insulinprofile.InsulinProfileEditorFormContent
 import de.dh.daps.ui.screens.setupwizard.components.SetupStepScaffold
 
 @Composable
@@ -100,7 +100,7 @@ fun InsulinProfileStep(
         isNextEnabled = isValid,
         snackbarHostState = snackbarHostState
     ) { innerPadding ->
-        InsulinProfileEditorContent(
+        InsulinProfileEditorFormContent(
             name = name,
             onNameChange = { name = it },
             isNameValid = isNameValid,

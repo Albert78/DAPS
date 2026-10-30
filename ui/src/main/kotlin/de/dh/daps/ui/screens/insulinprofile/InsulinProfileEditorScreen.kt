@@ -43,7 +43,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -105,15 +107,41 @@ data class EditableInsulinSettingState(
     val peak: String
 )
 
+@Composable
+fun InsulinProfileEditorScreen(
+    viewModel: InsulinProfileEditorViewModel,
+    onNavigateUp: () -> Unit
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    InsulinProfileEditorContent(
+        uiState = uiState,
+        onSave = { profile ->
+            viewModel.save(profile, onSuccess = onNavigateUp)
+        },
+        onCancel = onNavigateUp,
+        isNameUnique = { name, id -> viewModel.isNameUnique(name, id) }
+    )
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InsulinProfileDetailEditor(
-    profile: InsulinProfile,
-    insulinTypes: List<InsulinType>,
+fun InsulinProfileEditorContent(
+    uiState: InsulinProfileEditorUiState,
     onSave: (InsulinProfile) -> Unit,
     onCancel: () -> Unit,
     isNameUnique: (String, Long) -> Boolean = { _, _ -> true }
 ) {
+    if (uiState.isLoading || uiState.profile == null) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
+    val profile = uiState.profile
+    val insulinTypes = uiState.insulinTypes
+
     var name by remember(profile) { mutableStateOf(profile.name) }
     var basalBlocks by remember(profile) { mutableStateOf(profile.basalBlocks) }
     var isfBlocks by remember(profile) { mutableStateOf(profile.isfBlocks) }
@@ -222,7 +250,7 @@ fun InsulinProfileDetailEditor(
             )
         }
     ) { innerPadding ->
-        InsulinProfileEditorContent(
+        InsulinProfileEditorFormContent(
             name = name,
             onNameChange = { name = it },
             isNameValid = isNameValid,
@@ -269,9 +297,8 @@ fun InsulinProfileDetailEditor(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InsulinProfileEditorContent(
+fun InsulinProfileEditorFormContent(
     name: String,
     onNameChange: (String) -> Unit,
     insulinTypes: List<InsulinType>,
@@ -852,7 +879,7 @@ fun InsertButton(canInsert: Boolean, onClick: () -> Unit) {
 
 @Preview(showBackground = true)
 @Composable
-private fun InsulinProfileDetailEditorPreview() {
+private fun InsulinProfileEditorContentPreview() {
     val sampleInsulinType = InsulinType(name = "Humalog", activeSubstance = "Insulin lispro", dia = Minutes.ofHours(5), peak = Minutes.ofHours(1))
     val sampleProfile = InsulinProfile(
         id = 1,
@@ -873,41 +900,16 @@ private fun InsulinProfileDetailEditorPreview() {
     )
 
     AppPreview {
-        InsulinProfileDetailEditor(
-            profile = sampleProfile,
-            insulinTypes = listOf(
-                sampleInsulinType,
-                InsulinType(name = "NovoRapid", activeSubstance = "Insulin aspart", dia = Minutes.ofHours(5), peak = Minutes.ofHours(1))
+        InsulinProfileEditorContent(
+            uiState = InsulinProfileEditorUiState(
+                profile = sampleProfile,
+                insulinTypes = listOf(
+                    sampleInsulinType,
+                    InsulinType(name = "NovoRapid", activeSubstance = "Insulin aspart", dia = Minutes.ofHours(5), peak = Minutes.ofHours(1))
+                )
             ),
             onSave = {},
             onCancel = {}
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun InsulinProfileEditorContentPreview() {
-    val sampleInsulinType = InsulinType(name = "Humalog", activeSubstance = "Insulin lispro", dia = Minutes.ofHours(5), peak = Minutes.ofHours(1))
-    AppPreview {
-        InsulinProfileEditorContent(
-            name = "Normal",
-            onNameChange = {},
-            insulinTypes = listOf(sampleInsulinType),
-            insulinSettings = listOf(
-                EditableInsulinSettingState(
-                    insulinType = sampleInsulinType,
-                    dia = "300",
-                    peak = "60"
-                )
-            ),
-            onInsulinSettingsChanged = {},
-            basalBlocks = listOf(Block(Minutes.ofHours(24), 1.0)),
-            onBasalBlocksChanged = {},
-            isfBlocks = listOf(Block(Minutes.ofHours(24), 50.0)),
-            onIsfBlocksChanged = {},
-            crBlocks = listOf(Block(Minutes.ofHours(24), 10.0)),
-            onCrBlocksChanged = {}
         )
     }
 }

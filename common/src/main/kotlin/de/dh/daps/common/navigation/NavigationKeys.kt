@@ -8,7 +8,8 @@ import kotlinx.serialization.Serializable
 @Serializable object PermissionsRoute : NavKey
 @Serializable object PreferencesMainRoute : NavKey
 @Serializable object AppDataRoute : NavKey
-@Serializable object InsulinProfileEditorRoute : NavKey
+@Serializable object InsulinProfilesRoute : NavKey
+@Serializable data class InsulinProfileEditorRoute(val profileId: Long? = null, val isCopy: Boolean = false) : NavKey
 @Serializable object CurrentTherapySettingsRoute : NavKey
 @Serializable object MealCorrectionBolusRoute : NavKey
 @Serializable data class HistoricalMealRoute(val mealId: Long) : NavKey

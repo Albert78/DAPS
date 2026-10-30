@@ -30,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -50,6 +51,7 @@ import de.dh.daps.ui.common.composables.isStandardMealType
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppPreview
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 import de.dh.daps.common.R as CommonR
 
 @Composable
@@ -117,11 +119,11 @@ fun MealTypesContent(
         } else {
             val listState = rememberLazyListState()
 
-            var previousSize by remember { mutableStateOf(uiState.mealTypes.size) }
+            var previousSize by remember { mutableIntStateOf(uiState.mealTypes.size) }
 
             LaunchedEffect(uiState.mealTypes.size) {
                 if (uiState.mealTypes.size > previousSize) {
-                    delay(100)
+                    delay(100.milliseconds)
                     val targetIndex = (listState.layoutInfo.totalItemsCount - 1).coerceAtLeast(0)
                     listState.animateScrollToItem(targetIndex)
                 }
@@ -157,23 +159,17 @@ fun MealTypesContent(
     val targetMealType = mealTypeToDelete
     if (targetMealType != null) {
         AppAlertDialog(
-            onDismissRequest = { mealTypeToDelete = null },
             titleText = stringResource(id = R.string.delete_meal_type_title),
-            content = { Text(stringResource(id = R.string.delete_meal_type_message, targetMealType.name)) },
-            confirmButton = {
-                NormalTextButton(onClick = {
-                    mealTypeToDelete = null
-                    onDeleteMealType(targetMealType)
-                }) {
-                    Text(stringResource(id = CommonR.string.action_delete))
-                }
+            confirmButtonText = stringResource(id = CommonR.string.action_delete),
+            onConfirm = {
+                mealTypeToDelete = null
+                onDeleteMealType(targetMealType)
             },
-            dismissButton = {
-                NormalTextButton(onClick = { mealTypeToDelete = null }) {
-                    Text(stringResource(id = android.R.string.cancel))
-                }
-            }
-        )
+            dismissButtonText = stringResource(id = android.R.string.cancel),
+            onDismissRequest = { mealTypeToDelete = null },
+        ) {
+            Text(stringResource(id = R.string.delete_meal_type_message, targetMealType.name))
+        }
     }
 }
 
@@ -213,13 +209,11 @@ fun MealTypeItem(
                         contentDescription = stringResource(id = CommonR.string.cd_move_down)
                     )
                 }
-                if (!mealType.isStandardMealType()) {
-                    IconButton(onClick = onDelete) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = stringResource(id = CommonR.string.action_delete)
-                        )
-                    }
+                IconButton(onClick = onDelete, enabled = !mealType.isStandardMealType()) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = stringResource(id = CommonR.string.action_delete)
+                    )
                 }
             }
         },

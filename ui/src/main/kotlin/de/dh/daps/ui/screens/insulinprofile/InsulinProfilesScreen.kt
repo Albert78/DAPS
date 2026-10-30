@@ -50,84 +50,71 @@ import de.dh.daps.common.R as CommonR
 
 @Composable
 fun InsulinProfilesScreen(
-    viewModel: InsulinProfileSettingsViewModel,
+    viewModel: InsulinProfilesViewModel,
     onNavigateUp: () -> Unit,
+    onNavigateToEditor: (Long?) -> Unit,
+    onNavigateToCopy: (Long) -> Unit,
     title: String = stringResource(id = R.string.insulin_profiles_screen_title)
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val copyNameFormat = stringResource(R.string.insulin_profiles_copy_name_format)
 
-    if (uiState.editingProfile != null) {
-        val editingProfile = uiState.editingProfile!!
-        InsulinProfileDetailEditor(
-            profile = editingProfile,
-            insulinTypes = uiState.insulinTypes,
-            onSave = { viewModel.saveInsulinProfile(it) },
-            onCancel = { viewModel.stopEditing() },
-            isNameUnique = { name, id -> viewModel.isNameUnique(name, id) }
-        )
-    } else {
-        InsulinProfilesContent(
-            uiState = uiState,
-            title = title,
-            onNavigateUp = onNavigateUp,
-            onAddProfile = { viewModel.startEditingNewProfile() },
-            onEditProfile = { viewModel.startEditing(it) },
-            onDeleteProfile = { viewModel.confirmDelete(it) },
-            onCopyProfile = { profile ->
-                viewModel.copyInsulinProfile(profile, copyNameFormat.format(profile.name))
-            },
-            onConfirmDeleteProfile = { profile -> viewModel.deleteInsulinProfile(profile) },
-            onCancelDeleteDialog = { viewModel.cancelDelete() }
-        )
-    }
+    InsulinProfilesContent(
+        uiState = uiState,
+        title = title,
+        onNavigateUp = onNavigateUp,
+        onAddProfile = { onNavigateToEditor(null) },
+        onEditProfile = { profile -> onNavigateToEditor(profile.id) },
+        onDeleteProfile = { profile -> viewModel.deleteInsulinProfile(profile) },
+        onCopyProfile = { profile -> onNavigateToCopy(profile.id) }
+    )
 }
 
 @Composable
 fun InsulinProfilesContent(
-    uiState: InsulinProfileSettingsUiState,
+    uiState: InsulinProfilesUiState,
     onNavigateUp: () -> Unit,
     onAddProfile: () -> Unit,
     onEditProfile: (InsulinProfile) -> Unit,
     onDeleteProfile: (InsulinProfile) -> Unit,
     onCopyProfile: (InsulinProfile) -> Unit,
-    onConfirmDeleteProfile: (InsulinProfile) -> Unit,
-    onCancelDeleteDialog: () -> Unit,
     title: String = stringResource(id = R.string.insulin_profiles_screen_title)
 ) {
+    var profileToDelete by remember { mutableStateOf<InsulinProfile?>(null) }
+
     InsulinProfileList(
         uiState = uiState,
         title = title,
         onNavigateUp = onNavigateUp,
         onAddProfile = onAddProfile,
         onEditProfile = onEditProfile,
-        onDeleteProfile = onDeleteProfile,
+        onDeleteProfile = { profileToDelete = it },
         onCopyProfile = onCopyProfile
     )
 
-    uiState.showDeleteConfirmation?.let { profile ->
+    val targetProfile = profileToDelete
+    if (targetProfile != null) {
         AppAlertDialog(
-            onDismissRequest = onCancelDeleteDialog,
             titleText = stringResource(id = R.string.delete_insulin_profile_title),
-            content = { Text(stringResource(id = R.string.delete_insulin_profile_message, profile.name)) },
-            confirmButton = {
-                NormalTextButton(onClick = { onConfirmDeleteProfile(profile) }) {
-                    Text(stringResource(id = android.R.string.ok))
+            confirmButtonText = stringResource(id = CommonR.string.action_delete),
+            onConfirm = {
+                val profile = profileToDelete
+                profileToDelete = null
+                if (profile != null) {
+                    onDeleteProfile(profile)
                 }
             },
-            dismissButton = {
-                NormalTextButton(onClick = onCancelDeleteDialog) {
-                    Text(stringResource(id = android.R.string.cancel))
-                }
-            }
-        )
+            dismissButtonText = stringResource(id = android.R.string.cancel),
+            onDismissRequest = { profileToDelete = null },
+        ) {
+            Text(stringResource(id = R.string.delete_insulin_profile_message, targetProfile.name))
+        }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InsulinProfileList(
-    uiState: InsulinProfileSettingsUiState,
+    uiState: InsulinProfilesUiState,
     onNavigateUp: () -> Unit,
     onAddProfile: () -> Unit,
     onEditProfile: (InsulinProfile) -> Unit,
@@ -187,20 +174,31 @@ fun InsulinProfileList(
                 ) {
                     items(uiState.profiles.size) { index ->
                         val profile = uiState.profiles[index]
+                        val isActive = uiState.isProfileActive(profile)
+                        val canDelete = uiState.canDeleteProfile(profile)
                         ListItem(
                             headlineContent = { Text(profile.name) },
+                            supportingContent = if (isActive) {
+                                {
+                                    Text(
+                                        text = stringResource(id = R.string.current_therapy_active_badge),
+                                        color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                                    )
+                                }
+                            } else null,
                             modifier = Modifier
                                 .padding(8.dp)
                                 .clickable { onEditProfile(profile) },
                             trailingContent = {
-                                Row {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
                                     IconButton(onClick = { onCopyProfile(profile) }) {
                                         Icon(
                                             imageVector = Icons.Default.ContentCopy,
                                             contentDescription = stringResource(id = R.string.cd_copy_insulin_profile)
                                         )
                                     }
-                                    IconButton(onClick = { onDeleteProfile(profile) }) {
+                                    IconButton(onClick = { onDeleteProfile(profile) }, enabled = canDelete) {
                                         Icon(
                                             imageVector = Icons.Default.Delete,
                                             contentDescription = stringResource(id = R.string.cd_delete_insulin_profile)
@@ -255,14 +253,12 @@ private fun InsulinProfilesPreview() {
 
     AppPreview {
         InsulinProfilesContent(
-            uiState = InsulinProfileSettingsUiState(profiles = sampleProfiles),
+            uiState = InsulinProfilesUiState(profiles = sampleProfiles),
             onNavigateUp = {},
             onAddProfile = {},
             onEditProfile = {},
             onDeleteProfile = {},
-            onCopyProfile = {},
-            onConfirmDeleteProfile = {},
-            onCancelDeleteDialog = {}
+            onCopyProfile = {}
         )
     }
 }
