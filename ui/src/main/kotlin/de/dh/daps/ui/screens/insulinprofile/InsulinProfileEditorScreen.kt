@@ -498,7 +498,6 @@ fun InsulinSettingsEditor(
                 )
                 Text(
                     text = buttonText,
-                    maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
             }

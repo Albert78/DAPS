@@ -169,7 +169,7 @@ private fun ReminderCard(
                 PrimaryButton(
                     onClick = onDismiss
                 ) {
-                    Text(stringResource(UiR.string.cd_reminders_action_dismiss))
+                    Text(stringResource(UiR.string.reminders_action_dismiss))
                 }
             }
         }

@@ -61,8 +61,8 @@ import de.dh.daps.common.domain.model.reminder.ReminderType
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.FramedCard
-import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.NormalTextButton
+import de.dh.daps.ui.common.composables.RoundOutlinedButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppPreview
@@ -411,7 +411,7 @@ private fun <T> AddOverrideButton(
 
     if (availableTypes.isNotEmpty()) {
         Box {
-            NormalButton(onClick = { expanded = true }) {
+            RoundOutlinedButton(onClick = { expanded = true }) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = null,

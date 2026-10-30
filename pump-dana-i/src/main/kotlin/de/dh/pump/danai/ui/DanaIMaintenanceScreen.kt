@@ -90,7 +90,7 @@ fun DanaIMaintenanceContent(
             IconButton(onClick = { showResetDialog = true }) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(R.string.danai_maintenance_btn_back)
+                    contentDescription = stringResource(de.dh.daps.common.R.string.action_back)
                 )
             }
             Text(

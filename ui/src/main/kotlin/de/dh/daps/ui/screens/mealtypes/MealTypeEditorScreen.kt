@@ -62,12 +62,13 @@ import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.MealTypeIcon
 import de.dh.daps.ui.common.composables.NormalTextButton
-import de.dh.daps.ui.common.composables.PrimaryButton
+import de.dh.daps.ui.common.composables.RoundOutlinedButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.getStandardMealTypeLabel
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppPreview
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 import de.dh.daps.common.R as CommonR
 
 private data class InitialMealTypeValues(
@@ -183,7 +184,7 @@ fun MealTypeEditorContent(
 
         LaunchedEffect(uiState.components.size) {
             if (uiState.components.size > previousComponentsSize) {
-                delay(100)
+                delay(100.milliseconds)
                 val targetIndex = (listState.layoutInfo.totalItemsCount - 1).coerceAtLeast(0)
                 listState.animateScrollToItem(targetIndex)
             }
@@ -348,7 +349,7 @@ fun MealTypeEditorContent(
             }
 
             item {
-                PrimaryButton(
+                RoundOutlinedButton(
                     onClick = {
                         val lastPeak = uiState.components.lastOrNull()?.peakMinutes
                         val defaultPeak = lastPeak?.let { it + Minutes(30) } ?: Minutes(30)

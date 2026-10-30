@@ -46,7 +46,7 @@ fun SetupStepScaffold(
     onTopBack: () -> Unit = {},
     showBottomBackButton: Boolean = true,
     onBack: () -> Unit = {},
-    nextButtonText: String? = stringResource(R.string.setup_wizard_btn_next),
+    nextButtonText: String? = stringResource(de.dh.daps.common.R .string.action_next),
     onNext: (() -> Unit)? = null,
     isNextEnabled: Boolean = true,
     snackbarHostState: SnackbarHostState? = null,
@@ -83,7 +83,7 @@ fun SetupStepScaffold(
                             Icon(
                                 imageVector = if (useCloseIcon) Icons.Default.Close else Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = stringResource(
-                                    if (useCloseIcon) de.dh.daps.common.R.string.cd_cancel else R.string.setup_wizard_btn_back
+                                    if (useCloseIcon) de.dh.daps.common.R.string.cd_cancel else de.dh.daps.common.R.string.action_back
                                 )
                             )
                         }
@@ -107,7 +107,7 @@ fun SetupStepScaffold(
                     ) {
                         if (showBottomBackButton) {
                             NormalButton(onClick = onBack) {
-                                Text(stringResource(R.string.setup_wizard_btn_back))
+                                Text(stringResource(de.dh.daps.common.R.string.action_back))
                             }
                         } else {
                             Spacer(Modifier.width(1.dp))

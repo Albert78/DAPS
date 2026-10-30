@@ -29,7 +29,6 @@
     <string name="danai_maintenance_subtitle">Der Wartungsmodus ist aktiv. Du kannst die Pumpe jetzt über das Tastenfeld bedienen und Reservoir- oder Katheterwechsel durchführen. Pumpenbefehle werden so lange blockiert, bis der Wartungsmodus beendet wird.</string>
     <string name="danai_maintenance_status_active">Aktiv</string>
     <string name="danai_maintenance_btn_end">Wartung beenden</string>
-    <string name="danai_maintenance_btn_back">Zurück</string>
     <string name="danai_maintenance_reset_catheter_dialog_title">Katheterwechsel eintragen?</string>
     <string name="danai_maintenance_reset_catheter_dialog_subtitle">Hast du den Katheter gewechselt? Dies setzt die Tragedauer zurück, um den nächsten Turnus zu starten.</string>
     <string name="danai_maintenance_reset_catheter_dialog_btn_reset">Katheter gewechselt</string>
