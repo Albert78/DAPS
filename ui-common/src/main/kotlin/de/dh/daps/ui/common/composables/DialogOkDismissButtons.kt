@@ -48,8 +48,8 @@ fun DialogConfirmDismissButtons(
 fun DialogConfirmButton(
     modifier: Modifier = Modifier,
     onConfirm: () -> Unit,
-    okButtonText: String = stringResource(id = R.string.ok),
-    isOkEnabled: Boolean = true
+    confirmButtonText: String = stringResource(id = R.string.ok),
+    isConfirmEnabled: Boolean = true
 ) {
     Row(
         modifier = modifier
@@ -60,9 +60,9 @@ fun DialogConfirmButton(
         )
         NormalTextButton(
             onClick = onConfirm,
-            enabled = isOkEnabled
+            enabled = isConfirmEnabled
         ) {
-            Text(okButtonText)
+            Text(confirmButtonText)
         }
     }
 }
