@@ -39,14 +39,9 @@ class RecommendationActivity : ComponentActivity() {
                     recommendations = recommendations,
                     carbsUnit = carbsUnit,
                     onApplyRecommendation = { rec ->
-                        lifecycleScope.launch {
-                            val intent = MainActivity.createRecommendationIntent(this@RecommendationActivity, rec)
-                            startActivity(intent)
-                            registry.recommendationManager.removeRecommendation(rec)
-                            if (registry.recommendationManager.recommendations.value.isEmpty) {
-                                finish()
-                            }
-                        }
+                        val intent = MainActivity.createRecommendationIntent(this@RecommendationActivity, rec)
+                        startActivity(intent)
+                        finish()
                     },
                     onDismissRecommendation = { rec ->
                         lifecycleScope.launch {

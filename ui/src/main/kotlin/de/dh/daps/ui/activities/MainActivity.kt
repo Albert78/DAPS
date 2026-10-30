@@ -396,22 +396,10 @@ class MainActivity : ComponentActivity() {
         fun createStartDashboardIntent(context: Context): Intent =
             IntentHandler.createStartDashboardIntent(context)
 
-        fun createEditMealIntent(context: Context, mealId: Long): Intent =
-            IntentHandler.createEditMealIntent(context, mealId)
-
-        fun createMealCorrectionBolusIntent(
-            context: Context
-        ): Intent = IntentHandler.createMealCorrectionBolusIntent(context)
-
         fun createRecommendationIntent(
             context: Context,
             recommendation: ApsRecommendation
         ): Intent = IntentHandler.createRecommendationIntent(context, recommendation)
-
-        fun createManualControlIntent(
-            context: Context,
-            initialDialog: ManualControlInitialDialog = ManualControlInitialDialog.NONE
-        ): Intent = IntentHandler.createManualControlIntent(context, initialDialog)
 
         fun createSystemControlIntent(
             context: Context,
