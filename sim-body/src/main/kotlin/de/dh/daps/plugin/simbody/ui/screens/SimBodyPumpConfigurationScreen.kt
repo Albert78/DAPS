@@ -11,6 +11,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import de.dh.daps.common.domain.model.data.Timestamp
+import de.dh.daps.common.domain.model.therapy.InsulinAmount
+import de.dh.daps.common.domain.model.therapy.InsulinConcentration
+import de.dh.daps.common.domain.model.therapy.InsulinHistory
+import de.dh.daps.common.domain.model.therapy.InsulinProfile
+import de.dh.daps.common.domain.model.therapy.getDefaultInsulinTypes
 import de.dh.daps.common.domain.pump.BasalStatus
 import de.dh.daps.common.domain.pump.BolusEvent
 import de.dh.daps.common.domain.pump.BolusStatus
@@ -20,11 +25,6 @@ import de.dh.daps.common.domain.pump.PumpAlerts
 import de.dh.daps.common.domain.pump.PumpCapabilities
 import de.dh.daps.common.domain.pump.PumpHardwareInformation
 import de.dh.daps.common.domain.pump.PumpLifecycleState
-import de.dh.daps.common.domain.model.therapy.InsulinAmount
-import de.dh.daps.common.domain.model.therapy.InsulinConcentration
-import de.dh.daps.common.domain.model.therapy.InsulinHistory
-import de.dh.daps.common.domain.model.therapy.InsulinProfile
-import de.dh.daps.common.domain.model.therapy.getDefaultInsulinTypes
 import de.dh.daps.common.infrastructure.PluginPreferences
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.plugin.simbody.R
@@ -39,7 +39,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 @Composable
-fun SimBodyConfigurationScreen(
+fun SimBodyPumpConfigurationScreen(
     pump: InsulinPump,
     preferences: PluginPreferences?,
     onClose: () -> Unit,
@@ -52,7 +52,7 @@ fun SimBodyConfigurationScreen(
     val currentConcentration by pump.insulinConcentration.collectAsState()
 
     PumpConfigurationScreen(
-        title = stringResource(R.string.sim_body_config_screen_title),
+        title = stringResource(R.string.sim_body_pump_config_screen_title),
         selectedTypeId = currentInsulinTypeId,
         availableTypes = availableInsulinTypes,
         onSelectType = { insulinType ->
@@ -74,8 +74,8 @@ fun SimBodyConfigurationScreen(
         },
         onClose = onClose,
         modifier = modifier,
-        typeCardSubtitle = stringResource(R.string.sim_body_config_insulin_type_subtitle),
-        concentrationCardSubtitle = stringResource(R.string.sim_body_config_concentration_subtitle),
+        typeCardSubtitle = stringResource(R.string.sim_body_pump_config_insulin_type_subtitle),
+        concentrationCardSubtitle = stringResource(R.string.sim_body_pump_config_concentration_subtitle),
     )
 }
 
@@ -123,12 +123,12 @@ private class PreviewSimBodyPump(
     override fun stop() {}
 }
 
-@Preview(name = "SimBody Config - Light", showBackground = true)
-@Preview(name = "SimBody Config - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "SimBody Pump Config - Light", showBackground = true)
+@Preview(name = "SimBody Pump Config - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun SimBodyConfigurationScreenPreview() {
+private fun SimBodyPumpConfigurationScreenPreview() {
     AppPreview {
-        SimBodyConfigurationScreen(
+        SimBodyPumpConfigurationScreen(
             pump = PreviewSimBodyPump(),
             preferences = null,
             onClose = {}

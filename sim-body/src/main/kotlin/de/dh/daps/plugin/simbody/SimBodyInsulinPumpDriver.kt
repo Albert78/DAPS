@@ -8,7 +8,7 @@ import de.dh.daps.common.domain.model.therapy.InsulinConcentration
 import de.dh.daps.common.infrastructure.Plugin
 import de.dh.daps.common.infrastructure.PluginContext
 import de.dh.daps.common.ui.UiText
-import de.dh.daps.plugin.simbody.ui.screens.SimBodyConfigurationScreen
+import de.dh.daps.plugin.simbody.ui.screens.SimBodyPumpConfigurationScreen
 import de.dh.daps.plugin.simbody.ui.screens.SimBodyPumpSetupScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -113,7 +113,7 @@ class SimBodyInsulinPumpDriver(
         pump: InsulinPump,
         onClose: () -> Unit,
     ): (@Composable () -> Unit) = {
-        SimBodyConfigurationScreen(
+        SimBodyPumpConfigurationScreen(
             pump = pump,
             preferences = pluginContext?.preferences,
             onClose = onClose,

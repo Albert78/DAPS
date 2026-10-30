@@ -73,8 +73,12 @@
     <string name="impact_liver">Leber (Endogen)</string>
     <string name="impact_exercise">Sport</string>
     <string name="impact_stress">Stress</string>
+
     <!-- Pump Configuration -->
-    <string name="sim_body_config_screen_title">SimBody Konfiguration</string>
-    <string name="sim_body_config_insulin_type_subtitle">Wähle den Typ des in der SimBody-Pumpe geladenen Insulins.</string>
-    <string name="sim_body_config_concentration_subtitle">Wähle die Konzentration des in der SimBody-Pumpe geladenen Insulins. Der Standardwert ist U100.</string>
+    <string name="sim_body_pump_config_screen_title">SimBody Insulinpumpe Konfiguration</string>
+    <string name="sim_body_pump_config_insulin_type_subtitle">Wähle den Typ des in der SimBody-Pumpe geladenen Insulins.</string>
+    <string name="sim_body_pump_config_concentration_subtitle">Wähle die Konzentration des in der SimBody-Pumpe geladenen Insulins. Der Standardwert ist U100.</string>
+
+    <!-- CGM Configuration -->
+    <string name="sim_body_cgm_config_screen_title">SimBody CGM Konfiguration</string>
 </resources>

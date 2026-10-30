@@ -1,24 +1,6 @@
 package de.dh.daps.plugin.simbody
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import de.dh.daps.common.device.driver.GlucoseSourceDriver
 import de.dh.daps.common.device.state.DeviceLifecycleState
 import de.dh.daps.common.domain.model.cgm.GlucoseSource
@@ -26,7 +8,7 @@ import de.dh.daps.common.infrastructure.Plugin
 import de.dh.daps.common.infrastructure.PluginContext
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.plugin.simbody.ui.screens.SimBodyCgmSetupScreen
-import de.dh.daps.ui.common.composables.PrimaryButton
+import de.dh.daps.plugin.simbody.ui.screens.SimBodyGlucoseConfigurationScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -109,66 +91,15 @@ class SimBodyGlucoseSourceDriver(
     }
 
     override fun getSettingsScreen(glucoseSource: GlucoseSource, onClose: () -> Unit): (@Composable () -> Unit) = {
-        SimBodyGlucoseSettingsContent(onClose = onClose)
+        SimBodyGlucoseConfigurationScreen(
+            glucoseSource = glucoseSource,
+            onClose = onClose,
+        )
     }
 
     companion object {
         const val DRIVER_ID = "de.dh.daps.plugin.simbody.cgm"
         const val DEFAULT_DEVICE_ID = "simbody-virtual-cgm-01"
         private const val KEY_DEVICE_ID = "device_id"
-    }
-}
-
-@Composable
-private fun SimBodyGlucoseSettingsContent(
-    onClose: () -> Unit
-) {
-    var fastSimulation by remember { mutableStateOf(false) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Text(
-            text = "SimBody CGM-Einstellungen",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold
-        )
-
-        HorizontalDivider()
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Schnelle Simulation",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = "Glukosewerte ohne Verzögerung im Simulator bereitstellen",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Switch(
-                checked = fastSimulation,
-                onCheckedChange = { fastSimulation = it }
-            )
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
-        ) {
-            PrimaryButton(onClick = onClose) {
-                Text(stringResource(de.dh.daps.common.R.string.action_close))
-            }
-        }
     }
 }
