@@ -25,7 +25,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
@@ -34,7 +33,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -57,7 +55,9 @@ import androidx.core.net.toUri
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.FramedCard
+import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.NormalTextButton
+import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.icons.Backup
@@ -236,7 +236,7 @@ fun AppDataContent(
                             color = MaterialTheme.colorScheme.secondary
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(
+                        PrimaryButton(
                             onClick = onSelectFolderClick,
                             modifier = Modifier.align(Alignment.End)
                         ) {
@@ -298,7 +298,7 @@ fun AppDataContent(
                             )
                         }
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(
+                        PrimaryButton(
                             onClick = onExportClick,
                             modifier = Modifier.align(Alignment.End)
                         ) {
@@ -371,7 +371,7 @@ fun AppDataContent(
                             )
                         }
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(
+                        PrimaryButton(
                             onClick = onImportClick,
                             modifier = Modifier.align(Alignment.End)
                         ) {
@@ -410,7 +410,7 @@ fun AppDataContent(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        OutlinedButton(
+                        NormalButton(
                             onClick = onResetClick,
                             colors = ButtonDefaults.outlinedButtonColors(
                                 contentColor = MaterialTheme.colorScheme.error
@@ -611,7 +611,7 @@ fun ResetConfirmationFullscreenDialogContent(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Button(
+                PrimaryButton(
                     onClick = onConfirm,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -638,7 +638,7 @@ fun ResetConfirmationFullscreenDialogContent(
                     }
                 }
 
-                OutlinedButton(
+                NormalButton(
                     onClick = onDismiss,
                     modifier = Modifier
                         .fillMaxWidth()

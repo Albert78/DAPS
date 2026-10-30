@@ -33,7 +33,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -60,6 +59,7 @@ import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.therapy.TherapyAdjustment
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.AppAlertDialog
+import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
@@ -416,7 +416,7 @@ fun ScheduledTherapyAdjustmentContent(
 
                 if (hasExistingAdjustment) {
                     Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedButton(
+                    NormalButton(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(48.dp),

@@ -37,12 +37,13 @@ fun PrimaryButton(
     ),
     border: BorderStroke? = null,
     shape: Shape = RoundedCornerShape(5.dp),
+    contentPadding: PaddingValues = smallPaddingValues(),
     content: @Composable () -> Unit
 ) {
     Button(
         onClick = onClick,
         modifier = modifier,
-        contentPadding = smallPaddingValues(),
+        contentPadding = contentPadding,
         colors = colors,
         enabled = enabled,
         shape = shape,
@@ -63,12 +64,13 @@ fun SecondaryButton(
     ),
     border: BorderStroke? = null,
     shape: Shape = RoundedCornerShape(5.dp),
+    contentPadding: PaddingValues = smallPaddingValues(),
     content: @Composable () -> Unit
 ) {
     Button(
         onClick = onClick,
         modifier = modifier,
-        contentPadding = smallPaddingValues(),
+        contentPadding = contentPadding,
         colors = colors,
         enabled = enabled,
         shape = shape,
@@ -89,12 +91,13 @@ fun NormalButton(
     ),
     border: BorderStroke? = ButtonDefaults.outlinedButtonBorder(enabled),
     shape: Shape = RoundedCornerShape(5.dp),
+    contentPadding: PaddingValues = smallPaddingValues(),
     content: @Composable () -> Unit
 ) {
     OutlinedButton(
         onClick = onClick,
         modifier = modifier,
-        contentPadding = smallPaddingValues(),
+        contentPadding = contentPadding,
         colors = colors,
         enabled = enabled,
         shape = shape,
@@ -113,12 +116,13 @@ fun NormalTextButton(
         contentColor = MaterialTheme.colorScheme.primary
     ),
     shape: Shape = RoundedCornerShape(5.dp),
+    contentPadding: PaddingValues = smallPaddingValues(),
     content: @Composable () -> Unit
 ) {
     TextButton(
         onClick = onClick,
         modifier = modifier,
-        contentPadding = smallPaddingValues(),
+        contentPadding = contentPadding,
         colors = colors,
         enabled = enabled,
         shape = shape
@@ -158,7 +162,7 @@ fun SecondaryButtonPreview() {
 @Preview(showBackground = false)
 @Preview(showBackground = false, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun OutlinedButtonPreview() {
+fun NormalButtonPreview() {
     AppPreview {
         NormalButton(
             modifier = Modifier.padding(8.dp),

@@ -25,7 +25,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -47,7 +46,6 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.common.domain.model.alarm.ActiveAlarmGroup
 import de.dh.daps.common.domain.model.alarm.AlarmSeverity
 import de.dh.daps.common.domain.model.alarm.AlarmType
-import de.dh.daps.ui.activities.AlarmActivity
 import de.dh.daps.common.domain.model.data.BgDelta
 import de.dh.daps.common.domain.model.data.BgReading
 import de.dh.daps.common.domain.model.data.BgSampleKind
@@ -66,17 +64,19 @@ import de.dh.daps.common.navigation.ManualControlInitialDialog
 import de.dh.daps.core.orchestration.ActiveRecommendations
 import de.dh.daps.core.orchestration.ApsRecommendation
 import de.dh.daps.ui.R
+import de.dh.daps.ui.activities.AlarmActivity
 import de.dh.daps.ui.common.LocalCarbsUnit
 import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.composables.ExpandableInfoCard
-import de.dh.daps.ui.common.theme.ExtendedTheme
+import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.WarningBanner
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.executeRecommendationAction
 import de.dh.daps.ui.common.getBolusRecommendationText
 import de.dh.daps.ui.common.theme.AppPreview
+import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.daps.ui.controls.apscontrol.ApsControlCard
 import de.dh.daps.ui.controls.history.HistoryAndImpactChartOrDefault
 import de.dh.daps.ui.controls.history.HistoryAndImpactDiagramData
@@ -400,14 +400,14 @@ fun ActiveAlarmGroupBanner(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                OutlinedButton(
+                NormalButton(
                     onClick = { onSnoozeAll(15) },
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = contentColor)
                 ) {
                     Text(stringResource(R.string.alarm_action_snooze_15))
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                OutlinedButton(
+                NormalButton(
                     onClick = { onSnoozeAll(30) },
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = contentColor)
                 ) {

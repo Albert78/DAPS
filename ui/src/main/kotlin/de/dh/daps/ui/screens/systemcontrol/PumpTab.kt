@@ -28,7 +28,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -43,12 +42,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.domain.model.data.Timestamp
+import de.dh.daps.common.domain.model.therapy.InsulinAmount
+import de.dh.daps.common.domain.model.therapy.InsulinConcentration
 import de.dh.daps.common.domain.pump.ExpirationDate
 import de.dh.daps.common.domain.pump.PatchDeactivationReason
 import de.dh.daps.common.domain.pump.PatchPhase
 import de.dh.daps.common.domain.pump.PumpLifecycleState
-import de.dh.daps.common.domain.model.therapy.InsulinAmount
-import de.dh.daps.common.domain.model.therapy.InsulinConcentration
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.core.pump.JobErrorCode
 import de.dh.daps.core.pump.PumpCoordinatorState
@@ -57,6 +56,7 @@ import de.dh.daps.core.pump.RetryReason
 import de.dh.daps.core.pump.SyncStep
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
+import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.icons.Icon_Pump_Device
 import de.dh.daps.ui.common.icons.PumpReservoir
@@ -310,9 +310,8 @@ fun PumpOverviewCard(
                                 label = "",
                                 reserveIconSpace = true
                             ) {
-                                OutlinedButton(
+                                NormalButton(
                                     onClick = onRefreshPumpStatus,
-                                    shape = RoundedCornerShape(8.dp),
                                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                                 ) {
                                     Column(
