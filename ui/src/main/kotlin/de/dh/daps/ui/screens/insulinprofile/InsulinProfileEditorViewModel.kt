@@ -31,7 +31,8 @@ data class InsulinProfileEditorUiState(
 class InsulinProfileEditorViewModel(
     private val registry: SystemRegistry,
     private val profileId: Long?,
-    private val isCopy: Boolean
+    private val isCopy: Boolean,
+    private val newName: String?
 ) : ViewModel() {
 
     private val therapyRepository = registry.therapyRepository
@@ -54,7 +55,7 @@ class InsulinProfileEditorViewModel(
                     if (isCopy) {
                         source.copy(
                             id = ID_UNDEFINED,
-                            name = "${source.name} (Copy)"
+                            name = newName ?: "${source.name} (Copy)"
                         )
                     } else {
                         source
@@ -122,11 +123,12 @@ class InsulinProfileEditorViewModel(
         class Factory(
             private val registry: SystemRegistry,
             private val profileId: Long?,
-            private val isCopy: Boolean
+            private val isCopy: Boolean,
+            private val newName: String?
         ) : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
-                return InsulinProfileEditorViewModel(registry, profileId, isCopy) as T
+                return InsulinProfileEditorViewModel(registry, profileId, isCopy, newName) as T
             }
         }
     }

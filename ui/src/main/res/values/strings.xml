@@ -56,6 +56,7 @@
     <string name="alert_profiles_screen_title">Benachrichtigungs-Profile</string>
 
     <string name="insulin_profiles_screen_title">Insulin-Profile verwalten</string>
+    <string name="insulin_profile_copy_template">%1$s (Kopie)</string>
     <string name="insulin_profile_editor_new_profile">Neues Insulin-Profil</string>
     <string name="insulin_profile_editor_edit_profile">Insulin-Profil bearbeiten</string>
     <string name="insulin_profile_editor_name_label">Name des Insulin-Profils</string>

@@ -198,15 +198,15 @@ class MainFeatureNavGraph(
                     onNavigateToEditor = { profileId ->
                         navViewModel.push(InsulinProfileEditorRoute(profileId = profileId))
                     },
-                    onNavigateToCopy = { profileId ->
-                        navViewModel.push(InsulinProfileEditorRoute(profileId = profileId, isCopy = true))
+                    onNavigateToCopy = { profileId, newName ->
+                        navViewModel.push(InsulinProfileEditorRoute(profileId = profileId, isCopy = true, newName = newName))
                     }
                 )
             }
 
             is InsulinProfileEditorRoute -> NavEntry(key) {
                 val vm: InsulinProfileEditorViewModel = viewModel(
-                    factory = InsulinProfileEditorViewModel.Companion.Factory(registry, key.profileId, key.isCopy)
+                    factory = InsulinProfileEditorViewModel.Companion.Factory(registry, key.profileId, key.isCopy, key.newName)
                 )
 
                 InsulinProfileEditorScreen(

@@ -19,6 +19,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -26,12 +27,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.domain.model.data.Block
@@ -41,11 +44,11 @@ import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.common.domain.model.therapy.ProfileInsulinSetting
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.AppAlertDialog
-import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppPreview
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 import de.dh.daps.common.R as CommonR
 
 @Composable
@@ -53,7 +56,7 @@ fun InsulinProfilesScreen(
     viewModel: InsulinProfilesViewModel,
     onNavigateUp: () -> Unit,
     onNavigateToEditor: (Long?) -> Unit,
-    onNavigateToCopy: (Long) -> Unit,
+    onNavigateToCopy: (Long, String) -> Unit,
     title: String = stringResource(id = R.string.insulin_profiles_screen_title)
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -65,7 +68,8 @@ fun InsulinProfilesScreen(
         onAddProfile = { onNavigateToEditor(null) },
         onEditProfile = { profile -> onNavigateToEditor(profile.id) },
         onDeleteProfile = { profile -> viewModel.deleteInsulinProfile(profile) },
-        onCopyProfile = { profile -> onNavigateToCopy(profile.id) }
+        onCopyProfile = { profile, copyName ->
+            onNavigateToCopy(profile.id, copyName) }
     )
 }
 
@@ -76,7 +80,7 @@ fun InsulinProfilesContent(
     onAddProfile: () -> Unit,
     onEditProfile: (InsulinProfile) -> Unit,
     onDeleteProfile: (InsulinProfile) -> Unit,
-    onCopyProfile: (InsulinProfile) -> Unit,
+    onCopyProfile: (InsulinProfile, String) -> Unit,
     title: String = stringResource(id = R.string.insulin_profiles_screen_title)
 ) {
     var profileToDelete by remember { mutableStateOf<InsulinProfile?>(null) }
@@ -119,7 +123,7 @@ fun InsulinProfileList(
     onAddProfile: () -> Unit,
     onEditProfile: (InsulinProfile) -> Unit,
     onDeleteProfile: (InsulinProfile) -> Unit,
-    onCopyProfile: (InsulinProfile) -> Unit,
+    onCopyProfile: (InsulinProfile, String) -> Unit,
     title: String = stringResource(id = R.string.insulin_profiles_screen_title)
 ) {
     Scaffold(
@@ -155,11 +159,11 @@ fun InsulinProfileList(
             } else {
                 val listState = rememberLazyListState()
 
-                var previousSize by remember { mutableStateOf(uiState.profiles.size) }
+                var previousSize by remember { mutableIntStateOf(uiState.profiles.size) }
 
                 LaunchedEffect(uiState.profiles.size) {
                     if (uiState.profiles.size > previousSize) {
-                        delay(100)
+                        delay(100.milliseconds)
                         val targetIndex = (listState.layoutInfo.totalItemsCount - 1).coerceAtLeast(0)
                         listState.animateScrollToItem(targetIndex)
                     }
@@ -182,8 +186,8 @@ fun InsulinProfileList(
                                 {
                                     Text(
                                         text = stringResource(id = R.string.current_therapy_active_badge),
-                                        color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.Bold
                                     )
                                 }
                             } else null,
@@ -192,7 +196,8 @@ fun InsulinProfileList(
                                 .clickable { onEditProfile(profile) },
                             trailingContent = {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    IconButton(onClick = { onCopyProfile(profile) }) {
+                                    val copyName = stringResource(R.string.insulin_profile_copy_template, profile.name)
+                                    IconButton(onClick = { onCopyProfile(profile, copyName) }) {
                                         Icon(
                                             imageVector = Icons.Default.ContentCopy,
                                             contentDescription = stringResource(id = R.string.cd_copy_insulin_profile)
@@ -258,7 +263,7 @@ private fun InsulinProfilesPreview() {
             onAddProfile = {},
             onEditProfile = {},
             onDeleteProfile = {},
-            onCopyProfile = {}
+            onCopyProfile = { _, _ -> }
         )
     }
 }
