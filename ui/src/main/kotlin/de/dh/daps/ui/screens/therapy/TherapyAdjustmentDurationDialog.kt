@@ -1,13 +1,12 @@
 package de.dh.daps.ui.screens.therapy
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
@@ -24,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.data.Timestamp
@@ -33,6 +33,7 @@ import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.TimeStepper
 import de.dh.daps.ui.common.composables.contentScrollIndicator
+import de.dh.daps.ui.common.theme.AppPreview
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlin.math.abs
@@ -44,7 +45,6 @@ private enum class DurationMode {
     ABSOLUTE
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun TherapyAdjustmentDurationDialog(
     initialEndTime: Timestamp?,
@@ -124,7 +124,7 @@ fun TherapyAdjustmentDurationDialog(
                             TimeStepper(
                                 currentTime = targetEndTime,
                                 onTimeChange = { newTime ->
-                                    if (newTime >= minEndTime && newTime <= maxEndTime) {
+                                    if (newTime in minEndTime..maxEndTime) {
                                         targetEndTime = newTime
                                     }
                                 },
@@ -183,7 +183,7 @@ fun TherapyAdjustmentDurationDialog(
                             AbsoluteTimeStepper(
                                 currentTime = targetEndTime,
                                 onTimeChange = { newTime ->
-                                    if (newTime >= minEndTime && newTime <= maxEndTime) {
+                                    if (newTime in minEndTime..maxEndTime) {
                                         targetEndTime = newTime
                                     }
                                 },
@@ -214,4 +214,17 @@ fun TherapyAdjustmentDurationDialog(
             }
         }
     )
+}
+
+@Preview(name = "Light Mode", showBackground = true, showSystemUi = true)
+@Preview(name = "Dark Mode", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, showSystemUi = true)
+@Composable
+private fun TherapyAdjustmentDurationDialogPreview() {
+    AppPreview {
+        TherapyAdjustmentDurationDialog(
+            initialEndTime = Timestamp.now() + Minutes(60),
+            onEndTimeSelected = {},
+            onDismiss = {}
+        )
+    }
 }
