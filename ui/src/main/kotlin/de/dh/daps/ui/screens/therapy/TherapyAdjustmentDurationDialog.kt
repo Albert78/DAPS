@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +29,7 @@ import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.AbsoluteTimeStepper
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.TimeStepper
 import de.dh.daps.ui.common.composables.contentScrollIndicator
@@ -69,7 +69,7 @@ fun TherapyAdjustmentDurationDialog(
 
     var targetEndTime by remember { mutableStateOf(computedInitialEndTime) }
 
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             NormalTextButton(
@@ -88,7 +88,7 @@ fun TherapyAdjustmentDurationDialog(
         title = {
             Text(text = stringResource(id = R.string.therapy_adjustment_duration_dialog_title))
         },
-        text = {
+        content = {
             val scrollState = rememberScrollState()
             Column(
                 modifier = Modifier

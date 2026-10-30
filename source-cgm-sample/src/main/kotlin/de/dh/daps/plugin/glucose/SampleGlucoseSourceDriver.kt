@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import de.dh.daps.ui.common.composables.AppAlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -32,6 +31,7 @@ import de.dh.daps.common.domain.model.cgm.GlucoseSource
 import de.dh.daps.common.infrastructure.Plugin
 import de.dh.daps.common.infrastructure.PluginContext
 import de.dh.daps.common.ui.UiText
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.NormalTextButton
@@ -213,7 +213,7 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
             AppAlertDialog(
                 onDismissRequest = { showUnbindDialog = false },
                 title = { Text(stringResource(R.string.sample_cgm_unbind_dialog_title)) },
-                text = { Text(stringResource(R.string.sample_cgm_unbind_dialog_message)) },
+                content = { Text(stringResource(R.string.sample_cgm_unbind_dialog_message)) },
                 confirmButton = {
                     PrimaryButton(
                         onClick = {

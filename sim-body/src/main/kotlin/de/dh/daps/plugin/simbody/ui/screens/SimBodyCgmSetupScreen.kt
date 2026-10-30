@@ -8,12 +8,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import de.dh.daps.ui.common.composables.AppAlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,6 +29,7 @@ import de.dh.daps.common.device.state.DeviceLifecycleState
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.plugin.simbody.R
 import de.dh.daps.plugin.simbody.SimBodyGlucoseSourceDriver
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.NormalTextButton
@@ -162,7 +161,7 @@ fun SimBodyCgmSetupContent(
         AppAlertDialog(
             onDismissRequest = { showUnbindDialog = false },
             title = { Text(stringResource(R.string.sim_body_cgm_unbind_dialog_title)) },
-            text = { Text(stringResource(R.string.sim_body_cgm_unbind_dialog_message)) },
+            content = { Text(stringResource(R.string.sim_body_cgm_unbind_dialog_message)) },
             confirmButton = {
                 PrimaryButton(
                     onClick = {

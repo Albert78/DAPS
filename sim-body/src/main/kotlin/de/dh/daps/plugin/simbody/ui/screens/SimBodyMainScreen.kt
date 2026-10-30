@@ -18,7 +18,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Timeline
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -46,6 +45,7 @@ import de.dh.daps.plugin.simbody.BodyModel
 import de.dh.daps.plugin.simbody.R
 import de.dh.daps.plugin.simbody.ui.components.SimBodyEatMealDialog
 import de.dh.daps.ui.common.carbsValue
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
@@ -240,10 +240,10 @@ private fun EditDoubleDialog(
     onConfirm: (Double) -> Unit
 ) {
     var textValue by remember { mutableStateOf(if (initialValue == 0.0) "" else initialValue.toString()) }
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.dialog_title_edit_param, title)) },
-        text = {
+        content = {
             OutlinedTextField(
                 value = textValue,
                 onValueChange = { textValue = it },

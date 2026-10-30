@@ -24,7 +24,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -59,6 +58,7 @@ import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.therapy.CarbCurveComponentData
 import de.dh.daps.common.domain.model.therapy.MealType
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.MealTypeIcon
 import de.dh.daps.ui.common.composables.NormalTextButton
@@ -367,10 +367,10 @@ fun MealTypeEditorContent(
     }
 
     if (showDiscardConfirmation) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showDiscardConfirmation = false },
             title = { Text(stringResource(id = R.string.meal_type_editor_discard_title)) },
-            text = { Text(stringResource(id = R.string.meal_type_editor_discard_message)) },
+            content = { Text(stringResource(id = R.string.meal_type_editor_discard_message)) },
             confirmButton = {
                 NormalTextButton(
                     onClick = {

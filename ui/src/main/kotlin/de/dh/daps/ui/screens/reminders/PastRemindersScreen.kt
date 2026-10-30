@@ -16,7 +16,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
@@ -40,11 +39,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.reminder.Reminder
 import de.dh.daps.common.domain.model.reminder.ReminderStatus
 import de.dh.daps.common.domain.model.reminder.ReminderType
-import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.ScreenTitle
@@ -184,12 +184,12 @@ fun PastRemindersContent(
 
     reminderToDelete?.let { reminder ->
         val titleText = reminder.title.ifBlank { stringResource(CommonR.string.notification_reminder_title) }
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { reminderToDelete = null },
             title = {
                 Text(text = stringResource(R.string.delete_reminder_title))
             },
-            text = {
+            content = {
                 Text(text = stringResource(R.string.delete_reminder_message, titleText))
             },
             confirmButton = {
@@ -214,12 +214,12 @@ fun PastRemindersContent(
     }
 
     if (showClearAllDialog) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showClearAllDialog = false },
             title = {
                 Text(text = stringResource(R.string.past_reminders_clear_dialog_title))
             },
-            text = {
+            content = {
                 Text(text = stringResource(R.string.past_reminders_clear_dialog_message))
             },
             confirmButton = {

@@ -16,7 +16,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -34,7 +33,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -44,12 +42,14 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.common.domain.model.therapy.MealType
 import de.dh.daps.common.domain.model.therapy.getDefaultMealTypes
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.MealTypeIcon
 import de.dh.daps.ui.common.composables.NormalTextButton
-import de.dh.daps.ui.common.composables.isStandardMealType
 import de.dh.daps.ui.common.composables.contentScrollIndicator
+import de.dh.daps.ui.common.composables.isStandardMealType
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppPreview
+import kotlinx.coroutines.delay
 import de.dh.daps.common.R as CommonR
 
 @Composable
@@ -156,10 +156,10 @@ fun MealTypesContent(
 
     val targetMealType = mealTypeToDelete
     if (targetMealType != null) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { mealTypeToDelete = null },
             title = { Text(stringResource(id = R.string.delete_meal_type_title)) },
-            text = { Text(stringResource(id = R.string.delete_meal_type_message, targetMealType.name)) },
+            content = { Text(stringResource(id = R.string.delete_meal_type_message, targetMealType.name)) },
             confirmButton = {
                 NormalTextButton(onClick = {
                     mealTypeToDelete = null

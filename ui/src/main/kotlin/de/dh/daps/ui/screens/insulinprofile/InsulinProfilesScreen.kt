@@ -13,7 +13,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -35,12 +34,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.data.Block
+import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.therapy.InsulinProfile
 import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.common.domain.model.therapy.ProfileInsulinSetting
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
@@ -106,10 +106,10 @@ fun InsulinProfilesContent(
     )
 
     uiState.showDeleteConfirmation?.let { profile ->
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = onCancelDeleteDialog,
             title = { Text(stringResource(id = R.string.delete_insulin_profile_title)) },
-            text = { Text(stringResource(id = R.string.delete_insulin_profile_message, profile.name)) },
+            content = { Text(stringResource(id = R.string.delete_insulin_profile_message, profile.name)) },
             confirmButton = {
                 NormalTextButton(onClick = { onConfirmDeleteProfile(profile) }) {
                     Text(stringResource(id = android.R.string.ok))

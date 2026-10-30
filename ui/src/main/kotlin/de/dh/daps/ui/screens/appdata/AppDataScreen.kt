@@ -25,7 +25,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
@@ -39,7 +38,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -57,7 +55,9 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.FramedCard
+import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.icons.Backup
@@ -442,7 +442,7 @@ fun AppDataContent(
 
     // Confirm Import Dialog
     if (uiState.showImportConfirmDialog) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = onImportDismiss,
             icon = {
                 Icon(
@@ -452,16 +452,18 @@ fun AppDataContent(
                 )
             },
             title = { Text(stringResource(R.string.app_data_dialog_import_title)) },
-            text = { Text(stringResource(R.string.app_data_dialog_import_message)) },
+            content = { Text(stringResource(R.string.app_data_dialog_import_message)) },
             confirmButton = {
-                Button(
+                NormalTextButton(
                     onClick = onImportConfirm
                 ) {
                     Text(stringResource(R.string.app_data_btn_import))
                 }
             },
             dismissButton = {
-                TextButton(onClick = onImportDismiss) {
+                NormalTextButton(
+                    onClick = onImportDismiss
+                ) {
                     Text(stringResource(CommonR.string.action_cancel))
                 }
             }

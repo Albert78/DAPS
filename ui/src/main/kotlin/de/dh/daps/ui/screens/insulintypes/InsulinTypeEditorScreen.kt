@@ -14,7 +14,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -36,6 +35,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
@@ -189,10 +189,10 @@ private fun DiscardChangesDialog(
     onSave: () -> Unit,
     onDiscard: () -> Unit
 ) {
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismissRequest,
         title = { Text(stringResource(id = R.string.insulin_type_editor_discard_title)) },
-        text = { Text(stringResource(id = R.string.insulin_type_editor_discard_message)) },
+        content = { Text(stringResource(id = R.string.insulin_type_editor_discard_message)) },
         confirmButton = {
             NormalTextButton(
                 onClick = onSave,

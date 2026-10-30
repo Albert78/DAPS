@@ -23,7 +23,6 @@ import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
@@ -68,6 +67,7 @@ import de.dh.daps.common.domain.model.therapy.InsulinOrigin
 import de.dh.daps.common.domain.model.therapy.InsulinStatus
 import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.InsulinAmountStepper
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
@@ -169,12 +169,12 @@ fun InsulinHistoryContent(
         }
 
         deletingInsulin?.let { insulin ->
-            AlertDialog(
+            AppAlertDialog(
                 onDismissRequest = { deletingInsulin = null },
                 title = {
                     Text(text = stringResource(id = R.string.delete_insulin_title))
                 },
-                text = {
+                content = {
                     Text(text = stringResource(id = R.string.delete_insulin_message))
                 },
                 confirmButton = {
@@ -489,7 +489,7 @@ fun AddManualInsulinDialog(
     var selectedInsulinType by remember { mutableStateOf(defaultInsulinType ?: availableInsulinTypes.firstOrNull()) }
     var expanded by remember { mutableStateOf(false) }
 
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
@@ -497,7 +497,7 @@ fun AddManualInsulinDialog(
                 else stringResource(id = R.string.insulin_history_add_manual_title)
             )
         },
-        text = {
+        content = {
             Column {
                 Text(
                     text = stringResource(id = R.string.insulin_history_add_manual_desc),

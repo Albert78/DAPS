@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -21,6 +20,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.domain.model.engine.ApsMode
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.theme.AppPreview
@@ -35,7 +35,7 @@ fun ApsModeSelectionDialog(
     onModeChange: (ApsMode) -> Unit,
     onDismissRequest: () -> Unit
 ) {
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismissRequest,
         title = {
             Text(
@@ -44,7 +44,7 @@ fun ApsModeSelectionDialog(
                 textAlign = TextAlign.Center
             )
         },
-        text = {
+        content = {
             ApsModeSelectionContent(
                 selectedMode = selectedMode,
                 availableModes = availableModes,

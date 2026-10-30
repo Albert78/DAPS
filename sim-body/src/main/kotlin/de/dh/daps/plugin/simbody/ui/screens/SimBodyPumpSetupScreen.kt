@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import de.dh.daps.ui.common.composables.AppAlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -30,6 +29,7 @@ import de.dh.daps.common.device.state.DeviceLifecycleState
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.plugin.simbody.R
 import de.dh.daps.plugin.simbody.SimBodyInsulinPumpDriver
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.NormalTextButton
@@ -161,7 +161,7 @@ fun SimBodyPumpSetupContent(
         AppAlertDialog(
             onDismissRequest = { showUnbindDialog = false },
             title = { Text(stringResource(R.string.sim_body_pump_unbind_dialog_title)) },
-            text = { Text(stringResource(R.string.sim_body_pump_unbind_dialog_message)) },
+            content = { Text(stringResource(R.string.sim_body_pump_unbind_dialog_message)) },
             confirmButton = {
                 PrimaryButton(
                     onClick = {

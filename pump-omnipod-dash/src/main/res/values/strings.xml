@@ -23,9 +23,9 @@
     <string name="omnipod_dash_cancel_dialog_step1_title">Einrichtung abbrechen?</string>
     <string name="omnipod_dash_cancel_dialog_step1_message">Möchtest du die Einrichtung abbrechen?\n\nEs wurde noch keine Verbindung zum Pod hergestellt und kein Kopplungsschlüssel erzeugt. Das Setup des Pods kann danach wiederaufgenommen werden. Wenn du schon Insulin eingefüllt hast, muss das Setup innerhalb von 2 Stunden gestartet werden.</string>
     <string name="omnipod_dash_cancel_dialog_step1_confirm">Einrichtung abbrechen</string>
-    <string name="omnipod_dash_cancel_dialog_title">Einrichtung wirklich abbrechen?</string>
-    <string name="omnipod_dash_cancel_dialog_message">Möchtest du die Einrichtung dieses Pods wirklich abbrechen?\n\n• Der Pod kann danach nicht mehr verwendet oder neu gestartet werden.\n• Bereits eingefülltes Insulin geht verloren.\n• Falls die Kanüle bereits gesetzt wurde, muss der Pod vom Körper entfernt werden.\n\nDer Pod muss entsorgt werden und für den nächsten Versuch muss ein neuer Pod verwendet werden.</string>
-    <string name="omnipod_dash_cancel_dialog_confirm">Einrichtung abbrechen &amp; Pod verworfen</string>
+    <string name="omnipod_dash_cancel_dialog_step2_title">Einrichtung wirklich abbrechen?</string>
+    <string name="omnipod_dash_cancel_dialog_step2_message">Möchtest du die Einrichtung dieses Pods wirklich abbrechen?\n\n• Der Pod kann danach nicht mehr verwendet oder neu gestartet werden.\n• Bereits eingefülltes Insulin geht verloren.\n• Falls die Kanüle bereits gesetzt wurde, muss der Pod vom Körper entfernt werden.\n\nDer Pod muss entsorgt werden und für den nächsten Versuch muss ein neuer Pod verwendet werden.</string>
+    <string name="omnipod_dash_cancel_dialog_step2_confirm">Einrichtung abbrechen &amp; Pod verwerfen</string>
     <string name="omnipod_dash_cancel_dialog_continue">Setup fortsetzen</string>
     <string name="omnipod_dash_setup_step_progress">Schritt %1$d von %2$d</string>
     <string name="omnipod_dash_ble_status_connected">Pod über Bluetooth verbunden</string>

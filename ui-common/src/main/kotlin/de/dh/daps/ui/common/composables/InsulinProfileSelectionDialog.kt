@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -24,7 +23,7 @@ fun InsulinProfileSelectionDialog(
     onProfileSelected: (InsulinProfile) -> Unit,
     onDismiss: () -> Unit
 ) {
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Row(
@@ -35,7 +34,7 @@ fun InsulinProfileSelectionDialog(
                 Text(stringResource(id = CommonR.string.therapy_insulin_profile_selection_title))
             }
         },
-        text = {
+        content = {
             LazyColumn {
                 items(profiles) { profile ->
                     ListItem(

@@ -21,7 +21,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -41,14 +40,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.domain.model.cgm.GlucoseSourceStatus
 import de.dh.daps.common.domain.model.data.BgReading
 import de.dh.daps.common.domain.model.data.Timestamp
-import de.dh.daps.common.domain.pump.ExpirationDate
-import de.dh.daps.common.domain.model.cgm.GlucoseSourceStatus
-import de.dh.daps.common.domain.pump.PumpReplaceableComponent
 import de.dh.daps.common.domain.model.engine.ApsMode
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.common.domain.model.therapy.InsulinConcentration
+import de.dh.daps.common.domain.pump.ExpirationDate
+import de.dh.daps.common.domain.pump.PumpReplaceableComponent
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.core.aps.CoreIssue
 import de.dh.daps.core.glucosesource.GlucoseSourceIssue
@@ -56,6 +55,7 @@ import de.dh.daps.core.orchestration.ApsIssue
 import de.dh.daps.core.pump.PumpIssue
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.LocalGlucoseUnit
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.glucoseUnitLabel
@@ -247,7 +247,7 @@ private fun ApsIssuesDialog(
     val isSuspended = state.mode.value == ApsMode.Suspend
     val displayIssues = state.unintendedIssues
 
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
@@ -255,7 +255,7 @@ private fun ApsIssuesDialog(
                 style = MaterialTheme.typography.titleLarge
             )
         },
-        text = {
+        content = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.verticalScroll(rememberScrollState())

@@ -28,7 +28,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -74,10 +73,10 @@ import de.dh.daps.common.CR_MIN
 import de.dh.daps.common.ID_UNDEFINED
 import de.dh.daps.common.ISF_MAX
 import de.dh.daps.common.ISF_MIN
-import de.dh.daps.common.domain.model.data.GlucoseUnit
-import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.data.BgDelta
 import de.dh.daps.common.domain.model.data.Block
+import de.dh.daps.common.domain.model.data.GlucoseUnit
+import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.therapy.InsulinProfile
 import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.common.domain.model.therapy.ProfileInsulinSetting
@@ -85,6 +84,7 @@ import de.dh.daps.ui.R
 import de.dh.daps.ui.common.DefaultSteppingStrategy
 import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.ValueDisplayStrategy
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.EditableValueStepper
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.StepperDefaults
@@ -242,10 +242,10 @@ fun InsulinProfileDetailEditor(
     }
 
     if (showDiscardConfirmation) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showDiscardConfirmation = false },
             title = { Text(stringResource(id = R.string.insulin_profile_editor_discard_title)) },
-            text = { Text(stringResource(id = R.string.insulin_profile_editor_discard_message)) },
+            content = { Text(stringResource(id = R.string.insulin_profile_editor_discard_message)) },
             confirmButton = {
                 NormalTextButton(
                     onClick = {
@@ -732,10 +732,10 @@ fun TherapyBlockListEditor(
 
 @Composable
 fun InsulinProfileHelpDialog(onDismiss: () -> Unit) {
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(id = R.string.insulin_profile_editor_help_title)) },
-        text = {
+        content = {
             Text(
                 stringResource(id = R.string.help_24h_profile_general) +
                         "\n\n" +

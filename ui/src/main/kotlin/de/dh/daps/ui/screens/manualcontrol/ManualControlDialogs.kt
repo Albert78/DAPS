@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -31,6 +30,7 @@ import de.dh.daps.core.orchestration.ApsRecommendation
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
 import de.dh.daps.ui.common.DefaultSteppingStrategy
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.EditableValueStepper
 import de.dh.daps.ui.common.composables.InsulinAmountStepper
 import de.dh.daps.ui.common.composables.NormalTextButton
@@ -112,10 +112,10 @@ fun DeliverBolusDialog(
 ) {
     var amountState by remember { mutableDoubleStateOf(dialogData.initialAmount.iu) }
 
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(id = R.string.manual_control_dialog_deliver_bolus_title)) },
-        text = {
+        content = {
             DeliverBolusDialogContent(
                 amountState = amountState,
                 onAmountChange = { amountState = it },
@@ -199,10 +199,10 @@ fun SetTempBasalDialog(
     var percent by remember { mutableIntStateOf(dialogData.initialPercent) }
     var durationHours by remember { mutableIntStateOf(dialogData.initialDurationHours) }
 
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(id = R.string.manual_control_dialog_set_temp_basal_title)) },
-        text = {
+        content = {
             SetTempBasalDialogContent(
                 percent = percent,
                 onPercentChange = { percent = it },

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import de.dh.daps.ui.common.composables.AppAlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
@@ -29,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.WarningBanner
@@ -56,7 +56,7 @@ fun DanaIPumpUnbindDialog(
     AppAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.danai_unbind_dialog_title)) },
-        text = {
+        content = {
             DanaIPumpUnbindDialogContent(
                 isLoading = isLoading,
                 isSaving = isSaving,

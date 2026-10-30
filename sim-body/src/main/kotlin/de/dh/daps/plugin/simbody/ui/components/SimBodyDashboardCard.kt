@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -27,13 +26,14 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.data.Block
+import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.plugin.simbody.BodyModel
 import de.dh.daps.plugin.simbody.R
 import de.dh.daps.plugin.simbody.model.BodyProfile
 import de.dh.daps.ui.common.carbsUnitLabel
 import de.dh.daps.ui.common.carbsValue
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
@@ -169,10 +169,10 @@ private fun EditDoubleDialog(
     onConfirm: (Double) -> Unit
 ) {
     var textValue by remember { mutableStateOf(if (initialValue == 0.0) "" else initialValue.toString()) }
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.dialog_title_edit_param, title)) },
-        text = {
+        content = {
             OutlinedTextField(
                 value = textValue,
                 onValueChange = { textValue = it },

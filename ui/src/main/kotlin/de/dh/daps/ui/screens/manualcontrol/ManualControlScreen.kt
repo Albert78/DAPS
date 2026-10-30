@@ -13,7 +13,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,7 +38,6 @@ import de.dh.daps.common.domain.model.data.BgSampleKind
 import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.data.Timestamp
-import de.dh.daps.common.domain.pump.BasalStatus
 import de.dh.daps.common.domain.model.therapy.DeferredBolus
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.common.domain.model.therapy.InsulinApplication
@@ -48,10 +46,12 @@ import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.common.domain.model.therapy.MealEntry
 import de.dh.daps.common.domain.model.therapy.getDefaultSlowMealType
 import de.dh.daps.common.domain.model.therapy.getDefaultStandardMealType
+import de.dh.daps.common.domain.pump.BasalStatus
 import de.dh.daps.common.navigation.ManualControlInitialDialog
 import de.dh.daps.core.orchestration.ActiveRecommendations
 import de.dh.daps.core.orchestration.ApsRecommendation
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
@@ -258,10 +258,10 @@ fun ManualControlContent(
     }
 
     if (uiState.showLockError) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = onDismissLockError,
             title = { Text(stringResource(id = R.string.core_issue_title)) },
-            text = {
+            content = {
                 Text(
                     text = stringResource(
                         id = R.string.treatment_lock_error_message,

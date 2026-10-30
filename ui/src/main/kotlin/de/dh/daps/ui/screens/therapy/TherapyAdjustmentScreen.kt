@@ -20,7 +20,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -53,6 +52,7 @@ import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.therapy.TherapyAdjustment
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
@@ -299,12 +299,12 @@ fun TherapyAdjustmentContent(
     }
 
     if (showDiscardDialog) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showDiscardDialog = false },
             title = {
                 Text(text = stringResource(R.string.therapy_adjustment_discard_dialog_title))
             },
-            text = {
+            content = {
                 Text(text = stringResource(R.string.therapy_adjustment_discard_dialog_message))
             },
             confirmButton = {

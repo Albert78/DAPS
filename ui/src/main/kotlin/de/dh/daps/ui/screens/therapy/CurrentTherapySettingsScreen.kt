@@ -25,7 +25,6 @@ import androidx.compose.material.icons.filled.Adjust
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.VerticalAlignBottom
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -67,6 +66,7 @@ import de.dh.daps.common.domain.model.therapy.ScheduledTherapyAdjustment
 import de.dh.daps.common.domain.model.therapy.TherapyAdjustment
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.InsulinProfileSelectionDialog
 import de.dh.daps.ui.common.composables.NormalTextButton
@@ -258,7 +258,7 @@ fun CurrentTherapySettingsContent(
 private fun TherapySettingsHelpDialog(
     onDismiss: () -> Unit
 ) {
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             NormalTextButton(onClick = onDismiss) {
@@ -268,7 +268,7 @@ private fun TherapySettingsHelpDialog(
         title = {
             Text(text = stringResource(id = R.string.therapy_settings_help_title))
         },
-        text = {
+        content = {
             val scrollState = rememberScrollState()
             Column(
                 modifier = Modifier

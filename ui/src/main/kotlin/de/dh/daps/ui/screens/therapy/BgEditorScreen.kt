@@ -22,7 +22,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.VerticalAlignBottom
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -47,11 +46,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.TARGET_MAX
 import de.dh.daps.common.TARGET_MIN
-import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.data.BgBlock
 import de.dh.daps.common.domain.model.data.BgValue
+import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.DefaultSteppingStrategy
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.EditableValueStepper
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.StepperDefaults
@@ -148,10 +148,10 @@ fun BgEditorContent(
     }
 
     if (showDiscardConfirmation) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showDiscardConfirmation = false },
             title = { Text(stringResource(id = R.string.bg_editor_discard_title)) },
-            text = { Text(stringResource(id = R.string.bg_editor_discard_message)) },
+            content = { Text(stringResource(id = R.string.bg_editor_discard_message)) },
             confirmButton = {
                 NormalTextButton(onClick = {
                     showDiscardConfirmation = false
@@ -220,10 +220,10 @@ fun BgEditorFormContent(
 
 @Composable
 fun BgEditorHelpDialog(onDismiss: () -> Unit) {
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(id = R.string.bg_editor_help_title)) },
-        text = {
+        content = {
             Text(
                 stringResource(id = R.string.help_24h_profile_general) +
                         "\n\n" +

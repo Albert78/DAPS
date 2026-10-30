@@ -24,7 +24,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -54,6 +53,7 @@ import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.reminder.ReminderType
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.AbsoluteTimeStepper
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.DateTimePickerDialog
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalTextButton
@@ -332,10 +332,10 @@ fun ReminderEditorContent(
     }
 
     if (showDiscardConfirmation) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showDiscardConfirmation = false },
             title = { Text(stringResource(id = R.string.reminder_editor_discard_title)) },
-            text = { Text(stringResource(id = R.string.reminder_editor_discard_message)) },
+            content = { Text(stringResource(id = R.string.reminder_editor_discard_message)) },
             confirmButton = {
                 NormalTextButton(
                     onClick = {

@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -68,6 +67,7 @@ import de.dh.daps.core.aps.ProjectedBg
 import de.dh.daps.core.therapy.TreatmentLock
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.carbsValue
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.CarbsValueStepper
 import de.dh.daps.ui.common.composables.FoodTypeSelector
 import de.dh.daps.ui.common.composables.FramedCard
@@ -595,7 +595,7 @@ fun CalculationDetailsDialog(
     onDismiss: () -> Unit,
     onApply: () -> Unit
 ) {
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
@@ -604,7 +604,7 @@ fun CalculationDetailsDialog(
                 fontWeight = FontWeight.Bold
             )
         },
-        text = {
+        content = {
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)

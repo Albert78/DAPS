@@ -22,7 +22,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -59,6 +58,7 @@ import de.dh.daps.core.therapy.TherapyManager
 import de.dh.daps.core.therapy.TreatmentLock
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.AbsoluteTimeStepper
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.CarbsValueStepper
 import de.dh.daps.ui.common.composables.FoodTypeSelector
 import de.dh.daps.ui.common.composables.FramedCard
@@ -358,10 +358,10 @@ fun EditHistoricalMealContent(
     }
 
     if (showDiscardConfirmation) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showDiscardConfirmation = false },
             title = { Text(stringResource(id = R.string.edit_historical_meal_discard_title)) },
-            text = { Text(stringResource(id = R.string.edit_historical_meal_discard_message)) },
+            content = { Text(stringResource(id = R.string.edit_historical_meal_discard_message)) },
             confirmButton = {
                 NormalTextButton(
                     onClick = {
@@ -385,10 +385,10 @@ fun EditHistoricalMealContent(
     }
 
     if (showDeleteConfirmation) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showDeleteConfirmation = false },
             title = { Text(stringResource(id = R.string.delete_meal_title)) },
-            text = { Text(stringResource(id = R.string.delete_meal_message)) },
+            content = { Text(stringResource(id = R.string.delete_meal_message)) },
             confirmButton = {
                 NormalTextButton(onClick = {
                     showDeleteConfirmation = false

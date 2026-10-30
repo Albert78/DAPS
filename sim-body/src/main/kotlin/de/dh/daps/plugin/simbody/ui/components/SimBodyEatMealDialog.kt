@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,10 +22,11 @@ import de.dh.daps.common.domain.model.therapy.MealType
 import de.dh.daps.plugin.simbody.BodyModel
 import de.dh.daps.plugin.simbody.R
 import de.dh.daps.ui.common.carbsUnitLabel
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.CarbsValueStepper
+import de.dh.daps.ui.common.composables.FoodTypeSelector
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.theme.AppPreview
-import de.dh.daps.ui.common.composables.FoodTypeSelector
 
 @Composable
 fun SimBodyEatMealDialog(
@@ -38,10 +38,10 @@ fun SimBodyEatMealDialog(
     var carbs by remember { mutableDoubleStateOf(0.0) }
     var selectedType by remember { mutableStateOf(mealTypes.find { it.id == ID_MEAL_STANDARD } ?: mealTypes.first()) }
 
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.dialog_title_eat_meal)) },
-        text = {
+        content = {
             SimBodyEatMealDialogContent(
                 carbs = carbs,
                 onCarbsChange = { carbs = it },

@@ -21,8 +21,6 @@ import androidx.compose.material.icons.filled.BluetoothDisabled
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Router
 import androidx.compose.material3.Badge
-import de.dh.daps.ui.common.composables.AppAlertDialog
-import de.dh.daps.ui.common.composables.DialogTitle
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -50,8 +48,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.dh.daps.common.device.state.DeviceLifecycleState
-import de.dh.daps.common.R as CommonR
 import de.dh.daps.common.ui.UiText
+import de.dh.daps.ui.common.composables.AppAlertDialog
+import de.dh.daps.ui.common.composables.DialogTitle
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.NormalTextButton
@@ -61,8 +60,8 @@ import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.pump.omnipod.dash.OmnipodDashInsulinPumpDriver
 import de.dh.pump.omnipod.dash.R
-
 import de.dh.pump.omnipod.protocol.ble.PodBleConnectionState
+import de.dh.daps.common.R as CommonR
 
 enum class ActivationStep(
     val title: UiText,
@@ -557,7 +556,7 @@ fun OmnipodDashUnbindDialog(
     AppAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.omnipod_dash_unbind_dialog_title)) },
-        text = { Text(stringResource(R.string.omnipod_dash_unbind_dialog_message)) },
+        content = { Text(stringResource(R.string.omnipod_dash_unbind_dialog_message)) },
         confirmButton = {
             PrimaryButton(
                 onClick = onConfirm,

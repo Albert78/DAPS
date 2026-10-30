@@ -18,7 +18,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
@@ -52,6 +51,7 @@ import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.reminder.Reminder
 import de.dh.daps.common.domain.model.reminder.ReminderType
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.ScreenTitle
@@ -238,12 +238,12 @@ fun RemindersContent(
 
     reminderToDelete?.let { reminder ->
         val titleText = reminder.title.ifBlank { stringResource(CommonR.string.notification_reminder_title) }
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { reminderToDelete = null },
             title = {
                 Text(text = stringResource(R.string.delete_reminder_title))
             },
-            text = {
+            content = {
                 Text(text = stringResource(R.string.delete_reminder_message, titleText))
             },
             confirmButton = {

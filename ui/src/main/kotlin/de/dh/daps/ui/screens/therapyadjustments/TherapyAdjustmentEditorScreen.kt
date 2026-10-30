@@ -21,7 +21,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -62,6 +61,7 @@ import de.dh.daps.ui.common.ConfigurableDisplayStrategy
 import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.ModuloSteppingStrategy
 import de.dh.daps.ui.common.ValueDisplayStrategy
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.EditableValueStepper
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
@@ -451,10 +451,10 @@ fun TherapyAdjustmentEditorContent(
     }
 
     if (showDiscardConfirmation) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showDiscardConfirmation = false },
             title = { Text(stringResource(id = R.string.therapy_adjustment_editor_discard_title)) },
-            text = { Text(stringResource(id = R.string.therapy_adjustment_editor_discard_message)) },
+            content = { Text(stringResource(id = R.string.therapy_adjustment_editor_discard_message)) },
             confirmButton = {
                 NormalTextButton(
                     onClick = {
