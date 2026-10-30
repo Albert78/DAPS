@@ -53,7 +53,6 @@ import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.therapy.TherapyAdjustment
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.AppAlertDialog
-import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppPreview
@@ -302,23 +301,14 @@ fun TherapyAdjustmentContent(
         AppAlertDialog(
             onDismissRequest = { showDiscardDialog = false },
             titleText = stringResource(R.string.therapy_adjustment_discard_dialog_title),
+            confirmButtonText = stringResource(R.string.discard_confirm_button),
+            onConfirm = {
+                showDiscardDialog = false
+                onDiscardClicked()
+            },
+            dismissButtonText = stringResource(R.string.discard_dismiss_button),
             content = {
                 Text(text = stringResource(R.string.therapy_adjustment_discard_dialog_message))
-            },
-            confirmButton = {
-                NormalTextButton(
-                    onClick = {
-                        showDiscardDialog = false
-                        onDiscardClicked()
-                    }
-                ) {
-                    Text(text = stringResource(R.string.discard_confirm_button))
-                }
-            },
-            dismissButton = {
-                NormalTextButton(onClick = { showDiscardDialog = false }) {
-                    Text(text = stringResource(R.string.discard_dismiss_button))
-                }
             }
         )
     }

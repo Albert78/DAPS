@@ -56,7 +56,6 @@ import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalButton
-import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
@@ -443,7 +442,6 @@ fun AppDataContent(
     // Confirm Import Dialog
     if (uiState.showImportConfirmDialog) {
         AppAlertDialog(
-            onDismissRequest = onImportDismiss,
             icon = {
                 Icon(
                     imageVector = Icons.Default.Warning,
@@ -452,21 +450,11 @@ fun AppDataContent(
                 )
             },
             titleText = stringResource(R.string.app_data_dialog_import_title),
-            content = { Text(stringResource(R.string.app_data_dialog_import_message)) },
-            confirmButton = {
-                NormalTextButton(
-                    onClick = onImportConfirm
-                ) {
-                    Text(stringResource(R.string.app_data_btn_import))
-                }
-            },
-            dismissButton = {
-                NormalTextButton(
-                    onClick = onImportDismiss
-                ) {
-                    Text(stringResource(android.R.string.cancel))
-                }
-            }
+            confirmButtonText = stringResource(R.string.app_data_btn_import),
+            onConfirm = onImportConfirm,
+            dismissButtonText = stringResource(android.R.string.cancel),
+            onDismissRequest = onImportDismiss,
+            content = { Text(stringResource(R.string.app_data_dialog_import_message)) }
         )
     }
 }

@@ -42,7 +42,6 @@ import de.dh.daps.common.domain.model.therapy.TherapyAdjustment
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
 import de.dh.daps.ui.common.composables.AppAlertDialog
-import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.glucoseValue
@@ -155,20 +154,13 @@ fun TherapyAdjustmentsContent(
         AppAlertDialog(
             onDismissRequest = { adjustmentToDelete = null },
             titleText = stringResource(id = R.string.delete_therapy_adjustment_title),
-            content = { Text(stringResource(id = R.string.delete_therapy_adjustment_message, targetAdjustment.name)) },
-            confirmButton = {
-                NormalTextButton(onClick = {
-                    adjustmentToDelete = null
-                    onDeleteAdjustment(targetAdjustment)
-                }) {
-                    Text(stringResource(id = CommonR.string.action_delete))
-                }
+            confirmButtonText = stringResource(id = CommonR.string.action_delete),
+            onConfirm = {
+                adjustmentToDelete = null
+                onDeleteAdjustment(targetAdjustment)
             },
-            dismissButton = {
-                NormalTextButton(onClick = { adjustmentToDelete = null }) {
-                    Text(stringResource(id = android.R.string.cancel))
-                }
-            }
+            dismissButtonText = stringResource(id = android.R.string.cancel),
+            content = { Text(stringResource(id = R.string.delete_therapy_adjustment_message, targetAdjustment.name)) }
         )
     }
 }

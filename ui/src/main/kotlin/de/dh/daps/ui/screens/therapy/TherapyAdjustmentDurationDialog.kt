@@ -30,7 +30,6 @@ import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.AbsoluteTimeStepper
 import de.dh.daps.ui.common.composables.AppAlertDialog
-import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.TimeStepper
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.theme.AppPreview
@@ -71,21 +70,12 @@ fun TherapyAdjustmentDurationDialog(
 
     AppAlertDialog(
         onDismissRequest = onDismiss,
-        confirmButton = {
-            NormalTextButton(
-                onClick = {
-                    onEndTimeSelected(targetEndTime)
-                }
-            ) {
-                Text(text = stringResource(id = android.R.string.ok))
-            }
-        },
-        dismissButton = {
-            NormalTextButton(onClick = onDismiss) {
-                Text(text = stringResource(id = android.R.string.cancel))
-            }
-        },
         titleText = stringResource(id = R.string.therapy_adjustment_duration_dialog_title),
+        confirmButtonText = stringResource(id = android.R.string.ok),
+        onConfirm = {
+            onEndTimeSelected(targetEndTime)
+        },
+        dismissButtonText = stringResource(id = android.R.string.cancel),
         content = {
             val scrollState = rememberScrollState()
             Column(

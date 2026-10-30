@@ -44,7 +44,6 @@ import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.AppAlertDialog
-import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.icons.Icon_Insulin
@@ -205,20 +204,13 @@ fun InsulinTypesContent(
         AppAlertDialog(
             onDismissRequest = { insulinTypeToDelete = null },
             titleText = stringResource(id = R.string.delete_insulin_type_title),
-            content = { Text(stringResource(id = R.string.delete_insulin_type_message, targetInsulinType.name)) },
-            confirmButton = {
-                NormalTextButton(onClick = {
-                    insulinTypeToDelete = null
-                    onDeleteInsulinType(targetInsulinType)
-                }) {
-                    Text(stringResource(id = CommonR.string.action_delete))
-                }
+            confirmButtonText = stringResource(id = CommonR.string.action_delete),
+            onConfirm = {
+                insulinTypeToDelete = null
+                onDeleteInsulinType(targetInsulinType)
             },
-            dismissButton = {
-                NormalTextButton(onClick = { insulinTypeToDelete = null }) {
-                    Text(stringResource(id = android.R.string.cancel))
-                }
-            }
+            dismissButtonText = stringResource(id = android.R.string.cancel),
+            content = { Text(stringResource(id = R.string.delete_insulin_type_message, targetInsulinType.name)) }
         )
     }
 }

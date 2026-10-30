@@ -260,12 +260,10 @@ private fun TherapySettingsHelpDialog(
 ) {
     AppAlertDialog(
         onDismissRequest = onDismiss,
-        confirmButton = {
-            NormalTextButton(onClick = onDismiss) {
-                Text(text = stringResource(id = android.R.string.ok))
-            }
-        },
         titleText = stringResource(id = R.string.therapy_settings_help_title),
+        confirmButtonText = stringResource(id = android.R.string.ok),
+        onConfirm = onDismiss,
+        dismissButtonText = null,
         content = {
             val scrollState = rememberScrollState()
             Column(

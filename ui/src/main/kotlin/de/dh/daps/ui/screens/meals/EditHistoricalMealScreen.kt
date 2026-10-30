@@ -388,20 +388,13 @@ fun EditHistoricalMealContent(
         AppAlertDialog(
             onDismissRequest = { showDeleteConfirmation = false },
             titleText = stringResource(id = R.string.delete_meal_title),
-            content = { Text(stringResource(id = R.string.delete_meal_message)) },
-            confirmButton = {
-                NormalTextButton(onClick = {
-                    showDeleteConfirmation = false
-                    onDelete()
-                }) {
-                    Text(stringResource(id = CommonR.string.action_delete))
-                }
+            confirmButtonText = stringResource(id = CommonR.string.action_delete),
+            onConfirm = {
+                showDeleteConfirmation = false
+                onDelete()
             },
-            dismissButton = {
-                NormalTextButton(onClick = { showDeleteConfirmation = false }) {
-                    Text(stringResource(id = android.R.string.cancel))
-                }
-            }
+            dismissButtonText = stringResource(id = android.R.string.cancel),
+            content = { Text(stringResource(id = R.string.delete_meal_message)) }
         )
     }
 }

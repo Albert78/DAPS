@@ -57,7 +57,6 @@ import de.dh.daps.ui.R
 import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.FramedCard
-import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.icons.Icon_Warning
 import de.dh.daps.ui.common.insulinValue
@@ -297,11 +296,9 @@ private fun ApsIssuesDialog(
                 }
             }
         },
-        confirmButton = {
-            NormalTextButton(onClick = onDismiss) {
-                Text(text = stringResource(id = de.dh.daps.common.R.string.action_close))
-            }
-        }
+        confirmButtonText = stringResource(id = de.dh.daps.common.R.string.action_close),
+        onConfirm = onDismiss,
+        dismissButtonText = null
     )
 }
 
