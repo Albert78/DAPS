@@ -1,6 +1,5 @@
 package de.dh.daps.ui.screens.preferences
 
-import android.app.TimePickerDialog
 import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -50,6 +49,7 @@ import de.dh.daps.ui.common.carbsUnitLabel
 import de.dh.daps.ui.common.composables.DialogDismissButton
 import de.dh.daps.ui.common.composables.DialogSurface
 import de.dh.daps.ui.common.composables.DialogTitle
+import de.dh.daps.ui.common.composables.TimePickerDialog
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.glucoseUnitLabel
@@ -105,6 +105,7 @@ fun PreferencesContent(
     var showThemeDialog by remember { mutableStateOf(false) }
     var showGlucoseUnitDialog by remember { mutableStateOf(false) }
     var showCarbsUnitDialog by remember { mutableStateOf(false) }
+    var showCatheterPatchWarningTimeDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = Modifier
@@ -164,20 +165,10 @@ fun PreferencesContent(
 
             val formattedTime = uiState.catheterPatchWarningTime.format(DateTimeFormatter.ofPattern("HH:mm"))
             PreferenceItem(
-                title = stringResource(R.string.pref_catheter_change_warning_title),
-                summary = stringResource(R.string.pref_catheter_change_warning_time_format, formattedTime),
+                title = stringResource(R.string.pref_catheter_change_warning_time_title),
+                summary = stringResource(R.string.pref_catheter_change_warning_time_description, formattedTime),
                 icon = Icon_Reminders,
-                onClick = {
-                    TimePickerDialog(
-                        context,
-                        { _, hourOfDay, minute ->
-                            onCatheterPatchWarningTimeSelected(LocalTime.of(hourOfDay, minute))
-                        },
-                        uiState.catheterPatchWarningTime.hour,
-                        uiState.catheterPatchWarningTime.minute,
-                        true
-                    ).show()
-                }
+                onClick = { showCatheterPatchWarningTimeDialog = true }
             )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
@@ -214,6 +205,19 @@ fun PreferencesContent(
                 onCarbsUnitSelected(newValue)
                 showCarbsUnitDialog = false
             }
+        )
+    }
+
+    if (showCatheterPatchWarningTimeDialog) {
+        TimePickerDialog(
+            dialogTitle = stringResource(R.string.pref_catheter_change_warning_time_title),
+            uiState.catheterPatchWarningTime,
+            onDismissRequest = { showCatheterPatchWarningTimeDialog = false },
+            onTimeSelected = { time ->
+                onCatheterPatchWarningTimeSelected(LocalTime.of(time.hour, time.minute))
+                showCatheterPatchWarningTimeDialog = false
+            },
+            uiState.is24HourFormat
         )
     }
 }

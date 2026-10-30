@@ -1,5 +1,6 @@
 package de.dh.daps.ui.screens.preferences
 
+import android.text.format.DateFormat
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -35,6 +36,7 @@ data class PreferencesUiState(
     val glucoseUnit: GlucoseUnit = GlucoseUnit.MG_DL,
     val carbsUnit: CarbsUnit = CarbsUnit.GRAMS,
     val catheterPatchWarningTime: LocalTime = DEFAULT_CATHETER_PATCH_WARNING_TIME,
+    val is24HourFormat: Boolean = true
 )
 
 /**
@@ -72,6 +74,7 @@ class PreferencesViewModel(
         val glucoseUnit = preferences.glucoseUnit
         val carbsUnit = preferences.carbsUnit
         val catheterPatchWarningTime = preferences.catheterPatchWarningTime
+        val is24HourFormat = DateFormat.is24HourFormat(systemRegistry.appContext)
 
         _uiState.update { PreferencesUiState(
             isLoading = false,
@@ -80,6 +83,7 @@ class PreferencesViewModel(
             glucoseUnit = glucoseUnit,
             carbsUnit = carbsUnit,
             catheterPatchWarningTime = catheterPatchWarningTime,
+            is24HourFormat = is24HourFormat
         ) }
     }
 
