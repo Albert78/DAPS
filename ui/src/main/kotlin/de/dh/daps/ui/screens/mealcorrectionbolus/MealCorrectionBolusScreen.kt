@@ -32,7 +32,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -74,6 +73,7 @@ import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.ImageCaptionWithSwitch
 import de.dh.daps.ui.common.composables.InsulinAmountStepper
 import de.dh.daps.ui.common.composables.PrimaryButton
+import de.dh.daps.ui.common.composables.RoundOutlinedButton
 import de.dh.daps.ui.common.composables.StepperDefaults
 import de.dh.daps.ui.common.composables.TimeStepper
 import de.dh.daps.ui.common.composables.TimeStepperDefaults
@@ -754,7 +754,7 @@ fun InsulinPlanCard(
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            OutlinedButton(onClick = onOpenBolusPlanDialog) {
+            RoundOutlinedButton(onClick = onOpenBolusPlanDialog) {
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = null

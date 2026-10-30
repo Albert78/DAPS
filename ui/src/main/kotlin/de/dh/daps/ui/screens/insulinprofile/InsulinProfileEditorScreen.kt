@@ -34,7 +34,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import de.dh.daps.ui.common.composables.RoundOutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -486,7 +486,7 @@ fun InsulinSettingsEditor(
         val buttonIcon = if (unconfiguredTypes.isNotEmpty()) Icons.Default.Add else Icons.Default.Check
 
         Box(modifier = Modifier.fillMaxWidth()) {
-            OutlinedButton(
+            RoundOutlinedButton(
                 onClick = { showAddMenu = true },
                 enabled = unconfiguredTypes.isNotEmpty(),
                 modifier = Modifier.fillMaxWidth()

@@ -19,7 +19,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import de.dh.daps.ui.common.composables.RoundOutlinedButton
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -182,7 +182,7 @@ fun InsulinTypeStep(
                     }
                 }
 
-                OutlinedButton(
+                RoundOutlinedButton(
                     onClick = { onStartEditing(null) },
                     modifier = Modifier.fillMaxWidth()
                 ) {

@@ -27,7 +27,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import de.dh.daps.ui.common.composables.RoundOutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -541,7 +541,7 @@ fun EditMealCard(
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                OutlinedButton(onClick = onOpenBolusPlanSheet) {
+                RoundOutlinedButton(onClick = onOpenBolusPlanSheet) {
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = null

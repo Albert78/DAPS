@@ -1,5 +1,6 @@
 package de.dh.daps.ui.screens.setupwizard.components
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.NormalButton
@@ -130,4 +132,18 @@ fun SetupStepScaffold(
             content(innerPadding)
         }
     }
+}
+
+@Preview(showBackground = true, name = "Default Mode", heightDp = 200)
+@Preview(showBackground = true, name = "Default Mode - Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, heightDp = 200)
+@Composable
+fun ScaffoldPreview() {
+    SetupStepScaffold(
+        title = "Setup Schritt 1",
+        stepProgress = Pair(3, 5),
+        showTopBackButton = true,
+        nextButtonText = "Weiter",
+        onNext = {},
+        isNextEnabled = true
+    ) { }
 }

@@ -131,6 +131,30 @@ fun NormalTextButton(
     }
 }
 
+@Composable
+fun RoundOutlinedButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    colors: ButtonColors = ButtonDefaults.outlinedButtonColors(),
+    border: BorderStroke? = ButtonDefaults.outlinedButtonBorder(enabled),
+    shape: Shape = ButtonDefaults.outlinedShape,
+    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
+    content: @Composable () -> Unit
+) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = modifier,
+        contentPadding = contentPadding,
+        colors = colors,
+        enabled = enabled,
+        shape = shape,
+        border = border
+    ) {
+        content()
+    }
+}
+
 @Preview(showBackground = true)
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
@@ -169,6 +193,20 @@ fun NormalButtonPreview() {
             onClick = {}
         ) {
             Text(text = "Normal Button")
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun RoundOutlinedButtonPreview() {
+    AppPreview {
+        RoundOutlinedButton(
+            modifier = Modifier.padding(8.dp),
+            onClick = {}
+        ) {
+            Text(text = "Round Outlined Button")
         }
     }
 }

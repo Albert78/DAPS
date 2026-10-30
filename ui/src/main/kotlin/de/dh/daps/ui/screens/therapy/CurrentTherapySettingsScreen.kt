@@ -31,7 +31,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.OutlinedButton
+import de.dh.daps.ui.common.composables.RoundOutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -221,7 +221,7 @@ fun CurrentTherapySettingsContent(
                         onClick = onNavigateToScheduledTherapyAdjustment
                     )
                 } else {
-                    OutlinedButton(
+                    RoundOutlinedButton(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 4.dp),
