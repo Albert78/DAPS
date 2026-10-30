@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.DrawerValue
@@ -89,6 +91,7 @@ import de.dh.daps.ui.GlobalViewModel
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.EdgeToEdgeHandler
 import de.dh.daps.ui.common.composables.LoadingScreen
+import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.icons.Icon_App_Data
 import de.dh.daps.ui.common.icons.Icon_Bolus
 import de.dh.daps.ui.common.icons.Icon_Food_Database
@@ -469,68 +472,79 @@ fun DrawerContent(
                 }
                 HorizontalDivider()
 
-                DrawerItem(
-                    label = stringResource(id = R.string.menu_meals_label),
-                    icon = Icon_Meal,
-                    selected = currentRoute == MealsRoute,
-                    onClick = { onRouteSelected(MealsRoute) }
-                )
-                DrawerItem(
-                    label = stringResource(id = R.string.menu_insulin_history_label),
-                    icon = Icon_Bolus,
-                    selected = currentRoute == InsulinHistoryRoute,
-                    onClick = { onRouteSelected(InsulinHistoryRoute) }
-                )
-                DrawerItem(
-                    label = stringResource(id = R.string.menu_reminders_label),
-                    icon = Icon_Reminders,
-                    selected = currentRoute == RemindersRoute,
-                    onClick = { onRouteSelected(RemindersRoute) }
-                )
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                DrawerItem(
-                    label = stringResource(id = R.string.manual_control_screen_title),
-                    icon = Icon_ManualControlMode,
-                    selected = currentRoute is ManualControlRoute,
-                    onClick = { onRouteSelected(ManualControlRoute()) }
-                )
-                DrawerItem(
-                    label = stringResource(id = R.string.menu_system_control_label),
-                    icon = Icon_System_Control,
-                    selected = currentRoute is SystemControlRoute,
-                    onClick = { onRouteSelected(SystemControlRoute()) }
-                )
-                DrawerItem(
-                    label = stringResource(id = R.string.menu_food_database_label),
-                    icon = Icon_Food_Database,
-                    selected = currentRoute == FoodDatabaseRoute,
-                    onClick = { onRouteSelected(FoodDatabaseRoute) }
-                )
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                DrawerItem(
-                    label = stringResource(id = R.string.menu_master_data_label),
-                    icon = Icon_Master_Data,
-                    selected = currentRoute == MasterDataRoute,
-                    onClick = { onRouteSelected(MasterDataRoute) }
-                )
-                DrawerItem(
-                    label = stringResource(id = R.string.menu_item_preferences_label),
-                    icon = Icon_Settings,
-                    selected = currentRoute == PreferencesMainRoute,
-                    onClick = { onRouteSelected(PreferencesMainRoute) }
-                )
-                DrawerItem(
-                    label = stringResource(id = R.string.menu_app_data_label),
-                    icon = Icon_App_Data,
-                    selected = currentRoute == AppDataRoute,
-                    onClick = { onRouteSelected(AppDataRoute) }
-                )
-                DrawerItem(
-                    label = stringResource(id = R.string.menu_item_permissions_label),
-                    icon = Icon_Permissions,
-                    selected = currentRoute == PermissionsRoute,
-                    onClick = { onRouteSelected(PermissionsRoute) }
-                )
+                val scrollState = rememberScrollState()
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .contentScrollIndicator(scrollState)
+                        .verticalScroll(scrollState)
+                ) {
+                    Spacer(Modifier.height(4.dp))
+
+                    DrawerItem(
+                        label = stringResource(id = R.string.menu_meals_label),
+                        icon = Icon_Meal,
+                        selected = currentRoute == MealsRoute,
+                        onClick = { onRouteSelected(MealsRoute) }
+                    )
+                    DrawerItem(
+                        label = stringResource(id = R.string.menu_insulin_history_label),
+                        icon = Icon_Bolus,
+                        selected = currentRoute == InsulinHistoryRoute,
+                        onClick = { onRouteSelected(InsulinHistoryRoute) }
+                    )
+                    DrawerItem(
+                        label = stringResource(id = R.string.menu_reminders_label),
+                        icon = Icon_Reminders,
+                        selected = currentRoute == RemindersRoute,
+                        onClick = { onRouteSelected(RemindersRoute) }
+                    )
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                    DrawerItem(
+                        label = stringResource(id = R.string.manual_control_screen_title),
+                        icon = Icon_ManualControlMode,
+                        selected = currentRoute is ManualControlRoute,
+                        onClick = { onRouteSelected(ManualControlRoute()) }
+                    )
+                    DrawerItem(
+                        label = stringResource(id = R.string.menu_system_control_label),
+                        icon = Icon_System_Control,
+                        selected = currentRoute is SystemControlRoute,
+                        onClick = { onRouteSelected(SystemControlRoute()) }
+                    )
+                    DrawerItem(
+                        label = stringResource(id = R.string.menu_food_database_label),
+                        icon = Icon_Food_Database,
+                        selected = currentRoute == FoodDatabaseRoute,
+                        onClick = { onRouteSelected(FoodDatabaseRoute) }
+                    )
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                    DrawerItem(
+                        label = stringResource(id = R.string.menu_master_data_label),
+                        icon = Icon_Master_Data,
+                        selected = currentRoute == MasterDataRoute,
+                        onClick = { onRouteSelected(MasterDataRoute) }
+                    )
+                    DrawerItem(
+                        label = stringResource(id = R.string.menu_item_preferences_label),
+                        icon = Icon_Settings,
+                        selected = currentRoute == PreferencesMainRoute,
+                        onClick = { onRouteSelected(PreferencesMainRoute) }
+                    )
+                    DrawerItem(
+                        label = stringResource(id = R.string.menu_app_data_label),
+                        icon = Icon_App_Data,
+                        selected = currentRoute == AppDataRoute,
+                        onClick = { onRouteSelected(AppDataRoute) }
+                    )
+                    DrawerItem(
+                        label = stringResource(id = R.string.menu_item_permissions_label),
+                        icon = Icon_Permissions,
+                        selected = currentRoute == PermissionsRoute,
+                        onClick = { onRouteSelected(PermissionsRoute) }
+                    )
+                }
             }
         }
     }
@@ -548,7 +562,9 @@ private fun DrawerItem(
         icon = { Icon(imageVector = icon, contentDescription = null) },
         selected = selected,
         onClick = onClick,
-        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+        modifier = Modifier
+            .height(50.dp)
+            .padding(NavigationDrawerItemDefaults.ItemPadding)
     )
 }
 
