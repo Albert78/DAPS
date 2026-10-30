@@ -157,12 +157,12 @@ fun DateTimePickerDialog(
                         }
                     }
 
-                    DialogOkDismissButtons(
+                    DialogConfirmDismissButtons(
                         modifier = Modifier
                             .padding(24.dp),
                         onConfirm = {
                             val selectedDateMillis =
-                                datePickerState.selectedDateMillis ?: return@DialogOkDismissButtons
+                                datePickerState.selectedDateMillis ?: return@DialogConfirmDismissButtons
                             val date = Instant.ofEpochMilli(selectedDateMillis)
                                 .atZone(timeZoneId)
                                 .toLocalDate()
@@ -255,12 +255,12 @@ fun DatePickerDialog(
                         )
                     }
 
-                    DialogOkDismissButtons(
+                    DialogConfirmDismissButtons(
                         modifier = Modifier
                             .padding(24.dp),
                         onConfirm = {
                             val selectedDateMillis =
-                                datePickerState.selectedDateMillis ?: return@DialogOkDismissButtons
+                                datePickerState.selectedDateMillis ?: return@DialogConfirmDismissButtons
                             val result = Instant.ofEpochMilli(selectedDateMillis)
                                 .atZone(timeZoneId)
                                 .toLocalDate()
@@ -325,7 +325,7 @@ fun TimePickerDialog(
                         TimePicker(state = timePickerState)
                     }
 
-                    DialogOkDismissButtons(
+                    DialogConfirmDismissButtons(
                         modifier = Modifier
                             .padding(24.dp),
                         onConfirm = {

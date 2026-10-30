@@ -14,13 +14,13 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.ui.common.theme.AppPreview
 
 @Composable
-fun DialogOkDismissButtons(
+fun DialogConfirmDismissButtons(
     modifier: Modifier = Modifier,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
-    okButtonText: String = stringResource(id = R.string.ok),
-    cancelButtonText: String = stringResource(id = R.string.cancel),
-    isOkEnabled: Boolean = true
+    confirmButtonText: String = stringResource(id = R.string.ok),
+    dismissButtonText: String = stringResource(id = R.string.cancel),
+    isConfirmEnabled: Boolean = true
 ) {
     Row(
         modifier = modifier
@@ -32,20 +32,20 @@ fun DialogOkDismissButtons(
         NormalTextButton(
             onClick = onDismiss
         ) {
-            Text(cancelButtonText)
+            Text(dismissButtonText)
         }
         Spacer(modifier = Modifier.padding(start = 8.dp))
         NormalTextButton(
             onClick = onConfirm,
-            enabled = isOkEnabled
+            enabled = isConfirmEnabled
         ) {
-            Text(okButtonText)
+            Text(confirmButtonText)
         }
     }
 }
 
 @Composable
-fun DialogOkButton(
+fun DialogConfirmButton(
     modifier: Modifier = Modifier,
     onConfirm: () -> Unit,
     okButtonText: String = stringResource(id = R.string.ok),
@@ -69,9 +69,9 @@ fun DialogOkButton(
 
 @Preview
 @Composable
-fun DialogOkDismissButtonsPreview() {
+fun DialogConfirmDismissButtonsPreview() {
     AppPreview {
-        DialogOkDismissButtons(
+        DialogConfirmDismissButtons(
             onConfirm = {},
             onDismiss = {}
         )
@@ -80,9 +80,9 @@ fun DialogOkDismissButtonsPreview() {
 
 @Preview
 @Composable
-fun DialogOkButtonPreview() {
+fun DialogConfirmButtonPreview() {
     AppPreview {
-        DialogOkButton(
+        DialogConfirmButton(
             onConfirm = {}
         )
     }

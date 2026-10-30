@@ -20,8 +20,9 @@ import androidx.compose.material.icons.filled.BluetoothConnected
 import androidx.compose.material.icons.filled.BluetoothDisabled
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Router
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
+import de.dh.daps.ui.common.composables.AppAlertDialog
+import de.dh.daps.ui.common.composables.DialogTitle
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -43,6 +44,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -138,48 +140,27 @@ fun OmnipodDashSetupScreen(
             )
 
             if (showCancelDialog) {
-                val titleRes = if (currentStepIndex == 0) {
-                    R.string.omnipod_dash_cancel_dialog_step1_title
+                if (currentStepIndex == 0) {
+                    OmnipodDashCancelSetupStep1Dialog(
+                        onConfirm = {
+                            showCancelDialog = false
+                            viewModel.cancelSetup(driver) {
+                                onDriverReset()
+                            }
+                        },
+                        onDismiss = { showCancelDialog = false }
+                    )
                 } else {
-                    R.string.omnipod_dash_cancel_dialog_title
+                    OmnipodDashCancelSetupStep2Dialog(
+                        onConfirm = {
+                            showCancelDialog = false
+                            viewModel.cancelSetup(driver) {
+                                onDriverReset()
+                            }
+                        },
+                        onDismiss = { showCancelDialog = false }
+                    )
                 }
-                val messageRes = if (currentStepIndex == 0) {
-                    R.string.omnipod_dash_cancel_dialog_step1_message
-                } else {
-                    R.string.omnipod_dash_cancel_dialog_message
-                }
-                val confirmRes = if (currentStepIndex == 0) {
-                    R.string.omnipod_dash_cancel_dialog_step1_confirm
-                } else {
-                    R.string.omnipod_dash_cancel_dialog_confirm
-                }
-
-                AlertDialog(
-                    onDismissRequest = { showCancelDialog = false },
-                    title = { Text(stringResource(titleRes)) },
-                    text = { Text(stringResource(messageRes)) },
-                    confirmButton = {
-                        PrimaryButton(
-                            onClick = {
-                                showCancelDialog = false
-                                viewModel.cancelSetup(driver) {
-                                    onDriverReset()
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.error,
-                                contentColor = MaterialTheme.colorScheme.onError
-                            )
-                        ) {
-                            Text(stringResource(confirmRes))
-                        }
-                    },
-                    dismissButton = {
-                        NormalTextButton(onClick = { showCancelDialog = false }) {
-                            Text(stringResource(R.string.omnipod_dash_cancel_dialog_continue))
-                        }
-                    }
-                )
             }
         }
     }
@@ -279,29 +260,12 @@ fun OmnipodDashBoundContent(
     }
 
     if (showUnbindDialog) {
-        AlertDialog(
-            onDismissRequest = { showUnbindDialog = false },
-            title = { Text(stringResource(R.string.omnipod_dash_unbind_dialog_title)) },
-            text = { Text(stringResource(R.string.omnipod_dash_unbind_dialog_message)) },
-            confirmButton = {
-                PrimaryButton(
-                    onClick = {
-                        showUnbindDialog = false
-                        onUnbind()
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = MaterialTheme.colorScheme.onError
-                    )
-                ) {
-                    Text(stringResource(R.string.omnipod_dash_unbind_dialog_confirm))
-                }
+        OmnipodDashUnbindDialog(
+            onConfirm = {
+                showUnbindDialog = false
+                onUnbind()
             },
-            dismissButton = {
-                NormalTextButton(onClick = { showUnbindDialog = false }) {
-                    Text(stringResource(CommonR.string.action_cancel))
-                }
-            }
+            onDismiss = { showUnbindDialog = false }
         )
     }
 }
@@ -496,6 +460,124 @@ fun BleStatusBanner(
 
 private data class Quadruple<A, B, C, D>(val first: A, val second: B, val third: C, val fourth: D)
 
+/**
+ * Dialog to confirm cancelling the Omnipod Dash setup process at step 1.
+ */
+@Composable
+fun OmnipodDashCancelSetupStep1Dialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    AppAlertDialog(
+        onDismissRequest = onDismiss,
+        titleText = stringResource(R.string.omnipod_dash_cancel_dialog_step1_title),
+        confirmButtonText = stringResource(R.string.omnipod_dash_cancel_dialog_step1_confirm),
+        dismissButtonText = stringResource(R.string.omnipod_dash_cancel_dialog_continue),
+        onConfirm = onConfirm,
+        modifier = modifier
+    ) {
+        Text(
+            text = stringResource(R.string.omnipod_dash_cancel_dialog_step1_message),
+            style = MaterialTheme.typography.bodyMedium
+        )
+    }
+}
+
+/**
+ * Dialog to confirm cancelling the Omnipod Dash setup process at step 2+.
+ */
+@Composable
+fun OmnipodDashCancelSetupStep2Dialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val titleText = stringResource(R.string.omnipod_dash_cancel_dialog_step2_title)
+    AppAlertDialog(
+        onDismissRequest = onDismiss,
+        titleText = titleText,
+        modifier = modifier
+    ) {
+        Column(
+            modifier = Modifier.padding(24.dp)
+        ) {
+            DialogTitle(text = titleText)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = stringResource(R.string.omnipod_dash_cancel_dialog_step2_message),
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                PrimaryButton(
+                    onClick = onConfirm,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(R.string.omnipod_dash_cancel_dialog_step2_confirm),
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                NormalButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(R.string.omnipod_dash_cancel_dialog_continue),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Dialog to confirm unbinding the Omnipod Dash Pod.
+ */
+@Composable
+fun OmnipodDashUnbindDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    AppAlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.omnipod_dash_unbind_dialog_title)) },
+        text = { Text(stringResource(R.string.omnipod_dash_unbind_dialog_message)) },
+        confirmButton = {
+            PrimaryButton(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError
+                )
+            ) {
+                Text(stringResource(R.string.omnipod_dash_unbind_dialog_confirm))
+            }
+        },
+        dismissButton = {
+            NormalTextButton(onClick = onDismiss) {
+                Text(stringResource(CommonR.string.action_cancel))
+            }
+        },
+        modifier = modifier
+    )
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun BleStatusBannerConnectedPreview() {
@@ -586,6 +668,39 @@ private fun OmnipodDashSetupContentStep3Preview() {
             activationError = null,
             onNextStep = {},
             onCancel = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun OmnipodDashCancelSetupDialogStep1Preview() {
+    AppPreview {
+        OmnipodDashCancelSetupStep1Dialog(
+            onConfirm = {},
+            onDismiss = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun OmnipodDashCancelSetupDialogStep2Preview() {
+    AppPreview {
+        OmnipodDashCancelSetupStep2Dialog(
+            onConfirm = {},
+            onDismiss = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun OmnipodDashUnbindDialogPreview() {
+    AppPreview {
+        OmnipodDashUnbindDialog(
+            onConfirm = {},
+            onDismiss = {}
         )
     }
 }

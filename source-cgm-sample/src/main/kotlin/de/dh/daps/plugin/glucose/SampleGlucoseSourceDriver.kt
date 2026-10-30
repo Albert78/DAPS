@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.AlertDialog
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -210,7 +210,7 @@ class SampleGlucoseSourceDriver : GlucoseSourceDriver, Plugin {
         }
 
         if (showUnbindDialog) {
-            AlertDialog(
+            AppAlertDialog(
                 onDismissRequest = { showUnbindDialog = false },
                 title = { Text(stringResource(R.string.sample_cgm_unbind_dialog_title)) },
                 text = { Text(stringResource(R.string.sample_cgm_unbind_dialog_message)) },

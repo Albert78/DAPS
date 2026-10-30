@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Build
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -31,6 +30,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.ui.common.composables.AppAlertDialog
+import de.dh.daps.ui.common.composables.DialogTitle
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.NormalTextButton
@@ -181,52 +182,54 @@ fun DanaIMaintenanceResetCatheterDialog(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    AlertDialog(
+    val titleText = stringResource(R.string.danai_maintenance_reset_catheter_dialog_title)
+    AppAlertDialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = stringResource(R.string.danai_maintenance_reset_catheter_dialog_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-        },
-        text = {
+        titleText = titleText,
+        content = {
             Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                modifier = Modifier.padding(24.dp),
             ) {
-                Text(
-                    text = stringResource(R.string.danai_maintenance_reset_catheter_dialog_subtitle),
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                DialogTitle(text = titleText)
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    PrimaryButton(
-                        onClick = onConfirmReset,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(stringResource(R.string.danai_maintenance_reset_catheter_dialog_btn_reset))
-                    }
+                    Text(
+                        text = stringResource(R.string.danai_maintenance_reset_catheter_dialog_subtitle),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
 
-                    NormalButton(
-                        onClick = onConfirmNoReset,
-                        modifier = Modifier.fillMaxWidth()
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text(stringResource(R.string.danai_maintenance_reset_catheter_dialog_btn_dont_reset))
-                    }
+                        PrimaryButton(
+                            onClick = onConfirmReset,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(stringResource(R.string.danai_maintenance_reset_catheter_dialog_btn_reset))
+                        }
 
-                    NormalTextButton(
-                        onClick = onDismiss,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(stringResource(R.string.danai_maintenance_reset_catheter_dialog_btn_cancel))
+                        NormalButton(
+                            onClick = onConfirmNoReset,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(stringResource(R.string.danai_maintenance_reset_catheter_dialog_btn_dont_reset))
+                        }
+
+                        NormalTextButton(
+                            onClick = onDismiss,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(stringResource(R.string.danai_maintenance_reset_catheter_dialog_btn_cancel))
+                        }
                     }
                 }
             }
         },
-        confirmButton = {},
         modifier = modifier
     )
 }

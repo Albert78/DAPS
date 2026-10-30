@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
+import de.dh.daps.ui.common.composables.AppAlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
@@ -53,7 +53,7 @@ fun DanaIPumpUnbindDialog(
     var setLightEnabled by remember { mutableStateOf(true) }
     var backlightTime by remember(userOptions) { mutableIntStateOf(userOptions?.backlightOnTimeSec ?: 30) }
 
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.danai_unbind_dialog_title)) },
         text = {
