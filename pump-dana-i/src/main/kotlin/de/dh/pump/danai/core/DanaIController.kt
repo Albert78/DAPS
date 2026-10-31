@@ -64,7 +64,7 @@ fun PumpResponse.ensureOk(commandName: String) {
  * updates the pump model with fresh data while a session is active.
  */
 class DanaIController(
-    private val pump: DanaIPump,
+    val pump: DanaIPump,
     val link: DanaILink,
     private val logger: DanaILogger,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main),

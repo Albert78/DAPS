@@ -199,7 +199,13 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
             DanaPumpPreferences(it.preferences).clear()
         }
 
-        pumpAdapter?.controller?.disconnect()
+        val controller = pumpAdapter?.controller
+        controller?.let {
+            runCatching {
+                it.pump.setSuspend(true)
+            }
+            it.disconnect()
+        }
 
         _activePump.value = null
         _lifecycleState.value = DeviceLifecycleState.NoDevice
