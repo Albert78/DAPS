@@ -85,8 +85,8 @@ import de.dh.daps.ui.screens.insulinhistory.InsulinHistoryViewModel
 import de.dh.daps.ui.screens.dashboard.DashboardScreen
 import de.dh.daps.ui.screens.dashboard.DashboardViewModel
 import de.dh.daps.ui.screens.fooddatabase.FoodDatabaseScreen
-import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupScreen
-import de.dh.daps.ui.screens.glucosesourcesetup.GlucoseSourceSetupViewModel
+import de.dh.daps.ui.screens.driversetup.GlucoseSourceSetupScreen
+import de.dh.daps.ui.screens.driversetup.GlucoseSourceSetupViewModel
 import de.dh.daps.ui.screens.history.HistoryScreen
 import de.dh.daps.ui.screens.insulinprofile.InsulinProfilesScreen
 import de.dh.daps.ui.screens.insulinprofile.InsulinProfilesViewModel
@@ -117,8 +117,8 @@ import de.dh.daps.ui.screens.permissions.requestIgnoreBatteryOptimizations
 import de.dh.daps.common.navigation.PastRemindersRoute
 import de.dh.daps.ui.screens.preferences.PreferencesScreen
 import de.dh.daps.ui.screens.preferences.PreferencesViewModel
-import de.dh.daps.ui.screens.pumpsetup.PumpSetupScreen
-import de.dh.daps.ui.screens.pumpsetup.PumpSetupViewModel
+import de.dh.daps.ui.screens.driversetup.PumpSetupScreen
+import de.dh.daps.ui.screens.driversetup.PumpSetupViewModel
 import de.dh.daps.ui.screens.reminders.PastRemindersScreen
 import de.dh.daps.ui.screens.reminders.PastRemindersViewModel
 import de.dh.daps.ui.screens.reminders.RemindersScreen

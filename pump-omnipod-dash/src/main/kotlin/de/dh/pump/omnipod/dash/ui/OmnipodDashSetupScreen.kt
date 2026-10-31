@@ -61,7 +61,6 @@ import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.pump.omnipod.dash.OmnipodDashInsulinPumpDriver
 import de.dh.pump.omnipod.dash.R
 import de.dh.pump.omnipod.protocol.ble.PodBleConnectionState
-import de.dh.daps.common.R as CommonR
 
 enum class ActivationStep(
     val title: UiText,

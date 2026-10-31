@@ -1,10 +1,10 @@
-package de.dh.daps.ui.screens.pumpsetup
+package de.dh.daps.ui.screens.driversetup
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import de.dh.daps.common.device.driver.InsulinPumpDriver
+import de.dh.daps.common.device.driver.GlucoseSourceDriver
 import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -13,26 +13,26 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-data class PumpSetupUiState(
-    val availableDrivers: List<InsulinPumpDriver> = emptyList(),
-    val selectedDriver: InsulinPumpDriver? = null,
+data class GlucoseSourceSetupUiState(
+    val availableDrivers: List<GlucoseSourceDriver> = emptyList(),
+    val selectedDriver: GlucoseSourceDriver? = null,
     val activeDriverId: String? = null,
     val errorMessage: String? = null
 )
 
-class PumpSetupViewModel(
+class GlucoseSourceSetupViewModel(
     registry: SystemRegistry
 ) : ViewModel() {
 
-    private val selectedDriverState = MutableStateFlow<InsulinPumpDriver?>(null)
+    private val selectedDriverState = MutableStateFlow<GlucoseSourceDriver?>(null)
     private val errorMessageState = MutableStateFlow<String?>(null)
 
     init {
-        selectedDriverState.value = registry.pumpDriverManager.getActiveDriver()
+        selectedDriverState.value = registry.glucoseSourceDriverManager.getActiveDriver()
 
         viewModelScope.launch {
-            var previousActiveDriver: InsulinPumpDriver? = registry.pumpDriverManager.getActiveDriver()
-            registry.pumpDriverManager.activeDriver.collect { activeDriver ->
+            var previousActiveDriver: GlucoseSourceDriver? = registry.glucoseSourceDriverManager.getActiveDriver()
+            registry.glucoseSourceDriverManager.activeDriver.collect { activeDriver ->
                 if (activeDriver == null && previousActiveDriver != null) {
                     selectedDriverState.value = null
                 }
@@ -41,13 +41,13 @@ class PumpSetupViewModel(
         }
     }
 
-    val uiState: StateFlow<PumpSetupUiState> = combine(
+    val uiState: StateFlow<GlucoseSourceSetupUiState> = combine(
         selectedDriverState,
-        registry.pumpDriverManager.activeDriver,
+        registry.glucoseSourceDriverManager.activeDriver,
         errorMessageState
     ) { selectedDriver, activeDriver, errorMessage ->
-        PumpSetupUiState(
-            availableDrivers = registry.pumpDriverManager.drivers,
+        GlucoseSourceSetupUiState(
+            availableDrivers = registry.glucoseSourceDriverManager.drivers,
             selectedDriver = selectedDriver,
             activeDriverId = activeDriver?.driverId,
             errorMessage = errorMessage
@@ -55,13 +55,13 @@ class PumpSetupViewModel(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = PumpSetupUiState(
-            availableDrivers = registry.pumpDriverManager.drivers,
-            selectedDriver = registry.pumpDriverManager.getActiveDriver()
+        initialValue = GlucoseSourceSetupUiState(
+            availableDrivers = registry.glucoseSourceDriverManager.drivers,
+            selectedDriver = registry.glucoseSourceDriverManager.getActiveDriver()
         )
     )
 
-    fun selectDriver(driver: InsulinPumpDriver?) {
+    fun selectDriver(driver: GlucoseSourceDriver?) {
         selectedDriverState.value = driver
         errorMessageState.value = null
     }
@@ -76,7 +76,7 @@ class PumpSetupViewModel(
         ) : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
-                return PumpSetupViewModel(registry) as T
+                return GlucoseSourceSetupViewModel(registry) as T
             }
         }
     }
