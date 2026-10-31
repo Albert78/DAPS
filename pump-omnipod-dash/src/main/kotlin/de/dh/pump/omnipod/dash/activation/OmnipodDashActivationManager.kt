@@ -60,9 +60,15 @@ class OmnipodDashActivationManager(
 
     private suspend fun ensureBleConnected(): OmnipodDashBleManager {
         val address = podStateManager.bluetoothAddress
-        if (address.isNullOrEmpty()) {
-            throw IllegalStateException("No Pod Bluetooth address available")
+        if (address.isNullOrEmpty() || podStateManager.ltk == null) {
+            val pairResult = bleManager.pairNewPod()
+            if (pairResult.isFailure) {
+                throw pairResult.exceptionOrNull()
+                    ?: IllegalStateException("BLE Scanning and Pairing failed")
+            }
+            return bleManager
         }
+
         if (bleManager.connectionState.value != PodBleConnectionState.CONNECTED) {
             val connectResult = bleManager.connect(address)
             if (connectResult.isFailure) {

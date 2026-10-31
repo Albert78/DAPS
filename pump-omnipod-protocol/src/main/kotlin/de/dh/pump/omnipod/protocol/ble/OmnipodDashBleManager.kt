@@ -10,6 +10,7 @@ import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
 import android.bluetooth.BluetoothStatusCodes
 import android.content.Context
+import de.dh.pump.omnipod.protocol.ble.scan.PodScanner
 import de.dh.pump.omnipod.protocol.command.Command
 import de.dh.pump.omnipod.protocol.definition.NakErrorType
 import de.dh.pump.omnipod.protocol.response.NakResponse
@@ -18,7 +19,12 @@ import de.dh.pump.omnipod.protocol.security.CommandAckError
 import de.dh.pump.omnipod.protocol.security.CommandReceiveError
 import de.dh.pump.omnipod.protocol.security.CommandReceiveSuccess
 import de.dh.pump.omnipod.protocol.security.CommandSendSuccess
+import de.dh.pump.omnipod.protocol.security.EnDecrypt
+import de.dh.pump.omnipod.protocol.security.LTKExchanger
 import de.dh.pump.omnipod.protocol.security.Session
+import de.dh.pump.omnipod.protocol.security.SessionEstablisher
+import de.dh.pump.omnipod.protocol.security.SessionKeys
+import de.dh.pump.omnipod.protocol.security.SessionNegotiationResynchronization
 import de.dh.pump.omnipod.protocol.state.OmnipodDashPodStateManager
 import de.dh.pump.omnipod.protocol.transport.BleCommand
 import de.dh.pump.omnipod.protocol.transport.BleCommandHello
@@ -32,13 +38,16 @@ import de.dh.pump.omnipod.protocol.transport.BleSendResult
 import de.dh.pump.omnipod.protocol.transport.BleSendSuccess
 import de.dh.pump.omnipod.protocol.transport.CmdBleIO
 import de.dh.pump.omnipod.protocol.transport.DataBleIO
+import de.dh.pump.omnipod.protocol.transport.Id
 import de.dh.pump.omnipod.protocol.transport.MessageIO
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import java.util.UUID
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
@@ -214,6 +223,90 @@ class OmnipodDashBleManager(
             Result.success(Unit)
         } catch (e: Exception) {
             _connectionState.value = PodBleConnectionState.FAILED
+            Result.failure(e)
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    suspend fun pairNewPod(): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
+                ?: return@withContext Result.failure(IllegalStateException("BluetoothManager unavailable"))
+            val adapter = bluetoothManager.adapter
+                ?: return@withContext Result.failure(IllegalStateException("BluetoothAdapter unavailable"))
+            if (!adapter.isEnabled) {
+                return@withContext Result.failure(IllegalStateException("Bluetooth is disabled"))
+            }
+
+            val scanner = PodScanner(adapter)
+            val discovered = scanner.scanForPod()
+
+            podStateManager.bluetoothAddress = discovered.address
+            podStateManager.lotNumber = discovered.lotNo
+            podStateManager.podSequenceNumber = discovered.sequenceNo.toLong()
+
+            val connectResult = connect(discovered.address)
+            if (connectResult.isFailure) {
+                return@withContext connectResult
+            }
+
+            val connected = withTimeoutOrNull(10000L) {
+                while (_connectionState.value != PodBleConnectionState.CONNECTED) {
+                    delay(100)
+                }
+                true
+            }
+            if (connected != true) {
+                disconnect()
+                return@withContext Result.failure(IllegalStateException("Timed out waiting for BLE GATT connection"))
+            }
+
+            val myId = Id.fromInt(4242)
+            val podId = Id.fromInt(podStateManager.uniqueId ?: 4242)
+            val exchanger = LTKExchanger(messageIO, myId, podId)
+            val pairResult = exchanger.negotiateLTK()
+
+            podStateManager.ltk = pairResult.ltk
+
+            val establisher = SessionEstablisher(
+                msgIO = messageIO,
+                ltk = pairResult.ltk,
+                eapSqn = podStateManager.eapAkaSequenceNumber,
+                myId = myId,
+                podId = podId,
+                msgSeq = pairResult.msgSeq
+            )
+            var response = establisher.negotiateSessionKeys()
+            if (response is SessionNegotiationResynchronization) {
+                podStateManager.eapAkaSequenceNumber = response.synchronizedEapSqn.value
+                val establisher2 = SessionEstablisher(
+                    msgIO = messageIO,
+                    ltk = pairResult.ltk,
+                    eapSqn = podStateManager.eapAkaSequenceNumber,
+                    myId = myId,
+                    podId = podId,
+                    msgSeq = response.msgSequenceNumber
+                )
+                response = establisher2.negotiateSessionKeys()
+            }
+
+            if (response !is SessionKeys) {
+                disconnect()
+                return@withContext Result.failure(IllegalStateException("Session negotiation failed: $response"))
+            }
+
+            val enDecrypt = EnDecrypt(response.nonce, response.ck)
+            this@OmnipodDashBleManager.session = Session(
+                msgIO = messageIO,
+                myId = myId,
+                podId = podId,
+                sessionKeys = response,
+                enDecrypt = enDecrypt
+            )
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            disconnect()
             Result.failure(e)
         }
     }

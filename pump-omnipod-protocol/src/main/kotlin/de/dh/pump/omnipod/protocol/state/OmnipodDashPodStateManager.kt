@@ -37,6 +37,7 @@ interface OmnipodDashPodStateManager {
     var podSequenceNumber: Long?
     var bluetoothAddress: String?
     var ltk: ByteArray?
+    var eapAkaSequenceNumber: ByteArray
     var activatedAtTimestampMs: Long?
     var lastNonce: Int?
 
@@ -166,6 +167,7 @@ class OmnipodDashPodStateManagerImpl(
     override var podSequenceNumber: Long? = null
     override var bluetoothAddress: String? = null
     override var ltk: ByteArray? = null
+    override var eapAkaSequenceNumber: ByteArray = ByteArray(6)
     override var activatedAtTimestampMs: Long? = null
     override var lastNonce: Int? = null
 
