@@ -447,19 +447,24 @@ class DanaIController(
         try {
             val startTimestamp = maxOf(lastBasalHistoryTimestamp, start)
             val queryPumpTime = PumpTimestamp.fromSystemTimestamp(startTimestamp, pump.pumpTimeOffsetMs)
-            val history = client.executeStream(commands.historyBasal(queryPumpTime))
-            val points = mapBasalRecordsToHistoryPoints(
-                records = history.records,
-                pumpTimeOffsetMs = pump.pumpTimeOffsetMs,
-                concentration = pump.insulinConcentration.value
-            )
+            client.execute(commands.generalSetHistoryUploadMode(1))
+            try {
+                val history = client.executeStream(commands.historyBasal(queryPumpTime))
+                val points = mapBasalRecordsToHistoryPoints(
+                    records = history.records,
+                    pumpTimeOffsetMs = pump.pumpTimeOffsetMs,
+                    concentration = pump.insulinConcentration.value
+                )
 
-            if (points.isNotEmpty()) {
-                pump.updateBasalHistory(points, start)
-                val maxSystemTimestamp = history.records.maxOf { it.timestamp }.toSystemTimestamp(pump.pumpTimeOffsetMs)
-                lastBasalHistoryTimestamp = maxSystemTimestamp.plusMs(1)
+                if (points.isNotEmpty()) {
+                    pump.updateBasalHistory(points, start)
+                    val maxSystemTimestamp = history.records.maxOf { it.timestamp }.toSystemTimestamp(pump.pumpTimeOffsetMs)
+                    lastBasalHistoryTimestamp = maxSystemTimestamp.plusMs(1)
+                }
+                logger.log("Basal history sync completed: ${history.records.size} records converted to ${points.size} history points.")
+            } finally {
+                client.execute(commands.generalSetHistoryUploadMode(0))
             }
-            logger.log("Basal history sync completed: ${history.records.size} records converted to ${points.size} history points.")
         } catch (e: Exception) {
             logger.log("Basal history sync failed: ${e.message}")
         }
@@ -534,21 +539,26 @@ class DanaIController(
         try {
             val startTimestamp = maxOf(lastBolusHistoryTimestamp, start)
             val queryPumpTime = PumpTimestamp.fromSystemTimestamp(startTimestamp, pump.pumpTimeOffsetMs)
-            val history = client.executeStream(commands.historyBolus(queryPumpTime))
-            val points = history.records.map { record ->
-                DanaInsulinHistoryPoint(
-                    timestamp = record.timestamp.toSystemTimestamp(pump.pumpTimeOffsetMs),
-                    amount = InsulinAmount.fromPumpUnits(record.value ?: 0.0, pump.insulinConcentration.value),
-                    category = InsulinCategory.Bolus,
-                    pumpId = record.recordCode.toString()
-                )
+            client.execute(commands.generalSetHistoryUploadMode(1))
+            try {
+                val history = client.executeStream(commands.historyBolus(queryPumpTime))
+                val points = history.records.map { record ->
+                    DanaInsulinHistoryPoint(
+                        timestamp = record.timestamp.toSystemTimestamp(pump.pumpTimeOffsetMs),
+                        amount = InsulinAmount.fromPumpUnits(record.value ?: 0.0, pump.insulinConcentration.value),
+                        category = InsulinCategory.Bolus,
+                        pumpId = record.recordCode.toString()
+                    )
+                }
+                if (points.isNotEmpty()) {
+                    pump.updateBolusHistory(points, start)
+                    val maxSystemTimestamp = history.records.maxOf { it.timestamp }.toSystemTimestamp(pump.pumpTimeOffsetMs)
+                    lastBolusHistoryTimestamp = maxSystemTimestamp.plusMs(1)
+                }
+                logger.log("Bolus history sync completed: ${points.size} records.")
+            } finally {
+                client.execute(commands.generalSetHistoryUploadMode(0))
             }
-            if (points.isNotEmpty()) {
-                pump.updateBolusHistory(points, start)
-                val maxSystemTimestamp = history.records.maxOf { it.timestamp }.toSystemTimestamp(pump.pumpTimeOffsetMs)
-                lastBolusHistoryTimestamp = maxSystemTimestamp.plusMs(1)
-            }
-            logger.log("Bolus history sync completed: ${points.size} records.")
         } catch (e: Exception) {
             logger.log("Bolus history sync failed: ${e.message}")
         }
