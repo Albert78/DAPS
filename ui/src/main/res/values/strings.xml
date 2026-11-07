@@ -887,13 +887,10 @@
     <string name="data_retention_category_reminders">Erinnerungen &amp; Benachrichtigungen</string>
     <string name="data_retention_category_system_metrics">System-Metriken &amp; Insights</string>
     <string name="data_retention_category_other">Sonstige Anwendungsdaten</string>
-    <string name="data_retention_option_1_day">1 Tag</string>
-    <string name="data_retention_option_3_days">3 Tage</string>
-    <string name="data_retention_option_7_days">7 Tage</string>
-    <string name="data_retention_option_14_days">14 Tage</string>
-    <string name="data_retention_option_30_days">30 Tage</string>
-    <string name="data_retention_option_90_days">90 Tage</string>
-    <string name="data_retention_option_180_days">180 Tage</string>
+    <plurals name="data_retention_option_days">
+        <item quantity="one">%1$d Tag</item>
+        <item quantity="other">%1$d Tage</item>
+    </plurals>
     <string name="data_retention_option_unlimited">Unbegrenzt</string>
     <string name="data_retention_section_actions_title">Manuelle Aktionen</string>
     <string name="data_retention_card_cleanup_title">Bereinigung sofort ausführen</string>

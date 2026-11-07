@@ -42,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -280,15 +281,9 @@ private fun DataRetentionCategory.toDisplayString(): String = when (this) {
 }
 
 @Composable
-private fun RetentionOption.toDisplayString(): String = when (this) {
-    RetentionOption.DAY_1 -> stringResource(R.string.data_retention_option_1_day)
-    RetentionOption.DAYS_3 -> stringResource(R.string.data_retention_option_3_days)
-    RetentionOption.DAYS_7 -> stringResource(R.string.data_retention_option_7_days)
-    RetentionOption.DAYS_14 -> stringResource(R.string.data_retention_option_14_days)
-    RetentionOption.DAYS_30 -> stringResource(R.string.data_retention_option_30_days)
-    RetentionOption.DAYS_90 -> stringResource(R.string.data_retention_option_90_days)
-    RetentionOption.DAYS_180 -> stringResource(R.string.data_retention_option_180_days)
-    RetentionOption.UNLIMITED -> stringResource(R.string.data_retention_option_unlimited)
+private fun RetentionOption.toDisplayString(): String {
+    val count = days ?: return stringResource(R.string.data_retention_option_unlimited)
+    return pluralStringResource(R.plurals.data_retention_option_days, count, count)
 }
 
 @Preview(showBackground = true, heightDp = 1000)
