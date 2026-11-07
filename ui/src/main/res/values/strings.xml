@@ -176,6 +176,9 @@
     <string name="aps_service_notification_content_no_value_yet">Kein Glukosewert</string>
 
     <string name="history_screen_title">Historie</string>
+    <string name="history_nav_previous_day">Vorheriger Tag</string>
+    <string name="history_nav_next_day">Nächster Tag</string>
+    <string name="history_date_range_format">dd.MM.yyyy HH:mm</string>
     <string name="current_therapy_settings_screen_title">Aktuelle Therapie</string>
     <string name="current_therapy_active_insulin_profile_label">Insulin-Profil</string>
     <string name="current_therapy_available_profiles_label">Verfügbare Insulin-Profile</string>

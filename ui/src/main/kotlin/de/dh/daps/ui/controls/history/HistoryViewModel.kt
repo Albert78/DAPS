@@ -12,14 +12,16 @@ import de.dh.daps.common.domain.model.therapy.MealEntry
 import de.dh.daps.core.SystemRegistry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlin.time.Duration.Companion.milliseconds
 
 data class HistoryUiState(
@@ -27,7 +29,12 @@ data class HistoryUiState(
     val isError: Boolean,
     val readings: List<BgReading> = listOf(),
     val insulinApplications: List<InsulinApplication> = listOf(),
-    val meals: List<MealEntry> = listOf()
+    val meals: List<MealEntry> = listOf(),
+    val dayOffset: Int = 0,
+    val startTimestampMs: Long = 0L,
+    val endTimestampMs: Long = 0L,
+    val canNavigatePrevious: Boolean = true,
+    val canNavigateNext: Boolean = false
 )
 
 private data class RawHistoryData(
@@ -46,55 +53,55 @@ class HistoryViewModel(
     private val glucoseRepository = systemRegistry.glucoseRepository
     private val treatmentRepository = systemRegistry.treatmentRepository
 
-    private var lastReadings: List<BgReading>? = null
-    private var cachedFilteredReadings: List<BgReading> = emptyList()
+    private val _dayOffset = MutableStateFlow(0)
+    val dayOffset: StateFlow<Int> = _dayOffset.asStateFlow()
 
-    private var lastInsulin: List<InsulinApplication>? = null
-    private var cachedFilteredInsulin: List<InsulinApplication> = emptyList()
+    fun navigatePreviousDay() {
+        _dayOffset.update { offset -> offset + 1 }
+    }
 
-    private var lastMeals: List<MealEntry>? = null
-    private var cachedFilteredMeals: List<MealEntry> = emptyList()
+    fun navigateNextDay() {
+        _dayOffset.update { offset -> (offset - 1).coerceAtLeast(0) }
+    }
 
-    val historyUiState: StateFlow<HistoryUiState> = combine(
+    private val rawDataFlow = combine(
         glucoseRepository.observeBgReadings().distinctUntilChanged(),
         treatmentRepository.observeInsulinApplications().distinctUntilChanged(),
         treatmentRepository.observeMeals().distinctUntilChanged()
     ) { readings, insulin, meals ->
         RawHistoryData(readings, insulin, meals)
-    }
-    .debounce(300.milliseconds)
-    .map { (readings, insulin, meals) ->
-        val historyLimit = Timestamp.now().minusHours(25)
+    }.debounce(300.milliseconds)
 
-        val filteredReadings = if (readings === lastReadings) {
-            cachedFilteredReadings
-        } else {
-            lastReadings = readings
-            readings.filterSince(historyLimit) { it.timestamp }.also { cachedFilteredReadings = it }
-        }
+    val historyUiState: StateFlow<HistoryUiState> = combine(
+        rawDataFlow,
+        _dayOffset
+    ) { (readings, insulin, meals), dayOffset ->
+        val now = Timestamp.now()
+        val endTimestamp = now.minusHours(24.0 * dayOffset)
+        val startTimestamp = endTimestamp.minusHours(25.0)
 
-        val filteredInsulin = if (insulin === lastInsulin) {
-            cachedFilteredInsulin
-        } else {
-            lastInsulin = insulin
-            insulin.filterSince(historyLimit) { it.timestamp }.also { cachedFilteredInsulin = it }
-        }
+        val filteredReadings = readings.filter { it.timestamp.ms in startTimestamp.ms..endTimestamp.ms }
+        val filteredInsulin = insulin.filter { it.timestamp.ms in startTimestamp.ms..endTimestamp.ms }
+        val filteredMeals = meals.filter { it.timestamp.ms in startTimestamp.ms..endTimestamp.ms }
 
-        val filteredMeals = if (meals === lastMeals) {
-            cachedFilteredMeals
-        } else {
-            lastMeals = meals
-            meals.filterSince(historyLimit) { it.timestamp }.also { cachedFilteredMeals = it }
-        }
+        val canNavigatePrevious = readings.any { it.timestamp < startTimestamp } ||
+                insulin.any { it.timestamp < startTimestamp } ||
+                meals.any { it.timestamp < startTimestamp }
+        val canNavigateNext = dayOffset > 0
 
-        Log.d(TAG, "Updating history data with ${filteredReadings.size} readings, ${filteredInsulin.size} insulin apps, ${filteredMeals.size} meals")
+        Log.d(TAG, "Updating history data for dayOffset=$dayOffset ($startTimestamp to $endTimestamp) with ${filteredReadings.size} readings, ${filteredInsulin.size} insulin apps, ${filteredMeals.size} meals")
 
         HistoryUiState(
             isLoading = false,
             isError = false,
             readings = filteredReadings,
             insulinApplications = filteredInsulin,
-            meals = filteredMeals
+            meals = filteredMeals,
+            dayOffset = dayOffset,
+            startTimestampMs = startTimestamp.ms,
+            endTimestampMs = endTimestamp.ms,
+            canNavigatePrevious = canNavigatePrevious,
+            canNavigateNext = canNavigateNext
         )
     }
     .flowOn(Dispatchers.Default)
@@ -116,19 +123,4 @@ class HistoryViewModel(
             }
         }
     }
-}
-
-private inline fun <T> List<T>.filterSince(limit: Timestamp, crossinline getTimestamp: (T) -> Timestamp): List<T> {
-    if (isEmpty()) return emptyList()
-    val index = binarySearch { getTimestamp(it).compareTo(limit) }
-    val startIndex = if (index >= 0) {
-        var start = index
-        while (start > 0 && getTimestamp(this[start - 1]) >= limit) {
-            start--
-        }
-        start
-    } else {
-        -index - 1
-    }
-    return if (startIndex < size) subList(startIndex, size) else emptyList()
 }
