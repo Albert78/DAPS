@@ -205,10 +205,46 @@ class TherapyManager(
     suspend fun getCurrentTherapySettings(): CurrentTherapySettings = therapyRepository.getCurrentTherapySettings()
 
     /**
+     * Resolves the effective therapy settings for a specific timestamp,
+     * taking into account adjustment expiration and scheduled therapy adjustments.
+     */
+    suspend fun getTherapySettingsAt(timestamp: Timestamp): CurrentTherapySettings {
+        val currentSettings = getCurrentTherapySettings()
+
+        val activeEndTime = currentSettings.adjustmentEndTime
+        var settings = if (activeEndTime != null && timestamp >= activeEndTime) {
+            currentSettings.copy(
+                insulinAdjustmentPercentage = 0,
+                targetBgOverride = null,
+                lowThresholdOverride = null,
+                alertProfileOverride = null,
+                adjustmentHint = null,
+                adjustmentEndTime = null
+            )
+        } else {
+            currentSettings
+        }
+
+        val scheduled = runCatching { getScheduledTherapyAdjustment() }.getOrNull()
+        if (scheduled != null && timestamp >= scheduled.startTime && timestamp < scheduled.endTime) {
+            settings = settings.copy(
+                insulinAdjustmentPercentage = scheduled.percentage,
+                targetBgOverride = scheduled.targetBgOverride,
+                lowThresholdOverride = scheduled.lowThresholdOverride,
+                alertProfileOverride = scheduled.alertProfileOverride,
+                adjustmentHint = scheduled.adjustmentHint,
+                adjustmentEndTime = scheduled.endTime
+            )
+        }
+
+        return settings
+    }
+
+    /**
      * Gets the planned basal rate at the given timestamp.
      */
     suspend fun getBasalPerHour(timestamp: Timestamp): InsulinAmount {
-        val settings = getCurrentTherapySettings()
+        val settings = getTherapySettingsAt(timestamp)
         val baseBasal = settings.effectiveInsulinProfile.basalBlocks.getAmountForMinute(timestamp.minutesSinceMidnight())
         return InsulinAmount(baseBasal)
     }
@@ -219,7 +255,7 @@ class TherapyManager(
      * Unit: Grams of carbs.
      */
     suspend fun getCrFactor(timestamp: Timestamp): Double {
-        val settings = getCurrentTherapySettings()
+        val settings = getTherapySettingsAt(timestamp)
         return settings.effectiveInsulinProfile.crBlocks.getAmountForMinute(timestamp.minutesSinceMidnight())
     }
 
@@ -230,13 +266,13 @@ class TherapyManager(
      * Unit: Blood glucose delta.
      */
     suspend fun getIsfFactor(timestamp: Timestamp): BgDelta {
-        val settings = getCurrentTherapySettings()
+        val settings = getTherapySettingsAt(timestamp)
         val amount = settings.effectiveInsulinProfile.isfBlocks.getAmountForMinute(timestamp.minutesSinceMidnight())
         return BgDelta.fromMgDl(amount.toInt())
     }
 
     suspend fun getBgSettings(timestamp: Timestamp = Timestamp.now()): Pair<BgValue, BgValue> {
-        val settings = getCurrentTherapySettings()
+        val settings = getTherapySettingsAt(timestamp)
         val defaultBg = settings.defaultBgBlocks.getBgForMinute(timestamp.minutesSinceMidnight())
         return Pair(
             settings.targetBgOverride ?: defaultBg.first,
