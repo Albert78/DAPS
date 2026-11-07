@@ -322,6 +322,19 @@ class CurrentTherapyViewModel(
         return formStateHolder.isDirty() || _draftEndTime.value != active.adjustmentEndTime
     }
 
+    fun cancelTherapyAdjustment() {
+        viewModelScope.launch {
+            therapyManager.setTherapyAdjustment(
+                percentage = 0,
+                targetBg = null,
+                lowThreshold = null,
+                alertProfileOverrideId = null,
+                adjustmentHint = null,
+                adjustmentEndTime = null
+            )
+        }
+    }
+
     fun setTherapyAdjustment(
         percentage: Int,
         targetBg: BgValue?,

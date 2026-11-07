@@ -19,6 +19,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -106,6 +107,10 @@ fun TherapyAdjustmentScreen(
             viewModel.resetDraft()
             onNavigateUp()
         },
+        onDeleteClicked = {
+            viewModel.cancelTherapyAdjustment()
+            onNavigateUp()
+        },
         onNavigateUp = onNavigateUp
     )
 }
@@ -123,6 +128,7 @@ fun TherapyAdjustmentContent(
     onPresetApplied: (TherapyAdjustment) -> Unit,
     onApplyClicked: () -> Unit,
     onDiscardClicked: () -> Unit,
+    onDeleteClicked: () -> Unit = {},
     onNavigateUp: () -> Unit,
     availableAlarmProfiles: List<AlertProfile> = emptyList(),
     presets: List<TherapyAdjustment> = emptyList()
@@ -130,6 +136,10 @@ fun TherapyAdjustmentContent(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     var showDiscardDialog by remember { mutableStateOf(false) }
     var showDurationDialog by remember { mutableStateOf(false) }
+
+    val isAdjustmentActive = remember(formState) {
+        formState.isAdjustmentActive
+    }
 
     fun handleBack() {
         if (isDirty) {
@@ -154,6 +164,17 @@ fun TherapyAdjustmentContent(
                         )
                     }
                 },
+                actions = {
+                    IconButton(
+                        onClick = onDeleteClicked,
+                        enabled = isAdjustmentActive
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = stringResource(id = CommonR.string.cd_delete)
+                        )
+                    }
+                },
                 scrollBehavior = scrollBehavior
             )
         }
@@ -165,10 +186,6 @@ fun TherapyAdjustmentContent(
         ) {
             val focusManager = LocalFocusManager.current
             val scrollState = rememberScrollState()
-
-            val isAdjustmentActive = remember(formState) {
-                formState.isAdjustmentActive
-            }
 
             Box(
                 modifier = Modifier
