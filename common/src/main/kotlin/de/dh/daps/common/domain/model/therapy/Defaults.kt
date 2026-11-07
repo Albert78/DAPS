@@ -130,7 +130,6 @@ fun getDefaultInsulinProfile(context: Context, insulinType: InsulinType): Insuli
     getDefaultInsulinProfile(context, listOf(insulinType))
 
 fun getDefaultTherapyAdjustments(context: Context): List<TherapyAdjustment> = listOf(
-    TherapyAdjustment(name = context.getString(R.string.therapy_adjustment_preset_neutral)),
     TherapyAdjustment(name = context.getString(R.string.therapy_adjustment_preset_biking), percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
     TherapyAdjustment(name = context.getString(R.string.therapy_adjustment_preset_climbing), percentage = -40, targetBgMgDl = 160, lowThresholdMgDl = 110),
     TherapyAdjustment(name = context.getString(R.string.therapy_adjustment_preset_alcohol), percentage = -15, targetBgMgDl = 120, lowThresholdMgDl = 80),

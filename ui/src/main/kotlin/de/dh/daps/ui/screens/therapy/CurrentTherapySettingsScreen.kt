@@ -921,7 +921,6 @@ fun CurrentTherapySettingsPreview() {
             BgBlock(Minutes(1440), BgValue.fromMgDl(100), BgValue.fromMgDl(70))
         ),
         therapyAdjustmentPresets = listOf(
-            TherapyAdjustment(name = "Neutral"),
             TherapyAdjustment(name = "Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
             TherapyAdjustment(name = "Klettern", percentage = -40, targetBgMgDl = 160, lowThresholdMgDl = 110),
         )

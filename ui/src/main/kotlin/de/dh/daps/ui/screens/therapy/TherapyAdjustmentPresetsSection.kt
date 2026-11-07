@@ -130,7 +130,6 @@ private fun TherapyAdjustmentPresetsSectionPreview() {
     AppPreview(modifier = Modifier.padding(16.dp)) {
         TherapyAdjustmentPresetsSection(
             presets = listOf(
-                TherapyAdjustment(name = "Neutral"),
                 TherapyAdjustment(name = "Fahrrad fahren", percentage = -30, targetBgMgDl = 150, lowThresholdMgDl = 100),
                 TherapyAdjustment(name = "Stress", percentage = 20, targetBgMgDl = 115, lowThresholdMgDl = 75)
             ),
