@@ -158,7 +158,7 @@ class ApsHistoryEventsCommand(
             durationMinutes = durationMinutes(kind, param2),
             ratioPercent = if (kind == ApsHistoryEventKind.TEMP_START) param1 else null,
             carbohydrateGrams = if (kind == ApsHistoryEventKind.CARBS) param1 else null,
-            currentRateUnitsPerHour = if (kind == ApsHistoryEventKind.PROFILE_CHANGE) param2 / 100.0 else null,
+            currentRateUnitsPerHour = if (kind == ApsHistoryEventKind.PROFILE_CHANGE) param1 / 100.0 else null,
             previousTimestamp = if (kind == ApsHistoryEventKind.TIME_CHANGE) PumpTimestamp(u32Be(payload, 7) * 1000L) else null,
         )
     }

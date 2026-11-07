@@ -623,7 +623,7 @@ class DanaIController(
             if (eventTime > startTime) break
             when (event.kind) {
                 ApsHistoryEventKind.PROFILE_CHANGE -> {
-                    currentBaseRateUnits = event.currentRateUnitsPerHour ?: (event.param2 / 100.0)
+                    currentBaseRateUnits = event.currentRateUnitsPerHour
                 }
                 ApsHistoryEventKind.TEMP_START -> {
                     activeTempPercent = event.ratioPercent ?: event.param1
@@ -655,7 +655,7 @@ class DanaIController(
                 val (event, eventTime) = systemEvents[eventIndex]
                 when (event.kind) {
                     ApsHistoryEventKind.PROFILE_CHANGE -> {
-                        currentBaseRateUnits = event.currentRateUnitsPerHour ?: (event.param2 / 100.0)
+                        currentBaseRateUnits = event.currentRateUnitsPerHour
                     }
                     ApsHistoryEventKind.TEMP_START -> {
                         activeTempPercent = event.ratioPercent ?: event.param1
@@ -684,7 +684,13 @@ class DanaIController(
             }
 
             val slotZdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(slot.ms), ZoneId.systemDefault())
-            val baseRate = currentBaseRateUnits ?: hourlyBasalRates.getOrNull(slotZdt.hour) ?: currentBasalStatus.activeRate.toPumpUnits(concentration)
+            val tempPercent = currentBasalStatus.tempBasalPercent
+            val unscaledStatusRate = if (currentBasalStatus.isTempBasal && tempPercent != null && tempPercent > 0) {
+                currentBasalStatus.activeRate.toPumpUnits(concentration) / (tempPercent / 100.0)
+            } else {
+                currentBasalStatus.activeRate.toPumpUnits(concentration)
+            }
+            val baseRate = currentBaseRateUnits ?: hourlyBasalRates.getOrNull(slotZdt.hour) ?: unscaledStatusRate
 
             val activeRate = if (isSuspended) {
                 0.0
