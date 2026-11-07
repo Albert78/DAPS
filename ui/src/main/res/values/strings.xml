@@ -360,7 +360,7 @@
     <string name="meal_correction_bolus_calc_cob_part">COB Ausgleich: %1$s</string>
     <string name="meal_correction_bolus_calc_future_carbs_part">Zukünftige KH: %1$s</string>
     <string name="meal_correction_bolus_calc_deferred_part">Verzögerte Boli: %1$s</string>
-    <string name="meal_correction_bolus_calc_low_bg_warning">Blutzucker ≤ %1$s um %2$s</string>
+    <string name="meal_correction_bolus_calc_low_bg_warning">Blutzucker ca. %1$s um %2$s</string>
     <string name="meal_correction_bolus_calc_no_bg_warning">Kein Blutzuckerwert</string>
     <string name="meal_correction_bolus_insulin_label">Insulinmenge</string>
     <string name="meal_correction_bolus_meal_time_label">Zeit der Mahlzeit</string>

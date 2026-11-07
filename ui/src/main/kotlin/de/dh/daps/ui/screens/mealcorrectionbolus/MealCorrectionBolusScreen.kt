@@ -607,17 +607,15 @@ fun CalculationDetailsDialog(
                 val bgProjection = impendingLow ?:
                 ProjectedBg(uiState.projections.bg, uiState.projections.timestamp)
 
-                if (impendingLow == null) {
-                    Text(
-                        text = stringResource(
-                            R.string.meal_correction_bolus_calc_factors_label,
-                            isfValue(uiState.isf),
-                            crValue(uiState.cr, withUnit = false)
-                        ),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                Text(
+                    text = stringResource(
+                        R.string.meal_correction_bolus_calc_factors_label,
+                        isfValue(uiState.isf),
+                        crValue(uiState.cr, withUnit = false)
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
 
                 if (bgProjection.bg.isInvalid()) {
                     Text(
@@ -626,60 +624,60 @@ fun CalculationDetailsDialog(
                         color = MaterialTheme.colorScheme.error,
                         fontWeight = FontWeight.Bold
                     )
-                } else if (bgProjection.bg <= uiState.lowThreshold) {
-                    Text(
-                        text = stringResource(
-                            R.string.meal_correction_bolus_calc_low_bg_warning,
-                            glucoseValue(uiState.lowThreshold, withUnit = true),
-                            time(bgProjection.timestamp)
-                        ),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error,
-                        fontWeight = FontWeight.Bold
-                    )
+                } else {
+                    if (impendingLow != null) {
+                        Text(
+                            text = stringResource(
+                                R.string.meal_correction_bolus_calc_low_bg_warning,
+                                glucoseValue(impendingLow.bg),
+                                time(impendingLow.timestamp)
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
 
-                if (impendingLow == null) {
-                    HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
+                HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
 
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        text = stringResource(R.string.meal_correction_bolus_calc_meal_part, insulinValue(uiState.calculation.mealPart.iu, signed = true)),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = stringResource(R.string.meal_correction_bolus_calc_correction_part, insulinValue(uiState.calculation.correctionPart.iu, signed = true)),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    if (uiState.calculation.iobPart > InsulinAmount.ZERO) {
                         Text(
-                            text = stringResource(R.string.meal_correction_bolus_calc_meal_part, insulinValue(uiState.calculation.mealPart.iu, signed = true)),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Text(
-                            text = stringResource(R.string.meal_correction_bolus_calc_correction_part, insulinValue(uiState.calculation.correctionPart.iu, signed = true)),
+                            text = stringResource(R.string.meal_correction_bolus_calc_iob_part, insulinValue(-uiState.calculation.iobPart.iu, signed = true)),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.error
                         )
-                        if (uiState.calculation.iobPart > InsulinAmount.ZERO) {
-                            Text(
-                                text = stringResource(R.string.meal_correction_bolus_calc_iob_part, insulinValue(-uiState.calculation.iobPart.iu, signed = true)),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        }
-                        if (uiState.calculation.cobPart > InsulinAmount.ZERO) {
-                            Text(
-                                text = stringResource(R.string.meal_correction_bolus_calc_cob_part, insulinValue(uiState.calculation.cobPart.iu, signed = true)),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                        if (uiState.calculation.futureCarbsPart > InsulinAmount.ZERO) {
-                            Text(
-                                text = stringResource(R.string.meal_correction_bolus_calc_future_carbs_part, insulinValue(uiState.calculation.futureCarbsPart.iu, signed = true)),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                        if (uiState.calculation.deferredBolusPart > InsulinAmount.ZERO) {
-                            Text(
-                                text = stringResource(R.string.meal_correction_bolus_calc_deferred_part, insulinValue(-uiState.calculation.deferredBolusPart.iu, signed = true)),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        }
+                    }
+                    if (uiState.calculation.cobPart > InsulinAmount.ZERO) {
+                        Text(
+                            text = stringResource(R.string.meal_correction_bolus_calc_cob_part, insulinValue(uiState.calculation.cobPart.iu, signed = true)),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    if (uiState.calculation.futureCarbsPart > InsulinAmount.ZERO) {
+                        Text(
+                            text = stringResource(R.string.meal_correction_bolus_calc_future_carbs_part, insulinValue(uiState.calculation.futureCarbsPart.iu, signed = true)),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    if (uiState.calculation.deferredBolusPart > InsulinAmount.ZERO) {
+                        Text(
+                            text = stringResource(R.string.meal_correction_bolus_calc_deferred_part, insulinValue(-uiState.calculation.deferredBolusPart.iu, signed = true)),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error
+                        )
                     }
                 }
 

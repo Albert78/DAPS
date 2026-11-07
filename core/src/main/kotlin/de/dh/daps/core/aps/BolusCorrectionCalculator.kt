@@ -170,6 +170,7 @@ object BolusCalculationMath {
      * @param deferredBolusAmount Insulin amount already planned for administration.
      * @return A [BolusParts] object containing all calculated components.
      */
+    @Suppress("UNUSED_PARAMETER")
     fun calculateBolusParts(
         carbsGrams: Double,
         mealTimestamp: Timestamp,
@@ -187,8 +188,12 @@ object BolusCalculationMath {
         val mealPart = convertToInsulinAmountFromCarbs(carbsGrams, cr)
 
         // Determine BG deviation from target at the time of the meal.
-        // Fallback to target if no valid BG is available.
-        val bgMgdl = if (bg.isValid()) bg.mgdl else targetBg.mgdl
+        // Use impending low BG if available, otherwise projected BG. Fallback to target if no valid BG is available.
+        val bgMgdl = when {
+            impendingLow != null && impendingLow.bg.isValid() -> impendingLow.bg.mgdl
+            bg.isValid() -> bg.mgdl
+            else -> targetBg.mgdl
+        }
         val bgDiff = bgMgdl - targetBg.mgdl
 
         // Calculate correction, COB and future carb parts using meal-time factors
@@ -199,17 +204,13 @@ object BolusCalculationMath {
         val cobPart = if (bgDiff < -15) InsulinAmount.ZERO else convertToInsulinAmountFromCarbs(cob, cr)
         val futureCarbsPart = convertToInsulinAmountFromCarbs(futureCarbs, cr)
 
-        val bolusAmount = if (impendingLow != null && impendingLow.timestamp < mealTimestamp.plusMinutes(60)) {
-            InsulinAmount.ZERO
-        } else {
-            // Sum up all parts: Add requirements (Meal, Correction, COB, Future Carbs),
-            // subtract already active/planned resources (IOB, Deferred Boluses).
-            val total = (mealPart + correctionPart - iob + cobPart + futureCarbsPart - deferredBolusAmount).coerceAtLeast(InsulinAmount.ZERO)
+        // Sum up all parts: Add requirements (Meal, Correction, COB, Future Carbs),
+        // subtract already active/planned resources (IOB, Deferred Boluses).
+        val total = (mealPart + correctionPart - iob + cobPart + futureCarbsPart - deferredBolusAmount).coerceAtLeast(InsulinAmount.ZERO)
 
-            // Round to 2 decimal places for insulin pump precision
-            val roundedTotal = round(total.iu * 100.0) / 100.0
-            InsulinAmount(roundedTotal)
-        }
+        // Round to 2 decimal places for insulin pump precision
+        val roundedTotal = round(total.iu * 100.0) / 100.0
+        val bolusAmount = InsulinAmount(roundedTotal)
 
         return BolusParts(
             mealPart = mealPart,
