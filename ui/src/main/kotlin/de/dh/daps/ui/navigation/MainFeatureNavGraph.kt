@@ -73,7 +73,7 @@ import de.dh.daps.common.repository.setUserDeclinedPermissions
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.treatmentlock.TreatmentLockScreen
 import de.dh.daps.ui.common.treatmentlock.TreatmentLockViewModel
-import de.dh.daps.ui.controls.history.HistoryViewModel
+import de.dh.daps.ui.screens.dashboard.RecentHistoryViewModel
 import de.dh.daps.ui.controls.state.SystemViewModel
 import de.dh.daps.ui.screens.alertprofiles.AlertProfileEditorScreen
 import de.dh.daps.ui.screens.alertprofiles.AlertProfileEditorViewModel
@@ -159,8 +159,8 @@ class MainFeatureNavGraph(
                     viewModel(factory = DashboardViewModel.Companion.Factory(registry))
                 val systemVM: SystemViewModel =
                     viewModel(factory = SystemViewModel.Companion.Factory(registry))
-                val historyVM: HistoryViewModel =
-                    viewModel(factory = HistoryViewModel.Companion.Factory(registry))
+                val recentHistoryVM: RecentHistoryViewModel =
+                    viewModel(factory = RecentHistoryViewModel.Companion.Factory(registry))
                 val currentTherapyVM: CurrentTherapyViewModel =
                     viewModel(factory = CurrentTherapyViewModel.Companion.Factory(registry))
                 val permissionsViewModel: PermissionsViewModel =
@@ -174,7 +174,7 @@ class MainFeatureNavGraph(
                 DashboardScreen(
                     viewModel = vm,
                     systemViewModel = systemVM,
-                    historyViewModel = historyVM,
+                    recentHistoryViewModel = recentHistoryVM,
                     currentTherapyViewModel = currentTherapyVM,
                     permissionsViewModel = permissionsViewModel,
                     onFixPermissions = { navViewModel.push(PermissionsRoute) },
@@ -263,8 +263,8 @@ class MainFeatureNavGraph(
             }
 
             is HistoryRoute -> NavEntry(key) {
-                val historyVM: HistoryViewModel =
-                    viewModel(factory = HistoryViewModel.Companion.Factory(registry))
+                val historyVM: de.dh.daps.ui.screens.history.HistoryViewModel =
+                    viewModel(factory = de.dh.daps.ui.screens.history.HistoryViewModel.Companion.Factory(registry))
 
                 HistoryScreen(
                     historyViewModel = historyVM

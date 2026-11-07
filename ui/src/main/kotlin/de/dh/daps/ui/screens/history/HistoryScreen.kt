@@ -41,8 +41,6 @@ import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.controls.history.BgHistoryChartOrDefault
 import de.dh.daps.ui.controls.history.BgOverviewChart
 import de.dh.daps.ui.controls.history.HistoryDiagramData
-import de.dh.daps.ui.controls.history.HistoryUiState
-import de.dh.daps.ui.controls.history.HistoryViewModel
 import de.dh.daps.ui.controls.history.createSampleReadings
 import de.dh.daps.ui.controls.history.rememberBgHistoryChartState
 import java.time.Instant
@@ -102,7 +100,9 @@ fun HistoryContent(
                     glucoseUnit = glucoseUnit,
                     carbsUnit = carbsUnit,
                     insulinApplications = historyUiState.insulinApplications,
-                    meals = historyUiState.meals
+                    meals = historyUiState.meals,
+                    isLatestDay = historyUiState.isLatestDay,
+                    endTimestampMs = historyUiState.endTimestampMs
                 )
 
                 Column(
@@ -223,7 +223,8 @@ fun createSampleHistoryUiState(
         startTimestampMs = startMs,
         endTimestampMs = endMs,
         canNavigatePrevious = true,
-        canNavigateNext = dayOffset > 0
+        canNavigateNext = dayOffset > 0,
+        isLatestDay = dayOffset == 0
     )
 }
 

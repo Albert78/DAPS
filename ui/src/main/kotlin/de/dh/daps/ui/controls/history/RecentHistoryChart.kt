@@ -14,13 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.Stable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableDoubleStateOf
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -30,10 +24,6 @@ import androidx.compose.ui.unit.dp
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.CartesianDrawingContext
 import com.patrykandpatrick.vico.compose.cartesian.CartesianMeasuringContext
-import com.patrykandpatrick.vico.compose.cartesian.Scroll
-import com.patrykandpatrick.vico.compose.cartesian.VicoScrollState
-import com.patrykandpatrick.vico.compose.cartesian.VicoZoomState
-import com.patrykandpatrick.vico.compose.cartesian.Zoom
 import com.patrykandpatrick.vico.compose.cartesian.axis.Axis
 import com.patrykandpatrick.vico.compose.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.compose.cartesian.axis.VerticalAxis
@@ -47,8 +37,6 @@ import com.patrykandpatrick.vico.compose.cartesian.layer.LineCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLine
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
-import com.patrykandpatrick.vico.compose.cartesian.rememberVicoScrollState
-import com.patrykandpatrick.vico.compose.cartesian.rememberVicoZoomState
 import com.patrykandpatrick.vico.compose.common.Fill
 import com.patrykandpatrick.vico.compose.common.Position
 import com.patrykandpatrick.vico.compose.common.component.rememberShapeComponent
@@ -85,9 +73,7 @@ import de.dh.daps.ui.common.theme.ExtendedTheme
 import java.util.Calendar
 import java.util.Locale
 
-private const val INITIAL_SHOW_HOURS = 4.0
-
-data class HistoryAndImpactDiagramData(
+data class RecentHistoryAndImpactDiagramData(
     val baseTimestamp: Long,
     val minX: Double,
     val maxX: Double,
@@ -103,6 +89,8 @@ data class HistoryAndImpactDiagramData(
     val dataSignature: Any
 ) {
     companion object {
+        private const val INITIAL_SHOW_HOURS = 4.0
+
         fun create(
             readings: List<BgReading>,
             glucoseUnit: GlucoseUnit,
@@ -112,7 +100,7 @@ data class HistoryAndImpactDiagramData(
             profile: InsulinProfile? = null,
             dia: Minutes = Minutes(DEFAULT_DIA_MINUTES.toShort()),
             peak: Minutes = Minutes(DEFAULT_PEAK_MINUTES.toShort())
-        ): HistoryAndImpactDiagramData? {
+        ): RecentHistoryAndImpactDiagramData? {
             /**
              * Axis scales:
              * X-Axis: 1 unit = 1 minute
@@ -140,8 +128,8 @@ data class HistoryAndImpactDiagramData(
             } else {
                 baseEndTs
             }
-            val maxX = ((endTs - baseTimestamp).toDouble() / MS_PER_MINUTE).
-                coerceAtLeast(INITIAL_SHOW_HOURS * 60.0)
+            val maxX = ((endTs - baseTimestamp).toDouble() / MS_PER_MINUTE)
+                .coerceAtLeast(INITIAL_SHOW_HOURS * 60.0)
 
             val insulinX = mutableListOf<Double>()
             val insulinY = mutableListOf<Double>()
@@ -202,7 +190,7 @@ data class HistoryAndImpactDiagramData(
                 carbY.add(totalCarbAbsorption)
             }
 
-            return HistoryAndImpactDiagramData(
+            return RecentHistoryAndImpactDiagramData(
                 baseTimestamp = baseTimestamp,
                 minX = minX,
                 maxX = maxX,
@@ -221,11 +209,11 @@ data class HistoryAndImpactDiagramData(
             )
         }
 
-        fun empty(glucoseUnit: GlucoseUnit = GlucoseUnit.MG_DL, carbsUnit: CarbsUnit = CarbsUnit.GRAMS): HistoryAndImpactDiagramData {
+        fun empty(glucoseUnit: GlucoseUnit = GlucoseUnit.MG_DL, carbsUnit: CarbsUnit = CarbsUnit.GRAMS): RecentHistoryAndImpactDiagramData {
             val now = Timestamp.now().ms
             val baseTimestamp = (now / MS_PER_HOUR) * MS_PER_HOUR
             val maxX = INITIAL_SHOW_HOURS * 60.0
-            return HistoryAndImpactDiagramData(
+            return RecentHistoryAndImpactDiagramData(
                 baseTimestamp = baseTimestamp,
                 minX = 0.0,
                 maxX = maxX,
@@ -243,79 +231,9 @@ data class HistoryAndImpactDiagramData(
     }
 }
 
-/**
- * State of the BgHistoryChart to observe and control the visible range.
- */
-@Stable
-class BgHistoryChartState(
-    val scrollState: VicoScrollState,
-    val zoomState: VicoZoomState
-) {
-    internal var minX by mutableDoubleStateOf(0.0)
-    internal var maxX by mutableDoubleStateOf(0.0)
-    internal var layerWidth by mutableFloatStateOf(0f)
-
-    /**
-     * The currently visible X-range in the chart (minutes offset from baseTimestamp).
-     * Uses derivedStateOf to avoid state-write loops and unnecessary recompositions.
-     */
-    val visibleRange by derivedStateOf {
-        val totalXRange = maxX - minX
-        if (layerWidth <= 0 || totalXRange <= 0.0 || scrollState.maxValue < 0f) {
-            null
-        } else {
-            // totalWidthPx is the virtual width of the entire chart
-            val totalWidthPx = scrollState.maxValue + layerWidth
-            // scrollState.value is the current horizontal scroll offset
-            val startX = minX + (scrollState.value / totalWidthPx) * totalXRange
-            val endX = startX + (layerWidth / totalWidthPx) * totalXRange
-            startX..endX
-        }
-    }
-
-    /**
-     * Programmatically sets the visible range of the chart.
-     */
-    suspend fun setVisibleRange(start: Double, end: Double) {
-        val totalXRange = maxX - minX
-        val desiredWidth = end - start
-        if (desiredWidth <= 0 || layerWidth <= 0 || totalXRange <= 0.0) return
-
-        zoomState.zoom(Zoom.x(desiredWidth))
-        scrollState.scroll(Scroll.Absolute.x(x = start))
-    }
-
-    /**
-     * Scrolls the chart to a specific time offset without changing the zoom level.
-     */
-    suspend fun scrollTo(start: Double) {
-        scrollState.scroll(Scroll.Absolute.x(x = start))
-    }
-}
-
 @Composable
-fun rememberBgHistoryChartState(
-    initialShowHours: Double = INITIAL_SHOW_HOURS
-): BgHistoryChartState {
-    val scrollState = rememberVicoScrollState(initialScroll = Scroll.Absolute.End)
-
-    val initialZoom = remember(initialShowHours) { Zoom.x(initialShowHours * 60.0) }
-    val minZoom = remember(initialShowHours) { Zoom.x(24.0 * 60) }
-    val maxZoom = remember(initialShowHours) { Zoom.x(initialShowHours * 30) }
-
-    val zoomState = rememberVicoZoomState(
-        initialZoom = initialZoom,
-        minZoom = minZoom,
-        maxZoom = maxZoom
-    )
-    return remember(scrollState, zoomState) {
-        BgHistoryChartState(scrollState, zoomState)
-    }
-}
-
-@Composable
-fun HistoryAndImpactChart(
-    diagramData: HistoryAndImpactDiagramData,
+fun RecentHistoryAndImpactChart(
+    diagramData: RecentHistoryAndImpactDiagramData,
     modifier: Modifier = Modifier,
     onChartClick: (() -> Unit)? = null,
     controlledState: BgHistoryChartState? = null,
@@ -646,7 +564,7 @@ fun HistoryAndImpactChart(
     }
 }
 
-fun createSampleImpactDiagramData(): HistoryAndImpactDiagramData {
+fun createSampleRecentHistoryAndImpactDiagramData(): RecentHistoryAndImpactDiagramData {
     val readings = createSampleReadings(120, 5)
     val baseTs = readings.first().timestamp.ms
 
@@ -669,7 +587,7 @@ fun createSampleImpactDiagramData(): HistoryAndImpactDiagramData {
         MealEntry(0, Timestamp(baseTs + 460 * MS_PER_MINUTE), 40.0, sampleMealType)
     )
 
-    return HistoryAndImpactDiagramData.create(
+    return RecentHistoryAndImpactDiagramData.create(
         readings = readings,
         glucoseUnit = GlucoseUnit.MG_DL,
         insulinApplications = insulinApplications,
@@ -680,16 +598,16 @@ fun createSampleImpactDiagramData(): HistoryAndImpactDiagramData {
 }
 
 @Composable
-fun HistoryAndImpactChartOrDefault(
-    diagramData: HistoryAndImpactDiagramData?,
+fun RecentHistoryAndImpactChartOrDefault(
+    diagramData: RecentHistoryAndImpactDiagramData?,
     modifier: Modifier = Modifier,
     onChartClick: (() -> Unit)? = null,
     state: BgHistoryChartState? = null,
     showInsulin: Boolean = true,
     showCarbs: Boolean = true
 ) {
-    val data = diagramData ?: remember { HistoryAndImpactDiagramData.empty() }
-    HistoryAndImpactChart(
+    val data = diagramData ?: remember { RecentHistoryAndImpactDiagramData.empty() }
+    RecentHistoryAndImpactChart(
         diagramData = data,
         modifier = modifier,
         onChartClick = onChartClick,
@@ -701,10 +619,10 @@ fun HistoryAndImpactChartOrDefault(
 
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun HistoryAndImpactChartPreview() {
-    val diagramData = remember { createSampleImpactDiagramData() }
+fun RecentHistoryAndImpactChartPreview() {
+    val diagramData = remember { createSampleRecentHistoryAndImpactDiagramData() }
     AppPreview {
-        HistoryAndImpactChart(
+        RecentHistoryAndImpactChart(
             diagramData = diagramData,
             modifier = Modifier.height(300.dp)
         )
@@ -713,9 +631,9 @@ fun HistoryAndImpactChartPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun HistoryAndImpactChartDefaultPreview() {
+fun RecentHistoryAndImpactChartDefaultPreview() {
     AppPreview {
-        HistoryAndImpactChartOrDefault(
+        RecentHistoryAndImpactChartOrDefault(
             diagramData = null,
             modifier = Modifier.height(300.dp)
         )

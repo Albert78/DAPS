@@ -1,4 +1,4 @@
-package de.dh.daps.ui.controls.history
+package de.dh.daps.ui.screens.history
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -34,7 +34,8 @@ data class HistoryUiState(
     val startTimestampMs: Long = 0L,
     val endTimestampMs: Long = 0L,
     val canNavigatePrevious: Boolean = true,
-    val canNavigateNext: Boolean = false
+    val canNavigateNext: Boolean = false,
+    val isLatestDay: Boolean = true
 )
 
 private data class RawHistoryData(
@@ -88,6 +89,7 @@ class HistoryViewModel(
                 insulin.any { it.timestamp < startTimestamp } ||
                 meals.any { it.timestamp < startTimestamp }
         val canNavigateNext = dayOffset > 0
+        val isLatestDay = dayOffset == 0
 
         Log.d(TAG, "Updating history data for dayOffset=$dayOffset ($startTimestamp to $endTimestamp) with ${filteredReadings.size} readings, ${filteredInsulin.size} insulin apps, ${filteredMeals.size} meals")
 
@@ -101,7 +103,8 @@ class HistoryViewModel(
             startTimestampMs = startTimestamp.ms,
             endTimestampMs = endTimestamp.ms,
             canNavigatePrevious = canNavigatePrevious,
-            canNavigateNext = canNavigateNext
+            canNavigateNext = canNavigateNext,
+            isLatestDay = isLatestDay
         )
     }
     .flowOn(Dispatchers.Default)

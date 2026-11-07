@@ -18,7 +18,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -40,6 +44,8 @@ import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.CartesianDrawingContext
 import com.patrykandpatrick.vico.compose.cartesian.CartesianMeasuringContext
 import com.patrykandpatrick.vico.compose.cartesian.Scroll
+import com.patrykandpatrick.vico.compose.cartesian.VicoScrollState
+import com.patrykandpatrick.vico.compose.cartesian.VicoZoomState
 import com.patrykandpatrick.vico.compose.cartesian.Zoom
 import com.patrykandpatrick.vico.compose.cartesian.axis.Axis
 import com.patrykandpatrick.vico.compose.cartesian.axis.BaseAxis
@@ -102,8 +108,6 @@ import java.util.Calendar
 import java.util.Locale
 import de.dh.daps.common.R as CommonR
 
-private const val INITIAL_SHOW_HOURS = 4.0
-
 data class HistoryDiagramData(
     val readings: List<BgReading>,
     val baseTimestamp: Long,
@@ -120,10 +124,9 @@ data class HistoryDiagramData(
     val carbYValues: List<Double> = emptyList(),
     val dataSignature: Any
 ) {
-    val bgXValues: List<Double> get() = xValues
-    val bgYValues: List<Double> get() = yValues
-
     companion object {
+        const val INITIAL_SHOW_HOURS = 4.0
+
         fun create(
             readings: List<BgReading>,
             glucoseUnit: GlucoseUnit,
@@ -132,7 +135,9 @@ data class HistoryDiagramData(
             meals: List<MealEntry> = emptyList(),
             profile: InsulinProfile? = null,
             dia: Minutes = Minutes(DEFAULT_DIA_MINUTES.toShort()),
-            peak: Minutes = Minutes(DEFAULT_PEAK_MINUTES.toShort())
+            peak: Minutes = Minutes(DEFAULT_PEAK_MINUTES.toShort()),
+            isLatestDay: Boolean = true,
+            endTimestampMs: Long? = null
         ): HistoryDiagramData? {
             val validReadings = readings.filter { it.sampleKind == BgSampleKind.Value && it.value.isValid() }
             if (validReadings.isEmpty()) return null
@@ -144,18 +149,21 @@ data class HistoryDiagramData(
             val minX = 0.0
 
             val now = System.currentTimeMillis()
-            val lastFutureEntryTs = (insulinApplications.map { it.timestamp.ms + 4 * MS_PER_HOUR } + meals.map { it.timestamp.ms + 4 * MS_PER_HOUR })
-                .filter { it > now }
-                .maxOrNull()
-
-            val baseEndTs = (((lastReadingTs + MS_PER_HOUR / 2) / MS_PER_HOUR) + 1) * MS_PER_HOUR
-            val endTs = if (lastFutureEntryTs != null) {
-                maxOf(baseEndTs, minOf(now + 3 * MS_PER_HOUR, lastFutureEntryTs))
+            val endTs = if (isLatestDay) {
+                val lastFutureEntryTs = (insulinApplications.map { it.timestamp.ms + 4 * MS_PER_HOUR } + meals.map { it.timestamp.ms + 4 * MS_PER_HOUR })
+                    .filter { it > now }
+                    .maxOrNull()
+                val baseEndTs = (((lastReadingTs + MS_PER_HOUR / 2) / MS_PER_HOUR) + 1) * MS_PER_HOUR
+                if (lastFutureEntryTs != null) {
+                    maxOf(baseEndTs, minOf(now + 3 * MS_PER_HOUR, lastFutureEntryTs))
+                } else {
+                    baseEndTs
+                }
             } else {
-                baseEndTs
+                endTimestampMs ?: lastReadingTs
             }
             val maxX = ((endTs - baseTimestamp).toDouble() / MS_PER_MINUTE)
-                .coerceAtLeast(INITIAL_SHOW_HOURS * 60.0)
+                .coerceAtLeast(if (isLatestDay) INITIAL_SHOW_HOURS * 60.0 else 0.0)
 
             val defaultInsulinCurve = InsulinCurve(dia.value.toDouble(), peak.value.toDouble())
             val insulinCurves = mutableMapOf<String, InsulinCurve>()
@@ -255,6 +263,76 @@ data class HistoryDiagramData(
                 dataSignature = "empty_${baseTimestamp}_${glucoseUnit}_$carbsUnit"
             )
         }
+    }
+}
+
+/**
+ * State of the BgHistoryChart to observe and control the visible range.
+ */
+@Stable
+class BgHistoryChartState(
+    val scrollState: VicoScrollState,
+    val zoomState: VicoZoomState
+) {
+    internal var minX by mutableDoubleStateOf(0.0)
+    internal var maxX by mutableDoubleStateOf(0.0)
+    internal var layerWidth by mutableFloatStateOf(0f)
+
+    /**
+     * The currently visible X-range in the chart (minutes offset from baseTimestamp).
+     * Uses derivedStateOf to avoid state-write loops and unnecessary recompositions.
+     */
+    val visibleRange by derivedStateOf {
+        val totalXRange = maxX - minX
+        if (layerWidth <= 0 || totalXRange <= 0.0 || scrollState.maxValue < 0f) {
+            null
+        } else {
+            // totalWidthPx is the virtual width of the entire chart
+            val totalWidthPx = scrollState.maxValue + layerWidth
+            // scrollState.value is the current horizontal scroll offset
+            val startX = minX + (scrollState.value / totalWidthPx) * totalXRange
+            val endX = startX + (layerWidth / totalWidthPx) * totalXRange
+            startX..endX
+        }
+    }
+
+    /**
+     * Programmatically sets the visible range of the chart.
+     */
+    suspend fun setVisibleRange(start: Double, end: Double) {
+        val totalXRange = maxX - minX
+        val desiredWidth = end - start
+        if (desiredWidth <= 0 || layerWidth <= 0 || totalXRange <= 0.0) return
+
+        zoomState.zoom(Zoom.x(desiredWidth))
+        scrollState.scroll(Scroll.Absolute.x(x = start))
+    }
+
+    /**
+     * Scrolls the chart to a specific time offset without changing the zoom level.
+     */
+    suspend fun scrollTo(start: Double) {
+        scrollState.scroll(Scroll.Absolute.x(x = start))
+    }
+}
+
+@Composable
+fun rememberBgHistoryChartState(
+    initialShowHours: Double = HistoryDiagramData.INITIAL_SHOW_HOURS
+): BgHistoryChartState {
+    val scrollState = rememberVicoScrollState(initialScroll = Scroll.Absolute.End)
+
+    val initialZoom = remember(initialShowHours) { Zoom.x(initialShowHours * 60.0) }
+    val minZoom = remember(initialShowHours) { Zoom.x(24.0 * 60) }
+    val maxZoom = remember(initialShowHours) { Zoom.x(initialShowHours * 30) }
+
+    val zoomState = rememberVicoZoomState(
+        initialZoom = initialZoom,
+        minZoom = minZoom,
+        maxZoom = maxZoom
+    )
+    return remember(scrollState, zoomState) {
+        BgHistoryChartState(scrollState, zoomState)
     }
 }
 

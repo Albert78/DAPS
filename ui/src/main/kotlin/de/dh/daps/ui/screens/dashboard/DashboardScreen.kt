@@ -78,10 +78,8 @@ import de.dh.daps.ui.common.getBolusRecommendationText
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.daps.ui.controls.apscontrol.ApsControlCard
-import de.dh.daps.ui.controls.history.HistoryAndImpactChartOrDefault
-import de.dh.daps.ui.controls.history.HistoryAndImpactDiagramData
-import de.dh.daps.ui.controls.history.HistoryUiState
-import de.dh.daps.ui.controls.history.HistoryViewModel
+import de.dh.daps.ui.controls.history.RecentHistoryAndImpactChartOrDefault
+import de.dh.daps.ui.controls.history.RecentHistoryAndImpactDiagramData
 import de.dh.daps.ui.controls.history.createSampleReadings
 import de.dh.daps.ui.controls.history.rememberBgHistoryChartState
 import de.dh.daps.ui.controls.state.CurrentBgUiState
@@ -105,7 +103,7 @@ import java.util.Locale
 fun DashboardScreen(
     viewModel: DashboardViewModel,
     systemViewModel: SystemViewModel,
-    historyViewModel: HistoryViewModel,
+    recentHistoryViewModel: RecentHistoryViewModel,
     currentTherapyViewModel: CurrentTherapyViewModel,
     permissionsViewModel: PermissionsViewModel,
     onFixPermissions: () -> Unit,
@@ -121,7 +119,7 @@ fun DashboardScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val currentBgUiState by systemViewModel.currentBgUiState.collectAsState()
-    val historyUiState by historyViewModel.historyUiState.collectAsState()
+    val recentHistoryUiState by recentHistoryViewModel.recentHistoryUiState.collectAsState()
     val iob by systemViewModel.iob.collectAsState()
     val cob by systemViewModel.cob.collectAsState()
     val currentTherapyUiState by currentTherapyViewModel.uiState.collectAsState()
@@ -130,7 +128,7 @@ fun DashboardScreen(
     DashboardContent(
         dashboardUiState = uiState,
         currentBgUiState = currentBgUiState,
-        historyUiState = historyUiState,
+        recentHistoryUiState = recentHistoryUiState,
         iob = iob,
         cob = cob,
         currentTherapyUiState = currentTherapyUiState,
@@ -157,7 +155,7 @@ fun DashboardScreen(
 fun DashboardContent(
     dashboardUiState: DashboardUiState,
     currentBgUiState: CurrentBgUiState,
-    historyUiState: HistoryUiState,
+    recentHistoryUiState: RecentHistoryUiState,
     iob: InsulinAmount,
     cob: Double,
     currentTherapyUiState: CurrentTherapyUiState,
@@ -287,18 +285,18 @@ fun DashboardContent(
                 val chartState = rememberBgHistoryChartState()
                 val glucoseUnit = LocalGlucoseUnit.current
                 val carbsUnit = LocalCarbsUnit.current
-                if (historyUiState.isLoading || currentTherapyUiState.isLoading) {
+                if (recentHistoryUiState.isLoading || currentTherapyUiState.isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 } else {
-                    HistoryAndImpactChartOrDefault(
-                        diagramData = HistoryAndImpactDiagramData.create(
-                            readings = historyUiState.readings,
+                    RecentHistoryAndImpactChartOrDefault(
+                        diagramData = RecentHistoryAndImpactDiagramData.create(
+                            readings = recentHistoryUiState.readings,
                             glucoseUnit = glucoseUnit,
                             carbsUnit = carbsUnit,
-                            insulinApplications = historyUiState.insulinApplications,
-                            meals = historyUiState.meals,
+                            insulinApplications = recentHistoryUiState.insulinApplications,
+                            meals = recentHistoryUiState.meals,
                             profile = currentTherapyUiState.activeTherapyStatus.profile.profile
                         ),
                         state = chartState,
@@ -545,13 +543,13 @@ fun DashboardTempBasalRecommendationCard(
     )
 }
 
-fun createSampleHistoryUiState(
+fun createSampleRecentHistoryUiState(
     size: Int = 120,
     minsInterval: Short = 5,
     base: Double = 90.0,
     amplitude: Double = 10.0,
     noiseFactor: Double = 1.0
-): HistoryUiState {
+): RecentHistoryUiState {
     val now = Timestamp.now()
     val rawReadings = createSampleReadings(
         size = size,
@@ -647,7 +645,7 @@ fun createSampleHistoryUiState(
         )
     )
 
-    return HistoryUiState(
+    return RecentHistoryUiState(
         isLoading = false,
         isError = false,
         readings = readings,
@@ -668,7 +666,7 @@ fun DashboardPreview() {
                 apsMode = ApsMode.AutoCorrection
             ),
             currentBgUiState = createSampleGoodBgUiState(),
-            historyUiState = createSampleHistoryUiState(),
+            recentHistoryUiState = createSampleRecentHistoryUiState(),
             iob = InsulinAmount(1.57),
             cob = 12.0,
             currentTherapyUiState = CurrentTherapyUiState(
@@ -731,7 +729,7 @@ fun DashboardPermissionsWarningPreview() {
                     apsMode = ApsMode.AutoCorrection
                 ),
                 currentBgUiState = createSampleGoodBgUiState(),
-                historyUiState = createSampleHistoryUiState(),
+                recentHistoryUiState = createSampleRecentHistoryUiState(),
                 iob = InsulinAmount(1.57),
                 cob = 12.0,
                 currentTherapyUiState = CurrentTherapyUiState(
