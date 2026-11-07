@@ -1,5 +1,6 @@
 package de.dh.pump.danai.ui
 
+import android.app.Application
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,19 +24,92 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import de.dh.daps.common.device.state.DeviceLifecycleState
+import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.pump.dana.commands.options.DanaRsUserOptions
+import de.dh.pump.danai.DanaIInsulinPumpDriver
 import de.dh.pump.danai.R
+import de.dh.pump.danai.core.DanaIPumpAdapter
+import kotlinx.coroutines.launch
+
+/**
+ * Stateful screen container for an already bound Dana-i insulin pump.
+ */
+@Composable
+fun DanaIBoundScreen(
+    driver: DanaIInsulinPumpDriver,
+    state: DeviceLifecycleState.DeviceBound,
+    onDriverReset: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: DanaIBoundViewModel = viewModel(
+        factory = DanaIBoundViewModel.Companion.Factory(
+            LocalContext.current.applicationContext as Application
+        )
+    )
+) {
+    val userOptions by viewModel.userOptions.collectAsStateWithLifecycle()
+    val isLoadingOptions by viewModel.isLoadingOptions.collectAsStateWithLifecycle()
+    val isSavingOptions by viewModel.isSavingOptions.collectAsStateWithLifecycle()
+    val optionsError by viewModel.optionsError.collectAsStateWithLifecycle()
+
+    val activePump by driver.activePump.collectAsStateWithLifecycle()
+    val pumpAdapter = activePump as? DanaIPumpAdapter
+    val isMaintenanceActive = pumpAdapter?.isMaintenanceMode?.collectAsStateWithLifecycle()?.value ?: false
+
+    if (isMaintenanceActive) {
+        val coroutineScope = rememberCoroutineScope()
+        DanaIMaintenanceScreen(
+            onEndMaintenance = { resetCatheterWear ->
+                coroutineScope.launch {
+                    if (resetCatheterWear) {
+                        pumpAdapter.saveCatheterLastChanged(Timestamp.now())
+                    }
+                    pumpAdapter.setMaintenanceMode(false)
+                }
+            },
+            modifier = modifier
+        )
+    } else {
+        DanaIBoundContent(
+            displayName = state.displayName.asString(),
+            deviceId = state.deviceId,
+            userOptions = userOptions,
+            isLoadingOptions = isLoadingOptions,
+            isSavingOptions = isSavingOptions,
+            optionsError = optionsError,
+            onLoadOptions = { viewModel.loadUserOptions(driver) },
+            onStartMaintenance = {
+                pumpAdapter?.setMaintenanceMode(true)
+            },
+            onSaveAndUnbind = { options ->
+                viewModel.saveAndUnbind(driver, options) {
+                    onDriverReset()
+                }
+            },
+            onUnbindOnly = {
+                viewModel.unbind(driver) {
+                    onDriverReset()
+                }
+            },
+            modifier = modifier
+        )
+    }
+}
 
 /**
  * View for an already bound Dana-i insulin pump with options, maintenance access, and unbind capabilities.

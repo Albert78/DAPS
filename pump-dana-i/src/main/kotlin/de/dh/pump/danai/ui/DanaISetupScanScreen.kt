@@ -1,5 +1,6 @@
 package de.dh.pump.danai.ui
 
+import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
@@ -24,6 +25,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -31,13 +34,59 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.WarningBanner
 import de.dh.daps.ui.common.theme.AppPreview
+import de.dh.pump.danai.DanaIInsulinPumpDriver
 import de.dh.pump.danai.R
 import de.dh.pump.danai.core.connection.DanaScanError
 import de.dh.pump.danai.core.connection.DanaScanResult
+
+/**
+ * Stateful screen container for Dana-i BLE discovery and pairing workflow.
+ */
+@Composable
+fun DanaISetupScanScreen(
+    driver: DanaIInsulinPumpDriver,
+    modifier: Modifier = Modifier,
+    viewModel: DanaISetupViewModel = viewModel(
+        factory = DanaISetupViewModel.Companion.Factory(
+            LocalContext.current.applicationContext as Application
+        )
+    )
+) {
+    val scanResults by viewModel.scanResults.collectAsStateWithLifecycle()
+    val isScanning by viewModel.isScanning.collectAsStateWithLifecycle()
+    val scanError by viewModel.scanError.collectAsStateWithLifecycle()
+    val pairingAddress by viewModel.pairingAddress.collectAsStateWithLifecycle()
+    val pairError by viewModel.pairError.collectAsStateWithLifecycle()
+    val isStaleBondError by viewModel.isStaleBondError.collectAsStateWithLifecycle()
+
+    // Automatically start BLE scan when screen opens in setup/unbound state
+    LaunchedEffect(Unit) {
+        viewModel.startDiscovery()
+    }
+
+    DanaISetupContent(
+        scanResults = scanResults,
+        isScanning = isScanning,
+        scanError = scanError,
+        pairingAddress = pairingAddress,
+        pairError = pairError,
+        isStaleBondError = isStaleBondError,
+        onStartDiscovery = { viewModel.startDiscovery() },
+        onPairClick = { scanResult ->
+            viewModel.pairAndBind(
+                driver = driver,
+                scanResult = scanResult
+            )
+        },
+        modifier = modifier
+    )
+}
 
 /**
  * Discovery and pairing UI component for Dana-i insulin pumps.
