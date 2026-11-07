@@ -621,3 +621,22 @@ fun InsulinHistoryWithDataPreview() {
         )
     }
 }
+
+@Preview(showSystemUi = true, name = "Add Manual Insulin Dialog")
+@Composable
+private fun AddManualInsulinDialogPreview() {
+    val sampleInsulinType = InsulinType(
+        name = "Fiasp",
+        activeSubstance = "Insulin aspart",
+        peak = Minutes(50.toShort()),
+        dia = Minutes(300.toShort())
+    )
+    AppPreview {
+        AddManualInsulinDialog(
+            availableInsulinTypes = listOf(sampleInsulinType),
+            defaultInsulinType = sampleInsulinType,
+            onDismiss = {},
+            onConfirm = { _, _, _, _, _ -> }
+        )
+    }
+}
