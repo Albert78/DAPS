@@ -59,7 +59,7 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
     private val _lifecycleState = MutableStateFlow<DeviceLifecycleState>(DeviceLifecycleState.NoDevice)
     override val lifecycleState: StateFlow<DeviceLifecycleState> = _lifecycleState.asStateFlow()
 
-    private val _activePump = MutableStateFlow<InsulinPump?>(null)
+    private val _activePump = MutableStateFlow<DanaIPumpAdapter?>(null)
     override val activePump: StateFlow<InsulinPump?> = _activePump.asStateFlow()
 
     override fun setup(context: PluginContext) {
@@ -89,6 +89,11 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
 
             try {
                 bindPump(name, address)
+                try {
+                    _activePump.value?.controller?.connect()
+                } catch (_: Exception) {
+                    // Ignore
+                }
                 val insulinTypeId = danaPrefs.getInsulinTypeId()
                 if (!insulinTypeId.isNullOrEmpty()) {
                     _lifecycleState.value = DeviceLifecycleState.DeviceBound(
@@ -143,7 +148,6 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
         val pumpAdapter = DanaIPumpAdapter.create(link, defaultLogger, scope)
         pumpAdapter.pump.setInsulinTypeId(danaPrefs.getInsulinTypeId())
         pumpAdapter.pump.setInsulinConcentration(danaPrefs.getInsulinConcentration())
-        pumpAdapter.controller.connect()
 
         _activePump.value = pumpAdapter
 
@@ -167,6 +171,7 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
         // Wait for connection and handshake to complete successfully (max 60 seconds for pairing)
         val isConnected = try {
             withTimeoutOrNull(60.seconds) {
+                pumpAdapter.controller.connect()
                 pumpAdapter.controller.link.sessionState.first {
                     it is SessionState.Connected || it is SessionState.Failed || (it.isClosed && it !is SessionState.Connecting)
                 } is SessionState.Connected
