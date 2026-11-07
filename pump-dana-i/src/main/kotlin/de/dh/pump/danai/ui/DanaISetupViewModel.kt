@@ -60,6 +60,7 @@ class DanaISetupViewModel(application: Application) : AndroidViewModel(applicati
                     deviceName = scanResult.name,
                     deviceAddress = scanResult.address,
                 )
+                driver.setSetupInProgress()
                 _pairingAddress.value = null
                 onSuccess?.invoke()
             } catch (e: Exception) {

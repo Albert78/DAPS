@@ -17,6 +17,12 @@
     <string name="danai_setup_scanner_unavailable">Bluetooth-Scanner ist auf diesem Gerät derzeit nicht verfügbar.</string>
     <string name="danai_setup_btn_enable_bluetooth">Bluetooth-Einstellungen öffnen</string>
 
+    <!-- Setup Insulin Parameters Step -->
+    <string name="danai_setup_insulin_title">Insulineinstellungen</string>
+    <string name="danai_setup_insulin_subtitle">Wähle den Typ und die Konzentration des in deiner Dana-i geladenen Insulins, um die Einrichtung abzuschließen.</string>
+    <string name="danai_setup_insulin_btn_finish">Einrichtung abschließen</string>
+    <string name="danai_setup_insulin_btn_cancel">Kopplung abbrechen</string>
+
     <!-- Bound Screen -->
     <string name="danai_bound_title">Dana-i Insulinpumpe gebunden</string>
     <string name="danai_bound_subtitle">Deine Dana-i Insulinpumpe ist derzeit aktiv mit der App gebunden.</string>

@@ -70,7 +70,7 @@ fun DanaISetupScanScreen(
         viewModel.startDiscovery()
     }
 
-    DanaISetupContent(
+    DanaISetupScanContent(
         scanResults = scanResults,
         isScanning = isScanning,
         scanError = scanError,
@@ -92,7 +92,7 @@ fun DanaISetupScanScreen(
  * Discovery and pairing UI component for Dana-i insulin pumps.
  */
 @Composable
-fun DanaISetupContent(
+fun DanaISetupScanContent(
     scanResults: List<DanaScanResult>,
     isScanning: Boolean,
     scanError: DanaScanError?,
@@ -307,9 +307,9 @@ private fun openBluetoothSettings(context: Context) {
 
 @Preview(showBackground = true)
 @Composable
-private fun DanaISetupContentScanningPreview() {
+private fun DanaISetupScanContentScanningPreview() {
     AppPreview {
-        DanaISetupContent(
+        DanaISetupScanContent(
             scanResults = emptyList(),
             isScanning = true,
             scanError = null,
@@ -324,9 +324,9 @@ private fun DanaISetupContentScanningPreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun DanaISetupContentResultsPreview() {
+private fun DanaISetupScanContentResultsPreview() {
     AppPreview {
-        DanaISetupContent(
+        DanaISetupScanContent(
             scanResults = listOf(DanaScanResult.Fake("DANA-1234", "00:11:22:33:44:55")),
             isScanning = false,
             scanError = null,

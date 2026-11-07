@@ -6,9 +6,11 @@ import android.util.Log
 import androidx.compose.runtime.Composable
 import de.dh.daps.common.device.driver.InsulinPumpDriver
 import de.dh.daps.common.device.state.DeviceLifecycleState
+import de.dh.daps.common.domain.model.therapy.InsulinConcentration
 import de.dh.daps.common.domain.pump.InsulinPump
 import de.dh.daps.common.infrastructure.Plugin
 import de.dh.daps.common.infrastructure.PluginContext
+import de.dh.daps.common.infrastructure.PluginPreferences
 import de.dh.daps.common.ui.UiText
 import de.dh.pump.danai.core.DanaILogger
 import de.dh.pump.danai.core.DanaIPumpAdapter
@@ -45,6 +47,8 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
         get() = BluetoothPermissionUtils.neededPermissions
 
     private var pluginContext: PluginContext? = null
+    val preferences: PluginPreferences? get() = pluginContext?.preferences
+
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val defaultLogger = object : DanaILogger {
         override fun log(message: String) {
@@ -85,8 +89,19 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
 
             try {
                 bindPump(name, address)
+                val insulinTypeId = danaPrefs.getInsulinTypeId()
+                if (!insulinTypeId.isNullOrEmpty()) {
+                    _lifecycleState.value = DeviceLifecycleState.DeviceBound(
+                        deviceId = address,
+                        displayName = UiText.DynamicString(name),
+                    )
+                } else {
+                    _lifecycleState.value = DeviceLifecycleState.SetupInProgress
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to bind Dana-i pump during initState", e)
+                _lifecycleState.value = DeviceLifecycleState.NoDevice
+                _activePump.value = null
             }
         } else {
             _lifecycleState.value = DeviceLifecycleState.NoDevice
@@ -130,18 +145,15 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
         pumpAdapter.pump.setInsulinConcentration(danaPrefs.getInsulinConcentration())
         pumpAdapter.controller.connect()
 
-        _lifecycleState.value = DeviceLifecycleState.DeviceBound(
-            deviceId = deviceAddress,
-            displayName = UiText.DynamicString(deviceName),
-        )
         _activePump.value = pumpAdapter
 
         return pumpAdapter
     }
 
     /**
-     * Binds a Dana-i pump during device pairing and saves configuration preferences ONLY after
-     * a successful connection and protocol handshake.
+     * Binds a Dana-i pump during device pairing and saves configuration preferences after
+     * a successful connection and protocol handshake. If the pairing or connection process is
+     * not successful, an exception is raised.
      */
     suspend fun bindPumpDevice(
         deviceName: String,
@@ -185,6 +197,40 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
         DanaPumpPreferences(pc.preferences).savePumpAddress(deviceName, deviceAddress)
 
         return pumpAdapter
+    }
+
+    /**
+     * Sets the driver lifecycle state to [DeviceLifecycleState.SetupInProgress].
+     */
+    fun setSetupInProgress() {
+        _lifecycleState.value = DeviceLifecycleState.SetupInProgress
+    }
+
+    /**
+     * Completes the setup step by saving insulin type and concentration preferences,
+     * applying them to the active pump adapter, and transitioning to [DeviceLifecycleState.DeviceBound].
+     */
+    suspend fun completeSetup(
+        insulinTypeId: String?,
+        concentration: InsulinConcentration
+    ) {
+        val pc = pluginContext ?: throw IllegalStateException("PluginContext not initialized")
+        val danaPrefs = DanaPumpPreferences(pc.preferences)
+
+        danaPrefs.saveInsulinTypeId(insulinTypeId)
+        danaPrefs.saveInsulinConcentration(concentration)
+
+        val pumpAdapter = _activePump.value as? DanaIPumpAdapter
+        pumpAdapter?.pump?.setInsulinTypeId(insulinTypeId)
+        pumpAdapter?.pump?.setInsulinConcentration(concentration)
+
+        val address = danaPrefs.getLastAddress()
+        val name = danaPrefs.getLastName().ifEmpty { "Dana-i" }
+
+        _lifecycleState.value = DeviceLifecycleState.DeviceBound(
+            deviceId = address,
+            displayName = UiText.DynamicString(name),
+        )
     }
 
     /**

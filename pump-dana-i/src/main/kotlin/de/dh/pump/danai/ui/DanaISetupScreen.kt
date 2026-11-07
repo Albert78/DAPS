@@ -10,8 +10,10 @@ import de.dh.pump.danai.DanaIInsulinPumpDriver
 /**
  * Stateful setup container for Sooil Dana-i insulin pumps.
  *
- * Top-level state-router that delegates to [DanaIBoundScreen] when in [DeviceLifecycleState.DeviceBound]
- * or [DanaISetupScanScreen] during setup/scanning.
+ * Top-level state-router that delegates to:
+ * - [DanaIBoundScreen] when in [DeviceLifecycleState.DeviceBound]
+ * - [DanaISetupInsulinParametersScreen] when in [DeviceLifecycleState.SetupInProgress]
+ * - [DanaISetupScanScreen] during setup/scanning (e.g. [DeviceLifecycleState.NoDevice]).
  */
 @Composable
 fun DanaISetupScreen(
@@ -27,6 +29,12 @@ fun DanaISetupScreen(
                 driver = driver,
                 state = state,
                 onDriverReset = onDriverReset,
+                modifier = modifier
+            )
+        }
+        is DeviceLifecycleState.SetupInProgress -> {
+            DanaISetupInsulinParametersScreen(
+                driver = driver,
                 modifier = modifier
             )
         }
