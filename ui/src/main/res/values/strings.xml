@@ -309,7 +309,9 @@
     <string name="therapy_adjustment_apply_button">Übernehmen</string>
     <string name="therapy_adjustment_hint_until_format">%1$s (bis %2$s)</string>
     <string name="therapy_adjustment_active_now">Aktuell aktiv</string>
+    <string name="therapy_adjustment_active_now_edited">Aktuell aktiv (in Bearbeitung)</string>
     <string name="therapy_adjustment_active_until_format">Aktiv bis %s Uhr</string>
+    <string name="therapy_adjustment_active_until_edited_format">Aktiv bis %s Uhr (in Bearbeitung)</string>
     <string name="therapy_adjustment_timing_summary_title">Zeitplanung</string>
     <string name="therapy_adjustment_schedule_button">Anpassung planen</string>
     <string name="scheduled_therapy_adjustment_screen_title">Therapie-Anpassung planen</string>

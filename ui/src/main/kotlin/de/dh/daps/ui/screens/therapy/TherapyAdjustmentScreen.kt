@@ -85,6 +85,7 @@ fun TherapyAdjustmentScreen(
     TherapyAdjustmentContent(
         formState = formState,
         adjustmentEndTime = currentDraft.adjustmentEndTime,
+        hasActiveAdjustment = activeTherapyStatus.adjustment.isAdjustmentActive,
         baseTarget = activeTherapyStatus.baseTarget,
         baseLow = activeTherapyStatus.baseLow,
         isDirty = isDirty,
@@ -120,6 +121,7 @@ fun TherapyAdjustmentScreen(
 fun TherapyAdjustmentContent(
     formState: TherapyAdjustmentFormState,
     adjustmentEndTime: Timestamp?,
+    hasActiveAdjustment: Boolean = false,
     baseTarget: BgValue,
     baseLow: BgValue,
     isDirty: Boolean,
@@ -206,12 +208,13 @@ fun TherapyAdjustmentContent(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    if (!isDirty && isAdjustmentActive) {
+                    if (hasActiveAdjustment) {
                         val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
-                        val activeHintText = if (adjustmentEndTime != null) {
-                            stringResource(R.string.therapy_adjustment_active_until_format, timeFormat.format(adjustmentEndTime.ms))
-                        } else {
-                            stringResource(R.string.therapy_adjustment_active_now)
+                        val activeHintText = when {
+                            isDirty && adjustmentEndTime != null -> stringResource(R.string.therapy_adjustment_active_until_edited_format, timeFormat.format(adjustmentEndTime.ms))
+                            isDirty -> stringResource(R.string.therapy_adjustment_active_now_edited)
+                            adjustmentEndTime != null -> stringResource(R.string.therapy_adjustment_active_until_format, timeFormat.format(adjustmentEndTime.ms))
+                            else -> stringResource(R.string.therapy_adjustment_active_now)
                         }
 
                         Surface(
@@ -355,6 +358,7 @@ private fun TherapyAdjustmentPreviewValues() {
                 lowThresholdOverride = BgValue.fromMgDl(80)
             ),
             adjustmentEndTime = Timestamp(System.currentTimeMillis() + 3600_000),
+            hasActiveAdjustment = true,
             baseTarget = BgValue.fromMgDl(100),
             baseLow = BgValue.fromMgDl(70),
             isDirty = false,
