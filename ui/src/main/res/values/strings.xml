@@ -842,13 +842,7 @@
 
     <!-- App-Daten Management (Backup/Restore/Reset) -->
     <string name="menu_app_data_label">App-Daten</string>
-    <string name="app_data_screen_title">App-Daten Management</string>
-    <string name="app_data_section_reset_title">Werkszustand</string>
-    <string name="app_data_card_reset_title">App-Daten neu initialisieren</string>
-    <string name="app_data_card_reset_desc">Löscht alle gespeicherten Behandlungsdaten und Einstellungen und setzt die Anwendung auf den Werkszustand zurück.</string>
-    <string name="app_data_btn_reset">Daten zurücksetzen</string>
-    <string name="app_data_dialog_reset_title">DAPS wirklich zurücksetzen?</string>
-    <string name="app_data_dialog_reset_message">Achtung: Alle gespeicherten Behandlungsdaten, Protokolle und Einstellungen in DAPS werden unwiderruflich gelöscht und auf den Werkszustand zurückgesetzt!</string>
+    <string name="app_data_screen_title">App-Daten-Management</string>
     <string name="app_data_section_storage_title">Speicherort</string>
     <string name="app_data_card_storage_title">Datenverzeichnis festlegen</string>
     <string name="app_data_card_storage_desc">Wähle einen Ordner für automatische und manuelle Backups über den Storage Access Framework (SAF).</string>
@@ -856,7 +850,7 @@
     <string name="app_data_btn_select_folder">Ordner wählen</string>
     <string name="app_data_section_export_title">Backup &amp; Export</string>
     <string name="app_data_card_export_title">Sicherung erstellen</string>
-    <string name="app_data_card_export_desc">Sichere deine Therapiekonfiguration, Einstellungen und Historie in einer komprimierten .dapsbackup-Datei.</string>
+    <string name="app_data_card_export_desc">Sichere deine Therapiekonfiguration, Einstellungen und Historie in einer .dapsbackup-Datei.</string>
     <string name="app_data_option_include_history">Behandlungsverlauf (Messwerte, Boli, Mahlzeiten) einschließen</string>
     <string name="app_data_option_include_diagnostics">Diagnose-Logs &amp; Insights einschließen</string>
     <string name="app_data_btn_export">Export starten</string>
@@ -873,6 +867,12 @@
     <string name="app_data_msg_export_success">Sicherung wurde erfolgreich exportiert.</string>
     <string name="app_data_msg_import_success">Sicherung wurde erfolgreich wiederhergestellt.</string>
     <string name="app_data_msg_error">Fehler beim Ausführen der Aktion: %1$s</string>
+    <string name="app_data_section_reset_title">Werkszustand</string>
+    <string name="app_data_card_reset_title">App-Daten neu initialisieren</string>
+    <string name="app_data_card_reset_desc">Löscht alle gespeicherten Behandlungsdaten und Einstellungen und setzt die Anwendung auf den Werkszustand zurück.</string>
+    <string name="app_data_btn_reset">Daten zurücksetzen</string>
+    <string name="app_data_dialog_reset_title">DAPS wirklich zurücksetzen?</string>
+    <string name="app_data_dialog_reset_message">Achtung: Alle gespeicherten Behandlungsdaten, Protokolle und Einstellungen in DAPS werden unwiderruflich gelöscht und auf den Werkszustand zurückgesetzt!</string>
 
     <!-- Setup Wizard -->
     <string name="setup_wizard_title">Willkommen bei DAPS</string>
