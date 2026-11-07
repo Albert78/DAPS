@@ -5,11 +5,17 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -60,16 +66,36 @@ import com.patrykandpatrick.vico.compose.common.Fill
 import com.patrykandpatrick.vico.compose.common.Position
 import com.patrykandpatrick.vico.compose.common.component.rememberShapeComponent
 import com.patrykandpatrick.vico.compose.common.data.ExtraStore
+import de.dh.daps.common.DEFAULT_DIA_MINUTES
+import de.dh.daps.common.DEFAULT_PEAK_MINUTES
 import de.dh.daps.common.MS_PER_HOUR
 import de.dh.daps.common.MS_PER_MINUTE
+import de.dh.daps.common.domain.calculation.CarbCurveComponent
+import de.dh.daps.common.domain.calculation.InsulinCurve
 import de.dh.daps.common.domain.model.data.BgReading
 import de.dh.daps.common.domain.model.data.BgSampleKind
+import de.dh.daps.common.domain.model.data.CarbsUnit
 import de.dh.daps.common.domain.model.data.GlucoseUnit
+import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.data.Timestamp
+import de.dh.daps.common.domain.model.engine.Timeline
+import de.dh.daps.common.domain.model.therapy.CarbCurveComponentData
+import de.dh.daps.common.domain.model.therapy.InsulinAmount
+import de.dh.daps.common.domain.model.therapy.InsulinApplication
+import de.dh.daps.common.domain.model.therapy.InsulinOrigin
+import de.dh.daps.common.domain.model.therapy.InsulinProfile
+import de.dh.daps.common.domain.model.therapy.InsulinStatus
+import de.dh.daps.common.domain.model.therapy.InsulinType
+import de.dh.daps.common.domain.model.therapy.MealEntry
+import de.dh.daps.common.domain.model.therapy.MealType
+import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.BlueA200
 import de.dh.daps.ui.common.composables.DeepOrangeA700
 import de.dh.daps.ui.common.composables.RedA700
+import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.theme.AppPreview
+import de.dh.daps.ui.common.theme.ColorCarbs
+import de.dh.daps.ui.common.theme.ColorInsulin
 import de.dh.daps.ui.common.theme.ExtendedTheme
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -87,38 +113,129 @@ data class HistoryDiagramData(
     val xValues: List<Double>,
     val yValues: List<Double>,
     val glucoseUnit: GlucoseUnit,
+    val carbsUnit: CarbsUnit = CarbsUnit.GRAMS,
+    val insulinXValues: List<Double> = emptyList(),
+    val insulinYValues: List<Double> = emptyList(),
+    val carbXValues: List<Double> = emptyList(),
+    val carbYValues: List<Double> = emptyList(),
     val dataSignature: Any
 ) {
+    val bgXValues: List<Double> get() = xValues
+    val bgYValues: List<Double> get() = yValues
+
     companion object {
-        fun fromReadings(readings: List<BgReading>, glucoseUnit: GlucoseUnit): HistoryDiagramData? {
-            val validReadings = readings.filter { it.sampleKind == BgSampleKind.Value }
+        fun create(
+            readings: List<BgReading>,
+            glucoseUnit: GlucoseUnit,
+            carbsUnit: CarbsUnit = CarbsUnit.GRAMS,
+            insulinApplications: List<InsulinApplication> = emptyList(),
+            meals: List<MealEntry> = emptyList(),
+            profile: InsulinProfile? = null,
+            dia: Minutes = Minutes(DEFAULT_DIA_MINUTES.toShort()),
+            peak: Minutes = Minutes(DEFAULT_PEAK_MINUTES.toShort())
+        ): HistoryDiagramData? {
+            val validReadings = readings.filter { it.sampleKind == BgSampleKind.Value && it.value.isValid() }
             if (validReadings.isEmpty()) return null
 
             val firstTs = validReadings.first().timestamp.ms
             val baseTimestamp = firstTs
 
-            val lastTs = validReadings.last().timestamp.ms
+            val lastReadingTs = validReadings.last().timestamp.ms
             val minX = 0.0
 
-            val endTs = (((lastTs + MS_PER_HOUR / 2) / MS_PER_HOUR) + 1) * MS_PER_HOUR
-            val maxX = (endTs - baseTimestamp).toDouble() / MS_PER_MINUTE
+            val now = System.currentTimeMillis()
+            val lastFutureEntryTs = (insulinApplications.map { it.timestamp.ms + 4 * MS_PER_HOUR } + meals.map { it.timestamp.ms + 4 * MS_PER_HOUR })
+                .filter { it > now }
+                .maxOrNull()
+
+            val baseEndTs = (((lastReadingTs + MS_PER_HOUR / 2) / MS_PER_HOUR) + 1) * MS_PER_HOUR
+            val endTs = if (lastFutureEntryTs != null) {
+                maxOf(baseEndTs, minOf(now + 3 * MS_PER_HOUR, lastFutureEntryTs))
+            } else {
+                baseEndTs
+            }
+            val maxX = ((endTs - baseTimestamp).toDouble() / MS_PER_MINUTE)
+                .coerceAtLeast(INITIAL_SHOW_HOURS * 60.0)
+
+            val defaultInsulinCurve = InsulinCurve(dia.value.toDouble(), peak.value.toDouble())
+            val insulinCurves = mutableMapOf<String, InsulinCurve>()
+            fun getInsulinCurve(type: InsulinType): InsulinCurve {
+                return insulinCurves.getOrPut(type.id) {
+                    if (profile != null) {
+                        val setting = profile.getSettingFor(type)
+                        InsulinCurve(setting.dia.value.toDouble(), setting.peak.value.toDouble())
+                    } else {
+                        defaultInsulinCurve
+                    }
+                }
+            }
+
+            val mealCurves = meals.map { it.mealType }.distinct().associateWith { mealType ->
+                mealType.components.map { comp ->
+                    CarbCurveComponent(comp.peakMinutes.value.toDouble()) to comp.weight.toDouble() / 100.0
+                }
+            }
+
+            val insulinX = mutableListOf<Double>()
+            val insulinY = mutableListOf<Double>()
+            val carbX = mutableListOf<Double>()
+            val carbY = mutableListOf<Double>()
+
+            for (i in 0..maxX.toInt() step Timeline.DEFAULT_TICK_INTERVAL.value.toInt()) {
+                val x = i.toDouble()
+                insulinX.add(x)
+                carbX.add(x)
+
+                var totalInsulinActivity = 0.0
+                for (app in insulinApplications) {
+                    if (app.status == InsulinStatus.Cancelled || app.status == InsulinStatus.Invalidated) continue
+                    val xStart = (app.timestamp.ms - baseTimestamp).toDouble() / MS_PER_MINUTE
+                    val timeSinceApp = x - xStart
+                    val insulinCurve = getInsulinCurve(app.insulinType)
+                    totalInsulinActivity += app.amount.iu * insulinCurve.normalizedActivity(timeSinceApp) * 60.0
+                }
+                insulinY.add(totalInsulinActivity)
+
+                var totalCarbAbsorption = 0.0
+                for (meal in meals) {
+                    val xStart = (meal.timestamp.ms - baseTimestamp).toDouble() / MS_PER_MINUTE
+                    val timeSinceMeal = x - xStart
+                    if (timeSinceMeal >= 0) {
+                        val components = mealCurves[meal.mealType] ?: emptyList()
+                        var mealAbsorptionRate = 0.0
+                        for ((curve, weight) in components) {
+                            mealAbsorptionRate += curve.normalizedActivity(timeSinceMeal) * weight
+                        }
+                        totalCarbAbsorption += (meal.carbGrams * mealAbsorptionRate * 60.0) / 10.0
+                    }
+                }
+                carbY.add(totalCarbAbsorption)
+            }
+
+            val bgXValues = validReadings.map { ((it.timestamp.ms - baseTimestamp).toDouble() / MS_PER_MINUTE * 10000).toLong() / 10000.0 }
+            val bgYValues = validReadings.map {
+                if (glucoseUnit == GlucoseUnit.MG_DL) it.value.mgdl
+                else it.value.mmol
+            }
 
             return HistoryDiagramData(
                 readings = validReadings,
                 baseTimestamp = baseTimestamp,
                 minX = minX,
                 maxX = maxX,
-                xValues = validReadings.map { ((it.timestamp.ms - baseTimestamp).toDouble() / MS_PER_MINUTE * 10000).toLong() / 10000.0 },
-                yValues = validReadings.map {
-                    if (glucoseUnit == GlucoseUnit.MG_DL) it.value.mgdl
-                    else it.value.mmol
-                },
+                xValues = bgXValues,
+                yValues = bgYValues,
                 glucoseUnit = glucoseUnit,
-                dataSignature = "${validReadings.size}_${validReadings.first().timestamp.ms}_${validReadings.last().timestamp.ms}_$glucoseUnit"
+                carbsUnit = carbsUnit,
+                insulinXValues = insulinX,
+                insulinYValues = insulinY,
+                carbXValues = carbX,
+                carbYValues = carbY,
+                dataSignature = "${validReadings.size}_${validReadings.first().timestamp.ms}_${validReadings.last().timestamp.ms}_${insulinApplications.size}_${meals.size}_${glucoseUnit}_$carbsUnit"
             )
         }
 
-        fun empty(glucoseUnit: GlucoseUnit = GlucoseUnit.MG_DL): HistoryDiagramData {
+        fun empty(glucoseUnit: GlucoseUnit = GlucoseUnit.MG_DL, carbsUnit: CarbsUnit = CarbsUnit.GRAMS): HistoryDiagramData {
             val now = Timestamp.now().ms
             val baseTimestamp = (now / MS_PER_HOUR) * MS_PER_HOUR
             val maxX = INITIAL_SHOW_HOURS * 60.0
@@ -130,7 +247,12 @@ data class HistoryDiagramData(
                 xValues = listOf(0.0, maxX),
                 yValues = listOf(0.0, 0.0),
                 glucoseUnit = glucoseUnit,
-                dataSignature = "empty_${baseTimestamp}_$glucoseUnit"
+                carbsUnit = carbsUnit,
+                insulinXValues = emptyList(),
+                insulinYValues = emptyList(),
+                carbXValues = emptyList(),
+                carbYValues = emptyList(),
+                dataSignature = "empty_${baseTimestamp}_${glucoseUnit}_$carbsUnit"
             )
         }
     }
@@ -145,6 +267,8 @@ fun BgHistoryChart(
     lowBgColor: Color = RedA700.copy(alpha = 0.2f),
     highBgColor: Color = DeepOrangeA700.copy(alpha = 0.3f),
     showMarkers: Boolean = false,
+    showInsulin: Boolean = true,
+    showCarbs: Boolean = true,
     onChartClick: (() -> Unit)? = null,
     controlledState: BgHistoryChartState? = null
 ) {
@@ -157,9 +281,37 @@ fun BgHistoryChart(
 
     var initialScrollToEndDone by remember(diagramData.dataSignature) { mutableStateOf(false) }
 
-    LaunchedEffect(diagramData.dataSignature) {
+    LaunchedEffect(diagramData.dataSignature, showInsulin, showCarbs) {
         modelProducer.runTransaction {
-            lineModel { series(x = diagramData.xValues, y = diagramData.yValues) }
+            // Layer 0 Model: BG
+            lineModel {
+                series(x = diagramData.xValues, y = diagramData.yValues)
+            }
+
+            // Layer 1 Model: Impact (Insulin & Carbs)
+            lineModel {
+                // Series 0: Insulin
+                val insX = diagramData.insulinXValues.ifEmpty { listOf(0.0) }
+                series(
+                    x = insX,
+                    y = if (showInsulin && diagramData.insulinXValues.isNotEmpty()) {
+                        diagramData.insulinYValues
+                    } else {
+                        insX.map { 0.0 }
+                    }
+                )
+
+                // Series 1: Carbs
+                val carbX = diagramData.carbXValues.ifEmpty { listOf(0.0) }
+                series(
+                    x = carbX,
+                    y = if (showCarbs && diagramData.carbXValues.isNotEmpty()) {
+                        diagramData.carbYValues
+                    } else {
+                        carbX.map { 0.0 }
+                    }
+                )
+            }
         }
 
         if (!initialScrollToEndDone && diagramData.readings.isNotEmpty()) {
@@ -178,6 +330,16 @@ fun BgHistoryChart(
                 } else {
                     (maxY.coerceAtLeast(11.1) + 0.5).coerceAtMost(22.7)
                 }
+            override fun getMinX(minX: Double, maxX: Double, extraStore: ExtraStore) = diagramData.minX
+            override fun getMaxX(minX: Double, maxX: Double, extraStore: ExtraStore) = diagramData.maxX
+        }
+    }
+
+    val impactRangeProvider = remember(diagramData.minX, diagramData.maxX) {
+        object : CartesianLayerRangeProvider {
+            override fun getMinY(minY: Double, maxY: Double, extraStore: ExtraStore) = 0.0
+            override fun getMaxY(minY: Double, maxY: Double, extraStore: ExtraStore) =
+                maxY.coerceAtLeast(2.0) * 1.1
             override fun getMinX(minX: Double, maxX: Double, extraStore: ExtraStore) = diagramData.minX
             override fun getMaxX(minX: Double, maxX: Double, extraStore: ExtraStore) = diagramData.maxX
         }
@@ -295,6 +457,86 @@ fun BgHistoryChart(
         }
     }
 
+    val impactAxisItemPlacer = remember {
+        object : VerticalAxis.ItemPlacer {
+            override fun getLabelValues(
+                context: CartesianDrawingContext,
+                axisHeight: Float,
+                maxLabelHeight: Float,
+                position: Axis.Position.Vertical
+            ) = getValues(context.ranges.getYRange(position).maxY)
+
+            override fun getWidthMeasurementLabelValues(
+                context: CartesianMeasuringContext,
+                axisHeight: Float,
+                maxLabelHeight: Float,
+                position: Axis.Position.Vertical
+            ) = getValues(context.ranges.getYRange(position).maxY)
+
+            override fun getHeightMeasurementLabelValues(
+                context: CartesianMeasuringContext,
+                position: Axis.Position.Vertical
+            ) = getValues(context.ranges.getYRange(position).maxY)
+
+            private fun getValues(maxY: Double): List<Double> {
+                val v = mutableListOf<Double>()
+                val step = when {
+                    maxY <= 1.0 -> 0.2
+                    maxY <= 2.0 -> 0.5
+                    maxY <= 5.0 -> 1.0
+                    maxY <= 10.0 -> 2.0
+                    else -> 5.0
+                }
+                var c = 0.0
+                while (c <= maxY + 0.0001) {
+                    v.add(c)
+                    c += step
+                }
+                return v
+            }
+
+            override fun getTopLayerMargin(
+                context: CartesianMeasuringContext,
+                verticalLabelPosition: Position.Vertical,
+                maxLabelHeight: Float,
+                maxLineThickness: Float
+            ) = 0f
+
+            override fun getBottomLayerMargin(
+                context: CartesianMeasuringContext,
+                verticalLabelPosition: Position.Vertical,
+                maxLabelHeight: Float,
+                maxLineThickness: Float
+            ) = 0f
+        }
+    }
+
+    val impactAxisValueFormatter = remember {
+        CartesianValueFormatter { _, value, _ ->
+            String.format(Locale.getDefault(), "%.2f", value)
+        }
+    }
+
+    val bgLine = LineCartesianLayer.rememberLine(
+        fill = LineCartesianLayer.LineFill.single(Fill(Color.Transparent)),
+        pointProvider = LineCartesianLayer.PointProvider.single(
+            LineCartesianLayer.Point(
+                rememberShapeComponent(shape = CircleShape, fill = Fill(BlueA200)),
+                size = 6.dp
+            )
+        )
+    )
+    val insulinLine = LineCartesianLayer.rememberLine(
+        fill = LineCartesianLayer.LineFill.single(Fill(if (showInsulin) ColorInsulin else Color.Transparent)),
+        areaFill = LineCartesianLayer.AreaFill.single(Fill(if (showInsulin) ColorInsulin.copy(alpha = 0.2f) else Color.Transparent)),
+        pointProvider = null
+    )
+    val carbLine = LineCartesianLayer.rememberLine(
+        fill = LineCartesianLayer.LineFill.single(Fill(if (showCarbs) ColorCarbs else Color.Transparent)),
+        areaFill = LineCartesianLayer.AreaFill.single(Fill(if (showCarbs) ColorCarbs.copy(alpha = 0.2f) else Color.Transparent)),
+        pointProvider = null
+    )
+
     val mgdlStr = stringResource(CommonR.string.glucose_unit_mgdl)
     val mmolStr = stringResource(CommonR.string.glucose_unit_mmol)
 
@@ -352,45 +594,88 @@ fun BgHistoryChart(
         }
     }
 
-    CartesianChartHost(
-        chart = rememberCartesianChart(
-            rememberLineCartesianLayer(
-                lineProvider = LineCartesianLayer.LineProvider.series(
-                    LineCartesianLayer.rememberLine(
-                        fill = LineCartesianLayer.LineFill.single(Fill(Color.Transparent)),
-                        pointProvider = LineCartesianLayer.PointProvider.single(
-                            LineCartesianLayer.Point(
-                                rememberShapeComponent(shape = CircleShape, fill = Fill(BlueA200)),
-                                size = 6.dp
-                            )
-                        )
-                    )
+    val ieLabel = stringResource(R.string.history_impact_ie_label)
+    val carbsImpactLabel = when (diagramData.carbsUnit) {
+        CarbsUnit.GRAMS -> stringResource(R.string.history_impact_carbs_10_grams_per_h_label)
+        CarbsUnit.KE -> stringResource(R.string.history_impact_carbs_ke_per_h_label)
+    }
+    val impactLabel = remember(showInsulin, showCarbs, ieLabel, carbsImpactLabel) {
+        listOfNotNull(
+            if (showInsulin) "$ieLabel/h" else null,
+            if (showCarbs) carbsImpactLabel else null
+        ).joinToString(" | ")
+    }
+
+    Column(modifier = modifier) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = glucoseUnitLabel(),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            if (showInsulin || showCarbs) {
+                Text(
+                    text = impactLabel,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        CartesianChartHost(
+            chart = rememberCartesianChart(
+                rememberLineCartesianLayer(
+                    lineProvider = LineCartesianLayer.LineProvider.series(bgLine),
+                    rangeProvider = rangeProvider,
+                    verticalAxisPosition = Axis.Position.Vertical.Start
                 ),
-                rangeProvider = rangeProvider
+                rememberLineCartesianLayer(
+                    lineProvider = LineCartesianLayer.LineProvider.series(insulinLine, carbLine),
+                    rangeProvider = impactRangeProvider,
+                    verticalAxisPosition = Axis.Position.Vertical.End
+                ),
+                startAxis = VerticalAxis.rememberStart(
+                    itemPlacer = yItemPlacer,
+                    label = rememberAxisLabelComponent(style = TextStyle(color = ExtendedTheme.semanticColors.highContrast)),
+                    size = BaseAxis.Size.Fixed(45.dp)
+                ),
+                endAxis = if (showInsulin || showCarbs) {
+                    VerticalAxis.rememberEnd(
+                        label = rememberAxisLabelComponent(style = TextStyle(color = ExtendedTheme.semanticColors.highContrast)),
+                        itemPlacer = impactAxisItemPlacer,
+                        valueFormatter = impactAxisValueFormatter,
+                        horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Inside,
+                        line = null,
+                        guideline = null
+                    )
+                } else null,
+                bottomAxis = HorizontalAxis.rememberBottom(
+                    label = rememberAxisLabelComponent(style = TextStyle(color = ExtendedTheme.semanticColors.highContrast)),
+                    valueFormatter = xAxisValueFormatter,
+                    itemPlacer = xItemPlacer
+                ),
+                marker = marker,
+                decorations = decorations,
             ),
-            startAxis = VerticalAxis.rememberStart(
-                itemPlacer = yItemPlacer,
-                label = rememberAxisLabelComponent(style = TextStyle(color = ExtendedTheme.semanticColors.highContrast)),
-                size = BaseAxis.Size.Fixed(45.dp)
-            ),
-            bottomAxis = HorizontalAxis.rememberBottom(
-                label = rememberAxisLabelComponent(style = TextStyle(color = ExtendedTheme.semanticColors.highContrast)),
-                valueFormatter = xAxisValueFormatter,
-                itemPlacer = xItemPlacer
-            ),
-            marker = marker,
-            decorations = decorations,
-        ),
-        modelProducer = modelProducer,
-        scrollState = state.scrollState,
-        zoomState = state.zoomState,
-        modifier = modifier.clickable(
-            interactionSource = remember { MutableInteractionSource() },
-            indication = null,
-            enabled = onChartClick != null,
-            onClick = { onChartClick?.invoke() }
-        ),
-    )
+            modelProducer = modelProducer,
+            scrollState = state.scrollState,
+            zoomState = state.zoomState,
+            modifier = Modifier
+                .weight(1f)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    enabled = onChartClick != null,
+                    onClick = { onChartClick?.invoke() }
+                ),
+        )
+    }
 }
 
 @Composable
@@ -400,11 +685,23 @@ fun BgHistoryChartOrDefault(
     lowBgThreshold: Double = 70.0,
     highBgThreshold: Double = 170.0,
     showMarkers: Boolean = false,
+    showInsulin: Boolean = true,
+    showCarbs: Boolean = true,
     onChartClick: (() -> Unit)? = null,
     state: BgHistoryChartState? = null
 ) {
     val data = diagramData ?: remember { HistoryDiagramData.empty() }
-    BgHistoryChart(data, modifier, lowBgThreshold, highBgThreshold, showMarkers = showMarkers, onChartClick = onChartClick, controlledState = state)
+    BgHistoryChart(
+        diagramData = data,
+        modifier = modifier,
+        lowBgThreshold = lowBgThreshold,
+        highBgThreshold = highBgThreshold,
+        showMarkers = showMarkers,
+        showInsulin = showInsulin,
+        showCarbs = showCarbs,
+        onChartClick = onChartClick,
+        controlledState = state
+    )
 }
 
 @Composable
@@ -604,7 +901,33 @@ fun BgOverviewChart(
 
 fun createSampleDiagramData(size: Int, minsInterval: Short): HistoryDiagramData {
     val readings = createSampleReadings(size, minsInterval)
-    return HistoryDiagramData.fromReadings(readings, GlucoseUnit.MG_DL)!!
+    val baseTs = readings.first().timestamp.ms
+
+    val sampleMealType = MealType(
+        id = "1",
+        name = "Normal",
+        components = listOf(CarbCurveComponentData(100, Minutes(90))),
+        cat = Minutes(180)
+    )
+
+    val insulinApplications = listOf(
+        InsulinApplication(0, Timestamp(baseTs + 30 * MS_PER_MINUTE), InsulinAmount(5.0), InsulinType(id = "1", name = "Rapid", activeSubstance = null, peak = Minutes(60.toShort()), dia = Minutes(300.toShort())), InsulinOrigin.Manual, meal = true),
+        InsulinApplication(0, Timestamp(baseTs + 280 * MS_PER_MINUTE), InsulinAmount(8.0), InsulinType(id = "1", name = "Rapid", activeSubstance = null, peak = Minutes(60.toShort()), dia = Minutes(300.toShort())), InsulinOrigin.Manual, meal = true),
+        InsulinApplication(0, Timestamp(baseTs + 450 * MS_PER_MINUTE), InsulinAmount(4.0), InsulinType(id = "1", name = "Rapid", activeSubstance = null, peak = Minutes(60.toShort()), dia = Minutes(300.toShort())), InsulinOrigin.Manual, meal = true)
+    )
+
+    val meals = listOf(
+        MealEntry(0, Timestamp(baseTs + 20 * MS_PER_MINUTE), 50.0, sampleMealType),
+        MealEntry(0, Timestamp(baseTs + 300 * MS_PER_MINUTE), 80.0, sampleMealType),
+        MealEntry(0, Timestamp(baseTs + 460 * MS_PER_MINUTE), 40.0, sampleMealType)
+    )
+
+    return HistoryDiagramData.create(
+        readings = readings,
+        glucoseUnit = GlucoseUnit.MG_DL,
+        insulinApplications = insulinApplications,
+        meals = meals
+    )!!
 }
 
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)

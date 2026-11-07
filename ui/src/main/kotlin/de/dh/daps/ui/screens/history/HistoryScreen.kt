@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -21,7 +23,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.LocalCarbsUnit
 import de.dh.daps.ui.common.LocalGlucoseUnit
+import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.controls.history.BgHistoryChartOrDefault
@@ -71,8 +75,21 @@ fun HistoryContent(
                 )
             } else {
                 val glucoseUnit = LocalGlucoseUnit.current
-                val diagramData = HistoryDiagramData.fromReadings(historyUiState.readings, glucoseUnit)
-                Column(modifier = Modifier.fillMaxSize()) {
+                val carbsUnit = LocalCarbsUnit.current
+                val diagramData = HistoryDiagramData.create(
+                    readings = historyUiState.readings,
+                    glucoseUnit = glucoseUnit,
+                    carbsUnit = carbsUnit,
+                    insulinApplications = historyUiState.insulinApplications,
+                    meals = historyUiState.meals
+                )
+                val scrollState = rememberScrollState()
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .contentScrollIndicator(scrollState)
+                        .verticalScroll(scrollState)
+                ) {
                     BgHistoryChartOrDefault(
                         diagramData = diagramData,
                         showMarkers = true,
