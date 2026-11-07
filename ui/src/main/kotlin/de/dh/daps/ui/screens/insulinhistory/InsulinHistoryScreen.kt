@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -67,6 +69,7 @@ import de.dh.daps.common.domain.model.therapy.InsulinOrigin
 import de.dh.daps.common.domain.model.therapy.InsulinStatus
 import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.composables.AbsoluteTimeStepper
 import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.InsulinAmountStepper
 import de.dh.daps.ui.common.composables.NormalTextButton
@@ -90,11 +93,11 @@ fun InsulinHistoryScreen(
 
     InsulinHistoryContent(
         uiState = uiState,
-        onAddManualInsulin = { amount, type, basal, correction, meal ->
-            viewModel.addManualInsulin(amount, type, basal, correction, meal)
+        onAddManualInsulin = { amount, type, timestamp, basal, correction, meal ->
+            viewModel.addManualInsulin(amount, type, timestamp, basal, correction, meal)
         },
-        onUpdateManualInsulin = { app, amount, type, basal, correction, meal ->
-            viewModel.updateManualInsulin(app, amount, type, basal, correction, meal)
+        onUpdateManualInsulin = { app, amount, type, timestamp, basal, correction, meal ->
+            viewModel.updateManualInsulin(app, amount, type, timestamp, basal, correction, meal)
         },
         onDeleteInsulin = { viewModel.deleteInsulin(it) },
         onToggleInvalidateInsulin = { viewModel.toggleInvalidated(it) },
@@ -106,8 +109,8 @@ fun InsulinHistoryScreen(
 @Composable
 fun InsulinHistoryContent(
     uiState: InsulinHistoryUiState,
-    onAddManualInsulin: (InsulinAmount, InsulinType, Boolean, Boolean, Boolean) -> Unit,
-    onUpdateManualInsulin: (InsulinApplication, InsulinAmount, InsulinType, Boolean, Boolean, Boolean) -> Unit,
+    onAddManualInsulin: (InsulinAmount, InsulinType, Timestamp, Boolean, Boolean, Boolean) -> Unit,
+    onUpdateManualInsulin: (InsulinApplication, InsulinAmount, InsulinType, Timestamp, Boolean, Boolean, Boolean) -> Unit,
     onDeleteInsulin: (InsulinApplication) -> Unit,
     onToggleInvalidateInsulin: (InsulinApplication) -> Unit = {},
     onNavigateUp: () -> Unit,
@@ -144,8 +147,8 @@ fun InsulinHistoryContent(
                 availableInsulinTypes = uiState.insulinTypes,
                 defaultInsulinType = uiState.defaultInsulinType,
                 onDismiss = { showAddDialog = false },
-                onConfirm = { amount, type, basal, correction, meal ->
-                    onAddManualInsulin(amount, type, basal, correction, meal)
+                onConfirm = { amount, type, timestamp, basal, correction, meal ->
+                    onAddManualInsulin(amount, type, timestamp, basal, correction, meal)
                     showAddDialog = false
                 }
             )
@@ -156,13 +159,14 @@ fun InsulinHistoryContent(
                 availableInsulinTypes = uiState.insulinTypes,
                 defaultInsulinType = insulin.insulinType,
                 initialAmount = insulin.amount,
+                initialTimestamp = insulin.timestamp,
                 initialBasal = insulin.basal,
                 initialCorrection = insulin.correction,
                 initialMeal = insulin.meal,
                 isEditMode = true,
                 onDismiss = { editingInsulin = null },
-                onConfirm = { amount, type, basal, correction, meal ->
-                    onUpdateManualInsulin(insulin, amount, type, basal, correction, meal)
+                onConfirm = { amount, type, timestamp, basal, correction, meal ->
+                    onUpdateManualInsulin(insulin, amount, type, timestamp, basal, correction, meal)
                     editingInsulin = null
                 }
             )
@@ -473,14 +477,16 @@ fun AddManualInsulinDialog(
     availableInsulinTypes: List<InsulinType>,
     defaultInsulinType: InsulinType?,
     initialAmount: InsulinAmount = InsulinAmount.ZERO,
+    initialTimestamp: Timestamp = Timestamp.now(),
     initialBasal: Boolean = false,
     initialCorrection: Boolean = false,
     initialMeal: Boolean = false,
     isEditMode: Boolean = false,
     onDismiss: () -> Unit,
-    onConfirm: (InsulinAmount, InsulinType, Boolean, Boolean, Boolean) -> Unit
+    onConfirm: (InsulinAmount, InsulinType, Timestamp, Boolean, Boolean, Boolean) -> Unit
 ) {
     var amount by remember { mutableDoubleStateOf(initialAmount.iu) }
+    var timestamp by remember { mutableStateOf(initialTimestamp) }
     var basal by remember { mutableStateOf(initialBasal) }
     var correction by remember { mutableStateOf(initialCorrection) }
     var meal by remember { mutableStateOf(initialMeal) }
@@ -492,7 +498,12 @@ fun AddManualInsulinDialog(
         titleText = if (isEditMode) stringResource(id = R.string.insulin_history_edit_manual_title)
         else stringResource(id = R.string.insulin_history_add_manual_title),
         content = {
-            Column {
+            val scrollState = rememberScrollState()
+            Column(
+                modifier = Modifier
+                    .contentScrollIndicator(scrollState)
+                    .verticalScroll(scrollState)
+            ) {
                 Text(
                     text = stringResource(id = R.string.insulin_history_add_manual_desc),
                     style = MaterialTheme.typography.bodyMedium,
@@ -538,7 +549,38 @@ fun AddManualInsulinDialog(
                     Spacer(Modifier.height(16.dp))
                 }
 
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.insulin_history_add_manual_time_label),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    val now = remember { Timestamp.now() }
+                    val minTime = remember(now) { now.minusHours(10) }
+                    val maxTime = remember(now) { now.plusHours(1) }
+                    AbsoluteTimeStepper(
+                        currentTime = timestamp,
+                        onTimeChange = { timestamp = it },
+                        minTime = minTime,
+                        maxTime = maxTime,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.insulin_history_add_manual_amount_label),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Spacer(Modifier.height(8.dp))
                     InsulinAmountStepper(
                         currentValue = amount,
                         onValueChange = { amount = it },
@@ -570,7 +612,7 @@ fun AddManualInsulinDialog(
                 onClick = {
                     val type = selectedInsulinType
                     if (amount > 0 && type != null) {
-                        onConfirm(InsulinAmount(amount), type, basal, correction, meal)
+                        onConfirm(InsulinAmount(amount), type, timestamp, basal, correction, meal)
                     }
                 },
                 enabled = amount > 0 && selectedInsulinType != null
@@ -593,8 +635,8 @@ fun InsulinHistoryPreview() {
     AppPreview {
         InsulinHistoryContent(
             uiState = InsulinHistoryUiState(),
-            onAddManualInsulin = { _, _, _, _, _ -> },
-            onUpdateManualInsulin = { _, _, _, _, _, _ -> },
+            onAddManualInsulin = { _, _, _, _, _, _ -> },
+            onUpdateManualInsulin = { _, _, _, _, _, _, _ -> },
             onDeleteInsulin = {},
             onNavigateUp = {}
         )
@@ -614,8 +656,8 @@ fun InsulinHistoryWithDataPreview() {
     AppPreview {
         InsulinHistoryContent(
             uiState = InsulinHistoryUiState(insulinEntries = sampleEntries),
-            onAddManualInsulin = { _, _, _, _, _ -> },
-            onUpdateManualInsulin = { _, _, _, _, _, _ -> },
+            onAddManualInsulin = { _, _, _, _, _, _ -> },
+            onUpdateManualInsulin = { _, _, _, _, _, _, _ -> },
             onDeleteInsulin = {},
             onNavigateUp = {}
         )
@@ -636,7 +678,7 @@ private fun AddManualInsulinDialogPreview() {
             availableInsulinTypes = listOf(sampleInsulinType),
             defaultInsulinType = sampleInsulinType,
             onDismiss = {},
-            onConfirm = { _, _, _, _, _ -> }
+            onConfirm = { _, _, _, _, _, _ -> }
         )
     }
 }

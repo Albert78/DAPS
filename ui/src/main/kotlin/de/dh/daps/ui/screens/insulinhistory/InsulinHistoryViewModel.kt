@@ -72,13 +72,14 @@ class InsulinHistoryViewModel(
     fun addManualInsulin(
         amount: InsulinAmount,
         insulinType: InsulinType,
+        timestamp: Timestamp,
         basal: Boolean,
         correction: Boolean,
         meal: Boolean
     ) {
         viewModelScope.launch {
             val application = InsulinApplication(
-                timestamp = Timestamp.now(),
+                timestamp = timestamp,
                 amount = amount,
                 insulinType = insulinType,
                 origin = InsulinOrigin.Manual,
@@ -94,13 +95,14 @@ class InsulinHistoryViewModel(
         application: InsulinApplication,
         newAmount: InsulinAmount,
         newType: InsulinType,
+        timestamp: Timestamp,
         basal: Boolean,
         correction: Boolean,
         meal: Boolean
     ) {
         viewModelScope.launch {
             val updated = application.copy(
-                dose = application.dose.copy(amount = newAmount, insulinType = newType),
+                dose = application.dose.copy(timestamp = timestamp, amount = newAmount, insulinType = newType),
                 basal = basal,
                 correction = correction,
                 meal = meal

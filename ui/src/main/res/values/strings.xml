@@ -205,7 +205,7 @@
     <string name="recommendation_text_temp_basal">Empfohlener Temp-Basal: %1$d%% für %2$dh</string>
 
     <string name="recommendation_carbs_info_title">Nimm %1$s Kohlenhydrate</string>
-    <string name="recommendation_bolus_info_title">Spritze %1$.2f I.E. Insulin</string>
+    <string name="recommendation_bolus_info_title">Verabreiche %1$.2f I.E. Insulin</string>
     <string name="recommendation_temp_basal_info_title">Setze Temp-Basal (%1$d%%)</string>
     <string name="recommendation_carbs_info_text">Nimm %1$s zu dir, um den Blutzucker zu korrigieren.</string>
     <string name="recommendation_bolus_info_text">Verabreiche dir %1$.2f I.E. Insulin zur Korrektur des Blutzuckerspiegels.</string>
@@ -481,6 +481,8 @@
     <string name="insulin_history_add_manual_title">Pen-Insulin</string>
     <string name="insulin_history_edit_manual_title">Insulineintrag bearbeiten</string>
     <string name="insulin_history_add_manual_desc">Trage hier eine Dosis ein, die du dir selbst gespritzt hast (Pen, Spritze). Das Insulin wird NICHT über die Pumpe abgegeben, aber im Algorithmus berücksichtigt.</string>
+    <string name="insulin_history_add_manual_amount_label">Insulinmenge</string>
+    <string name="insulin_history_add_manual_time_label">Zeit der Verabreichung</string>
     <string name="delete_insulin_title">Insulin-Eintrag löschen</string>
     <string name="delete_insulin_message">Nach dem Löschen wird der Algorithmus die Dosis nicht mehr berücksichtigen.\nMöchtest du diesen Insulin-Eintrag wirklich löschen?</string>
     <string name="insulin_category_correction">Korrektur</string>
