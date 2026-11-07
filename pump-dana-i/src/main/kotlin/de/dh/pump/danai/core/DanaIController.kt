@@ -45,6 +45,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.util.Calendar
 import kotlin.time.Duration.Companion.seconds
 
@@ -293,7 +294,7 @@ class DanaIController(
     private suspend fun syncPumpTime(client: PumpClient) {
         try {
             val sysTime = System.currentTimeMillis()
-            val zoneOffsetSeconds = java.time.ZonedDateTime.now().offset.totalSeconds
+            val zoneOffsetSeconds = ZonedDateTime.now().offset.totalSeconds / 3600
             val response = client.execute(commands.optionSetPumpUtcAndTimeZone(sysTime, zoneOffsetSeconds))
             if (response.status == PumpStatus.OK) {
                 logger.log("Successfully synchronized pump time with system time.")
@@ -449,7 +450,12 @@ class DanaIController(
             val queryPumpTime = PumpTimestamp.fromSystemTimestamp(startTimestamp, pump.pumpTimeOffsetMs)
             client.execute(commands.generalSetHistoryUploadMode(1))
             try {
-                val history = client.executeStream(commands.historyBasal(queryPumpTime))
+                val history = client.executeStream(
+                    commands.historyBasal(
+                        queryPumpTime,
+                        ZoneOffset.UTC
+                    )
+                )
                 val points = mapBasalRecordsToHistoryPoints(
                     records = history.records,
                     pumpTimeOffsetMs = pump.pumpTimeOffsetMs,
@@ -503,8 +509,7 @@ class DanaIController(
                     DanaInsulinHistoryPoint(
                         timestamp = targetTimestamp,
                         amount = InsulinAmount.fromPumpUnits(unitsPerHour, concentration),
-                        category = InsulinCategory.Basal,
-                        pumpId = "${record.recordCode}_1"
+                        category = InsulinCategory.Basal
                     )
                 )
             } else {
@@ -521,8 +526,7 @@ class DanaIController(
                         DanaInsulinHistoryPoint(
                             timestamp = currentPulseTime,
                             amount = amountPerPulse,
-                            category = InsulinCategory.Basal,
-                            pumpId = "${record.recordCode}_$seq"
+                            category = InsulinCategory.Basal
                         )
                     )
                     currentPulseTime = currentPulseTime.plusMs(intervalMs)
@@ -541,7 +545,12 @@ class DanaIController(
             val queryPumpTime = PumpTimestamp.fromSystemTimestamp(startTimestamp, pump.pumpTimeOffsetMs)
             client.execute(commands.generalSetHistoryUploadMode(1))
             try {
-                val history = client.executeStream(commands.historyBolus(queryPumpTime))
+                val history = client.executeStream(
+                    commands.historyBolus(
+                        queryPumpTime,
+                        ZoneOffset.UTC
+                    )
+                )
                 val points = history.records.map { record ->
                     DanaInsulinHistoryPoint(
                         timestamp = record.timestamp.toSystemTimestamp(pump.pumpTimeOffsetMs),
