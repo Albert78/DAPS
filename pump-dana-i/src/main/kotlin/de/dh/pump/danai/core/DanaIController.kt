@@ -22,8 +22,10 @@ import de.dh.pump.client.singleframe.ProtocolFrame
 import de.dh.pump.client.singleframe.PumpClient
 import de.dh.pump.client.singleframe.PumpResponse
 import de.dh.pump.dana.commands.DanaRsCommands
+import de.dh.pump.dana.commands.aps.ApsHistoryEvent
+import de.dh.pump.dana.commands.aps.ApsHistoryEventKind
+import de.dh.pump.dana.commands.aps.ApsHistoryEventsResult
 import de.dh.pump.dana.commands.general.DanaRsPumpErrorState
-import de.dh.pump.dana.commands.history.DanaRsHistoryRecord
 import de.dh.pump.dana.commands.options.DanaRsUserOptions
 import de.dh.pump.dana.commands.options.OptionUserOptionsResponse
 import de.dh.pump.dana.notifications.DanaAlarmNotification
@@ -44,8 +46,11 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.time.Instant
+import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import kotlin.time.Duration.Companion.seconds
 
@@ -73,8 +78,8 @@ class DanaIController(
     private val commands = DanaRsCommands()
     private val actionMutex = Mutex()
     private var sessionHandlerJob: Job? = null
-    private var lastBasalHistoryTimestamp: Timestamp = Timestamp.now().minusHours(24)
-    private var lastBolusHistoryTimestamp: Timestamp = Timestamp.now().minusHours(24)
+    private var lastApsHistoryTimestamp: Timestamp = Timestamp.now().minusHours(24)
+    private var basalTickerJob: Job? = null
     private var lastAppliedProfile: InsulinProfile? = null
 
     private data class ActiveBolusContext(
@@ -221,9 +226,11 @@ class DanaIController(
     private suspend fun handleSessionStateChange(state: SessionState) {
         if (state is SessionState.Connected) {
             startSessionHandler(state.client)
+            startBasalTicker()
             pump.setConnected(true)
         } else if (state.isClosed) {
             stopSessionHandler()
+            stopBasalTicker()
             pump.setConnected(false)
         }
     }
@@ -396,7 +403,7 @@ class DanaIController(
 
         if (context != null && !isDelivering) {
             logger.log("Active bolus (${context.bolusId}) finished while offline/disconnected. Reconciling with history...")
-            performBolusHistorySync(client)
+            performApsHistorySync(client)
 
             val matchingRecord = pump.history.value?.points?.find { record ->
                 record.category == InsulinCategory.Bolus && record.timestamp >= context.startTime.minusSeconds(60)
@@ -442,135 +449,282 @@ class DanaIController(
         }
     }
 
-    private suspend fun performBasalHistorySync(client: PumpClient, start: Timestamp = pump.lastRequestedStart) {
-        logger.log("Syncing basal history...")
+    private fun startBasalTicker() {
+        stopBasalTicker()
+        basalTickerJob = scope.launch {
+            logger.log("Starting synthetic basal ticker...")
+            while (true) {
+                val nowMs = System.currentTimeMillis()
+                val zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(nowMs), ZoneId.systemDefault())
+                val currentMinute = zdt.minute
 
-        try {
-            val startTimestamp = maxOf(lastBasalHistoryTimestamp, start)
-            val queryPumpTime = PumpTimestamp.fromSystemTimestamp(startTimestamp, pump.pumpTimeOffsetMs)
-            client.execute(commands.generalSetHistoryUploadMode(1))
-            try {
-                val history = client.executeStream(
-                    commands.historyBasal(
-                        queryPumpTime,
-                        ZoneOffset.UTC
-                    )
-                )
-                val points = mapBasalRecordsToHistoryPoints(
-                    records = history.records,
-                    pumpTimeOffsetMs = pump.pumpTimeOffsetMs,
-                    concentration = pump.insulinConcentration.value
-                )
-
-                if (points.isNotEmpty()) {
-                    pump.updateBasalHistory(points, start)
-                    val maxSystemTimestamp = history.records.maxOf { it.timestamp }.toSystemTimestamp(pump.pumpTimeOffsetMs)
-                    lastBasalHistoryTimestamp = maxSystemTimestamp.plusMs(1)
+                val nextSlotMinute = ((currentMinute / 4) + 1) * 4
+                val targetZdt = if (nextSlotMinute >= 60) {
+                    zdt.plusHours(1).withMinute(0).withSecond(0).withNano(0)
+                } else {
+                    zdt.withMinute(nextSlotMinute).withSecond(0).withNano(0)
                 }
-                logger.log("Basal history sync completed: ${history.records.size} records converted to ${points.size} history points.")
-            } finally {
-                client.execute(commands.generalSetHistoryUploadMode(0))
+                val delayMs = maxOf(500L, targetZdt.toInstant().toEpochMilli() - nowMs)
+
+                kotlinx.coroutines.delay(delayMs)
+                onBasalTickerTick()
             }
-        } catch (e: Exception) {
-            logger.log("Basal history sync failed: ${e.message}")
         }
     }
 
-    private fun mapBasalRecordsToHistoryPoints(
-        records: List<DanaRsHistoryRecord>,
-        pumpTimeOffsetMs: Long,
-        concentration: InsulinConcentration
-    ): List<InsulinHistoryPoint> {
-        if (records.isEmpty()) return emptyList()
+    private fun stopBasalTicker() {
+        basalTickerJob?.cancel()
+        basalTickerJob = null
+    }
 
-        val sortedRecords = records.sortedBy { it.timestamp }
-        val points = ArrayList<InsulinHistoryPoint>()
+    private fun onBasalTickerTick() {
+        try {
+            val now = Timestamp.now()
+            val currentStatus = pump.basalStatus.value
 
-        for (i in sortedRecords.indices) {
-            val record = sortedRecords[i]
-            val startTime = record.timestamp.toSystemTimestamp(pumpTimeOffsetMs)
-            val unitsPerHour = record.value ?: 0.0
-            val nextTime = if (i + 1 < sortedRecords.size) {
-                sortedRecords[i + 1].timestamp.toSystemTimestamp(pumpTimeOffsetMs)
-            } else {
-                startTime.plusHours(1)
+            if (currentStatus.isSuspended) {
+                return
             }
 
-            if (unitsPerHour <= 0.09) {
-                val cal = Calendar.getInstance().apply {
-                    timeInMillis = startTime.ms
-                    set(Calendar.MINUTE, 56)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }
-                val targetTimestamp = if (cal.timeInMillis < startTime.ms) startTime else Timestamp(cal.timeInMillis)
+            val activeRateUnits = currentStatus.activeRate.toPumpUnits(pump.insulinConcentration.value)
+            if (activeRateUnits <= 0.0) {
+                return
+            }
 
+            val zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(now.ms), ZoneId.systemDefault())
+            val isLowRate = activeRateUnits < 0.09
+
+            if (isLowRate) {
+                if (zdt.minute == 56) {
+                    val slotTimestamp = normalizeToBasalSlot(now, isLowRateAt56 = true)
+                    val pulseAmount = InsulinAmount.fromPumpUnits(activeRateUnits, pump.insulinConcentration.value)
+                    val pulseId = formatBasalPulseId(slotTimestamp)
+                    val point = DanaInsulinHistoryPoint(
+                        timestamp = slotTimestamp,
+                        amount = pulseAmount,
+                        category = InsulinCategory.Basal,
+                        pumpId = pulseId
+                    )
+                    logger.log("Basal ticker: Emitting low-rate pulse (minute 56) $activeRateUnits U (pumpId=$pulseId)")
+                    pump.updateBasalHistory(listOf(point))
+                }
+            } else {
+                val slotTimestamp = normalizeToBasalSlot(now, isLowRateAt56 = false)
+                val pulseAmount = InsulinAmount.fromPumpUnits(activeRateUnits / 15.0, pump.insulinConcentration.value)
+                val pulseId = formatBasalPulseId(slotTimestamp)
+                val point = DanaInsulinHistoryPoint(
+                    timestamp = slotTimestamp,
+                    amount = pulseAmount,
+                    category = InsulinCategory.Basal,
+                    pumpId = pulseId
+                )
+                logger.log("Basal ticker: Emitting 4-min pulse ${pulseAmount.iu} U (pumpId=$pulseId)")
+                pump.updateBasalHistory(listOf(point))
+            }
+        } catch (e: Exception) {
+            logger.log("Error in basal ticker: ${e.message}")
+        }
+    }
+
+    private suspend fun performApsHistorySync(client: PumpClient, start: Timestamp = pump.lastRequestedStart) {
+        logger.log("Syncing APS history...")
+
+        try {
+            val startTimestamp = maxOf(lastApsHistoryTimestamp, start)
+            val queryPumpTime = PumpTimestamp.fromSystemTimestamp(startTimestamp, pump.pumpTimeOffsetMs)
+
+            client.execute(commands.generalSetHistoryUploadMode(1))
+            val result = try {
+                client.executeStream(
+                    commands.apsHistoryEvents(
+                        fromTime = queryPumpTime,
+                        zoneId = ZoneOffset.UTC,
+                        useUtcLayout = true
+                    )
+                ) as ApsHistoryEventsResult
+            } finally {
+                client.execute(commands.generalSetHistoryUploadMode(0))
+            }
+
+            val events = result.events.sortedBy { it.timestamp }
+            logger.log("Fetched ${events.size} APS history events.")
+
+            val bolusPoints = events.mapNotNull { event ->
+                if (isBolusEvent(event.kind)) {
+                    val sysTime = event.timestamp.toSystemTimestamp(pump.pumpTimeOffsetMs)
+                    val amount = event.insulinUnits ?: 0.0
+                    if (amount > 0.0) {
+                        DanaInsulinHistoryPoint(
+                            timestamp = sysTime,
+                            amount = InsulinAmount.fromPumpUnits(amount, pump.insulinConcentration.value),
+                            category = InsulinCategory.Bolus,
+                            pumpId = event.pumpId.toString()
+                        )
+                    } else null
+                } else null
+            }
+            if (bolusPoints.isNotEmpty()) {
+                pump.updateBolusHistory(bolusPoints, start)
+            }
+
+            val basalPoints = reconstructBasalPulsesFromApsEvents(
+                events = events,
+                startTime = startTimestamp,
+                endTime = Timestamp.now(),
+                pumpTimeOffsetMs = pump.pumpTimeOffsetMs,
+                concentration = pump.insulinConcentration.value,
+                currentBasalStatus = pump.basalStatus.value,
+                hourlyBasalRates = pump.hourlyBasalRates.value
+            )
+            if (basalPoints.isNotEmpty()) {
+                pump.updateBasalHistory(basalPoints, start)
+            }
+
+            if (events.isNotEmpty()) {
+                val maxPumpTime = events.maxOf { it.timestamp }.toSystemTimestamp(pump.pumpTimeOffsetMs)
+                lastApsHistoryTimestamp = maxPumpTime.plusMs(1)
+            }
+            logger.log("APS history sync completed: ${bolusPoints.size} boluses, ${basalPoints.size} basal pulses.")
+        } catch (e: Exception) {
+            logger.log("APS history sync failed: ${e.message}")
+        }
+    }
+
+    private fun isBolusEvent(kind: ApsHistoryEventKind): Boolean = when (kind) {
+        ApsHistoryEventKind.BOLUS,
+        ApsHistoryEventKind.DUAL_BOLUS,
+        ApsHistoryEventKind.EXTENDED_START,
+        ApsHistoryEventKind.DUAL_EXTENDED_START -> true
+        else -> false
+    }
+
+    internal fun reconstructBasalPulsesFromApsEvents(
+        events: List<ApsHistoryEvent>,
+        startTime: Timestamp,
+        endTime: Timestamp,
+        pumpTimeOffsetMs: Long,
+        concentration: InsulinConcentration,
+        currentBasalStatus: BasalStatus,
+        hourlyBasalRates: List<Double>
+    ): List<InsulinHistoryPoint> {
+        if (startTime >= endTime) return emptyList()
+
+        val systemEvents = events.map { event ->
+            event to event.timestamp.toSystemTimestamp(pumpTimeOffsetMs)
+        }.sortedBy { it.second }
+
+        var currentBaseRateUnits: Double? = null
+        var activeTempPercent: Int? = null
+        var tempEndTime: Timestamp? = null
+        var isSuspended = false
+
+        // Initialize state from past events prior to startTime if any
+        for ((event, eventTime) in systemEvents) {
+            if (eventTime > startTime) break
+            when (event.kind) {
+                ApsHistoryEventKind.PROFILE_CHANGE -> {
+                    currentBaseRateUnits = event.currentRateUnitsPerHour ?: (event.param2 / 100.0)
+                }
+                ApsHistoryEventKind.TEMP_START -> {
+                    activeTempPercent = event.ratioPercent ?: event.param1
+                    val durationMin = event.durationMinutes ?: event.param2
+                    tempEndTime = eventTime.plusMinutes(durationMin)
+                }
+                ApsHistoryEventKind.TEMP_STOP -> {
+                    activeTempPercent = null
+                    tempEndTime = null
+                }
+                ApsHistoryEventKind.SUSPEND_ON -> {
+                    isSuspended = true
+                }
+                ApsHistoryEventKind.SUSPEND_OFF -> {
+                    isSuspended = false
+                }
+                else -> {}
+            }
+        }
+
+        val points = mutableListOf<InsulinHistoryPoint>()
+        var slot = normalizeToBasalSlot(startTime)
+        val endSlot = normalizeToBasalSlot(endTime)
+        var eventIndex = 0
+
+        while (slot <= endSlot) {
+            // Apply all events that occurred up to slot
+            while (eventIndex < systemEvents.size && systemEvents[eventIndex].second <= slot) {
+                val (event, eventTime) = systemEvents[eventIndex]
+                when (event.kind) {
+                    ApsHistoryEventKind.PROFILE_CHANGE -> {
+                        currentBaseRateUnits = event.currentRateUnitsPerHour ?: (event.param2 / 100.0)
+                    }
+                    ApsHistoryEventKind.TEMP_START -> {
+                        activeTempPercent = event.ratioPercent ?: event.param1
+                        val durationMin = event.durationMinutes ?: event.param2
+                        tempEndTime = eventTime.plusMinutes(durationMin)
+                    }
+                    ApsHistoryEventKind.TEMP_STOP -> {
+                        activeTempPercent = null
+                        tempEndTime = null
+                    }
+                    ApsHistoryEventKind.SUSPEND_ON -> {
+                        isSuspended = true
+                    }
+                    ApsHistoryEventKind.SUSPEND_OFF -> {
+                        isSuspended = false
+                    }
+                    else -> {}
+                }
+                eventIndex++
+            }
+
+            // Check temp basal expiry
+            if (tempEndTime != null && slot >= tempEndTime) {
+                activeTempPercent = null
+                tempEndTime = null
+            }
+
+            val slotZdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(slot.ms), ZoneId.systemDefault())
+            val baseRate = currentBaseRateUnits ?: hourlyBasalRates.getOrNull(slotZdt.hour) ?: currentBasalStatus.activeRate.toPumpUnits(concentration)
+
+            val activeRate = if (isSuspended) {
+                0.0
+            } else if (activeTempPercent != null) {
+                baseRate * (activeTempPercent / 100.0)
+            } else {
+                baseRate
+            }
+
+            if (activeRate >= 0.09) {
+                val pulseAmount = InsulinAmount.fromPumpUnits(activeRate / 15.0, concentration)
+                val pulseId = formatBasalPulseId(slot)
                 points.add(
                     DanaInsulinHistoryPoint(
-                        timestamp = targetTimestamp,
-                        amount = InsulinAmount.fromPumpUnits(unitsPerHour, concentration),
-                        category = InsulinCategory.Basal
+                        timestamp = slot,
+                        amount = pulseAmount,
+                        category = InsulinCategory.Basal,
+                        pumpId = pulseId
                     )
                 )
-            } else {
-                val intervalMs = 4 * 60 * 1000L
-                val amountPerPulse = InsulinAmount.fromPumpUnits(
-                    unitsPerHour / 15.0,
-                    concentration
-                )
-                var currentPulseTime = startTime
-                var seq = 1
-
-                while (currentPulseTime < nextTime) {
+            } else if (activeRate > 0.0) {
+                if (slotZdt.minute == 56) {
+                    val slot56Timestamp = normalizeToBasalSlot(slot, isLowRateAt56 = true)
+                    val pulseAmount = InsulinAmount.fromPumpUnits(activeRate, concentration)
+                    val pulseId = formatBasalPulseId(slot56Timestamp)
                     points.add(
                         DanaInsulinHistoryPoint(
-                            timestamp = currentPulseTime,
-                            amount = amountPerPulse,
-                            category = InsulinCategory.Basal
+                            timestamp = slot56Timestamp,
+                            amount = pulseAmount,
+                            category = InsulinCategory.Basal,
+                            pumpId = pulseId
                         )
                     )
-                    currentPulseTime = currentPulseTime.plusMs(intervalMs)
-                    seq++
                 }
             }
+
+            slot = slot.plusMs(4 * 60 * 1000L)
         }
+
         return points
-    }
-
-    private suspend fun performBolusHistorySync(client: PumpClient, start: Timestamp = pump.lastRequestedStart) {
-        logger.log("Syncing bolus history...")
-
-        try {
-            val startTimestamp = maxOf(lastBolusHistoryTimestamp, start)
-            val queryPumpTime = PumpTimestamp.fromSystemTimestamp(startTimestamp, pump.pumpTimeOffsetMs)
-            client.execute(commands.generalSetHistoryUploadMode(1))
-            try {
-                val history = client.executeStream(
-                    commands.historyBolus(
-                        queryPumpTime,
-                        ZoneOffset.UTC
-                    )
-                )
-                val points = history.records.map { record ->
-                    DanaInsulinHistoryPoint(
-                        timestamp = record.timestamp.toSystemTimestamp(pump.pumpTimeOffsetMs),
-                        amount = InsulinAmount.fromPumpUnits(record.value ?: 0.0, pump.insulinConcentration.value),
-                        category = InsulinCategory.Bolus,
-                        pumpId = record.recordCode.toString()
-                    )
-                }
-                if (points.isNotEmpty()) {
-                    pump.updateBolusHistory(points, start)
-                    val maxSystemTimestamp = history.records.maxOf { it.timestamp }.toSystemTimestamp(pump.pumpTimeOffsetMs)
-                    lastBolusHistoryTimestamp = maxSystemTimestamp.plusMs(1)
-                }
-                logger.log("Bolus history sync completed: ${points.size} records.")
-            } finally {
-                client.execute(commands.generalSetHistoryUploadMode(0))
-            }
-        } catch (e: Exception) {
-            logger.log("Bolus history sync failed: ${e.message}")
-        }
     }
 
     private suspend fun processNotificationFrame(frame: ProtocolFrame, client: PumpClient) {
@@ -603,7 +757,7 @@ class DanaIController(
 
                 setActiveBolusContext(null)
 
-                performBolusHistorySync(client)
+                performApsHistorySync(client)
                 updatePumpStatus(client)
             }
 
@@ -703,7 +857,7 @@ class DanaIController(
 
         val cmd = commands.basalSetTemporaryBasal(percent, durationHours)
         client.execute(cmd).ensureOk(cmd.name)
-        performBasalHistorySync(client)
+        performApsHistorySync(client)
         updatePumpStatus(client)
     }
 
@@ -748,6 +902,7 @@ class DanaIController(
         logger.log("Action: Canceling Temp Basal")
         val cmd = commands.basalSetCancelTemporaryBasal()
         client.execute(cmd).ensureOk(cmd.name)
+        performApsHistorySync(client)
         updatePumpStatus(client)
     }
 
@@ -761,6 +916,7 @@ class DanaIController(
         logger.log("Action: Setting Suspend to $suspended")
         val cmd = if (suspended) commands.basalSetSuspendOn() else commands.basalSetSuspendOff()
         client.execute(cmd).ensureOk(cmd.name)
+        performApsHistorySync(client)
         updatePumpStatus(client)
     }
 
@@ -795,8 +951,7 @@ class DanaIController(
 
     private suspend fun executeSyncHistory(start: Timestamp) = withConnection { client ->
         updateTimeOffset(client)
-        performBasalHistorySync(client, start)
-        performBolusHistorySync(client, start)
+        performApsHistorySync(client, start)
     }
 
     private suspend fun executeRefreshStatus() = withConnection { client ->
@@ -900,6 +1055,7 @@ class DanaIController(
      * Terminates all background activities of this controller.
      */
     fun stop() {
+        stopBasalTicker()
         scope.launch { stopSessionHandler() }
         // Unwire callbacks to avoid leaks
         pump.onBolus = null
@@ -913,5 +1069,25 @@ class DanaIController(
         pump.onSetUserOptions = null
         pump.onExecute = null
         pump.onExecuteStream = null
+    }
+
+    companion object {
+        private val BASAL_PULSE_ID_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm")
+
+        fun formatBasalPulseId(timestamp: Timestamp): String {
+            val zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp.ms), ZoneId.systemDefault())
+            return "basal_pulse_${zdt.format(BASAL_PULSE_ID_FORMATTER)}"
+        }
+
+        fun normalizeToBasalSlot(timestamp: Timestamp, isLowRateAt56: Boolean = false): Timestamp {
+            val zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp.ms), ZoneId.systemDefault())
+            val normalizedZdt = if (isLowRateAt56) {
+                zdt.withMinute(56).withSecond(0).withNano(0)
+            } else {
+                val minute = (zdt.minute / 4) * 4
+                zdt.withMinute(minute).withSecond(0).withNano(0)
+            }
+            return Timestamp(normalizedZdt.toInstant().toEpochMilli())
+        }
     }
 }
