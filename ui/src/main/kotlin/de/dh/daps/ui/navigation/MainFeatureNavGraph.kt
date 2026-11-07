@@ -22,6 +22,7 @@ import de.dh.daps.common.domain.model.therapy.getDefaultInsulinTypes
 import de.dh.daps.common.navigation.AlertProfileEditorRoute
 import de.dh.daps.common.navigation.AlertProfilesRoute
 import de.dh.daps.common.navigation.AppDataRoute
+import de.dh.daps.common.navigation.DataRetentionRoute
 import de.dh.daps.common.navigation.BgEditorRoute
 import de.dh.daps.common.navigation.InsulinHistoryRoute
 import de.dh.daps.common.navigation.RemindersRoute
@@ -80,6 +81,8 @@ import de.dh.daps.ui.screens.alertprofiles.AlertProfilesScreen
 import de.dh.daps.ui.screens.alertprofiles.AlertProfilesViewModel
 import de.dh.daps.ui.screens.appdata.AppDataScreen
 import de.dh.daps.ui.screens.appdata.AppDataViewModel
+import de.dh.daps.ui.screens.retention.DataRetentionScreen
+import de.dh.daps.ui.screens.retention.DataRetentionViewModel
 import de.dh.daps.ui.screens.insulinhistory.InsulinHistoryScreen
 import de.dh.daps.ui.screens.insulinhistory.InsulinHistoryViewModel
 import de.dh.daps.ui.screens.dashboard.DashboardScreen
@@ -404,6 +407,18 @@ class MainFeatureNavGraph(
                 )
 
                 AppDataScreen(
+                    viewModel = vm,
+                    onNavigateUp = { navViewModel.pop() },
+                    onNavigateToRetention = { navViewModel.push(DataRetentionRoute) }
+                )
+            }
+
+            is DataRetentionRoute -> NavEntry(key) {
+                val vm: DataRetentionViewModel = viewModel(
+                    factory = DataRetentionViewModel.Companion.Factory(registry)
+                )
+
+                DataRetentionScreen(
                     viewModel = vm,
                     onNavigateUp = { navViewModel.pop() }
                 )

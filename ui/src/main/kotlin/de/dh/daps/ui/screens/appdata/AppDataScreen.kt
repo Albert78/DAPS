@@ -22,6 +22,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.Warning
@@ -71,7 +72,8 @@ import de.dh.daps.common.R as CommonR
 @Composable
 fun AppDataScreen(
     viewModel: AppDataViewModel,
-    onNavigateUp: () -> Unit
+    onNavigateUp: () -> Unit,
+    onNavigateToRetention: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -124,6 +126,7 @@ fun AppDataScreen(
     AppDataContent(
         uiState = uiState,
         onNavigateUp = onNavigateUp,
+        onNavigateToRetention = onNavigateToRetention,
         onResetClick = { viewModel.showResetConfirmation(true) },
         onSelectFolderClick = { openDocumentTreeLauncher.launch(null) },
         onIncludeHistoryChange = { viewModel.setIncludeHistory(it) },
@@ -149,6 +152,7 @@ fun AppDataScreen(
 fun AppDataContent(
     uiState: AppDataUiState,
     onNavigateUp: () -> Unit,
+    onNavigateToRetention: () -> Unit,
     onResetClick: () -> Unit,
     onSelectFolderClick: () -> Unit,
     onIncludeHistoryChange: (Boolean) -> Unit,
@@ -240,6 +244,45 @@ fun AppDataContent(
                             modifier = Modifier.align(Alignment.End)
                         ) {
                             Text(stringResource(R.string.app_data_btn_select_folder))
+                        }
+                    }
+                }
+
+                // Data Retention Policies
+                Text(
+                    text = stringResource(R.string.app_data_section_retention_title),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                FramedCard(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.CleaningServices,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = stringResource(R.string.app_data_card_retention_title),
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = stringResource(R.string.app_data_card_retention_desc),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        PrimaryButton(
+                            onClick = onNavigateToRetention,
+                            modifier = Modifier.align(Alignment.End)
+                        ) {
+                            Text(stringResource(R.string.app_data_btn_configure_retention))
                         }
                     }
                 }
@@ -472,6 +515,7 @@ fun AppDataContentPreview() {
                 isProcessing = false
             ),
             onNavigateUp = {},
+            onNavigateToRetention = {},
             onResetClick = {},
             onSelectFolderClick = {},
             onIncludeHistoryChange = {},

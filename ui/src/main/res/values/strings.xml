@@ -874,6 +874,33 @@
     <string name="app_data_dialog_reset_title">DAPS wirklich zurücksetzen?</string>
     <string name="app_data_dialog_reset_message">Achtung: Alle gespeicherten Behandlungsdaten, Protokolle und Einstellungen in DAPS werden unwiderruflich gelöscht und auf den Werkszustand zurückgesetzt!</string>
 
+    <!-- Data Retention Settings -->
+    <string name="app_data_section_retention_title">Automatische Datenbereinigung</string>
+    <string name="app_data_card_retention_title">Löschfristen konfigurieren</string>
+    <string name="app_data_card_retention_desc">Definiere automatische Löschfristen für Glukosewerte, Therapie-Historie, Hardware-Logs und Erinnerungen.</string>
+    <string name="app_data_btn_configure_retention">Anpassen</string>
+    <string name="data_retention_screen_title">Aufbewahrungsfristen</string>
+    <string name="data_retention_section_categories_title">Richtlinien pro Kategorie</string>
+    <string name="data_retention_category_glucose">Glukose-Messwerte</string>
+    <string name="data_retention_category_therapy">Therapie-Historie</string>
+    <string name="data_retention_category_hardware_logs">Hardware-Logs &amp; Verbindungsdaten</string>
+    <string name="data_retention_category_reminders">Erinnerungen &amp; Benachrichtigungen</string>
+    <string name="data_retention_category_system_metrics">System-Metriken &amp; Insights</string>
+    <string name="data_retention_category_other">Sonstige Anwendungsdaten</string>
+    <string name="data_retention_option_1_day">1 Tag</string>
+    <string name="data_retention_option_3_days">3 Tage</string>
+    <string name="data_retention_option_7_days">7 Tage</string>
+    <string name="data_retention_option_14_days">14 Tage</string>
+    <string name="data_retention_option_30_days">30 Tage</string>
+    <string name="data_retention_option_90_days">90 Tage</string>
+    <string name="data_retention_option_180_days">180 Tage</string>
+    <string name="data_retention_option_unlimited">Unbegrenzt</string>
+    <string name="data_retention_section_actions_title">Manuelle Aktionen</string>
+    <string name="data_retention_card_cleanup_title">Bereinigung sofort ausführen</string>
+    <string name="data_retention_card_cleanup_desc">Entfernt unverzüglich alle gespeicherten Daten, die älter als die oben festgelegten Fristen sind.</string>
+    <string name="data_retention_btn_cleanup_now">Jetzt aufräumen</string>
+    <string name="data_retention_msg_cleanup_success">Datenbereinigung wurde erfolgreich ausgeführt.</string>
+
     <!-- Setup Wizard -->
     <string name="setup_wizard_title">Willkommen bei DAPS</string>
     <string name="setup_wizard_busy_text">System wird eingerichtet…</string>
