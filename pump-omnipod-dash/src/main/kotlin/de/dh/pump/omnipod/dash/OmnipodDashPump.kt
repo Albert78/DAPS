@@ -876,7 +876,6 @@ class OmnipodDashPump(
     }
 
     private suspend fun logEvent(eventType: OmnipodHistoryEventType, detailText: String, units: Double) {
-        cleanupOldEvents()
         db?.historyDao()?.insertEvent(
             OmnipodHistoryEntity(
                 timestampMs = System.currentTimeMillis(),
@@ -887,16 +886,10 @@ class OmnipodDashPump(
         )
     }
 
-    private suspend fun cleanupOldEvents() {
-        val cutoffMs = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(HISTORY_CLEANUP_DAYS)
-        db?.historyDao()?.deleteEventsOlderThan(cutoffMs)
-    }
-
     companion object {
         const val PUMP_ID = "de.dh.daps.plugin.omnipod.dash"
         private const val POD_DURATION_HOURS = 72L
         private const val POD_GRACE_HOURS = 8L
-        private const val HISTORY_CLEANUP_DAYS = 3L
         private val BOLUS_POLL_INTERVAL = 2.seconds
 
         private const val MIN_BASAL_RATE = 0.05

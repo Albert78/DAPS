@@ -417,13 +417,6 @@ class BodyModel(
         meals.removeIf { it.timestamp < threshold }
         insulinApplications.removeIf { it.timestamp < threshold }
         impactHistory.removeIf { it.currentTimestamp < threshold }
-
-        simBodyDao?.let { dao ->
-            scope.launch {
-                dao.deleteOldHistory(threshold)
-                dao.deleteOldEvents(threshold)
-            }
-        }
     }
 
     /**

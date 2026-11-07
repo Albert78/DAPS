@@ -73,9 +73,6 @@ class ReminderManagerImpl(
                 checkAndProcessRemindersInternal(models)
             }
         }
-        scope.launch {
-            purgeOldReminders(3)
-        }
     }
 
     override fun stop() {

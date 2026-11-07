@@ -2,10 +2,10 @@ package de.dh.daps.plugin.simbody
 
 import android.util.Log
 import de.dh.daps.common.domain.model.data.Timestamp
+import de.dh.daps.common.domain.model.data.getAmountForMinute
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.common.domain.model.therapy.InsulinCategory
 import de.dh.daps.common.domain.model.therapy.InsulinProfile
-import de.dh.daps.common.domain.model.data.getAmountForMinute
 import de.dh.daps.plugin.simbody.repository.db.PumpDao
 import de.dh.daps.plugin.simbody.repository.db.PumpDeliveryType
 import de.dh.daps.plugin.simbody.repository.db.PumpHistoryEntity
@@ -322,8 +322,6 @@ class SimBodyPumpDevice(
                 }
             }
         }
-
-        cleanupHistory()
     }
 
     private fun checkGeneralErrors(commandName: String) {
@@ -558,7 +556,6 @@ class SimBodyPumpDevice(
                 }
             }
         }
-        cleanupHistory()
     }
 
     /**
@@ -599,17 +596,6 @@ class SimBodyPumpDevice(
     }
 
     fun getHistory(): List<HistoryEntry> = _history.toList()
-
-    private fun cleanupHistory() {
-        val threeDaysAgo = Timestamp.now().minusHours(72)
-        _history.removeIf { it.timestamp < threeDaysAgo }
-
-        pumpDao?.let { dao ->
-            scope.launch {
-                dao.deleteOldHistory(threeDaysAgo)
-            }
-        }
-    }
 
     /**
      * Replaces the reservoir and resets levels.
