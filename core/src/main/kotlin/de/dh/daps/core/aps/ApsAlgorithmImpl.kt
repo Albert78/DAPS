@@ -409,7 +409,7 @@ class ApsAlgorithmImpl(
             val dia = setting.dia
             val insulinPeak = setting.peak
 
-            val bgSettings = therapyManager.getBgSettings(now)
+            val bgSettings = therapyManager.getBgSettings(now + insulinPeak * 2)
             val targetBg = bgSettings.first
             val lowThreshold = bgSettings.second
 
