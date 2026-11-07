@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -219,6 +220,7 @@ fun InsulinProfileEditorContent(
     BackHandler(onBack = ::handleBack)
 
     Scaffold(
+        modifier = Modifier.imePadding(),
         topBar = {
             TopAppBar(
                 title = screenTitle(
@@ -911,6 +913,148 @@ private fun InsulinProfileEditorContentPreview() {
             ),
             onSave = {},
             onCancel = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Form Content - Insulin Tab")
+@Composable
+private fun InsulinProfileEditorFormContentInsulinTabPreview() {
+    val sampleInsulinTypes = listOf(
+        InsulinType(name = "Humalog", activeSubstance = "Insulin lispro", dia = Minutes.ofHours(5), peak = Minutes.ofHours(1)),
+        InsulinType(name = "NovoRapid", activeSubstance = "Insulin aspart", dia = Minutes.ofHours(5), peak = Minutes.ofHours(1))
+    )
+    val sampleInsulinSettings = listOf(
+        EditableInsulinSettingState(
+            insulinType = sampleInsulinTypes[0],
+            dia = "300",
+            peak = "60"
+        )
+    )
+    AppPreview {
+        InsulinProfileEditorFormContent(
+            name = "Normal Profile",
+            onNameChange = {},
+            insulinTypes = sampleInsulinTypes,
+            insulinSettings = sampleInsulinSettings,
+            onInsulinSettingsChanged = {},
+            basalBlocks = listOf(
+                Block(Minutes.ofHours(8), 0.8),
+                Block(Minutes.ofHours(16), 1.0)
+            ),
+            onBasalBlocksChanged = {},
+            isfBlocks = listOf(Block(Minutes.ofHours(24), 50.0)),
+            onIsfBlocksChanged = {},
+            crBlocks = listOf(Block(Minutes.ofHours(24), 10.0)),
+            onCrBlocksChanged = {},
+            selectedTab = 0
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Form Content - Basal Tab")
+@Composable
+private fun InsulinProfileEditorFormContentBasalTabPreview() {
+    val sampleInsulinTypes = listOf(
+        InsulinType(name = "Humalog", activeSubstance = "Insulin lispro", dia = Minutes.ofHours(5), peak = Minutes.ofHours(1))
+    )
+    val sampleInsulinSettings = listOf(
+        EditableInsulinSettingState(
+            insulinType = sampleInsulinTypes[0],
+            dia = "300",
+            peak = "60"
+        )
+    )
+    AppPreview {
+        InsulinProfileEditorFormContent(
+            name = "Normal Profile",
+            onNameChange = {},
+            insulinTypes = sampleInsulinTypes,
+            insulinSettings = sampleInsulinSettings,
+            onInsulinSettingsChanged = {},
+            basalBlocks = listOf(
+                Block(Minutes.ofHours(8), 0.8),
+                Block(Minutes.ofHours(16), 1.0),
+                Block(Minutes.ofHours(24), 0.7)
+            ),
+            onBasalBlocksChanged = {},
+            isfBlocks = listOf(Block(Minutes.ofHours(24), 50.0)),
+            onIsfBlocksChanged = {},
+            crBlocks = listOf(Block(Minutes.ofHours(24), 10.0)),
+            onCrBlocksChanged = {},
+            selectedTab = 1
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Form Content - ISF Tab")
+@Composable
+private fun InsulinProfileEditorFormContentIsfTabPreview() {
+    val sampleInsulinTypes = listOf(
+        InsulinType(name = "Humalog", activeSubstance = "Insulin lispro", dia = Minutes.ofHours(5), peak = Minutes.ofHours(1))
+    )
+    val sampleInsulinSettings = listOf(
+        EditableInsulinSettingState(
+            insulinType = sampleInsulinTypes[0],
+            dia = "300",
+            peak = "60"
+        )
+    )
+    AppPreview {
+        InsulinProfileEditorFormContent(
+            name = "Normal Profile",
+            onNameChange = {},
+            insulinTypes = sampleInsulinTypes,
+            insulinSettings = sampleInsulinSettings,
+            onInsulinSettingsChanged = {},
+            basalBlocks = listOf(
+                Block(Minutes.ofHours(24), 1.0)
+            ),
+            onBasalBlocksChanged = {},
+            isfBlocks = listOf(
+                Block(Minutes.ofHours(12), 40.0),
+                Block(Minutes.ofHours(24), 50.0)
+            ),
+            onIsfBlocksChanged = {},
+            crBlocks = listOf(Block(Minutes.ofHours(24), 10.0)),
+            onCrBlocksChanged = {},
+            selectedTab = 2
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Form Content - CR Tab")
+@Composable
+private fun InsulinProfileEditorFormContentCrTabPreview() {
+    val sampleInsulinTypes = listOf(
+        InsulinType(name = "Humalog", activeSubstance = "Insulin lispro", dia = Minutes.ofHours(5), peak = Minutes.ofHours(1))
+    )
+    val sampleInsulinSettings = listOf(
+        EditableInsulinSettingState(
+            insulinType = sampleInsulinTypes[0],
+            dia = "300",
+            peak = "60"
+        )
+    )
+    AppPreview {
+        InsulinProfileEditorFormContent(
+            name = "Normal Profile",
+            onNameChange = {},
+            insulinTypes = sampleInsulinTypes,
+            insulinSettings = sampleInsulinSettings,
+            onInsulinSettingsChanged = {},
+            basalBlocks = listOf(
+                Block(Minutes.ofHours(24), 1.0)
+            ),
+            onBasalBlocksChanged = {},
+            isfBlocks = listOf(Block(Minutes.ofHours(24), 50.0)),
+            onIsfBlocksChanged = {},
+            crBlocks = listOf(
+                Block(Minutes.ofHours(12), 8.0),
+                Block(Minutes.ofHours(24), 10.0)
+            ),
+            onCrBlocksChanged = {},
+            selectedTab = 3
         )
     }
 }
