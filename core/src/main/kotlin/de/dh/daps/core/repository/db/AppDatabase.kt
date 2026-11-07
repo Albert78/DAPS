@@ -9,6 +9,7 @@ import de.dh.daps.core.repository.db.dao.AlertProfileDao
 import de.dh.daps.core.repository.db.dao.MetabolicEventsDao
 import de.dh.daps.core.repository.db.dao.ProviderDao
 import de.dh.daps.core.repository.db.dao.ReminderDao
+import de.dh.daps.core.repository.db.dao.RetentionSettingsDao
 import de.dh.daps.core.repository.db.dao.SettingsDao
 import de.dh.daps.core.repository.db.dao.SystemMetricsDao
 import de.dh.daps.core.repository.db.dao.TherapyDao
@@ -25,6 +26,7 @@ import de.dh.daps.core.repository.db.entities.InsulinTypeEntity
 import de.dh.daps.core.repository.db.entities.MealEntity
 import de.dh.daps.core.repository.db.entities.MealTypeEntity
 import de.dh.daps.core.repository.db.entities.ReminderEntity
+import de.dh.daps.core.repository.db.entities.RetentionSettingsEntity
 import de.dh.daps.core.repository.db.entities.ScheduledTherapyAdjustmentEntity
 import de.dh.daps.core.repository.db.entities.SensorTypeEntity
 import de.dh.daps.core.repository.db.entities.TherapyAdjustmentEntity
@@ -55,7 +57,8 @@ import java.util.concurrent.Executors
     DeferredBolusEntity::class,
     CoreInsightEntity::class,
     WakeupMetricEntity::class,
-    TickMetricEntity::class
+    TickMetricEntity::class,
+    RetentionSettingsEntity::class
 ], version = 1)
 @TypeConverters(
     DbTypeConverters::class
@@ -68,6 +71,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun systemMetricsDao(): SystemMetricsDao
     abstract fun alertProfileDao(): AlertProfileDao
     abstract fun reminderDao(): ReminderDao
+    abstract fun retentionSettingsDao(): RetentionSettingsDao
 
     companion object {
         const val CURRENT_DATABASE_VERSION = "1.0"

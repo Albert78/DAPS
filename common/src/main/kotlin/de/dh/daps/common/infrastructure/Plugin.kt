@@ -1,5 +1,7 @@
 package de.dh.daps.common.infrastructure
 
+import de.dh.daps.common.domain.model.data.Timestamp
+import de.dh.daps.common.domain.model.retention.DataRetentionCategory
 import de.dh.daps.common.ui.UiText
 
 /**
@@ -82,4 +84,11 @@ interface Plugin {
         includeHistory: Boolean,
         includeDiagnostics: Boolean
     ) {}
+
+    /**
+     * Called during system maintenance to purge historical data according to the system's retention policy.
+     * [cutoffs] provides the calculated cutoff timestamp for each retention category.
+     * A `null` cutoff value indicates that data for that category should be kept indefinitely (no deletion).
+     */
+    suspend fun purgeData(cutoffs: Map<DataRetentionCategory, Timestamp?>) {}
 }

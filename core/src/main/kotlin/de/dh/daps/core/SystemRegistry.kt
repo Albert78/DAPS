@@ -15,6 +15,7 @@ import de.dh.daps.core.backup.AppDataManagementRepository
 import de.dh.daps.core.glucosesource.GlucoseSourceDriverManager
 import de.dh.daps.core.glucosesource.GlucoseSourceManager
 import de.dh.daps.core.infrastructure.AndroidNotifications
+import de.dh.daps.core.infrastructure.DataRetentionManager
 import de.dh.daps.core.orchestration.DeviceConnectionManager
 import de.dh.daps.core.orchestration.RecommendationManager
 import de.dh.daps.core.orchestration.SystemOrchestrator
@@ -213,6 +214,11 @@ interface SystemRegistry {
      * App-wide service for managing reminders.
      */
     val reminderManager: ReminderManager
+
+    /**
+     * Manages system-wide data retention policies and executes historical data cleanup.
+     */
+    val dataRetentionManager: DataRetentionManager
 
     /**
      * Manages the overall application state, including the active APS mode and system-wide issues.

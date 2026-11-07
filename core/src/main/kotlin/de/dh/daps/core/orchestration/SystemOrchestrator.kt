@@ -25,6 +25,7 @@ import de.dh.daps.core.aps.SimpleBolusCorrectionCalculator
 import de.dh.daps.core.glucosesource.GlucoseSourceIssue
 import de.dh.daps.core.glucosesource.GlucoseSourceManager
 import de.dh.daps.core.infrastructure.AndroidNotifications
+import de.dh.daps.core.infrastructure.DataRetentionManager
 import de.dh.daps.core.pump.PumpIssue
 import de.dh.daps.core.pump.PumpManager
 import de.dh.daps.core.repository.DeviceStatusRepository
@@ -189,6 +190,7 @@ class SystemOrchestratorImpl(
     private val therapyManager: TherapyManager,
     private val recommendationManager: RecommendationManager,
     private val reminderManager: ReminderManager,
+    private val dataRetentionManager: DataRetentionManager,
     private val carbsInsulinCalculator: CarbsInsulinCalculator,
 
     // Internal Helper Components (with Default Values)
@@ -533,7 +535,7 @@ class SystemOrchestratorImpl(
 
     private fun performDailyMaintenance() {
         scope.launch {
-            reminderManager.purgeOldReminders(3)
+            dataRetentionManager.executeCleanup()
         }
         scheduleDailyMaintenance()
     }

@@ -4,6 +4,8 @@ import android.util.Log
 import androidx.compose.runtime.Composable
 import de.dh.daps.common.device.driver.InsulinPumpDriver
 import de.dh.daps.common.device.state.DeviceLifecycleState
+import de.dh.daps.common.domain.model.data.Timestamp
+import de.dh.daps.common.domain.model.retention.DataRetentionCategory
 import de.dh.daps.common.domain.pump.InsulinPump
 import de.dh.daps.common.infrastructure.Plugin
 import de.dh.daps.common.infrastructure.PluginContext
@@ -182,6 +184,19 @@ class OmnipodDashInsulinPumpDriver : InsulinPumpDriver, Plugin {
             driver = this,
             onClose = onClose
         )
+    }
+
+    override suspend fun purgeData(cutoffs: Map<DataRetentionCategory, Timestamp?>) {
+        val cutoff = cutoffs[DataRetentionCategory.DEVICE_HARDWARE_LOGS] ?: cutoffs[DataRetentionCategory.THERAPY_HISTORY]
+        if (cutoff != null) {
+            pluginContext?.appContext?.let { ctx ->
+                try {
+                    OmnipodHistoryDatabase.getInstance(ctx).historyDao().deleteEventsOlderThan(cutoff.ms)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error purging historical data", e)
+                }
+            }
+        }
     }
 
     companion object {

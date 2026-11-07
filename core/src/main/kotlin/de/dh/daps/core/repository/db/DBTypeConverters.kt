@@ -7,6 +7,7 @@ import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.reminder.ReminderStatus
 import de.dh.daps.common.domain.model.reminder.ReminderType
+import de.dh.daps.common.domain.model.retention.RetentionOption
 import de.dh.daps.common.domain.model.engine.ApsMode
 import de.dh.daps.common.domain.model.therapy.InsulinStatus
 import de.dh.daps.core.aps.CoreReasoning
@@ -98,6 +99,18 @@ class DbTypeConverters {
             ReminderStatus.valueOf(value)
         } catch (_: Exception) {
             ReminderStatus.ACTIVE
+        }
+    }
+
+    @TypeConverter
+    fun fromRetentionOption(option: RetentionOption): String = option.name
+
+    @TypeConverter
+    fun toRetentionOption(value: String): RetentionOption {
+        return try {
+            RetentionOption.valueOf(value)
+        } catch (_: Exception) {
+            RetentionOption.DAYS_30
         }
     }
 

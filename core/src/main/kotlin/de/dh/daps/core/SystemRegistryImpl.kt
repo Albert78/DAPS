@@ -26,6 +26,8 @@ import de.dh.daps.core.backup.BackupResult
 import de.dh.daps.core.glucosesource.GlucoseSourceDriverManager
 import de.dh.daps.core.glucosesource.GlucoseSourceManager
 import de.dh.daps.core.infrastructure.AndroidNotifications
+import de.dh.daps.core.infrastructure.DataRetentionManager
+import de.dh.daps.core.infrastructure.DataRetentionManagerImpl
 import de.dh.daps.core.infrastructure.PluginContextImpl
 import de.dh.daps.core.infrastructure.ReminderManagerImpl
 import de.dh.daps.core.infrastructure.SystemWakeServiceImpl
@@ -84,6 +86,7 @@ class SystemRegistryImpl(
     override val therapyManager: TherapyManager,
     override val recommendationManager: RecommendationManager,
     override val reminderManager: ReminderManager,
+    override val dataRetentionManager: DataRetentionManager,
     override val systemOrchestrator: SystemOrchestrator,
     override val pluginManager: PluginManager,
     override val wakeService: SystemWakeService,
@@ -314,6 +317,14 @@ class SystemRegistryImpl(
                 scope = scope
             )
 
+            val dataRetentionManager = DataRetentionManagerImpl(
+                appDatabase = appDatabase,
+                systemMetricsRepository = systemMetricsRepository,
+                pluginManager = pluginManager,
+                timeService = timeService,
+                scope = scope
+            )
+
             val recommendationManager = RecommendationManager()
 
             val therapyManager = TherapyManager(
@@ -346,6 +357,7 @@ class SystemRegistryImpl(
                 therapyManager = therapyManager,
                 recommendationManager = recommendationManager,
                 reminderManager = reminderManager,
+                dataRetentionManager = dataRetentionManager,
                 carbsInsulinCalculator = carbsInsulinCalculator
             )
 
@@ -398,6 +410,7 @@ class SystemRegistryImpl(
                 therapyManager = therapyManager,
                 recommendationManager = recommendationManager,
                 reminderManager = reminderManager,
+                dataRetentionManager = dataRetentionManager,
                 glucoseSourceManager = glucoseSourceManager,
                 glucoseSourceDriverManager = glucoseSourceDriverManager,
                 systemOrchestrator = systemOrchestrator,

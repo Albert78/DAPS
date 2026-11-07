@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "b09aaec4ff7cc88b2016814730b77406",
+    "identityHash": "7445a1212c979a850ee8710857617380",
     "entities": [
       {
         "tableName": "sensor_type",
@@ -1029,11 +1029,65 @@
             "id"
           ]
         }
+      },
+      {
+        "tableName": "retention_settings",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `glucoseReadings` TEXT NOT NULL, `therapyHistory` TEXT NOT NULL, `deviceHardwareLogs` TEXT NOT NULL, `reminders` TEXT NOT NULL, `systemMetrics` TEXT NOT NULL, `other` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "glucoseReadings",
+            "columnName": "glucoseReadings",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "therapyHistory",
+            "columnName": "therapyHistory",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deviceHardwareLogs",
+            "columnName": "deviceHardwareLogs",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reminders",
+            "columnName": "reminders",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "systemMetrics",
+            "columnName": "systemMetrics",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "other",
+            "columnName": "other",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b09aaec4ff7cc88b2016814730b77406')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7445a1212c979a850ee8710857617380')"
     ]
   }
 }

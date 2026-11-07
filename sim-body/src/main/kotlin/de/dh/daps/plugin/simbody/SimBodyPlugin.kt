@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.room.withTransaction
 import de.dh.daps.common.domain.model.data.BgReading
 import de.dh.daps.common.domain.model.data.Timestamp
+import de.dh.daps.common.domain.model.retention.DataRetentionCategory
 import de.dh.daps.common.domain.model.cgm.GlucoseSource
 import de.dh.daps.common.domain.pump.InsulinPump
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
@@ -286,6 +287,20 @@ class SimBodyPlugin(
 
         bodyModel.loadState()
         pumpDevice.loadState()
+    }
+
+    override suspend fun purgeData(
+        cutoffs: Map<DataRetentionCategory, Timestamp?>
+    ) = withContext(Dispatchers.IO) {
+        val simCutoff = cutoffs[DataRetentionCategory.GLUCOSE_READINGS] ?: cutoffs[DataRetentionCategory.THERAPY_HISTORY]
+        if (simCutoff != null) {
+            database.impactDao().deleteOldHistory(simCutoff)
+            database.impactDao().deleteOldEvents(simCutoff)
+        }
+        val pumpCutoff = cutoffs[DataRetentionCategory.THERAPY_HISTORY]
+        if (pumpCutoff != null) {
+            database.pumpDao().deleteOldHistory(pumpCutoff)
+        }
     }
 
     fun getGlucoseSource(): GlucoseSource = SimBodyGlucoseSource(

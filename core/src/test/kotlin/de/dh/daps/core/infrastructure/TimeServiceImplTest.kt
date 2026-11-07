@@ -12,6 +12,7 @@ import de.dh.daps.core.repository.db.dao.AlertProfileDao
 import de.dh.daps.core.repository.db.dao.MetabolicEventsDao
 import de.dh.daps.core.repository.db.dao.ProviderDao
 import de.dh.daps.core.repository.db.dao.ReminderDao
+import de.dh.daps.core.repository.db.dao.RetentionSettingsDao
 import de.dh.daps.core.repository.db.dao.SettingsDao
 import de.dh.daps.core.repository.db.dao.SystemMetricsDao
 import de.dh.daps.core.repository.db.dao.TherapyDao
@@ -67,6 +68,7 @@ class TimeServiceImplTest {
         override fun settingsDao(): SettingsDao = throw NotImplementedError()
         override fun alertProfileDao(): AlertProfileDao = throw NotImplementedError()
         override fun reminderDao(): ReminderDao = throw NotImplementedError()
+        override fun retentionSettingsDao(): RetentionSettingsDao = throw NotImplementedError()
         override fun clearAllTables() {}
         override fun createInvalidationTracker(): InvalidationTracker = InvalidationTracker(this, emptyMap(), emptyMap())
     }
