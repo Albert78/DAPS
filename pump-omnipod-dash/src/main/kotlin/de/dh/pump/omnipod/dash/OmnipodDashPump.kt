@@ -2,6 +2,11 @@ package de.dh.pump.omnipod.dash
 
 import android.content.Context
 import de.dh.daps.common.domain.model.data.Timestamp
+import de.dh.daps.common.domain.model.therapy.InsulinAmount
+import de.dh.daps.common.domain.model.therapy.InsulinCategory
+import de.dh.daps.common.domain.model.therapy.InsulinConcentration
+import de.dh.daps.common.domain.model.therapy.InsulinHistory
+import de.dh.daps.common.domain.model.therapy.InsulinProfile
 import de.dh.daps.common.domain.pump.BasalStatus
 import de.dh.daps.common.domain.pump.BolusDeliveryState
 import de.dh.daps.common.domain.pump.BolusEvent
@@ -14,11 +19,6 @@ import de.dh.daps.common.domain.pump.PumpAlerts
 import de.dh.daps.common.domain.pump.PumpCapabilities
 import de.dh.daps.common.domain.pump.PumpHardwareInformation
 import de.dh.daps.common.domain.pump.PumpLifecycleState
-import de.dh.daps.common.domain.model.therapy.InsulinAmount
-import de.dh.daps.common.domain.model.therapy.InsulinCategory
-import de.dh.daps.common.domain.model.therapy.InsulinConcentration
-import de.dh.daps.common.domain.model.therapy.InsulinHistory
-import de.dh.daps.common.domain.model.therapy.InsulinProfile
 import de.dh.daps.common.ui.UiText
 import de.dh.pump.PumpCommandException
 import de.dh.pump.PumpStatus
@@ -62,6 +62,7 @@ import kotlinx.coroutines.launch
 import java.util.Date
 import java.util.EnumSet
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.seconds
 
 data class OmnipodDashStatusData(
     override val pumpSuspended: Boolean = false,
@@ -81,7 +82,6 @@ class OmnipodDashPump(
     private val bleManager: OmnipodDashBleManager,
     private val context: Context? = null
 ) : InsulinPump {
-
     override val insulinPumpId: String = PUMP_ID
     override val insulinPumpDisplayName: UiText = UiText.StringResource(R.string.omnipod_dash_pump_display_name)
     override val insulinTypeId: StateFlow<String?> get() = podStateManager.insulinTypeId
@@ -104,12 +104,12 @@ class OmnipodDashPump(
 
     private val _pumpCapabilities = MutableStateFlow(
         PumpCapabilities(
-            minBasalRate = InsulinAmount(0.05),
-            supportsZeroBasal = true,
-            minBasalIncrement = InsulinAmount(0.05),
-            minBolusAmount = InsulinAmount(0.05),
-            minBolusIncrement = InsulinAmount(0.05),
-            maxBolusSize = InsulinAmount(30.0)
+            minBasalRate = InsulinAmount(MIN_BASAL_RATE),
+            supportsZeroBasal = SUPPORTS_ZERO_BASAL,
+            minBasalIncrement = InsulinAmount(MIN_BASAL_INCREMENT),
+            minBolusAmount = InsulinAmount(MIN_BOLUS_AMOUNT),
+            minBolusIncrement = InsulinAmount(MIN_BOLUS_INCREMENT),
+            maxBolusSize = InsulinAmount(MAX_BOLUS_SIZE)
         )
     )
     override val pumpCapabilities: StateFlow<PumpCapabilities> = _pumpCapabilities.asStateFlow()
@@ -524,7 +524,7 @@ class OmnipodDashPump(
                 PodPulseCalculator.INSULIN_PER_PULSE_U
             )
             true
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         } finally {
             podStateManager.basalCorrectionInProgress = false
@@ -554,8 +554,7 @@ class OmnipodDashPump(
     override suspend fun syncHistory(start: Timestamp) {
         refreshStatus()
         db?.let { historyDb ->
-            val cutoff = start
-            val entities = historyDb.historyDao().getEventsSince(cutoff.ms)
+            val entities = historyDb.historyDao().getEventsSince(start.ms)
 
             val points = entities.map { entity ->
                 OmnipodInsulinHistoryPoint(
@@ -767,7 +766,7 @@ class OmnipodDashPump(
         var lastDeliveredPulses: Short = 0
 
         while (isDelivering && scope.isActive) {
-            delay(BOLUS_POLL_INTERVAL_MS)
+            delay(BOLUS_POLL_INTERVAL)
 
             if (_bolusStatus.value.state != BolusDeliveryState.DELIVERING) {
                 break
@@ -898,6 +897,13 @@ class OmnipodDashPump(
         private const val POD_DURATION_HOURS = 72L
         private const val POD_GRACE_HOURS = 8L
         private const val HISTORY_CLEANUP_DAYS = 3L
-        private const val BOLUS_POLL_INTERVAL_MS = 2000L
+        private val BOLUS_POLL_INTERVAL = 2.seconds
+
+        private const val MIN_BASAL_RATE = 0.05
+        private const val SUPPORTS_ZERO_BASAL = true
+        private const val MIN_BASAL_INCREMENT = 0.05
+        private const val MIN_BOLUS_AMOUNT = 0.05
+        private const val MIN_BOLUS_INCREMENT = 0.05
+        private const val MAX_BOLUS_SIZE = 30.0
     }
 }

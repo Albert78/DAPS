@@ -51,6 +51,8 @@ import kotlinx.coroutines.withTimeoutOrNull
 import java.util.UUID
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 enum class PodBleConnectionState {
     DISCONNECTED, CONNECTING, CONNECTED, FAILED
@@ -250,9 +252,9 @@ class OmnipodDashBleManager(
                 return@withContext connectResult
             }
 
-            val connected = withTimeoutOrNull(10000L) {
+            val connected = withTimeoutOrNull(10.seconds) {
                 while (_connectionState.value != PodBleConnectionState.CONNECTED) {
-                    delay(100)
+                    delay(100.milliseconds)
                 }
                 true
             }
