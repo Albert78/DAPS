@@ -23,11 +23,39 @@ data class PumpHardwareInformation(
  * Technical specification and hardware characteristics.
  */
 data class PumpCapabilities(
+    /**
+     * Minimum basal rate supported by the pump in actual International Units per hour (I.E. / IU/h),
+     * calculated after taking insulin concentration into account rather than raw technical hardware units/ticks.
+     */
     val minBasalRate: InsulinAmount,
+
+    /**
+     * Indicates whether the pump supports setting a zero basal rate (0.0 I.E./h).
+     */
     val supportsZeroBasal: Boolean,
+
+    /**
+     * Minimum basal rate increment supported by the pump in actual International Units per hour (I.E. / IU/h),
+     * calculated after taking insulin concentration into account rather than raw technical hardware units/ticks.
+     */
     val minBasalIncrement: InsulinAmount,
+
+    /**
+     * Minimum bolus amount supported by the pump in actual International Units (I.E. / IU),
+     * calculated after taking insulin concentration into account rather than raw technical hardware units/ticks.
+     */
     val minBolusAmount: InsulinAmount,
+
+    /**
+     * Minimum bolus increment supported by the pump in actual International Units (I.E. / IU),
+     * calculated after taking insulin concentration into account rather than raw technical hardware units/ticks.
+     */
     val minBolusIncrement: InsulinAmount,
+
+    /**
+     * Maximum single bolus size supported by the pump in actual International Units (I.E. / IU),
+     * calculated after taking insulin concentration into account rather than raw technical hardware units/ticks.
+     */
     val maxBolusSize: InsulinAmount,
     // TODO: Continue list for sensible capability values
 //    val supportsTempBasal: Boolean,
