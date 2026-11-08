@@ -26,6 +26,12 @@ data class BolusParts(
     val deferredBolusPart: InsulinAmount,
     val totalProposed: InsulinAmount
 ) {
+    /**
+     * Net non-meal insulin adjustment (BG correction - IOB + COB + future carbs - deferred boluses).
+     */
+    val netCorrectionPart: InsulinAmount
+        get() = bgCorrectionPart - iobPart + cobPart + futureCarbsPart - deferredBolusPart
+
     companion object {
         fun empty(): BolusParts = BolusParts(
             mealPart = InsulinAmount.ZERO,
@@ -89,7 +95,7 @@ interface BolusCorrectionCalculator {
      */
     suspend fun distributeInsulinPlan(
         manualBolus: InsulinAmount,
-        bgCorrection: InsulinAmount,
+        netCorrection: InsulinAmount,
         mealType: MealType?,
         imi: Minutes
     ): List<PlannedInsulin>
@@ -225,7 +231,7 @@ object BolusCalculationMath {
 
     fun distributeInsulinPlan(
         manualBolus: InsulinAmount,
-        bgCorrection: InsulinAmount,
+        netCorrection: InsulinAmount,
         mealType: MealType?,
         imi: Minutes
     ): List<PlannedInsulin> {
@@ -241,7 +247,7 @@ object BolusCalculationMath {
             )
         }
 
-        val roundedAmounts = calculateComponentAmounts(manualBolus.iu, bgCorrection.iu, mealType)
+        val roundedAmounts = calculateComponentAmounts(manualBolus.iu, netCorrection.iu, mealType)
 
         return mealType.components.mapIndexed { index, component ->
             val amount = InsulinAmount(roundedAmounts[index])
@@ -343,12 +349,12 @@ class SimpleBolusCorrectionCalculator(
 
     override suspend fun distributeInsulinPlan(
         manualBolus: InsulinAmount,
-        bgCorrection: InsulinAmount,
+        netCorrection: InsulinAmount,
         mealType: MealType?,
         imi: Minutes
     ) = BolusCalculationMath.distributeInsulinPlan(
         manualBolus = manualBolus,
-        bgCorrection = bgCorrection,
+        netCorrection = netCorrection,
         mealType = mealType,
         imi = imi
     )

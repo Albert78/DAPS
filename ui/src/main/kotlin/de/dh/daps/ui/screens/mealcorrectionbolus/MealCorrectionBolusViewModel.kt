@@ -149,7 +149,10 @@ data class BolusCalculationDetails(
     val futureCarbsPart: InsulinAmount = InsulinAmount.ZERO,
     val deferredBolusPart: InsulinAmount = InsulinAmount.ZERO,
     val proposedTotal: InsulinAmount = InsulinAmount.ZERO
-)
+) {
+    val netCorrectionPart: InsulinAmount
+        get() = bgCorrectionPart - iobPart + cobPart + futureCarbsPart - deferredBolusPart
+}
 
 data class MealCorrectionBolusUiState(
     val isLoading: Boolean = true,
@@ -480,7 +483,7 @@ class MealCorrectionBolusViewModel(
 
         val newPlan = bolusCorrectionCalculator.distributeInsulinPlan(
             manualBolus = state.input.manualBolus,
-            bgCorrection = state.calculation.bgCorrectionPart,
+            netCorrection = state.calculation.netCorrectionPart,
             mealType = state.input.selectedMealType,
             imi = suggestedImi ?: Minutes.ZERO
         )
@@ -544,7 +547,7 @@ class MealCorrectionBolusViewModel(
                             treatmentLock = lock,
                             amount = immediateBolus,
                             meal = mealEntry,
-                            correctionPart = state.calculation.bgCorrectionPart
+                            correctionPart = state.calculation.netCorrectionPart
                         )
                     }
 
