@@ -589,6 +589,7 @@
     <string name="system_control_pump_sync_step_reconciling_temp_basal">Temporäre Basalrate abgleichen…</string>
     <string name="system_control_pump_sync_step_reconciling_profile">Basalprofil abgleichen…</string>
     <string name="system_control_pump_sync_step_executing_bolus">Bolus übertragen…</string>
+    <string name="system_control_pump_sync_step_delivering_bolus">Bolus wird abgegeben…</string>
 
     <string name="system_control_pump_retry_reason_busy">Pumpe beschäftigt</string>
     <string name="system_control_pump_retry_reason_connection">Verbindung fehlgeschlagen</string>

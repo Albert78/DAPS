@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 class SampleInsulinPump : InsulinPump {
 
@@ -62,6 +64,7 @@ class SampleInsulinPump : InsulinPump {
     override val bolusStatus: StateFlow<BolusStatus> = MutableStateFlow(BolusStatus())
     override val bolusEvents: SharedFlow<BolusEvent> = MutableSharedFlow()
     override val history: StateFlow<InsulinHistory?> = MutableStateFlow(null)
+    override val bolusDeliveryDurationPerUnit: StateFlow<Duration> = MutableStateFlow(12.seconds)
 
     override suspend fun bolus(amount: InsulinAmount, bolusId: String?) {
         // TODO: Implement bolus delivery

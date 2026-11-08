@@ -974,6 +974,7 @@ fun PumpTechnicalStatusCard(
                         SyncStep.ReconcilingTempBasal -> stringResource(R.string.system_control_pump_sync_step_reconciling_temp_basal)
                         SyncStep.ReconcilingProfile -> stringResource(R.string.system_control_pump_sync_step_reconciling_profile)
                         SyncStep.ExecutingBolus -> stringResource(R.string.system_control_pump_sync_step_executing_bolus)
+                        SyncStep.DeliveringBolus -> stringResource(R.string.system_control_pump_sync_step_delivering_bolus)
                     }
                     Row(
                         verticalAlignment = Alignment.CenterVertically,

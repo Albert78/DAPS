@@ -3,9 +3,10 @@ package de.dh.daps.core.pump
 import android.util.Log
 import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.data.Timestamp
-import de.dh.daps.common.domain.pump.InsulinPump
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.common.domain.model.therapy.InsulinProfile
+import de.dh.daps.common.domain.pump.BolusDeliveryState
+import de.dh.daps.common.domain.pump.InsulinPump
 import de.dh.daps.core.pump.PumpCoordinator.Companion.BUSY_RETRY_DELAYS_MS
 import de.dh.daps.core.pump.PumpCoordinator.Companion.MAX_CONNECTION_RETRIES
 import de.dh.daps.core.pump.PumpCoordinator.Companion.RETRY_INTERVAL_MS
@@ -44,7 +45,8 @@ enum class SyncStep {
     ReconcilingSuspend,
     ReconcilingTempBasal,
     ReconcilingProfile,
-    ExecutingBolus
+    ExecutingBolus,
+    DeliveringBolus
 }
 
 /**
@@ -586,16 +588,22 @@ class PumpCoordinator private constructor(
         while (true) {
             try {
                 when (val type = job.type) {
-                    is BolusJobType.Deliver -> pump.bolus(type.amount, type.bolusId)
-                    is BolusJobType.Stop ->
+                    is BolusJobType.Deliver -> {
+                        pump.bolus(type.amount, type.bolusId)
+                        _lastConnectionTime.value = Timestamp.now()
+                        return awaitBolusCompletion(job, type.amount)
+                    }
+                    is BolusJobType.Stop -> {
                         try {
                             pump.stopBolus()
                         } catch (_: Exception) {
                             // Ignore. If we cannot stop a bolus, it might already be finished or something else. Shit happens.
                         }
+                        removeJobsUpToLastStop()
+                        _lastConnectionTime.value = Timestamp.now()
+                        return true
+                    }
                 }
-                _lastConnectionTime.value = Timestamp.now()
-                return true
             } catch (e: PumpConnectionException) {
                 if (connectionRetryCount < MAX_CONNECTION_RETRIES) {
                     connectionRetryCount++
@@ -659,6 +667,86 @@ class PumpCoordinator private constructor(
                 )
                 onJobError(failedJob, errorCode)
                 return false
+            }
+        }
+    }
+
+    /**
+     * Waits for an actively delivering bolus to finish on hardware (or until timed out / stopped).
+     *
+     * Blocks further coordinator action while [InsulinPump.bolusStatus] reports [BolusDeliveryState.DELIVERING],
+     * periodically checking for a user-initiated [BolusJobType.Stop] job in [_pendingBoluses].
+     * Computes a dynamic timeout based on the bolus [amount] and [InsulinPump.bolusDeliveryDurationPerUnit].
+     * After delivery completes, stops, or times out, status and history are refreshed automatically.
+     */
+    private suspend fun awaitBolusCompletion(job: BolusJob, amount: InsulinAmount): Boolean {
+        _syncStatus.value = PumpSyncStatus.Reconciling(SyncStep.DeliveringBolus)
+
+        val secPerUnit = pump.bolusDeliveryDurationPerUnit.value
+        val timeoutDuration = 30.seconds + (secPerUnit * amount.iu)
+
+        val completedInTime = withTimeoutOrNull(timeoutDuration) {
+            combine(pump.bolusStatus, _pendingBoluses) { status, pending ->
+                val hasStopJob = pending.any { it.type is BolusJobType.Stop }
+                status to hasStopJob
+            }.first { (status, hasStopJob) ->
+                hasStopJob || status.state != BolusDeliveryState.DELIVERING
+            }
+        }
+
+        if (completedInTime != null) {
+            val (_, hasStopJob) = completedInTime
+            if (hasStopJob) {
+                try {
+                    pump.stopBolus()
+                } catch (_: Exception) {
+                    // Ignore stop errors if pump already finished or stopped
+                }
+                removeJobsUpToLastStop()
+            }
+        } else {
+            Log.w(TAG, "Bolus delivery timed out for job ${job.id} after $timeoutDuration")
+        }
+
+        // Refresh status and history after delivery finishes, is stopped, or times out
+        refreshStatusAndHistoryWithRetries()
+
+        if (completedInTime == null) {
+            val errorCode = JobErrorCode.TechnicalError("Bolus delivery timed out after $timeoutDuration")
+            val failedJob = job.copy(lastError = errorCode)
+            _pendingBoluses.update { pending -> pending.map { if (it.id == job.id) failedJob else it } }
+            onJobError(failedJob, errorCode)
+            return false
+        }
+
+        val (status, hasStopJob) = completedInTime
+        if (hasStopJob) {
+            return true
+        }
+
+        return status.state == BolusDeliveryState.COMPLETED || status.state == BolusDeliveryState.IDLE
+    }
+
+    /**
+     * Removes all pending jobs up to and including the latest [BolusJobType.Stop] job.
+     * Triggers [onJobError] for any deliver jobs that were canceled as a result of the stop command.
+     */
+    private fun removeJobsUpToLastStop() {
+        val jobsToCancel = mutableListOf<BolusJob>()
+        _pendingBoluses.update { pending ->
+            val lastStopIndex = pending.indexOfLast { it.type is BolusJobType.Stop }
+            if (lastStopIndex != -1) {
+                jobsToCancel.addAll(pending.take(lastStopIndex + 1))
+                pending.drop(lastStopIndex + 1)
+            } else {
+                pending
+            }
+        }
+        jobsToCancel.forEach { job ->
+            if (job.type is BolusJobType.Deliver) {
+                val errorCode = JobErrorCode.CommandFailed(PumpStatus.REJECTED, "Bolus canceled by stop command")
+                val canceledJob = job.copy(lastError = errorCode)
+                onJobError(canceledJob, errorCode)
             }
         }
     }

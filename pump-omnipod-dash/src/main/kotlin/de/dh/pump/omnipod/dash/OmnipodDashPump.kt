@@ -57,6 +57,8 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.Date
@@ -134,6 +136,8 @@ class OmnipodDashPump(
 
     private val _history = MutableStateFlow<InsulinHistory?>(null)
     override val history: StateFlow<InsulinHistory?> = _history.asStateFlow()
+
+    override val bolusDeliveryDurationPerUnit: StateFlow<Duration> = MutableStateFlow(12.seconds)
 
     private val db: OmnipodHistoryDatabase? by lazy {
         context?.let { OmnipodHistoryDatabase.getInstance(it) }

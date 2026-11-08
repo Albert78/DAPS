@@ -18,12 +18,15 @@ import de.dh.daps.common.ui.UiText
 import de.dh.pump.danai.core.connection.DanaILink
 import de.dh.pump.danai.core.model.DanaIBolusSpeed
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import java.time.Instant
 import java.time.ZoneId
 
@@ -117,6 +120,8 @@ class DanaIPumpAdapter(
     override val bolusEvents: SharedFlow<BolusEvent> get() = pump.bolusEvents
 
     override val history: StateFlow<InsulinHistory?> get() = pump.history
+
+    override val bolusDeliveryDurationPerUnit: StateFlow<Duration> = MutableStateFlow(12.seconds)
 
     override suspend fun bolus(amount: InsulinAmount, bolusId: String?) {
         // TODO: Read bolus speed from configuration

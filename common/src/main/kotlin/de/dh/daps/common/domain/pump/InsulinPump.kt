@@ -9,6 +9,8 @@ import de.dh.daps.common.ui.UiText
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Manufacturer and hardware information about a pump.
@@ -146,6 +148,9 @@ data class BolusStatus(
      */
     val progressPercent: Int
         get() = if (targetAmount > InsulinAmount.ZERO) ((deliveredAmount / targetAmount) * 100).coerceIn(0.0, 100.0).toInt() else 0
+
+    val isDelivering: Boolean
+        get() = state == BolusDeliveryState.DELIVERING
 }
 
 /**
@@ -275,6 +280,13 @@ interface InsulinPump {
      */
     val insulinConcentration: StateFlow<InsulinConcentration>
         get() = MutableStateFlow(InsulinConcentration.U100)
+
+    /**
+     * Duration required to deliver one unit of insulin on the hardware (default: 12 seconds per Unit).
+     * Used to calculate expected bolus delivery times and timeouts.
+     */
+    val bolusDeliveryDurationPerUnit: StateFlow<Duration>
+        get() = MutableStateFlow(12.seconds)
 
     /**
      * Initiates a bolus delivery with an optional tracking [bolusId].
