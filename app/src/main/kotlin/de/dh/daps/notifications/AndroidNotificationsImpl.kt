@@ -130,10 +130,9 @@ class AndroidNotificationsImpl(
         }
     }
 
-    fun getBgDeltaString(delta: BgValue?, unit: GlucoseUnit): String? {
+    fun getBgDeltaString(delta: BgDelta?, unit: GlucoseUnit): String? {
         if (delta == null) return null
-        val deltaValue = BgDelta.fromMgDl(delta.mgdl)
-        val valStr = deltaValue.toDiff(unit)
+        val valStr = delta.toDiff(unit)
         val unitStr = when (unit) {
             GlucoseUnit.MG_DL -> context.getString(CommonR.string.glucose_unit_mgdl)
             GlucoseUnit.MMOL -> context.getString(CommonR.string.glucose_unit_mmol)

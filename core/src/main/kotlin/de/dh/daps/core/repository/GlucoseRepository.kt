@@ -1,10 +1,10 @@
 package de.dh.daps.core.repository
 
+import de.dh.daps.common.domain.model.cgm.DataProvider
+import de.dh.daps.common.domain.model.cgm.SensorType
 import de.dh.daps.common.domain.model.data.BgReading
 import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.data.Timestamp
-import de.dh.daps.common.domain.model.cgm.DataProvider
-import de.dh.daps.common.domain.model.cgm.SensorType
 import de.dh.daps.core.repository.db.AppDatabase
 import de.dh.daps.core.repository.db.dao.ProviderDao
 import de.dh.daps.core.repository.db.entities.DataProviderEntity
@@ -42,8 +42,13 @@ class GlucoseRepository(appDatabase: AppDatabase) {
     ) {
         insertDataProviderGlucoseReading(reading, dataProvider, sourceSensor)
 
-        if (_currentBg.value == null || reading.timestamp >= _currentBg.value!!.timestamp) {
-            lastBg = _currentBg.value
+        val current = _currentBg.value
+        if (current == null) {
+            _currentBg.value = reading
+        } else if (reading.timestamp > current.timestamp) {
+            lastBg = current
+            _currentBg.value = reading
+        } else if (reading.timestamp == current.timestamp) {
             _currentBg.value = reading
         }
     }
