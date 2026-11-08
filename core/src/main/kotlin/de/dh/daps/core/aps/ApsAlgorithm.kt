@@ -252,7 +252,7 @@ class NoopAlgorithm: ApsAlgorithm {
 
             override suspend fun distributeInsulinPlan(
                 manualBolus: InsulinAmount,
-                correctionPart: InsulinAmount,
+                bgCorrection: InsulinAmount,
                 mealType: MealType?,
                 imi: Minutes
             ): List<PlannedInsulin> = emptyList()

@@ -355,7 +355,7 @@
     <string name="meal_correction_bolus_calc_result_label">Vorgeschlagener Bolus: %1$s</string>
     <string name="meal_correction_bolus_apply_button">Übernehmen</string>
     <string name="meal_correction_bolus_calc_meal_part">Mahlzeit: %1$s</string>
-    <string name="meal_correction_bolus_calc_correction_part">Korrektur: %1$s</string>
+    <string name="meal_correction_bolus_calc_correction_part">Zielwert-Korrektur: %1$s</string>
     <string name="meal_correction_bolus_calc_iob_part">IOB Abzug: %1$s</string>
     <string name="meal_correction_bolus_calc_cob_part">COB Ausgleich: %1$s</string>
     <string name="meal_correction_bolus_calc_future_carbs_part">Zukünftige KH: %1$s</string>

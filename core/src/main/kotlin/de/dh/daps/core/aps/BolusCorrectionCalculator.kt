@@ -19,7 +19,7 @@ import kotlin.math.round
 
 data class BolusParts(
     val mealPart: InsulinAmount,
-    val correctionPart: InsulinAmount,
+    val bgCorrectionPart: InsulinAmount,
     val iobPart: InsulinAmount,
     val cobPart: InsulinAmount,
     val futureCarbsPart: InsulinAmount,
@@ -29,7 +29,7 @@ data class BolusParts(
     companion object {
         fun empty(): BolusParts = BolusParts(
             mealPart = InsulinAmount.ZERO,
-            correctionPart = InsulinAmount.ZERO,
+            bgCorrectionPart = InsulinAmount.ZERO,
             iobPart = InsulinAmount.ZERO,
             cobPart = InsulinAmount.ZERO,
             futureCarbsPart = InsulinAmount.ZERO,
@@ -89,7 +89,7 @@ interface BolusCorrectionCalculator {
      */
     suspend fun distributeInsulinPlan(
         manualBolus: InsulinAmount,
-        correctionPart: InsulinAmount,
+        bgCorrection: InsulinAmount,
         mealType: MealType?,
         imi: Minutes
     ): List<PlannedInsulin>
@@ -198,7 +198,7 @@ object BolusCalculationMath {
 
         // Calculate correction, COB and future carb parts using meal-time factors
 
-        val correctionPart = convertToInsulinAmountFromBgDelta(BgDelta.fromMgDl(bgDiff), isf)
+        val bgCorrectionPart = convertToInsulinAmountFromBgDelta(BgDelta.fromMgDl(bgDiff), isf)
 
         // Safety first: If we are too low, the COB part might be incorrect, so just ignore it for now.
         val cobPart = if (bgDiff < -15) InsulinAmount.ZERO else convertToInsulinAmountFromCarbs(cob, cr)
@@ -206,7 +206,7 @@ object BolusCalculationMath {
 
         // Sum up all parts: Add requirements (Meal, Correction, COB, Future Carbs),
         // subtract already active/planned resources (IOB, Deferred Boluses).
-        val total = (mealPart + correctionPart - iob + cobPart + futureCarbsPart - deferredBolusAmount).coerceAtLeast(InsulinAmount.ZERO)
+        val total = (mealPart + bgCorrectionPart - iob + cobPart + futureCarbsPart - deferredBolusAmount).coerceAtLeast(InsulinAmount.ZERO)
 
         // Round to 2 decimal places for insulin pump precision
         val roundedTotal = round(total.iu * 100.0) / 100.0
@@ -214,7 +214,7 @@ object BolusCalculationMath {
 
         return BolusParts(
             mealPart = mealPart,
-            correctionPart = correctionPart,
+            bgCorrectionPart = bgCorrectionPart,
             iobPart = iob,
             cobPart = cobPart,
             futureCarbsPart = futureCarbsPart,
@@ -225,7 +225,7 @@ object BolusCalculationMath {
 
     fun distributeInsulinPlan(
         manualBolus: InsulinAmount,
-        correctionPart: InsulinAmount,
+        bgCorrection: InsulinAmount,
         mealType: MealType?,
         imi: Minutes
     ): List<PlannedInsulin> {
@@ -241,7 +241,7 @@ object BolusCalculationMath {
             )
         }
 
-        val roundedAmounts = calculateComponentAmounts(manualBolus.iu, correctionPart.iu, mealType)
+        val roundedAmounts = calculateComponentAmounts(manualBolus.iu, bgCorrection.iu, mealType)
 
         return mealType.components.mapIndexed { index, component ->
             val amount = InsulinAmount(roundedAmounts[index])
@@ -343,12 +343,12 @@ class SimpleBolusCorrectionCalculator(
 
     override suspend fun distributeInsulinPlan(
         manualBolus: InsulinAmount,
-        correctionPart: InsulinAmount,
+        bgCorrection: InsulinAmount,
         mealType: MealType?,
         imi: Minutes
     ) = BolusCalculationMath.distributeInsulinPlan(
         manualBolus = manualBolus,
-        correctionPart = correctionPart,
+        bgCorrection = bgCorrection,
         mealType = mealType,
         imi = imi
     )

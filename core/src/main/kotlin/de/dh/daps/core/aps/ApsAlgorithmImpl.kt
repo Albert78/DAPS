@@ -192,12 +192,12 @@ class ApsAlgorithmImpl(
 
         override suspend fun distributeInsulinPlan(
             manualBolus: InsulinAmount,
-            correctionPart: InsulinAmount,
+            bgCorrection: InsulinAmount,
             mealType: MealType?,
             imi: Minutes
         ) = BolusCalculationMath.distributeInsulinPlan(
             manualBolus,
-            correctionPart,
+            bgCorrection,
             mealType,
             imi
         )

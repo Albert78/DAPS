@@ -368,13 +368,13 @@ class Core(
 
         override suspend fun distributeInsulinPlan(
             manualBolus: InsulinAmount,
-            correctionPart: InsulinAmount,
+            bgCorrection: InsulinAmount,
             mealType: MealType?,
             imi: Minutes
         ): List<PlannedInsulin> = mutex.withLock {
             delegate.distributeInsulinPlan(
                 manualBolus,
-                correctionPart,
+                bgCorrection,
                 mealType,
                 imi
             )

@@ -649,7 +649,7 @@ fun CalculationDetailsDialog(
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = stringResource(R.string.meal_correction_bolus_calc_correction_part, insulinValue(uiState.calculation.correctionPart.iu, signed = true)),
+                        text = stringResource(R.string.meal_correction_bolus_calc_correction_part, insulinValue(uiState.calculation.bgCorrectionPart.iu, signed = true)),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -971,7 +971,7 @@ fun MealCorrectionBolusScreenshotLowPreview() {
                 cr = 10.0,
                 calculation = BolusCalculationDetails(
                     mealPart = InsulinAmount(6.0),
-                    correctionPart = InsulinAmount(-0.6),
+                    bgCorrectionPart = InsulinAmount(-0.6),
                     iobPart = InsulinAmount(0.15),
                     proposedTotal = InsulinAmount(5.25),
                 ),
@@ -1049,7 +1049,7 @@ fun MealCorrectionBolusScreenshotHighPreview() {
                 cr = 10.0,
                 calculation = BolusCalculationDetails(
                     mealPart = InsulinAmount(4.0),
-                    correctionPart = InsulinAmount(0.9),
+                    bgCorrectionPart = InsulinAmount(0.9),
                     iobPart = InsulinAmount.ZERO,
                     proposedTotal = InsulinAmount(4.9),
                 ),
@@ -1124,7 +1124,7 @@ fun MealCorrectionBolusDefaultPreview() {
                 cr = 10.0,
                 calculation = BolusCalculationDetails(
                     mealPart = InsulinAmount(4.5),
-                    correctionPart = InsulinAmount(0.8),
+                    bgCorrectionPart = InsulinAmount(0.8),
                     proposedTotal = InsulinAmount(5.3),
                 ),
                 submissionStatus = SubmissionStatus.NotSubmitted,

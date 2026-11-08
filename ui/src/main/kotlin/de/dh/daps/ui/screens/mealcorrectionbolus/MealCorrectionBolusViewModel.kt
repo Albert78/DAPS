@@ -143,7 +143,7 @@ data class MealInput(
  */
 data class BolusCalculationDetails(
     val mealPart: InsulinAmount = InsulinAmount.ZERO,
-    val correctionPart: InsulinAmount = InsulinAmount.ZERO,
+    val bgCorrectionPart: InsulinAmount = InsulinAmount.ZERO,
     val iobPart: InsulinAmount = InsulinAmount.ZERO,
     val cobPart: InsulinAmount = InsulinAmount.ZERO,
     val futureCarbsPart: InsulinAmount = InsulinAmount.ZERO,
@@ -444,7 +444,7 @@ class MealCorrectionBolusViewModel(
                 it.copy(
                     calculation = BolusCalculationDetails(
                         mealPart = result.mealPart,
-                        correctionPart = result.correctionPart,
+                        bgCorrectionPart = result.bgCorrectionPart,
                         iobPart = result.iobPart,
                         cobPart = result.cobPart,
                         futureCarbsPart = result.futureCarbsPart,
@@ -480,7 +480,7 @@ class MealCorrectionBolusViewModel(
 
         val newPlan = bolusCorrectionCalculator.distributeInsulinPlan(
             manualBolus = state.input.manualBolus,
-            correctionPart = state.calculation.correctionPart,
+            bgCorrection = state.calculation.bgCorrectionPart,
             mealType = state.input.selectedMealType,
             imi = suggestedImi ?: Minutes.ZERO
         )
@@ -544,7 +544,7 @@ class MealCorrectionBolusViewModel(
                             treatmentLock = lock,
                             amount = immediateBolus,
                             meal = mealEntry,
-                            correctionPart = state.calculation.correctionPart
+                            correctionPart = state.calculation.bgCorrectionPart
                         )
                     }
 
