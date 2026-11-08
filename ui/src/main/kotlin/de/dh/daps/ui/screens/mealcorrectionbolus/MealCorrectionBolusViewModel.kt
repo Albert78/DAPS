@@ -554,8 +554,6 @@ class MealCorrectionBolusViewModel(
                     deferredBoluses.forEach {
                         therapyManager.addDeferredBolus(lock, it)
                     }
-
-                    therapyManager.waitForPumpSync(treatmentLock = lock)
                 }
 
                 recommendationManager.recommendations.value.carbs?.let {
