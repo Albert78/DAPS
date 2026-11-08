@@ -1,6 +1,7 @@
 package de.dh.daps.ui.screens.insulinhistory
 
 import android.content.res.Configuration
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -23,6 +25,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
@@ -70,6 +73,7 @@ import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.AbsoluteTimeStepper
 import de.dh.daps.ui.common.composables.AppAlertDialog
+import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.composables.InsulinAmountStepper
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
@@ -100,6 +104,7 @@ fun InsulinHistoryScreen(
         },
         onDeleteInsulin = { viewModel.deleteInsulin(it) },
         onToggleInvalidateInsulin = { viewModel.toggleInvalidated(it) },
+        onSetFilters = { categories, statuses -> viewModel.setFilters(categories, statuses) },
         onNavigateUp = onNavigateUp,
     )
 }
@@ -112,9 +117,11 @@ fun InsulinHistoryContent(
     onUpdateManualInsulin: (InsulinApplication, InsulinAmount, InsulinType, Timestamp, Boolean, Boolean, Boolean) -> Unit,
     onDeleteInsulin: (InsulinApplication) -> Unit,
     onToggleInvalidateInsulin: (InsulinApplication) -> Unit = {},
+    onSetFilters: (Set<InsulinCategoryFilter>, Set<InsulinStatus>) -> Unit = { _, _ -> },
     onNavigateUp: () -> Unit,
 ) {
     var showAddDialog by remember { mutableStateOf(false) }
+    var showFilterDialog by remember { mutableStateOf(false) }
     var editingInsulin by remember { mutableStateOf<InsulinApplication?>(null) }
     var deletingInsulin by remember { mutableStateOf<InsulinApplication?>(null) }
 
@@ -129,6 +136,24 @@ fun InsulinHistoryContent(
                             contentDescription = stringResource(id = CommonR.string.cd_navigate_up)
                         )
                     }
+                },
+                actions = {
+                    IconButton(onClick = { showFilterDialog = true }) {
+                        Box(modifier = Modifier.padding(4.dp)) {
+                            Icon(
+                                imageVector = Icons.Default.FilterAlt,
+                                contentDescription = stringResource(id = R.string.cd_filter)
+                            )
+                            if (uiState.isFilterActive) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .background(AppColorBlue, CircleShape)
+                                        .align(Alignment.TopEnd)
+                                )
+                            }
+                        }
+                    }
                 }
             )
         },
@@ -141,6 +166,18 @@ fun InsulinHistoryContent(
             }
         }
     ) { innerPadding ->
+        if (showFilterDialog) {
+            FilterDialog(
+                selectedCategories = uiState.selectedCategories,
+                selectedStatuses = uiState.selectedStatuses,
+                onDismiss = { showFilterDialog = false },
+                onApplyFilters = { categories, statuses ->
+                    onSetFilters(categories, statuses)
+                    showFilterDialog = false
+                }
+            )
+        }
+
         if (showAddDialog) {
             AddManualInsulinDialog(
                 availableInsulinTypes = uiState.insulinTypes,
@@ -221,6 +258,13 @@ fun InsulinHistoryContent(
                         .toLocalDate()
                 }
             }
+            val totalGroupedEntries = remember(uiState.allInsulinEntries) {
+                uiState.allInsulinEntries.groupBy {
+                    Instant.ofEpochMilli(it.timestamp.ms)
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate()
+                }
+            }
 
             LazyColumn(
                 state = listState,
@@ -234,8 +278,14 @@ fun InsulinHistoryContent(
                     )
             ) {
                 groupedEntries.forEach { (date, entries) ->
+                    val totalCount = totalGroupedEntries[date]?.size ?: entries.size
                     stickyHeader {
-                        DateHeader(date)
+                        DateHeader(
+                            date = date,
+                            displayedCount = entries.size,
+                            totalCount = totalCount,
+                            isFilterActive = uiState.isFilterActive
+                        )
                     }
                     items(entries) { entry ->
                         val isEditable = remember(entry.timestamp, entry.origin, uiState.editThresholdHours) {
@@ -258,21 +308,168 @@ fun InsulinHistoryContent(
 }
 
 @Composable
-fun DateHeader(date: LocalDate) {
+fun DateHeader(
+    date: LocalDate,
+    displayedCount: Int = 0,
+    totalCount: Int = 0,
+    isFilterActive: Boolean = false
+) {
     val formatter = remember { DateTimeFormatter.ofPattern("EEEE, dd. MMMM yyyy", Locale.getDefault()) }
     val dateString = remember(date) { date.format(formatter) }
+
+    val titleText = if (isFilterActive) {
+        "$dateString " + stringResource(id = R.string.insulin_history_filter_header_count, displayedCount, totalCount)
+    } else {
+        dateString
+    }
 
     Surface(
         color = MaterialTheme.colorScheme.surfaceVariant,
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            text = dateString,
+            text = titleText,
             style = MaterialTheme.typography.titleSmall,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
+}
+
+@Composable
+fun FilterDialog(
+    selectedCategories: Set<InsulinCategoryFilter>,
+    selectedStatuses: Set<InsulinStatus>,
+    onDismiss: () -> Unit,
+    onApplyFilters: (Set<InsulinCategoryFilter>, Set<InsulinStatus>) -> Unit
+) {
+    var tempCategories by remember { mutableStateOf(selectedCategories) }
+    var tempStatuses by remember { mutableStateOf(selectedStatuses) }
+
+    AppAlertDialog(
+        onDismissRequest = onDismiss,
+        titleText = stringResource(id = R.string.insulin_history_filter_title),
+        content = {
+            val scrollState = rememberScrollState()
+            Column(
+                modifier = Modifier
+                    .contentScrollIndicator(scrollState)
+                    .verticalScroll(scrollState)
+            ) {
+                Text(
+                    text = stringResource(id = R.string.insulin_history_filter_category_section),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(Modifier.height(8.dp))
+
+                InsulinCategoryFilter.entries.forEach { category ->
+                    val label = when (category) {
+                        InsulinCategoryFilter.BASAL -> stringResource(id = R.string.insulin_category_basal)
+                        InsulinCategoryFilter.CORRECTION -> stringResource(id = R.string.insulin_category_correction)
+                        InsulinCategoryFilter.MEAL -> stringResource(id = R.string.insulin_category_meal)
+                    }
+                    val isChecked = tempCategories.contains(category)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                tempCategories = if (isChecked) {
+                                    tempCategories - category
+                                } else {
+                                    tempCategories + category
+                                }
+                            }
+                    ) {
+                        Checkbox(
+                            checked = isChecked,
+                            onCheckedChange = { checked ->
+                                tempCategories = if (checked) {
+                                    tempCategories + category
+                                } else {
+                                    tempCategories - category
+                                }
+                            }
+                        )
+                        Text(text = label)
+                    }
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                Text(
+                    text = stringResource(id = R.string.insulin_history_filter_status_section),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(Modifier.height(8.dp))
+
+                InsulinStatus.entries.forEach { status ->
+                    val label = when (status) {
+                        InsulinStatus.Confirmed -> stringResource(id = R.string.insulin_status_confirmed)
+                        InsulinStatus.Scheduled -> stringResource(id = R.string.insulin_status_scheduled)
+                        InsulinStatus.Cancelled -> stringResource(id = R.string.insulin_status_cancelled)
+                        InsulinStatus.Invalidated -> stringResource(id = R.string.insulin_status_invalidated)
+                    }
+                    val isChecked = tempStatuses.contains(status)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                tempStatuses = if (isChecked) {
+                                    tempStatuses - status
+                                } else {
+                                    tempStatuses + status
+                                }
+                            }
+                    ) {
+                        Checkbox(
+                            checked = isChecked,
+                            onCheckedChange = { checked ->
+                                tempStatuses = if (checked) {
+                                    tempStatuses + status
+                                } else {
+                                    tempStatuses - status
+                                }
+                            }
+                        )
+                        Text(text = label)
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Column(
+                horizontalAlignment = Alignment.End,
+            ) {
+                NormalTextButton(
+                    onClick = {
+                        tempCategories = emptySet()
+                        tempStatuses = emptySet()
+                    }
+                ) {
+                    Text(text = stringResource(id = R.string.insulin_history_filter_action_reset))
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    NormalTextButton(onClick = onDismiss) {
+                        Text(text = stringResource(id = CommonR.string.cd_cancel))
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    PrimaryButton(
+                        onClick = {
+                            onApplyFilters(tempCategories, tempStatuses)
+                        }
+                    ) {
+                        Text(text = stringResource(id = R.string.insulin_history_filter_action_apply))
+                    }
+                }
+            }
+        },
+        dismissButton = null
+    )
 }
 
 @Composable
@@ -678,6 +875,19 @@ private fun AddManualInsulinDialogPreview() {
             defaultInsulinType = sampleInsulinType,
             onDismiss = {},
             onConfirm = { _, _, _, _, _, _ -> }
+        )
+    }
+}
+
+@Preview(showSystemUi = true, name = "Filter Dialog")
+@Composable
+private fun FilterDialogPreview() {
+    AppPreview {
+        FilterDialog(
+            selectedCategories = setOf(InsulinCategoryFilter.BASAL),
+            selectedStatuses = setOf(InsulinStatus.Confirmed, InsulinStatus.Scheduled),
+            onDismiss = {},
+            onApplyFilters = { _, _ -> }
         )
     }
 }

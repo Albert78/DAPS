@@ -18,12 +18,23 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+enum class InsulinCategoryFilter {
+    BASAL, CORRECTION, MEAL
+}
+
 data class InsulinHistoryUiState(
     val insulinEntries: List<InsulinApplication> = emptyList(),
+    val allInsulinEntries: List<InsulinApplication> = emptyList(),
     val insulinTypes: List<InsulinType> = emptyList(),
     val defaultInsulinType: InsulinType? = null,
-    val editThresholdHours: Int = MEAL_EDIT_THRESHOLD_HOURS
-)
+    val editThresholdHours: Int = MEAL_EDIT_THRESHOLD_HOURS,
+    val selectedCategories: Set<InsulinCategoryFilter> = emptySet(),
+    val selectedStatuses: Set<InsulinStatus> = emptySet()
+) {
+    val isFilterActive: Boolean
+        get() = (selectedCategories.isNotEmpty() && selectedCategories.size < 3) ||
+                (selectedStatuses.isNotEmpty() && selectedStatuses.size < InsulinStatus.entries.size)
+}
 
 class InsulinHistoryViewModel(
     private val registry: SystemRegistry
@@ -34,6 +45,8 @@ class InsulinHistoryViewModel(
 
     private val _insulinTypes = MutableStateFlow<List<InsulinType>>(emptyList())
     private val _defaultInsulinType = MutableStateFlow<InsulinType?>(null)
+    private val _selectedCategories = MutableStateFlow<Set<InsulinCategoryFilter>>(emptySet())
+    private val _selectedStatuses = MutableStateFlow<Set<InsulinStatus>>(emptySet())
 
     init {
         viewModelScope.launch {
@@ -45,13 +58,35 @@ class InsulinHistoryViewModel(
     val uiState: StateFlow<InsulinHistoryUiState> = combine(
         treatmentRepository.observeInsulinApplications(includeCancelled = true),
         _insulinTypes,
-        _defaultInsulinType
-    ) { entries, types, defaultType ->
+        _defaultInsulinType,
+        _selectedCategories,
+        _selectedStatuses
+    ) { entries, types, defaultType, categories, statuses ->
+        val sortedEntries = entries.sortedByDescending { it.timestamp }
+        val filteredEntries = sortedEntries.filter { application ->
+            val matchesCategory = if (categories.isEmpty() || categories.size == 3) {
+                true
+            } else {
+                (categories.contains(InsulinCategoryFilter.BASAL) && application.basal) ||
+                (categories.contains(InsulinCategoryFilter.CORRECTION) && application.correction) ||
+                (categories.contains(InsulinCategoryFilter.MEAL) && application.meal)
+            }
+            val matchesStatus = if (statuses.isEmpty() || statuses.size == InsulinStatus.entries.size) {
+                true
+            } else {
+                application.status in statuses
+            }
+            matchesCategory && matchesStatus
+        }
+
         InsulinHistoryUiState(
-            insulinEntries = entries.sortedByDescending { it.timestamp },
+            insulinEntries = filteredEntries,
+            allInsulinEntries = sortedEntries,
             insulinTypes = types,
             defaultInsulinType = defaultType,
-            editThresholdHours = MEAL_EDIT_THRESHOLD_HOURS
+            editThresholdHours = MEAL_EDIT_THRESHOLD_HOURS,
+            selectedCategories = categories,
+            selectedStatuses = statuses
         )
     }
         .stateIn(
@@ -59,6 +94,16 @@ class InsulinHistoryViewModel(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = InsulinHistoryUiState()
         )
+
+    fun setFilters(categories: Set<InsulinCategoryFilter>, statuses: Set<InsulinStatus>) {
+        _selectedCategories.value = categories
+        _selectedStatuses.value = statuses
+    }
+
+    fun clearFilters() {
+        _selectedCategories.value = emptySet()
+        _selectedStatuses.value = emptySet()
+    }
 
     companion object {
         class Factory(private val registry: SystemRegistry) : ViewModelProvider.Factory {

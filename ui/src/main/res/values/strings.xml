@@ -490,6 +490,14 @@
     <string name="insulin_category_correction">Korrektur</string>
     <string name="insulin_category_basal">Basal</string>
     <string name="insulin_category_meal">Mahlzeit</string>
+    <string name="insulin_status_confirmed">Bestätigt</string>
+    <string name="insulin_history_filter_title">Filter</string>
+    <string name="insulin_history_filter_category_section">Kategorie</string>
+    <string name="insulin_history_filter_status_section">Status</string>
+    <string name="insulin_history_filter_action_reset">Zurücksetzen</string>
+    <string name="insulin_history_filter_action_apply">Anwenden</string>
+    <string name="insulin_history_filter_header_count">(%1$d/%2$d Einträge angezeigt)</string>
+    <string name="cd_filter">Filter</string>
     <string name="insulin_origin_pump">Pumpe</string>
     <string name="insulin_origin_manual">Manuell</string>
 
