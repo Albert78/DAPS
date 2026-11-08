@@ -3,12 +3,12 @@ package de.dh.daps.core.therapy
 import android.content.Intent
 import android.util.Log
 import de.dh.daps.common.ID_UNDEFINED
+import de.dh.daps.common.domain.model.data.BgBlock
 import de.dh.daps.common.domain.model.data.BgDelta
 import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.data.Timestamp
-import de.dh.daps.common.domain.pump.BolusDeliveryState
-import de.dh.daps.common.domain.pump.BolusStatus
-import de.dh.daps.common.domain.model.data.BgBlock
+import de.dh.daps.common.domain.model.data.getAmountForMinute
+import de.dh.daps.common.domain.model.data.getBgForMinute
 import de.dh.daps.common.domain.model.therapy.CurrentTherapySettings
 import de.dh.daps.common.domain.model.therapy.DeferredBolus
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
@@ -18,8 +18,8 @@ import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.common.domain.model.therapy.MealEntry
 import de.dh.daps.common.domain.model.therapy.ScheduledTherapyAdjustment
 import de.dh.daps.common.domain.model.therapy.TherapyAdjustment
-import de.dh.daps.common.domain.model.data.getAmountForMinute
-import de.dh.daps.common.domain.model.data.getBgForMinute
+import de.dh.daps.common.domain.pump.BolusDeliveryState
+import de.dh.daps.common.domain.pump.BolusStatus
 import de.dh.daps.common.infrastructure.SystemWakeService
 import de.dh.daps.common.infrastructure.WakeupHandler
 import de.dh.daps.core.aps.DeferredBolusUpdate
@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlin.math.round
 
 /**
  * Represents an active lock on therapy-related operations.
@@ -617,10 +618,21 @@ class TherapyManager(
             return
         }
 
+        val minBolusAmount = getPumpCapabilities()?.minBolusAmount
+        if (minBolusAmount != null && amount < minBolusAmount) {
+            Log.i(TAG, "Skipping bolus which is too low for pump (amount=$amount, minBolusAmount=$minBolusAmount)")
+            return
+        }
+        val minBolusIncrement = getPumpCapabilities()?.minBolusIncrement
+        val roundedAmount = if (minBolusIncrement == null) amount else (minBolusIncrement * round(amount.iu / minBolusIncrement.iu))
+        if (roundedAmount != amount) {
+            Log.i(TAG, "Rounded bolus amount to nearest pump increment (requested=$amount, minBolusIncrement=$minBolusIncrement, roundedAmount=$roundedAmount)")
+        }
+
         // Record insulin administration in meals
         val isMealBolus = meal != null || (handledDeferredBoluses?.any { it.mealId != null } == true)
         if (meal != null && meal.id != ID_UNDEFINED) {
-            val mealInsulin = (amount - correctionPart - basalPart).coerceAtLeast(InsulinAmount.ZERO)
+            val mealInsulin = (roundedAmount - correctionPart - basalPart).coerceAtLeast(InsulinAmount.ZERO)
             if (mealInsulin > InsulinAmount.ZERO) {
                 treatmentRepository.addAdministeredInsulinToMeal(meal.id, mealInsulin)
             }
@@ -638,7 +650,7 @@ class TherapyManager(
         // Preserve delivery metadata until history sync
         val scheduledEntry = treatmentRepository.addScheduledPumpInsulinEntry(
             timestamp = Timestamp.now(),
-            amount = amount,
+            amount = roundedAmount,
             insulinType = getPumpInsulinType(),
             basal = basalPart > InsulinAmount.ZERO,
             correction = correctionPart > InsulinAmount.ZERO,
@@ -646,12 +658,7 @@ class TherapyManager(
         )
         val bolusId = if (scheduledEntry.id != 0L) scheduledEntry.id.toString() else null
 
-        val minBolusIncrement = getPumpCapabilities()?.minBolusAmount
-        if (minBolusIncrement != null && amount < minBolusIncrement) {
-            Log.i(TAG, "Skipping bolus which is too low for pump (amount=$amount, minBolusIncrement=$minBolusIncrement)")
-            return
-        }
-        pumpManager.deliverBolus(amount, bolusId, expiresAt = expiresAt)
+        pumpManager.deliverBolus(roundedAmount, bolusId, expiresAt = expiresAt)
     }
 
     /**
