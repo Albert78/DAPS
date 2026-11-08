@@ -750,6 +750,20 @@ class TherapyManager(
     }
 
     /**
+     * Waits for pending pump jobs to complete if there are any.
+     * Unlike [waitForPumpSync], this does not trigger a full status/history sync
+     * if there are no pending jobs in the queue.
+     * @return Number of pending jobs.
+     */
+    suspend fun waitForPendingPumpJobs(treatmentLock: TreatmentLock): Int {
+        checkLock(treatmentLock)
+        if (pumpManager.hasPendingJobs()) {
+            pumpManager.waitForJobsOrError()
+        }
+        return pumpManager.getPendingJobsCount()
+    }
+
+    /**
      * Tries to acquire a lock for a specific execution block.
      * The lock must be acquired, if either
      * - the following process needs consistent data for the ongoing process (e.g. MealCorrectionBolus screen,

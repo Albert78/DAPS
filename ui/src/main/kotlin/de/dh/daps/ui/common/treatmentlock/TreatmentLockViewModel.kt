@@ -50,19 +50,19 @@ class TreatmentLockViewModel(
                 val result = therapyManager.tryAcquire(tag) { treatmentLock ->
                     if (requirePumpSync) {
                         _uiState.update { it.copy(status = LockStatus.Syncing, busyOwner = null) }
-                        val pendingJobs = therapyManager.waitForPumpSync(treatmentLock)
+                        val pendingJobs = therapyManager.waitForPendingPumpJobs(treatmentLock)
                         if (pendingJobs > 0) {
                             _uiState.update { it.copy(status = LockStatus.PumpSyncPending) }
                             return@tryAcquire
                         }
                     }
 
-                    _uiState.update { 
+                    _uiState.update {
                         it.copy(
                             status = LockStatus.Acquired,
                             acquiredLock = treatmentLock,
                             busyOwner = null
-                        ) 
+                        )
                     }
                     try {
                         awaitCancellation()
