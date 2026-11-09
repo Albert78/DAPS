@@ -5,6 +5,7 @@ import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
+import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.common.domain.model.therapy.MealType
 import de.dh.daps.common.domain.model.therapy.PlannedInsulin
 import de.dh.daps.common.domain.model.therapy.convertToCarbsFromBgDelta
@@ -95,6 +96,7 @@ interface BolusCorrectionCalculator {
      */
     suspend fun distributeInsulinPlan(
         manualBolus: InsulinAmount,
+        insulinType: InsulinType,
         netCorrection: InsulinAmount,
         mealType: MealType?,
         imi: Minutes
@@ -230,6 +232,7 @@ object BolusCalculationMath {
 
     fun distributeInsulinPlan(
         manualBolus: InsulinAmount,
+        insulinType: InsulinType,
         netCorrection: InsulinAmount,
         mealType: MealType?,
         imi: Minutes
@@ -348,11 +351,13 @@ class SimpleBolusCorrectionCalculator(
 
     override suspend fun distributeInsulinPlan(
         manualBolus: InsulinAmount,
+        insulinType: InsulinType,
         netCorrection: InsulinAmount,
         mealType: MealType?,
         imi: Minutes
     ) = BolusCalculationMath.distributeInsulinPlan(
         manualBolus = manualBolus,
+        insulinType = insulinType,
         netCorrection = netCorrection,
         mealType = mealType,
         imi = imi

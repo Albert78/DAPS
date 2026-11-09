@@ -10,6 +10,7 @@ import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.engine.Timeline
 import de.dh.daps.common.domain.model.therapy.DeferredBolus
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
+import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.common.domain.model.therapy.MealType
 import de.dh.daps.common.domain.model.therapy.PlannedInsulin
 import de.dh.daps.core.repository.GlucoseRepository
@@ -368,12 +369,14 @@ class Core(
 
         override suspend fun distributeInsulinPlan(
             manualBolus: InsulinAmount,
+            insulinType: InsulinType,
             netCorrection: InsulinAmount,
             mealType: MealType?,
             imi: Minutes
         ): List<PlannedInsulin> = mutex.withLock {
             delegate.distributeInsulinPlan(
                 manualBolus,
+                insulinType,
                 netCorrection,
                 mealType,
                 imi

@@ -481,8 +481,10 @@ class MealCorrectionBolusViewModel(
             lowThreshold = bgSettings.second
         )
 
+        val pumpInsulinType = therapyManager.getPumpInsulinType()
         val newPlan = bolusCorrectionCalculator.distributeInsulinPlan(
             manualBolus = state.input.manualBolus,
+            insulinType = pumpInsulinType,
             netCorrection = state.calculation.netCorrectionPart,
             mealType = state.input.selectedMealType,
             imi = suggestedImi ?: Minutes.ZERO

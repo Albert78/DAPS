@@ -7,6 +7,7 @@ import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.therapy.DeferredBolus
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
+import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.common.domain.model.therapy.MealType
 import de.dh.daps.common.domain.model.therapy.PlannedInsulin
 
@@ -252,6 +253,7 @@ class NoopAlgorithm: ApsAlgorithm {
 
             override suspend fun distributeInsulinPlan(
                 manualBolus: InsulinAmount,
+                insulinType: InsulinType,
                 netCorrection: InsulinAmount,
                 mealType: MealType?,
                 imi: Minutes

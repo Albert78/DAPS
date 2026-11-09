@@ -14,6 +14,7 @@ import de.dh.daps.common.domain.model.therapy.DeferredBolus
 import de.dh.daps.common.domain.model.therapy.FAST_KE_DEFAULT_PEAK
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.common.domain.model.therapy.InsulinDose
+import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.common.domain.model.therapy.MealType
 import de.dh.daps.common.domain.model.therapy.convertToBgDeltaFromUnits
 import de.dh.daps.common.domain.model.therapy.convertToCarbsFromBgDelta
@@ -192,11 +193,13 @@ class ApsAlgorithmImpl(
 
         override suspend fun distributeInsulinPlan(
             manualBolus: InsulinAmount,
+            insulinType: InsulinType,
             netCorrection: InsulinAmount,
             mealType: MealType?,
             imi: Minutes
         ) = BolusCalculationMath.distributeInsulinPlan(
             manualBolus,
+            insulinType,
             netCorrection,
             mealType,
             imi
