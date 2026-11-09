@@ -681,7 +681,7 @@
     <string name="core_insight_label_bg">BZ</string>
     <string name="core_insight_label_iob">Zuk. IOB</string>
     <string name="core_insight_label_cob">Zuk. KH</string>
-    <string name="core_insight_label_pred_peak">Vorherges. Peak</string>
+    <string name="core_insight_label_pred_peak">Vorhersage</string>
     <string name="core_insight_label_dev">Abweich.</string>
     <string name="core_insight_label_target">Ziel</string>
     <string name="core_insight_label_isf">ISF</string>

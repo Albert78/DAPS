@@ -19,7 +19,7 @@ data class CoreInsightEntity(
     val deviationPerTick: BgDelta,
     val futureActiveInsulin: InsulinAmount,
     val futureActiveCarbs: Double,
-    val predictedBgAtPeak: BgValue,
+    val predictedBgAtCorrection: BgValue,
     val targetBg: BgValue,
     val isf: BgDelta,
     val cr: Double,
