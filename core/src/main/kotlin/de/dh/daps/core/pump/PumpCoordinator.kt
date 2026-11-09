@@ -466,7 +466,7 @@ class PumpCoordinator private constructor(
                 action()
                 _lastConnectionTime.value = Timestamp.now()
                 return true
-            } catch (e: PumpConnectionException) {
+            } catch (_: PumpConnectionException) {
                 if (connectionRetryCount < MAX_CONNECTION_RETRIES) {
                     connectionRetryCount++
                     _syncStatus.value = PumpSyncStatus.Retrying(
@@ -481,7 +481,7 @@ class PumpCoordinator private constructor(
                 }
             } catch (e: PumpCommandException) {
                 when (e.status) {
-                    PumpStatus.BUSY -> {
+                    PumpStatus.BUSY, PumpStatus.REJECTED -> {
                         if (busyRetryCount < BUSY_RETRY_DELAYS_MS.size) {
                             val delayMs = BUSY_RETRY_DELAYS_MS[busyRetryCount]
                             busyRetryCount++
