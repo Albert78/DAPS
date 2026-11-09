@@ -224,7 +224,7 @@ class ApsAlgorithmImpl(
 
         if (numTicks <= 0) return BgDelta.ZERO
 
-        val deviations = mutableListOf<Double>()
+        val deviations = ArrayList<Double>(numTicks)
 
         // 1. Calculate per-tick deviation: d_t = (BG_t - BG_{t-1}) - BGI_t
         predictionModel.forEach(from = startTick + 1, to = endTick) { tick, state ->
@@ -261,7 +261,7 @@ class ApsAlgorithmImpl(
         var weightedSum = 0.0
         var totalWeight = 0.0
         var weight = 1.0
-        val decayFactor = 0.75 // Older ticks lose weight exponentially per step
+        val decayFactor = 0.8 // Older ticks lose weight exponentially per step
 
         // Iterate from most recent (end of list) to oldest ticks
         for (i in deviations.indices.reversed()) {
@@ -603,7 +603,13 @@ class ApsAlgorithmImpl(
 
             val insulinEquivalentOfCarbsAtPeak = convertToInsulinAmountFromCarbs(carbs = futureActiveCarbsAtPeak, cr = crAtPeak)
 
-            val bgErrorCorrectionUnits = (convertToInsulinAmountFromBgDelta(bgErrorAtPeak, isfAtPeak) * AGGRESSIVENESS_ERROR_CORRECTION)
+            // If we're above the threshold, don't correct too much
+            val bgCorrectError = if (bgErrorAtPeak > HIGH_CORRECTION_TARGET_SAFETY_THRESHOLD)
+                bgErrorAtPeak - HIGH_CORRECTION_TARGET_SAFETY_THRESHOLD
+            else
+                bgErrorAtPeak
+
+            val bgErrorCorrectionUnits = (convertToInsulinAmountFromBgDelta(bgCorrectError, isfAtPeak) * AGGRESSIVENESS_ERROR_CORRECTION)
                 .coerceAtLeast(InsulinAmount.ZERO)
 
             val pumpCapabilities = therapyManager.getPumpCapabilities()
@@ -719,12 +725,10 @@ class ApsAlgorithmImpl(
     companion object {
         val TAG = ApsAlgorithmImpl::class.simpleName!!
 
-        const val PREDICTION_WINDOW_HOURS = 10
+        const val PREDICTION_WINDOW_HOURS = 6
         val DEVIATION_TIME_BASE = Minutes(30)
         val BG_HISTORY_TIME = DEVIATION_TIME_BASE + Minutes(30)
         val PRESERVE_PREDICTIONS_PAST_TIME = DEVIATION_TIME_BASE
-
-        const val DEVIATION_DECAY_FACTOR_PER_TICK = 0.9
 
         suspend fun create(
             treatmentRepository: TreatmentRepository,

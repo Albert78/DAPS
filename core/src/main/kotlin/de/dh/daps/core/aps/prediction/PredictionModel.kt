@@ -12,7 +12,7 @@ import de.dh.daps.common.domain.model.therapy.InsulinDose
 import de.dh.daps.common.domain.model.therapy.MealEntry
 import de.dh.daps.common.domain.model.therapy.convertToBgDeltaFromUnits
 import de.dh.daps.common.domain.model.therapy.convertToInsulinAmountFromCarbs
-import de.dh.daps.core.aps.ApsAlgorithmImpl.Companion.DEVIATION_DECAY_FACTOR_PER_TICK
+import de.dh.daps.core.aps.DEVIATION_DECAY_FACTOR_PER_TICK
 import de.dh.daps.core.therapy.TherapyManager
 
 /**
