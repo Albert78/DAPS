@@ -409,7 +409,7 @@ fun MealCorrectionBolusContextInfo(
                 ) {
                     if (uiState.projections.isProjected) {
                         Text(
-                            text = stringResource(CommonR.string.approx_prefix),
+                            text = stringResource(CommonR.string.projection_prefix),
                             style = MaterialTheme.typography.bodySmall,
                             color = Color.Gray,
                             modifier = Modifier.align(Alignment.CenterVertically)

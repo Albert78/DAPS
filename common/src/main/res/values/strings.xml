@@ -29,7 +29,7 @@
     <string name="duration_hours_and_minutes_format">%1$d Std. %2$d Min.</string>
     <string name="within_time_just_now">sofort</string>
 
-    <string name="approx_prefix">ca.</string>
+    <string name="projection_prefix">vsl.</string>
     <string name="unknown_label">Unbekannt</string>
     <string name="bg_delta_format">Delta: %1$s %2$s</string>
     <string name="bg_raw_format">(raw: %1$s)</string>
