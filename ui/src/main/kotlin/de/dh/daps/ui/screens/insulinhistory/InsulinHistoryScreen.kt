@@ -3,6 +3,7 @@ package de.dh.daps.ui.screens.insulinhistory
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -78,6 +79,7 @@ import de.dh.daps.ui.common.composables.InsulinAmountStepper
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
+import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppPreview
 import java.time.Instant
@@ -265,6 +267,13 @@ fun InsulinHistoryContent(
                         .toLocalDate()
                 }
             }
+            val dailyTddMap = remember(totalGroupedEntries) {
+                totalGroupedEntries.mapValues { (_, entries) ->
+                    entries
+                        .filter { it.status == InsulinStatus.Confirmed }
+                        .sumOf { it.amount.iu }
+                }
+            }
 
             LazyColumn(
                 state = listState,
@@ -279,12 +288,14 @@ fun InsulinHistoryContent(
             ) {
                 groupedEntries.forEach { (date, entries) ->
                     val totalCount = totalGroupedEntries[date]?.size ?: entries.size
+                    val tdd = dailyTddMap[date]
                     stickyHeader {
                         DateHeader(
                             date = date,
                             displayedCount = entries.size,
                             totalCount = totalCount,
-                            isFilterActive = uiState.isFilterActive
+                            isFilterActive = uiState.isFilterActive,
+                            tdd = tdd
                         )
                     }
                     items(entries) { entry ->
@@ -312,7 +323,8 @@ fun DateHeader(
     date: LocalDate,
     displayedCount: Int = 0,
     totalCount: Int = 0,
-    isFilterActive: Boolean = false
+    isFilterActive: Boolean = false,
+    tdd: Double? = null
 ) {
     val formatter = remember { DateTimeFormatter.ofPattern("EEEE, dd. MMMM yyyy", Locale.getDefault()) }
     val dateString = remember(date) { date.format(formatter) }
@@ -323,16 +335,33 @@ fun DateHeader(
         dateString
     }
 
+    val formattedTdd = insulinValue(tdd)
+
     Surface(
         color = MaterialTheme.colorScheme.surfaceVariant,
         modifier = Modifier.fillMaxWidth()
     ) {
-        Text(
-            text = titleText,
-            style = MaterialTheme.typography.titleSmall,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = titleText,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f, fill = false)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = stringResource(id = R.string.insulin_history_tdd_label, formattedTdd),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
 
