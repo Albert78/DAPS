@@ -27,9 +27,7 @@ import de.dh.daps.core.aps.prediction.SampledBgReadings
 import de.dh.daps.core.repository.GlucoseRepository
 import de.dh.daps.core.repository.TreatmentRepository
 import de.dh.daps.core.therapy.TherapyManager
-import kotlin.math.abs
 import kotlin.math.ceil
-import kotlin.math.sqrt
 
 class ApsAlgorithmImpl(
     private val timeline: Timeline,
@@ -214,9 +212,10 @@ class ApsAlgorithmImpl(
      * Deviations typically occur due to unannounced meals or variations in insulin/carb sensitivity
      * compared to the prediction model.
      *
-     * A non-zero deviation is returned ONLY if it is observed consistently across (almost) all ticks
-     * of the historical window. If the readings fluctuate or contain noise, [BgDelta.ZERO] is returned
-     * to avoid applying false corrections to future predictions.
+     * A directional trend consistency check is performed to verify that the deviation has a clear
+     * orientation (e.g. accelerating/rising glucose after unannounced meals or dropping glucose).
+     * If directional consensus is met, an Exponential Moving Average (EMA) is computed to weight
+     * recent ticks more heavily. Unordered fluctuations/noise are filtered out and result in [BgDelta.ZERO].
      */
     private suspend fun calcAvgDeviationPerTick(pastTime: Minutes): BgDelta {
         val endTick = timeline.getNowTick()
@@ -240,51 +239,39 @@ class ApsAlgorithmImpl(
             }
         }
 
-        // Require at least 80% of the ticks in the window to be valid
         val validCount = deviations.size
         val minRequiredTicks = (numTicks * 0.8).toInt().coerceAtLeast(1)
-        if (validCount < minRequiredTicks) {
+        if (validCount < minRequiredTicks) return BgDelta.ZERO
+
+        // 2. Check trend consistency (sign ratio check instead of rigid standard deviation)
+        val significantThreshold = 0.5 // Deviations below 0.5 mg/dL/tick are considered negligible
+        val positiveCount = deviations.count { it > significantThreshold }
+        val negativeCount = deviations.count { it < -significantThreshold }
+
+        val minTrendRatio = 0.75 // At least 75% of ticks must point in the same direction
+        val isConsistentRise = (positiveCount.toDouble() / validCount) >= minTrendRatio
+        val isConsistentDrop = (negativeCount.toDouble() / validCount) >= minTrendRatio
+
+        if (!isConsistentRise && !isConsistentDrop) {
+            // No clear direction -> unordered noise
             return BgDelta.ZERO
         }
 
-        // 2. Compute median deviation as a robust candidate for the systematic trend
-        deviations.sort()
-        val medianDeviation = if (validCount % 2 == 1) {
-            deviations[validCount / 2]
-        } else {
-            (deviations[validCount / 2 - 1] + deviations[validCount / 2]) / 2.0
+        // 3. Exponential Moving Average (EMA): Weight more recent ticks heavier
+        var weightedSum = 0.0
+        var totalWeight = 0.0
+        var weight = 1.0
+        val decayFactor = 0.75 // Older ticks lose weight exponentially per step
+
+        // Iterate from most recent (end of list) to oldest ticks
+        for (i in deviations.indices.reversed()) {
+            weightedSum += deviations[i] * weight
+            totalWeight += weight
+            weight *= decayFactor
         }
 
-        // 3. Consistency check: Verify that the deviation is uniform across ticks
-        val maxAllowedDevFromMedian = 1.5 // Max allowed per-tick deviation from median (in mg/dL per tick)
-        val maxAllowedStdDev = 1.2        // Max allowed standard deviation across ticks (in mg/dL per tick)
-        val minConsistentRatio = 0.85     // Minimum ratio of ticks that must fall within the tolerance band
-
-        // A) Check standard deviation (overall dispersion)
-        val mean = deviations.average()
-        val variance = deviations.sumOf { (it - mean) * (it - mean) } / validCount
-        val stdDev = sqrt(variance)
-
-        if (stdDev > maxAllowedStdDev) {
-            // High variance/noise detected across ticks
-            return BgDelta.ZERO
-        }
-
-        // B) Check inlier count within tolerance band around median
-        var consistentTicksCount = 0
-        for (dev in deviations) {
-            if (abs(dev - medianDeviation) <= maxAllowedDevFromMedian) {
-                consistentTicksCount++
-            }
-        }
-
-        val requiredConsistentTicks = ceil(validCount * minConsistentRatio).toInt()
-        if (consistentTicksCount < requiredConsistentTicks) {
-            // Ticks are not sufficiently consistent
-            return BgDelta.ZERO
-        }
-
-        return BgDelta.fromMgDl(medianDeviation)
+        val avgDeviation = weightedSum / totalWeight
+        return BgDelta.fromMgDl(avgDeviation)
     }
 
     /**
