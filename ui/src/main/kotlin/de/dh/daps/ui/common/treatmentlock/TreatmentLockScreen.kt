@@ -65,7 +65,10 @@ fun TreatmentLockScreenContent(
             TreatmentLockHeader(title = title, onNavigateUp = onNavigateUp)
             val message = when (uiState.status) {
                 LockStatus.Syncing -> stringResource(R.string.treatment_lock_syncing)
-                else -> stringResource(R.string.treatment_lock_busy_system, uiState.busyOwner ?: "System")
+                else -> stringResource(
+                    R.string.treatment_lock_busy_system,
+                    uiState.busyOwner ?: stringResource(R.string.treatment_lock_busy_owner_system)
+                )
             }
             LoadingScreen(message = message)
         }
