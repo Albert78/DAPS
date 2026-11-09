@@ -367,10 +367,13 @@ class ApsAlgorithmImpl(
                 filtered
             }
 
-            // Fill the "past" part of our tick states with real BG values from out input.
+            // Fill the "past" part of our tick states with real BG values from our input.
             // This is necessary at cold start and for each state when the algorithm didn't recalculate for some reason.
             predictionModel.rollingHistory.forEachS(to = nowTick) { tick, state ->
-                if (validFilteredBg.isValid()) {
+                val historicalBg = sampledBgReadings.getAt(tick)
+                if (historicalBg.isValid()) {
+                    state.assumedBg = historicalBg
+                } else if (validFilteredBg.isValid()) {
                     state.assumedBg = validFilteredBg
                 }
             }

@@ -333,6 +333,7 @@ class SimpleBolusCorrectionCalculator(
     private fun getCurrentBg() = glucoseRepository.currentBg.value?.value ?: BgValue.INVALID
 
     override suspend fun calculateBolusProjections(mealTimestamp: Timestamp) = BolusProjections(
+        timestamp = Timestamp.now(),
         bg = getCurrentBg()
     )
 
