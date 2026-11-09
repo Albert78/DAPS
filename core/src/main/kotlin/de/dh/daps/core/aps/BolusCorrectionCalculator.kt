@@ -4,6 +4,7 @@ import de.dh.daps.common.domain.model.data.BgDelta
 import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.data.Timestamp
+import de.dh.daps.common.domain.model.data.min
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.common.domain.model.therapy.MealType
@@ -253,8 +254,17 @@ object BolusCalculationMath {
 
         return mealType.components.mapIndexed { index, component ->
             val amount = InsulinAmount(roundedAmounts[index])
-            val delayFromBase = if (index == 0) 0 else component.peakMinutes.value.toInt()
-            val finalDefaultTime = defaultTimeFromMeal + Minutes(delayFromBase.toShort())
+            val peakDelivery = component.peakMinutes - insulinType.peak
+
+            val finalDefaultTime = if (index == 0) {
+                if (defaultTimeFromMeal > Minutes.ZERO) {
+                    defaultTimeFromMeal
+                } else {
+                    min(defaultTimeFromMeal, peakDelivery)
+                }
+            } else {
+                defaultTimeFromMeal + peakDelivery
+            }
 
             PlannedInsulin(
                 amount = amount,
