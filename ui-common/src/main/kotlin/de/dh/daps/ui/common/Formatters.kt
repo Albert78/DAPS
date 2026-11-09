@@ -28,6 +28,8 @@ import java.util.Locale
 import kotlin.math.abs
 import de.dh.daps.common.R as CommonR
 
+private const val NBSP = "\u00A0"
+
 data class AppFormatters(
     val shortDateTime: DateTimeFormatter,
     val shortDate: DateTimeFormatter,
@@ -111,7 +113,8 @@ fun timeUnitLabel(): String {
  */
 @Composable
 fun timeWithUnit(timestamp: Timestamp): String {
-    return "${time(timestamp)} ${timeUnitLabel()}"
+    val label = timeUnitLabel()
+    return if (label.isEmpty()) time(timestamp) else "${time(timestamp)}$NBSP$label"
 }
 
 /**
@@ -574,7 +577,7 @@ fun glucoseValue(
     if (value == null || value.isInvalid()) return default
     val valStr = value.toString(unit)
     return if (withUnit) {
-        "$valStr ${glucoseUnitLabel(unit)}"
+        "$valStr$NBSP${glucoseUnitLabel(unit)}"
     } else valStr
 }
 
@@ -599,7 +602,7 @@ fun isfValue(
             GlucoseUnit.MG_DL -> stringResource(CommonR.string.unit_mgdl_per_u)
             GlucoseUnit.MMOL -> stringResource(CommonR.string.unit_mmol_per_u)
         }
-        "$valStr $unitStr"
+        "$valStr$NBSP$unitStr"
     } else valStr
 }
 
@@ -625,7 +628,7 @@ fun deltaValue(
             GlucoseUnit.MG_DL -> stringResource(CommonR.string.glucose_unit_mgdl)
             GlucoseUnit.MMOL -> stringResource(CommonR.string.glucose_unit_mmol)
         }
-        "$valStr $unitStr"
+        "$valStr$NBSP$unitStr"
     } else valStr
 }
 
@@ -641,7 +644,7 @@ fun deltaValue(
 fun crValue(value: Double?, default: String = "-", withUnit: Boolean = true): String {
     return value?.let {
         val valStr = String.format(Locale.getDefault(), "%.1f", it)
-        if (withUnit) "$valStr " + stringResource(CommonR.string.unit_g_per_u)
+        if (withUnit) "$valStr$NBSP${stringResource(CommonR.string.unit_g_per_u)}"
         else valStr
     } ?: default
 }
@@ -683,7 +686,7 @@ fun formatInsulinValue(
     return value?.let {
         val format = if (signed) "%+.2f" else "%.2f"
         val valStr = String.format(Locale.getDefault(), format, it)
-        if (withUnit) "$valStr ${formatInsulinUnitLabel(resources)}"
+        if (withUnit) "$valStr$NBSP${formatInsulinUnitLabel(resources)}"
         else valStr
     } ?: default
 }
@@ -831,7 +834,7 @@ fun formatCarbsGramsValue(
     return value?.let {
         val format = if (signed) "%+.0f" else "%.0f"
         val valStr = String.format(Locale.getDefault(), format, it)
-        if (withUnit) "$valStr ${formatCarbsGramsUnitLabel(resources)}"
+        if (withUnit) "$valStr$NBSP${formatCarbsGramsUnitLabel(resources)}"
         else valStr
     } ?: default
 }
@@ -860,7 +863,7 @@ fun formatCarbsKeValue(
             ".1f"
         }
         val valStr = String.format(Locale.getDefault(), format, it)
-        if (withUnit) "$valStr ${formatCarbsKeUnitLabel(resources)}"
+        if (withUnit) "$valStr$NBSP${formatCarbsKeUnitLabel(resources)}"
         else valStr
     } ?: default
 }
