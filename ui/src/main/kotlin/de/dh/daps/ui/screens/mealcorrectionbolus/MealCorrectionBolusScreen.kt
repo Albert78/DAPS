@@ -243,10 +243,14 @@ fun MealCorrectionBolusContent(
                                     color = MaterialTheme.colorScheme.primary
                                 )
 
-                                uiState.conflictingMealTime?.let { conflictingTime ->
+                                uiState.conflictingMeal?.let { conflictingMeal ->
                                     Spacer(Modifier.height(8.dp))
                                     ConflictingMealBadge(
-                                        label = stringResource(R.string.meal_correction_bolus_conflicting_meal_info, conflictingTime)
+                                        label = stringResource(
+                                            R.string.meal_correction_bolus_conflicting_meal_info,
+                                            conflictingMeal.time,
+                                            carbsValue(conflictingMeal.carbGrams)
+                                        )
                                     )
                                 }
                             }
@@ -957,6 +961,7 @@ fun MealCorrectionBolusScreenshotLowPreview() {
                     manualBolus = InsulinAmount(5.25),
                     mealTimestamp = now,
                 ),
+                conflictingMeal = ConflictingMealInfo(time = "12:30", carbGrams = 45.0),
                 mealTypes = sampleMealTypes,
                 projections = BolusProjections(
                     timestamp = now,

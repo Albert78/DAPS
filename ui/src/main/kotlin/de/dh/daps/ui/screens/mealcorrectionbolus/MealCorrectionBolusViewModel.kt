@@ -154,6 +154,11 @@ data class BolusCalculationDetails(
         get() = bgCorrectionPart - iobPart + cobPart + futureCarbsPart - deferredBolusPart
 }
 
+data class ConflictingMealInfo(
+    val time: String,
+    val carbGrams: Double
+)
+
 data class MealCorrectionBolusUiState(
     val isLoading: Boolean = true,
     val input: MealInput = MealInput(),
@@ -173,7 +178,7 @@ data class MealCorrectionBolusUiState(
     val isMealReminderAllowed: Boolean = false,
     val showCloseBanner: Boolean = false,
     val submissionStatus: SubmissionStatus = SubmissionStatus.NotSubmitted,
-    val conflictingMealTime: String? = null
+    val conflictingMeal: ConflictingMealInfo? = null
 )
 
 class MealCorrectionBolusViewModel(
@@ -255,18 +260,23 @@ class MealCorrectionBolusViewModel(
         }
     }
 
-    private fun findConflictingMealTime(mealTimestamp: Timestamp): String? {
+    private fun findConflictingMeal(mealTimestamp: Timestamp): ConflictingMealInfo? {
         val fiveMinutesMs = 5 * 60 * 1000L
         val conflictingMeal = existingMeals
             .filter { abs(mealTimestamp.ms - it.timestamp.ms) < fiveMinutesMs }
             .minByOrNull { abs(mealTimestamp.ms - it.timestamp.ms) }
 
-        return conflictingMeal?.let { time(it.timestamp) }
+        return conflictingMeal?.let {
+            ConflictingMealInfo(
+                time = time(it.timestamp),
+                carbGrams = it.carbGrams
+            )
+        }
     }
 
     private fun checkMealTimeConflict(mealTimestamp: Timestamp) {
-        val conflictingTime = findConflictingMealTime(mealTimestamp)
-        _uiState.update { it.copy(conflictingMealTime = conflictingTime) }
+        val conflictingMeal = findConflictingMeal(mealTimestamp)
+        _uiState.update { it.copy(conflictingMeal = conflictingMeal) }
     }
 
     fun onCarbsChange(grams: Double) {
@@ -591,7 +601,7 @@ class MealCorrectionBolusViewModel(
                     }
 
                     // 4. Check for conflicting meal time
-                    val conflictingTime = findConflictingMealTime(newMealTimestamp)
+                    val conflictingMeal = findConflictingMeal(newMealTimestamp)
 
                     val isReminderAllowed = newMealTimestamp >= now + Minutes(MEAL_REMINDER_MIN_FUTURE_MINUTES.toShort())
 
@@ -599,7 +609,7 @@ class MealCorrectionBolusViewModel(
                         input = state.input.copy(mealTimestamp = newMealTimestamp),
                         insulinPlan = updatedPlan,
                         isProjectionsStale = isStale,
-                        conflictingMealTime = conflictingTime,
+                        conflictingMeal = conflictingMeal,
                         isMealReminderAllowed = isReminderAllowed,
                         isMealReminderEnabled = if (!isReminderAllowed) false else state.isMealReminderEnabled
                     )
