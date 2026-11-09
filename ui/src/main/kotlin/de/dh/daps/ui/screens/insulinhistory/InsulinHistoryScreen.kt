@@ -27,6 +27,8 @@ import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FilterAlt
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
@@ -53,7 +55,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -253,6 +257,7 @@ fun InsulinHistoryContent(
             }
         } else {
             val listState = rememberLazyListState()
+            val coroutineScope = rememberCoroutineScope()
             val groupedEntries = remember(uiState.insulinEntries) {
                 uiState.insulinEntries.groupBy {
                     Instant.ofEpochMilli(it.timestamp.ms)
@@ -260,6 +265,17 @@ fun InsulinHistoryContent(
                         .toLocalDate()
                 }
             }
+            val datesList = remember(groupedEntries) { groupedEntries.keys.toList() }
+            val dateHeaderIndices = remember(groupedEntries) {
+                val map = mutableMapOf<LocalDate, Int>()
+                var currentIndex = 0
+                groupedEntries.forEach { (date, entries) ->
+                    map[date] = currentIndex
+                    currentIndex += 1 + entries.size
+                }
+                map
+            }
+
             val totalGroupedEntries = remember(uiState.allInsulinEntries) {
                 uiState.allInsulinEntries.groupBy {
                     Instant.ofEpochMilli(it.timestamp.ms)
@@ -286,16 +302,42 @@ fun InsulinHistoryContent(
                         topIconPadding = 48.dp
                     )
             ) {
-                groupedEntries.forEach { (date, entries) ->
+                groupedEntries.entries.forEachIndexed { index, (date, entries) ->
                     val totalCount = totalGroupedEntries[date]?.size ?: entries.size
                     val tdd = dailyTddMap[date]
+
+                    val previousDate = if (index > 0) datesList[index - 1] else null
+                    val nextDate = if (index < datesList.size - 1) datesList[index + 1] else null
+
+                    val onPreviousClick: (() -> Unit)? = previousDate?.let { targetDate ->
+                        {
+                            dateHeaderIndices[targetDate]?.let { targetIndex ->
+                                coroutineScope.launch {
+                                    listState.animateScrollToItem(targetIndex)
+                                }
+                            }
+                        }
+                    }
+
+                    val onNextClick: (() -> Unit)? = nextDate?.let { targetDate ->
+                        {
+                            dateHeaderIndices[targetDate]?.let { targetIndex ->
+                                coroutineScope.launch {
+                                    listState.animateScrollToItem(targetIndex)
+                                }
+                            }
+                        }
+                    }
+
                     stickyHeader {
                         DateHeader(
                             date = date,
                             displayedCount = entries.size,
                             totalCount = totalCount,
                             isFilterActive = uiState.isFilterActive,
-                            tdd = tdd
+                            tdd = tdd,
+                            onPreviousDayClick = onPreviousClick,
+                            onNextDayClick = onNextClick
                         )
                     }
                     items(entries) { entry ->
@@ -324,7 +366,9 @@ fun DateHeader(
     displayedCount: Int = 0,
     totalCount: Int = 0,
     isFilterActive: Boolean = false,
-    tdd: Double? = null
+    tdd: Double? = null,
+    onPreviousDayClick: (() -> Unit)? = null,
+    onNextDayClick: (() -> Unit)? = null
 ) {
     val formatter = remember { DateTimeFormatter.ofPattern("EEEE, dd. MMMM yyyy", Locale.getDefault()) }
     val dateString = remember(date) { date.format(formatter) }
@@ -344,23 +388,48 @@ fun DateHeader(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(start = 16.dp, end = 4.dp, top = 6.dp, bottom = 6.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = titleText,
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.weight(1f, fill = false)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = stringResource(id = R.string.insulin_history_tdd_label, formattedTdd),
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = titleText,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = stringResource(id = R.string.insulin_history_tdd_label, formattedTdd),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = { onPreviousDayClick?.invoke() },
+                    enabled = onPreviousDayClick != null
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowUp,
+                        contentDescription = stringResource(id = R.string.history_nav_next_day)
+                    )
+                }
+                IconButton(
+                    onClick = { onNextDayClick?.invoke() },
+                    enabled = onNextDayClick != null
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowDown,
+                        contentDescription = stringResource(id = R.string.history_nav_previous_day)
+                    )
+                }
+            }
         }
     }
 }
@@ -873,9 +942,9 @@ fun InsulinHistoryPreview() {
 fun InsulinHistoryWithDataPreview() {
     val sampleInsulinType = InsulinType(name = "Fiasp", activeSubstance = "Insulin aspart", peak = Minutes(50.toShort()), dia = Minutes(300.toShort()))
     val sampleEntries = listOf(
-        InsulinApplication(id = 1, timestamp = Timestamp.now().minusHours(8), amount = InsulinAmount(5.0), insulinType = sampleInsulinType, origin = InsulinOrigin.Pump, meal = true, correction = true),
+        InsulinApplication(id = 1, timestamp = Timestamp.now().minusHours(1), amount = InsulinAmount(3.0), insulinType = sampleInsulinType, origin = InsulinOrigin.Manual, basal = true),
         InsulinApplication(id = 2, timestamp = Timestamp.now().minusHours(5), amount = InsulinAmount(2.5), insulinType = sampleInsulinType, origin = InsulinOrigin.Manual, meal = true),
-        InsulinApplication(id = 3, timestamp = Timestamp.now().minusHours(1), amount = InsulinAmount(3.0), insulinType = sampleInsulinType, origin = InsulinOrigin.Manual, basal = true)
+        InsulinApplication(id = 3, timestamp = Timestamp.now().minusHours(28), amount = InsulinAmount(5.0), insulinType = sampleInsulinType, origin = InsulinOrigin.Pump, meal = true, correction = true)
     )
 
     AppPreview {
