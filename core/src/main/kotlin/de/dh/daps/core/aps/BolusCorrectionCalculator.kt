@@ -140,7 +140,7 @@ object BolusCalculationMath {
         }
 
         val diff = currentBg.mgdl - targetBg.mgdl
-        if (diff <= 0.0) return Minutes(0)
+        if (diff <= 0.0) return Minutes(5) // An IMI > 0 will lead to a deferred bolus -> algorithm will postpone it, if necessary
 
         // Simple rule: 5 minutes per 20 mg/dL above target, max 45 min
         val rawMinutes = Minutes(((diff / 20.0) * 5.0).toInt().toShort())
@@ -206,8 +206,7 @@ object BolusCalculationMath {
 
         val bgCorrectionPart = convertToInsulinAmountFromBgDelta(BgDelta.fromMgDl(bgDiff), isf)
 
-        // Safety first: If we are too low, the COB part might be incorrect, so just ignore it for now.
-        val cobPart = if (bgDiff < -15) InsulinAmount.ZERO else convertToInsulinAmountFromCarbs(cob, cr)
+        val cobPart = convertToInsulinAmountFromCarbs(cob, cr)
         val futureCarbsPart = convertToInsulinAmountFromCarbs(futureCarbs, cr)
 
         // Sum up all parts: Add requirements (Meal, Correction, COB, Future Carbs),
