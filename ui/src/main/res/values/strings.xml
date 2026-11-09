@@ -394,6 +394,7 @@
     <string name="meals_screen_title">Mahlzeiten-Historie</string>
     <string name="meal_history_detail_title">Mahlzeit Details</string>
     <string name="meals_empty_list">Keine Mahlzeiten eingetragen</string>
+    <string name="meals_daily_carbs_label">Tages-Kohlenhydrate: %1$s</string>
     <string name="meal_not_found">Mahlzeit nicht gefunden</string>
     <string name="delete_meal_title">Mahlzeit löschen</string>
     <string name="delete_meal_message">Möchtest du diese Mahlzeit wirklich löschen?</string>

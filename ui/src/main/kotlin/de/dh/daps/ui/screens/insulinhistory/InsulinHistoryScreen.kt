@@ -82,6 +82,7 @@ import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.composables.InsulinAmountStepper
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
+import de.dh.daps.ui.common.composables.animateScrollToItemFast
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.composables.screenTitle
@@ -313,7 +314,7 @@ fun InsulinHistoryContent(
                         {
                             dateHeaderIndices[targetDate]?.let { targetIndex ->
                                 coroutineScope.launch {
-                                    listState.animateScrollToItem(targetIndex)
+                                    listState.animateScrollToItemFast(targetIndex)
                                 }
                             }
                         }
@@ -323,7 +324,7 @@ fun InsulinHistoryContent(
                         {
                             dateHeaderIndices[targetDate]?.let { targetIndex ->
                                 coroutineScope.launch {
-                                    listState.animateScrollToItem(targetIndex)
+                                    listState.animateScrollToItemFast(targetIndex)
                                 }
                             }
                         }

@@ -2,7 +2,10 @@ package de.dh.daps.ui.screens.meals
 
 import android.content.res.Configuration
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,6 +15,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -27,9 +32,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.domain.model.data.Minutes
@@ -39,6 +46,7 @@ import de.dh.daps.common.domain.model.therapy.MealEntry
 import de.dh.daps.common.domain.model.therapy.MealType
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.carbsValue
+import de.dh.daps.ui.common.composables.animateScrollToItemFast
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppPreview
@@ -47,6 +55,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlinx.coroutines.launch
 import de.dh.daps.common.R as CommonR
 
 @Composable
@@ -112,6 +121,7 @@ fun MealsContent(
             }
         } else {
             val listState = rememberLazyListState()
+            val coroutineScope = rememberCoroutineScope()
             val groupedMeals = remember(uiState.meals) {
                 uiState.meals
                     .sortedByDescending { it.timestamp }
@@ -120,6 +130,21 @@ fun MealsContent(
                             .atZone(ZoneId.systemDefault())
                             .toLocalDate()
                     }
+            }
+            val dailyCarbsMap = remember(groupedMeals) {
+                groupedMeals.mapValues { (_, meals) ->
+                    meals.sumOf { it.carbGrams }
+                }
+            }
+            val datesList = remember(groupedMeals) { groupedMeals.keys.toList() }
+            val dateHeaderIndices = remember(groupedMeals) {
+                val map = mutableMapOf<LocalDate, Int>()
+                var currentIndex = 0
+                groupedMeals.forEach { (date, meals) ->
+                    map[date] = currentIndex
+                    currentIndex += 1 + meals.size
+                }
+                map
             }
 
             LazyColumn(
@@ -133,9 +158,38 @@ fun MealsContent(
                         topIconPadding = 48.dp
                     )
             ) {
-                groupedMeals.forEach { (date, meals) ->
+                groupedMeals.entries.forEachIndexed { index, (date, meals) ->
+                    val totalCarbs = dailyCarbsMap[date]
+                    val previousDate = if (index > 0) datesList[index - 1] else null
+                    val nextDate = if (index < datesList.size - 1) datesList[index + 1] else null
+
+                    val onPreviousClick: (() -> Unit)? = previousDate?.let { targetDate ->
+                        {
+                            dateHeaderIndices[targetDate]?.let { targetIndex ->
+                                coroutineScope.launch {
+                                    listState.animateScrollToItemFast(targetIndex)
+                                }
+                            }
+                        }
+                    }
+
+                    val onNextClick: (() -> Unit)? = nextDate?.let { targetDate ->
+                        {
+                            dateHeaderIndices[targetDate]?.let { targetIndex ->
+                                coroutineScope.launch {
+                                    listState.animateScrollToItemFast(targetIndex)
+                                }
+                            }
+                        }
+                    }
+
                     stickyHeader {
-                        DateHeader(date)
+                        DateHeader(
+                            date = date,
+                            totalCarbs = totalCarbs,
+                            onPreviousDayClick = onPreviousClick,
+                            onNextDayClick = onNextClick
+                        )
                     }
                     items(meals) { meal ->
                         val isEditable = remember(meal.timestamp, uiState.editThresholdHours) {
@@ -156,20 +210,66 @@ fun MealsContent(
 }
 
 @Composable
-fun DateHeader(date: LocalDate) {
+fun DateHeader(
+    date: LocalDate,
+    totalCarbs: Double? = null,
+    onPreviousDayClick: (() -> Unit)? = null,
+    onNextDayClick: (() -> Unit)? = null
+) {
     val formatter = remember { DateTimeFormatter.ofPattern("EEEE, dd. MMMM yyyy", Locale.getDefault()) }
     val dateString = remember(date) { date.format(formatter) }
+    val formattedCarbs = carbsValue(totalCarbs)
 
     Surface(
         color = MaterialTheme.colorScheme.surfaceVariant,
         modifier = Modifier.fillMaxWidth()
     ) {
-        Text(
-            text = dateString,
-            style = MaterialTheme.typography.titleSmall,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 4.dp, top = 6.dp, bottom = 6.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = dateString,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = stringResource(id = R.string.meals_daily_carbs_label, formattedCarbs),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = { onPreviousDayClick?.invoke() },
+                    enabled = onPreviousDayClick != null
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowUp,
+                        contentDescription = stringResource(id = R.string.history_nav_next_day)
+                    )
+                }
+                IconButton(
+                    onClick = { onNextDayClick?.invoke() },
+                    enabled = onNextDayClick != null
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowDown,
+                        contentDescription = stringResource(id = R.string.history_nav_previous_day)
+                    )
+                }
+            }
+        }
     }
 }
 
