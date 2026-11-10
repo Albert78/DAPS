@@ -51,7 +51,8 @@ DAPS does the "normal stuff" really well (blood glucose display, Manual Mode ("O
 - Additional CGM and pump drivers
 
 ## ⚖️ Comparison with AAPS
-The large open-source project AAPS is very powerful and can do pretty much everything imaginable. DAPS, on the other hand, is cleaner and provides essential features right where you need them. It is not overloaded and not suffering from "featureitis". Furthermore, DAPS uses less than 1% battery per day, depending on usage and phone of course. That is a fraction of what AAPS consumes.
+The large open-source project AAPS is very powerful and can do just about anything you can imagine. DAPS, on the other hand, is more streamlined
+and provides key features exactly where you need them. The goal is to have the right features at your fingertips when you need them.
 
 ## 🚫 What is DAPS not?
 It is not quite finished yet, but getting there step by step. It is currently in the alpha phase. However, it will not turn into an all-in-one bloated
@@ -156,9 +157,8 @@ Bolusrechner mit diversen Empfehlungen, die üblichen Insulin- und Profileinstel
 - Weitere CGM- und Pumpentreiber
 
 ## ⚖️ Vergleich mit AAPS
-Das große Open-Source-Projekt AAPS ist sehr mächtig und kann so ziemlich alles, was man sich vorstellen kann. DAPS hingegen ist aufgeräumter
-und bietet dir die wichtigen Funktionen genau dort, wo du sie brauchst. Es ist nicht überladen und nicht von „Featureitis“ betroffen.
-Außerdem braucht DAPS weniger als 1% Akku, je nach Nutzung und Telefon natürlich. Das ist ein Bruchteil dessen, was AAPS an Akku zieht.
+Das große Open-Source-Projekt AAPS ist sehr leistungsstark und kann so gut wie alles, was man sich vorstellen kann. DAPS hingegen ist übersichtlicher
+und bietet wichtige Funktionen genau dort, wo man sie braucht. Die Zielsetzung ist es, die richtigen Funktionen dann zur Hand zu haben, wenn man sie braucht.
 
 ## 🚫 Was ist DAPS nicht?
 Es ist noch nicht ganz fertig, wird aber Schritt für Schritt fertiger. Es befindet sich noch in der Alpha-Phase. Es wird sich aber nicht zur
