@@ -2,6 +2,7 @@ package de.dh.daps.common.domain.model.therapy
 
 import de.dh.daps.common.domain.model.alarm.AlertProfile
 import de.dh.daps.common.domain.model.data.BgValue
+import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.data.Timestamp
 
 /**
@@ -9,10 +10,34 @@ import de.dh.daps.common.domain.model.data.Timestamp
  * Allows synchronous, thread-safe resolution of effective settings without database or manager lookups.
  */
 data class TherapySnapshot(
+    val insulinSettings: List<ProfileInsulinSetting> = emptyList(),
     val dayProfile: DayProfileTimeline,
     val defaultAlertProfile: AlertProfile,
     val activeOverlays: List<TherapyOverlay> = emptyList()
 ) {
+    /**
+     * Resolves the [ProfileInsulinSetting] (DIA and Peak) for the given [insulinType].
+     * Falls back to default DIA/Peak defined on the [InsulinType] if no profile-specific override exists.
+     */
+    fun getSettingFor(insulinType: InsulinType): ProfileInsulinSetting {
+        return insulinSettings.firstOrNull { it.insulinType.id == insulinType.id }
+            ?: ProfileInsulinSetting(
+                insulinType = insulinType,
+                dia = insulinType.dia,
+                peak = insulinType.peak
+            )
+    }
+
+    /**
+     * Resolves DIA for [insulinType] (customized in profile or fallback to insulinType.dia).
+     */
+    fun getDiaFor(insulinType: InsulinType): Minutes = getSettingFor(insulinType).dia
+
+    /**
+     * Resolves Peak for [insulinType] (customized in profile or fallback to insulinType.peak).
+     */
+    fun getPeakFor(insulinType: InsulinType): Minutes = getSettingFor(insulinType).peak
+
     /**
      * Resolves the effective therapy settings for the given [timestamp].
      */

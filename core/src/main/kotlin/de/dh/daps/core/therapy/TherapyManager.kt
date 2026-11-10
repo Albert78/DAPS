@@ -104,6 +104,7 @@ class TherapyManager(
         )
         val overlays = listOfNotNull(currentSettings.toOverlayOrNull()) + scheduledAdjustments.map { it.toOverlay() }
         TherapySnapshot(
+            insulinSettings = currentSettings.insulinProfile.insulinSettings,
             dayProfile = dayProfile,
             defaultAlertProfile = currentSettings.defaultAlertProfile,
             activeOverlays = overlays
