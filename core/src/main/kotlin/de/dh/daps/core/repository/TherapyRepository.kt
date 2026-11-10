@@ -137,6 +137,7 @@ class TherapyRepository(
         val profile = getInsulinProfileById(entity.insulin_profile_id) ?: return null
         val defaultAlertProfile = alertProfileDao.getDefaultAlertProfile()?.toModel()
             ?: alertProfileDao.getAllAlertProfiles().firstOrNull()?.toModel()
+            ?: return null
         val alertProfileOverride = entity.alert_profile_override_id?.let { alertProfileId ->
             alertProfileDao.getAlertProfileById(alertProfileId)?.toModel()
         }

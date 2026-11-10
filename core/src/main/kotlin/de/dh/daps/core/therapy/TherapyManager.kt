@@ -3,6 +3,7 @@ package de.dh.daps.core.therapy
 import android.content.Intent
 import android.util.Log
 import de.dh.daps.common.ID_UNDEFINED
+import de.dh.daps.common.domain.model.alarm.AlertProfile
 import de.dh.daps.common.domain.model.data.BgBlock
 import de.dh.daps.common.domain.model.data.BgDelta
 import de.dh.daps.common.domain.model.data.BgValue
@@ -110,7 +111,10 @@ class TherapyManager(
     }.stateIn(
         scope = scope,
         started = SharingStarted.Eagerly,
-        initialValue = TherapySnapshot(DayProfileTimeline(emptyList()))
+        initialValue = TherapySnapshot(
+            dayProfile = DayProfileTimeline(emptyList()),
+            defaultAlertProfile = AlertProfile()
+        )
     )
 
     /**

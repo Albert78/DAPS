@@ -18,7 +18,7 @@ data class CurrentTherapySettings(
     val insulinAdjustmentPercentage: Int = 0,
     val targetBgOverride: BgValue? = null,
     val lowThresholdOverride: BgValue? = null,
-    val defaultAlertProfile: AlertProfile? = null,
+    val defaultAlertProfile: AlertProfile,
     val alertProfileOverride: AlertProfile? = null,
     val adjustmentHint: String? = null,
     val adjustmentEndTime: Timestamp? = null
@@ -32,12 +32,12 @@ data class CurrentTherapySettings(
     /**
      * Effective alert profile (override if active, otherwise default).
      */
-    val effectiveAlertProfile: AlertProfile?
+    val effectiveAlertProfile: AlertProfile
         get() = alertProfileOverride ?: defaultAlertProfile
 
     /**
      * ID of the effective alert profile.
      */
-    val effectiveAlertProfileId: Long?
-        get() = effectiveAlertProfile?.id
+    val effectiveAlertProfileId: Long
+        get() = effectiveAlertProfile.id
 }

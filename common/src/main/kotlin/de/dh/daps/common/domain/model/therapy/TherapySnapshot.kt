@@ -10,7 +10,7 @@ import de.dh.daps.common.domain.model.data.Timestamp
  */
 data class TherapySnapshot(
     val dayProfile: DayProfileTimeline,
-    val defaultAlertProfile: AlertProfile? = null,
+    val defaultAlertProfile: AlertProfile,
     val activeOverlays: List<TherapyOverlay> = emptyList()
 ) {
     /**
@@ -26,7 +26,7 @@ data class TherapySnapshot(
     /**
      * Resolves the effective [AlertProfile] for the given [timestamp].
      */
-    fun getAlertProfileAt(timestamp: Timestamp): AlertProfile? {
+    fun getAlertProfileAt(timestamp: Timestamp): AlertProfile {
         val overlay = activeOverlays.firstOrNull { it.isActiveAt(timestamp) }
         return overlay?.alertProfileOverride ?: defaultAlertProfile
     }

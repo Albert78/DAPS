@@ -14,7 +14,7 @@ data class EffectiveTherapySettings(
     val basalRate: InsulinAmount,
     val isf: BgDelta,
     val cr: Double,
-    val alertProfile: AlertProfile? = null
+    val alertProfile: AlertProfile
 )
 
 /**
@@ -26,17 +26,16 @@ data class TherapyOverlay(
     val insulinAdjustmentPercentage: Int = 0,
     val targetBgOverride: BgValue? = null,
     val lowThresholdOverride: BgValue? = null,
-    val alertProfileOverrideId: Long? = null,
     val alertProfileOverride: AlertProfile? = null,
     val adjustmentHint: String? = null
 ) {
     fun isActiveAt(timestamp: Timestamp): Boolean =
-        timestamp >= startTime && timestamp < endTime
+        timestamp in startTime..<endTime
 }
 
 fun DayProfileSegment.applyOverlay(
     overlay: TherapyOverlay?,
-    defaultAlertProfile: AlertProfile? = null
+    defaultAlertProfile: AlertProfile
 ): EffectiveTherapySettings {
     val activeAlertProfile = overlay?.alertProfileOverride ?: defaultAlertProfile
     if (overlay == null) {
@@ -76,7 +75,6 @@ fun CurrentTherapySettings.toOverlayOrNull(now: Timestamp = Timestamp.now()): Th
         insulinAdjustmentPercentage = insulinAdjustmentPercentage,
         targetBgOverride = targetBgOverride,
         lowThresholdOverride = lowThresholdOverride,
-        alertProfileOverrideId = alertProfileOverrideId,
         alertProfileOverride = alertProfileOverride,
         adjustmentHint = adjustmentHint
     )
@@ -88,7 +86,6 @@ fun ScheduledTherapyAdjustment.toOverlay(): TherapyOverlay = TherapyOverlay(
     insulinAdjustmentPercentage = percentage,
     targetBgOverride = targetBgOverride,
     lowThresholdOverride = lowThresholdOverride,
-    alertProfileOverrideId = effectiveAlertProfileOverrideId,
     alertProfileOverride = alertProfileOverride,
     adjustmentHint = adjustmentHint
 )

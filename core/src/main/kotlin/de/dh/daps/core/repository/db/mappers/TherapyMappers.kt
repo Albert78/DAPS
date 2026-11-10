@@ -93,7 +93,7 @@ fun CurrentTherapySettings.toEntity() = CurrentTherapySettingsEntity(
 
 fun CurrentTherapySettingsEntity.toModel(
     profile: InsulinProfile,
-    defaultAlertProfile: AlertProfile? = null,
+    defaultAlertProfile: AlertProfile,
     alertProfileOverride: AlertProfile? = null
 ): CurrentTherapySettings {
     return CurrentTherapySettings(
