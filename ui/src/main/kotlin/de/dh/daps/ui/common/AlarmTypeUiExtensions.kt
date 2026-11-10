@@ -46,7 +46,7 @@ val AlarmType.descriptionResId: Int?
         AlarmType.PUMP_STALE_BOND -> R.string.alarm_type_pump_stale_bond_desc
         AlarmType.PUMP_CATHETER_CHANGE_WARN -> R.string.alarm_type_pump_catheter_change_warn_desc
         AlarmType.PUMP_PATCH_CHANGE_WARN -> R.string.alarm_type_pump_patch_change_warn_desc
-        AlarmType.CGM_SIGNAL_LOSS -> R.string.core_issue_no_recent_values
+        AlarmType.CGM_SIGNAL_LOSS -> R.string.aps_issue_stale_bg
         AlarmType.CGM_EXPIRED -> R.string.glucose_source_issue_expired
         AlarmType.CGM_SENSOR_ERROR -> R.string.glucose_source_issue_sensor_error
         AlarmType.CGM_STALE_BOND -> R.string.glucose_source_issue_stale_bluetooth_bond

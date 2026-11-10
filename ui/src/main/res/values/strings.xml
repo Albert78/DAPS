@@ -220,7 +220,8 @@
 
     <string name="alarm_notification_channel_name">Glukose- &amp; Sicherheitsalarme</string>
     <string name="core_issue_title">Berechnungen blockiert</string>
-    <string name="core_issue_no_recent_values">Keine aktuellen Glukosewerte seit %1$d Minuten.</string>
+    <string name="aps_issue_stale_bg">Seit %1$d Minuten wurden keine Glukosewerte empfangen.</string>
+    <string name="core_issue_no_recent_values">APS-Berechnung ausgesetzt: Keine aktuellen Glukosewerte seit %1$d Minuten.</string>
     <string name="core_issue_noisy_values">Die Glukosewerte sind zu verrauscht für eine sichere Berechnung.</string>
     <string name="core_issue_internal_error">Interner Fehler im Algorithmus: %1$s</string>
     <string name="core_issue_therapy_lock_busy">%1$s: Therapie-Sperre aktiv (Nutzer-Aktion)</string>

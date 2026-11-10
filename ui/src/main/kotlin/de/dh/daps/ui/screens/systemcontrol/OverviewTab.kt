@@ -304,7 +304,7 @@ private fun ApsIssuesDialog(
 
 @Composable
 private fun formatApsIssue(issue: ApsIssue): String = when (issue) {
-    is ApsIssue.StaleBG -> stringResource(id = R.string.core_issue_no_recent_values, 15)
+    is ApsIssue.StaleBG -> stringResource(id = R.string.aps_issue_stale_bg, issue.minutes)
     is ApsIssue.BluetoothDisabled -> stringResource(id = R.string.alarm_type_system_bluetooth_off_desc)
     is ApsIssue.Core -> when (val coreIssue = issue.issue) {
         is CoreIssue.NoRecentValues -> stringResource(id = R.string.core_issue_no_recent_values, coreIssue.minutes)
@@ -840,7 +840,7 @@ internal fun sampleOverviewTabExpiredUiState(): OverviewTabUiState = OverviewTab
     apsSystem = OverviewApsSystemUiState.Content(
         mode = StatusMetric(ApsMode.AutoCorrection, status = ValueStatus.WARNING),
         lastCalculation = StatusMetric(Timestamp(System.currentTimeMillis() - 120_000), status = ValueStatus.GOOD),
-        issues = listOf(ApsIssue.StaleBG)
+        issues = listOf(ApsIssue.StaleBG(15))
     ),
     glucoseSource = OverviewGlucoseSourceUiState.Content(
         sensorName = UiText.DynamicString("SimBody Virtueller Glukosesensor"),

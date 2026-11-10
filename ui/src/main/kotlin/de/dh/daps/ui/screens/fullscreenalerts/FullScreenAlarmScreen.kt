@@ -272,7 +272,7 @@ fun getAlarmTypeTitle(alarmType: AlarmType): String = stringResource(id = alarmT
 
 @Composable
 fun getAlarmTypeDescription(alarmType: AlarmType): String = when (alarmType) {
-    AlarmType.CGM_SIGNAL_LOSS -> stringResource(id = R.string.core_issue_no_recent_values, 15)
+    AlarmType.CGM_SIGNAL_LOSS -> stringResource(id = R.string.aps_issue_stale_bg, 12)
     else -> alarmType.descriptionResId?.let { stringResource(id = it) } ?: stringResource(id = alarmType.titleResId)
 }
 

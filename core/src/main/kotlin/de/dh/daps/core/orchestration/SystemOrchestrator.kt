@@ -56,7 +56,7 @@ sealed interface ApsIssue {
     /**
      * No recent glucose value available, the loop cannot calculate new treatments.
      */
-    data object StaleBG : ApsIssue
+    data class StaleBG(val minutes: Int) : ApsIssue
 
     /**
      * Active core issue preventing calculation or normal loop execution.
@@ -103,11 +103,6 @@ interface SystemOrchestrator {
      * Active issues of the APS.
      */
     val apsIssues: StateFlow<Set<ApsIssue>>
-
-    /**
-     * Signal flow indicating whether the blood glucose value is stale.
-     */
-    val isBgStale: StateFlow<Boolean>
 
     /**
      * State of the core loop.
@@ -218,7 +213,6 @@ class SystemOrchestratorImpl(
     override val resumeRequestedAt: StateFlow<Timestamp?> = modeManager.resumeRequestedAt
 
     override val apsIssues: StateFlow<Set<ApsIssue>> = issueAggregator.apsIssues
-    override val isBgStale: StateFlow<Boolean> = issueAggregator.isBgStale
 
     private val _coreState = MutableStateFlow<CoreState>(CoreState.Uninitialized)
     override val coreState: StateFlow<CoreState> = _coreState.asStateFlow()

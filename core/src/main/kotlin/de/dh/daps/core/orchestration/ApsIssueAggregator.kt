@@ -1,6 +1,8 @@
 package de.dh.daps.core.orchestration
 
+import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.data.Timestamp
+import de.dh.daps.core.aps.CoreIssue
 import de.dh.daps.core.aps.CoreState
 import de.dh.daps.core.aps.STALE_BG_THRESHOLD
 import de.dh.daps.core.glucosesource.GlucoseSourceIssue
@@ -24,16 +26,13 @@ class ApsIssueAggregator {
     private val _apsIssues = MutableStateFlow<Set<ApsIssue>>(emptySet())
     val apsIssues: StateFlow<Set<ApsIssue>> = _apsIssues.asStateFlow()
 
-    private val _isBgStale = MutableStateFlow(false)
-    val isBgStale: StateFlow<Boolean> = _isBgStale.asStateFlow()
+    private val _staleSince = MutableStateFlow<Timestamp?>(null)
+    val staleSince: StateFlow<Timestamp?> = _staleSince.asStateFlow()
 
     fun staleCheck(glucoseSourceManager: GlucoseSourceManager) {
-        _isBgStale.value = isBgStale(glucoseSourceManager)
-    }
-
-    fun isBgStale(glucoseSourceManager: GlucoseSourceManager): Boolean {
         val lastDataTime = glucoseSourceManager.lastInputTimestamp.value
-        return lastDataTime.isInvalid() || lastDataTime + STALE_BG_THRESHOLD < Timestamp.now()
+        val isStale = lastDataTime.isInvalid() || lastDataTime + STALE_BG_THRESHOLD < Timestamp.now()
+        _staleSince.value = if (isStale) lastDataTime else null
     }
 
     fun nextBgStaleCheckAt(glucoseSourceManager: GlucoseSourceManager): Timestamp {
@@ -42,7 +41,7 @@ class ApsIssueAggregator {
     }
 
     fun onNewBgReadingArrived() {
-        _isBgStale.value = false
+        _staleSince.value = null
     }
 
     fun startObserving(
@@ -55,14 +54,14 @@ class ApsIssueAggregator {
     ) {
         scope.launch {
             combine(
-                _isBgStale,
+                _staleSince,
                 coreState,
                 pumpManager.pumpIssues,
                 glucoseSourceManager.glucoseSourceIssues,
                 deviceStatusRepository.observeBluetoothStatus(),
                 consumableIssues
             ) { flows ->
-                val stale = flows[0] as Boolean
+                val staleSince = flows[0] as Timestamp?
                 val state = flows[1] as CoreState
                 @Suppress("UNCHECKED_CAST")
                 val pIssues = flows[2] as Set<PumpIssue>
@@ -76,8 +75,16 @@ class ApsIssueAggregator {
                 if (btStatus == BluetoothStatus.DISABLED || btStatus == BluetoothStatus.UNAVAILABLE) {
                     issues.add(ApsIssue.BluetoothDisabled)
                 }
-                if (stale) {
-                    issues.add(ApsIssue.StaleBG)
+
+                val hasCoreNoRecentValues = state is CoreState.Active && state.issues.any { it is CoreIssue.NoRecentValues }
+
+                if (staleSince != null && !hasCoreNoRecentValues) {
+                    val staleMinutes = if (staleSince.isValid()) {
+                        Minutes.timeDifference(staleSince, Timestamp.now()).value.toInt().coerceAtLeast(STALE_BG_THRESHOLD.value.toInt())
+                    } else {
+                        STALE_BG_THRESHOLD.value.toInt()
+                    }
+                    issues.add(ApsIssue.StaleBG(staleMinutes))
                 }
                 if (state is CoreState.Active) {
                     state.issues.forEach { issues.add(ApsIssue.Core(it)) }
@@ -95,6 +102,6 @@ class ApsIssueAggregator {
 
     fun reset() {
         _apsIssues.value = emptySet()
-        _isBgStale.value = false
+        _staleSince.value = null
     }
 }

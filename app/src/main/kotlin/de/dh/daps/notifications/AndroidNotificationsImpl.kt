@@ -498,7 +498,7 @@ class AndroidNotificationsImpl(
                 ""
             }
         }
-        AlarmType.CGM_SIGNAL_LOSS -> context.getString(UiR.string.core_issue_no_recent_values, 15)
+        AlarmType.CGM_SIGNAL_LOSS -> context.getString(UiR.string.aps_issue_stale_bg, 12)
         else -> alarmType.descriptionResId?.let { context.getString(it) } ?: ""
     }
 
