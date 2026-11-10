@@ -13,6 +13,8 @@
         <item quantity="other">vor %1$d Tagen</item>
     </plurals>
 
+    <string name="time_today">heute</string>
+
     <string name="time_until_just_now">jetzt</string>
     <string name="time_until_seconds">in %1$d Sek</string>
     <string name="time_until_minutes">in %1$d Min</string>

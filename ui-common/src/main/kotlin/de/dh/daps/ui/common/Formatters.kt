@@ -7,7 +7,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLocale
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import de.dh.daps.common.domain.model.data.BgDelta
 import de.dh.daps.common.domain.model.data.BgReadingsInterval
@@ -24,6 +23,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.util.Locale
 import kotlin.math.abs
 import de.dh.daps.common.R as CommonR
@@ -331,6 +331,7 @@ fun shortDate(date: LocalDate?, default: String = "-"): String {
  * Composable UI function.
  * Formats a millisecond time difference into a relative past time description.
  *
+ * @param daysOnly If true, skips sub-day time resolutions (hours, minutes, seconds) and formats as days ("heute", "gestern", "vor 3 Tagen").
  * @example shortRelativeTimeAgo(3000) -> "Gerade eben" / "just now"
  * @example shortRelativeTimeAgo(300000) -> "vor 5 Min." / "5 min ago"
  * @example shortRelativeTimeAgo(7200000) -> "vor 2 Std." / "2 h ago"
@@ -338,18 +339,18 @@ fun shortDate(date: LocalDate?, default: String = "-"): String {
  * @example shortRelativeTimeAgo(259200000) -> "vor 3 Tagen" / "3 days ago"
  */
 @Composable
-fun shortRelativeTimeAgo(diffMs: Long): String {
+fun shortRelativeTimeAgo(diffMs: Long, daysOnly: Boolean = false): String {
     val diffSec = diffMs / 1000
     val diffMin = diffMs / 60000
     val diffHours = diffMin / 60
     val diffDays = diffHours / 24
     return when {
-        diffSec < 5 -> stringResource(CommonR.string.time_ago_just_now)
-        diffSec < 61 -> stringResource(CommonR.string.time_ago_seconds_ago, diffSec)
-        diffMin < 1 -> stringResource(CommonR.string.time_ago_just_now)
-        diffMin < 91 -> stringResource(CommonR.string.time_ago_minutes_ago, diffMin)
-        diffHours < 24 -> stringResource(CommonR.string.time_ago_hours_ago, diffHours)
-        else -> pluralStringResource(CommonR.plurals.time_ago_days, diffDays.toInt(), diffDays)
+        !daysOnly && diffSec < 5 -> stringResource(CommonR.string.time_ago_just_now)
+        !daysOnly && diffSec < 61 -> stringResource(CommonR.string.time_ago_seconds_ago, diffSec)
+        !daysOnly && diffMin < 1 -> stringResource(CommonR.string.time_ago_just_now)
+        !daysOnly && diffMin < 91 -> stringResource(CommonR.string.time_ago_minutes_ago, diffMin)
+        !daysOnly && diffHours < 24 -> stringResource(CommonR.string.time_ago_hours_ago, diffHours)
+        else -> pluralStringResourceZero(CommonR.plurals.time_ago_days, CommonR.string.time_today, diffDays.toInt(), diffDays)
     }
 }
 
@@ -360,33 +361,34 @@ fun shortRelativeTimeAgo(diffMs: Long): String {
  * @example shortRelativeTimeAgo(timestamp) -> "vor 5 Min." / "5 min ago"
  */
 @Composable
-fun shortRelativeTimeAgo(timestamp: Timestamp): String {
+fun shortRelativeTimeAgo(timestamp: Timestamp, daysOnly: Boolean = false): String {
     val diffMs = System.currentTimeMillis() - timestamp.ms
-    return shortRelativeTimeAgo(diffMs)
+    return shortRelativeTimeAgo(diffMs, daysOnly = daysOnly)
 }
 
 /**
  * Composable UI function.
  * Formats a millisecond time difference into a relative future time description.
  *
+ * @param daysOnly If true, skips sub-day time resolutions (hours, minutes, seconds) and formats as days ("heute", "morgen", "in 3 Tagen").
  * @example shortRelativeTimeUntil(300000) -> "in 5 Min." / "in 5 min"
  * @example shortRelativeTimeUntil(7200000) -> "in 2 Std." / "in 2 h"
  * @example shortRelativeTimeUntil(86400000) -> "morgen" / "tomorrow"
  * @example shortRelativeTimeUntil(259200000) -> "in 3 Tagen" / "in 3 days"
  */
 @Composable
-fun shortRelativeTimeUntil(diffMs: Long): String {
+fun shortRelativeTimeUntil(diffMs: Long, daysOnly: Boolean = false): String {
     val diffSec = diffMs / 1000
     val diffMin = diffMs / 60000
     val diffHours = diffMin / 60
     val diffDays = diffHours / 24
     return when {
-        diffSec < 5 -> stringResource(CommonR.string.time_until_just_now)
-        diffSec < 61 -> stringResource(CommonR.string.time_until_seconds, diffSec)
-        diffMin < 1 -> stringResource(CommonR.string.time_until_just_now)
-        diffMin < 91 -> stringResource(CommonR.string.time_until_minutes, diffMin)
-        diffHours < 24 -> stringResource(CommonR.string.time_until_hours, diffHours)
-        else -> pluralStringResource(CommonR.plurals.time_until_days, diffDays.toInt(), diffDays)
+        !daysOnly && diffSec < 5 -> stringResource(CommonR.string.time_until_just_now)
+        !daysOnly && diffSec < 61 -> stringResource(CommonR.string.time_until_seconds, diffSec)
+        !daysOnly && diffMin < 1 -> stringResource(CommonR.string.time_until_just_now)
+        !daysOnly && diffMin < 91 -> stringResource(CommonR.string.time_until_minutes, diffMin)
+        !daysOnly && diffHours < 24 -> stringResource(CommonR.string.time_until_hours, diffHours)
+        else -> pluralStringResourceZero(CommonR.plurals.time_until_days, CommonR.string.time_today, diffDays.toInt(), diffDays)
     }
 }
 
@@ -397,9 +399,9 @@ fun shortRelativeTimeUntil(diffMs: Long): String {
  * @example shortRelativeTimeUntil(timestamp) -> "in 5 Min." / "in 5 min"
  */
 @Composable
-fun shortRelativeTimeUntil(timestamp: Timestamp): String {
+fun shortRelativeTimeUntil(timestamp: Timestamp, daysOnly: Boolean = false): String {
     val diffMs = timestamp.ms - System.currentTimeMillis()
-    return shortRelativeTimeUntil(diffMs)
+    return shortRelativeTimeUntil(diffMs, daysOnly = daysOnly)
 }
 
 /**
@@ -421,23 +423,45 @@ fun shortRelativeTime(timestamp: Timestamp): String {
 
 /**
  * Composable UI function.
- * Formats an [ExpirationDate] into a relative time description (past or future automatically).
+ * Formats a [LocalDate] into a relative date description ("heute", "morgen", "gestern", "in 3 Tagen", "vor 3 Tagen").
  *
- * @example shortRelativeTime(expirationDate) -> "vor 2 Std." / "in 3 Tagen"
+ * @example shortRelativeTime(today) -> "heute"
+ * @example shortRelativeTime(tomorrow) -> "morgen"
+ * @example shortRelativeTime(yesterday) -> "gestern"
+ */
+@Composable
+fun shortRelativeTime(date: LocalDate): String {
+    val today = LocalDate.now()
+    val daysDiff = ChronoUnit.DAYS.between(today, date)
+    return if (daysDiff < 0) {
+        pluralStringResourceZero(
+            CommonR.plurals.time_ago_days,
+            CommonR.string.time_today,
+            (-daysDiff).toInt(),
+            -daysDiff
+        )
+    } else {
+        pluralStringResourceZero(
+            CommonR.plurals.time_until_days,
+            CommonR.string.time_today,
+            daysDiff.toInt(),
+            daysDiff
+        )
+    }
+}
+
+/**
+ * Composable UI function.
+ * Formats an [ExpirationDate] into a relative time description (past or future automatically).
+ * For [ExpirationDate.Approximate], only the calendar day offset is formatted ("heute", "morgen", "in 3 Tagen", etc.).
+ *
+ * @example shortRelativeTime(expirationDate) -> "vor 2 Std." / "in 3 Tagen" / "heute"
  */
 @Composable
 fun shortRelativeTime(expirationDate: ExpirationDate): String {
     return when (expirationDate) {
         is ExpirationDate.Hard -> shortRelativeTime(expirationDate.dateTime)
-        is ExpirationDate.Approximate -> {
-            val targetMs = expirationDate.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-            val diffMs = targetMs - System.currentTimeMillis()
-            if (diffMs < 0) {
-                shortRelativeTimeAgo(-diffMs)
-            } else {
-                shortRelativeTimeUntil(diffMs)
-            }
-        }
+        is ExpirationDate.Approximate -> shortRelativeTime(expirationDate.date)
     }
 }
 
