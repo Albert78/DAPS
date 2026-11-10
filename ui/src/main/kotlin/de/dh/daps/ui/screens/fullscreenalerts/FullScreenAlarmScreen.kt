@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -102,13 +103,6 @@ fun FullScreenAlarmScreen(
                 alarmGroup.heroAlarms.forEach { heroAlarm ->
                     val rawTitle = getAlarmTypeTitle(heroAlarm)
                     val displayTitle = if (heroAlarm.isSafetyCritical) rawTitle.uppercase(locale) else rawTitle
-                    Text(
-                        text = displayTitle,
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = contentColor,
-                        fontWeight = FontWeight.ExtraBold,
-                        textAlign = TextAlign.Center
-                    )
 
                     FramedCard(
                         modifier = Modifier.fillMaxWidth(),
@@ -121,8 +115,24 @@ fun FullScreenAlarmScreen(
                                 .padding(24.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
+                            Text(
+                                text = displayTitle,
+                                style = MaterialTheme.typography.titleLarge,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.ExtraBold,
+                                textAlign = TextAlign.Center
+                            )
+
                             val bgValue = (heroAlarm as? ActiveAlarm.GlucoseAlarm)?.bgValue
+                            val description = getAlarmTypeDescription(heroAlarm)
+
                             if (bgValue != null && bgValue.isValid()) {
+                                Spacer(modifier = Modifier.height(12.dp))
+                                HorizontalDivider(
+                                    modifier = Modifier.fillMaxWidth(0.6f),
+                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                                )
+                                Spacer(modifier = Modifier.height(12.dp))
                                 Text(
                                     text = bgValue.toString(glucoseUnit),
                                     style = MaterialTheme.typography.displayLarge,
@@ -137,12 +147,18 @@ fun FullScreenAlarmScreen(
                                     style = MaterialTheme.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                            } else {
+                            } else if (description != null) {
+                                Spacer(modifier = Modifier.height(12.dp))
+                                HorizontalDivider(
+                                    modifier = Modifier.fillMaxWidth(0.6f),
+                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                                )
+                                Spacer(modifier = Modifier.height(12.dp))
                                 Text(
-                                    text = getAlarmTypeDescription(heroAlarm),
+                                    text = description,
                                     style = MaterialTheme.typography.bodyLarge,
                                     textAlign = TextAlign.Center,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -164,11 +180,12 @@ fun FullScreenAlarmScreen(
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
-                    alarmGroup.otherAlarms.forEach { otherAlarm ->
+                    alarmGroup.otherAlarms.forEachIndexed { index, otherAlarm ->
+                        if (index > 0) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
                         FramedCard(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp),
+                            modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(16.dp),
                             containerColor = MaterialTheme.colorScheme.surfaceVariant
                         ) {
@@ -185,12 +202,19 @@ fun FullScreenAlarmScreen(
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = getAlarmTypeDescription(otherAlarm),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                val description = getAlarmTypeDescription(otherAlarm)
+                                if (description != null) {
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    HorizontalDivider(
+                                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                                    )
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    Text(
+                                        text = description,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
                         }
                     }
@@ -253,9 +277,13 @@ fun getAlarmTypeTitle(alarmType: AlarmType): String = stringResource(id = alarmT
 fun getAlarmTypeTitle(alarm: ActiveAlarm): String = stringResource(id = alarm.titleResId)
 
 @Composable
-fun getAlarmTypeDescription(alarm: ActiveAlarm): String = when (alarm) {
-    is ActiveAlarm.CgmSignalLoss -> stringResource(id = R.string.aps_issue_stale_bg, alarm.minutes)
-    else -> alarm.descriptionResId?.let { stringResource(id = it) } ?: stringResource(id = alarm.titleResId)
+fun getAlarmTypeDescription(alarm: ActiveAlarm): String? {
+    val desc = when (alarm) {
+        is ActiveAlarm.CgmSignalLoss -> stringResource(id = R.string.aps_issue_stale_bg, alarm.minutes)
+        else -> alarm.descriptionResId?.let { stringResource(id = it) }
+    }
+    val title = getAlarmTypeTitle(alarm)
+    return if (desc != null && !desc.equals(title, ignoreCase = true)) desc else null
 }
 
 @Preview(showBackground = true, name = "Critical Low BG Alarm")
