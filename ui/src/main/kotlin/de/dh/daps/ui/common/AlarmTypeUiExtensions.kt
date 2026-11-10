@@ -48,10 +48,10 @@ val AlarmType.descriptionResId: Int?
         AlarmType.PUMP_STALE_BOND -> R.string.alarm_type_pump_stale_bond_desc
         AlarmType.PUMP_CATHETER_CHANGE_WARN -> R.string.alarm_type_pump_catheter_change_warn_desc
         AlarmType.PUMP_PATCH_CHANGE_WARN -> R.string.alarm_type_pump_patch_change_warn_desc
-        AlarmType.CGM_EXPIRED -> R.string.glucose_source_issue_expired
-        AlarmType.CGM_SENSOR_ERROR -> R.string.glucose_source_issue_sensor_error
+        AlarmType.CGM_EXPIRED -> R.string.alarm_type_cgm_expired_desc
+        AlarmType.CGM_SENSOR_ERROR -> R.string.alarm_type_cgm_sensor_error_desc
         AlarmType.CGM_STALE_BOND -> R.string.glucose_source_issue_stale_bluetooth_bond
-        AlarmType.SYSTEM_BATTERY_LOW -> R.string.alarm_type_system_battery_low
+        AlarmType.SYSTEM_BATTERY_LOW -> R.string.alarm_type_system_battery_low_desc
         AlarmType.SYSTEM_BLUETOOTH_OFF -> R.string.alarm_type_system_bluetooth_off_desc
         AlarmType.SYSTEM_THERAPY_SETTINGS_MISSING -> R.string.alarm_type_system_therapy_settings_missing_desc
     }
