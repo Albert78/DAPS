@@ -560,16 +560,18 @@ class ApsAlgorithmImpl(
                 val lowTempBasalEffectUntilCorrection = insulinEffectUntilCorrection - normalBasalEffectUntilCorrection
 
                 if (bgErrorAtCorrection + lowTempBasalEffectUntilCorrection < ZERO_TEMP_BASAL_TRIGGER) {
-                    // Prediction is too low, even without basal -> Zero temp and defer ongoing meal boluses
+                    // Prediction is too low, Zero-temp is required because 0% basal cannot prevent reaching ZERO_TEMP_BASAL_TRIGGER.
+                    // TODO: Consider capturing the primary driver/sub-reason in CoreInsight:
+                    //   Root causes: 1) low BG baseline/falling trend (bgError), 2) high active IOB (insulinEffect).
                     return CalculationResult.zeroTemp(durationInHours = 1).withMetrics(insight)
                 }
                 // Else go on with decreased basal
-                val needed = -(normalBasalEffectUntilCorrection - bgErrorAtCorrection).coerceAtMost(BgDelta.ZERO)
+                val neededEffect = -(normalBasalEffectUntilCorrection - bgErrorAtCorrection).coerceAtMost(BgDelta.ZERO)
                 val normalEffect = -normalBasalEffectUntilCorrection
                 val percent = if (normalEffect.mgdl < 0.01)
                     0 // Safety guard
                 else
-                    ((needed.mgdl * 100.0 / normalEffect.mgdl).coerceIn(0.0, 100.0)).toInt()
+                    ((neededEffect.mgdl * 100.0 / normalEffect.mgdl).coerceIn(0.0, 100.0)).toInt()
 
                 return CalculationResult.tempBasal(
                     percent = percent,
