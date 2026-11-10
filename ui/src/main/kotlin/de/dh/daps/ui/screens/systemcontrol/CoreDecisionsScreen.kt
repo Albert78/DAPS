@@ -1,9 +1,11 @@
 package de.dh.daps.ui.screens.systemcontrol
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -46,6 +48,7 @@ import de.dh.daps.core.aps.CoreReasoning
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.carbsValue
+import de.dh.daps.ui.common.composables.FastScrollbar
 import de.dh.daps.ui.common.composables.animateScrollToItemFast
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
@@ -82,6 +85,11 @@ fun CoreDecisionsContent(
     onNavigateUp: () -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
+    val locale = LocalLocale.current.platformLocale
+    val badgeFormatter = remember(locale) {
+        DateTimeFormatter.ofPattern("dd.MM. HH:00", locale)
+    }
+
     val groupedEntries = remember(uiState.coreInsights) {
         uiState.coreInsights.groupBy { insight ->
             Instant.ofEpochMilli(insight.timestamp.ms)
@@ -102,6 +110,16 @@ fun CoreDecisionsContent(
         }
         map
     }
+    val itemIndexToHour = remember(groupedEntries) {
+        val list = mutableListOf<LocalDateTime>()
+        groupedEntries.forEach { (hour, entries) ->
+            list.add(hour)
+            entries.forEach { _ ->
+                list.add(hour)
+            }
+        }
+        list
+    }
 
     Scaffold(
         topBar = {
@@ -119,69 +137,87 @@ fun CoreDecisionsContent(
         }
     ) { innerPadding ->
         val listState = rememberLazyListState()
-        LazyColumn(
-            state = listState,
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .contentScrollIndicator(
-                    scrollableState = listState,
-                    showTopGradient = false,
-                    topIconPadding = 48.dp
-                )
         ) {
-            if (uiState.coreInsights.isEmpty()) {
-                item {
-                    Text(
-                        text = stringResource(id = R.string.core_decisions_no_insights),
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(16.dp)
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .contentScrollIndicator(
+                        scrollableState = listState,
+                        showTopGradient = false,
+                        topIconPadding = 48.dp
                     )
-                }
-            } else {
-                groupedEntries.entries.forEachIndexed { index, (hour, entries) ->
-                    val previousHour = if (index > 0) hoursList[index - 1] else null
-                    val nextHour = if (index < hoursList.size - 1) hoursList[index + 1] else null
+            ) {
+                if (uiState.coreInsights.isEmpty()) {
+                    item {
+                        Text(
+                            text = stringResource(id = R.string.core_decisions_no_insights),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                } else {
+                    groupedEntries.entries.forEachIndexed { index, (hour, entries) ->
+                        val previousHour = if (index > 0) hoursList[index - 1] else null
+                        val nextHour = if (index < hoursList.size - 1) hoursList[index + 1] else null
 
-                    val onPreviousClick: (() -> Unit)? = previousHour?.let { targetHour ->
-                        {
-                            hourHeaderIndices[targetHour]?.let { targetIndex ->
-                                coroutineScope.launch {
-                                    listState.animateScrollToItemFast(targetIndex)
+                        val onPreviousClick: (() -> Unit)? = previousHour?.let { targetHour ->
+                            {
+                                hourHeaderIndices[targetHour]?.let { targetIndex ->
+                                    coroutineScope.launch {
+                                        listState.animateScrollToItemFast(targetIndex)
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    val onNextClick: (() -> Unit)? = nextHour?.let { targetHour ->
-                        {
-                            hourHeaderIndices[targetHour]?.let { targetIndex ->
-                                coroutineScope.launch {
-                                    listState.animateScrollToItemFast(targetIndex)
+                        val onNextClick: (() -> Unit)? = nextHour?.let { targetHour ->
+                            {
+                                hourHeaderIndices[targetHour]?.let { targetIndex ->
+                                    coroutineScope.launch {
+                                        listState.animateScrollToItemFast(targetIndex)
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    stickyHeader {
-                        HourHeader(
-                            hour = hour,
-                            count = entries.size,
-                            onPreviousHourClick = onPreviousClick,
-                            onNextHourClick = onNextClick
-                        )
+                        stickyHeader {
+                            HourHeader(
+                                hour = hour,
+                                count = entries.size,
+                                onPreviousHourClick = onPreviousClick,
+                                onNextHourClick = onNextClick
+                            )
+                        }
+                        items(entries, key = { it.timestamp.ms }) { insight ->
+                            Spacer(modifier = Modifier.height(8.dp))
+                            InsightCard(
+                                insight = insight,
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                        }
                     }
-                    items(entries, key = { it.timestamp.ms }) { insight ->
-                        Spacer(modifier = Modifier.height(8.dp))
-                        InsightCard(
-                            insight = insight,
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        )
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
                 }
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
+            }
+
+            if (uiState.coreInsights.isNotEmpty()) {
+                FastScrollbar(
+                    listState = listState,
+                    getBadgeText = { index ->
+                        itemIndexToHour.getOrNull(index)?.format(badgeFormatter)
+                    },
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .fillMaxHeight()
+                        .padding(vertical = 8.dp)
+                )
             }
         }
     }
