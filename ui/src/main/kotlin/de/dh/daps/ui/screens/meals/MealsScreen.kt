@@ -50,12 +50,12 @@ import de.dh.daps.ui.common.composables.animateScrollToItemFast
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppPreview
+import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
-import kotlinx.coroutines.launch
 import de.dh.daps.common.R as CommonR
 
 @Composable
@@ -256,7 +256,7 @@ fun DateHeader(
                 ) {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowUp,
-                        contentDescription = stringResource(id = R.string.history_nav_next_day)
+                        contentDescription = stringResource(id = R.string.cd_history_nav_next_day)
                     )
                 }
                 IconButton(
@@ -265,7 +265,7 @@ fun DateHeader(
                 ) {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowDown,
-                        contentDescription = stringResource(id = R.string.history_nav_previous_day)
+                        contentDescription = stringResource(id = R.string.cd_history_nav_previous_day)
                     )
                 }
             }

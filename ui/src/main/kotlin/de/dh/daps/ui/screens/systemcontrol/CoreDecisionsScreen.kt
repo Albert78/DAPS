@@ -1,5 +1,6 @@
 package de.dh.daps.ui.screens.systemcontrol
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,6 +14,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -21,12 +24,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLocale
@@ -40,13 +46,20 @@ import de.dh.daps.core.aps.CoreReasoning
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.carbsValue
+import de.dh.daps.ui.common.composables.animateScrollToItemFast
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.crValue
 import de.dh.daps.ui.common.glucoseValue
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.isfValue
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.util.Date
 import de.dh.daps.common.R as CommonR
 
@@ -68,6 +81,28 @@ fun CoreDecisionsContent(
     uiState: CoreDecisionsUiState,
     onNavigateUp: () -> Unit
 ) {
+    val coroutineScope = rememberCoroutineScope()
+    val groupedEntries = remember(uiState.coreInsights) {
+        uiState.coreInsights.groupBy { insight ->
+            Instant.ofEpochMilli(insight.timestamp.ms)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime()
+                .truncatedTo(ChronoUnit.HOURS)
+        }
+    }
+    val hoursList = remember(groupedEntries) {
+        groupedEntries.keys.toList()
+    }
+    val hourHeaderIndices = remember(groupedEntries) {
+        val map = mutableMapOf<LocalDateTime, Int>()
+        var currentIndex = 0
+        groupedEntries.forEach { (hour, entries) ->
+            map[hour] = currentIndex
+            currentIndex += 1 + entries.size
+        }
+        map
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -89,21 +124,60 @@ fun CoreDecisionsContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .contentScrollIndicator(listState)
-                .padding(horizontal = 16.dp)
+                .contentScrollIndicator(
+                    scrollableState = listState,
+                    showTopGradient = false,
+                    topIconPadding = 48.dp
+                )
         ) {
             if (uiState.coreInsights.isEmpty()) {
                 item {
                     Text(
                         text = stringResource(id = R.string.core_decisions_no_insights),
                         style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(vertical = 16.dp)
+                        modifier = Modifier.padding(16.dp)
                     )
                 }
             } else {
-                items(uiState.coreInsights) { insight ->
-                    InsightCard(insight)
-                    Spacer(modifier = Modifier.height(8.dp))
+                groupedEntries.entries.forEachIndexed { index, (hour, entries) ->
+                    val previousHour = if (index > 0) hoursList[index - 1] else null
+                    val nextHour = if (index < hoursList.size - 1) hoursList[index + 1] else null
+
+                    val onPreviousClick: (() -> Unit)? = previousHour?.let { targetHour ->
+                        {
+                            hourHeaderIndices[targetHour]?.let { targetIndex ->
+                                coroutineScope.launch {
+                                    listState.animateScrollToItemFast(targetIndex)
+                                }
+                            }
+                        }
+                    }
+
+                    val onNextClick: (() -> Unit)? = nextHour?.let { targetHour ->
+                        {
+                            hourHeaderIndices[targetHour]?.let { targetIndex ->
+                                coroutineScope.launch {
+                                    listState.animateScrollToItemFast(targetIndex)
+                                }
+                            }
+                        }
+                    }
+
+                    stickyHeader {
+                        HourHeader(
+                            hour = hour,
+                            count = entries.size,
+                            onPreviousHourClick = onPreviousClick,
+                            onNextHourClick = onNextClick
+                        )
+                    }
+                    items(entries, key = { it.timestamp.ms }) { insight ->
+                        Spacer(modifier = Modifier.height(8.dp))
+                        InsightCard(
+                            insight = insight,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
                 }
                 item {
                     Spacer(modifier = Modifier.height(16.dp))
@@ -114,7 +188,78 @@ fun CoreDecisionsContent(
 }
 
 @Composable
-fun InsightCard(insight: CoreInsight) {
+fun HourHeader(
+    hour: LocalDateTime,
+    count: Int,
+    onPreviousHourClick: (() -> Unit)? = null,
+    onNextHourClick: (() -> Unit)? = null
+) {
+    val locale = LocalLocale.current.platformLocale
+    val dateFormatter = remember(locale) { DateTimeFormatter.ofPattern("EEEE, dd. MMMM yyyy", locale) }
+    val timeFormatter = remember(locale) { DateTimeFormatter.ofPattern("HH:mm", locale) }
+
+    val dateStr = remember(hour, dateFormatter) { hour.format(dateFormatter) }
+    val startTimeStr = remember(hour, timeFormatter) { hour.format(timeFormatter) }
+    val endTimeStr = remember(hour, timeFormatter) { hour.plusHours(1).format(timeFormatter) }
+
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 4.dp, top = 6.dp, bottom = 6.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = dateStr,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = "$startTimeStr – $endTimeStr Uhr ($count)",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = { onPreviousHourClick?.invoke() },
+                    enabled = onPreviousHourClick != null
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowUp,
+                        contentDescription = stringResource(id = R.string.cd_history_nav_previous_hour)
+                    )
+                }
+                IconButton(
+                    onClick = { onNextHourClick?.invoke() },
+                    enabled = onNextHourClick != null
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowDown,
+                        contentDescription = stringResource(id = R.string.cd_history_nav_next_hour)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun InsightCard(
+    insight: CoreInsight,
+    modifier: Modifier = Modifier
+) {
     val locale = LocalLocale.current.platformLocale
     val dateTimeFormat = remember(locale) { SimpleDateFormat("HH:mm:ss", locale) }
     val glucoseUnit = LocalGlucoseUnit.current
@@ -128,7 +273,7 @@ fun InsightCard(insight: CoreInsight) {
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {

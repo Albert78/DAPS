@@ -57,7 +57,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -84,9 +83,10 @@ import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.animateScrollToItemFast
 import de.dh.daps.ui.common.composables.contentScrollIndicator
-import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.composables.screenTitle
+import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.theme.AppPreview
+import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -418,7 +418,7 @@ fun DateHeader(
                 ) {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowUp,
-                        contentDescription = stringResource(id = R.string.history_nav_next_day)
+                        contentDescription = stringResource(id = R.string.cd_history_nav_next_day)
                     )
                 }
                 IconButton(
@@ -427,7 +427,7 @@ fun DateHeader(
                 ) {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowDown,
-                        contentDescription = stringResource(id = R.string.history_nav_previous_day)
+                        contentDescription = stringResource(id = R.string.cd_history_nav_previous_day)
                     )
                 }
             }

@@ -174,7 +174,7 @@ fun DateRangeHeader(
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                contentDescription = stringResource(id = R.string.history_nav_previous_day)
+                contentDescription = stringResource(id = R.string.cd_history_nav_previous_day)
             )
         }
 
@@ -191,7 +191,7 @@ fun DateRangeHeader(
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = stringResource(id = R.string.history_nav_next_day)
+                contentDescription = stringResource(id = R.string.cd_history_nav_next_day)
             )
         }
     }
