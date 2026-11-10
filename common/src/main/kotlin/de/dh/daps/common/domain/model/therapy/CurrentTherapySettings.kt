@@ -40,21 +40,4 @@ data class CurrentTherapySettings(
      */
     val effectiveAlertProfileId: Long?
         get() = effectiveAlertProfile?.id
-
-    /**
-     * Calculates and caches the effective insulin profile considering [insulinAdjustmentPercentage].
-     * Evaluated lazily once per instance.
-     * Calculates the effective [InsulinProfile] by applying the [insulinAdjustmentPercentage]
-     * to the basal rates, CR and ISF blocks of [insulinProfile].
-     */
-    val effectiveInsulinProfile: InsulinProfile
-        get() {
-            if (insulinAdjustmentPercentage == 0) return insulinProfile
-            val factor = 1.0 + (insulinAdjustmentPercentage / 100.0)
-            return insulinProfile.copy(
-                basalBlocks = insulinProfile.basalBlocks.map { it.copy(amount = it.amount * factor) },
-                crBlocks = insulinProfile.crBlocks.map { it.copy(amount = it.amount / factor) },
-                isfBlocks = insulinProfile.isfBlocks.map { it.copy(amount = it.amount / factor) }
-            )
-        }
 }

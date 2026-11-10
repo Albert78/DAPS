@@ -7,9 +7,8 @@ import de.dh.daps.common.domain.model.data.BgBlock
 import de.dh.daps.common.domain.model.data.BgDelta
 import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.data.Timestamp
-import de.dh.daps.common.domain.model.data.getAmountForMinute
-import de.dh.daps.common.domain.model.data.getBgForMinute
 import de.dh.daps.common.domain.model.therapy.CurrentTherapySettings
+import de.dh.daps.common.domain.model.therapy.DayProfileTimeline
 import de.dh.daps.common.domain.model.therapy.DeferredBolus
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.common.domain.model.therapy.InsulinHistory
@@ -18,6 +17,9 @@ import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.common.domain.model.therapy.MealEntry
 import de.dh.daps.common.domain.model.therapy.ScheduledTherapyAdjustment
 import de.dh.daps.common.domain.model.therapy.TherapyAdjustment
+import de.dh.daps.common.domain.model.therapy.TherapySnapshot
+import de.dh.daps.common.domain.model.therapy.toOverlay
+import de.dh.daps.common.domain.model.therapy.toOverlayOrNull
 import de.dh.daps.common.domain.pump.BolusDeliveryState
 import de.dh.daps.common.domain.pump.BolusStatus
 import de.dh.daps.common.infrastructure.SystemWakeService
@@ -31,12 +33,15 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -88,6 +93,26 @@ class TherapyManager(
 
     val currentTherapySettingsFlow: Flow<CurrentTherapySettings> = therapyRepository.observeCurrentTherapySettings()
 
+    val therapySnapshot: StateFlow<TherapySnapshot> = combine(
+        therapyRepository.observeCurrentTherapySettings(),
+        therapyRepository.observeAllScheduledTherapyAdjustments()
+    ) { currentSettings, scheduledAdjustments ->
+        val dayProfile = DayProfileTimeline.create(
+            insulinProfile = currentSettings.insulinProfile,
+            defaultBgBlocks = currentSettings.defaultBgBlocks
+        )
+        val overlays = listOfNotNull(currentSettings.toOverlayOrNull()) + scheduledAdjustments.map { it.toOverlay() }
+        TherapySnapshot(
+            dayProfile = dayProfile,
+            defaultAlertProfile = currentSettings.defaultAlertProfile,
+            activeOverlays = overlays
+        )
+    }.stateIn(
+        scope = scope,
+        started = SharingStarted.Eagerly,
+        initialValue = TherapySnapshot(DayProfileTimeline(emptyList()))
+    )
+
     /**
      * Wires up the therapy manager with external components, sync history.
      */
@@ -118,10 +143,10 @@ class TherapyManager(
 
         currentScope.launch {
             combine(
-                currentTherapySettingsFlow.map { it.effectiveInsulinProfile },
+                currentTherapySettingsFlow.map { it.insulinProfile },
                 pumpManager.activeInsulinPump
-            ) { effectiveProfile, activePump ->
-                if (activePump != null) effectiveProfile to activePump else null
+            ) { profile, activePump ->
+                if (activePump != null) profile to activePump else null
             }
                 .filterNotNull()
                 .distinctUntilChanged()
@@ -206,59 +231,24 @@ class TherapyManager(
     suspend fun getCurrentTherapySettings(): CurrentTherapySettings = therapyRepository.getCurrentTherapySettings()
 
     /**
-     * Resolves the effective therapy settings for a specific timestamp,
-     * taking into account adjustment expiration and scheduled therapy adjustments.
+     * Returns the current self-contained [TherapySnapshot] containing the 24-hour day profile timeline
+     * and any currently active or scheduled overlays.
      */
-    suspend fun getTherapySettingsAt(timestamp: Timestamp): CurrentTherapySettings {
-        val currentSettings = getCurrentTherapySettings()
-
-        val activeEndTime = currentSettings.adjustmentEndTime
-        var settings = if (activeEndTime != null && timestamp >= activeEndTime) {
-            currentSettings.copy(
-                insulinAdjustmentPercentage = 0,
-                targetBgOverride = null,
-                lowThresholdOverride = null,
-                alertProfileOverride = null,
-                adjustmentHint = null,
-                adjustmentEndTime = null
-            )
-        } else {
-            currentSettings
-        }
-
-        val scheduled = runCatching { getScheduledTherapyAdjustment() }.getOrNull()
-        if (scheduled != null && timestamp >= scheduled.startTime && timestamp < scheduled.endTime) {
-            settings = settings.copy(
-                insulinAdjustmentPercentage = scheduled.percentage,
-                targetBgOverride = scheduled.targetBgOverride,
-                lowThresholdOverride = scheduled.lowThresholdOverride,
-                alertProfileOverride = scheduled.alertProfileOverride,
-                adjustmentHint = scheduled.adjustmentHint,
-                adjustmentEndTime = scheduled.endTime
-            )
-        }
-
-        return settings
-    }
+    fun getTherapySnapshot(): TherapySnapshot = therapySnapshot.value
 
     /**
      * Gets the planned basal rate at the given timestamp.
      */
-    suspend fun getBasalPerHour(timestamp: Timestamp): InsulinAmount {
-        val settings = getTherapySettingsAt(timestamp)
-        val baseBasal = settings.effectiveInsulinProfile.basalBlocks.getAmountForMinute(timestamp.minutesSinceMidnight())
-        return InsulinAmount(baseBasal)
-    }
+    suspend fun getBasalPerHour(timestamp: Timestamp): InsulinAmount =
+        therapySnapshot.value.getSettingsAt(timestamp).basalRate
 
     /**
      * Gets the carbohydrate to insulin ratio to be used for calculations at the given timestamp.
      * The CR is a measure of how many grams of carbohydrates are covered by one unit of insulin.
      * Unit: Grams of carbs.
      */
-    suspend fun getCrFactor(timestamp: Timestamp): Double {
-        val settings = getTherapySettingsAt(timestamp)
-        return settings.effectiveInsulinProfile.crBlocks.getAmountForMinute(timestamp.minutesSinceMidnight())
-    }
+    suspend fun getCrFactor(timestamp: Timestamp): Double =
+        therapySnapshot.value.getSettingsAt(timestamp).cr
 
     /**
      * Gets the insulin sensitivity factor to be used for calculations for the given timestamp.
@@ -266,19 +256,19 @@ class TherapyManager(
      * unit of insulin lowers blood glucose levels.
      * Unit: Blood glucose delta.
      */
-    suspend fun getIsfFactor(timestamp: Timestamp): BgDelta {
-        val settings = getTherapySettingsAt(timestamp)
-        val amount = settings.effectiveInsulinProfile.isfBlocks.getAmountForMinute(timestamp.minutesSinceMidnight())
-        return BgDelta.fromMgDl(amount.toInt())
-    }
+    suspend fun getIsfFactor(timestamp: Timestamp): BgDelta =
+        therapySnapshot.value.getSettingsAt(timestamp).isf
 
     suspend fun getBgSettings(timestamp: Timestamp = Timestamp.now()): Pair<BgValue, BgValue> {
-        val settings = getTherapySettingsAt(timestamp)
-        val defaultBg = settings.defaultBgBlocks.getBgForMinute(timestamp.minutesSinceMidnight())
-        return Pair(
-            settings.targetBgOverride ?: defaultBg.first,
-            settings.lowThresholdOverride ?: defaultBg.second
-        )
+        val settings = therapySnapshot.value.getSettingsAt(timestamp)
+        return Pair(settings.targetBg, settings.lowThreshold)
+    }
+
+    /**
+     * Gets the maximum target BG and maximum low threshold BG settings within the given time interval [from, to].
+     */
+    suspend fun getMaxBgSettings(from: Timestamp, to: Timestamp): Pair<BgValue, BgValue> {
+        return therapySnapshot.value.getMaxBgSettings(from, to)
     }
 
     suspend fun updateDefaultBgBlocks(blocks: List<BgBlock>) {

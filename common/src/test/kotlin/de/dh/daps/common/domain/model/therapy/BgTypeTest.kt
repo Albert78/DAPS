@@ -45,4 +45,21 @@ class BgTypeTest {
         assertEquals(-0.95, result.mgdl, 0.001)
         assertEquals(-95, result.scaled.toInt())
     }
+
+    @Test
+    fun testBgValueMinMax() {
+        val val1 = BgValue.fromMgDl(80.0)
+        val val2 = BgValue.fromMgDl(120.0)
+
+        assertEquals(val1, val1.min(val2))
+        assertEquals(val1, val2.min(val1))
+        assertEquals(val2, val1.max(val2))
+        assertEquals(val2, val2.max(val1))
+
+        assertEquals(val1, de.dh.daps.common.domain.model.data.min(val1, val2))
+        assertEquals(val2, de.dh.daps.common.domain.model.data.max(val1, val2))
+
+        assertEquals(val1, BgValue.min(val1, listOf(val2, BgValue.fromMgDl(150.0))))
+        assertEquals(val2, BgValue.max(val1, listOf(val2, BgValue.fromMgDl(70.0))))
+    }
 }

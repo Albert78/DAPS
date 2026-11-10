@@ -28,6 +28,14 @@ value class BgValue(val scaled: UShort): Comparable<BgValue> {
     fun isValid(): Boolean = scaled > 0u
     fun isInvalid(): Boolean = !isValid()
 
+    fun max(other: BgValue): BgValue = if (this >= other) this else other
+    fun min(other: BgValue): BgValue = if (this <= other) this else other
+
+    fun coerceAtLeast(minimumValue: BgValue): BgValue = if (this < minimumValue) minimumValue else this
+    fun coerceAtMost(maximumValue: BgValue): BgValue = if (this > maximumValue) maximumValue else this
+    fun coerceIn(minimumValue: BgValue, maximumValue: BgValue): BgValue =
+        this.coerceAtLeast(minimumValue).coerceAtMost(maximumValue)
+
     fun toString(glucoseUnit: GlucoseUnit) =
         when (glucoseUnit) {
             GlucoseUnit.MG_DL -> mgdlInt.toString()
@@ -40,6 +48,30 @@ value class BgValue(val scaled: UShort): Comparable<BgValue> {
 
     companion object {
         val INVALID = BgValue(0u)
+
+        fun max(a: BgValue, b: BgValue): BgValue = if (a >= b) a else b
+
+        fun max(first: BgValue, others: Iterable<BgValue>): BgValue {
+            var result = first
+            for (other in others) {
+                if (other > result) {
+                    result = other
+                }
+            }
+            return result
+        }
+
+        fun min(a: BgValue, b: BgValue): BgValue = if (a <= b) a else b
+
+        fun min(first: BgValue, others: Iterable<BgValue>): BgValue {
+            var result = first
+            for (other in others) {
+                if (other < result) {
+                    result = other
+                }
+            }
+            return result
+        }
 
         fun fromMgDl(value: Short): BgValue = fromMgDl(value.toInt())
 
@@ -60,3 +92,6 @@ value class BgValue(val scaled: UShort): Comparable<BgValue> {
         }
     }
 }
+
+fun max(a: BgValue, b: BgValue): BgValue = BgValue.max(a, b)
+fun min(a: BgValue, b: BgValue): BgValue = BgValue.min(a, b)

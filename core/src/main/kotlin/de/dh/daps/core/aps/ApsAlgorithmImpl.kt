@@ -403,9 +403,10 @@ class ApsAlgorithmImpl(
             val insulinPeak = setting.peak
             val correctionHorizon = setting.peak
 
-            val bgSettingsAtCorrection = therapyManager.getBgSettings(now + correctionHorizon * 2)
-            val targetBg = bgSettingsAtCorrection.first
-            val lowThreshold = bgSettingsAtCorrection.second
+            val (targetBg, lowThreshold) = therapyManager.getMaxBgSettings(
+                from = now,
+                to = now + correctionHorizon * 2
+            )
 
             val isfNow = therapyManager.getIsfFactor(now)
             val crNow = therapyManager.getCrFactor(now)
@@ -543,7 +544,6 @@ class ApsAlgorithmImpl(
                 ?: return CalculationResult.safetyBasal().withMetrics(insight)
             val cumulatedBasalActivityUntilCorrection = tickStateAtCorrectionValues.second
 
-            val isfAtCorrection = therapyManager.getIsfFactor(evaluationTimestamp)
             val crAtCorrection = therapyManager.getCrFactor(evaluationTimestamp)
 
             insight = insight.copy(predictedBgAtCorrection = predictedBgAtCorrection)
@@ -557,8 +557,8 @@ class ApsAlgorithmImpl(
                 // cumulatedInsulinActivityUntilCorrection is what we expect to be active from past
                 // injections, with normal basal from now until peak, and without any new meal or correction treatments.
                 val cumulatedInsulinActivityUntilCorrection = iobNow - iobAtCorrection
-                val insulinEffectUntilCorrection = -convertToBgDeltaFromUnits(cumulatedInsulinActivityUntilCorrection, isfAtCorrection)
-                val normalBasalEffectUntilCorrection = -convertToBgDeltaFromUnits(cumulatedBasalActivityUntilCorrection, isfAtCorrection)
+                val insulinEffectUntilCorrection = -convertToBgDeltaFromUnits(cumulatedInsulinActivityUntilCorrection, isfNow)
+                val normalBasalEffectUntilCorrection = -convertToBgDeltaFromUnits(cumulatedBasalActivityUntilCorrection, isfNow)
 
                 // All predictions are based on the assumption that we deliver normal basal. So
                 // to calculate the low temp scenario, we just subtract the normal basal effect.
@@ -610,7 +610,7 @@ class ApsAlgorithmImpl(
             else
                 bgErrorAtCorrection
 
-            val bgErrorCorrectionUnits = (convertToInsulinAmountFromBgDelta(bgCorrectError, isfAtCorrection) * AGGRESSIVENESS_ERROR_CORRECTION)
+            val bgErrorCorrectionUnits = (convertToInsulinAmountFromBgDelta(bgCorrectError, isfNow) * AGGRESSIVENESS_ERROR_CORRECTION)
                 .coerceAtLeast(InsulinAmount.ZERO)
 
             val pumpCapabilities = therapyManager.getPumpCapabilities()
