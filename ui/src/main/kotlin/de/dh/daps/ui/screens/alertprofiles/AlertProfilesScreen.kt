@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -39,8 +40,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.domain.model.alarm.AlarmSeverity
@@ -346,18 +349,24 @@ fun SeveritySummaryItem(
     name: String,
     config: AlertSignalConfig
 ) {
+    val isEnabled = config.enabled
     val sound = config.soundConfig
-    val hasSound = sound != null && sound.volume > 0
-    val hasVibration = config.vibrationMode != VibrationMode.OFF
+    val hasSound = isEnabled && sound != null && sound.volume > 0
+    val hasVibration = isEnabled && config.vibrationMode != VibrationMode.OFF
 
     val soundVibrationIcon = when {
+        !isEnabled -> Icons.Default.Block
         hasSound && hasVibration -> Icon_Sound_Vibration
         hasSound -> Icon_Sound_Only
         hasVibration -> Icon_Vibration_Only
         else -> Icon_Sound_Off
     }
 
+    val alpha = if (isEnabled) 1.0f else 0.38f
+    val textDecoration = if (isEnabled) TextDecoration.None else TextDecoration.LineThrough
+
     Column(
+        modifier = Modifier.graphicsLayer(alpha = alpha),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(
@@ -377,7 +386,9 @@ fun SeveritySummaryItem(
         }
         Text(
             text = name,
-            style = MaterialTheme.typography.labelSmall,
+            style = MaterialTheme.typography.labelSmall.copy(
+                textDecoration = textDecoration
+            ),
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -390,24 +401,31 @@ fun SignalSummaryItem(
     config: AlertSignalConfig,
     overridesCount: Int = 0
 ) {
+    val isEnabled = config.enabled
     val sound = config.soundConfig
-    val hasSound = config.enabled && sound != null && sound.volume > 0
-    val hasVibration = config.enabled && config.vibrationMode != VibrationMode.OFF
+    val hasSound = isEnabled && sound != null && sound.volume > 0
+    val hasVibration = isEnabled && config.vibrationMode != VibrationMode.OFF
 
     val icon = when {
-        !config.enabled -> Icon_Sound_Off
+        !isEnabled -> Icons.Default.Block
         hasSound && hasVibration -> Icon_Sound_Vibration
         hasSound -> Icon_Sound_Only
         hasVibration -> Icon_Vibration_Only
         else -> Icon_Sound_Off
     }
 
+    val alpha = if (isEnabled) 1.0f else 0.38f
+    val textDecoration = if (isEnabled) TextDecoration.None else TextDecoration.LineThrough
+
     Column(
+        modifier = Modifier.graphicsLayer(alpha = alpha),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.labelMedium.copy(
+                textDecoration = textDecoration
+            ),
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.primary
         )
@@ -542,7 +560,7 @@ fun AlertProfilesPreview() {
 
     val sampleSilent = AlertProfile(
         id = 3L,
-        name = "Stumm",
+        name = "Stumm & Deaktiviert",
         isDefault = true,
         alarmDefaults = mapOf(
             AlarmSeverity.CRITICAL to AlertSignalConfig(
@@ -556,6 +574,7 @@ fun AlertProfilesPreview() {
                 overrideDnd = false
             ),
             AlarmSeverity.INFO to AlertSignalConfig(
+                enabled = false,
                 displayMode = AlertDisplayMode.NotificationOnly,
                 vibrationMode = VibrationMode.SHORT,
                 overrideDnd = false
@@ -576,7 +595,7 @@ fun AlertProfilesPreview() {
             )
         ),
         reminderDefault = AlertSignalConfig(
-            enabled = true,
+            enabled = false,
             displayMode = AlertDisplayMode.NotificationOnly,
             vibrationMode = VibrationMode.SHORT,
             overrideDnd = false
