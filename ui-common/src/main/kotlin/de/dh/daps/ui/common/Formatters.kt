@@ -334,6 +334,7 @@ fun shortDate(date: LocalDate?, default: String = "-"): String {
  * @example shortRelativeTimeAgo(3000) -> "Gerade eben" / "just now"
  * @example shortRelativeTimeAgo(300000) -> "vor 5 Min." / "5 min ago"
  * @example shortRelativeTimeAgo(7200000) -> "vor 2 Std." / "2 h ago"
+ * @example shortRelativeTimeAgo(86400000) -> "gestern" / "yesterday"
  * @example shortRelativeTimeAgo(259200000) -> "vor 3 Tagen" / "3 days ago"
  */
 @Composable
@@ -370,7 +371,7 @@ fun shortRelativeTimeAgo(timestamp: Timestamp): String {
  *
  * @example shortRelativeTimeUntil(300000) -> "in 5 Min." / "in 5 min"
  * @example shortRelativeTimeUntil(7200000) -> "in 2 Std." / "in 2 h"
- * @example shortRelativeTimeUntil(86400000) -> "in 1 Tag" / "in 1 day"
+ * @example shortRelativeTimeUntil(86400000) -> "morgen" / "tomorrow"
  * @example shortRelativeTimeUntil(259200000) -> "in 3 Tagen" / "in 3 days"
  */
 @Composable
