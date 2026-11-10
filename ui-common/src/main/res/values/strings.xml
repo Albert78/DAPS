@@ -10,4 +10,7 @@
 
     <string name="date_time_picker_dialog_date_button">Datum</string>
     <string name="date_time_picker_dialog_time_button">Zeit</string>
+
+    <string name="jump_to_hour_title">Zu Stunde springen</string>
+    <string name="jump_to_hour_entries_count">%1$d Einträge</string>
 </resources>

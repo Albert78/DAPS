@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,9 +32,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,6 +53,7 @@ import de.dh.daps.ui.R
 import de.dh.daps.ui.common.LocalGlucoseUnit
 import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.composables.FastScrollbar
+import de.dh.daps.ui.common.composables.HourJumpDialog
 import de.dh.daps.ui.common.composables.animateScrollToItemFast
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
@@ -101,6 +106,9 @@ fun CoreDecisionsContent(
     val hoursList = remember(groupedEntries) {
         groupedEntries.keys.toList()
     }
+    val entriesByHour = remember(groupedEntries) {
+        groupedEntries.mapValues { it.value.size }
+    }
     val hourHeaderIndices = remember(groupedEntries) {
         val map = mutableMapOf<LocalDateTime, Int>()
         var currentIndex = 0
@@ -121,6 +129,16 @@ fun CoreDecisionsContent(
         list
     }
 
+    val listState = rememberLazyListState()
+    var showJumpDialog by remember { mutableStateOf(false) }
+
+    val currentVisibleHour by remember {
+        derivedStateOf {
+            val firstIndex = listState.firstVisibleItemIndex
+            itemIndexToHour.getOrNull(firstIndex)
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -132,11 +150,20 @@ fun CoreDecisionsContent(
                             contentDescription = stringResource(id = CommonR.string.cd_navigate_up)
                         )
                     }
+                },
+                actions = {
+                    if (uiState.coreInsights.isNotEmpty()) {
+                        IconButton(onClick = { showJumpDialog = true }) {
+                            Icon(
+                                imageVector = Icons.Default.Schedule,
+                                contentDescription = stringResource(id = R.string.cd_jump_to_hour)
+                            )
+                        }
+                    }
                 }
             )
         }
     ) { innerPadding ->
-        val listState = rememberLazyListState()
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -220,6 +247,22 @@ fun CoreDecisionsContent(
                 )
             }
         }
+    }
+
+    if (showJumpDialog && uiState.coreInsights.isNotEmpty()) {
+        HourJumpDialog(
+            entriesByHour = entriesByHour,
+            currentVisibleHour = currentVisibleHour,
+            onHourSelected = { targetHour ->
+                showJumpDialog = false
+                hourHeaderIndices[targetHour]?.let { targetIndex ->
+                    coroutineScope.launch {
+                        listState.animateScrollToItemFast(targetIndex)
+                    }
+                }
+            },
+            onDismissRequest = { showJumpDialog = false }
+        )
     }
 }
 

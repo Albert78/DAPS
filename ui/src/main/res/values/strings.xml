@@ -680,6 +680,8 @@
 
     <string name="core_decisions_screen_title">System-Ereignisse</string>
     <string name="core_decisions_no_insights">Keine Daten verfügbar</string>
+    <string name="cd_jump_to_hour">Zu Stunde springen</string>
+    <string name="cd_entries_count">%1$d Einträge</string>
     <string name="core_insight_label_bg">BZ</string>
     <string name="core_insight_label_iob">Zuk. IOB</string>
     <string name="core_insight_label_cob">Zuk. KH</string>
