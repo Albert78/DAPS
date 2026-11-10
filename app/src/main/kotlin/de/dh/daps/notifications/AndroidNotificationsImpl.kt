@@ -483,9 +483,7 @@ class AndroidNotificationsImpl(
         alarm: ActiveAlarm,
         unit: GlucoseUnit = GlucoseUnit.MG_DL
     ): String = when (alarm) {
-        is ActiveAlarm.CriticalLowBg -> getBgValueString(alarm.bgValue, unit, false) ?: ""
-        is ActiveAlarm.LowBg -> getBgValueString(alarm.bgValue, unit, false) ?: ""
-        is ActiveAlarm.HighBg -> getBgValueString(alarm.bgValue, unit, false) ?: ""
+        is ActiveAlarm.GlucoseAlarm -> getBgValueString(alarm.bgValue, unit, false) ?: ""
         is ActiveAlarm.CgmSignalLoss -> context.getString(UiR.string.aps_issue_stale_bg, alarm.minutes)
         is ActiveAlarm.Generic -> alarm.type.descriptionResId?.let { context.getString(it) } ?: ""
     }

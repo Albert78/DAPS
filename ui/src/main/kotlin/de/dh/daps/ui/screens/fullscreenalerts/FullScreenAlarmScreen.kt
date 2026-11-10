@@ -121,12 +121,7 @@ fun FullScreenAlarmScreen(
                                 .padding(24.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            val bgValue = when (heroAlarm) {
-                                is ActiveAlarm.CriticalLowBg -> heroAlarm.bgValue
-                                is ActiveAlarm.LowBg -> heroAlarm.bgValue
-                                is ActiveAlarm.HighBg -> heroAlarm.bgValue
-                                else -> null
-                            }
+                            val bgValue = (heroAlarm as? ActiveAlarm.GlucoseAlarm)?.bgValue
                             if (bgValue != null && bgValue.isValid()) {
                                 Text(
                                     text = bgValue.toString(glucoseUnit),

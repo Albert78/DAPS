@@ -11,15 +11,19 @@ sealed interface ActiveAlarm {
     val category: AlarmCategory get() = type.category
     val isSafetyCritical: Boolean get() = type.isSafetyCritical
 
-    data class CriticalLowBg(val bgValue: BgValue) : ActiveAlarm {
+    sealed interface GlucoseAlarm : ActiveAlarm {
+        val bgValue: BgValue
+    }
+
+    data class CriticalLowBg(override val bgValue: BgValue) : GlucoseAlarm {
         override val type = AlarmType.CRITICAL_LOW_BG
     }
 
-    data class LowBg(val bgValue: BgValue) : ActiveAlarm {
+    data class LowBg(override val bgValue: BgValue) : GlucoseAlarm {
         override val type = AlarmType.LOW_BG
     }
 
-    data class HighBg(val bgValue: BgValue) : ActiveAlarm {
+    data class HighBg(override val bgValue: BgValue) : GlucoseAlarm {
         override val type = AlarmType.HIGH_BG
     }
 
