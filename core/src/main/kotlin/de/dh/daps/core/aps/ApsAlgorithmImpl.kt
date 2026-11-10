@@ -82,11 +82,8 @@ class ApsAlgorithmImpl(
 
         val meals = treatmentRepository.getMeals()
         val insulinApplications = treatmentRepository.getInsulinApplications()
-        val settings = therapyManager.getCurrentTherapySettings()
+        val snapshot = therapyManager.getTherapySnapshot()
         val pumpInsulinType = therapyManager.getPumpInsulinType()
-        val setting = settings.insulinProfile.getSettingFor(pumpInsulinType)
-        val dia = setting.dia
-        val insulinPeak = setting.peak
         val activeDoses = insulinApplications.toActiveDoses()
 
         predictionModel.calculate(
@@ -94,9 +91,8 @@ class ApsAlgorithmImpl(
             avgCurrentDeviationPerTick = avgCurrentDeviationPerTick,
             meals = meals,
             insulinDoses = activeDoses,
-            dia = dia,
-            insulinPeak = insulinPeak,
-            therapyManager = therapyManager,
+            therapySnapshot = snapshot,
+            insulinType = pumpInsulinType,
             carbsInsulinCalculator = carbsInsulinCalculator
         )
     }
@@ -396,20 +392,20 @@ class ApsAlgorithmImpl(
 
             val meals = treatmentRepository.getMeals()
             val insulinApplications = treatmentRepository.getInsulinApplications()
-            val settings = therapyManager.getCurrentTherapySettings()
+            val snapshot = therapyManager.getTherapySnapshot()
             val pumpInsulinType = therapyManager.getPumpInsulinType()
-            val setting = settings.insulinProfile.getSettingFor(pumpInsulinType)
-            val dia = setting.dia
-            val insulinPeak = setting.peak
-            val correctionHorizon = setting.peak
+            val dia = snapshot.getDiaFor(pumpInsulinType)
+            val insulinPeak = snapshot.getPeakFor(pumpInsulinType)
+            val correctionHorizon = insulinPeak
 
-            val (targetBg, lowThreshold) = therapyManager.getMaxBgSettings(
+            val (targetBg, lowThreshold) = snapshot.getMaxBgSettings(
                 from = now,
                 to = now + correctionHorizon * 2
             )
 
-            val isfNow = therapyManager.getIsfFactor(now)
-            val crNow = therapyManager.getCrFactor(now)
+            val settingsNow = snapshot.getSettingsAt(now)
+            val isfNow = settingsNow.isf
+            val crNow = settingsNow.cr
 
             insight = insight.copy(
                 bgFiltered = validFilteredBg,
@@ -434,9 +430,8 @@ class ApsAlgorithmImpl(
                 avgCurrentDeviationPerTick = avgCurrentDeviationPerTick,
                 meals = meals,
                 insulinDoses = activeDoses,
-                dia = dia,
-                insulinPeak = insulinPeak,
-                therapyManager = therapyManager,
+                therapySnapshot = snapshot,
+                insulinType = pumpInsulinType,
                 carbsInsulinCalculator = carbsInsulinCalculator
             )
 

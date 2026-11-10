@@ -3,17 +3,17 @@ package de.dh.daps.core.aps.prediction
 import de.dh.daps.common.domain.calculation.CarbsInsulinCalculator
 import de.dh.daps.common.domain.model.data.BgDelta
 import de.dh.daps.common.domain.model.data.BgValue
-import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.data.Tick
 import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.engine.Timeline
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.common.domain.model.therapy.InsulinDose
+import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.common.domain.model.therapy.MealEntry
+import de.dh.daps.common.domain.model.therapy.TherapySnapshot
 import de.dh.daps.common.domain.model.therapy.convertToBgDeltaFromUnits
 import de.dh.daps.common.domain.model.therapy.convertToInsulinAmountFromCarbs
 import de.dh.daps.core.aps.DEVIATION_DECAY_FACTOR_PER_TICK
-import de.dh.daps.core.therapy.TherapyManager
 
 /**
  * Predicts future blood glucose levels based on current blood glucose, treatment history
@@ -79,9 +79,8 @@ class PredictionModel(
         avgCurrentDeviationPerTick: BgDelta,
         meals: List<MealEntry>,
         insulinDoses: List<InsulinDose>,
-        dia: Minutes,
-        insulinPeak: Minutes,
-        therapyManager: TherapyManager,
+        therapySnapshot: TherapySnapshot,
+        insulinType: InsulinType,
         carbsInsulinCalculator: CarbsInsulinCalculator
     ) {
         var bg = currentBg
@@ -90,6 +89,9 @@ class PredictionModel(
             state.predictedBg = bg
             state.assumedBg = bg
         }
+
+        val dia = therapySnapshot.getDiaFor(insulinType)
+        val insulinPeak = therapySnapshot.getPeakFor(insulinType)
 
         var deviationPerTick = avgCurrentDeviationPerTick
         var runningCumulatedBasal = InsulinAmount.ZERO
@@ -111,9 +113,10 @@ class PredictionModel(
             val timestamp = timeline.timestamp(tick)
 
             if (state.isf == null || state.cr == null || state.basalRateUph == null) {
-                state.isf = therapyManager.getIsfFactor(timestamp)
-                state.cr = therapyManager.getCrFactor(timestamp)
-                state.basalRateUph = therapyManager.getBasalPerHour(timestamp)
+                val effectiveSettings = therapySnapshot.getSettingsAt(timestamp)
+                state.isf = effectiveSettings.isf
+                state.cr = effectiveSettings.cr
+                state.basalRateUph = effectiveSettings.basalRate
             }
 
             val insulinEquivalentOfCarbs = convertToInsulinAmountFromCarbs(state.effectiveCarbs!!, state.cr!!)
