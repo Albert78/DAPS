@@ -29,7 +29,7 @@ class AlarmBroadcastReceiver : BroadcastReceiver() {
                     // Snooze all active firing alarms
                     val activeGroup = registry.alarmEvaluator.activeAlarmGroup.value
                     if (activeGroup != null) {
-                        registry.alarmSnoozeManager.snoozeAlarms(activeGroup.allAlarms, minutes)
+                        registry.alarmSnoozeManager.snoozeAlarms(activeGroup.allAlarmTypes, minutes)
                     }
                 }
                 registry.alarmPlayerManager.stopAlarm()

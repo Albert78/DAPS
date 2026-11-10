@@ -26,8 +26,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.domain.model.alarm.ActiveAlarm
 import de.dh.daps.common.domain.model.alarm.ActiveAlarmGroup
-import de.dh.daps.common.domain.model.alarm.AlarmCategory
 import de.dh.daps.common.domain.model.alarm.AlarmSeverity
 import de.dh.daps.common.domain.model.alarm.AlarmType
 import de.dh.daps.common.domain.model.data.BgValue
@@ -42,29 +42,7 @@ import de.dh.daps.ui.common.titleResId
 
 @Composable
 fun FullScreenAlarmScreen(
-    alarmType: AlarmType,
-    bgValue: BgValue?,
-    glucoseUnit: GlucoseUnit,
-    onSnooze: (minutes: Int) -> Unit
-) {
-    val group = ActiveAlarmGroup(
-        heroAlarms = listOf(alarmType),
-        otherAlarms = emptyList(),
-        highestSeverity = alarmType.defaultSeverity,
-        primaryAlarm = alarmType
-    )
-    FullScreenAlarmScreen(
-        alarmGroup = group,
-        bgValue = bgValue,
-        glucoseUnit = glucoseUnit,
-        onSnoozeAll = onSnooze
-    )
-}
-
-@Composable
-fun FullScreenAlarmScreen(
     alarmGroup: ActiveAlarmGroup,
-    bgValue: BgValue?,
     glucoseUnit: GlucoseUnit,
     onSnoozeAll: (minutes: Int) -> Unit
 ) {
@@ -143,7 +121,13 @@ fun FullScreenAlarmScreen(
                                 .padding(24.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            if (heroAlarm.category == AlarmCategory.GLUCOSE && bgValue != null && bgValue.isValid()) {
+                            val bgValue = when (heroAlarm) {
+                                is ActiveAlarm.CriticalLowBg -> heroAlarm.bgValue
+                                is ActiveAlarm.LowBg -> heroAlarm.bgValue
+                                is ActiveAlarm.HighBg -> heroAlarm.bgValue
+                                else -> null
+                            }
+                            if (bgValue != null && bgValue.isValid()) {
                                 Text(
                                     text = bgValue.toString(glucoseUnit),
                                     style = MaterialTheme.typography.displayLarge,
@@ -271,20 +255,29 @@ fun FullScreenAlarmScreen(
 fun getAlarmTypeTitle(alarmType: AlarmType): String = stringResource(id = alarmType.titleResId)
 
 @Composable
-fun getAlarmTypeDescription(alarmType: AlarmType): String = when (alarmType) {
-    AlarmType.CGM_SIGNAL_LOSS -> stringResource(id = R.string.aps_issue_stale_bg, 12)
-    else -> alarmType.descriptionResId?.let { stringResource(id = it) } ?: stringResource(id = alarmType.titleResId)
+fun getAlarmTypeTitle(alarm: ActiveAlarm): String = stringResource(id = alarm.titleResId)
+
+@Composable
+fun getAlarmTypeDescription(alarm: ActiveAlarm): String = when (alarm) {
+    is ActiveAlarm.CgmSignalLoss -> stringResource(id = R.string.aps_issue_stale_bg, alarm.minutes)
+    else -> alarm.descriptionResId?.let { stringResource(id = it) } ?: stringResource(id = alarm.titleResId)
 }
 
 @Preview(showBackground = true, name = "Critical Low BG Alarm")
 @Composable
 fun FullScreenAlarmScreenCriticalPreview() {
     AppPreview {
+        val criticalAlarm = ActiveAlarm.CriticalLowBg(BgValue.fromMgDl(55))
+        val group = ActiveAlarmGroup(
+            heroAlarms = listOf(criticalAlarm),
+            otherAlarms = emptyList(),
+            highestSeverity = AlarmSeverity.CRITICAL,
+            primaryAlarm = criticalAlarm
+        )
         FullScreenAlarmScreen(
-            alarmType = AlarmType.CRITICAL_LOW_BG,
-            bgValue = BgValue.fromMgDl(55),
+            alarmGroup = group,
             glucoseUnit = GlucoseUnit.MG_DL,
-            onSnooze = {}
+            onSnoozeAll = {}
         )
     }
 }
@@ -294,14 +287,13 @@ fun FullScreenAlarmScreenCriticalPreview() {
 fun FullScreenAlarmScreenMultiPreview() {
     AppPreview {
         val group = ActiveAlarmGroup(
-            heroAlarms = listOf(AlarmType.PUMP_OCCLUSION, AlarmType.HIGH_BG),
-            otherAlarms = listOf(AlarmType.PUMP_LOW_BATTERY),
+            heroAlarms = listOf(ActiveAlarm.Generic(AlarmType.PUMP_OCCLUSION), ActiveAlarm.HighBg(BgValue.fromMgDl(280))),
+            otherAlarms = listOf(ActiveAlarm.Generic(AlarmType.PUMP_LOW_BATTERY)),
             highestSeverity = AlarmSeverity.CRITICAL,
-            primaryAlarm = AlarmType.PUMP_OCCLUSION
+            primaryAlarm = ActiveAlarm.Generic(AlarmType.PUMP_OCCLUSION)
         )
         FullScreenAlarmScreen(
             alarmGroup = group,
-            bgValue = BgValue.fromMgDl(280),
             glucoseUnit = GlucoseUnit.MG_DL,
             onSnoozeAll = {}
         )

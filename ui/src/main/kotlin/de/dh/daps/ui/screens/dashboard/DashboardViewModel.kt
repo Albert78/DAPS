@@ -89,7 +89,7 @@ class DashboardViewModel(
     fun snoozeAllAlarms(minutes: Int) {
         val activeGroup = uiState.value.activeAlarmGroup
         if (activeGroup != null) {
-            alarmSnoozeManager.snoozeAlarms(activeGroup.allAlarms, minutes)
+            alarmSnoozeManager.snoozeAlarms(activeGroup.allAlarmTypes, minutes)
         }
         systemRegistry.alarmPlayerManager.stopAlarm()
     }

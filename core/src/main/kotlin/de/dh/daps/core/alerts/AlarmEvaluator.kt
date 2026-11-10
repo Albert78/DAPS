@@ -2,12 +2,13 @@ package de.dh.daps.core.alerts
 
 import android.content.Intent
 import android.util.Log
+import de.dh.daps.common.domain.model.alarm.ActiveAlarm
 import de.dh.daps.common.domain.model.alarm.ActiveAlarmGroup
-import de.dh.daps.common.domain.model.alarm.AlarmCategory
-import de.dh.daps.common.domain.model.alarm.AlertProfile
 import de.dh.daps.common.domain.model.alarm.AlarmSeverity
-import de.dh.daps.common.domain.model.alarm.AlertSignalConfig
 import de.dh.daps.common.domain.model.alarm.AlarmType
+import de.dh.daps.common.domain.model.alarm.AlertProfile
+import de.dh.daps.common.domain.model.alarm.AlertSignalConfig
+import de.dh.daps.core.aps.STALE_BG_THRESHOLD
 import de.dh.daps.common.domain.model.data.BgReading
 import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.data.Timestamp
@@ -60,7 +61,6 @@ class AlarmEvaluator(
     private val _activeFiringConfig = MutableStateFlow<AlertSignalConfig?>(null)
     val activeFiringConfig: StateFlow<AlertSignalConfig?> = _activeFiringConfig.asStateFlow()
 
-    private var lastEvaluatedBgValue: BgValue? = null
     private var lastInput: EvaluationInput? = null
 
     private var evaluationJob: Job? = null
@@ -110,7 +110,6 @@ class AlarmEvaluator(
         _activeAlarms.value = emptySet()
         _activeAlarmGroup.value = null
         _activeFiringConfig.value = null
-        lastEvaluatedBgValue = null
         lastInput = null
         androidNotifications.cancelAlarmNotification()
     }
@@ -240,34 +239,30 @@ class AlarmEvaluator(
                         .thenBy { it.name }
                 )
 
-            val primaryAlarm = heroAlarms.first()
+            val heroActiveAlarms = heroAlarms.map { toActiveAlarm(it, input) }
+            val otherActiveAlarms = otherAlarms.map { toActiveAlarm(it, input) }
+            val primaryActiveAlarm = heroActiveAlarms.first()
+
             val alarmGroup = ActiveAlarmGroup(
-                heroAlarms = heroAlarms,
-                otherAlarms = otherAlarms,
+                heroAlarms = heroActiveAlarms,
+                otherAlarms = otherActiveAlarms,
                 highestSeverity = highestSeverity,
-                primaryAlarm = primaryAlarm
+                primaryAlarm = primaryActiveAlarm
             )
 
             val activeProfile = input.activeProfile
-            val config = activeProfile?.getConfigFor(primaryAlarm) ?: AlertSignalConfig()
-
-            val bgValue = input.bgReading?.value
-            val isGlucoseAlarmActive = alarmGroup.allAlarms.any { it.category == AlarmCategory.GLUCOSE }
-            val effectiveBgValue = if (isGlucoseAlarmActive) bgValue else null
+            val config = activeProfile?.getConfigFor(primaryActiveAlarm.type) ?: AlertSignalConfig()
 
             val previousGroup = _activeAlarmGroup.value
             val previousConfig = _activeFiringConfig.value
-            val previousBgValue = lastEvaluatedBgValue
 
             _activeAlarmGroup.value = alarmGroup
             _activeFiringConfig.value = config
-            lastEvaluatedBgValue = if (isGlucoseAlarmActive) bgValue else null
 
-            // Only re-post notification if active alarm group, signal config, or BG reading (if glucose alarm) actually changed
-            val bgChanged = isGlucoseAlarmActive && (bgValue != previousBgValue)
-            if (alarmGroup != previousGroup || config != previousConfig || bgChanged) {
+            // Only re-post notification if active alarm group or signal config actually changed
+            if (alarmGroup != previousGroup || config != previousConfig) {
                 Log.d(TAG, "Posting notification for active alarm group $alarmGroup (isFullScreen=${config.isFullScreen})")
-                androidNotifications.showAlarmNotification(alarmGroup, effectiveBgValue, isFullScreen = config.isFullScreen)
+                androidNotifications.showAlarmNotification(alarmGroup, isFullScreen = config.isFullScreen)
             }
         } else {
             // No unsnoozed alarms active
@@ -277,8 +272,18 @@ class AlarmEvaluator(
             }
             _activeAlarmGroup.value = null
             _activeFiringConfig.value = null
-            lastEvaluatedBgValue = null
         }
+    }
+
+    private fun toActiveAlarm(type: AlarmType, input: EvaluationInput): ActiveAlarm = when (type) {
+        AlarmType.CRITICAL_LOW_BG -> ActiveAlarm.CriticalLowBg(input.bgReading?.value ?: BgValue.INVALID)
+        AlarmType.LOW_BG -> ActiveAlarm.LowBg(input.bgReading?.value ?: BgValue.INVALID)
+        AlarmType.HIGH_BG -> ActiveAlarm.HighBg(input.bgReading?.value ?: BgValue.INVALID)
+        AlarmType.CGM_SIGNAL_LOSS -> {
+            val minutes = input.apsIssues.filterIsInstance<ApsIssue.StaleBG>().firstOrNull()?.minutes ?: STALE_BG_THRESHOLD.value.toInt()
+            ActiveAlarm.CgmSignalLoss(minutes)
+        }
+        else -> ActiveAlarm.Generic(type)
     }
 
     private fun severityRank(severity: AlarmSeverity): Int = when (severity) {

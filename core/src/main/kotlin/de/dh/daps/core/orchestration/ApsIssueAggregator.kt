@@ -27,7 +27,6 @@ class ApsIssueAggregator {
     val apsIssues: StateFlow<Set<ApsIssue>> = _apsIssues.asStateFlow()
 
     private val _staleSince = MutableStateFlow<Timestamp?>(null)
-    val staleSince: StateFlow<Timestamp?> = _staleSince.asStateFlow()
 
     fun staleCheck(glucoseSourceManager: GlucoseSourceManager) {
         val lastDataTime = glucoseSourceManager.lastInputTimestamp.value

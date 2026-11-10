@@ -9,11 +9,12 @@ package de.dh.daps.common.domain.model.alarm
  * @property primaryAlarm The primary alarm used for signal configurations (audio/vibration/fullscreen).
  */
 data class ActiveAlarmGroup(
-    val heroAlarms: List<AlarmType>,
-    val otherAlarms: List<AlarmType>,
+    val heroAlarms: List<ActiveAlarm>,
+    val otherAlarms: List<ActiveAlarm>,
     val highestSeverity: AlarmSeverity,
-    val primaryAlarm: AlarmType
+    val primaryAlarm: ActiveAlarm
 ) {
-    val allAlarms: List<AlarmType> get() = heroAlarms + otherAlarms
+    val allAlarms: List<ActiveAlarm> get() = heroAlarms + otherAlarms
+    val allAlarmTypes: List<AlarmType> get() = allAlarms.map { it.type }
     val totalCount: Int get() = heroAlarms.size + otherAlarms.size
 }

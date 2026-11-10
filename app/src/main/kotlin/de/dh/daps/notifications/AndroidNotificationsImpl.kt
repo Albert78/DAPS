@@ -12,8 +12,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import de.dh.daps.R
+import de.dh.daps.common.domain.model.alarm.ActiveAlarm
 import de.dh.daps.common.domain.model.alarm.ActiveAlarmGroup
-import de.dh.daps.common.domain.model.alarm.AlarmType
 import de.dh.daps.common.domain.model.alarm.AlertProfile
 import de.dh.daps.common.domain.model.alarm.getDefaultAlertProfiles
 import de.dh.daps.common.domain.model.data.BgDelta
@@ -390,23 +390,12 @@ class AndroidNotificationsImpl(
         notify(notificationId, builder.build())
     }
 
-    override fun showAlarmNotification(alarmType: AlarmType, bgValue: BgValue?, isFullScreen: Boolean) {
-        val group = ActiveAlarmGroup(
-            heroAlarms = listOf(alarmType),
-            otherAlarms = emptyList(),
-            highestSeverity = alarmType.defaultSeverity,
-            primaryAlarm = alarmType
-        )
-        showAlarmNotification(group, bgValue, isFullScreen)
-    }
-
     override fun showAlarmNotification(
         alarmGroup: ActiveAlarmGroup,
-        bgValue: BgValue?,
         isFullScreen: Boolean
     ) {
         val activeProfile = getActiveAlertProfile()
-        val config = activeProfile.getConfigFor(alarmGroup.primaryAlarm)
+        val config = activeProfile.getConfigFor(alarmGroup.primaryAlarm.type)
         if (!config.enabled) {
             return
         }
@@ -419,7 +408,7 @@ class AndroidNotificationsImpl(
             heroTitles
         }
 
-        val primaryContentText = getAlarmContentText(alarmGroup.primaryAlarm, bgValue, unit)
+        val primaryContentText = getAlarmContentText(alarmGroup.primaryAlarm, unit)
 
         val alarmActivityIntent = Intent(context, AlarmActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -447,7 +436,7 @@ class AndroidNotificationsImpl(
 
         val inboxStyle = NotificationCompat.InboxStyle()
         alarmGroup.heroAlarms.forEach { hero ->
-            val desc = getAlarmContentText(hero, bgValue, unit)
+            val desc = getAlarmContentText(hero, unit)
             val lineText = if (desc.isNotBlank()) "${getAlarmTitle(hero)}: $desc" else getAlarmTitle(hero)
             inboxStyle.addLine(lineText)
         }
@@ -487,19 +476,18 @@ class AndroidNotificationsImpl(
         notify(ALARM_NOTIFICATION_ID, notification)
     }
 
-    private fun getAlarmTitle(alarmType: AlarmType): String =
-        context.getString(alarmType.titleResId)
+    private fun getAlarmTitle(alarm: ActiveAlarm): String =
+        context.getString(alarm.type.titleResId)
 
-    private fun getAlarmContentText(alarmType: AlarmType, bgValue: BgValue?, unit: GlucoseUnit): String = when (alarmType) {
-        AlarmType.CRITICAL_LOW_BG, AlarmType.LOW_BG, AlarmType.HIGH_BG -> {
-            if (bgValue != null) {
-                getBgValueString(bgValue, unit, false) ?: ""
-            } else {
-                ""
-            }
-        }
-        AlarmType.CGM_SIGNAL_LOSS -> context.getString(UiR.string.aps_issue_stale_bg, 12)
-        else -> alarmType.descriptionResId?.let { context.getString(it) } ?: ""
+    private fun getAlarmContentText(
+        alarm: ActiveAlarm,
+        unit: GlucoseUnit = GlucoseUnit.MG_DL
+    ): String = when (alarm) {
+        is ActiveAlarm.CriticalLowBg -> getBgValueString(alarm.bgValue, unit, false) ?: ""
+        is ActiveAlarm.LowBg -> getBgValueString(alarm.bgValue, unit, false) ?: ""
+        is ActiveAlarm.HighBg -> getBgValueString(alarm.bgValue, unit, false) ?: ""
+        is ActiveAlarm.CgmSignalLoss -> context.getString(UiR.string.aps_issue_stale_bg, alarm.minutes)
+        is ActiveAlarm.Generic -> alarm.type.descriptionResId?.let { context.getString(it) } ?: ""
     }
 
     override fun cancelAlarmNotification() {

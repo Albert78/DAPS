@@ -43,7 +43,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import de.dh.daps.common.domain.model.alarm.ActiveAlarm
 import de.dh.daps.common.domain.model.alarm.ActiveAlarmGroup
+import de.dh.daps.ui.common.titleResId
 import de.dh.daps.common.domain.model.alarm.AlarmSeverity
 import de.dh.daps.common.domain.model.alarm.AlarmType
 import de.dh.daps.common.domain.model.data.BgDelta
@@ -341,10 +343,10 @@ fun DashboardContent(
 }
 
 @Composable
-fun getAlarmGroupHeroTitles(heroAlarms: List<AlarmType>): String {
+fun getAlarmGroupHeroTitles(heroAlarms: List<ActiveAlarm>): String {
     val titles = mutableListOf<String>()
     for (alarm in heroAlarms) {
-        titles.add(getAlarmTypeTitle(alarm))
+        titles.add(stringResource(id = alarm.titleResId))
     }
     return titles.joinToString(", ")
 }
@@ -826,10 +828,10 @@ fun ActiveAlarmGroupBannerCriticalPreview() {
         Box(modifier = Modifier.padding(16.dp)) {
             ActiveAlarmGroupBanner(
                 alarmGroup = ActiveAlarmGroup(
-                    heroAlarms = listOf(AlarmType.CRITICAL_LOW_BG),
+                    heroAlarms = listOf(ActiveAlarm.CriticalLowBg(BgValue.fromMgDl(55))),
                     otherAlarms = emptyList(),
                     highestSeverity = AlarmSeverity.CRITICAL,
-                    primaryAlarm = AlarmType.CRITICAL_LOW_BG
+                    primaryAlarm = ActiveAlarm.CriticalLowBg(BgValue.fromMgDl(55))
                 ),
                 onSnoozeAll = {},
                 onBannerClick = {}
@@ -845,10 +847,10 @@ fun ActiveAlarmGroupBannerWarningPreview() {
         Box(modifier = Modifier.padding(16.dp)) {
             ActiveAlarmGroupBanner(
                 alarmGroup = ActiveAlarmGroup(
-                    heroAlarms = listOf(AlarmType.LOW_BG),
-                    otherAlarms = listOf(AlarmType.HIGH_BG),
+                    heroAlarms = listOf(ActiveAlarm.LowBg(BgValue.fromMgDl(65))),
+                    otherAlarms = listOf(ActiveAlarm.HighBg(BgValue.fromMgDl(250))),
                     highestSeverity = AlarmSeverity.WARNING,
-                    primaryAlarm = AlarmType.LOW_BG
+                    primaryAlarm = ActiveAlarm.LowBg(BgValue.fromMgDl(65))
                 ),
                 onSnoozeAll = {},
                 onBannerClick = {}

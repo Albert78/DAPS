@@ -351,8 +351,23 @@ class ApsAlgorithmImpl(
                         }
                     }
                     if (!receivedValidValue) {
+                        var lastValidTick: Tick? = null
+                        for (tick in (nowTick.value - 180..nowTick.value).reversed()) {
+                            val candidate = Tick(tick)
+                            if (sampledBgReadings.getAt(candidate).isValid()) {
+                                lastValidTick = candidate
+                                break
+                            }
+                        }
+                        val elapsedMinutes = if (lastValidTick != null) {
+                            val diffTicks = nowTick.value - lastValidTick.value
+                            val diffMinutes = diffTicks * timeline.tickDuration.value.toInt()
+                            diffMinutes.coerceAtLeast(SWITCH_OFF_ALGORITHM_INVALID_VALUES_THRESHOLD_IN_MINUTES)
+                        } else {
+                            SWITCH_OFF_ALGORITHM_INVALID_VALUES_THRESHOLD_IN_MINUTES
+                        }
                         return@recalculate CalculationResult.coreIssue(
-                            CoreIssue.NoRecentValues(SWITCH_OFF_ALGORITHM_INVALID_VALUES_THRESHOLD_IN_MINUTES),
+                            CoreIssue.NoRecentValues(elapsedMinutes),
                             CoreReasoning.INVALID_VALUES
                         ).withMetrics(insight)
                     }

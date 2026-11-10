@@ -21,7 +21,6 @@ class AlarmActivity : ComponentActivity() {
 
         setContent {
             val activeAlarmGroup by registry.alarmEvaluator.activeAlarmGroup.collectAsState()
-            val currentBgReading by registry.glucoseRepository.currentBg.collectAsState()
             val glucoseUnit by registry.appPreferencesRepository.glucoseUnit.collectAsState()
 
             val group = activeAlarmGroup
@@ -33,10 +32,9 @@ class AlarmActivity : ComponentActivity() {
             AppTheme(darkTheme = true) {
                 FullScreenAlarmScreen(
                     alarmGroup = group,
-                    bgValue = currentBgReading?.value,
                     glucoseUnit = glucoseUnit,
                     onSnoozeAll = { minutes ->
-                        registry.alarmSnoozeManager.snoozeAlarms(group.allAlarms, minutes)
+                        registry.alarmSnoozeManager.snoozeAlarms(group.allAlarmTypes, minutes)
                         finish()
                     }
                 )
