@@ -148,19 +148,16 @@ class PumpManagerImpl(
                         }
                     }
                     launch {
-                        combine(pc.pump.isBlocked, pc.syncStatus) { driverBlocked, syncStatus ->
-                            driverBlocked || syncStatus is PumpSyncStatus.Error
-                        }.collect { isBlocked ->
+                        combine(pc.pump.connectionState, pc.syncStatus) { connState, syncStatus ->
+                            connState to (connState.isBlocked || syncStatus is PumpSyncStatus.Error)
+                        }.collect { (connState, isBlocked) ->
                             if (isBlocked) {
                                 setIssue(PumpIssue.Blocked)
                             } else {
                                 removeIssue(PumpIssue.Blocked)
                             }
-                        }
-                    }
-                    launch {
-                        pc.pump.requiresStaleBondRemoval.collect { requiresRemoval ->
-                            if (requiresRemoval) {
+
+                            if (connState.requiresStaleBondRemoval) {
                                 setIssue(PumpIssue.StaleBluetoothBond)
                             } else {
                                 removeIssue(PumpIssue.StaleBluetoothBond)

@@ -246,8 +246,10 @@ class PumpCoordinator private constructor(
 
     private fun setupPump() {
         scope.launch {
-            pump.isConnected.collect { _ ->
-                _lastConnectionTime.value = Timestamp.now()
+            pump.connectionState.collect { connectionState ->
+                if (connectionState.isConnected) {
+                    _lastConnectionTime.value = Timestamp.now()
+                }
             }
         }
     }

@@ -8,6 +8,7 @@ import de.dh.daps.common.domain.pump.InsulinPump
 import de.dh.daps.common.domain.pump.InsulinPumpStatus
 import de.dh.daps.common.domain.pump.PumpAlerts
 import de.dh.daps.common.domain.pump.PumpCapabilities
+import de.dh.daps.common.domain.pump.PumpConnectionState
 import de.dh.daps.common.domain.pump.PumpHardwareInformation
 import de.dh.daps.common.domain.pump.PumpLifecycleState
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
@@ -78,9 +79,25 @@ class DanaIPumpAdapter(
         )
     )
 
-    override val isConnected: StateFlow<Boolean> = pump.isConnected
-    override val isBlocked: StateFlow<Boolean> get() = pump.isMaintenanceMode
-    override val requiresStaleBondRemoval: StateFlow<Boolean> get() = controller.requiresStaleBondRemoval
+    override val connectionState: StateFlow<PumpConnectionState> = combine(
+        pump.isConnected,
+        pump.isMaintenanceMode,
+        controller.requiresStaleBondRemoval
+    ) { connected, maintenance, staleBond ->
+        PumpConnectionState(
+            isConnected = connected,
+            isBlocked = maintenance,
+            requiresStaleBondRemoval = staleBond
+        )
+    }.stateIn(
+        scope,
+        SharingStarted.Eagerly,
+        PumpConnectionState(
+            isConnected = pump.isConnected.value,
+            isBlocked = pump.isMaintenanceMode.value,
+            requiresStaleBondRemoval = controller.requiresStaleBondRemoval.value
+        )
+    )
 
     private val danaPreferences: DanaPumpPreferences? = try {
         DanaPumpPreferences(controller.link.preferences)

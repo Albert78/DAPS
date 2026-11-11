@@ -17,6 +17,7 @@ import de.dh.daps.common.domain.pump.PatchDeactivationReason
 import de.dh.daps.common.domain.pump.PatchPhase
 import de.dh.daps.common.domain.pump.PumpAlerts
 import de.dh.daps.common.domain.pump.PumpCapabilities
+import de.dh.daps.common.domain.pump.PumpConnectionState
 import de.dh.daps.common.domain.pump.PumpHardwareInformation
 import de.dh.daps.common.domain.pump.PumpLifecycleState
 import de.dh.daps.common.ui.UiText
@@ -57,13 +58,12 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.Date
 import java.util.EnumSet
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 data class OmnipodDashStatusData(
@@ -116,8 +116,8 @@ class OmnipodDashPump(
     )
     override val pumpCapabilities: StateFlow<PumpCapabilities> = _pumpCapabilities.asStateFlow()
 
-    private val _isConnected = MutableStateFlow(true)
-    override val isConnected: StateFlow<Boolean> = _isConnected.asStateFlow()
+    private val _connectionState = MutableStateFlow(PumpConnectionState(isConnected = true))
+    override val connectionState: StateFlow<PumpConnectionState> = _connectionState.asStateFlow()
 
     private val _pumpStatus = MutableStateFlow<InsulinPumpStatus>(OmnipodDashStatusData())
     override val pumpStatus: StateFlow<InsulinPumpStatus> = _pumpStatus.asStateFlow()
@@ -873,7 +873,7 @@ class OmnipodDashPump(
     }
 
     override fun stop() {
-        _isConnected.value = false
+        _connectionState.value = _connectionState.value.copy(isConnected = false)
         activeBolusJob?.cancel()
         scope.cancel()
         bleManager.disconnect()

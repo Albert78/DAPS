@@ -16,6 +16,7 @@ import de.dh.daps.common.domain.pump.InsulinPump
 import de.dh.daps.common.domain.pump.InsulinPumpStatus
 import de.dh.daps.common.domain.pump.PumpAlerts
 import de.dh.daps.common.domain.pump.PumpCapabilities
+import de.dh.daps.common.domain.pump.PumpConnectionState
 import de.dh.daps.common.domain.pump.PumpHardwareInformation
 import de.dh.daps.common.domain.pump.PumpLifecycleState
 import de.dh.daps.common.ui.UiText
@@ -97,8 +98,8 @@ class SimBodyInsulinPump(
         )
     )
 
-    private val _isConnected = MutableStateFlow(true)
-    override val isConnected: StateFlow<Boolean> = _isConnected
+    private val _connectionState = MutableStateFlow(PumpConnectionState(isConnected = true))
+    override val connectionState: StateFlow<PumpConnectionState> = _connectionState.asStateFlow()
 
     private val _isConnecting = MutableStateFlow(false)
     val isConnecting: StateFlow<Boolean> = _isConnecting
@@ -108,13 +109,13 @@ class SimBodyInsulinPump(
         scope.launch {
             _isConnecting.value = true
             delay(1000.milliseconds) // Simulate connection delay
-            _isConnected.value = true
+            _connectionState.value = _connectionState.value.copy(isConnected = true)
             _isConnecting.value = false
         }
     }
 
     fun disconnect() {
-        _isConnected.value = false
+        _connectionState.value = _connectionState.value.copy(isConnected = false)
     }
 
     override val pumpStatus: StateFlow<InsulinPumpStatus> = combine(
@@ -122,13 +123,13 @@ class SimBodyInsulinPump(
         device.reservoirLevel,
         device.isBroken,
         device.isSuspended,
-        _isConnected
-    ) { battery, reservoir, broken, suspended, connected ->
+        _connectionState
+    ) { battery, reservoir, broken, suspended, connState ->
         object : InsulinPumpStatus {
             override val pumpSuspended: Boolean = broken || suspended
             override val batteryRemainingPercent: Int = (battery * 100).toInt()
             override val reservoirRemainingUnits: InsulinAmount = reservoir
-            override val lastSyncTimestamp: Timestamp = if (connected) Timestamp.now() else Timestamp.INVALID
+            override val lastSyncTimestamp: Timestamp = if (connState.isConnected) Timestamp.now() else Timestamp.INVALID
             override val lifecycleState: PumpLifecycleState = PumpLifecycleState.Durable()
         }
     }
@@ -240,41 +241,41 @@ class SimBodyInsulinPump(
     }
 
     override suspend fun bolus(amount: InsulinAmount, bolusId: String?) {
-        if (!_isConnected.value) throw PumpConnectionException("Pump not connected to App")
+        if (!_connectionState.value.isConnected) throw PumpConnectionException("Pump not connected to App")
 
         device.deliverBolus(amount, bolusId)
     }
 
     override suspend fun stopBolus() {
-        if (!_isConnected.value) throw PumpConnectionException("Pump not connected to App")
+        if (!_connectionState.value.isConnected) throw PumpConnectionException("Pump not connected to App")
         device.stopBolus()
     }
 
     override suspend fun tempBasal(percent: Int, durationHours: Int) {
-        if (!_isConnected.value) throw PumpConnectionException("Pump not connected to App")
+        if (!_connectionState.value.isConnected) throw PumpConnectionException("Pump not connected to App")
         device.updateTempBasalPercent(percent, durationHours)
         refreshStatus()
     }
 
     override suspend fun cancelTempBasal() {
-        if (!_isConnected.value) throw PumpConnectionException("Pump not connected to App")
+        if (!_connectionState.value.isConnected) throw PumpConnectionException("Pump not connected to App")
         device.updateTempBasalPercent(null) // Clear temp basal override
         refreshStatus()
     }
 
     override suspend fun setSuspend(suspended: Boolean) {
-        if (!_isConnected.value) throw PumpConnectionException("Pump not connected to App")
+        if (!_connectionState.value.isConnected) throw PumpConnectionException("Pump not connected to App")
         device.setSuspended(suspended)
         refreshStatus()
     }
 
     override suspend fun setProfile(profile: InsulinProfile) {
-        if (!_isConnected.value) throw Exception("Pump not connected to App")
+        if (!_connectionState.value.isConnected) throw Exception("Pump not connected to App")
         device.setProfile(profile)
     }
 
     override suspend fun syncHistory(start: Timestamp) {
-        if (!_isConnected.value) return
+        if (!_connectionState.value.isConnected) return
         lastRequestedStart = start
         val cutoff = start
         val points = device.getHistory()
@@ -299,7 +300,7 @@ class SimBodyInsulinPump(
     }
 
     override suspend fun refreshStatus() {
-        if (!_isConnected.value) return
+        if (!_connectionState.value.isConnected) return
         // pumpStatus and alerts are already connected via flows in this simulator.
         // We also sync history on refresh in this sim to stay up-to-date.
         syncHistory(lastRequestedStart)

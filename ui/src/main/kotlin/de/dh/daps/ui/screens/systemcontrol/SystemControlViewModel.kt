@@ -28,6 +28,7 @@ import de.dh.daps.common.domain.model.cgm.GlucoseSource
 import de.dh.daps.common.domain.model.cgm.GlucoseSourceStatus
 import de.dh.daps.common.domain.pump.InsulinPump
 import de.dh.daps.common.domain.pump.InsulinPumpStatus
+import de.dh.daps.common.domain.pump.PumpConnectionState
 import de.dh.daps.common.domain.pump.PumpHardwareInformation
 import de.dh.daps.common.domain.pump.PumpLifecycleState
 import de.dh.daps.common.domain.pump.PumpReplaceableComponent
@@ -387,7 +388,7 @@ class SystemControlViewModel(
             val nextWakeupFlow = coordinator?.nextWakeupTime ?: flowOf(null)
 
             combine(
-                pump.isConnected,
+                pump.connectionState,
                 pump.hardwareInformation,
                 pump.pumpStatus,
                 jobsFlow,
@@ -399,7 +400,8 @@ class SystemControlViewModel(
                 pump.insulinConcentration,
                 pump.insulinTypeId
             ) { array ->
-                val connected = array[0] as Boolean
+                val connectionState = array[0] as PumpConnectionState
+                val connected = connectionState.isConnected
                 val hardware = array[1] as PumpHardwareInformation?
                 val status = array[2] as InsulinPumpStatus
                 @Suppress("UNCHECKED_CAST")

@@ -13,6 +13,28 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 /**
+ * Connection, maintenance, and bond state of an insulin pump.
+ */
+data class PumpConnectionState(
+    /**
+     * Flag indicating whether the app is currently connected to the pump.
+     */
+    val isConnected: Boolean = false,
+
+    /**
+     * Flag indicating whether communication or command execution with the pump is currently blocked
+     * on the driver or software side (e.g. driver maintenance mode or software blockade).
+     */
+    val isBlocked: Boolean = false,
+
+    /**
+     * Flag indicating whether the connection failed due to a stale OS Bluetooth bond
+     * requiring manual unbonding in Android settings.
+     */
+    val requiresStaleBondRemoval: Boolean = false
+)
+
+/**
  * Manufacturer and hardware information about a pump.
  */
 data class PumpHardwareInformation(
@@ -213,21 +235,10 @@ interface InsulinPump {
      */
     val pumpCapabilities: StateFlow<PumpCapabilities>
 
-    val isConnected: StateFlow<Boolean>
-
     /**
-     * Flag indicating whether communication or command execution with the pump is currently blocked
-     * on the driver or software side (e.g. driver maintenance mode or software blockade).
+     * Connection, maintenance, and bond state of the pump.
      */
-    val isBlocked: StateFlow<Boolean>
-        get() = MutableStateFlow(false)
-
-    /**
-     * Flag indicating whether the connection failed due to a stale OS Bluetooth bond
-     * requiring manual unbonding in Android settings.
-     */
-    val requiresStaleBondRemoval: StateFlow<Boolean>
-        get() = MutableStateFlow(false)
+    val connectionState: StateFlow<PumpConnectionState>
 
     /**
      * General status and data of the pump (Battery, Reservoir, etc.).

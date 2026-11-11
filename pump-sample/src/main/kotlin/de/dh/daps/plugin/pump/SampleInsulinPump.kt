@@ -12,6 +12,7 @@ import de.dh.daps.common.domain.pump.InsulinPump
 import de.dh.daps.common.domain.pump.InsulinPumpStatus
 import de.dh.daps.common.domain.pump.PumpAlerts
 import de.dh.daps.common.domain.pump.PumpCapabilities
+import de.dh.daps.common.domain.pump.PumpConnectionState
 import de.dh.daps.common.domain.pump.PumpHardwareInformation
 import de.dh.daps.common.domain.pump.PumpLifecycleState
 import de.dh.daps.common.ui.UiText
@@ -49,7 +50,7 @@ class SampleInsulinPump : InsulinPump {
             maxBolusSize = InsulinAmount(25.0)
         )
     )
-    override val isConnected: StateFlow<Boolean> = MutableStateFlow(true)
+    override val connectionState: StateFlow<PumpConnectionState> = MutableStateFlow(PumpConnectionState(isConnected = true))
     override val pumpStatus: StateFlow<InsulinPumpStatus> = MutableStateFlow(
         object : InsulinPumpStatus {
             override val pumpSuspended: Boolean = false
