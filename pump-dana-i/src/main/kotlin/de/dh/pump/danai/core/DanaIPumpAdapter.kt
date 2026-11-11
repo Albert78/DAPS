@@ -17,7 +17,6 @@ import de.dh.daps.common.domain.pump.PumpInsulinConfig
 import de.dh.daps.common.domain.pump.PumpLifecycleState
 import de.dh.daps.common.ui.UiText
 import de.dh.pump.danai.core.connection.DanaILink
-import de.dh.pump.danai.core.model.DanaIBolusSpeed
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -133,8 +132,7 @@ class DanaIPumpAdapter(
     override val history: StateFlow<InsulinHistory?> get() = pump.history
 
     override suspend fun bolus(amount: InsulinAmount, bolusId: String?) {
-        // TODO: Read bolus speed from configuration
-        val speed = DanaIBolusSpeed.U12_SECONDS
+        val speed = danaPreferences?.getBolusSpeed() ?: DanaPumpPreferences.DEFAULT_BOLUS_SPEED
         pump.bolus(amount, speed, bolusId)
     }
 

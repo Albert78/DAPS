@@ -3,6 +3,7 @@ package de.dh.pump.danai.core
 import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.therapy.InsulinConcentration
 import de.dh.daps.common.infrastructure.PluginPreferences
+import de.dh.pump.danai.core.model.DanaIBolusSpeed
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -11,7 +12,6 @@ import kotlinx.coroutines.flow.map
  * Type-safe wrapper over [PluginPreferences] for Dana pump driver preferences.
  */
 class DanaPumpPreferences(val preferences: PluginPreferences) {
-
     suspend fun getInsulinTypeId(): String? =
         preferences.getString(KEY_INSULIN_TYPE_ID).first()
 
@@ -31,6 +31,20 @@ class DanaPumpPreferences(val preferences: PluginPreferences) {
     suspend fun saveInsulinConcentration(concentration: InsulinConcentration) {
         preferences.putFloat(KEY_INSULIN_CONCENTRATION, concentration.factor.toFloat())
     }
+
+    suspend fun getBolusSpeed(): DanaIBolusSpeed {
+        val wireValue = preferences.getInt(KEY_BOLUS_SPEED, DEFAULT_BOLUS_SPEED.wireValue).first()
+        return DanaIBolusSpeed.fromWireValue(wireValue)
+    }
+
+    suspend fun saveBolusSpeed(speed: DanaIBolusSpeed) {
+        preferences.putInt(KEY_BOLUS_SPEED, speed.wireValue)
+    }
+
+    fun getBolusSpeedFlow(): Flow<DanaIBolusSpeed> =
+        preferences.getInt(KEY_BOLUS_SPEED, DEFAULT_BOLUS_SPEED.wireValue).map { wireValue ->
+            DanaIBolusSpeed.fromWireValue(wireValue)
+        }
 
     suspend fun getCatheterWearDurationDays(defaultDays: Int = DEFAULT_CATHETER_WEAR_DURATION_DAYS): Int =
         preferences.getInt(KEY_CATHETER_WEAR_DURATION_DAYS, defaultDays).first()
@@ -102,6 +116,8 @@ class DanaPumpPreferences(val preferences: PluginPreferences) {
     companion object {
         const val KEY_INSULIN_TYPE_ID = "insulin_type_id"
         const val KEY_INSULIN_CONCENTRATION = "insulin_concentration"
+        const val KEY_BOLUS_SPEED = "bolus_speed"
+        val DEFAULT_BOLUS_SPEED = DanaIBolusSpeed.U12_SECONDS
         const val KEY_CATHETER_WEAR_DURATION_DAYS = "catheter_wear_duration_days"
         const val DEFAULT_CATHETER_WEAR_DURATION_DAYS = 3
         const val KEY_CATHETER_LAST_CHANGED = "catheter_last_changed"

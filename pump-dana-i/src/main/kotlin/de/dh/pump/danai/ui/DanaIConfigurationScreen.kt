@@ -3,10 +3,12 @@ package de.dh.pump.danai.ui
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,6 +49,7 @@ import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.pump.danai.R
 import de.dh.pump.danai.core.DanaIPumpAdapter
 import de.dh.pump.danai.core.DanaPumpPreferences
+import de.dh.pump.danai.core.model.DanaIBolusSpeed
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -73,6 +76,10 @@ fun DanaIConfigurationScreen(
     val currentCatheterWearDurationDays by remember(danaPrefs) {
         danaPrefs?.getCatheterWearDurationDaysFlow() ?: flowOf(DanaPumpPreferences.DEFAULT_CATHETER_WEAR_DURATION_DAYS)
     }.collectAsState(initial = DanaPumpPreferences.DEFAULT_CATHETER_WEAR_DURATION_DAYS)
+
+    val currentBolusSpeed by remember(danaPrefs) {
+        danaPrefs?.getBolusSpeedFlow() ?: flowOf(DanaPumpPreferences.DEFAULT_BOLUS_SPEED)
+    }.collectAsState(initial = DanaPumpPreferences.DEFAULT_BOLUS_SPEED)
 
     PumpConfigurationScreen(
         title = stringResource(R.string.danai_config_screen_title),
@@ -104,6 +111,16 @@ fun DanaIConfigurationScreen(
         typeCardSubtitle = stringResource(R.string.danai_config_insulin_type_subtitle),
         concentrationCardSubtitle = stringResource(R.string.danai_config_concentration_subtitle),
         additionalContent = {
+            BolusSpeedCard(
+                selectedSpeed = currentBolusSpeed,
+                onSelectSpeed = { speed ->
+                    danaPrefs?.let { prefs ->
+                        scope.launch {
+                            prefs.saveBolusSpeed(speed)
+                        }
+                    }
+                }
+            )
             CatheterWearDurationCard(
                 selectedDays = currentCatheterWearDurationDays,
                 onSelectDays = { days ->
@@ -116,6 +133,59 @@ fun DanaIConfigurationScreen(
             )
         }
     )
+}
+
+/**
+ * Card displaying bolus speed selection options (12s/U, 30s/U, 60s/U).
+ */
+@Composable
+fun BolusSpeedCard(
+    selectedSpeed: DanaIBolusSpeed,
+    onSelectSpeed: (DanaIBolusSpeed) -> Unit,
+    modifier: Modifier = Modifier,
+    title: String = stringResource(R.string.danai_config_bolus_speed_title),
+    subtitle: String = stringResource(R.string.danai_config_bolus_speed_subtitle),
+) {
+    FramedCard(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                DanaIBolusSpeed.entries.forEach { speed ->
+                    val isSelected = selectedSpeed == speed
+                    val label = when (speed) {
+                        DanaIBolusSpeed.U12_SECONDS -> stringResource(R.string.danai_config_bolus_speed_12s)
+                        DanaIBolusSpeed.U30_SECONDS -> stringResource(R.string.danai_config_bolus_speed_30s)
+                        DanaIBolusSpeed.U60_SECONDS -> stringResource(R.string.danai_config_bolus_speed_60s)
+                    }
+                    FilterChip(
+                        selected = isSelected,
+                        onClick = { onSelectSpeed(speed) },
+                        label = { Text(text = label) }
+                    )
+                }
+            }
+        }
+    }
 }
 
 /**
