@@ -1,5 +1,7 @@
 package de.dh.daps.ui.activities
 
+import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
@@ -42,12 +44,21 @@ class AlarmActivity : ComponentActivity() {
         }
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+    }
+
     override fun onResume() {
         super.onResume()
         val registry = (application as RegistryProvider).registry
         val activeGroup = registry.alarmEvaluator.activeAlarmGroup.value
         val activeConfig = registry.alarmEvaluator.activeFiringConfig.value
-        if (activeGroup != null && activeConfig != null) {
+        val isMuted = intent?.getBooleanExtra(EXTRA_MUTED, false) == true
+
+        if (isMuted) {
+            registry.alarmPlayerManager.stopAlarm()
+        } else if (activeGroup != null && activeConfig != null) {
             val primaryAlarm = activeGroup.primaryAlarm
             registry.alarmPlayerManager.playAlarm(activeConfig, isSafetyCritical = primaryAlarm.isSafetyCritical)
         }
@@ -71,5 +82,16 @@ class AlarmActivity : ComponentActivity() {
             WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
             WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
         )
+    }
+
+    companion object {
+        const val EXTRA_MUTED = "de.dh.daps.ui.activities.EXTRA_MUTED"
+
+        fun createStartIntent(context: Context, muted: Boolean = false): Intent {
+            return Intent(context, AlarmActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                putExtra(EXTRA_MUTED, muted)
+            }
+        }
     }
 }

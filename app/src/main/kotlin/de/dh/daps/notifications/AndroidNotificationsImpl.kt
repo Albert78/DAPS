@@ -410,17 +410,16 @@ class AndroidNotificationsImpl(
 
         val primaryContentText = getAlarmContentText(alarmGroup.primaryAlarm, unit)
 
-        val alarmActivityIntent = Intent(context, AlarmActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        }
+        val contentIntent = AlarmActivity.createStartIntent(context, muted = true)
         val contentPendingIntent = PendingIntent.getActivity(
-            context, 0,
-            alarmActivityIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            context, ALARM_CONTENT_PENDING_INTENT_REQUEST_CODE,
+            contentIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
+        val fullScreenIntent = AlarmActivity.createStartIntent(context, muted = false)
         val fullScreenPendingIntent = PendingIntent.getActivity(
-            context, 0,
-            alarmActivityIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            context, ALARM_FULLSCREEN_PENDING_INTENT_REQUEST_CODE,
+            fullScreenIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         // Snooze all active alarms when snooze action is selected from notification
@@ -513,6 +512,9 @@ class AndroidNotificationsImpl(
         @Deprecated("Use ALARM_NOTIFICATION_ID instead")
         const val ALGORITHM_ISSUE_NOTIFICATION_ID = ALARM_NOTIFICATION_ID
         const val REMINDER_NOTIFICATION_ID = 6
+
+        const val ALARM_FULLSCREEN_PENDING_INTENT_REQUEST_CODE = 0
+        const val ALARM_CONTENT_PENDING_INTENT_REQUEST_CODE = 1
 
         const val SERVICE_CHANNEL_ID = "aps_service_channel"
         const val RECOMMENDATION_CHANNEL_ID = "aps_recommendation_channel"
