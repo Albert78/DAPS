@@ -3,7 +3,13 @@
 [[Deutsche Version]](#deutsch) • [![Discord](https://img.shields.io/badge/Discord-Join_Community-5865F2?logo=discord&logoColor=white)](https://discord.gg/d3KPpgJ5f)
 
 ## 💡 Current state
-The app can be tested but it's in beta state and not yet ready for productive use. I'm currently testing the app with the DanaI pump driver.
+I'm currently testing the app by myself since November, 6th with the integrated Dana-i driver. The app works really, really fine;
+the Dana-i driver works for about 95% (Omnipod Dash driver is not tested yet and doesn't seem to work yet - currently, I don't have a test device present). 
+Currently, I encounter bolus commands which are not processed by the pump from time to time, have to find out, why.
+It's not a big problem, that situation can be handled by switching to the SystemControl - pump tab. Here, in the technical state section,
+you can see if the pump subsystem is working well or, if not, which pump jobs are pending. You can also reset the communication to retry.
+
+The app can also be tested with the Sim-Body plugin. Just compile in simDebug flavor.
 
 > [!WARNING]
 > **Experimental software — not a medical device.**
