@@ -248,7 +248,9 @@ class NoopAlgorithm: ApsAlgorithm {
                 projectedNetIob: InsulinAmount,
                 projectedCob: Double,
                 futureCarbs: Double,
-                deferredBolusAmount: InsulinAmount
+                deferredBolusAmount: InsulinAmount,
+                isRescueCarbs: Boolean,
+                rescueCarbsAmount: Double
             ): BolusParts = BolusParts.empty()
 
             override suspend fun distributeInsulinPlan(

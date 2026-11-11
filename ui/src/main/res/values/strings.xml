@@ -366,7 +366,7 @@
     <string name="meal_correction_bolus_calc_deferred_part">Verzögerte Boli: %1$s</string>
     <string name="meal_correction_bolus_calc_low_bg_warning">Blutzucker ca. %1$s um %2$s</string>
     <string name="meal_correction_bolus_calc_no_bg_warning">Kein Blutzuckerwert</string>
-    <string name="meal_correction_bolus_insulin_label">Insulinmenge</string>
+    <string name="meal_correction_bolus_insulin_label">Insulinmenge (gesamt)</string>
     <string name="meal_correction_bolus_meal_time_label">Zeit der Mahlzeit</string>
     <string name="meal_correction_bolus_conflicting_meal_info">Es wurde bereits eine Mahlzeit um %1$s mit %2$s eingetragen</string>
     <string name="meal_correction_bolus_insulin_plan_title">Insulin-Planung</string>

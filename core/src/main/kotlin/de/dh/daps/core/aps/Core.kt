@@ -345,6 +345,14 @@ class Core(
             delegate.calculateBolusProjections(mealTimestamp)
         }
 
+        override suspend fun calculateMealBolusContext(
+            mealTimestamp: Timestamp,
+            rescueCarbsGrams: Double,
+            recommendedBolusAmount: InsulinAmount?
+        ): MealBolusContext = mutex.withLock {
+            delegate.calculateMealBolusContext(mealTimestamp, rescueCarbsGrams, recommendedBolusAmount)
+        }
+
         override suspend fun calculateBolusParts(
             carbsGrams: Double,
             mealTimestamp: Timestamp,
@@ -353,7 +361,9 @@ class Core(
             projectedNetIob: InsulinAmount,
             projectedCob: Double,
             futureCarbs: Double,
-            deferredBolusAmount: InsulinAmount
+            deferredBolusAmount: InsulinAmount,
+            isRescueCarbs: Boolean,
+            rescueCarbsAmount: Double
         ): BolusParts = mutex.withLock {
             delegate.calculateBolusParts(
                 carbsGrams,
@@ -363,8 +373,17 @@ class Core(
                 projectedNetIob,
                 projectedCob,
                 futureCarbs,
-                deferredBolusAmount
+                deferredBolusAmount,
+                isRescueCarbs,
+                rescueCarbsAmount
             )
+        }
+
+        override suspend fun calculateBolusParts(
+            carbsGrams: Double,
+            context: MealBolusContext
+        ): BolusParts = mutex.withLock {
+            delegate.calculateBolusParts(carbsGrams, context)
         }
 
         override suspend fun distributeInsulinPlan(

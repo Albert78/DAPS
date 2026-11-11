@@ -24,6 +24,7 @@ import de.dh.daps.common.domain.model.therapy.getDefaultStandardMealType
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.aps.BolusCalculationMath
 import de.dh.daps.core.aps.BolusProjections
+import de.dh.daps.core.aps.MealBolusContext
 import de.dh.daps.core.therapy.TreatmentLock
 import de.dh.daps.ui.common.time
 import kotlinx.coroutines.delay
@@ -196,6 +197,19 @@ class MealCorrectionBolusViewModel(
     private var calculationJob: kotlinx.coroutines.Job? = null
     private var existingMeals: List<MealEntry> = emptyList()
 
+    private suspend fun calculateMealBolusContext(
+        mealTimestamp: Timestamp = _uiState.value.input.mealTimestamp
+    ): MealBolusContext {
+        val activeRecs = recommendationManager.recommendations.value
+        val rescueCarbsGrams = activeRecs.carbs?.amountInGram?.toDouble() ?: 0.0
+        val recommendedBolusAmount = activeRecs.bolus?.amount
+        return bolusCorrectionCalculator.calculateMealBolusContext(
+            mealTimestamp = mealTimestamp,
+            rescueCarbsGrams = rescueCarbsGrams,
+            recommendedBolusAmount = recommendedBolusAmount
+        )
+    }
+
     init {
         viewModelScope.launch {
             val now = Timestamp.now()
@@ -207,17 +221,10 @@ class MealCorrectionBolusViewModel(
             val lowThreshold = bgSettings.second
             val mealTypes = treatmentRepository.getAllMealTypes()
 
-            val projections = bolusCorrectionCalculator.calculateBolusProjections(now)
-            val projectedBg = projections.bg
-            val suggestedImi = BolusCalculationMath.calculateSuggestedImi(
-                currentBg = projectedBg,
-                targetBg = targetBg,
-                lowThreshold = lowThreshold
-            )
-            val calculatedSuggestedCarbs = BolusCalculationMath.calculateSuggestedCarbsGrams(projectedBg, targetBg, isf, cr, projections.futureCarbs)
+            val context = calculateMealBolusContext(now)
 
-            val activeCarbsRec = recommendationManager.recommendations.value.carbs?.amountInGram?.toDouble()
-            val initialSuggestedCarbsGrams = activeCarbsRec ?: calculatedSuggestedCarbs
+            val suggestedImi = context.suggestedImi
+            val initialSuggestedCarbsGrams = context.suggestedCarbsGrams
 
             _uiState.update {
                 val mealTimeFromNow = max(Minutes.ZERO, suggestedImi ?: Minutes.ZERO)
@@ -233,7 +240,7 @@ class MealCorrectionBolusViewModel(
                         carbsGrams = initialSuggestedCarbsGrams,
                     ),
                     mealTypes = mealTypes,
-                    projections = projections,
+                    projections = context.projections,
                     targetBg = targetBg,
                     lowThreshold = lowThreshold,
                     isf = isf,
@@ -249,11 +256,15 @@ class MealCorrectionBolusViewModel(
         }
 
         viewModelScope.launch {
-            recommendationManager.recommendations.collect { activeRecs ->
-                activeRecs.carbs?.let { carbsRec ->
-                    val recAmount = carbsRec.amountInGram.toDouble()
-                    _uiState.update { state ->
-                        state.copy(suggestedCarbsGrams = recAmount)
+            recommendationManager.recommendations.collect { _ ->
+                val state = _uiState.value
+                if (!state.isLoading) {
+                    val context = calculateMealBolusContext(state.input.mealTimestamp)
+                    _uiState.update { s ->
+                        s.copy(
+                            suggestedCarbsGrams = context.suggestedCarbsGrams,
+                            suggestedImi = context.suggestedImi
+                        )
                     }
                 }
             }
@@ -299,7 +310,7 @@ class MealCorrectionBolusViewModel(
         val isReminderAllowed = newMealTimestamp >= now + Minutes(MEAL_REMINDER_MIN_FUTURE_MINUTES.toShort())
 
         viewModelScope.launch {
-            val projections = bolusCorrectionCalculator.calculateBolusProjections(newMealTimestamp)
+            val context = calculateMealBolusContext(newMealTimestamp)
 
             _uiState.update { state ->
                 state.copy(
@@ -307,7 +318,9 @@ class MealCorrectionBolusViewModel(
                         mealTimestamp = newMealTimestamp,
                         mealTimeFromNow = offsetMinutes
                     ),
-                    projections = projections,
+                    projections = context.projections,
+                    suggestedCarbsGrams = context.suggestedCarbsGrams,
+                    suggestedImi = context.suggestedImi,
                     isMealReminderAllowed = isReminderAllowed,
                     isMealReminderEnabled = if (!isReminderAllowed) false else state.isMealReminderEnabled
                 )
@@ -330,22 +343,13 @@ class MealCorrectionBolusViewModel(
     fun onRefreshProjections() {
         viewModelScope.launch {
             val state = _uiState.value
-            val projections = bolusCorrectionCalculator.calculateBolusProjections(state.input.mealTimestamp)
-            val projectedBg = projections.bg
-            val suggestedImi = BolusCalculationMath.calculateSuggestedImi(
-                currentBg = projectedBg,
-                targetBg = state.targetBg,
-                lowThreshold = state.lowThreshold
-            )
-            val suggestedCarbsGrams = BolusCalculationMath.calculateSuggestedCarbsGrams(
-                projectedBg, state.targetBg, state.isf, state.cr, projections.futureCarbs
-            )
+            val context = calculateMealBolusContext(state.input.mealTimestamp)
 
             _uiState.update {
                 it.copy(
-                    projections = projections,
-                    suggestedCarbsGrams = suggestedCarbsGrams,
-                    suggestedImi = suggestedImi,
+                    projections = context.projections,
+                    suggestedCarbsGrams = context.suggestedCarbsGrams,
+                    suggestedImi = context.suggestedImi,
                 )
             }
             calculateBolus()
@@ -442,19 +446,18 @@ class MealCorrectionBolusViewModel(
         calculationJob = viewModelScope.launch {
             val state = _uiState.value
 
+            val context = calculateMealBolusContext(state.input.mealTimestamp)
+
             val result = bolusCorrectionCalculator.calculateBolusParts(
                 carbsGrams = state.input.carbsGrams,
-                mealTimestamp = state.input.mealTimestamp,
-                projectedBg = state.projections.bg,
-                impendingLow = state.projections.impendingLow,
-                projectedNetIob = state.projections.netIob,
-                projectedCob = state.projections.cob,
-                futureCarbs = state.projections.futureCarbs,
-                deferredBolusAmount = state.projections.deferredBolusAmount
+                context = context
             )
 
             _uiState.update {
                 it.copy(
+                    projections = context.projections,
+                    suggestedCarbsGrams = context.suggestedCarbsGrams,
+                    suggestedImi = context.suggestedImi,
                     calculation = BolusCalculationDetails(
                         mealPart = result.mealPart,
                         bgCorrectionPart = result.bgCorrectionPart,
@@ -469,7 +472,7 @@ class MealCorrectionBolusViewModel(
                     )
                 )
             }
-            recalculateInsulinPlanTimesS()
+            recalculateInsulinPlanTimesS(context)
         }
     }
 
@@ -479,17 +482,12 @@ class MealCorrectionBolusViewModel(
         }
     }
 
-    private suspend fun recalculateInsulinPlanTimesS() {
+    private suspend fun recalculateInsulinPlanTimesS(context: MealBolusContext? = null) {
         val state = _uiState.value
         val now = Timestamp.now()
 
-        val projectedBg = state.projections.bg
-        val bgSettings = therapyManager.getBgSettings(state.input.mealTimestamp)
-        val suggestedImi = BolusCalculationMath.calculateSuggestedImi(
-            currentBg = projectedBg,
-            targetBg = bgSettings.first,
-            lowThreshold = bgSettings.second
-        )
+        val actualContext = context ?: calculateMealBolusContext(state.input.mealTimestamp)
+        val suggestedImi = actualContext.suggestedImi
 
         val pumpInsulinType = therapyManager.getPumpInsulinType()
         val newPlan = bolusCorrectionCalculator.distributeInsulinPlan(

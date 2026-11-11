@@ -176,6 +176,42 @@ class ApsAlgorithmImpl(
             )
         }
 
+        override suspend fun calculateMealBolusContext(
+            mealTimestamp: Timestamp,
+            rescueCarbsGrams: Double,
+            recommendedBolusAmount: InsulinAmount?
+        ): MealBolusContext {
+            val projections = calculateBolusProjections(mealTimestamp)
+            val (targetBg, lowThreshold) = therapyManager.getBgSettings(mealTimestamp)
+            val isf = therapyManager.getIsfFactor(mealTimestamp)
+            val cr = therapyManager.getCrFactor(mealTimestamp)
+
+            val isRescueCarbs = rescueCarbsGrams > 0.0
+            val suggestedCarbsGrams = if (isRescueCarbs) rescueCarbsGrams else {
+                BolusCalculationMath.calculateSuggestedCarbsGrams(projections.bg, targetBg, isf, cr, projections.futureCarbs)
+            }
+
+            val suggestedImi = BolusCalculationMath.calculateSuggestedImi(
+                currentBg = projections.bg,
+                targetBg = targetBg,
+                lowThreshold = lowThreshold,
+                impendingLow = projections.impendingLow,
+                isRescueCarbs = isRescueCarbs
+            )
+
+            val isImiSuppressedByLow = isRescueCarbs || projections.impendingLow != null || (projections.bg.isValid() && projections.bg.mgdl <= lowThreshold.mgdl)
+
+            return MealBolusContext(
+                timestamp = mealTimestamp,
+                projections = projections,
+                suggestedCarbsGrams = suggestedCarbsGrams,
+                suggestedImi = suggestedImi,
+                rescueCarbsGrams = rescueCarbsGrams,
+                isImiSuppressedByLow = isImiSuppressedByLow,
+                recommendedBolusAmount = recommendedBolusAmount
+            )
+        }
+
         override suspend fun calculateBolusParts(
             carbsGrams: Double,
             mealTimestamp: Timestamp,
@@ -184,7 +220,9 @@ class ApsAlgorithmImpl(
             projectedNetIob: InsulinAmount,
             projectedCob: Double,
             futureCarbs: Double,
-            deferredBolusAmount: InsulinAmount
+            deferredBolusAmount: InsulinAmount,
+            isRescueCarbs: Boolean,
+            rescueCarbsAmount: Double
         ) = BolusCalculationMath.calculateBolusParts(
             carbsGrams = carbsGrams,
             mealTimestamp = mealTimestamp,
@@ -196,7 +234,25 @@ class ApsAlgorithmImpl(
             netIob = projectedNetIob,
             cob = projectedCob,
             futureCarbs = futureCarbs,
-            deferredBolusAmount = deferredBolusAmount
+            deferredBolusAmount = deferredBolusAmount,
+            isRescueCarbs = isRescueCarbs,
+            rescueCarbsAmount = rescueCarbsAmount
+        )
+
+        override suspend fun calculateBolusParts(
+            carbsGrams: Double,
+            context: MealBolusContext
+        ): BolusParts = calculateBolusParts(
+            carbsGrams = carbsGrams,
+            mealTimestamp = context.timestamp,
+            projectedBg = context.projections.bg,
+            impendingLow = context.projections.impendingLow,
+            projectedNetIob = context.projections.netIob,
+            projectedCob = context.projections.cob,
+            futureCarbs = context.projections.futureCarbs,
+            deferredBolusAmount = context.projections.deferredBolusAmount,
+            isRescueCarbs = context.isRescueCarbs,
+            rescueCarbsAmount = context.rescueCarbsGrams
         )
 
         override suspend fun distributeInsulinPlan(

@@ -67,6 +67,22 @@ data class BolusProjections(
 )
 
 /**
+ * Consolidated domain context containing projections, active recommendations, and calculated suggestions
+ * for a meal bolus calculation.
+ */
+data class MealBolusContext(
+    val timestamp: Timestamp = Timestamp.now(),
+    val projections: BolusProjections = BolusProjections(),
+    val suggestedCarbsGrams: Double = 0.0,
+    val suggestedImi: Minutes? = null,
+    val rescueCarbsGrams: Double = 0.0,
+    val isImiSuppressedByLow: Boolean = false,
+    val recommendedBolusAmount: InsulinAmount? = null
+) {
+    val isRescueCarbs: Boolean get() = rescueCarbsGrams > 0.0
+}
+
+/**
  * Bolus calculator to support the user with carbs, IMI and bolus suggestions.
  */
 interface BolusCorrectionCalculator {
@@ -74,6 +90,20 @@ interface BolusCorrectionCalculator {
      * Calculates the base data for the meal bolus screen.
      */
     suspend fun calculateBolusProjections(mealTimestamp: Timestamp = Timestamp.now()): BolusProjections
+
+    /**
+     * Calculates the consolidated meal bolus context (projections + suggestions + recommendations).
+     */
+    suspend fun calculateMealBolusContext(
+        mealTimestamp: Timestamp = Timestamp.now(),
+        rescueCarbsGrams: Double = 0.0,
+        recommendedBolusAmount: InsulinAmount? = null
+    ): MealBolusContext = MealBolusContext(
+        timestamp = mealTimestamp,
+        projections = calculateBolusProjections(mealTimestamp),
+        rescueCarbsGrams = rescueCarbsGrams,
+        recommendedBolusAmount = recommendedBolusAmount
+    )
 
     /**
      * Calculates the bolus parts for a given carb intake at a specific time.
@@ -88,8 +118,26 @@ interface BolusCorrectionCalculator {
         projectedNetIob: InsulinAmount,
         projectedCob: Double,
         futureCarbs: Double,
-        deferredBolusAmount: InsulinAmount
+        deferredBolusAmount: InsulinAmount,
+        isRescueCarbs: Boolean = false,
+        rescueCarbsAmount: Double = 0.0
     ): BolusParts
+
+    suspend fun calculateBolusParts(
+        carbsGrams: Double,
+        context: MealBolusContext
+    ): BolusParts = calculateBolusParts(
+        carbsGrams = carbsGrams,
+        mealTimestamp = context.timestamp,
+        projectedBg = context.projections.bg,
+        impendingLow = context.projections.impendingLow,
+        projectedNetIob = context.projections.netIob,
+        projectedCob = context.projections.cob,
+        futureCarbs = context.projections.futureCarbs,
+        deferredBolusAmount = context.projections.deferredBolusAmount,
+        isRescueCarbs = context.isRescueCarbs,
+        rescueCarbsAmount = context.rescueCarbsGrams
+    )
 
     /**
      * Distributes the insulin plan based on the manual bolus amount and other parameters.
@@ -127,20 +175,21 @@ object BolusCalculationMath {
         return Minutes(rounded.toShort())
     }
 
-    // TODO: Calculate better IMI
     fun calculateSuggestedImi(
         currentBg: BgValue,
         targetBg: BgValue,
         lowThreshold: BgValue,
+        impendingLow: ProjectedBg? = null,
+        isRescueCarbs: Boolean = false,
         allowPast: Boolean = false
     ): Minutes? {
         if (currentBg.isInvalid() || targetBg.isInvalid() || lowThreshold.isInvalid()) return null
 
-        if (currentBg.mgdl <= targetBg.mgdl + 15 && currentBg.mgdl >= targetBg.mgdl - 15) return null
-
-        if (currentBg.mgdl <= lowThreshold.mgdl) {
+        if (isRescueCarbs || impendingLow != null || currentBg.mgdl <= lowThreshold.mgdl) {
             return if (allowPast) Minutes(-15) else Minutes(0)
         }
+
+        if (currentBg.mgdl <= targetBg.mgdl + 15 && currentBg.mgdl >= targetBg.mgdl - 15) return null
 
         val diff = currentBg.mgdl - targetBg.mgdl
         if (diff <= 0.0) return Minutes(5) // An IMI > 0 will lead to a deferred bolus -> algorithm will postpone it, if necessary
@@ -191,10 +240,18 @@ object BolusCalculationMath {
         netIob: InsulinAmount,
         cob: Double,
         futureCarbs: Double,
-        deferredBolusAmount: InsulinAmount
+        deferredBolusAmount: InsulinAmount,
+        isRescueCarbs: Boolean = false,
+        rescueCarbsAmount: Double = 0.0
     ): BolusParts {
-        // Calculate insulin needed for the current meal (Grams -> IU)
-        val mealPart = convertToInsulinAmountFromCarbs(carbsGrams, cr)
+        // Calculate insulin needed for current meal (Grams -> IU).
+        // If rescue carbs are recommended, do not dose insulin for rescue carbs.
+        val netCarbsForInsulin = if (isRescueCarbs && rescueCarbsAmount > 0.0) {
+            (carbsGrams - rescueCarbsAmount).coerceAtLeast(0.0)
+        } else {
+            carbsGrams
+        }
+        val mealPart = convertToInsulinAmountFromCarbs(netCarbsForInsulin, cr)
 
         // Determine BG deviation from target at the time of the meal.
         // Use impending low BG if available, otherwise projected BG. Fallback to target if no valid BG is available.
@@ -337,6 +394,42 @@ class SimpleBolusCorrectionCalculator(
         bg = getCurrentBg()
     )
 
+    override suspend fun calculateMealBolusContext(
+        mealTimestamp: Timestamp,
+        rescueCarbsGrams: Double,
+        recommendedBolusAmount: InsulinAmount?
+    ): MealBolusContext {
+        val projections = calculateBolusProjections(mealTimestamp)
+        val (targetBg, lowThreshold) = therapyManager.getBgSettings(mealTimestamp)
+        val isf = therapyManager.getIsfFactor(mealTimestamp)
+        val cr = therapyManager.getCrFactor(mealTimestamp)
+
+        val isRescueCarbs = rescueCarbsGrams > 0.0
+        val suggestedCarbsGrams = if (isRescueCarbs) rescueCarbsGrams else {
+            BolusCalculationMath.calculateSuggestedCarbsGrams(projections.bg, targetBg, isf, cr, projections.futureCarbs)
+        }
+
+        val suggestedImi = BolusCalculationMath.calculateSuggestedImi(
+            currentBg = projections.bg,
+            targetBg = targetBg,
+            lowThreshold = lowThreshold,
+            impendingLow = projections.impendingLow,
+            isRescueCarbs = isRescueCarbs
+        )
+
+        val isImiSuppressedByLow = isRescueCarbs || projections.impendingLow != null || (projections.bg.isValid() && projections.bg.mgdl <= lowThreshold.mgdl)
+
+        return MealBolusContext(
+            timestamp = mealTimestamp,
+            projections = projections,
+            suggestedCarbsGrams = suggestedCarbsGrams,
+            suggestedImi = suggestedImi,
+            rescueCarbsGrams = rescueCarbsGrams,
+            isImiSuppressedByLow = isImiSuppressedByLow,
+            recommendedBolusAmount = recommendedBolusAmount
+        )
+    }
+
     override suspend fun calculateBolusParts(
         carbsGrams: Double,
         mealTimestamp: Timestamp,
@@ -345,20 +438,40 @@ class SimpleBolusCorrectionCalculator(
         projectedNetIob: InsulinAmount,
         projectedCob: Double,
         futureCarbs: Double,
-        deferredBolusAmount: InsulinAmount
+        deferredBolusAmount: InsulinAmount,
+        isRescueCarbs: Boolean,
+        rescueCarbsAmount: Double
     ) = BolusCalculationMath.calculateBolusParts(
-            carbsGrams = carbsGrams,
-            mealTimestamp = mealTimestamp,
-            bg = projectedBg,
-            cr = therapyManager.getCrFactor(mealTimestamp),
-            isf = therapyManager.getIsfFactor(mealTimestamp),
-            targetBg = therapyManager.getBgSettings(mealTimestamp).first,
-            impendingLow = impendingLow,
-            netIob = projectedNetIob,
-            cob = projectedCob,
-            futureCarbs = futureCarbs,
-            deferredBolusAmount = deferredBolusAmount
-        )
+        carbsGrams = carbsGrams,
+        mealTimestamp = mealTimestamp,
+        bg = projectedBg,
+        cr = therapyManager.getCrFactor(mealTimestamp),
+        isf = therapyManager.getIsfFactor(mealTimestamp),
+        targetBg = therapyManager.getBgSettings(mealTimestamp).first,
+        impendingLow = impendingLow,
+        netIob = projectedNetIob,
+        cob = projectedCob,
+        futureCarbs = futureCarbs,
+        deferredBolusAmount = deferredBolusAmount,
+        isRescueCarbs = isRescueCarbs,
+        rescueCarbsAmount = rescueCarbsAmount
+    )
+
+    override suspend fun calculateBolusParts(
+        carbsGrams: Double,
+        context: MealBolusContext
+    ): BolusParts = calculateBolusParts(
+        carbsGrams = carbsGrams,
+        mealTimestamp = context.timestamp,
+        projectedBg = context.projections.bg,
+        impendingLow = context.projections.impendingLow,
+        projectedNetIob = context.projections.netIob,
+        projectedCob = context.projections.cob,
+        futureCarbs = context.projections.futureCarbs,
+        deferredBolusAmount = context.projections.deferredBolusAmount,
+        isRescueCarbs = context.isRescueCarbs,
+        rescueCarbsAmount = context.rescueCarbsGrams
+    )
 
     override suspend fun distributeInsulinPlan(
         manualBolus: InsulinAmount,
