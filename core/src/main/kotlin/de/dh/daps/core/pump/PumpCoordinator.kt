@@ -678,13 +678,13 @@ class PumpCoordinator private constructor(
      *
      * Blocks further coordinator action while [InsulinPump.bolusStatus] reports [BolusDeliveryState.DELIVERING],
      * periodically checking for a user-initiated [BolusJobType.Stop] job in [_pendingBoluses].
-     * Computes a dynamic timeout based on the bolus [amount] and [InsulinPump.bolusDeliveryDurationPerUnit].
+     * Computes a dynamic timeout based on the bolus [amount] and [PumpInsulinConfig.bolusDeliveryDurationPerUnit].
      * After delivery completes, stops, or times out, status and history are refreshed automatically.
      */
     private suspend fun awaitBolusCompletion(job: BolusJob, amount: InsulinAmount): Boolean {
         _syncStatus.value = PumpSyncStatus.Reconciling(SyncStep.DeliveringBolus)
 
-        val secPerUnit = pump.bolusDeliveryDurationPerUnit.value
+        val secPerUnit = pump.insulinConfig.value.bolusDeliveryDurationPerUnit
         val timeoutDuration = 30.seconds + (secPerUnit * amount.iu)
 
         val completedInTime = withTimeoutOrNull(timeoutDuration) {

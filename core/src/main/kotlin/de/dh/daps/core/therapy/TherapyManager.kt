@@ -293,7 +293,7 @@ class TherapyManager(
 
     suspend fun getPumpInsulinType(): InsulinType {
         val activePump = pumpManager.activeInsulinPump.value ?: pumpManager.insulinPump
-        val insulinTypeId = activePump?.insulinTypeId?.value
+        val insulinTypeId = activePump?.insulinConfig?.value?.insulinTypeId
         val allTypes = treatmentRepository.getAllInsulinTypes()
         if (!insulinTypeId.isNullOrBlank()) {
             val type = allTypes.firstOrNull { it.id == insulinTypeId }
@@ -317,7 +317,7 @@ class TherapyManager(
     @OptIn(ExperimentalCoroutinesApi::class)
     fun observePumpInsulinType(): Flow<InsulinType> {
         return pumpManager.activeInsulinPump.flatMapLatest { activePump ->
-            val typeIdFlow = activePump?.insulinTypeId ?: flowOf(null)
+            val typeIdFlow = activePump?.insulinConfig?.map { it.insulinTypeId } ?: flowOf(null)
             combine(
                 typeIdFlow,
                 treatmentRepository.observeInsulinTypes()
@@ -349,7 +349,7 @@ class TherapyManager(
      */
     suspend fun isInsulinTypeInUse(insulinTypeId: String): Boolean {
         val activePump = pumpManager.activeInsulinPump.value ?: pumpManager.insulinPump
-        val isUsedInPump = activePump?.insulinTypeId?.value == insulinTypeId
+        val isUsedInPump = activePump?.insulinConfig?.value?.insulinTypeId == insulinTypeId
         val isUsedInHistory = treatmentRepository.isInsulinTypeUsedInHistory(insulinTypeId)
         return isUsedInPump || isUsedInHistory
     }
@@ -360,7 +360,7 @@ class TherapyManager(
     @OptIn(ExperimentalCoroutinesApi::class)
     fun observeUsedInsulinTypeIds(): Flow<Set<String>> {
         return pumpManager.activeInsulinPump.flatMapLatest { activePump ->
-            val pumpTypeFlow = activePump?.insulinTypeId ?: flowOf(null)
+            val pumpTypeFlow = activePump?.insulinConfig?.map { it.insulinTypeId } ?: flowOf(null)
             combine(
                 treatmentRepository.observeUsedInsulinTypeIds(),
                 pumpTypeFlow

@@ -23,7 +23,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
-import de.dh.daps.common.domain.model.therapy.InsulinConcentration
 import de.dh.daps.common.domain.model.therapy.InsulinHistory
 import de.dh.daps.common.domain.model.therapy.InsulinProfile
 import de.dh.daps.common.domain.model.therapy.getDefaultInsulinTypes
@@ -36,6 +35,7 @@ import de.dh.daps.common.domain.pump.PumpAlerts
 import de.dh.daps.common.domain.pump.PumpCapabilities
 import de.dh.daps.common.domain.pump.PumpConnectionState
 import de.dh.daps.common.domain.pump.PumpHardwareInformation
+import de.dh.daps.common.domain.pump.PumpInsulinConfig
 import de.dh.daps.common.domain.pump.PumpLifecycleState
 import de.dh.daps.common.infrastructure.PluginPreferences
 import de.dh.daps.common.ui.UiText
@@ -66,8 +66,9 @@ fun DanaIConfigurationScreen(
     val danaPrefs = remember(preferences) { preferences?.let { DanaPumpPreferences(it) } }
 
     val availableInsulinTypes = remember(context) { getDefaultInsulinTypes(context) }
-    val currentInsulinTypeId by pump.insulinTypeId.collectAsState()
-    val currentConcentration by pump.insulinConcentration.collectAsState()
+    val insulinConfig by pump.insulinConfig.collectAsState()
+    val currentInsulinTypeId = insulinConfig.insulinTypeId
+    val currentConcentration = insulinConfig.concentration
 
     val currentCatheterWearDurationDays by remember(danaPrefs) {
         danaPrefs?.getCatheterWearDurationDaysFlow() ?: flowOf(DanaPumpPreferences.DEFAULT_CATHETER_WEAR_DURATION_DAYS)
@@ -164,8 +165,7 @@ fun CatheterWearDurationCard(
 }
 
 private class PreviewDanaIPump(
-    override val insulinTypeId: StateFlow<String?> = MutableStateFlow(null),
-    override val insulinConcentration: StateFlow<InsulinConcentration> = MutableStateFlow(InsulinConcentration.U100),
+    override val insulinConfig: StateFlow<PumpInsulinConfig> = MutableStateFlow(PumpInsulinConfig()),
 ) : InsulinPump {
     override val insulinPumpId: String = "preview-dana-i"
     override val insulinPumpDisplayName: UiText = UiText.DynamicString("Sooil Dana-i")

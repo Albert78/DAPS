@@ -1,6 +1,9 @@
 package de.dh.pump.danai.core
 
 import de.dh.daps.common.domain.model.data.Timestamp
+import de.dh.daps.common.domain.model.therapy.InsulinAmount
+import de.dh.daps.common.domain.model.therapy.InsulinHistory
+import de.dh.daps.common.domain.model.therapy.InsulinProfile
 import de.dh.daps.common.domain.pump.BasalStatus
 import de.dh.daps.common.domain.pump.BolusEvent
 import de.dh.daps.common.domain.pump.BolusStatus
@@ -10,24 +13,18 @@ import de.dh.daps.common.domain.pump.PumpAlerts
 import de.dh.daps.common.domain.pump.PumpCapabilities
 import de.dh.daps.common.domain.pump.PumpConnectionState
 import de.dh.daps.common.domain.pump.PumpHardwareInformation
+import de.dh.daps.common.domain.pump.PumpInsulinConfig
 import de.dh.daps.common.domain.pump.PumpLifecycleState
-import de.dh.daps.common.domain.model.therapy.InsulinAmount
-import de.dh.daps.common.domain.model.therapy.InsulinConcentration
-import de.dh.daps.common.domain.model.therapy.InsulinHistory
-import de.dh.daps.common.domain.model.therapy.InsulinProfile
 import de.dh.daps.common.ui.UiText
 import de.dh.pump.danai.core.connection.DanaILink
 import de.dh.pump.danai.core.model.DanaIBolusSpeed
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 import java.time.Instant
 import java.time.ZoneId
 
@@ -43,11 +40,8 @@ class DanaIPumpAdapter(
     override val insulinPumpDisplayName: UiText
         get() = UiText.DynamicString(controller.deviceName.ifBlank { "Sooil Dana-i" })
 
-    override val insulinTypeId: StateFlow<String?>
-        get() = pump.insulinTypeId
-
-    override val insulinConcentration: StateFlow<InsulinConcentration>
-        get() = pump.insulinConcentration
+    override val insulinConfig: StateFlow<PumpInsulinConfig>
+        get() = pump.insulinConfig
 
     override val hardwareInformation: StateFlow<PumpHardwareInformation?> = pump.hardware.map { hi ->
         hi?.let {
@@ -137,8 +131,6 @@ class DanaIPumpAdapter(
     override val bolusEvents: SharedFlow<BolusEvent> get() = pump.bolusEvents
 
     override val history: StateFlow<InsulinHistory?> get() = pump.history
-
-    override val bolusDeliveryDurationPerUnit: StateFlow<Duration> = MutableStateFlow(12.seconds)
 
     override suspend fun bolus(amount: InsulinAmount, bolusId: String?) {
         // TODO: Read bolus speed from configuration

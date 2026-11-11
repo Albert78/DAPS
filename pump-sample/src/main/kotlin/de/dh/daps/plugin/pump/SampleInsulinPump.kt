@@ -2,7 +2,6 @@ package de.dh.daps.plugin.pump
 
 import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
-import de.dh.daps.common.domain.model.therapy.InsulinConcentration
 import de.dh.daps.common.domain.model.therapy.InsulinHistory
 import de.dh.daps.common.domain.model.therapy.InsulinProfile
 import de.dh.daps.common.domain.pump.BasalStatus
@@ -14,14 +13,13 @@ import de.dh.daps.common.domain.pump.PumpAlerts
 import de.dh.daps.common.domain.pump.PumpCapabilities
 import de.dh.daps.common.domain.pump.PumpConnectionState
 import de.dh.daps.common.domain.pump.PumpHardwareInformation
+import de.dh.daps.common.domain.pump.PumpInsulinConfig
 import de.dh.daps.common.domain.pump.PumpLifecycleState
 import de.dh.daps.common.ui.UiText
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 
 class SampleInsulinPump : InsulinPump {
 
@@ -30,8 +28,7 @@ class SampleInsulinPump : InsulinPump {
     override val insulinPumpId: String = SampleInsulinPumpDriver.DRIVER_ID
     override val insulinPumpDisplayName: UiText = UiText.StringResource(R.string.sample_pump_device_display_name)
 
-    override val insulinTypeId: StateFlow<String?> = MutableStateFlow(null)
-    override val insulinConcentration: StateFlow<InsulinConcentration> = MutableStateFlow(InsulinConcentration.U100)
+    override val insulinConfig: StateFlow<PumpInsulinConfig> = MutableStateFlow(PumpInsulinConfig())
 
     override val hardwareInformation: StateFlow<PumpHardwareInformation?> = MutableStateFlow(
         PumpHardwareInformation(
@@ -65,7 +62,6 @@ class SampleInsulinPump : InsulinPump {
     override val bolusStatus: StateFlow<BolusStatus> = MutableStateFlow(BolusStatus())
     override val bolusEvents: SharedFlow<BolusEvent> = MutableSharedFlow()
     override val history: StateFlow<InsulinHistory?> = MutableStateFlow(null)
-    override val bolusDeliveryDurationPerUnit: StateFlow<Duration> = MutableStateFlow(12.seconds)
 
     override suspend fun bolus(amount: InsulinAmount, bolusId: String?) {
         // TODO: Implement bolus delivery

@@ -35,6 +35,30 @@ data class PumpConnectionState(
 )
 
 /**
+ * Configuration of the insulin loaded in the pump and hardware delivery characteristics.
+ */
+data class PumpInsulinConfig(
+    /**
+     * ID of the insulin type loaded in the pump (e.g. Novorapid, Fiasp).
+     * The ID refers to the entity in the database.
+     * Optional / nullable if not configured.
+     */
+    val insulinTypeId: String? = null,
+
+    /**
+     * Concentration of the insulin loaded in the pump. Default is [InsulinConcentration.U100].
+     * Needed to convert [InsulinAmount] to pump units and vice versa.
+     */
+    val concentration: InsulinConcentration = InsulinConcentration.U100,
+
+    /**
+     * Duration required to deliver one unit of insulin on the hardware (default: 12 seconds per Unit).
+     * Used to calculate expected bolus delivery times and timeouts.
+     */
+    val bolusDeliveryDurationPerUnit: Duration = 12.seconds
+)
+
+/**
  * Manufacturer and hardware information about a pump.
  */
 data class PumpHardwareInformation(
@@ -278,26 +302,10 @@ interface InsulinPump {
     val history: StateFlow<InsulinHistory?>
 
     /**
-     * ID of the insulin type loaded in the pump (e.g. Novorapid, Fiasp).
-     * The ID refers to the entity in the database.
-     * Optional / nullable if not configured.
+     * Configuration of the insulin loaded in the pump and hardware delivery characteristics.
      */
-    val insulinTypeId: StateFlow<String?>
-        get() = MutableStateFlow(null)
-
-    /**
-     * Concentration of the insulin loaded in the pump. Default is [InsulinConcentration.Companion.U100].
-     * Needed to convert [InsulinAmount] to pump units and vice versa.
-     */
-    val insulinConcentration: StateFlow<InsulinConcentration>
-        get() = MutableStateFlow(InsulinConcentration.U100)
-
-    /**
-     * Duration required to deliver one unit of insulin on the hardware (default: 12 seconds per Unit).
-     * Used to calculate expected bolus delivery times and timeouts.
-     */
-    val bolusDeliveryDurationPerUnit: StateFlow<Duration>
-        get() = MutableStateFlow(12.seconds)
+    val insulinConfig: StateFlow<PumpInsulinConfig>
+        get() = MutableStateFlow(PumpInsulinConfig())
 
     /**
      * Initiates a bolus delivery with an optional tracking [bolusId].

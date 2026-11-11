@@ -21,9 +21,9 @@ import de.dh.daps.common.domain.pump.PumpAlerts
 import de.dh.daps.common.domain.pump.PumpCapabilities
 import de.dh.daps.common.domain.pump.PumpConnectionState
 import de.dh.daps.common.domain.pump.PumpHardwareInformation
+import de.dh.daps.common.domain.pump.PumpInsulinConfig
 import de.dh.daps.common.domain.pump.PumpLifecycleState
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
-import de.dh.daps.common.domain.model.therapy.InsulinConcentration
 import de.dh.daps.common.domain.model.therapy.InsulinHistory
 import de.dh.daps.common.domain.model.therapy.InsulinProfile
 import de.dh.daps.common.domain.model.therapy.getDefaultInsulinTypes
@@ -48,8 +48,9 @@ fun OmnipodDashConfigurationScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val availableInsulinTypes = remember(context) { getDefaultInsulinTypes(context) }
-    val currentInsulinTypeId by pump.insulinTypeId.collectAsState()
-    val currentConcentration by pump.insulinConcentration.collectAsState()
+    val insulinConfig by pump.insulinConfig.collectAsState()
+    val currentInsulinTypeId = insulinConfig.insulinTypeId
+    val currentConcentration = insulinConfig.concentration
 
     PumpConfigurationScreen(
         title = stringResource(R.string.omnipod_dash_config_screen_title),
@@ -82,8 +83,7 @@ fun OmnipodDashConfigurationScreen(
 }
 
 private class PreviewOmnipodPump(
-    override val insulinTypeId: StateFlow<String?> = MutableStateFlow(null),
-    override val insulinConcentration: StateFlow<InsulinConcentration> = MutableStateFlow(InsulinConcentration.U100),
+    override val insulinConfig: StateFlow<PumpInsulinConfig> = MutableStateFlow(PumpInsulinConfig()),
 ) : InsulinPump {
     override val insulinPumpId: String = "preview-omnipod"
     override val insulinPumpDisplayName: UiText = UiText.DynamicString("Omnipod Dash")

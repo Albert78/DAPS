@@ -100,7 +100,7 @@ class DanaIController(
             if (targetAmount != null && startTime != null) {
                 val restored = ActiveBolusContext(
                     bolusId = bolusId,
-                    targetAmount = InsulinAmount.fromPumpUnits(targetAmount, pump.insulinConcentration.value),
+                    targetAmount = InsulinAmount.fromPumpUnits(targetAmount, pump.insulinConfig.value.concentration),
                     startTime = Timestamp(startTime),
                 )
                 activeBolusContext = restored
@@ -122,7 +122,7 @@ class DanaIController(
         activeBolusContext = context
         danaPreferences.saveActiveBolus(
             bolusId = context?.bolusId,
-            targetAmount = context?.targetAmount?.toPumpUnits(pump.insulinConcentration.value),
+            targetAmount = context?.targetAmount?.toPumpUnits(pump.insulinConfig.value.concentration),
             startTime = context?.startTime?.ms,
         )
     }
@@ -334,7 +334,7 @@ class DanaIController(
         pump.updateStatus(
             DanaPumpStatusData(
                 batteryRemainingPercent = status.batteryRemainingPercent,
-                reservoirRemainingUnits = InsulinAmount.fromPumpUnits(status.reservoirRemainingUnits, pump.insulinConcentration.value),
+                reservoirRemainingUnits = InsulinAmount.fromPumpUnits(status.reservoirRemainingUnits, pump.insulinConfig.value.concentration),
                 dailyTotalUnits = status.dailyTotalUnits,
                 lastSyncTimestamp = Timestamp.now(),
             ),
@@ -356,7 +356,7 @@ class DanaIController(
         pump.updateAlerts(
             PumpAlerts(
                 batteryLow = status.batteryRemainingPercent <= WARNING_THRESHOLD_BATTERY_REMAINING_PERCENT,
-                reservoirLow = InsulinAmount.fromPumpUnits(status.reservoirRemainingUnits, pump.insulinConcentration.value) <= WARNING_THRESHOLD_RESERVOIR_REMAINING_UNITS,
+                reservoirLow = InsulinAmount.fromPumpUnits(status.reservoirRemainingUnits, pump.insulinConfig.value.concentration) <= WARNING_THRESHOLD_RESERVOIR_REMAINING_UNITS,
             ),
         )
 
@@ -369,7 +369,7 @@ class DanaIController(
 
         pump.updateBasal(
             BasalStatus(
-                activeRate = InsulinAmount.fromPumpUnits(actualRate, pump.insulinConcentration.value),
+                activeRate = InsulinAmount.fromPumpUnits(actualRate, pump.insulinConfig.value.concentration),
                 isTempBasal = status.tempBasalInProgress,
                 tempBasalPercent = if (status.tempBasalInProgress) status.tempBasalPercent else null,
                 isSuspended = status.pumpSuspended,
@@ -381,16 +381,16 @@ class DanaIController(
             val bolusInfo = client.execute(commands.bolusGetStepBolusInformation())
 
             val minBolusIncrement =
-                InsulinAmount.fromPumpUnits(bolusInfo.bolusStepUnits, pump.insulinConcentration.value)
+                InsulinAmount.fromPumpUnits(bolusInfo.bolusStepUnits, pump.insulinConfig.value.concentration)
             pump.updatePumpCapabilities(
                 PumpCapabilities(
                     minBasalRate = DANA_I_MIN_BASAL_RATE,
                     supportsZeroBasal = true,
                     // TODO: Check if the values from the commands really have this meaning
-                    minBasalIncrement = if (basalInfo.basalStepSupported) InsulinAmount.fromPumpUnits(basalInfo.basalStepUnits, pump.insulinConcentration.value) else DANA_I_MIN_BASAL_INCREMENT,
+                    minBasalIncrement = if (basalInfo.basalStepSupported) InsulinAmount.fromPumpUnits(basalInfo.basalStepUnits, pump.insulinConfig.value.concentration) else DANA_I_MIN_BASAL_INCREMENT,
                     minBolusAmount = minBolusIncrement,
                     minBolusIncrement = minBolusIncrement,
-                    maxBolusSize = InsulinAmount.fromPumpUnits(bolusInfo.maxBolusUnits, pump.insulinConcentration.value)
+                    maxBolusSize = InsulinAmount.fromPumpUnits(bolusInfo.maxBolusUnits, pump.insulinConfig.value.concentration)
                 )
             )
 
@@ -486,7 +486,7 @@ class DanaIController(
                 return
             }
 
-            val activeRateUnits = currentStatus.activeRate.toPumpUnits(pump.insulinConcentration.value)
+            val activeRateUnits = currentStatus.activeRate.toPumpUnits(pump.insulinConfig.value.concentration)
             if (activeRateUnits <= 0.0) {
                 return
             }
@@ -497,7 +497,7 @@ class DanaIController(
             if (isLowRate) {
                 if (zdt.minute == 56) {
                     val slotTimestamp = normalizeToBasalSlot(now, isLowRateAt56 = true)
-                    val pulseAmount = InsulinAmount.fromPumpUnits(activeRateUnits, pump.insulinConcentration.value)
+                    val pulseAmount = InsulinAmount.fromPumpUnits(activeRateUnits, pump.insulinConfig.value.concentration)
                     val pulseId = formatBasalPulseId(slotTimestamp)
                     val point = DanaInsulinHistoryPoint(
                         timestamp = slotTimestamp,
@@ -510,7 +510,7 @@ class DanaIController(
                 }
             } else {
                 val slotTimestamp = normalizeToBasalSlot(now, isLowRateAt56 = false)
-                val pulseAmount = InsulinAmount.fromPumpUnits(activeRateUnits / 15.0, pump.insulinConcentration.value)
+                val pulseAmount = InsulinAmount.fromPumpUnits(activeRateUnits / 15.0, pump.insulinConfig.value.concentration)
                 val pulseId = formatBasalPulseId(slotTimestamp)
                 val point = DanaInsulinHistoryPoint(
                     timestamp = slotTimestamp,
@@ -556,7 +556,7 @@ class DanaIController(
                     if (amount > 0.0) {
                         DanaInsulinHistoryPoint(
                             timestamp = sysTime,
-                            amount = InsulinAmount.fromPumpUnits(amount, pump.insulinConcentration.value),
+                            amount = InsulinAmount.fromPumpUnits(amount, pump.insulinConfig.value.concentration),
                             category = InsulinCategory.Bolus,
                             pumpId = event.pumpId.toString()
                         )
@@ -572,7 +572,7 @@ class DanaIController(
                 startTime = startTimestamp,
                 endTime = Timestamp.now(),
                 pumpTimeOffsetMs = pump.pumpTimeOffsetMs,
-                concentration = pump.insulinConcentration.value,
+                concentration = pump.insulinConfig.value.concentration,
                 currentBasalStatus = pump.basalStatus.value,
                 hourlyBasalRates = pump.hourlyBasalRates.value
             )
@@ -745,7 +745,7 @@ class DanaIController(
             is DanaDeliveryCompleteNotification -> {
                 val context = activeBolusContext
                 val bolusId = context?.bolusId
-                val delivered = InsulinAmount.fromPumpUnits(notification.deliveredInsulinUnits, pump.insulinConcentration.value)
+                val delivered = InsulinAmount.fromPumpUnits(notification.deliveredInsulinUnits, pump.insulinConfig.value.concentration)
                 val targetAmount = context?.targetAmount ?: delivered
                 val now = Timestamp.now()
 
@@ -771,7 +771,7 @@ class DanaIController(
                 val context = activeBolusContext
                 val bolusId = context?.bolusId
                 val targetAmount = context?.targetAmount ?: InsulinAmount.ZERO
-                val delivered = InsulinAmount.fromPumpUnits(notification.deliveredInsulinUnits, pump.insulinConcentration.value)
+                val delivered = InsulinAmount.fromPumpUnits(notification.deliveredInsulinUnits, pump.insulinConfig.value.concentration)
                 val now = Timestamp.now()
 
                 logger.log("Delivery progress: ${delivered.iu} U (bolusId=$bolusId)")
@@ -806,7 +806,7 @@ class DanaIController(
         speed: DanaIBolusSpeed,
         bolusId: String? = null,
     ) = withConnection { client ->
-        val pumpUnits = amount.toPumpUnits(pump.insulinConcentration.value)
+        val pumpUnits = amount.toPumpUnits(pump.insulinConfig.value.concentration)
         logger.log("Action: Executing Bolus $pumpUnits U (bolusId=$bolusId)")
         val now = Timestamp.now()
         val context = ActiveBolusContext(bolusId, amount, now)
@@ -937,7 +937,7 @@ class DanaIController(
 
         val hourlyRates = (0..23).map { hour ->
             val amount = profile.basalBlocks.getAmountForMinute(Minutes.ofHours(hour))
-            InsulinAmount(amount).toPumpUnits(pump.insulinConcentration.value)
+            InsulinAmount(amount).toPumpUnits(pump.insulinConfig.value.concentration)
         }
 
         val activeProfileRes = client.execute(commands.basalGetProfileNumber())

@@ -4,7 +4,6 @@ import android.content.Context
 import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.common.domain.model.therapy.InsulinCategory
-import de.dh.daps.common.domain.model.therapy.InsulinConcentration
 import de.dh.daps.common.domain.model.therapy.InsulinHistory
 import de.dh.daps.common.domain.model.therapy.InsulinProfile
 import de.dh.daps.common.domain.pump.BasalStatus
@@ -18,6 +17,7 @@ import de.dh.daps.common.domain.pump.PatchPhase
 import de.dh.daps.common.domain.pump.PumpAlerts
 import de.dh.daps.common.domain.pump.PumpCapabilities
 import de.dh.daps.common.domain.pump.PumpConnectionState
+import de.dh.daps.common.domain.pump.PumpInsulinConfig
 import de.dh.daps.common.domain.pump.PumpHardwareInformation
 import de.dh.daps.common.domain.pump.PumpLifecycleState
 import de.dh.daps.common.ui.UiText
@@ -86,8 +86,7 @@ class OmnipodDashPump(
 ) : InsulinPump {
     override val insulinPumpId: String = PUMP_ID
     override val insulinPumpDisplayName: UiText = UiText.StringResource(R.string.omnipod_dash_pump_display_name)
-    override val insulinTypeId: StateFlow<String?> get() = podStateManager.insulinTypeId
-    override val insulinConcentration: StateFlow<InsulinConcentration> get() = podStateManager.insulinConcentration
+    override val insulinConfig: StateFlow<PumpInsulinConfig> get() = podStateManager.insulinConfig
 
     private var sequenceNumber: Short = 1
     private var lastSyncTimestamp: Timestamp = Timestamp.now().minusHours(24)
@@ -136,8 +135,6 @@ class OmnipodDashPump(
 
     private val _history = MutableStateFlow<InsulinHistory?>(null)
     override val history: StateFlow<InsulinHistory?> = _history.asStateFlow()
-
-    override val bolusDeliveryDurationPerUnit: StateFlow<Duration> = MutableStateFlow(12.seconds)
 
     private val db: OmnipodHistoryDatabase? by lazy {
         context?.let { OmnipodHistoryDatabase.getInstance(it) }

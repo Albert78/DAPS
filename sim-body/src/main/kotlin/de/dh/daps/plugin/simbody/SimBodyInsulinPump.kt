@@ -18,6 +18,7 @@ import de.dh.daps.common.domain.pump.PumpAlerts
 import de.dh.daps.common.domain.pump.PumpCapabilities
 import de.dh.daps.common.domain.pump.PumpConnectionState
 import de.dh.daps.common.domain.pump.PumpHardwareInformation
+import de.dh.daps.common.domain.pump.PumpInsulinConfig
 import de.dh.daps.common.domain.pump.PumpLifecycleState
 import de.dh.daps.common.ui.UiText
 import de.dh.pump.PumpConnectionException
@@ -29,8 +30,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -38,6 +37,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -56,18 +56,15 @@ class SimBodyInsulinPump(
     override val insulinPumpId: String = SimBodyInsulinPumpDriver.DRIVER_ID
     override val insulinPumpDisplayName: UiText = UiText.StringResource(R.string.sim_body_pump_device_display_name)
 
-    private val _insulinTypeId = MutableStateFlow<String?>(null)
-    override val insulinTypeId: StateFlow<String?> = _insulinTypeId.asStateFlow()
-
-    private val _insulinConcentration = MutableStateFlow<InsulinConcentration>(InsulinConcentration.U100)
-    override val insulinConcentration: StateFlow<InsulinConcentration> = _insulinConcentration.asStateFlow()
+    private val _insulinConfig = MutableStateFlow(PumpInsulinConfig())
+    override val insulinConfig: StateFlow<PumpInsulinConfig> = _insulinConfig.asStateFlow()
 
     fun setInsulinTypeId(id: String?) {
-        _insulinTypeId.value = id
+        _insulinConfig.update { it.copy(insulinTypeId = id) }
     }
 
     fun setInsulinConcentration(concentration: InsulinConcentration) {
-        _insulinConcentration.value = concentration
+        _insulinConfig.update { it.copy(concentration = concentration) }
     }
 
     private var lastRequestedStart: Timestamp = Timestamp.now().minusHours(InsulinPump.DEFAULT_REQUESTED_HISTORY_HOURS)
@@ -187,8 +184,6 @@ class SimBodyInsulinPump(
 
     private val _history = MutableStateFlow<InsulinHistory?>(null)
     override val history: StateFlow<InsulinHistory?> = _history
-
-    override val bolusDeliveryDurationPerUnit: StateFlow<Duration> = MutableStateFlow(12.seconds)
 
     init {
         scope.launch {

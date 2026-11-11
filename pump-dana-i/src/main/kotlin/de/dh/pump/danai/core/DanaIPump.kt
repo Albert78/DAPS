@@ -8,6 +8,7 @@ import de.dh.daps.common.domain.pump.InsulinPump
 import de.dh.daps.common.domain.pump.InsulinPumpStatus
 import de.dh.daps.common.domain.pump.PumpAlerts
 import de.dh.daps.common.domain.pump.PumpCapabilities
+import de.dh.daps.common.domain.pump.PumpInsulinConfig
 import de.dh.daps.common.domain.pump.PumpLifecycleState
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.common.domain.model.therapy.InsulinCategory
@@ -28,6 +29,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import java.time.LocalDate
 
 /**
@@ -88,26 +90,19 @@ enum class DanaPumpError {
  * and bolus results, and allows issuing functional commands (orders) to the pump.
  */
 class DanaIPump {
-    private val _insulinTypeId = MutableStateFlow<String?>(null)
+    private val _insulinConfig = MutableStateFlow(PumpInsulinConfig())
 
     /**
-     * ID of the insulin type loaded in the pump.
+     * Configuration of the insulin loaded in the pump.
      */
-    val insulinTypeId: StateFlow<String?> = _insulinTypeId.asStateFlow()
-
-    private val _insulinConcentration = MutableStateFlow(InsulinConcentration.U100)
-
-    /**
-     * Concentration of the insulin loaded in the pump. Default is [InsulinConcentration.U100].
-     */
-    val insulinConcentration: StateFlow<InsulinConcentration> = _insulinConcentration.asStateFlow()
+    val insulinConfig: StateFlow<PumpInsulinConfig> = _insulinConfig.asStateFlow()
 
     fun setInsulinTypeId(id: String?) {
-        _insulinTypeId.value = id
+        _insulinConfig.update { it.copy(insulinTypeId = id) }
     }
 
     fun setInsulinConcentration(concentration: InsulinConcentration) {
-        _insulinConcentration.value = concentration
+        _insulinConfig.update { it.copy(concentration = concentration) }
     }
 
     /**

@@ -12,7 +12,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
-import de.dh.daps.common.domain.model.therapy.InsulinConcentration
 import de.dh.daps.common.domain.model.therapy.InsulinHistory
 import de.dh.daps.common.domain.model.therapy.InsulinProfile
 import de.dh.daps.common.domain.model.therapy.getDefaultInsulinTypes
@@ -25,6 +24,7 @@ import de.dh.daps.common.domain.pump.PumpAlerts
 import de.dh.daps.common.domain.pump.PumpCapabilities
 import de.dh.daps.common.domain.pump.PumpConnectionState
 import de.dh.daps.common.domain.pump.PumpHardwareInformation
+import de.dh.daps.common.domain.pump.PumpInsulinConfig
 import de.dh.daps.common.domain.pump.PumpLifecycleState
 import de.dh.daps.common.infrastructure.PluginPreferences
 import de.dh.daps.common.ui.UiText
@@ -49,8 +49,9 @@ fun SimBodyPumpConfigurationScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val availableInsulinTypes = remember(context) { getDefaultInsulinTypes(context) }
-    val currentInsulinTypeId by pump.insulinTypeId.collectAsState()
-    val currentConcentration by pump.insulinConcentration.collectAsState()
+    val insulinConfig by pump.insulinConfig.collectAsState()
+    val currentInsulinTypeId = insulinConfig.insulinTypeId
+    val currentConcentration = insulinConfig.concentration
 
     PumpConfigurationScreen(
         title = stringResource(R.string.sim_body_pump_config_screen_title),
@@ -81,8 +82,7 @@ fun SimBodyPumpConfigurationScreen(
 }
 
 private class PreviewSimBodyPump(
-    override val insulinTypeId: StateFlow<String?> = MutableStateFlow(null),
-    override val insulinConcentration: StateFlow<InsulinConcentration> = MutableStateFlow(InsulinConcentration.U100),
+    override val insulinConfig: StateFlow<PumpInsulinConfig> = MutableStateFlow(PumpInsulinConfig()),
 ) : InsulinPump {
     override val insulinPumpId: String = "preview-simbody"
     override val insulinPumpDisplayName: UiText = UiText.DynamicString("SimBody Virtuelle Insulinpumpe")

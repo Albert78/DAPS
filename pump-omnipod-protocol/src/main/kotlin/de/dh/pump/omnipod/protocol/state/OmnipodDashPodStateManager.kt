@@ -1,6 +1,7 @@
 package de.dh.pump.omnipod.protocol.state
 
 import de.dh.daps.common.domain.model.therapy.InsulinConcentration
+import de.dh.daps.common.domain.pump.PumpInsulinConfig
 import de.dh.daps.common.infrastructure.PluginPreferences
 import de.dh.pump.omnipod.protocol.definition.ActivationProgress
 import de.dh.pump.omnipod.protocol.definition.AlarmType
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.util.EnumSet
@@ -66,8 +68,7 @@ interface OmnipodDashPodStateManager {
     val basalDrift: Double
     var lastBasalCorrectionTime: Long?
     var basalCorrectionInProgress: Boolean
-    val insulinTypeId: StateFlow<String?>
-    val insulinConcentration: StateFlow<InsulinConcentration>
+    val insulinConfig: StateFlow<PumpInsulinConfig>
     fun setInsulinTypeId(id: String?)
     fun setInsulinConcentration(concentration: InsulinConcentration)
 
@@ -148,18 +149,15 @@ class OmnipodDashPodStateManagerImpl(
     override val isSuspended: Boolean get() = deliveryStatus == DeliveryStatus.SUSPENDED
     override val isPodRunning: Boolean get() = podStatus?.isRunning() == true
 
-    private val _insulinTypeId = MutableStateFlow<String?>(null)
-    override val insulinTypeId: StateFlow<String?> = _insulinTypeId.asStateFlow()
-
-    private val _insulinConcentration = MutableStateFlow(InsulinConcentration.U100)
-    override val insulinConcentration: StateFlow<InsulinConcentration> = _insulinConcentration.asStateFlow()
+    private val _insulinConfig = MutableStateFlow(PumpInsulinConfig())
+    override val insulinConfig: StateFlow<PumpInsulinConfig> = _insulinConfig.asStateFlow()
 
     override fun setInsulinTypeId(id: String?) {
-        _insulinTypeId.value = id
+        _insulinConfig.update { it.copy(insulinTypeId = id) }
     }
 
     override fun setInsulinConcentration(concentration: InsulinConcentration) {
-        _insulinConcentration.value = concentration
+        _insulinConfig.update { it.copy(concentration = concentration) }
     }
 
     override var uniqueId: Int? = null
@@ -472,16 +470,19 @@ class OmnipodDashPodStateManagerImpl(
             lastBasalCorrectionTime?.let { putLong(KEY_LAST_BASAL_CORRECTION_TIME, it) } ?: putLong(KEY_LAST_BASAL_CORRECTION_TIME, 0L)
             tempBasal?.let { putString(KEY_TEMP_BASAL, Json.encodeToString(it)) } ?: putString(KEY_TEMP_BASAL, null)
             basalProgram?.let { putString(KEY_BASAL_PROGRAM, Json.encodeToString(it)) } ?: putString(KEY_BASAL_PROGRAM, null)
-            _insulinTypeId.value?.let { putString(KEY_INSULIN_TYPE_ID, it) } ?: putString(KEY_INSULIN_TYPE_ID, null)
-            putFloat(KEY_INSULIN_CONCENTRATION, _insulinConcentration.value.factor.toFloat())
+            _insulinConfig.value.insulinTypeId?.let { putString(KEY_INSULIN_TYPE_ID, it) } ?: putString(KEY_INSULIN_TYPE_ID, null)
+            putFloat(KEY_INSULIN_CONCENTRATION, _insulinConfig.value.concentration.factor.toFloat())
         }
     }
 
     override suspend fun loadFromPreferences() {
         preferences?.let { prefs ->
-            _insulinTypeId.value = prefs.getString(KEY_INSULIN_TYPE_ID).first()
+            val typeId = prefs.getString(KEY_INSULIN_TYPE_ID).first()
             val concFactor = prefs.getFloat(KEY_INSULIN_CONCENTRATION, 1.0f).first()
-            _insulinConcentration.value = InsulinConcentration(concFactor.toDouble())
+            _insulinConfig.value = PumpInsulinConfig(
+                insulinTypeId = typeId,
+                concentration = InsulinConcentration(concFactor.toDouble())
+            )
             uniqueId = prefs.getInt(KEY_UNIQUE_ID, 0).first().takeIf { it != 0 }
             lotNumber = prefs.getLong(KEY_LOT_NUMBER, 0L).first().takeIf { it != 0L }
             podSequenceNumber = prefs.getLong(KEY_POD_SEQ_NUMBER, 0L).first().takeIf { it != 0L }
@@ -579,8 +580,7 @@ class OmnipodDashPodStateManagerImpl(
         bolusPulsesDelivered = null
         lastBasalCorrectionTime = null
         basalCorrectionInProgress = false
-        _insulinTypeId.value = null
-        _insulinConcentration.value = InsulinConcentration.U100
+        _insulinConfig.value = PumpInsulinConfig()
     }
 
     companion object {

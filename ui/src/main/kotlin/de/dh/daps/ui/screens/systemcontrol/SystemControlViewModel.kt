@@ -21,23 +21,23 @@ import de.dh.daps.common.PUMP_RESERVOIR_WARNING_THRESHOLD
 import de.dh.daps.common.SENSOR_EXPIRATION_WARNING_THRESHOLD_HOURS
 import de.dh.daps.common.device.driver.GlucoseSourceDriver
 import de.dh.daps.common.device.driver.InsulinPumpDriver
-import de.dh.daps.common.domain.model.data.BgReading
-import de.dh.daps.common.domain.model.data.Timestamp
-import de.dh.daps.common.domain.pump.ExpirationDate
 import de.dh.daps.common.domain.model.cgm.GlucoseSource
 import de.dh.daps.common.domain.model.cgm.GlucoseSourceStatus
+import de.dh.daps.common.domain.model.cgm.SourceHardwareInformation
+import de.dh.daps.common.domain.model.data.BgReading
+import de.dh.daps.common.domain.model.data.BgReadingsInterval
+import de.dh.daps.common.domain.model.data.Timestamp
+import de.dh.daps.common.domain.model.engine.ApsMode
+import de.dh.daps.common.domain.model.therapy.InsulinAmount
+import de.dh.daps.common.domain.model.therapy.InsulinConcentration
+import de.dh.daps.common.domain.model.therapy.InsulinStatus
+import de.dh.daps.common.domain.pump.ExpirationDate
 import de.dh.daps.common.domain.pump.InsulinPump
 import de.dh.daps.common.domain.pump.InsulinPumpStatus
 import de.dh.daps.common.domain.pump.PumpConnectionState
 import de.dh.daps.common.domain.pump.PumpHardwareInformation
 import de.dh.daps.common.domain.pump.PumpLifecycleState
 import de.dh.daps.common.domain.pump.PumpReplaceableComponent
-import de.dh.daps.common.domain.model.cgm.SourceHardwareInformation
-import de.dh.daps.common.domain.model.engine.ApsMode
-import de.dh.daps.common.domain.model.data.BgReadingsInterval
-import de.dh.daps.common.domain.model.therapy.InsulinAmount
-import de.dh.daps.common.domain.model.therapy.InsulinConcentration
-import de.dh.daps.common.domain.model.therapy.InsulinStatus
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.orchestration.ApsIssue
@@ -397,8 +397,7 @@ class SystemControlViewModel(
                 coordinatorStateFlow,
                 syncStatusFlow,
                 nextWakeupFlow,
-                pump.insulinConcentration,
-                pump.insulinTypeId
+                pump.insulinConfig // Included as a reactive trigger to ensure UI updates when insulin configuration changes
             ) { array ->
                 val connectionState = array[0] as PumpConnectionState
                 val connected = connectionState.isConnected
@@ -411,6 +410,8 @@ class SystemControlViewModel(
                 val coordinatorState = array[6] as PumpCoordinatorState
                 val syncStatus = array[7] as PumpSyncStatus
                 val nextWakeup = array[8] as Timestamp?
+                // Note: array[9] (pump.insulinConfig) is not extracted explicitly here because PumpUiData
+                // holds the pump reference, but it acts as a necessary trigger to re-emit PumpUiData.
 
                 PumpUiData(
                     connected = connected,
@@ -598,7 +599,7 @@ class SystemControlViewModel(
                     status = nextExpirationStatus
                 ),
                 nextExpirationType = nextExpirationType,
-                insulinConcentration = pInfo.pump?.insulinConcentration?.value ?: InsulinConcentration.U100
+                insulinConcentration = pInfo.pump?.insulinConfig?.value?.concentration ?: InsulinConcentration.U100
             )
         }
 
@@ -685,7 +686,7 @@ class SystemControlViewModel(
                 batteryPercent = pInfo.status.batteryRemainingPercent,
                 reservoirRemaining = pInfo.status.reservoirRemainingUnits,
                 tdd = tdd,
-                insulinConcentration = pInfo.pump?.insulinConcentration?.value ?: InsulinConcentration.U100,
+                insulinConcentration = pInfo.pump?.insulinConfig?.value?.concentration ?: InsulinConcentration.U100,
                 lastConnectionTimestamp = pInfo.lastConnection,
                 manufacturer = pInfo.manufacturer,
                 pumpModel = pInfo.model,
