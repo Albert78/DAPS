@@ -488,13 +488,13 @@ fun MealCorrectionBolusContextInfo(
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Text(
-                                text = stringResource(CommonR.string.label_iob),
+                                text = stringResource(CommonR.string.label_net_iob),
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
                             )
                             Text(
-                                text = insulinValue(uiState.projections.iob.iu),
+                                text = insulinValue(uiState.projections.netIob.iu),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -967,7 +967,7 @@ fun MealCorrectionBolusScreenshotLowPreview() {
                     timestamp = now,
                     bg = BgValue.fromMgDl(70),
                     isProjected = true,
-                    iob = InsulinAmount(0.15),
+                    netIob = InsulinAmount(0.15),
                     cob = 0.0,
                     futureCarbs = 0.0
                 ),
@@ -1045,7 +1045,7 @@ fun MealCorrectionBolusScreenshotHighPreview() {
                     timestamp = mealTimestamp,
                     bg = BgValue.fromMgDl(145),
                     isProjected = true,
-                    iob = InsulinAmount.ZERO,
+                    netIob = InsulinAmount.ZERO,
                     cob = 0.0,
                     futureCarbs = 0.0
                 ),
@@ -1120,7 +1120,7 @@ fun MealCorrectionBolusDefaultPreview() {
                     timestamp = Timestamp.now().plusMinutes(15),
                     bg = BgValue.fromMgDl(145),
                     isProjected = true,
-                    iob = InsulinAmount(1.2),
+                    netIob = InsulinAmount(1.2),
                     cob = 25.0,
                     futureCarbs = 10.0
                 ),

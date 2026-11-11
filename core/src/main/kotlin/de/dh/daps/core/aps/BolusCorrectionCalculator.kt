@@ -60,7 +60,7 @@ data class BolusProjections(
     val bg: BgValue = BgValue.INVALID,
     val isProjected: Boolean = false,
     val impendingLow: ProjectedBg? = null,
-    val iob: InsulinAmount = InsulinAmount.ZERO,
+    val netIob: InsulinAmount = InsulinAmount.ZERO,
     val cob: Double = 0.0,
     val futureCarbs: Double = 0.0,
     val deferredBolusAmount: InsulinAmount = InsulinAmount.ZERO
@@ -85,7 +85,7 @@ interface BolusCorrectionCalculator {
         mealTimestamp: Timestamp,
         projectedBg: BgValue,
         impendingLow: ProjectedBg?,
-        projectedIob: InsulinAmount,
+        projectedNetIob: InsulinAmount,
         projectedCob: Double,
         futureCarbs: Double,
         deferredBolusAmount: InsulinAmount
@@ -173,7 +173,7 @@ object BolusCalculationMath {
      * @param isf The Insulin Sensitivity Factor (ISF).
      * @param targetBg The target blood glucose value.
      * @param impendingLow If available, the next projected low value.
-     * @param iob The projected active insulin on board.
+     * @param netIob The projected active insulin on board, exclusive basal.
      * @param cob The projected active carbohydrates on board (in grams).
      * @param futureCarbs Carbohydrates pre-announced for the future.
      * @param deferredBolusAmount Insulin amount already planned for administration.
@@ -188,7 +188,7 @@ object BolusCalculationMath {
         isf: BgDelta,
         targetBg: BgValue,
         impendingLow: ProjectedBg?,
-        iob: InsulinAmount,
+        netIob: InsulinAmount,
         cob: Double,
         futureCarbs: Double,
         deferredBolusAmount: InsulinAmount
@@ -213,8 +213,8 @@ object BolusCalculationMath {
         val futureCarbsPart = convertToInsulinAmountFromCarbs(futureCarbs, cr)
 
         // Sum up all parts: Add requirements (Meal, Correction, COB, Future Carbs),
-        // subtract already active/planned resources (IOB, Deferred Boluses).
-        val total = (mealPart + bgCorrectionPart - iob + cobPart + futureCarbsPart - deferredBolusAmount).coerceAtLeast(InsulinAmount.ZERO)
+        // subtract already active/planned resources (net IOB, Deferred Boluses).
+        val total = (mealPart + bgCorrectionPart - netIob + cobPart + futureCarbsPart - deferredBolusAmount).coerceAtLeast(InsulinAmount.ZERO)
 
         // Round to 2 decimal places for insulin pump precision
         val roundedTotal = round(total.iu * 100.0) / 100.0
@@ -223,7 +223,7 @@ object BolusCalculationMath {
         return BolusParts(
             mealPart = mealPart,
             bgCorrectionPart = bgCorrectionPart,
-            iobPart = iob,
+            iobPart = netIob,
             cobPart = cobPart,
             futureCarbsPart = futureCarbsPart,
             deferredBolusPart = deferredBolusAmount,
@@ -342,7 +342,7 @@ class SimpleBolusCorrectionCalculator(
         mealTimestamp: Timestamp,
         projectedBg: BgValue,
         impendingLow: ProjectedBg?,
-        projectedIob: InsulinAmount,
+        projectedNetIob: InsulinAmount,
         projectedCob: Double,
         futureCarbs: Double,
         deferredBolusAmount: InsulinAmount
@@ -354,7 +354,7 @@ class SimpleBolusCorrectionCalculator(
             isf = therapyManager.getIsfFactor(mealTimestamp),
             targetBg = therapyManager.getBgSettings(mealTimestamp).first,
             impendingLow = impendingLow,
-            iob = projectedIob,
+            netIob = projectedNetIob,
             cob = projectedCob,
             futureCarbs = futureCarbs,
             deferredBolusAmount = deferredBolusAmount

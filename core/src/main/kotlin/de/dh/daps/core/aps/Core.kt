@@ -350,7 +350,7 @@ class Core(
             mealTimestamp: Timestamp,
             projectedBg: BgValue,
             impendingLow: ProjectedBg?,
-            projectedIob: InsulinAmount,
+            projectedNetIob: InsulinAmount,
             projectedCob: Double,
             futureCarbs: Double,
             deferredBolusAmount: InsulinAmount
@@ -360,7 +360,7 @@ class Core(
                 mealTimestamp,
                 projectedBg,
                 impendingLow,
-                projectedIob,
+                projectedNetIob,
                 projectedCob,
                 futureCarbs,
                 deferredBolusAmount

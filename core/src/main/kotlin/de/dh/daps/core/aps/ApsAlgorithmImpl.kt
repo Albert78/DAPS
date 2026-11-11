@@ -134,12 +134,26 @@ class ApsAlgorithmImpl(
                 block = { ProjectedBg(bg = it.assumedBg, timestamp = timeline.timestamp(it.tick)) }
             )
 
+            val insulinDoses = insulinHistory.toActiveDoses()
+            val artificialNormalBasalDoses = calculateArtificialNormalBasalDoses()
+
+            // Projected total IOB under the assumption that we deliver 100% basal from now on
             val projectedIob = carbsInsulinCalculator.iob(
-                insulinDoses = insulinHistory.toActiveDoses(excludeBasal = true),
+                insulinDoses = insulinDoses,
                 timestamp = mealTimestamp,
                 dia = dia,
                 peak = peak
             )
+            val projectedBasalIob = carbsInsulinCalculator.iob(
+                insulinDoses = artificialNormalBasalDoses,
+                timestamp = mealTimestamp,
+                dia = dia,
+                peak = peak
+            )
+
+            // IOB at meal time, without basal part
+            val projectedNetIob = projectedIob - projectedBasalIob
+
             val projectedCob = carbsInsulinCalculator.cob(
                 meals = mealsHistory,
                 timestamp = mealTimestamp,
@@ -155,7 +169,7 @@ class ApsAlgorithmImpl(
                 bg = assumedBg,
                 isProjected = mealTimestamp > Timestamp.now(),
                 impendingLow = impendingLow,
-                iob = projectedIob,
+                netIob = projectedNetIob,
                 cob = projectedCob,
                 futureCarbs = sumFutureCarbs,
                 deferredBolusAmount = sumFutureDeferredBolus
@@ -167,7 +181,7 @@ class ApsAlgorithmImpl(
             mealTimestamp: Timestamp,
             projectedBg: BgValue,
             impendingLow: ProjectedBg?,
-            projectedIob: InsulinAmount,
+            projectedNetIob: InsulinAmount,
             projectedCob: Double,
             futureCarbs: Double,
             deferredBolusAmount: InsulinAmount
@@ -179,7 +193,7 @@ class ApsAlgorithmImpl(
             isf = therapyManager.getIsfFactor(mealTimestamp),
             targetBg = therapyManager.getBgSettings(mealTimestamp).first,
             impendingLow = impendingLow,
-            iob = projectedIob,
+            netIob = projectedNetIob,
             cob = projectedCob,
             futureCarbs = futureCarbs,
             deferredBolusAmount = deferredBolusAmount
@@ -272,16 +286,15 @@ class ApsAlgorithmImpl(
 
     /**
      * Calculates a list of artificial basal insulin doses which reflect a 100% basal coverage
-     * of the last hours.
+     * of the last hours up to the given `until` time.
      */
-    private suspend fun calculateArtificialNormalBasalDoses(): List<InsulinDose> {
+    private suspend fun calculateArtificialNormalBasalDoses(until: Timestamp = Timestamp.now()): List<InsulinDose> {
         val insulinType = therapyManager.getPumpInsulinType()
         val pumpSetting = therapyManager.getCurrentTherapySettings().insulinProfile.getSettingFor(insulinType)
         val diaHours = (pumpSetting.dia.value + 59) / 60
-        val now = Timestamp.now()
         // For the more distant past, it's sufficient to approximate the basal with one delivery per hour
         val hourlyDoses = (1..diaHours).map { hour ->
-            val timestamp = now.minusHours(hour)
+            val timestamp = until.minusHours(hour)
             val amount = therapyManager.getBasalPerHour(timestamp)
             InsulinDose(
                 timestamp = timestamp,
@@ -290,10 +303,10 @@ class ApsAlgorithmImpl(
             )
         }
         // For the new past, we chose a more precise approach
-        val quarterBasalAmount = therapyManager.getBasalPerHour(now) / 4.0
+        val quarterBasalAmount = therapyManager.getBasalPerHour(until) / 4.0
         val quarterDosesLastHour = (1..4).map { quarter ->
             InsulinDose(
-                timestamp = now.minusMinutes(quarter * 15),
+                timestamp = until.minusMinutes(quarter * 15),
                 amount = quarterBasalAmount,
                 insulinType = insulinType
             )

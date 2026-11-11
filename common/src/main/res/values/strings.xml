@@ -109,6 +109,7 @@
     <string name="therapy_cr_label">CR</string>
 
     <string name="label_iob">IOB</string>
+    <string name="label_net_iob">Net IOB</string>
     <string name="label_cob">COB</string>
 
     <string name="glucose_unit_mgdl">mg/dl</string>
