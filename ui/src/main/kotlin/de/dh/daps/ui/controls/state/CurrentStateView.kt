@@ -1,6 +1,12 @@
 package de.dh.daps.ui.controls.state
 
 import android.content.res.Configuration
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
@@ -272,6 +278,19 @@ fun CurrentStateView(
                         else -> colors.glucoseTarget to false
                     }
 
+                    val infiniteTransition = rememberInfiniteTransition(label = "calculating_pulse")
+                    val pulseAlpha by infiniteTransition.animateFloat(
+                        initialValue = 0.3f,
+                        targetValue = 1.0f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(durationMillis = 750, easing = LinearEasing),
+                            repeatMode = RepeatMode.Reverse
+                        ),
+                        label = "pulseAlpha"
+                    )
+
+                    val dotAlpha = if (currentBgUiState.isCalculating) pulseAlpha else 1.0f
+
                     Column(
                         modifier = Modifier
                             .weight(1f)
@@ -284,7 +303,7 @@ fun CurrentStateView(
                                 Surface(
                                     modifier = Modifier.size(8.dp),
                                     shape = RoundedCornerShape(4.dp),
-                                    color = statusColor
+                                    color = statusColor.copy(alpha = dotAlpha)
                                 ) {}
                             }
                             Spacer(Modifier.width(4.dp))
