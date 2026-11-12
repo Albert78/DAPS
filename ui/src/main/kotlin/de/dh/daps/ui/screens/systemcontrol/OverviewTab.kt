@@ -656,10 +656,13 @@ private fun <T> StatusMetricText(
             is Boolean -> if (v) stringResource(id = R.string.label_active) else stringResource(id = R.string.label_inactive)
             is ApsSystemStatus -> when (v) {
                 ApsSystemStatus.Active -> stringResource(id = R.string.label_active)
+                ApsSystemStatus.Ready -> stringResource(id = R.string.label_ready)
+                ApsSystemStatus.Calculating -> stringResource(id = R.string.label_calculating)
+                ApsSystemStatus.Inactive -> stringResource(id = R.string.label_inactive)
                 ApsSystemStatus.Suspended -> stringResource(id = R.string.overview_aps_status_suspended)
                 is ApsSystemStatus.Issues -> pluralStringResourceZero(
                     pluralsResId = R.plurals.overview_aps_issues_count,
-                    zeroResId = R.string.label_active,
+                    zeroResId = R.string.label_ready,
                     quantity = v.count,
                     v.count
                 )

@@ -28,6 +28,7 @@ import de.dh.daps.common.domain.model.data.BgReading
 import de.dh.daps.common.domain.model.data.BgReadingsInterval
 import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.engine.ApsMode
+import de.dh.daps.core.aps.CoreState
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.common.domain.model.therapy.InsulinConcentration
 import de.dh.daps.common.domain.model.therapy.InsulinStatus
@@ -89,6 +90,9 @@ sealed interface OverviewAndroidSystemUiState {
 
 sealed interface ApsSystemStatus {
     data object Active : ApsSystemStatus
+    data object Ready : ApsSystemStatus
+    data object Calculating : ApsSystemStatus
+    data object Inactive : ApsSystemStatus
     data object Suspended : ApsSystemStatus
     data class Issues(val count: Int) : ApsSystemStatus
 }
@@ -98,7 +102,9 @@ sealed interface OverviewApsSystemUiState {
     data class Content(
         val mode: StatusMetric<ApsMode>,
         val lastCalculation: StatusMetric<Timestamp>,
-        val issues: List<ApsIssue>
+        val issues: List<ApsIssue>,
+        val coreState: CoreState = CoreState.Uninitialized,
+        val isCalculating: Boolean = false
     ) : OverviewApsSystemUiState {
         val unintendedIssues: List<ApsIssue>
             get() = if (mode.value == ApsMode.Suspend) {
@@ -119,8 +125,16 @@ sealed interface OverviewApsSystemUiState {
                         value = ApsSystemStatus.Suspended,
                         status = ValueStatus.WARNING
                     )
+                    coreState !is CoreState.Active -> StatusMetric(
+                        value = ApsSystemStatus.Inactive,
+                        status = ValueStatus.WARNING
+                    )
+                    isCalculating -> StatusMetric(
+                        value = ApsSystemStatus.Calculating,
+                        status = ValueStatus.GOOD
+                    )
                     else -> StatusMetric(
-                        value = ApsSystemStatus.Active,
+                        value = ApsSystemStatus.Ready,
                         status = ValueStatus.GOOD
                     )
                 }
@@ -438,8 +452,10 @@ class SystemControlViewModel(
     private val apsInfo = combine(
         systemOrchestrator.apsMode,
         systemOrchestrator.apsIssues,
-        systemOrchestrator.lastSuccessfulCoreCalculation
-    ) { mode, issues, lastCalcTs ->
+        systemOrchestrator.lastSuccessfulCoreCalculation,
+        systemOrchestrator.coreState,
+        systemOrchestrator.isCalculating
+    ) { mode, issues, lastCalcTs, coreState, isCalculating ->
         val modeValueStatus = when (mode) {
             ApsMode.AutoCorrection -> ValueStatus.GOOD
             ApsMode.Manual -> ValueStatus.GOOD
@@ -456,7 +472,9 @@ class SystemControlViewModel(
                 value = lastCalcTs,
                 status = lastCalcStatus
             ),
-            issues = issues.toList()
+            issues = issues.toList(),
+            coreState = coreState,
+            isCalculating = isCalculating
         )
     }
 

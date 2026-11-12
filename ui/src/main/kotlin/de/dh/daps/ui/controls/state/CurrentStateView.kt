@@ -264,15 +264,12 @@ fun CurrentStateView(
 
                     // System Column
                     val coreState = currentBgUiState.coreState
-                    val (statusColor, hasIssues) = when (coreState) {
-                        is CoreState.Active -> {
-                            if (currentBgUiState.apsIssues.isEmpty()) {
-                                colors.glucoseTarget to false
-                            } else {
-                                colors.glucoseLow to true
-                            }
-                        }
-                        else -> Color.Gray to false
+                    val primaryColor = MaterialTheme.colorScheme.primary
+                    val (statusColor, hasIssues) = when {
+                        currentBgUiState.apsIssues.isNotEmpty() -> colors.glucoseLow to true
+                        coreState !is CoreState.Active -> Color.Gray to false
+                        currentBgUiState.isCalculating -> primaryColor to false
+                        else -> colors.glucoseTarget to false
                     }
 
                     Column(
