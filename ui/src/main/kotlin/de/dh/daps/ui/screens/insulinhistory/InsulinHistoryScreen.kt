@@ -134,35 +134,80 @@ fun InsulinHistoryContent(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = screenTitle(stringResource(id = R.string.insulin_history_screen_title)),
-                navigationIcon = {
-                    IconButton(onClick = onNavigateUp) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(id = CommonR.string.cd_navigate_up)
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { showFilterDialog = true }) {
-                        Box(modifier = Modifier.padding(4.dp)) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                TopAppBar(
+                    title = screenTitle(stringResource(id = R.string.insulin_history_screen_title)),
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateUp) {
                             Icon(
-                                imageVector = Icons.Default.FilterAlt,
-                                contentDescription = stringResource(id = R.string.cd_filter)
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(id = CommonR.string.cd_navigate_up)
                             )
-                            if (uiState.isFilterActive) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(8.dp)
-                                        .background(AppColorBlue, CircleShape)
-                                        .align(Alignment.TopEnd)
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { showFilterDialog = true }) {
+                            Box(modifier = Modifier.padding(4.dp)) {
+                                Icon(
+                                    imageVector = Icons.Default.FilterAlt,
+                                    contentDescription = stringResource(id = R.string.cd_filter)
                                 )
+                                if (uiState.isFilterActive) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .background(AppColorBlue, CircleShape)
+                                            .align(Alignment.TopEnd)
+                                    )
+                                }
                             }
                         }
                     }
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 2.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    InsulinCategoryFilter.entries.forEach { category ->
+                        val label = when (category) {
+                            InsulinCategoryFilter.BASAL -> stringResource(id = R.string.insulin_category_basal)
+                            InsulinCategoryFilter.CORRECTION -> stringResource(id = R.string.insulin_category_correction)
+                            InsulinCategoryFilter.MEAL -> stringResource(id = R.string.insulin_category_meal)
+                        }
+                        val isChecked = uiState.selectedCategories.contains(category)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.clickable {
+                                val newCategories = if (isChecked) {
+                                    uiState.selectedCategories - category
+                                } else {
+                                    uiState.selectedCategories + category
+                                }
+                                onSetFilters(newCategories, uiState.selectedStatuses)
+                            }
+                        ) {
+                            Checkbox(
+                                checked = isChecked,
+                                onCheckedChange = { checked ->
+                                    val newCategories = if (checked) {
+                                        uiState.selectedCategories + category
+                                    } else {
+                                        uiState.selectedCategories - category
+                                    }
+                                    onSetFilters(newCategories, uiState.selectedStatuses)
+                                }
+                            )
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
                 }
-            )
+            }
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { showAddDialog = true }) {
@@ -543,7 +588,7 @@ fun FilterDialog(
             ) {
                 NormalTextButton(
                     onClick = {
-                        tempCategories = emptySet()
+                        tempCategories = DEFAULT_INSULIN_CATEGORY_FILTERS
                         tempStatuses = emptySet()
                     }
                 ) {

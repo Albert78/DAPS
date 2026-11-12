@@ -22,17 +22,19 @@ enum class InsulinCategoryFilter {
     BASAL, CORRECTION, MEAL
 }
 
+val DEFAULT_INSULIN_CATEGORY_FILTERS = setOf(InsulinCategoryFilter.CORRECTION, InsulinCategoryFilter.MEAL)
+
 data class InsulinHistoryUiState(
     val insulinEntries: List<InsulinApplication> = emptyList(),
     val allInsulinEntries: List<InsulinApplication> = emptyList(),
     val insulinTypes: List<InsulinType> = emptyList(),
     val defaultInsulinType: InsulinType? = null,
     val editThresholdHours: Int = MEAL_EDIT_THRESHOLD_HOURS,
-    val selectedCategories: Set<InsulinCategoryFilter> = emptySet(),
+    val selectedCategories: Set<InsulinCategoryFilter> = DEFAULT_INSULIN_CATEGORY_FILTERS,
     val selectedStatuses: Set<InsulinStatus> = emptySet()
 ) {
     val isFilterActive: Boolean
-        get() = (selectedCategories.isNotEmpty() && selectedCategories.size < 3) ||
+        get() = (selectedCategories != DEFAULT_INSULIN_CATEGORY_FILTERS) ||
                 (selectedStatuses.isNotEmpty() && selectedStatuses.size < InsulinStatus.entries.size)
 }
 
@@ -45,7 +47,7 @@ class InsulinHistoryViewModel(
 
     private val _insulinTypes = MutableStateFlow<List<InsulinType>>(emptyList())
     private val _defaultInsulinType = MutableStateFlow<InsulinType?>(null)
-    private val _selectedCategories = MutableStateFlow<Set<InsulinCategoryFilter>>(emptySet())
+    private val _selectedCategories = MutableStateFlow<Set<InsulinCategoryFilter>>(DEFAULT_INSULIN_CATEGORY_FILTERS)
     private val _selectedStatuses = MutableStateFlow<Set<InsulinStatus>>(emptySet())
 
     init {
@@ -64,8 +66,8 @@ class InsulinHistoryViewModel(
     ) { entries, types, defaultType, categories, statuses ->
         val sortedEntries = entries.sortedByDescending { it.timestamp }
         val filteredEntries = sortedEntries.filter { application ->
-            val matchesCategory = if (categories.isEmpty() || categories.size == 3) {
-                true
+            val matchesCategory = if (categories.isEmpty()) {
+                false
             } else {
                 (categories.contains(InsulinCategoryFilter.BASAL) && application.basal) ||
                 (categories.contains(InsulinCategoryFilter.CORRECTION) && application.correction) ||
@@ -101,7 +103,7 @@ class InsulinHistoryViewModel(
     }
 
     fun clearFilters() {
-        _selectedCategories.value = emptySet()
+        _selectedCategories.value = DEFAULT_INSULIN_CATEGORY_FILTERS
         _selectedStatuses.value = emptySet()
     }
 
