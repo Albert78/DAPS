@@ -196,7 +196,7 @@ class ApsAlgorithmImpl(
                 targetBg = targetBg,
                 lowThreshold = lowThreshold,
                 impendingLow = projections.impendingLow,
-                isRescueCarbs = isRescueCarbs
+                rescueCarbsGrams = rescueCarbsGrams
             )
 
             val isImiSuppressedByLow = isRescueCarbs || projections.impendingLow != null || (projections.bg.isValid() && projections.bg.mgdl <= lowThreshold.mgdl)
@@ -221,7 +221,6 @@ class ApsAlgorithmImpl(
             projectedCob: Double,
             futureCarbs: Double,
             deferredBolusAmount: InsulinAmount,
-            isRescueCarbs: Boolean,
             rescueCarbsAmount: Double
         ) = BolusCalculationMath.calculateBolusParts(
             carbsGrams = carbsGrams,
@@ -235,7 +234,6 @@ class ApsAlgorithmImpl(
             cob = projectedCob,
             futureCarbs = futureCarbs,
             deferredBolusAmount = deferredBolusAmount,
-            isRescueCarbs = isRescueCarbs,
             rescueCarbsAmount = rescueCarbsAmount
         )
 
@@ -251,7 +249,6 @@ class ApsAlgorithmImpl(
             projectedCob = context.projections.cob,
             futureCarbs = context.projections.futureCarbs,
             deferredBolusAmount = context.projections.deferredBolusAmount,
-            isRescueCarbs = context.isRescueCarbs,
             rescueCarbsAmount = context.rescueCarbsGrams
         )
 

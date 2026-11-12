@@ -78,9 +78,7 @@ data class MealBolusContext(
     val rescueCarbsGrams: Double = 0.0,
     val isImiSuppressedByLow: Boolean = false,
     val recommendedBolusAmount: InsulinAmount? = null
-) {
-    val isRescueCarbs: Boolean get() = rescueCarbsGrams > 0.0
-}
+)
 
 /**
  * Bolus calculator to support the user with carbs, IMI and bolus suggestions.
@@ -119,7 +117,6 @@ interface BolusCorrectionCalculator {
         projectedCob: Double,
         futureCarbs: Double,
         deferredBolusAmount: InsulinAmount,
-        isRescueCarbs: Boolean = false,
         rescueCarbsAmount: Double = 0.0
     ): BolusParts
 
@@ -135,7 +132,6 @@ interface BolusCorrectionCalculator {
         projectedCob = context.projections.cob,
         futureCarbs = context.projections.futureCarbs,
         deferredBolusAmount = context.projections.deferredBolusAmount,
-        isRescueCarbs = context.isRescueCarbs,
         rescueCarbsAmount = context.rescueCarbsGrams
     )
 
@@ -180,12 +176,12 @@ object BolusCalculationMath {
         targetBg: BgValue,
         lowThreshold: BgValue,
         impendingLow: ProjectedBg? = null,
-        isRescueCarbs: Boolean = false,
+        rescueCarbsGrams: Double = 0.0,
         allowPast: Boolean = false
     ): Minutes? {
         if (currentBg.isInvalid() || targetBg.isInvalid() || lowThreshold.isInvalid()) return null
 
-        if (isRescueCarbs || impendingLow != null || currentBg.mgdl <= lowThreshold.mgdl) {
+        if (rescueCarbsGrams > 0.0 || impendingLow != null || currentBg.mgdl <= lowThreshold.mgdl) {
             return if (allowPast) Minutes(-15) else Minutes(0)
         }
 
@@ -241,17 +237,10 @@ object BolusCalculationMath {
         cob: Double,
         futureCarbs: Double,
         deferredBolusAmount: InsulinAmount,
-        isRescueCarbs: Boolean = false,
         rescueCarbsAmount: Double = 0.0
     ): BolusParts {
-        // Calculate insulin needed for current meal (Grams -> IU).
-        // If rescue carbs are recommended, do not dose insulin for rescue carbs.
-        val netCarbsForInsulin = if (isRescueCarbs && rescueCarbsAmount > 0.0) {
-            (carbsGrams - rescueCarbsAmount).coerceAtLeast(0.0)
-        } else {
-            carbsGrams
-        }
-        val mealPart = convertToInsulinAmountFromCarbs(netCarbsForInsulin, cr)
+        // Meal part for ALL entered carbs (full transparency for the user)
+        val mealPart = convertToInsulinAmountFromCarbs(carbsGrams, cr)
 
         // Determine BG deviation from target at the time of the meal.
         // Use impending low BG if available, otherwise projected BG. Fallback to target if no valid BG is available.
@@ -262,16 +251,22 @@ object BolusCalculationMath {
         }
         val bgDiff = bgMgdl - targetBg.mgdl
 
-        // Calculate correction, COB and future carb parts using meal-time factors
-
+        // Pure, unadulterated BG correction part (positive or negative)
         val bgCorrectionPart = convertToInsulinAmountFromBgDelta(BgDelta.fromMgDl(bgDiff), isf)
 
         val cobPart = convertToInsulinAmountFromCarbs(cob, cr)
         val futureCarbsPart = convertToInsulinAmountFromCarbs(futureCarbs, cr)
 
-        // Sum up all parts: Add requirements (Meal, Correction, COB, Future Carbs),
-        // subtract already active/planned resources (net IOB, Deferred Boluses).
-        val total = (mealPart + bgCorrectionPart - netIob + cobPart + futureCarbsPart - deferredBolusAmount).coerceAtLeast(InsulinAmount.ZERO)
+        // Special rule for rescue carbs:
+        // If rescue carbs are recommended (rescueCarbsAmount > 0) AND the entered carbs are <= rescueCarbsAmount,
+        // no insulin is given (totalProposed = 0.0).
+        val isRescueCarbsCoveredOnly = rescueCarbsAmount > 0.0 && carbsGrams <= rescueCarbsAmount
+
+        val total = if (isRescueCarbsCoveredOnly) {
+            InsulinAmount.ZERO
+        } else {
+            (mealPart + bgCorrectionPart - netIob + cobPart + futureCarbsPart - deferredBolusAmount).coerceAtLeast(InsulinAmount.ZERO)
+        }
 
         // Round to 2 decimal places for insulin pump precision
         val roundedTotal = round(total.iu * 100.0) / 100.0
@@ -414,7 +409,7 @@ class SimpleBolusCorrectionCalculator(
             targetBg = targetBg,
             lowThreshold = lowThreshold,
             impendingLow = projections.impendingLow,
-            isRescueCarbs = isRescueCarbs
+            rescueCarbsGrams = rescueCarbsGrams
         )
 
         val isImiSuppressedByLow = isRescueCarbs || projections.impendingLow != null || (projections.bg.isValid() && projections.bg.mgdl <= lowThreshold.mgdl)
@@ -439,7 +434,6 @@ class SimpleBolusCorrectionCalculator(
         projectedCob: Double,
         futureCarbs: Double,
         deferredBolusAmount: InsulinAmount,
-        isRescueCarbs: Boolean,
         rescueCarbsAmount: Double
     ) = BolusCalculationMath.calculateBolusParts(
         carbsGrams = carbsGrams,
@@ -453,7 +447,6 @@ class SimpleBolusCorrectionCalculator(
         cob = projectedCob,
         futureCarbs = futureCarbs,
         deferredBolusAmount = deferredBolusAmount,
-        isRescueCarbs = isRescueCarbs,
         rescueCarbsAmount = rescueCarbsAmount
     )
 
@@ -469,7 +462,6 @@ class SimpleBolusCorrectionCalculator(
         projectedCob = context.projections.cob,
         futureCarbs = context.projections.futureCarbs,
         deferredBolusAmount = context.projections.deferredBolusAmount,
-        isRescueCarbs = context.isRescueCarbs,
         rescueCarbsAmount = context.rescueCarbsGrams
     )
 

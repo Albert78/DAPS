@@ -249,7 +249,6 @@ class NoopAlgorithm: ApsAlgorithm {
                 projectedCob: Double,
                 futureCarbs: Double,
                 deferredBolusAmount: InsulinAmount,
-                isRescueCarbs: Boolean,
                 rescueCarbsAmount: Double
             ): BolusParts = BolusParts.empty()
 

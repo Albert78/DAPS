@@ -362,7 +362,6 @@ class Core(
             projectedCob: Double,
             futureCarbs: Double,
             deferredBolusAmount: InsulinAmount,
-            isRescueCarbs: Boolean,
             rescueCarbsAmount: Double
         ): BolusParts = mutex.withLock {
             delegate.calculateBolusParts(
@@ -374,7 +373,6 @@ class Core(
                 projectedCob,
                 futureCarbs,
                 deferredBolusAmount,
-                isRescueCarbs,
                 rescueCarbsAmount
             )
         }

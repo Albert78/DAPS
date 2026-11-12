@@ -33,7 +33,7 @@ class BolusCorrectionCalculatorTest {
             currentBg = currentBg,
             targetBg = targetBg,
             lowThreshold = lowThreshold,
-            isRescueCarbs = true
+            rescueCarbsGrams = 10.0
         )
         assertEquals(Minutes(0).value, imi?.value)
     }
@@ -86,14 +86,15 @@ class BolusCorrectionCalculatorTest {
     }
 
     @Test
-    fun testBolusPartsRescueCarbsExemptedFromMealDose() {
+    fun testBolusPartsRescueCarbsCoveredOnly() {
         val cr = 10.0 // 1 U per 10g
-        val isf = BgDelta.fromMgDl(40)
+        val isf = BgDelta.fromMgDl(40) // 1 U per 40 mg/dL (BG 60 mg/dL => -1.0 U)
+        val lowBg = BgValue.fromMgDl(60.0)
 
         val parts = BolusCalculationMath.calculateBolusParts(
             carbsGrams = 10.0,
             mealTimestamp = Timestamp.now(),
-            bg = targetBg,
+            bg = lowBg,
             cr = cr,
             isf = isf,
             targetBg = targetBg,
@@ -102,24 +103,26 @@ class BolusCorrectionCalculatorTest {
             cob = 0.0,
             futureCarbs = 0.0,
             deferredBolusAmount = InsulinAmount.ZERO,
-            isRescueCarbs = true,
             rescueCarbsAmount = 10.0
         )
 
-        // 10g rescue carbs should not produce a meal insulin requirement
-        assertEquals(0.0, parts.mealPart.iu, 0.001)
+        // User sees full mealPart (1.0 U) and pure correction (-1.0 U).
+        // Special rule applies because carbsGrams (10g) <= rescueCarbsAmount (10g): totalProposed is 0.0 U.
+        assertEquals(1.0, parts.mealPart.iu, 0.001)
+        assertEquals(-1.0, parts.bgCorrectionPart.iu, 0.001)
         assertEquals(0.0, parts.totalProposed.iu, 0.001)
     }
 
     @Test
-    fun testBolusPartsPartialRescueCarbs() {
+    fun testBolusPartsRescueCarbsWithExtraMeal() {
         val cr = 10.0 // 1 U per 10g
-        val isf = BgDelta.fromMgDl(40)
+        val isf = BgDelta.fromMgDl(40) // 1 U per 40 mg/dL
+        val lowBg = BgValue.fromMgDl(60.0)
 
         val parts = BolusCalculationMath.calculateBolusParts(
-            carbsGrams = 25.0,
+            carbsGrams = 30.0,
             mealTimestamp = Timestamp.now(),
-            bg = targetBg,
+            bg = lowBg,
             cr = cr,
             isf = isf,
             targetBg = targetBg,
@@ -128,13 +131,14 @@ class BolusCorrectionCalculatorTest {
             cob = 0.0,
             futureCarbs = 0.0,
             deferredBolusAmount = InsulinAmount.ZERO,
-            isRescueCarbs = true,
             rescueCarbsAmount = 10.0
         )
 
-        // Net carbs for insulin = 25 - 10 = 15g -> 1.5 U
-        assertEquals(1.5, parts.mealPart.iu, 0.001)
-        assertEquals(1.5, parts.totalProposed.iu, 0.001)
+        // User sees full mealPart for 30g (3.0 U) and pure correction (-1.0 U).
+        // Total proposed = 3.0 U - 1.0 U = 2.0 U.
+        assertEquals(3.0, parts.mealPart.iu, 0.001)
+        assertEquals(-1.0, parts.bgCorrectionPart.iu, 0.001)
+        assertEquals(2.0, parts.totalProposed.iu, 0.001)
     }
 
     @Test
@@ -143,7 +147,7 @@ class BolusCorrectionCalculatorTest {
             rescueCarbsGrams = 15.0,
             recommendedBolusAmount = InsulinAmount(1.5)
         )
-        assertTrue(context.isRescueCarbs)
+        assertTrue(context.rescueCarbsGrams > 0.0)
         assertEquals(15.0, context.rescueCarbsGrams, 0.001)
         assertEquals(1.5, context.recommendedBolusAmount?.iu!!, 0.001)
     }
