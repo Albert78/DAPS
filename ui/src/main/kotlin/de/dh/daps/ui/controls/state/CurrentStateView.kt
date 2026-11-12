@@ -297,7 +297,11 @@ fun CurrentStateView(
                                 color = Color.Gray
                             )
                         }
-                        val labelRes = if (coreState is CoreState.Active) R.string.label_active else R.string.label_inactive
+                        val labelRes = when {
+                            coreState !is CoreState.Active -> R.string.label_inactive
+                            currentBgUiState.isCalculating -> R.string.label_calculating
+                            else -> R.string.label_ready
+                        }
                         if (hasIssues) {
                             Icon(
                                 imageVector = Icons.Default.Warning,
@@ -382,6 +386,33 @@ fun CurrentStateViewPreview() {
         ),
         coreState = CoreState.Active(issues = emptySet()),
         apsIssues = emptySet()
+    )
+    AppPreview {
+        Box(Modifier.padding(16.dp)) {
+            CurrentStateView(
+                currentBgUiState = state,
+                iob = InsulinAmount(1.57),
+                cob = 12.0
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Composable
+fun CurrentStateViewCalculatingPreview() {
+    val state = CurrentBgUiState(
+        isLoading = false,
+        isError = false,
+        currentBgValue = CurrentBgData.valid(
+            bgValue = BgValue.fromMgDl(125),
+            delta = BgDelta.fromMgDl(+15),
+            trend = BgTrend.FortyFiveUp,
+            timestamp = Timestamp.now(),
+        ),
+        coreState = CoreState.Active(issues = emptySet()),
+        apsIssues = emptySet(),
+        isCalculating = true
     )
     AppPreview {
         Box(Modifier.padding(16.dp)) {

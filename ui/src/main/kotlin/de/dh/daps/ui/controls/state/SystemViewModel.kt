@@ -72,6 +72,7 @@ class SystemViewModel(
                 therapyManager.currentTherapySettingsFlow,
                 systemOrchestrator.coreState,
                 systemOrchestrator.apsIssues,
+                systemOrchestrator.isCalculating,
                 _tickCounter
             ) { args ->
                 val readings = args[0] as List<BgReading>
@@ -80,6 +81,7 @@ class SystemViewModel(
                 val settings = args[3] as CurrentTherapySettings
                 val coreState = args[4] as CoreState
                 val apsIssues = args[5] as Set<ApsIssue>
+                val isCalculating = args[6] as Boolean
 
                 val now = Timestamp.now()
                 val profile = settings.insulinProfile
@@ -88,7 +90,7 @@ class SystemViewModel(
                 _iob.value = carbsInsulinCalculator.iob(insulinDoses = insulin.toActiveDoses(), timestamp = now, profile = profile)
                 _cob.value = carbsInsulinCalculator.cob(meals = meals, timestamp = now, includeFutureMeals = false)
 
-                updateUiModel(readings, coreState, apsIssues)
+                updateUiModel(readings, coreState, apsIssues, isCalculating)
             }.collect { }
         }
     }
@@ -96,7 +98,8 @@ class SystemViewModel(
     private fun updateUiModel(
         readings: List<BgReading>,
         coreState: CoreState,
-        apsIssues: Set<ApsIssue>
+        apsIssues: Set<ApsIssue>,
+        isCalculating: Boolean
     ) {
         val glucoseUnit = appPreferencesRepository.cachedPreferences.value?.glucoseUnit ?: GlucoseUnit.MG_DL
 
@@ -127,7 +130,8 @@ class SystemViewModel(
                         nextExpectedTimestamp = nextExpectedTimestamp,
                         readingsTimeDelay = readingsTimeDelay,
                         coreState = coreState,
-                        apsIssues = apsIssues
+                        apsIssues = apsIssues,
+                        isCalculating = isCalculating
                     )
                 } else {
                     CurrentBgUiState(
@@ -140,7 +144,8 @@ class SystemViewModel(
                         nextExpectedTimestamp = nextExpectedTimestamp,
                         readingsTimeDelay = readingsTimeDelay,
                         coreState = coreState,
-                        apsIssues = apsIssues
+                        apsIssues = apsIssues,
+                        isCalculating = isCalculating
                     )
                 }
             } else {
@@ -193,7 +198,8 @@ class SystemViewModel(
                     nextExpectedTimestamp = nextExpectedTimestamp,
                     readingsTimeDelay = readingsTimeDelay,
                     coreState = coreState,
-                    apsIssues = apsIssues
+                    apsIssues = apsIssues,
+                    isCalculating = isCalculating
                 )
             }
         }

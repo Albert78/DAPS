@@ -115,6 +115,11 @@ interface SystemOrchestrator {
     val lastSuccessfulCoreCalculation: StateFlow<Timestamp>
 
     /**
+     * Whether the APS core is currently performing a calculation.
+     */
+    val isCalculating: StateFlow<Boolean>
+
+    /**
      * Timestamp of when resume was requested (transition out of ApsMode.Suspend).
      * Null when APS mode is Suspend or no resume transition is active.
      */
@@ -219,6 +224,9 @@ class SystemOrchestratorImpl(
 
     private val _lastSuccessfulCoreCalculation = MutableStateFlow(Timestamp.now())
     override val lastSuccessfulCoreCalculation: StateFlow<Timestamp> = _lastSuccessfulCoreCalculation.asStateFlow()
+
+    private val _isCalculating = MutableStateFlow(false)
+    override val isCalculating: StateFlow<Boolean> = _isCalculating.asStateFlow()
 
     private lateinit var core: Core
 
@@ -424,6 +432,11 @@ class SystemOrchestratorImpl(
         newInitScope.launch {
             core.lastSuccessfulCoreCalculation.collect { timestamp ->
                 _lastSuccessfulCoreCalculation.value = timestamp
+            }
+        }
+        newInitScope.launch {
+            core.isCalculating.collect { isCalculating ->
+                _isCalculating.value = isCalculating
             }
         }
 

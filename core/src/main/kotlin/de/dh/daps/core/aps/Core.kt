@@ -108,6 +108,9 @@ class Core(
     private val _lastSuccessfulCoreCalculation = MutableStateFlow(Timestamp.now())
     internal val lastSuccessfulCoreCalculation: StateFlow<Timestamp> = _lastSuccessfulCoreCalculation.asStateFlow()
 
+    private val _isCalculating = MutableStateFlow(false)
+    val isCalculating: StateFlow<Boolean> = _isCalculating.asStateFlow()
+
     fun suspend() {
         setCoreState(CoreState.Suspended)
     }
@@ -142,21 +145,113 @@ class Core(
         val currentCoreState = coreState.value
         if (currentCoreState !is CoreState.Active) return
 
-        // This is the outer part of the process tick.
-        // We acquire the wake lock, we acquire the therapy manager's treatment lock,
-        // we let the algorithm do its calculations and finally, we
-        // execute the calculation result commands.
-        withBusyState {
-            val now = Timestamp.now()
-            val res = therapyManager.tryAcquire(TAG ?: "Core") { treatmentLock ->
-                val issuesWithoutLock = currentCoreState.issues.filterNot { it is CoreIssue.TherapyLockBusy }.toSet()
-                try {
-                    val pendingCount = onWaitForPumpSync(treatmentLock)
-                    if (pendingCount > 0) {
-                        Log.w(
-                            TAG,
-                            "processCalculation: $pendingCount insulin jobs were not executed! Skipping core calculation..."
+        _isCalculating.value = true
+        try {
+            // This is the outer part of the process tick.
+            // We acquire the wake lock, we acquire the therapy manager's treatment lock,
+            // we let the algorithm do its calculations and finally, we
+            // execute the calculation result commands.
+            withBusyState {
+                val now = Timestamp.now()
+                val res = therapyManager.tryAcquire(TAG ?: "Core") { treatmentLock ->
+                    val issuesWithoutLock = currentCoreState.issues.filterNot { it is CoreIssue.TherapyLockBusy }.toSet()
+                    try {
+                        val pendingCount = onWaitForPumpSync(treatmentLock)
+                        if (pendingCount > 0) {
+                            Log.w(
+                                TAG,
+                                "processCalculation: $pendingCount insulin jobs were not executed! Skipping core calculation..."
+                            )
+                            scope.launch {
+                                systemMetricsRepository.saveInsight(
+                                    CoreInsight(
+                                        timestamp = now,
+                                        bgOriginal = BgValue.INVALID,
+                                        bgFiltered = BgValue.INVALID,
+                                        deviationPerTick = BgDelta.ZERO,
+                                        futureActiveInsulin = InsulinAmount.ZERO,
+                                        futureActiveCarbs = 0.0,
+                                        predictedBgAtCorrection = BgValue.INVALID,
+                                        targetBg = BgValue.INVALID,
+                                        isf = BgDelta.ZERO,
+                                        cr = 0.0,
+                                        reasoning = CoreReasoning.PENDING_PUMP_JOBS
+                                    )
+                                )
+                            }
+                            setCoreState(CoreState.Active(issuesWithoutLock + CoreIssue.NoPumpConnection(lastSuccessfulCoreCalculation.value)))
+                            return@tryAcquire
+                        }
+                        onClearRecommendations()
+
+                        val result = doRecalculate()
+
+                        val insight = result.metrics ?: CoreInsight(
+                            timestamp = now,
+                            bgOriginal = BgValue.INVALID,
+                            bgFiltered = BgValue.INVALID,
+                            deviationPerTick = BgDelta.ZERO,
+                            futureActiveInsulin = InsulinAmount.ZERO,
+                            futureActiveCarbs = 0.0,
+                            predictedBgAtCorrection = BgValue.INVALID,
+                            targetBg = BgValue.INVALID,
+                            isf = BgDelta.ZERO,
+                            cr = 0.0,
+                            actionBolus = result.bolus,
+                            actionTempBasalPercent = result.tempBasal?.percent,
+                            actionTempBasalDurationInHours = result.tempBasal?.durationInHours,
+                            reasoning = result.reasoning
                         )
+                        scope.launch {
+                            systemMetricsRepository.saveInsight(insight)
+                        }
+
+                        if (result.carbsInGHint != null) {
+                            onCarbsHint(result.carbsInGHint)
+                        }
+                        if (result.tempBasal != null) {
+                            onSetTempBasal(
+                                treatmentLock,
+                                result.tempBasal.durationInHours,
+                                result.tempBasal.percent
+                            )
+                        }
+                        if (result.clearTempBasal) {
+                            onClearTempBasal(treatmentLock)
+                        }
+                        if (result.bolus != null && result.bolus >= InsulinAmount.EPSILON) {
+                            onDeliverBolus(
+                                treatmentLock,
+                                result.bolus,
+                                result.handledDeferredBoluses,
+                                result.correctionPart,
+                                result.basalPart
+                            )
+                            result.deferredBolusUpdates?.let { updates ->
+                                onApplyDeferredBolusUpdates(
+                                    treatmentLock,
+                                    updates
+                                )
+                            }
+                        }
+
+                        val pendingCount2 = onWaitForPumpSync(treatmentLock)
+                        if (pendingCount2 > 0) {
+                            setCoreState(CoreState.Active(issuesWithoutLock + CoreIssue.NoPumpConnection(lastSuccessfulCoreCalculation.value)))
+                            return@tryAcquire
+                        }
+                        _lastSuccessfulCoreCalculation.value = Timestamp.now()
+
+                        // Core can be active and yet have issues. In this case, the user is notified
+                        // about the issues (e.g. no BG values) but the algorithm will still be called.
+                        // If the algorithm can recover from the issues, it will continue working
+                        // and remove the issues.
+                        setCoreState(CoreState.Active(result.coreIssues ?: emptySet()))
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error during core execution", e)
+                        setCoreState(CoreState.Active(issuesWithoutLock + CoreIssue.InternalError(
+                            formatErrorMessage("Error during core execution", e)
+                        )))
                         scope.launch {
                             systemMetricsRepository.saveInsight(
                                 CoreInsight(
@@ -170,83 +265,19 @@ class Core(
                                     targetBg = BgValue.INVALID,
                                     isf = BgDelta.ZERO,
                                     cr = 0.0,
-                                    reasoning = CoreReasoning.PENDING_PUMP_JOBS
+                                    reasoning = CoreReasoning.INTERNAL_ERROR
                                 )
                             )
                         }
-                        setCoreState(CoreState.Active(issuesWithoutLock + CoreIssue.NoPumpConnection(lastSuccessfulCoreCalculation.value)))
-                        return@tryAcquire
                     }
-                    onClearRecommendations()
-
-                    val result = doRecalculate()
-
-                    val insight = result.metrics ?: CoreInsight(
-                        timestamp = now,
-                        bgOriginal = BgValue.INVALID,
-                        bgFiltered = BgValue.INVALID,
-                        deviationPerTick = BgDelta.ZERO,
-                        futureActiveInsulin = InsulinAmount.ZERO,
-                        futureActiveCarbs = 0.0,
-                        predictedBgAtCorrection = BgValue.INVALID,
-                        targetBg = BgValue.INVALID,
-                        isf = BgDelta.ZERO,
-                        cr = 0.0,
-                        actionBolus = result.bolus,
-                        actionTempBasalPercent = result.tempBasal?.percent,
-                        actionTempBasalDurationInHours = result.tempBasal?.durationInHours,
-                        reasoning = result.reasoning
+                }
+                if (res is LockResult.Busy) {
+                    Log.i(
+                        TAG,
+                        "Core skipping tick since therapy manager is busy (lock owner: ${res.owner})"
                     )
-                    scope.launch {
-                        systemMetricsRepository.saveInsight(insight)
-                    }
+                    setCoreState(CoreState.Active(currentCoreState.issues.filterNot { it is CoreIssue.TherapyLockBusy }.toSet() + CoreIssue.TherapyLockBusy(now)))
 
-                    if (result.carbsInGHint != null) {
-                        onCarbsHint(result.carbsInGHint)
-                    }
-                    if (result.tempBasal != null) {
-                        onSetTempBasal(
-                            treatmentLock,
-                            result.tempBasal.durationInHours,
-                            result.tempBasal.percent
-                        )
-                    }
-                    if (result.clearTempBasal) {
-                        onClearTempBasal(treatmentLock)
-                    }
-                    if (result.bolus != null && result.bolus >= InsulinAmount.EPSILON) {
-                        onDeliverBolus(
-                            treatmentLock,
-                            result.bolus,
-                            result.handledDeferredBoluses,
-                            result.correctionPart,
-                            result.basalPart
-                        )
-                        result.deferredBolusUpdates?.let { updates ->
-                            onApplyDeferredBolusUpdates(
-                                treatmentLock,
-                                updates
-                            )
-                        }
-                    }
-
-                    val pendingCount2 = onWaitForPumpSync(treatmentLock)
-                    if (pendingCount2 > 0) {
-                        setCoreState(CoreState.Active(issuesWithoutLock + CoreIssue.NoPumpConnection(lastSuccessfulCoreCalculation.value)))
-                        return@tryAcquire
-                    }
-                    _lastSuccessfulCoreCalculation.value = Timestamp.now()
-
-                    // Core can be active and yet have issues. In this case, the user is notified
-                    // about the issues (e.g. no BG values) but the algorithm will still be called.
-                    // If the algorithm can recover from the issues, it will continue working
-                    // and remove the issues.
-                    setCoreState(CoreState.Active(result.coreIssues ?: emptySet()))
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error during core execution", e)
-                    setCoreState(CoreState.Active(issuesWithoutLock + CoreIssue.InternalError(
-                        formatErrorMessage("Error during core execution", e)
-                    )))
                     scope.launch {
                         systemMetricsRepository.saveInsight(
                             CoreInsight(
@@ -260,37 +291,14 @@ class Core(
                                 targetBg = BgValue.INVALID,
                                 isf = BgDelta.ZERO,
                                 cr = 0.0,
-                                reasoning = CoreReasoning.INTERNAL_ERROR
+                                reasoning = CoreReasoning.THERAPY_LOCK_HELD
                             )
                         )
                     }
                 }
             }
-            if (res is LockResult.Busy) {
-                Log.i(
-                    TAG,
-                    "Core skipping tick since therapy manager is busy (lock owner: ${res.owner})"
-                )
-                setCoreState(CoreState.Active(currentCoreState.issues.filterNot { it is CoreIssue.TherapyLockBusy }.toSet() + CoreIssue.TherapyLockBusy(now)))
-
-                scope.launch {
-                    systemMetricsRepository.saveInsight(
-                        CoreInsight(
-                            timestamp = now,
-                            bgOriginal = BgValue.INVALID,
-                            bgFiltered = BgValue.INVALID,
-                            deviationPerTick = BgDelta.ZERO,
-                            futureActiveInsulin = InsulinAmount.ZERO,
-                            futureActiveCarbs = 0.0,
-                            predictedBgAtCorrection = BgValue.INVALID,
-                            targetBg = BgValue.INVALID,
-                            isf = BgDelta.ZERO,
-                            cr = 0.0,
-                            reasoning = CoreReasoning.THERAPY_LOCK_HELD
-                        )
-                    )
-                }
-            }
+        } finally {
+            _isCalculating.value = false
         }
     }
 

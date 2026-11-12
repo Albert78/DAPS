@@ -336,6 +336,8 @@
     <string name="label_fixed">fixiert</string>
     <string name="label_active">Aktiv</string>
     <string name="label_inactive">Inaktiv</string>
+    <string name="label_ready">Bereit</string>
+    <string name="label_calculating">Verarbeitet…</string>
     <string name="label_adjusted">(angepasst)</string>
 
     <string name="treatment_lock_busy_system">Warten auf %s…</string>
