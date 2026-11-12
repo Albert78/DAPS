@@ -32,6 +32,11 @@ interface PumpManager {
     val activeInsulinPump: StateFlow<InsulinPump?>
 
     /**
+     * Observable flow indicating whether the active insulin pump is currently in maintenance mode.
+     */
+    val isMaintenanceMode: StateFlow<Boolean>
+
+    /**
      * Provides access to the underlying coordinator. The pump coordinator is null if no pump
      * is present.
      * Note: Prefer using high-level methods of this manager.

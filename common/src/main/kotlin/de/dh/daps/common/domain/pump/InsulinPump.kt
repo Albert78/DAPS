@@ -308,6 +308,13 @@ interface InsulinPump {
         get() = MutableStateFlow(PumpInsulinConfig())
 
     /**
+     * StateFlow indicating whether the pump is currently in maintenance mode.
+     * Default is false.
+     */
+    val isMaintenanceMode: StateFlow<Boolean>
+        get() = MutableStateFlow(false)
+
+    /**
      * Initiates a bolus delivery with an optional tracking [bolusId].
      * @param amount The amount of insulin to deliver.
      * @param bolusId Optional tracking ID for the bolus. This ID will be used

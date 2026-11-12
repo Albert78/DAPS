@@ -15,12 +15,17 @@ import de.dh.daps.common.infrastructure.SystemWakeService
 import de.dh.daps.common.infrastructure.WakeupHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlin.time.Duration
@@ -37,6 +42,15 @@ class PumpManagerImpl(
 
     private val _activeInsulinPump = MutableStateFlow<InsulinPump?>(null)
     override val activeInsulinPump: StateFlow<InsulinPump?> = _activeInsulinPump.asStateFlow()
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override val isMaintenanceMode: StateFlow<Boolean> = activeInsulinPump
+        .flatMapLatest { pump -> pump?.isMaintenanceMode ?: flowOf(false) }
+        .stateIn(
+            scope = scope,
+            started = SharingStarted.Eagerly,
+            initialValue = false
+        )
 
     override var pumpCoordinator: PumpCoordinator? = null
         private set

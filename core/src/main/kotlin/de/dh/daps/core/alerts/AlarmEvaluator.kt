@@ -82,7 +82,8 @@ class AlarmEvaluator(
                 alarmSnoozeManager.snoozedAlarms,
                 systemOrchestrator.apsMode,
                 systemOrchestrator.resumeRequestedAt,
-                pumpStatusFlow
+                pumpStatusFlow,
+                pumpManager.isMaintenanceMode
             ) { flows ->
                 val therapySettings = flows[2] as CurrentTherapySettings?
                 @Suppress("UNCHECKED_CAST")
@@ -94,7 +95,8 @@ class AlarmEvaluator(
                     snoozedMap = flows[3] as Map<AlarmType, AlarmSnoozeState>,
                     apsMode = flows[4] as ApsMode,
                     resumeRequestedAt = flows[5] as Timestamp?,
-                    pumpStatus = flows[6] as InsulinPumpStatus?
+                    pumpStatus = flows[6] as InsulinPumpStatus?,
+                    isMaintenanceMode = flows[7] as Boolean
                 )
             }.collect { input ->
                 evaluate(input)
@@ -174,7 +176,7 @@ class AlarmEvaluator(
                 is ApsIssue.Pump -> {
                     when (issue.issue) {
                         is PumpIssue.Inoperative -> {
-                            if (input.apsMode != ApsMode.Suspend && !isWithinResumeGracePeriod) {
+                            if (input.apsMode != ApsMode.Suspend && !isWithinResumeGracePeriod && !input.isMaintenanceMode) {
                                 activeSet.add(AlarmType.PUMP_SUSPENDED)
                             }
                         }
@@ -300,7 +302,8 @@ class AlarmEvaluator(
         val snoozedMap: Map<AlarmType, AlarmSnoozeState>,
         val apsMode: ApsMode = ApsMode.Suspend,
         val resumeRequestedAt: Timestamp? = null,
-        val pumpStatus: InsulinPumpStatus? = null
+        val pumpStatus: InsulinPumpStatus? = null,
+        val isMaintenanceMode: Boolean = false
     )
 
     companion object {
