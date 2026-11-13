@@ -24,7 +24,6 @@ import de.dh.pump.client.singleframe.PumpResponse
 import de.dh.pump.dana.commands.DanaRsCommands
 import de.dh.pump.dana.commands.aps.ApsHistoryEvent
 import de.dh.pump.dana.commands.aps.ApsHistoryEventKind
-import de.dh.pump.dana.commands.aps.ApsHistoryEventsResult
 import de.dh.pump.dana.commands.general.DanaRsPumpErrorState
 import de.dh.pump.dana.commands.options.DanaRsUserOptions
 import de.dh.pump.dana.commands.options.OptionUserOptionsResponse
@@ -51,7 +50,6 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Calendar
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -541,7 +539,7 @@ class DanaIController(
                         zoneId = ZoneOffset.UTC,
                         useUtcLayout = true
                     )
-                ) as ApsHistoryEventsResult
+                )
             } finally {
                 client.execute(commands.generalSetHistoryUploadMode(0))
             }

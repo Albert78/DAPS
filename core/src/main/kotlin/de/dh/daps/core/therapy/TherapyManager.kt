@@ -574,18 +574,40 @@ class TherapyManager(
      * Triggered when the bolus status of the pump was updated.
      */
     suspend fun updateBolusStatus(bolusStatus: BolusStatus) {
-        if (bolusStatus.state != BolusDeliveryState.COMPLETED) return
-
         val appId = bolusStatus.bolusId?.toLongOrNull() ?: return
 
-        val confirmed = treatmentRepository.confirmScheduledBolus(
-            id = appId,
-            timestamp = bolusStatus.timestamp,
-            deliveredAmount = bolusStatus.deliveredAmount
-        )
-
-        if (confirmed) {
-            Log.i(TAG, "Confirmed scheduled bolus application #$appId")
+        when (bolusStatus.state) {
+            BolusDeliveryState.DELIVERING -> {
+                if (bolusStatus.timestamp.isValid()) {
+                    treatmentRepository.updateScheduledBolusTimestamp(appId, bolusStatus.timestamp)
+                }
+            }
+            BolusDeliveryState.COMPLETED -> {
+                val confirmed = treatmentRepository.confirmScheduledBolus(
+                    id = appId,
+                    timestamp = bolusStatus.timestamp,
+                    deliveredAmount = bolusStatus.deliveredAmount
+                )
+                if (confirmed) {
+                    Log.i(TAG, "Confirmed scheduled bolus application #$appId")
+                }
+            }
+            BolusDeliveryState.STOPPED -> {
+                if (bolusStatus.deliveredAmount > InsulinAmount.ZERO) {
+                    val confirmed = treatmentRepository.confirmScheduledBolus(
+                        id = appId,
+                        timestamp = bolusStatus.timestamp,
+                        deliveredAmount = bolusStatus.deliveredAmount
+                    )
+                    if (confirmed) {
+                        Log.i(TAG, "Confirmed partially delivered bolus application #$appId with ${bolusStatus.deliveredAmount}")
+                    }
+                } else {
+                    treatmentRepository.cancelInsulinApplication(appId)
+                    Log.i(TAG, "Cancelled stopped bolus application #$appId (0 U delivered)")
+                }
+            }
+            else -> {}
         }
     }
 

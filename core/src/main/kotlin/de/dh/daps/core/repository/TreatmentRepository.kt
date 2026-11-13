@@ -154,7 +154,25 @@ class TreatmentRepository(
                 if (candidate != null && !matchedExistingIds.contains(candidate.id)) candidate else null
             } else null
 
-            // Priority 2: Timestamp window search (±30 seconds)
+            // Priority 2: Timestamp window search for Scheduled/Cancelled entries (up to 5 minutes)
+            if (match == null) {
+                val minTime = timestamp.minusMinutes(1)
+                val maxTime = timestamp.plusMinutes(5)
+
+                for (candidate in existingApplications) {
+                    if (candidate.timestamp < minTime) continue
+                    if (candidate.timestamp > maxTime) break // Early break as list is sorted
+                    if (matchedExistingIds.contains(candidate.id)) continue
+                    if ((candidate.status == InsulinStatus.Scheduled || candidate.status == InsulinStatus.Cancelled) &&
+                        candidate.amount.isAlmostEqual(point.amount)
+                    ) {
+                        match = candidate
+                        break
+                    }
+                }
+            }
+
+            // Priority 3: Timestamp window search for other entries (±30 seconds)
             if (match == null) {
                 val minTime = timestamp.minusSeconds(30)
                 val maxTime = timestamp.plusSeconds(30)
@@ -172,12 +190,12 @@ class TreatmentRepository(
             if (match != null) {
                 matchedExistingIds.add(match.id)
 
-                // Skip DB update if already confirmed with matching dose
-                if (match.status == InsulinStatus.Confirmed && match.amount.isAlmostEqual(point.amount)) {
+                // Skip DB update if already confirmed with matching dose and timestamp
+                if (match.status == InsulinStatus.Confirmed && match.amount.isAlmostEqual(point.amount) && match.timestamp == timestamp) {
                     return@forEach
                 }
 
-                val newStatus = if (match.status == InsulinStatus.Invalidated || match.status == InsulinStatus.Cancelled) {
+                val newStatus = if (match.status == InsulinStatus.Invalidated) {
                     match.status
                 } else {
                     InsulinStatus.Confirmed
@@ -203,9 +221,15 @@ class TreatmentRepository(
             }
         }
 
-        // 3. Collect scheduled entries that were not matched to cancel
+        // 3. Collect scheduled entries that were not matched to cancel (applying a 5 minute grace period)
+        val graceCutoff = to.minusMinutes(5)
         val cancelledApplications = existingApplications
-            .filter { it.status == InsulinStatus.Scheduled && it.timestamp in from..to && !matchedExistingIds.contains(it.id) }
+            .filter {
+                it.status == InsulinStatus.Scheduled &&
+                it.timestamp <= graceCutoff &&
+                it.timestamp >= from &&
+                !matchedExistingIds.contains(it.id)
+            }
             .map { it.copy(status = InsulinStatus.Cancelled) }
 
         // 4. Perform batch DB updates and inserts
@@ -395,6 +419,28 @@ class TreatmentRepository(
     }
 
     /**
+     * Updates the timestamp of a scheduled or cancelled insulin application by its ID.
+     */
+    suspend fun updateScheduledBolusTimestamp(
+        id: Long,
+        timestamp: Timestamp
+    ): Boolean = mutex.withLock {
+        val application = insulinHistory.find {
+            it.id == id && (it.status == InsulinStatus.Scheduled || it.status == InsulinStatus.Cancelled)
+        } ?: return@withLock false
+
+        val updated = application.copy(
+            dose = application.dose.copy(timestamp = timestamp)
+        )
+        insulinHistory.removeIf { it.id == id }
+        insulinHistory.add(updated)
+        insulinHistory.sortBy { it.timestamp }
+
+        metabolicEventsDao.updateInsulinApplication(updated.toEntity())
+        return@withLock true
+    }
+
+    /**
      * Confirms a scheduled insulin application by setting its status to Confirmed,
      * and updating its timestamp and delivered amount.
      * @return `true` if the scheduled application was found and confirmed, `false` otherwise.
@@ -404,7 +450,9 @@ class TreatmentRepository(
         timestamp: Timestamp,
         deliveredAmount: InsulinAmount
     ): Boolean = mutex.withLock {
-        val application = insulinHistory.find { it.id == id && it.status == InsulinStatus.Scheduled } ?: return@withLock false
+        val application = insulinHistory.find {
+            it.id == id && (it.status == InsulinStatus.Scheduled || it.status == InsulinStatus.Cancelled)
+        } ?: return@withLock false
         val finalAmount = if (deliveredAmount > InsulinAmount.ZERO) deliveredAmount else application.dose.amount
         val finalTimestamp = if (timestamp.isValid()) timestamp else application.dose.timestamp
 
