@@ -245,9 +245,25 @@ data class DeferredBolus(
  * Snapshot of an insulin delivery point.
  */
 interface InsulinHistoryPoint {
+    /**
+     * Timestamp when the insulin delivery ended (!).
+     */
     val timestamp: Timestamp
+
+    /**
+     * Amount of delivered insulin.
+     */
     val amount: InsulinAmount
+
+    /**
+     * Basal or bolus. Automatic/programmed deliveries of extended bolus should be marked as
+     * bolus. Automatic deliveries according to a basal program should be marked as basal.
+     */
     val category: InsulinCategory
+
+    /**
+     * Unique identity of the history entry on the pump, if applicable.
+     */
     val pumpId: String?
 }
 

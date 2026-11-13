@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlin.time.Duration
 
 /**
  * Repository for active metabolic treatments (Insulin and Meals).
@@ -119,14 +120,18 @@ class TreatmentRepository(
      *
      * @return The recommended [Timestamp] for subsequent syncs, or `null` if no entries.
      */
-    suspend fun mergeInsulinHistory(history: InsulinHistory, insulinType: InsulinType): Timestamp? = mutex.withLock {
+    suspend fun mergeInsulinHistory(
+        history: InsulinHistory,
+        insulinType: InsulinType,
+        bolusDeliveryDurationPerUnit: Duration
+    ): Timestamp? = mutex.withLock {
         val from = history.from
         val to = history.to
         val historyStart = historyStart()
 
         val typesMap = metabolicEventsDao.getAllInsulinTypes().associateBy { it.id }
 
-        // 1. Load existing pump entries in range (sorted by timestamp)
+        // Load existing pump entries in range (sorted by timestamp)
         val existingEntities = metabolicEventsDao.getInsulinApplicationsSince((from - Minutes(5)).ms)
             .filter { it.origin == InsulinOrigin.Pump && it.timestamp <= to + Minutes(5) }
 
@@ -134,19 +139,70 @@ class TreatmentRepository(
             typesMap[entity.insulin_type_id]?.toModel()?.let { entity.toModel(it) }
         }
 
-        // Create O(1) lookup map for candidates with pumpId
-        val byPumpId = existingApplications
-            .filter { it.pumpId != null }
-            .associateBy { it.pumpId!! }
-
         val matchedExistingIds = mutableSetOf<Long>()
         val updatedApplications = mutableListOf<InsulinApplication>()
         val newApplications = mutableListOf<InsulinApplication>()
 
-        // 2. Match points with existing entries
-        history.points.forEach { point ->
-            if (point.amount < InsulinAmount.EPSILON) return@forEach
-            val timestamp = point.timestamp
+        // Separate history points into Basal and Bolus categories
+        val basalPoints = history.points.filter { it.category == InsulinCategory.Basal && it.amount >= InsulinAmount.EPSILON }
+        val bolusPoints = history.points.filter { it.category != InsulinCategory.Basal && it.amount >= InsulinAmount.EPSILON }
+
+        // --- Phase 1: Basal Matching ---
+        basalPoints.forEach { point ->
+            val historyPointTimestamp = point.timestamp
+
+            val minTime = historyPointTimestamp.minusSeconds(30)
+            val maxTime = historyPointTimestamp.plusSeconds(30)
+
+            var match: InsulinApplication? = null
+            for (candidate in existingApplications) {
+                if (!candidate.basal) continue
+                if (matchedExistingIds.contains(candidate.id)) continue
+                if (candidate.timestamp < minTime) continue
+                if (candidate.timestamp > maxTime) break
+
+                if (candidate.amount.isAlmostEqual(point.amount)) {
+                    match = candidate
+                    break
+                }
+            }
+
+            if (match != null) {
+                matchedExistingIds.add(match.id)
+
+                if (match.status == InsulinStatus.Confirmed && match.amount.isAlmostEqual(point.amount) && match.timestamp == historyPointTimestamp) {
+                    return@forEach
+                }
+
+                val newStatus = if (match.status == InsulinStatus.Invalidated) match.status else InsulinStatus.Confirmed
+                val updated = match.copy(
+                    dose = match.dose.copy(timestamp = historyPointTimestamp, amount = point.amount),
+                    status = newStatus,
+                    basal = true,
+                    pumpId = point.pumpId ?: match.pumpId
+                )
+                updatedApplications.add(updated)
+            } else {
+                val newApp = InsulinApplication(
+                    timestamp = historyPointTimestamp,
+                    amount = point.amount,
+                    insulinType = insulinType,
+                    origin = InsulinOrigin.Pump,
+                    basal = true,
+                    status = InsulinStatus.Confirmed,
+                    pumpId = point.pumpId
+                )
+                newApplications.add(newApp)
+            }
+        }
+
+        // --- Phase 2: Bolus Matching ---
+        val byPumpId = existingApplications
+            .filter { !it.basal && it.pumpId != null }
+            .associateBy { it.pumpId!! }
+
+        bolusPoints.forEach { point ->
+            val historyPointTimestamp = point.timestamp
 
             // Priority 1: O(1) lookup by pumpId
             var match: InsulinApplication? = if (point.pumpId != null) {
@@ -154,15 +210,37 @@ class TreatmentRepository(
                 if (candidate != null && !matchedExistingIds.contains(candidate.id)) candidate else null
             } else null
 
-            // Priority 2: Timestamp window search for Scheduled/Cancelled entries (up to 5 minutes)
+            // Priority 2: Confirmed entries match (timestamp ±30 seconds, matching amount)
             if (match == null) {
-                val minTime = timestamp.minusMinutes(1)
-                val maxTime = timestamp.plusMinutes(5)
+                val minTime = historyPointTimestamp.minusSeconds(30)
+                val maxTime = historyPointTimestamp.plusSeconds(30)
 
                 for (candidate in existingApplications) {
-                    if (candidate.timestamp < minTime) continue
-                    if (candidate.timestamp > maxTime) break // Early break as list is sorted
+                    if (candidate.basal) continue
                     if (matchedExistingIds.contains(candidate.id)) continue
+                    if (candidate.timestamp < minTime) continue
+                    if (candidate.timestamp > maxTime) break
+
+                    if (candidate.status == InsulinStatus.Confirmed && candidate.amount.isAlmostEqual(point.amount)) {
+                        match = candidate
+                        break
+                    }
+                }
+            }
+
+            // Priority 3: Scheduled/Cancelled entries match (start time lookback window)
+            if (match == null) {
+                val deliveryDuration = bolusDeliveryDurationPerUnit * point.amount.iu
+                val lookbackMs = deliveryDuration.inWholeMilliseconds + 60_000L // Duration + 1 minute margin
+                val minTime = historyPointTimestamp.minusMs(lookbackMs)
+                val maxTime = historyPointTimestamp.plusSeconds(30)
+
+                for (candidate in existingApplications) {
+                    if (candidate.basal) continue
+                    if (matchedExistingIds.contains(candidate.id)) continue
+                    if (candidate.timestamp < minTime) continue
+                    if (candidate.timestamp > maxTime) break
+
                     if ((candidate.status == InsulinStatus.Scheduled || candidate.status == InsulinStatus.Cancelled) &&
                         candidate.amount.isAlmostEqual(point.amount)
                     ) {
@@ -172,48 +250,26 @@ class TreatmentRepository(
                 }
             }
 
-            // Priority 3: Timestamp window search for other entries (±30 seconds)
-            if (match == null) {
-                val minTime = timestamp.minusSeconds(30)
-                val maxTime = timestamp.plusSeconds(30)
-
-                for (candidate in existingApplications) {
-                    if (candidate.timestamp < minTime) continue
-                    if (candidate.timestamp > maxTime) break // Early break as list is sorted
-                    if (!matchedExistingIds.contains(candidate.id) && candidate.amount.isAlmostEqual(point.amount)) {
-                        match = candidate
-                        break
-                    }
-                }
-            }
-
             if (match != null) {
                 matchedExistingIds.add(match.id)
 
-                // Skip DB update if already confirmed with matching dose and timestamp
-                if (match.status == InsulinStatus.Confirmed && match.amount.isAlmostEqual(point.amount) && match.timestamp == timestamp) {
+                if (match.status == InsulinStatus.Confirmed && match.amount.isAlmostEqual(point.amount) && match.timestamp == historyPointTimestamp) {
                     return@forEach
                 }
 
-                val newStatus = if (match.status == InsulinStatus.Invalidated) {
-                    match.status
-                } else {
-                    InsulinStatus.Confirmed
-                }
+                val newStatus = if (match.status == InsulinStatus.Invalidated) match.status else InsulinStatus.Confirmed
                 val updated = match.copy(
-                    dose = match.dose.copy(timestamp = timestamp, amount = point.amount),
+                    dose = match.dose.copy(timestamp = historyPointTimestamp, amount = point.amount),
                     status = newStatus,
-                    basal = point.category == InsulinCategory.Basal || match.basal,
                     pumpId = point.pumpId ?: match.pumpId
                 )
                 updatedApplications.add(updated)
             } else {
                 val newApp = InsulinApplication(
-                    timestamp = timestamp,
+                    timestamp = historyPointTimestamp,
                     amount = point.amount,
                     insulinType = insulinType,
                     origin = InsulinOrigin.Pump,
-                    basal = point.category == InsulinCategory.Basal,
                     status = InsulinStatus.Confirmed,
                     pumpId = point.pumpId
                 )
@@ -470,6 +526,12 @@ class TreatmentRepository(
         metabolicEventsDao.updateInsulinApplication(updated.toEntity())
         return@withLock true
     }
+
+    /**
+     * Cancels an insulin application by setting its status to [InsulinStatus.Cancelled].
+     * @return `true` if the application was found and cancelled, `false` otherwise.
+     */
+    suspend fun cancelInsulinApplication(id: Long): Boolean = setInsulinApplicationStatus(id, InsulinStatus.Cancelled)
 
     // --- Meal Types ---
 

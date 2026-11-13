@@ -47,6 +47,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.math.round
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Represents an active lock on therapy-related operations.
@@ -564,7 +565,13 @@ class TherapyManager(
      * Triggered when the history of actual bolus and basal values was updated.
      */
     suspend fun updatePumpHistory(history: InsulinHistory) {
-        val nextRequestedStart = treatmentRepository.mergeInsulinHistory(history, getPumpInsulinType())
+        val activePump = pumpManager.activeInsulinPump.value ?: pumpManager.insulinPump
+        val bolusDurationPerUnit = activePump?.insulinConfig?.value?.bolusDeliveryDurationPerUnit ?: 30.seconds
+        val nextRequestedStart = treatmentRepository.mergeInsulinHistory(
+            history = history,
+            insulinType = getPumpInsulinType(),
+            bolusDeliveryDurationPerUnit = bolusDurationPerUnit
+        )
         if (nextRequestedStart != null) {
             pumpManager.requestedHistoryStart = nextRequestedStart
         }
