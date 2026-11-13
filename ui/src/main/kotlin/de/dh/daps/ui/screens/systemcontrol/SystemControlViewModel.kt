@@ -579,8 +579,8 @@ class SystemControlViewModel(
                     val date = nextExpirationItem.date
                     val today = LocalDate.now()
                     when {
-                        date <= today -> ValueStatus.BAD
-                        date <= today.plusDays(1) -> ValueStatus.WARNING
+                        date < today -> ValueStatus.BAD
+                        date == today -> ValueStatus.WARNING
                         else -> ValueStatus.GOOD
                     }
                 }
