@@ -252,6 +252,15 @@ class PumpCoordinator private constructor(
                 }
             }
         }
+        scope.launch {
+            var wasMaintenance = pump.isMaintenanceMode.value
+            pump.isMaintenanceMode.collect { isMaintenance ->
+                if (wasMaintenance && !isMaintenance) {
+                    triggerSync()
+                }
+                wasMaintenance = isMaintenance
+            }
+        }
     }
 
     /**
