@@ -18,10 +18,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -29,6 +31,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Implementation of [PumpManager].
@@ -97,7 +100,26 @@ class PumpManagerImpl(
                             if (time != Timestamp.INVALID) {
                                 setIssue(PumpIssue.ConnectionMissing)
                             } else {
-                                removeIssue(PumpIssue.ConnectionMissing)
+                                val lastConn = pc.lastConnectionTime.value
+                                val isStale = lastConn.isValid() && ((Timestamp.now() - lastConn) > STALE_CONNECTION_TIMEOUT_MINUTES * 60 * 1000L)
+                                if (!isStale) {
+                                    removeIssue(PumpIssue.ConnectionMissing)
+                                }
+                            }
+                        }
+                    }
+                    launch {
+                        pc.lastConnectionTime.collectLatest { lastConn ->
+                            if (lastConn.isValid()) {
+                                val timeoutAt = lastConn.plusMinutes(STALE_CONNECTION_TIMEOUT_MINUTES)
+                                val remainingMs = timeoutAt - Timestamp.now()
+                                if (remainingMs > 0) {
+                                    if (!pc.pumpCommunicationErrorSince.value.isValid()) {
+                                        removeIssue(PumpIssue.ConnectionMissing)
+                                    }
+                                    delay(remainingMs.milliseconds)
+                                }
+                                setIssue(PumpIssue.ConnectionMissing)
                             }
                         }
                     }
@@ -303,5 +325,6 @@ class PumpManagerImpl(
         private const val TAG = "PumpManager"
         private const val WAKE_TAG = "PUMP"
         val WAKEUP_PUMP_COORDINATOR = 0u
+        private const val STALE_CONNECTION_TIMEOUT_MINUTES = 20
     }
 }
