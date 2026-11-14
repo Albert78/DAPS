@@ -562,7 +562,13 @@
     <string name="system_control_pump_action_suspend">Stoppen</string>
     <string name="system_control_pump_action_resume">Fortsetzen</string>
     <string name="system_control_pump_action_sync">Synchronisieren</string>
-    <string name="system_control_pump_action_maintainance_disconnect">Zur Wartung trennen</string>
+    <string name="system_control_pump_action_refresh">Aktualisieren</string>
+    <string name="system_control_pump_action_maintenance_disconnect">Zur Wartung trennen</string>
+    <string name="system_control_pump_patch_phase_priming">Vorbereitung</string>
+    <string name="system_control_pump_patch_phase_active">Aktiv</string>
+    <string name="system_control_pump_patch_phase_grace_period">Nachfrist</string>
+    <string name="system_control_pump_patch_active_duration">Aktivitätsdauer</string>
+    <string name="system_control_pump_patch_deactivation_reason">Deaktivierungsgrund: %1$s</string>
     <string name="system_control_pump_technical_status">Technischer Status</string>
     <string name="system_control_pump_communication_title">Kommunikationsschnittstelle</string>
     <string name="system_control_pump_communication_status_label">Status:</string>
@@ -604,6 +610,7 @@
     <string name="system_control_pump_retrying_status">%1$s (Versuch %2$d/%3$d)</string>
     <string name="system_control_pump_next_retry_label">Nächster Versuch</string>
     <string name="system_control_pump_next_wakeup_label">Nächste geplante Verbindung</string>
+    <string name="system_control_pump_error_since">Seit: %1$s</string>
 
     <string name="pump_setup_screen_title">Insulinpumpe einrichten</string>
     <string name="pump_setup_select_driver_subtitle">Wähle den passenden Treiber für deine Insulinpumpe aus, um das Gerät zu verbinden:</string>

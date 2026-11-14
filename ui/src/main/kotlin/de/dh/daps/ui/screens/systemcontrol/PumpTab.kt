@@ -312,7 +312,7 @@ fun PumpOverviewCard(
                             ) {
                                 NormalButton(
                                     onClick = onRefreshPumpStatus,
-                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                                 ) {
                                     Column(
                                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -325,7 +325,7 @@ fun PumpOverviewCard(
                                         )
                                         Spacer(modifier = Modifier.height(2.dp))
                                         Text(
-                                            text = "Aktualisieren",
+                                            text = stringResource(R.string.system_control_pump_action_refresh),
                                             style = MaterialTheme.typography.labelSmall
                                         )
                                     }
@@ -532,9 +532,9 @@ fun PatchPumpLifecycleSection(
                 )
 
                 val (phaseText, phaseColor) = when (state.phase) {
-                    PatchPhase.PRIMING -> "Vorbereitung" to MaterialTheme.colorScheme.primary
-                    PatchPhase.ACTIVE -> "Aktiv" to ExtendedTheme.semanticColors.good
-                    PatchPhase.IN_GRACE_PERIOD -> "Nachfrist" to ExtendedTheme.semanticColors.warning
+                    PatchPhase.PRIMING -> stringResource(R.string.system_control_pump_patch_phase_priming) to MaterialTheme.colorScheme.primary
+                    PatchPhase.ACTIVE -> stringResource(R.string.system_control_pump_patch_phase_active) to ExtendedTheme.semanticColors.good
+                    PatchPhase.IN_GRACE_PERIOD -> stringResource(R.string.system_control_pump_patch_phase_grace_period) to ExtendedTheme.semanticColors.warning
                     PatchPhase.EXPIRED -> stringResource(R.string.overview_glucose_source_status_expired) to MaterialTheme.colorScheme.error
                 }
 
@@ -562,7 +562,7 @@ fun PatchPumpLifecycleSection(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "Aktivitätsdauer",
+                            text = stringResource(R.string.system_control_pump_patch_active_duration),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -659,7 +659,7 @@ fun PatchPumpLifecycleSection(
                     color = MaterialTheme.colorScheme.outlineVariant
                 )
                 Text(
-                    text = "Deaktivierungsgrund: ${reason.name.replace('_', ' ')}",
+                    text = stringResource(R.string.system_control_pump_patch_deactivation_reason, reason.name.replace('_', ' ')),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error,
                     fontWeight = FontWeight.Medium
@@ -1038,7 +1038,7 @@ fun PumpTechnicalStatusCard(
                         )
                         if (sinceText != null) {
                             Text(
-                                text = "Seit: $sinceText",
+                                text = stringResource(R.string.system_control_pump_error_since, sinceText),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
