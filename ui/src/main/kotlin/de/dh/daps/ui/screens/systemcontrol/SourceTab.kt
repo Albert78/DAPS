@@ -423,16 +423,18 @@ fun SourceOverviewCard(
                         Column(modifier = Modifier.weight(1f)) {
                             if (uiState.hasNextPrediction) {
                                 val nextPred = uiState.nextPredictedTimestamp
-                                val nextTimeText = if (nextPred != null && nextPred.isValid()) {
-                                    smartTime(nextPred)
-                                } else {
-                                    notAvailableText
+                                val isPast = nextPred != null && nextPred.isValid() && nextPred.ms < System.currentTimeMillis()
+
+                                val nextTimeText = when {
+                                    isPast -> "???"
+                                    nextPred != null && nextPred.isValid() -> smartTime(nextPred)
+                                    else -> notAvailableText
                                 }
 
-                                val nextRelativeTime = if (nextPred != null && nextPred.isValid()) {
-                                    shortRelativeTime(nextPred)
-                                } else {
-                                    null
+                                val nextRelativeTime = when {
+                                    isPast -> null
+                                    nextPred != null && nextPred.isValid() -> shortRelativeTime(nextPred)
+                                    else -> null
                                 }
 
                                 ControlDetailRow(
