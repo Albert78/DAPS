@@ -672,9 +672,68 @@ class ApsAlgorithmImpl(
             val dueDeferredBoluses: MutableList<DeferredBolus> = mutableListOf()
             for (deferredBolus in deferredBoluses) {
                 if (deferredBolus.timestamp < now) {
-                    dueMealBolusAmount += deferredBolus.amount
+                    val delay = Minutes.timeDifference(deferredBolus.timestamp, now)
+                    if (delay > STALE_DEFERRED_BOLUS_THRESHOLD) {
+                        // Boluses are expired if they are too late
+                        continue
+                    }
+
+                    val effectiveAmount = if (delay > LATE_DEFERRED_BOLUS_THRESHOLD) {
+                        // Calculate insulin activity that would have elapsed if injected on time
+                        val spentInsulin = carbsInsulinCalculator.spentInsulin(
+                            amount = deferredBolus.amount,
+                            applicationTimestamp = deferredBolus.timestamp,
+                            timestamp = now,
+                            dia = dia,
+                            peak = insulinPeak
+                        )
+                        (deferredBolus.amount - spentInsulin).coerceAtLeast(InsulinAmount.ZERO)
+                    } else {
+                        deferredBolus.amount
+                    }
+
+                    dueMealBolusAmount += effectiveAmount
                     dueDeferredBoluses += deferredBolus
                 }
+            }
+
+            // Simulate predicted BG trajectory for the sum of due deferred boluses and scale down if targetBg is violated
+            if (dueMealBolusAmount > InsulinAmount.ZERO) {
+                val diaTicks = timeline.inTicks(dia)
+                val endTick = nowTick + diaTicks
+                var minAllowedDueBolus = dueMealBolusAmount
+                var cumulatedBgDrop = BgDelta.ZERO
+
+                predictionModel.forEach(from = nowTick + 1, to = endTick) { tick, state ->
+                    val baselineBg = state.assumedBg
+                    if (baselineBg.isValid()) {
+                        val tickIsf = state.isf ?: therapyManager.getIsfFactor(timeline.timestamp(tick))
+                        val intervalsSinceApplication = tick.value - nowTick.value
+                        val effectiveInsulin = carbsInsulinCalculator.insulinCalculationCache.effectiveInsulin(
+                            amount = dueMealBolusAmount,
+                            dia = dia,
+                            peak = insulinPeak,
+                            intervalsSinceApplication = intervalsSinceApplication
+                        )
+                        val bgDropInTick = convertToBgDeltaFromUnits(effectiveInsulin, tickIsf)
+                        cumulatedBgDrop += bgDropInTick
+                        val simulatedBg = baselineBg - cumulatedBgDrop
+
+                        if (simulatedBg < targetBg) {
+                            if (cumulatedBgDrop.mgdl > 0.0) {
+                                val maxAllowedBgDrop = (baselineBg - targetBg).coerceAtLeast(BgDelta.ZERO)
+                                val allowedFraction = maxAllowedBgDrop.mgdl / cumulatedBgDrop.mgdl
+                                val allowedAmount = dueMealBolusAmount * allowedFraction
+                                if (allowedAmount < minAllowedDueBolus) {
+                                    minAllowedDueBolus = allowedAmount
+                                }
+                            } else {
+                                minAllowedDueBolus = InsulinAmount.ZERO
+                            }
+                        }
+                    }
+                }
+                dueMealBolusAmount = minAllowedDueBolus.coerceAtLeast(InsulinAmount.ZERO)
             }
             val sumFutureDeferredBoluses = deferredBoluses.
                 filter { it.timestamp >= now }.
