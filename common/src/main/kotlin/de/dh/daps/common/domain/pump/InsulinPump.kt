@@ -13,6 +13,15 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 /**
+ * Structured information about a technical or communication error with timestamp.
+ */
+data class PumpConnectionError(
+    val message: String,
+    val cause: Throwable? = null,
+    val timestamp: Timestamp = Timestamp.now()
+)
+
+/**
  * Connection, maintenance, and bond state of an insulin pump.
  */
 data class PumpConnectionState(
@@ -31,7 +40,13 @@ data class PumpConnectionState(
      * Flag indicating whether the connection failed due to a stale OS Bluetooth bond
      * requiring manual unbonding in Android settings.
      */
-    val requiresStaleBondRemoval: Boolean = false
+    val requiresStaleBondRemoval: Boolean = false,
+
+    /**
+     * Structured details of the last technical or communication error, if any.
+     * Reset to null when communication succeeds or error is cleared.
+     */
+    val lastError: PumpConnectionError? = null
 )
 
 /**
@@ -378,6 +393,11 @@ interface InsulinPump {
      * @throws PumpConnectionException if the technical connection fails.
      */
     suspend fun refreshStatus()
+
+    /**
+     * Resets any persistent error state on the insulin pump driver.
+     */
+    fun resetError() {}
 
     /**
      * Stops this insulin pump connection.

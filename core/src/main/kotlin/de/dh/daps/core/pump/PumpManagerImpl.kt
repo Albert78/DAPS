@@ -93,16 +93,11 @@ class PumpManagerImpl(
                 pc.requestedHistoryStart = fallbackRequestedHistoryStart
                 pumpMonitorJob = scope.launch {
                     launch {
-                        pc.lastConnectionTime.collect { time ->
-                            if (time != Timestamp.INVALID) {
-                                removeIssue(PumpIssue.ConnectionMissing)
-                            }
-                        }
-                    }
-                    launch {
                         pc.pumpCommunicationErrorSince.collect { time ->
                             if (time != Timestamp.INVALID) {
                                 setIssue(PumpIssue.ConnectionMissing)
+                            } else {
+                                removeIssue(PumpIssue.ConnectionMissing)
                             }
                         }
                     }
@@ -163,7 +158,8 @@ class PumpManagerImpl(
                     }
                     launch {
                         combine(pc.pump.connectionState, pc.syncStatus) { connState, syncStatus ->
-                            connState to (connState.isBlocked || syncStatus is PumpSyncStatus.Error)
+                            val isBlocked = connState.isBlocked || syncStatus is PumpSyncStatus.Error
+                            connState to isBlocked
                         }.collect { (connState, isBlocked) ->
                             if (isBlocked) {
                                 setIssue(PumpIssue.Blocked)
@@ -238,6 +234,7 @@ class PumpManagerImpl(
     override fun reset() {
         _pumpIssues.value = if (insulinPump == null) setOf(PumpIssue.NoPumpBound) else emptySet()
         pumpCoordinator?.reset()
+        _activeInsulinPump.value?.resetError()
     }
 
     override fun stop() {

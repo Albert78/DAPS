@@ -225,7 +225,7 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
         danaPrefs.saveInsulinTypeId(insulinTypeId)
         danaPrefs.saveInsulinConcentration(concentration)
 
-        val pumpAdapter = _activePump.value as? DanaIPumpAdapter
+        val pumpAdapter = _activePump.value
         pumpAdapter?.pump?.setInsulinTypeId(insulinTypeId)
         pumpAdapter?.pump?.setInsulinConcentration(concentration)
 
@@ -244,7 +244,7 @@ class DanaIInsulinPumpDriver : InsulinPumpDriver, Plugin {
      */
     suspend fun unbindDevice() = withContext(NonCancellable) {
         val pc = pluginContext
-        val pumpAdapter = _activePump.value as? DanaIPumpAdapter
+        val pumpAdapter = _activePump.value
 
         pc?.let {
             DanaPumpPreferences(it.preferences).clear()

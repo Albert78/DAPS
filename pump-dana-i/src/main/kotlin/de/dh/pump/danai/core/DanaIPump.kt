@@ -1,6 +1,12 @@
 package de.dh.pump.danai.core
 
 import de.dh.daps.common.domain.model.data.Timestamp
+import de.dh.daps.common.domain.model.therapy.InsulinAmount
+import de.dh.daps.common.domain.model.therapy.InsulinCategory
+import de.dh.daps.common.domain.model.therapy.InsulinConcentration
+import de.dh.daps.common.domain.model.therapy.InsulinHistory
+import de.dh.daps.common.domain.model.therapy.InsulinHistoryPoint
+import de.dh.daps.common.domain.model.therapy.InsulinProfile
 import de.dh.daps.common.domain.pump.BasalStatus
 import de.dh.daps.common.domain.pump.BolusEvent
 import de.dh.daps.common.domain.pump.BolusStatus
@@ -8,14 +14,9 @@ import de.dh.daps.common.domain.pump.InsulinPump
 import de.dh.daps.common.domain.pump.InsulinPumpStatus
 import de.dh.daps.common.domain.pump.PumpAlerts
 import de.dh.daps.common.domain.pump.PumpCapabilities
+import de.dh.daps.common.domain.pump.PumpConnectionError
 import de.dh.daps.common.domain.pump.PumpInsulinConfig
 import de.dh.daps.common.domain.pump.PumpLifecycleState
-import de.dh.daps.common.domain.model.therapy.InsulinAmount
-import de.dh.daps.common.domain.model.therapy.InsulinCategory
-import de.dh.daps.common.domain.model.therapy.InsulinConcentration
-import de.dh.daps.common.domain.model.therapy.InsulinHistory
-import de.dh.daps.common.domain.model.therapy.InsulinHistoryPoint
-import de.dh.daps.common.domain.model.therapy.InsulinProfile
 import de.dh.pump.PumpCommandException
 import de.dh.pump.PumpConnectionException
 import de.dh.pump.client.singleframe.PumpCommand
@@ -133,6 +134,21 @@ class DanaIPump {
      * True if the pump is currently in maintenance mode (BLE disconnected, reported as suspended).
      */
     val isMaintenanceMode: StateFlow<Boolean> = _isMaintenanceMode.asStateFlow()
+
+    private val _lastError = MutableStateFlow<PumpConnectionError?>(null)
+
+    /**
+     * Last technical or communication error with timestamp.
+     */
+    val lastError: StateFlow<PumpConnectionError?> = _lastError.asStateFlow()
+
+    fun setLastError(error: PumpConnectionError?) {
+        _lastError.value = error
+    }
+
+    fun clearError() {
+        _lastError.value = null
+    }
 
     private val _status = MutableStateFlow(DanaPumpStatusData())
 

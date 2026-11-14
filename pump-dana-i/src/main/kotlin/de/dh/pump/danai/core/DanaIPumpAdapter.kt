@@ -75,12 +75,14 @@ class DanaIPumpAdapter(
     override val connectionState: StateFlow<PumpConnectionState> = combine(
         pump.isConnected,
         pump.isMaintenanceMode,
-        controller.requiresStaleBondRemoval
-    ) { connected, maintenance, staleBond ->
+        controller.requiresStaleBondRemoval,
+        pump.lastError
+    ) { connected, maintenance, staleBond, lastError ->
         PumpConnectionState(
             isConnected = connected,
             isBlocked = maintenance,
-            requiresStaleBondRemoval = staleBond
+            requiresStaleBondRemoval = staleBond,
+            lastError = lastError
         )
     }.stateIn(
         scope,
@@ -88,7 +90,8 @@ class DanaIPumpAdapter(
         PumpConnectionState(
             isConnected = pump.isConnected.value,
             isBlocked = pump.isMaintenanceMode.value,
-            requiresStaleBondRemoval = controller.requiresStaleBondRemoval.value
+            requiresStaleBondRemoval = controller.requiresStaleBondRemoval.value,
+            lastError = pump.lastError.value
         )
     )
 
@@ -169,6 +172,10 @@ class DanaIPumpAdapter(
 
     fun setMaintenanceMode(active: Boolean) {
         pump.setMaintenanceMode(active)
+    }
+
+    override fun resetError() {
+        pump.clearError()
     }
 
     override fun stop() {

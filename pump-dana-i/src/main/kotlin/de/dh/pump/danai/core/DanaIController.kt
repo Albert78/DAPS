@@ -14,6 +14,7 @@ import de.dh.daps.common.domain.pump.BolusEvent
 import de.dh.daps.common.domain.pump.BolusStatus
 import de.dh.daps.common.domain.pump.PumpAlerts
 import de.dh.daps.common.domain.pump.PumpCapabilities
+import de.dh.daps.common.domain.pump.PumpConnectionError
 import de.dh.pump.PumpCommandException
 import de.dh.pump.PumpConnectionException
 import de.dh.pump.PumpStatus
@@ -262,6 +263,25 @@ class DanaIController(
         sessionHandlerJob = null
     }
 
+    private fun handleCommunicationError(e: Throwable) {
+        val errorMessage = e.message ?: "BLE communication error"
+        logger.log("Communication error: $errorMessage")
+        pump.setLastError(
+            PumpConnectionError(
+                message = errorMessage,
+                cause = e,
+                timestamp = Timestamp.now()
+            )
+        )
+    }
+
+    private fun clearCommunicationError() {
+        if (pump.lastError.value != null) {
+            logger.log("Communication restored. Clearing last error.")
+            pump.clearError()
+        }
+    }
+
     /**
      * Helper that ensures an active technical connection and provides the client.
      */
@@ -271,8 +291,25 @@ class DanaIController(
         }
         link.connect()
         val state = link.sessionState.value
-        if (state !is SessionState.Connected) throw PumpConnectionException("Failed to connect to pump device")
-        block(state.client)
+        if (state !is SessionState.Connected) {
+            val ex = PumpConnectionException("Failed to connect to pump device")
+            handleCommunicationError(ex)
+            throw ex
+        }
+        try {
+            val result = block(state.client)
+            clearCommunicationError()
+            result
+        } catch (e: PumpConnectionException) {
+            handleCommunicationError(e)
+            throw e
+        } catch (e: PumpCommandException) {
+            throw e
+        } catch (e: Exception) {
+            val connException = PumpConnectionException("BLE communication failure: ${e.message}", e)
+            handleCommunicationError(connException)
+            throw connException
+        }
     }
 
     private suspend fun updateHardwareStatus(client: PumpClient) {
@@ -325,125 +362,132 @@ class DanaIController(
     }
 
     private suspend fun updatePumpStatus(client: PumpClient) {
-        updateTimeOffset(client)
-        val status = client.execute(commands.generalInitialScreenInformation())
+        try {
+            updateTimeOffset(client)
+            val status = client.execute(commands.generalInitialScreenInformation())
 
-        // Update general status data
-        pump.updateStatus(
-            DanaPumpStatusData(
-                batteryRemainingPercent = status.batteryRemainingPercent,
-                reservoirRemainingUnits = InsulinAmount.fromPumpUnits(status.reservoirRemainingUnits, pump.insulinConfig.value.concentration),
-                dailyTotalUnits = status.dailyTotalUnits,
-                lastSyncTimestamp = Timestamp.now(),
-            ),
-        )
-
-        // Update error states
-        val domainErrors = status.errorStates.map { protocolError ->
-            when (protocolError) {
-                DanaRsPumpErrorState.SUSPENDED -> DanaPumpError.Suspended
-                DanaRsPumpErrorState.DAILY_MAX -> DanaPumpError.DailyTotalMaxExceeded
-                DanaRsPumpErrorState.BOLUS_BLOCK -> DanaPumpError.BolusBlocked
-                DanaRsPumpErrorState.ORDER_DELIVERING -> DanaPumpError.CommandInProgress
-                DanaRsPumpErrorState.NO_PRIME -> DanaPumpError.NotPrimed
-            }
-        }.toSet()
-        pump.updateErrorStates(domainErrors)
-
-        // Update alerts
-        pump.updateAlerts(
-            PumpAlerts(
-                batteryLow = status.batteryRemainingPercent <= WARNING_THRESHOLD_BATTERY_REMAINING_PERCENT,
-                reservoirLow = InsulinAmount.fromPumpUnits(status.reservoirRemainingUnits, pump.insulinConfig.value.concentration) <= WARNING_THRESHOLD_RESERVOIR_REMAINING_UNITS,
-            ),
-        )
-
-        // Calculate actual active rate based on TBR percentage
-        val actualRate = if (status.tempBasalInProgress) {
-            status.currentBasalUnitsPerHour * (status.tempBasalPercent / 100.0)
-        } else {
-            status.currentBasalUnitsPerHour
-        }
-
-        pump.updateBasal(
-            BasalStatus(
-                activeRate = InsulinAmount.fromPumpUnits(actualRate, pump.insulinConfig.value.concentration),
-                isTempBasal = status.tempBasalInProgress,
-                tempBasalPercent = if (status.tempBasalInProgress) status.tempBasalPercent else null,
-                isSuspended = status.pumpSuspended,
-            ),
-        )
-
-        if (pump.pumpCapabilities.value == null) {
-            val basalInfo = client.execute(commands.basalGetBasalRate())
-            val bolusInfo = client.execute(commands.bolusGetStepBolusInformation())
-
-            val minBolusIncrement =
-                InsulinAmount.fromPumpUnits(bolusInfo.bolusStepUnits, pump.insulinConfig.value.concentration)
-            pump.updatePumpCapabilities(
-                PumpCapabilities(
-                    minBasalRate = DANA_I_MIN_BASAL_RATE,
-                    supportsZeroBasal = true,
-                    // TODO: Check if the values from the commands really have this meaning
-                    minBasalIncrement = if (basalInfo.basalStepSupported) InsulinAmount.fromPumpUnits(basalInfo.basalStepUnits, pump.insulinConfig.value.concentration) else DANA_I_MIN_BASAL_INCREMENT,
-                    minBolusAmount = minBolusIncrement,
-                    minBolusIncrement = minBolusIncrement,
-                    maxBolusSize = InsulinAmount.fromPumpUnits(bolusInfo.maxBolusUnits, pump.insulinConfig.value.concentration)
-                )
+            // Update general status data
+            pump.updateStatus(
+                DanaPumpStatusData(
+                    batteryRemainingPercent = status.batteryRemainingPercent,
+                    reservoirRemainingUnits = InsulinAmount.fromPumpUnits(status.reservoirRemainingUnits, pump.insulinConfig.value.concentration),
+                    dailyTotalUnits = status.dailyTotalUnits,
+                    lastSyncTimestamp = Timestamp.now(),
+                ),
             )
 
-            pump.updateHourlyBasalRates(basalInfo.hourlyRatesUnits)
-        }
+            // Update error states
+            val domainErrors = status.errorStates.map { protocolError ->
+                when (protocolError) {
+                    DanaRsPumpErrorState.SUSPENDED -> DanaPumpError.Suspended
+                    DanaRsPumpErrorState.DAILY_MAX -> DanaPumpError.DailyTotalMaxExceeded
+                    DanaRsPumpErrorState.BOLUS_BLOCK -> DanaPumpError.BolusBlocked
+                    DanaRsPumpErrorState.ORDER_DELIVERING -> DanaPumpError.CommandInProgress
+                    DanaRsPumpErrorState.NO_PRIME -> DanaPumpError.NotPrimed
+                }
+            }.toSet()
+            pump.updateErrorStates(domainErrors)
 
-        // Check offline bolus reconciliation
-        val isDelivering = status.errorStates.contains(DanaRsPumpErrorState.ORDER_DELIVERING)
-        val context = activeBolusContext
+            // Update alerts
+            pump.updateAlerts(
+                PumpAlerts(
+                    batteryLow = status.batteryRemainingPercent <= WARNING_THRESHOLD_BATTERY_REMAINING_PERCENT,
+                    reservoirLow = InsulinAmount.fromPumpUnits(status.reservoirRemainingUnits, pump.insulinConfig.value.concentration) <= WARNING_THRESHOLD_RESERVOIR_REMAINING_UNITS,
+                ),
+            )
 
-        if (context != null && !isDelivering) {
-            logger.log("Active bolus (${context.bolusId}) finished while offline/disconnected. Reconciling with history...")
-            performApsHistorySync(client)
-
-            val matchingRecord = pump.history.value?.points?.find { record ->
-                record.category == InsulinCategory.Bolus && record.timestamp >= context.startTime.minusSeconds(60)
+            // Calculate actual active rate based on TBR percentage
+            val actualRate = if (status.tempBasalInProgress) {
+                status.currentBasalUnitsPerHour * (status.tempBasalPercent / 100.0)
+            } else {
+                status.currentBasalUnitsPerHour
             }
 
-            val now = Timestamp.now()
-            if (matchingRecord != null) {
-                val delivered = matchingRecord.amount
-                if (delivered >= context.targetAmount) {
+            pump.updateBasal(
+                BasalStatus(
+                    activeRate = InsulinAmount.fromPumpUnits(actualRate, pump.insulinConfig.value.concentration),
+                    isTempBasal = status.tempBasalInProgress,
+                    tempBasalPercent = if (status.tempBasalInProgress) status.tempBasalPercent else null,
+                    isSuspended = status.pumpSuspended,
+                ),
+            )
+
+            if (pump.pumpCapabilities.value == null) {
+                val basalInfo = client.execute(commands.basalGetBasalRate())
+                val bolusInfo = client.execute(commands.bolusGetStepBolusInformation())
+
+                val minBolusIncrement =
+                    InsulinAmount.fromPumpUnits(bolusInfo.bolusStepUnits, pump.insulinConfig.value.concentration)
+                pump.updatePumpCapabilities(
+                    PumpCapabilities(
+                        minBasalRate = DANA_I_MIN_BASAL_RATE,
+                        supportsZeroBasal = true,
+                        // TODO: Check if the values from the commands really have this meaning
+                        minBasalIncrement = if (basalInfo.basalStepSupported) InsulinAmount.fromPumpUnits(basalInfo.basalStepUnits, pump.insulinConfig.value.concentration) else DANA_I_MIN_BASAL_INCREMENT,
+                        minBolusAmount = minBolusIncrement,
+                        minBolusIncrement = minBolusIncrement,
+                        maxBolusSize = InsulinAmount.fromPumpUnits(bolusInfo.maxBolusUnits, pump.insulinConfig.value.concentration)
+                    )
+                )
+
+                pump.updateHourlyBasalRates(basalInfo.hourlyRatesUnits)
+            }
+
+            // Check offline bolus reconciliation
+            val isDelivering = status.errorStates.contains(DanaRsPumpErrorState.ORDER_DELIVERING)
+            val context = activeBolusContext
+
+            if (context != null && !isDelivering) {
+                logger.log("Active bolus (${context.bolusId}) finished while offline/disconnected. Reconciling with history...")
+                performApsHistorySync(client)
+
+                val matchingRecord = pump.history.value?.points?.find { record ->
+                    record.category == InsulinCategory.Bolus && record.timestamp >= context.startTime.minusSeconds(60)
+                }
+
+                val now = Timestamp.now()
+                if (matchingRecord != null) {
+                    val delivered = matchingRecord.amount
+                    if (delivered >= context.targetAmount) {
+                        val statusObj = BolusStatus(
+                            BolusDeliveryState.COMPLETED,
+                            context.bolusId,
+                            context.targetAmount,
+                            delivered,
+                            now
+                        )
+                        pump.updateBolusStatus(statusObj)
+                        pump.emitBolusEvent(BolusEvent.Completed(context.bolusId, context.targetAmount, delivered, now))
+                    } else {
+                        val statusObj = BolusStatus(
+                            BolusDeliveryState.STOPPED,
+                            context.bolusId,
+                            context.targetAmount,
+                            delivered,
+                            now
+                        )
+                        pump.updateBolusStatus(statusObj)
+                        pump.emitBolusEvent(BolusEvent.Stopped(context.bolusId, context.targetAmount, delivered, now))
+                    }
+                } else {
                     val statusObj = BolusStatus(
                         BolusDeliveryState.COMPLETED,
                         context.bolusId,
                         context.targetAmount,
-                        delivered,
-                        now
-                    )
-                    pump.updateBolusStatus(statusObj)
-                    pump.emitBolusEvent(BolusEvent.Completed(context.bolusId, context.targetAmount, delivered, now))
-                } else {
-                    val statusObj = BolusStatus(
-                        BolusDeliveryState.STOPPED,
-                        context.bolusId,
                         context.targetAmount,
-                        delivered,
                         now
                     )
                     pump.updateBolusStatus(statusObj)
-                    pump.emitBolusEvent(BolusEvent.Stopped(context.bolusId, context.targetAmount, delivered, now))
+                    pump.emitBolusEvent(BolusEvent.Completed(context.bolusId, context.targetAmount, context.targetAmount, now))
                 }
-            } else {
-                val statusObj = BolusStatus(
-                    BolusDeliveryState.COMPLETED,
-                    context.bolusId,
-                    context.targetAmount,
-                    context.targetAmount,
-                    now
-                )
-                pump.updateBolusStatus(statusObj)
-                pump.emitBolusEvent(BolusEvent.Completed(context.bolusId, context.targetAmount, context.targetAmount, now))
+
+                setActiveBolusContext(null)
             }
 
-            setActiveBolusContext(null)
+            clearCommunicationError()
+        } catch (e: Exception) {
+            handleCommunicationError(e)
+            throw e
         }
     }
 
@@ -732,64 +776,69 @@ class DanaIController(
     }
 
     private suspend fun processNotificationFrame(frame: ProtocolFrame, client: PumpClient) {
-        val notification = NotificationParsers.parse(frame) ?: return
+        try {
+            val notification = NotificationParsers.parse(frame) ?: return
 
-        when (notification) {
-            is DanaAlarmNotification -> {
-                logger.log("Pump Alarm received: ${notification.alarmCode} (0x${"%02X".format(notification.alarmCode.code)})")
-                updatePumpStatus(client)
+            when (notification) {
+                is DanaAlarmNotification -> {
+                    logger.log("Pump Alarm received: ${notification.alarmCode} (0x${"%02X".format(notification.alarmCode.code)})")
+                    updatePumpStatus(client)
+                }
+
+                is DanaDeliveryCompleteNotification -> {
+                    val context = activeBolusContext
+                    val bolusId = context?.bolusId
+                    val delivered = InsulinAmount.fromPumpUnits(notification.deliveredInsulinUnits, pump.insulinConfig.value.concentration)
+                    val targetAmount = context?.targetAmount ?: delivered
+                    val now = Timestamp.now()
+
+                    logger.log("Delivery complete notification (${delivered.iu} U, bolusId=$bolusId). Syncing history...")
+
+                    val completedStatus = BolusStatus(
+                        state = BolusDeliveryState.COMPLETED,
+                        bolusId = bolusId,
+                        targetAmount = targetAmount,
+                        deliveredAmount = delivered,
+                        timestamp = now,
+                    )
+                    pump.updateBolusStatus(completedStatus)
+                    pump.emitBolusEvent(BolusEvent.Completed(bolusId, targetAmount, delivered, now))
+
+                    setActiveBolusContext(null)
+
+                    performApsHistorySync(client)
+                    updatePumpStatus(client)
+                }
+
+                is DanaDeliveryRateDisplayNotification -> {
+                    val context = activeBolusContext
+                    val bolusId = context?.bolusId
+                    val targetAmount = context?.targetAmount ?: InsulinAmount.ZERO
+                    val delivered = InsulinAmount.fromPumpUnits(notification.deliveredInsulinUnits, pump.insulinConfig.value.concentration)
+                    val now = Timestamp.now()
+
+                    logger.log("Delivery progress: ${delivered.iu} U (bolusId=$bolusId)")
+
+                    val progressStatus = BolusStatus(
+                        state = BolusDeliveryState.DELIVERING,
+                        bolusId = bolusId,
+                        targetAmount = targetAmount,
+                        deliveredAmount = delivered,
+                        timestamp = now,
+                    )
+                    pump.updateBolusStatus(progressStatus)
+                    pump.emitBolusEvent(BolusEvent.Progress(bolusId, targetAmount, delivered, now))
+                }
+
+                is DanaMissedBolusAlarmNotification -> {
+                    // Reminder-timer if bolus windows are configured in the pump.
+                    // Ignored in APS system.
+                    logger.log("Missed bolus alarm: ${notification.startHour}:${notification.startMinute} - ${notification.endHour}:${notification.endMinute}")
+                }
             }
-
-            is DanaDeliveryCompleteNotification -> {
-                val context = activeBolusContext
-                val bolusId = context?.bolusId
-                val delivered = InsulinAmount.fromPumpUnits(notification.deliveredInsulinUnits, pump.insulinConfig.value.concentration)
-                val targetAmount = context?.targetAmount ?: delivered
-                val now = Timestamp.now()
-
-                logger.log("Delivery complete notification (${delivered.iu} U, bolusId=$bolusId). Syncing history...")
-
-                val completedStatus = BolusStatus(
-                    state = BolusDeliveryState.COMPLETED,
-                    bolusId = bolusId,
-                    targetAmount = targetAmount,
-                    deliveredAmount = delivered,
-                    timestamp = now,
-                )
-                pump.updateBolusStatus(completedStatus)
-                pump.emitBolusEvent(BolusEvent.Completed(bolusId, targetAmount, delivered, now))
-
-                setActiveBolusContext(null)
-
-                performApsHistorySync(client)
-                updatePumpStatus(client)
-            }
-
-            is DanaDeliveryRateDisplayNotification -> {
-                val context = activeBolusContext
-                val bolusId = context?.bolusId
-                val targetAmount = context?.targetAmount ?: InsulinAmount.ZERO
-                val delivered = InsulinAmount.fromPumpUnits(notification.deliveredInsulinUnits, pump.insulinConfig.value.concentration)
-                val now = Timestamp.now()
-
-                logger.log("Delivery progress: ${delivered.iu} U (bolusId=$bolusId)")
-
-                val progressStatus = BolusStatus(
-                    state = BolusDeliveryState.DELIVERING,
-                    bolusId = bolusId,
-                    targetAmount = targetAmount,
-                    deliveredAmount = delivered,
-                    timestamp = now,
-                )
-                pump.updateBolusStatus(progressStatus)
-                pump.emitBolusEvent(BolusEvent.Progress(bolusId, targetAmount, delivered, now))
-            }
-
-            is DanaMissedBolusAlarmNotification -> {
-                // Reminder-timer if bolus windows are configured in the pump.
-                // Ignored in APS system.
-                logger.log("Missed bolus alarm: ${notification.startHour}:${notification.startMinute} - ${notification.endHour}:${notification.endMinute}")
-            }
+        } catch (e: Exception) {
+            logger.log("Error processing notification frame: ${e.message}")
+            handleCommunicationError(e)
         }
     }
 
