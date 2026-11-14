@@ -1150,7 +1150,7 @@ internal fun samplePumpTabUiState(): PumpTabUiState = PumpTabUiState.Content(
     pendingJobs = listOf(
         PumpJobItem(
             id = "job_1",
-            title = UiText.StringResource(R.string.system_control_pump_job_type_bolus, "1,50")
+            title = UiText.StringResource(R.string.system_control_pump_job_type_bolus, "1,50 I.E.")
         )
     ),
     pumpPluginSection = {
@@ -1305,7 +1305,7 @@ fun PumpTechnicalStatusErrorCardPreview() {
                 pendingJobs = listOf(
                     PumpJobItem(
                         id = "job_1",
-                        title = UiText.StringResource(R.string.system_control_pump_job_type_bolus, "1,50"),
+                        title = UiText.StringResource(R.string.system_control_pump_job_type_bolus, "1,50 I.E."),
                         errorMessage = UiText.StringResource(R.string.system_control_pump_job_error_connection_failed, ": Timeout")
                     )
                 ),

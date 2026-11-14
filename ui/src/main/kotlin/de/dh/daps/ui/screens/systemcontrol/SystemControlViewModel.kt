@@ -40,6 +40,7 @@ import de.dh.daps.common.domain.pump.PumpHardwareInformation
 import de.dh.daps.common.domain.pump.PumpLifecycleState
 import de.dh.daps.common.domain.pump.PumpReplaceableComponent
 import de.dh.daps.common.ui.UiText
+import de.dh.daps.ui.common.formatInsulinValue
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.orchestration.ApsIssue
 import de.dh.daps.core.pump.BolusJob
@@ -660,7 +661,10 @@ class SystemControlViewModel(
         } else {
             val pumpJobsList = pInfo.jobs.map { job ->
                 val titleText = when (val type = job.type) {
-                    is BolusJobType.Deliver -> UiText.StringResource(R.string.system_control_pump_job_type_bolus, type.amount.iu)
+                    is BolusJobType.Deliver -> UiText.StringResource(
+                        R.string.system_control_pump_job_type_bolus,
+                        formatInsulinValue(type.amount, systemRegistry.appContext)
+                    )
                     is BolusJobType.Stop -> UiText.StringResource(R.string.system_control_pump_job_type_cancel_bolus)
                 }
                 val errText = job.lastError?.let { err ->

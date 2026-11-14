@@ -588,7 +588,7 @@
     <string name="system_control_pump_jobs_empty">Keine ausstehenden Kommandos</string>
     <string name="system_control_pump_job_cancel">Kommando abbrechen</string>
     <string name="system_control_pump_job_type_refresh_status">Status aktualisieren</string>
-    <string name="system_control_pump_job_type_bolus">Bolus: %1$s I.E.</string>
+    <string name="system_control_pump_job_type_bolus">Bolus: %1$s</string>
     <string name="system_control_pump_job_type_cancel_bolus">Bolus abbrechen</string>
     <string name="system_control_pump_job_error_expired">Abgelaufen</string>
     <string name="system_control_pump_job_error_connection_failed">Verbindung fehlgeschlagen%1$s</string>
