@@ -806,6 +806,10 @@
     <string name="alarm_type_pump_catheter_change_warn_desc">Die empfohlene Tragedauer des Katheters ist überschritten. Bitte Katheter wechseln.</string>
     <string name="alarm_type_pump_patch_change_warn">Patch abgelaufen / Wechsel fällig</string>
     <string name="alarm_type_pump_patch_change_warn_desc">Die empfohlene Tragedauer des Patches ist überschritten. Bitte Patch wechseln.</string>
+    <string name="alarm_type_pump_maintenance_exceeded">Wartungsmodus Zeitüberschreitung</string>
+    <string name="alarm_type_pump_maintenance_exceeded_desc">Der Wartungsmodus der Insulinpumpe ist seit %d Minuten aktiv. Bitte beende den Wartungsmodus.</string>
+    <string name="alarm_type_pump_coordinator_error">Pumpen-Ablaufsteuerung gestört</string>
+    <string name="alarm_type_pump_coordinator_error_desc">Ein kritischer Fehler ist in der Ablaufsteuerung der Insulinpumpe aufgetreten. Bitte überprüfe die Pumpenverbindung.</string>
     <string name="alarm_type_cgm_signal_loss">CGM-Signal verloren</string>
     <string name="alarm_type_cgm_expired">Glukosesensor abgelaufen</string>
     <string name="alarm_type_cgm_expired_desc">Der Glukosesensor hat das Ende seiner Laufzeit erreicht und liefert keine Werte mehr. Bitte neuen Sensor setzen.</string>

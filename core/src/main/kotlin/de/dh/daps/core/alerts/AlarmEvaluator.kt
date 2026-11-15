@@ -8,7 +8,6 @@ import de.dh.daps.common.domain.model.alarm.AlarmSeverity
 import de.dh.daps.common.domain.model.alarm.AlarmType
 import de.dh.daps.common.domain.model.alarm.AlertProfile
 import de.dh.daps.common.domain.model.alarm.AlertSignalConfig
-import de.dh.daps.core.aps.STALE_BG_THRESHOLD
 import de.dh.daps.common.domain.model.data.BgReading
 import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.data.Timestamp
@@ -17,6 +16,7 @@ import de.dh.daps.common.domain.model.therapy.CurrentTherapySettings
 import de.dh.daps.common.domain.pump.InsulinPumpStatus
 import de.dh.daps.common.domain.pump.PumpLifecycleState
 import de.dh.daps.common.infrastructure.WakeupHandler
+import de.dh.daps.core.aps.STALE_BG_THRESHOLD
 import de.dh.daps.core.glucosesource.GlucoseSourceIssue
 import de.dh.daps.core.infrastructure.AndroidNotifications
 import de.dh.daps.core.orchestration.ApsIssue
@@ -65,6 +65,7 @@ class AlarmEvaluator(
 
     private var evaluationJob: Job? = null
     private var gracePeriodJob: Job? = null
+    private var maintenanceTimeoutJob: Job? = null
 
     @OptIn(ExperimentalCoroutinesApi::class)
     fun start() {
@@ -109,6 +110,8 @@ class AlarmEvaluator(
         evaluationJob = null
         gracePeriodJob?.cancel()
         gracePeriodJob = null
+        maintenanceTimeoutJob?.cancel()
+        maintenanceTimeoutJob = null
         _activeAlarms.value = emptySet()
         _activeAlarmGroup.value = null
         _activeFiringConfig.value = null
@@ -127,6 +130,8 @@ class AlarmEvaluator(
         lastInput = input
         gracePeriodJob?.cancel()
         gracePeriodJob = null
+        maintenanceTimeoutJob?.cancel()
+        maintenanceTimeoutJob = null
 
         val activeSet = mutableSetOf<AlarmType>()
 
@@ -193,6 +198,19 @@ class AlarmEvaluator(
                                 activeSet.add(AlarmType.PUMP_PATCH_CHANGE_WARN)
                             }
                         }
+                        is PumpIssue.Maintenance -> {
+                            val elapsedMs = now.ms - issue.issue.since.ms
+                            val remainingMs = PUMP_MAINTENANCE_TIMEOUT_MS - elapsedMs
+                            if (remainingMs <= 0) {
+                                activeSet.add(AlarmType.PUMP_MAINTENANCE_EXCEEDED)
+                            } else {
+                                maintenanceTimeoutJob = scope.launch {
+                                    delay(remainingMs.milliseconds)
+                                    evaluate(input)
+                                }
+                            }
+                        }
+                        is PumpIssue.CoordinatorError -> activeSet.add(AlarmType.PUMP_COORDINATOR_ERROR)
                         else -> {}
                     }
                 }
@@ -285,6 +303,16 @@ class AlarmEvaluator(
             val minutes = input.apsIssues.filterIsInstance<ApsIssue.StaleBG>().firstOrNull()?.minutes ?: STALE_BG_THRESHOLD.value.toInt()
             ActiveAlarm.CgmSignalLoss(minutes)
         }
+        AlarmType.PUMP_MAINTENANCE_EXCEEDED -> {
+            val maintenanceIssue = input.apsIssues.filterIsInstance<ApsIssue.Pump>()
+                .map { it.issue }
+                .filterIsInstance<PumpIssue.Maintenance>()
+                .firstOrNull()
+            val minutes = maintenanceIssue?.let {
+                ((Timestamp.now().ms - it.since.ms) / 60_000L).toInt()
+            } ?: 15
+            ActiveAlarm.PumpMaintenanceExceeded(minutes)
+        }
         else -> ActiveAlarm.Generic(type)
     }
 
@@ -313,7 +341,6 @@ class AlarmEvaluator(
         const val HIGH_THRESHOLD_MGDL = 250.0
         const val PUMP_RESUME_GRACE_PERIOD_MS = 10_000L
 
-        const val WAKE_TAG_ALARM_EVALUATOR = "AlarmEvaluator"
-        val WAKEUP_ID_ALARM_EVALUATOR: UInt = 600u
+        const val PUMP_MAINTENANCE_TIMEOUT_MS = 15 * 60 * 1000L
     }
 }

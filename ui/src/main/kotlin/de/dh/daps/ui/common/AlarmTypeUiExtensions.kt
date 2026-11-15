@@ -21,6 +21,8 @@ val AlarmType.titleResId: Int
         AlarmType.PUMP_STALE_BOND -> R.string.alarm_type_pump_stale_bond
         AlarmType.PUMP_CATHETER_CHANGE_WARN -> R.string.alarm_type_pump_catheter_change_warn
         AlarmType.PUMP_PATCH_CHANGE_WARN -> R.string.alarm_type_pump_patch_change_warn
+        AlarmType.PUMP_MAINTENANCE_EXCEEDED -> R.string.alarm_type_pump_maintenance_exceeded
+        AlarmType.PUMP_COORDINATOR_ERROR -> R.string.alarm_type_pump_coordinator_error
         AlarmType.CGM_SIGNAL_LOSS -> R.string.alarm_type_cgm_signal_loss
         AlarmType.CGM_EXPIRED -> R.string.alarm_type_cgm_expired
         AlarmType.CGM_SENSOR_ERROR -> R.string.alarm_type_cgm_sensor_error
@@ -40,7 +42,8 @@ val AlarmType.descriptionResId: Int?
         AlarmType.CRITICAL_LOW_BG,
         AlarmType.LOW_BG,
         AlarmType.HIGH_BG,
-        AlarmType.CGM_SIGNAL_LOSS -> null
+        AlarmType.CGM_SIGNAL_LOSS,
+        AlarmType.PUMP_MAINTENANCE_EXCEEDED -> null
         AlarmType.PUMP_OCCLUSION -> R.string.alarm_type_pump_occlusion_desc
         AlarmType.PUMP_SUSPENDED -> R.string.alarm_type_pump_suspended_desc
         AlarmType.PUMP_LOW_INSULIN -> R.string.alarm_type_pump_low_insulin_desc
@@ -48,6 +51,7 @@ val AlarmType.descriptionResId: Int?
         AlarmType.PUMP_STALE_BOND -> R.string.alarm_type_pump_stale_bond_desc
         AlarmType.PUMP_CATHETER_CHANGE_WARN -> R.string.alarm_type_pump_catheter_change_warn_desc
         AlarmType.PUMP_PATCH_CHANGE_WARN -> R.string.alarm_type_pump_patch_change_warn_desc
+        AlarmType.PUMP_COORDINATOR_ERROR -> R.string.alarm_type_pump_coordinator_error_desc
         AlarmType.CGM_EXPIRED -> R.string.alarm_type_cgm_expired_desc
         AlarmType.CGM_SENSOR_ERROR -> R.string.alarm_type_cgm_sensor_error_desc
         AlarmType.CGM_STALE_BOND -> R.string.glucose_source_issue_stale_bluetooth_bond

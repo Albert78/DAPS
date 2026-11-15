@@ -280,6 +280,7 @@ fun getAlarmTypeTitle(alarm: ActiveAlarm): String = stringResource(id = alarm.ti
 fun getAlarmTypeDescription(alarm: ActiveAlarm): String? {
     val desc = when (alarm) {
         is ActiveAlarm.CgmSignalLoss -> stringResource(id = R.string.aps_issue_stale_bg, alarm.minutes)
+        is ActiveAlarm.PumpMaintenanceExceeded -> stringResource(id = R.string.alarm_type_pump_maintenance_exceeded_desc, alarm.minutes)
         else -> alarm.descriptionResId?.let { stringResource(id = it) }
     }
     val title = getAlarmTypeTitle(alarm)

@@ -51,6 +51,16 @@ enum class AlarmType(
         defaultSeverity = AlarmSeverity.WARNING,
         category = AlarmCategory.PUMP
     ),
+    PUMP_MAINTENANCE_EXCEEDED(
+        defaultSeverity = AlarmSeverity.CRITICAL,
+        category = AlarmCategory.PUMP,
+        isSafetyCritical = true
+    ),
+    PUMP_COORDINATOR_ERROR(
+        defaultSeverity = AlarmSeverity.CRITICAL,
+        category = AlarmCategory.PUMP,
+        isSafetyCritical = true
+    ),
     CGM_SIGNAL_LOSS(
         defaultSeverity = AlarmSeverity.WARNING,
         category = AlarmCategory.CGM

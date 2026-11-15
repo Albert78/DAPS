@@ -31,5 +31,9 @@ sealed interface ActiveAlarm {
         override val type = AlarmType.CGM_SIGNAL_LOSS
     }
 
+    data class PumpMaintenanceExceeded(val minutes: Int) : ActiveAlarm {
+        override val type = AlarmType.PUMP_MAINTENANCE_EXCEEDED
+    }
+
     data class Generic(override val type: AlarmType) : ActiveAlarm
 }

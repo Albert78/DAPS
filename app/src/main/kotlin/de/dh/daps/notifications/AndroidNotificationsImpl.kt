@@ -484,6 +484,7 @@ class AndroidNotificationsImpl(
     ): String = when (alarm) {
         is ActiveAlarm.GlucoseAlarm -> getBgValueString(alarm.bgValue, unit, false) ?: ""
         is ActiveAlarm.CgmSignalLoss -> context.getString(UiR.string.aps_issue_stale_bg, alarm.minutes)
+        is ActiveAlarm.PumpMaintenanceExceeded -> context.getString(UiR.string.alarm_type_pump_maintenance_exceeded_desc, alarm.minutes)
         is ActiveAlarm.Generic -> alarm.type.descriptionResId?.let { context.getString(it) } ?: ""
     }
 
