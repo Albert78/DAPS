@@ -331,6 +331,7 @@ private fun formatApsIssue(issue: ApsIssue): String = when (issue) {
         is PumpIssue.PatchChangeWarn -> stringResource(id = R.string.pump_issue_patch_change_warn)
         is PumpIssue.Expired -> stringResource(id = R.string.pump_issue_expired)
         is PumpIssue.Maintenance -> stringResource(id = R.string.pump_issue_maintenance)
+        is PumpIssue.CoordinatorError -> stringResource(id = R.string.pump_issue_coordinator_error)
         is PumpIssue.StaleBluetoothBond -> stringResource(id = R.string.pump_issue_stale_bluetooth_bond)
         is PumpIssue.Other -> stringResource(id = R.string.pump_issue_other)
     }

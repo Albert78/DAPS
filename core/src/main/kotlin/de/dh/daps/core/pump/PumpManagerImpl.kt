@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -196,6 +197,22 @@ class PumpManagerImpl(
                             }
                         }
                     }
+                    launch {
+                        combine(pc.pumpCoordinatorState, pc.syncStatus) { state, syncStatus ->
+                            if (state == PumpCoordinatorState.Error) {
+                                val errorSync = syncStatus as? PumpSyncStatus.Error
+                                (errorSync?.errorSince ?: Timestamp.now()) to errorSync?.cause
+                            } else {
+                                null
+                            }
+                        }.collect { errorDetails ->
+                            if (errorDetails != null) {
+                                setCoordinatorErrorIssue(errorDetails.first, errorDetails.second)
+                            } else {
+                                removeCoordinatorErrorIssue()
+                            }
+                        }
+                    }
                     // Sync history
                     launch {
                         pc.pump.history.collect { history ->
@@ -312,6 +329,14 @@ class PumpManagerImpl(
 
     private fun removeMaintenanceIssue() {
         _pumpIssues.value = _pumpIssues.value.filterNot { it is PumpIssue.Maintenance }.toSet()
+    }
+
+    private fun setCoordinatorErrorIssue(since: Timestamp, cause: JobErrorCode?) {
+        _pumpIssues.value = _pumpIssues.value.filterNot { it is PumpIssue.CoordinatorError }.toSet() + PumpIssue.CoordinatorError(since, cause)
+    }
+
+    private fun removeCoordinatorErrorIssue() {
+        _pumpIssues.value = _pumpIssues.value.filterNot { it is PumpIssue.CoordinatorError }.toSet()
     }
 
     private fun handleJobError(job: BolusJob, jobErrorCode: JobErrorCode) {

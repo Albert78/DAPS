@@ -65,6 +65,14 @@ sealed interface PumpIssue {
     data class Maintenance(val since: Timestamp) : PumpIssue
 
     /**
+     * The pump coordinator is in an error state requiring reset or intervention.
+     */
+    data class CoordinatorError(
+        val since: Timestamp = Timestamp.now(),
+        val cause: JobErrorCode? = null
+    ) : PumpIssue
+
+    /**
      * The OS-level Bluetooth bond is stale/corrupted and requires manual unbonding in Android Settings.
      */
     data object StaleBluetoothBond : PumpIssue

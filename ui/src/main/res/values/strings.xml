@@ -236,6 +236,7 @@
     <string name="pump_issue_command_failed">Befehl an die Insulinpumpe fehlgeschlagen.</string>
     <string name="pump_issue_expired">Die Insulinpumpe oder der Pod ist abgelaufen.</string>
     <string name="pump_issue_maintenance">Die Insulinpumpe befindet sich im Wartungsmodus.</string>
+    <string name="pump_issue_coordinator_error">Fehler in der Ablaufsteuerung der Insulinpumpe.</string>
     <string name="pump_issue_stale_bluetooth_bond">Bluetooth-Kopplung ungültig. Bitte entkoppele die Pumpe in den Android-Einstellungen.</string>
     <string name="pump_issue_other">Fehler bei der Kommunikation mit der Insulinpumpe.</string>
     <string name="pump_issue_low_insulin">Wenig Insulin in der Pumpe.</string>
