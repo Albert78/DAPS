@@ -214,13 +214,6 @@ class DanaIPump {
      */
     val bolusEvents: SharedFlow<BolusEvent> = _bolusEvents.asSharedFlow()
 
-    private val _userOptions = MutableStateFlow<DanaRsUserOptions?>(null)
-
-    /**
-     * User configurable options on the pump (display light, sound, units, etc.).
-     */
-    val userOptions: StateFlow<DanaRsUserOptions?> = _userOptions.asStateFlow()
-
     // Internal actions to be implemented by the Controller
     internal var onBolus: (suspend (InsulinAmount, DanaIBolusSpeed, String?) -> Unit)? = null
     internal var onTempBasal: (suspend (Int, Int) -> Unit)? = null
@@ -351,11 +344,6 @@ class DanaIPump {
     suspend fun setUserOptions(options: DanaRsUserOptions) {
         onSetUserOptions?.invoke(options)
     }
-
-    internal fun updateUserOptions(options: DanaRsUserOptions) {
-        _userOptions.value = options
-    }
-
 
     /**
      * Executes a low-level command on the pump.

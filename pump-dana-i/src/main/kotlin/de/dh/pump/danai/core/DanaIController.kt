@@ -1019,7 +1019,7 @@ class DanaIController(
             val response = client.execute(commands.optionGetUserOption())
             if (response.status == PumpStatus.OK) {
                 val hwModel = pump.hardware.value?.hardwareModel ?: 7
-                var currentOptions = response.toUserOptions(hwModel)
+                val currentOptions = response.toUserOptions(hwModel)
                 logger.log("Fetched pump user options: LCD=${currentOptions.lcdOnTimeSec}s, Backlight=${currentOptions.backlightOnTimeSec}s")
 
                 val targetBacklightTime = CONNECTED_BACKLIGHT_ON_TIME_SEC
@@ -1029,13 +1029,10 @@ class DanaIController(
                     )
                     logger.log("Auto-configuring pump backlight setting upon connection: Backlight=$targetBacklightTime s (Off)")
                     val setRes = client.execute(commands.optionSetUserOption(updatedOptions))
-                    if (setRes.status == PumpStatus.OK) {
-                        currentOptions = updatedOptions
-                    } else {
+                    if (setRes.status != PumpStatus.OK) {
                         logger.log("Failed to auto-configure backlight setting: status=${setRes.status}")
                     }
                 }
-                pump.updateUserOptions(currentOptions)
             }
         } catch (e: Exception) {
             logger.log("Failed to update user options: ${e.message}")
@@ -1044,7 +1041,7 @@ class DanaIController(
 
     private suspend fun setMaintenanceUserOptions(maintenanceModeOn: Boolean) = withConnection(ignoreMaintenanceMode = true) { client ->
         logger.log("Configuring pump user options for maintenance mode...")
-        val currentOptions = pump.userOptions.value ?: try {
+        val currentOptions = try {
             val response = client.execute(commands.optionGetUserOption())
             if (response.status == PumpStatus.OK) {
                 val hwModel = pump.hardware.value?.hardwareModel ?: 7
@@ -1062,9 +1059,7 @@ class DanaIController(
                 currentOptions.copy(backlightOnTimeSec = 0)
             logger.log("Setting pump backlight to $MAINTENANCE_BACKLIGHT_ON_TIME_SEC s for maintenance mode...")
             val response = client.execute(commands.optionSetUserOption(maintenanceOptions))
-            if (response.status == PumpStatus.OK) {
-                pump.updateUserOptions(maintenanceOptions)
-            } else {
+            if (response.status != PumpStatus.OK) {
                 logger.log("Failed to set backlight for maintenance mode: status=${response.status}")
             }
         }
@@ -1075,9 +1070,7 @@ class DanaIController(
         val response = client.execute(commands.optionGetUserOption())
         response.ensureOk("OPTION_GET_USER_OPTION")
         val hwModel = pump.hardware.value?.hardwareModel ?: 7
-        val options = response.toUserOptions(hwModel)
-        pump.updateUserOptions(options)
-        options
+        response.toUserOptions(hwModel)
     }
 
     private suspend fun executeSetUserOptions(options: DanaRsUserOptions) = withConnection { client ->
@@ -1085,7 +1078,6 @@ class DanaIController(
         val cmd = commands.optionSetUserOption(options)
         val response = client.execute(cmd)
         response.ensureOk(cmd.name)
-        pump.updateUserOptions(options)
     }
 
     private fun OptionUserOptionsResponse.toUserOptions(hwModel: Int = 7): DanaRsUserOptions {
