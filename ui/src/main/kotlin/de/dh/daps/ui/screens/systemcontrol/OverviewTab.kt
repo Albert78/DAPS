@@ -330,7 +330,7 @@ private fun formatApsIssue(issue: ApsIssue): String = when (issue) {
         is PumpIssue.CatheterChangeWarn -> stringResource(id = R.string.pump_issue_catheter_change_warn)
         is PumpIssue.PatchChangeWarn -> stringResource(id = R.string.pump_issue_patch_change_warn)
         is PumpIssue.Expired -> stringResource(id = R.string.pump_issue_expired)
-        is PumpIssue.Blocked -> stringResource(id = R.string.pump_issue_blocked)
+        is PumpIssue.Maintenance -> stringResource(id = R.string.pump_issue_maintenance)
         is PumpIssue.StaleBluetoothBond -> stringResource(id = R.string.pump_issue_stale_bluetooth_bond)
         is PumpIssue.Other -> stringResource(id = R.string.pump_issue_other)
     }

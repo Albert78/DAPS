@@ -253,8 +253,9 @@ class PumpCoordinator private constructor(
             }
         }
         scope.launch {
-            var wasMaintenance = pump.isMaintenanceMode.value
-            pump.isMaintenanceMode.collect { isMaintenance ->
+            var wasMaintenance = pump.connectionState.value.isMaintenanceMode
+            pump.connectionState.collect { connState ->
+                val isMaintenance = connState.isMaintenanceMode
                 if (wasMaintenance && !isMaintenance) {
                     triggerSync()
                 }

@@ -69,7 +69,7 @@ fun DanaIBoundScreen(
 
     val activePump by driver.activePump.collectAsStateWithLifecycle()
     val pumpAdapter = activePump as? DanaIPumpAdapter
-    val isMaintenanceActive = pumpAdapter?.isMaintenanceMode?.collectAsStateWithLifecycle()?.value ?: false
+    val isMaintenanceActive = pumpAdapter?.connectionState?.collectAsStateWithLifecycle()?.value?.isMaintenanceMode ?: false
 
     if (isMaintenanceActive) {
         val coroutineScope = rememberCoroutineScope()

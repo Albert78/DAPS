@@ -42,6 +42,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -51,6 +52,7 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -508,7 +510,7 @@ class DanaIController(
                 }
                 val delayMs = maxOf(500L, targetZdt.toInstant().toEpochMilli() - nowMs)
 
-                kotlinx.coroutines.delay(delayMs)
+                delay(delayMs.milliseconds)
                 onBasalTickerTick()
             }
         }

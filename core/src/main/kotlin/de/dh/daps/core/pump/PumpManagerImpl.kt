@@ -24,9 +24,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
@@ -48,7 +48,7 @@ class PumpManagerImpl(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val isMaintenanceMode: StateFlow<Boolean> = activeInsulinPump
-        .flatMapLatest { pump -> pump?.isMaintenanceMode ?: flowOf(false) }
+        .flatMapLatest { pump -> pump?.connectionState?.map { it.isMaintenanceMode } ?: flowOf(false) }
         .stateIn(
             scope = scope,
             started = SharingStarted.Eagerly,
@@ -179,14 +179,14 @@ class PumpManagerImpl(
                         }
                     }
                     launch {
-                        combine(pc.pump.connectionState, pc.syncStatus) { connState, syncStatus ->
-                            val isBlocked = connState.isBlocked || syncStatus is PumpSyncStatus.Error
-                            connState to isBlocked
-                        }.collect { (connState, isBlocked) ->
-                            if (isBlocked) {
-                                setIssue(PumpIssue.Blocked)
+                        var maintenanceSince: Timestamp? = null
+                        pc.pump.connectionState.collect { connState ->
+                            if (connState.isMaintenanceMode) {
+                                val since = maintenanceSince ?: Timestamp.now().also { maintenanceSince = it }
+                                setMaintenanceIssue(since)
                             } else {
-                                removeIssue(PumpIssue.Blocked)
+                                maintenanceSince = null
+                                removeMaintenanceIssue()
                             }
 
                             if (connState.requiresStaleBondRemoval) {
@@ -304,6 +304,14 @@ class PumpManagerImpl(
         if (issue in _pumpIssues.value) {
             _pumpIssues.value -= issue
         }
+    }
+
+    private fun setMaintenanceIssue(since: Timestamp) {
+        _pumpIssues.value = _pumpIssues.value.filterNot { it is PumpIssue.Maintenance }.toSet() + PumpIssue.Maintenance(since)
+    }
+
+    private fun removeMaintenanceIssue() {
+        _pumpIssues.value = _pumpIssues.value.filterNot { it is PumpIssue.Maintenance }.toSet()
     }
 
     private fun handleJobError(job: BolusJob, jobErrorCode: JobErrorCode) {

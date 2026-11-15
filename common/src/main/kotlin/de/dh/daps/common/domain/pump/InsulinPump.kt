@@ -31,10 +31,9 @@ data class PumpConnectionState(
     val isConnected: Boolean = false,
 
     /**
-     * Flag indicating whether communication or command execution with the pump is currently blocked
-     * on the driver or software side (e.g. driver maintenance mode or software blockade).
+     * Flag indicating whether the pump connection is currently in driver maintenance mode.
      */
-    val isBlocked: Boolean = false,
+    val isMaintenanceMode: Boolean = false,
 
     /**
      * Flag indicating whether the connection failed due to a stale OS Bluetooth bond
@@ -321,13 +320,6 @@ interface InsulinPump {
      */
     val insulinConfig: StateFlow<PumpInsulinConfig>
         get() = MutableStateFlow(PumpInsulinConfig())
-
-    /**
-     * StateFlow indicating whether the pump is currently in maintenance mode.
-     * Default is false.
-     */
-    val isMaintenanceMode: StateFlow<Boolean>
-        get() = MutableStateFlow(false)
 
     /**
      * Initiates a bolus delivery with an optional tracking [bolusId].

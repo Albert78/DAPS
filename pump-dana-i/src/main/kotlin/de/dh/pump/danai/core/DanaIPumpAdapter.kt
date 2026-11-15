@@ -80,7 +80,7 @@ class DanaIPumpAdapter(
     ) { connected, maintenance, staleBond, lastError ->
         PumpConnectionState(
             isConnected = connected,
-            isBlocked = maintenance,
+            isMaintenanceMode = maintenance,
             requiresStaleBondRemoval = staleBond,
             lastError = lastError
         )
@@ -89,7 +89,7 @@ class DanaIPumpAdapter(
         SharingStarted.Eagerly,
         PumpConnectionState(
             isConnected = pump.isConnected.value,
-            isBlocked = pump.isMaintenanceMode.value,
+            isMaintenanceMode = pump.isMaintenanceMode.value,
             requiresStaleBondRemoval = controller.requiresStaleBondRemoval.value,
             lastError = pump.lastError.value
         )
@@ -167,7 +167,7 @@ class DanaIPumpAdapter(
         pump.refreshStatus()
     }
 
-    override val isMaintenanceMode: StateFlow<Boolean>
+    val isMaintenanceMode: StateFlow<Boolean>
         get() = pump.isMaintenanceMode
 
     fun setMaintenanceMode(active: Boolean) {

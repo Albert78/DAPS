@@ -1,5 +1,6 @@
 package de.dh.daps.core.pump
 
+import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.pump.PumpStatus
 
 /**
@@ -59,10 +60,9 @@ sealed interface PumpIssue {
     data object PatchChangeWarn : PumpIssue
 
     /**
-     * Communication or command execution with the pump is blocked on software level
-     * (e.g. driver in maintenance/blocked mode or coordinator in error state).
+     * The pump connection is currently in driver maintenance mode.
      */
-    data object Blocked : PumpIssue
+    data class Maintenance(val since: Timestamp) : PumpIssue
 
     /**
      * The OS-level Bluetooth bond is stale/corrupted and requires manual unbonding in Android Settings.
