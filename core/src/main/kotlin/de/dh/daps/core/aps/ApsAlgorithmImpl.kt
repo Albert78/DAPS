@@ -673,10 +673,6 @@ class ApsAlgorithmImpl(
             for (deferredBolus in deferredBoluses) {
                 if (deferredBolus.timestamp < now) {
                     val delay = Minutes.timeDifference(deferredBolus.timestamp, now)
-                    if (delay > STALE_DEFERRED_BOLUS_THRESHOLD) {
-                        // Boluses are expired if they are too late
-                        continue
-                    }
 
                     val effectiveAmount = if (delay > LATE_DEFERRED_BOLUS_THRESHOLD) {
                         // Calculate insulin activity that would have elapsed if injected on time

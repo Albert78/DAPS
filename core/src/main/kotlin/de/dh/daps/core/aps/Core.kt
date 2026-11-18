@@ -183,6 +183,7 @@ class Core(
                             return@tryAcquire
                         }
                         onClearRecommendations()
+                        therapyManager.purgeExpiredDeferredBoluses(treatmentLock)
 
                         val result = doRecalculate()
 

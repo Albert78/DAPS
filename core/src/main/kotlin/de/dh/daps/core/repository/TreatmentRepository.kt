@@ -13,6 +13,7 @@ import de.dh.daps.common.domain.model.therapy.InsulinStatus
 import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.common.domain.model.therapy.MealEntry
 import de.dh.daps.common.domain.model.therapy.MealType
+import de.dh.daps.core.aps.STALE_DEFERRED_BOLUS_THRESHOLD
 import de.dh.daps.core.repository.db.AppDatabase
 import de.dh.daps.core.repository.db.dao.MetabolicEventsDao
 import de.dh.daps.core.repository.db.mappers.toEntity
@@ -667,6 +668,21 @@ class TreatmentRepository(
 
     suspend fun getDeferredBoluses(): List<DeferredBolus> = mutex.withLock {
         return@withLock deferredBoluses.toList()
+    }
+
+    suspend fun purgeExpiredDeferredBoluses(now: Timestamp = Timestamp.now()) = mutex.withLock {
+        val expired = deferredBoluses.filter { deferredBolus ->
+            deferredBolus.timestamp < now &&
+                Minutes.timeDifference(deferredBolus.timestamp, now) > STALE_DEFERRED_BOLUS_THRESHOLD
+        }
+
+        if (expired.isNotEmpty()) {
+            val idsToRemove = expired.map { it.id }.filter { it != ID_UNDEFINED }
+            deferredBoluses.removeAll(expired)
+            if (idsToRemove.isNotEmpty()) {
+                metabolicEventsDao.deleteDeferredBoluses(idsToRemove)
+            }
+        }
     }
 
     suspend fun updateDeferredBolus(deferredBolus: DeferredBolus) = mutex.withLock {
