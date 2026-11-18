@@ -96,34 +96,44 @@ class PumpManagerImpl(
                 )
                 pc.requestedHistoryStart = fallbackRequestedHistoryStart
                 pumpMonitorJob = scope.launch {
+                    // Connection and error tracking
                     launch {
-                        pc.pumpCommunicationErrorSince.collect { time ->
-                            if (time != Timestamp.INVALID) {
-                                setIssue(PumpIssue.ConnectionMissing)
+                        combine(
+                            pc.lastConnectionTime,
+                            pc.pumpCoordinatorState,
+                            pc.syncStatus,
+                            pc.pumpCommunicationErrorSince,
+                            ::PumpMonitorState
+                        ).collectLatest { (lastConn, coordinatorState, syncStatus, errorSince) ->
+                            // Track coordinator error
+                            if (coordinatorState == PumpCoordinatorState.Error) {
+                                val errorSync = syncStatus as? PumpSyncStatus.Error
+                                setCoordinatorErrorIssue(errorSync?.errorSince ?: Timestamp.now(), errorSync?.cause)
                             } else {
-                                val lastConn = pc.lastConnectionTime.value
-                                val isStale = lastConn.isValid() && ((Timestamp.now() - lastConn) > STALE_CONNECTION_TIMEOUT_MINUTES * 60 * 1000L)
-                                if (!isStale) {
-                                    removeIssue(PumpIssue.ConnectionMissing)
-                                }
+                                removeCoordinatorErrorIssue()
+
+                                // When we reset the coordinator error, we also want to "clean" the logged
+                                // protocol issues. If we want to further analyze those issues,
+                                // this must have done before resetting the coordinator error.
+                                removeCommandFailedIssues()
+                                removeIssue(PumpIssue.Other)
                             }
-                        }
-                    }
-                    launch {
-                        pc.lastConnectionTime.collectLatest { lastConn ->
-                            if (lastConn.isValid()) {
+
+                            if (lastConn.isValid() && !errorSince.isValid()) {
                                 val timeoutAt = lastConn.plusMinutes(STALE_CONNECTION_TIMEOUT_MINUTES)
-                                val remainingMs = timeoutAt - Timestamp.now()
-                                if (remainingMs > 0) {
-                                    if (!pc.pumpCommunicationErrorSince.value.isValid()) {
-                                        removeIssue(PumpIssue.ConnectionMissing)
-                                    }
-                                    delay(remainingMs.milliseconds)
+                                val msUntilStale = timeoutAt - Timestamp.now()
+                                if (msUntilStale > 0) {
+                                    removeIssue(PumpIssue.ConnectionMissing)
+                                    // Wait for stale connection - will be canceled if one of our input flows changes
+                                    delay(msUntilStale.milliseconds)
                                 }
-                                setIssue(PumpIssue.ConnectionMissing)
                             }
+                            // In all other cases, we didn't have a valid connection until stale timeout
+                            setIssue(PumpIssue.ConnectionMissing)
                         }
                     }
+
+                    // Pump status - normal pump lifecycle values: Suspended, Battery, Reservoir
                     launch {
                         pc.pump.pumpStatus.collect { status ->
                             if (status.pumpSuspended) {
@@ -145,6 +155,23 @@ class PumpManagerImpl(
                             }
                         }
                     }
+
+                    // Pump status - pump lifecycle
+                    launch {
+                        pc.pump.pumpStatus.collect { status ->
+                            val isExpired = when (val lifecycle = status.lifecycleState) {
+                                is PumpLifecycleState.Patch -> lifecycle.isExpired
+                                is PumpLifecycleState.Durable -> false
+                            }
+                            if (isExpired) {
+                                setIssue(PumpIssue.Expired)
+                            } else {
+                                removeIssue(PumpIssue.Expired)
+                            }
+                        }
+                    }
+
+                    // Pump alerts
                     launch {
                         pc.pump.alerts.collect { alerts ->
                             if (alerts.batteryLow) {
@@ -166,19 +193,8 @@ class PumpManagerImpl(
                             }
                         }
                     }
-                    launch {
-                        pc.pump.pumpStatus.collect { status ->
-                            val isExpired = when (val lifecycle = status.lifecycleState) {
-                                is PumpLifecycleState.Patch -> lifecycle.isExpired
-                                is PumpLifecycleState.Durable -> false
-                            }
-                            if (isExpired) {
-                                setIssue(PumpIssue.Expired)
-                            } else {
-                                removeIssue(PumpIssue.Expired)
-                            }
-                        }
-                    }
+
+                    // Connection state: Maintenance mode and stale bluetooth bond
                     launch {
                         var maintenanceSince: Timestamp? = null
                         pc.pump.connectionState.collect { connState ->
@@ -197,28 +213,14 @@ class PumpManagerImpl(
                             }
                         }
                     }
-                    launch {
-                        combine(pc.pumpCoordinatorState, pc.syncStatus) { state, syncStatus ->
-                            if (state == PumpCoordinatorState.Error) {
-                                val errorSync = syncStatus as? PumpSyncStatus.Error
-                                (errorSync?.errorSince ?: Timestamp.now()) to errorSync?.cause
-                            } else {
-                                null
-                            }
-                        }.collect { errorDetails ->
-                            if (errorDetails != null) {
-                                setCoordinatorErrorIssue(errorDetails.first, errorDetails.second)
-                            } else {
-                                removeCoordinatorErrorIssue()
-                            }
-                        }
-                    }
+
                     // Sync history
                     launch {
                         pc.pump.history.collect { history ->
                             history?.let { historyUpdateListener?.invoke(it) }
                         }
                     }
+
                     // Bolus status
                     launch {
                         pc.pump.bolusStatus.collect { status ->
@@ -339,6 +341,10 @@ class PumpManagerImpl(
         _pumpIssues.value = _pumpIssues.value.filterNot { it is PumpIssue.CoordinatorError }.toSet()
     }
 
+    private fun removeCommandFailedIssues() {
+        _pumpIssues.value = _pumpIssues.value.filterNot { it is PumpIssue.CommandFailed }.toSet()
+    }
+
     private fun handleJobError(job: BolusJob, jobErrorCode: JobErrorCode) {
         when (jobErrorCode) {
             JobErrorCode.Expired,
@@ -353,6 +359,13 @@ class PumpManagerImpl(
             }
         }
     }
+
+    private data class PumpMonitorState(
+        val lastConn: Timestamp,
+        val state: PumpCoordinatorState,
+        val syncStatus: PumpSyncStatus,
+        val errorSince: Timestamp
+    )
 
     companion object {
         private const val TAG = "PumpManager"

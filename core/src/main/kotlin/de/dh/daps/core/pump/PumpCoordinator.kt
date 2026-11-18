@@ -229,8 +229,10 @@ class PumpCoordinator private constructor(
     private val _pumpCommunicationErrorSince = MutableStateFlow(Timestamp.INVALID)
     val pumpCommunicationErrorSince: StateFlow<Timestamp> = _pumpCommunicationErrorSince.asStateFlow()
 
-    // If we're currently connected, lastConnectionTime is the time when the connection was established,
-    // if we currently disconnected, lastConnectionTime is the time when the connection was disconnected.
+    /**
+     * Last time the pump was seen. This is the time when the last pump connection was established
+     * or when a command could successfully be issued.
+     */
     private val _lastConnectionTime = MutableStateFlow(Timestamp.INVALID)
     val lastConnectionTime: StateFlow<Timestamp> = _lastConnectionTime.asStateFlow()
 
