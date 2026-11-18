@@ -1,17 +1,15 @@
 package de.dh.daps.core.repository
 
-import de.dh.daps.common.DEFAULT_BG_LOW_THRESHOLD_MGDL
-import de.dh.daps.common.DEFAULT_BG_TARGET_MGDL
 import de.dh.daps.common.ID_UNDEFINED
-import de.dh.daps.common.domain.model.data.Minutes
-import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.data.BgBlock
 import de.dh.daps.common.domain.model.data.BgValue
+import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.therapy.CurrentTherapySettings
 import de.dh.daps.common.domain.model.therapy.InsulinProfile
 import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.common.domain.model.therapy.ScheduledTherapyAdjustment
 import de.dh.daps.common.domain.model.therapy.TherapyAdjustment
+import de.dh.daps.common.domain.model.therapy.getDefaultBgBlocks
 import de.dh.daps.core.repository.db.AppDatabase
 import de.dh.daps.core.repository.db.dao.MetabolicEventsDao
 import de.dh.daps.core.repository.db.dao.TherapyDao
@@ -149,13 +147,7 @@ class TherapyRepository(
 
         return if (settings.defaultBgBlocks.isEmpty()) {
             settings.copy(
-                defaultBgBlocks = listOf(
-                    BgBlock(
-                        Minutes.ofHours(24),
-                        BgValue.fromMgDl(DEFAULT_BG_TARGET_MGDL),
-                        BgValue.fromMgDl(DEFAULT_BG_LOW_THRESHOLD_MGDL)
-                    )
-                )
+                defaultBgBlocks = getDefaultBgBlocks()
             )
         } else {
             settings

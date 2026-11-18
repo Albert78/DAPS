@@ -2,6 +2,8 @@ package de.dh.daps.common.domain.model.therapy
 
 import android.content.Context
 import de.dh.daps.common.DEFAULT_BASAL_UNITS_PER_HOUR
+import de.dh.daps.common.DEFAULT_BG_LOW_THRESHOLD_MGDL
+import de.dh.daps.common.DEFAULT_BG_TARGET_MGDL
 import de.dh.daps.common.DEFAULT_CR_GRAM_PER_UNIT
 import de.dh.daps.common.DEFAULT_ISF_MGDL_PER_UNIT
 import de.dh.daps.common.ID_INSULIN_APIDRA
@@ -14,6 +16,8 @@ import de.dh.daps.common.ID_MEAL_HIGH_FAT
 import de.dh.daps.common.ID_MEAL_SLOW
 import de.dh.daps.common.ID_MEAL_STANDARD
 import de.dh.daps.common.R
+import de.dh.daps.common.domain.model.data.BgBlock
+import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.data.Block
 import de.dh.daps.common.domain.model.data.Minutes
 
@@ -105,6 +109,14 @@ fun getDefaultMealTypes(context: Context): List<MealType> = listOf(
     getDefaultStandardMealType(context),
     getDefaultHighFatMealType(context),
     getDefaultSlowMealType(context)
+)
+
+fun getDefaultBgBlocks(): List<BgBlock> = listOf(
+    BgBlock(
+        Minutes.ofHours(24),
+        BgValue.fromMgDl(DEFAULT_BG_TARGET_MGDL),
+        BgValue.fromMgDl(DEFAULT_BG_LOW_THRESHOLD_MGDL)
+    )
 )
 
 fun getDefaultInsulinProfile(context: Context, insulinTypes: List<InsulinType>): InsulinProfile = InsulinProfile(

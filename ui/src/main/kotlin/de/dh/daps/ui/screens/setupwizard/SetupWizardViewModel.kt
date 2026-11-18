@@ -4,11 +4,8 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import de.dh.daps.common.DEFAULT_BG_LOW_THRESHOLD_MGDL
-import de.dh.daps.common.DEFAULT_BG_TARGET_MGDL
 import de.dh.daps.common.DEFAULT_DIA_MINUTES
 import de.dh.daps.common.DEFAULT_PEAK_MINUTES
-import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.data.CarbsUnit
 import de.dh.daps.common.domain.model.data.GlucoseUnit
 import de.dh.daps.common.domain.model.data.Minutes
@@ -16,6 +13,7 @@ import de.dh.daps.common.domain.model.data.BgBlock
 import de.dh.daps.common.domain.model.therapy.InsulinProfile
 import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.common.domain.model.therapy.ProfileInsulinSetting
+import de.dh.daps.common.domain.model.therapy.getDefaultBgBlocks
 import de.dh.daps.common.domain.model.therapy.getDefaultInsulinProfile
 import de.dh.daps.common.domain.model.therapy.getDefaultInsulinTypes
 import de.dh.daps.common.domain.model.therapy.getDefaultMealTypes
@@ -82,13 +80,7 @@ class SetupWizardViewModel(
         val defaultTypes = getDefaultInsulinTypes(context)
         val initialProfile = getDefaultInsulinProfile(context, defaultTypes)
 
-        val initialBgBlocks = listOf(
-            BgBlock(
-                duration = Minutes.ofHours(24),
-                target = BgValue.fromMgDl(DEFAULT_BG_TARGET_MGDL),
-                lowThreshold = BgValue.fromMgDl(DEFAULT_BG_LOW_THRESHOLD_MGDL)
-            )
-        )
+        val initialBgBlocks = getDefaultBgBlocks()
 
         _uiState.value = SetupWizardUiState(
             currentStep = SetupWizardStep.MODE_SELECTION,
@@ -332,15 +324,7 @@ class SetupWizardViewModel(
                 // Save Therapy Settings with configured BgBlocks
                 registry.therapyRepository.updateCurrentTherapySettings(
                     insulinProfileId = insertedProfileId,
-                    defaultBgBlocks = state.bgBlocks.ifEmpty {
-                        listOf(
-                            BgBlock(
-                                duration = Minutes.ofHours(24),
-                                target = BgValue.fromMgDl(DEFAULT_BG_TARGET_MGDL),
-                                lowThreshold = BgValue.fromMgDl(DEFAULT_BG_LOW_THRESHOLD_MGDL)
-                            )
-                        )
-                    }
+                    defaultBgBlocks = state.bgBlocks.ifEmpty { getDefaultBgBlocks() }
                 )
 
                 registry.completeInitialization(SetupOption.ManualSetupCompleted)

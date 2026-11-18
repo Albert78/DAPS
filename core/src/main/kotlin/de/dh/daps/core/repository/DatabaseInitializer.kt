@@ -1,14 +1,10 @@
 package de.dh.daps.core.repository
 
 import android.content.Context
-import de.dh.daps.common.DEFAULT_BG_LOW_THRESHOLD_MGDL
-import de.dh.daps.common.DEFAULT_BG_TARGET_MGDL
 import de.dh.daps.common.ID_INSULIN_NOVORAPID
 import de.dh.daps.common.domain.model.alarm.getDefaultAlertProfiles
-import de.dh.daps.common.domain.model.data.BgValue
-import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.engine.CurrentSettings
-import de.dh.daps.common.domain.model.data.BgBlock
+import de.dh.daps.common.domain.model.therapy.getDefaultBgBlocks
 import de.dh.daps.common.domain.model.therapy.getDefaultInsulinProfile
 import de.dh.daps.common.domain.model.therapy.getDefaultInsulinTypes
 import de.dh.daps.common.domain.model.therapy.getDefaultMealTypes
@@ -99,13 +95,7 @@ object DatabaseInitializer {
 
             repository.updateCurrentTherapySettings(
                 insulinProfileId = activeProfile.id,
-                defaultBgBlocks = listOf(
-                    BgBlock(
-                        Minutes.ofHours(24),
-                        BgValue.fromMgDl(DEFAULT_BG_TARGET_MGDL),
-                        BgValue.fromMgDl(DEFAULT_BG_LOW_THRESHOLD_MGDL)
-                    )
-                )
+                defaultBgBlocks = getDefaultBgBlocks()
             )
         }
     }
