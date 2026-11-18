@@ -39,6 +39,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -170,7 +171,7 @@ fun InsulinHistoryContent(
                         .fillMaxWidth()
                         .horizontalScroll(rememberScrollState())
                         .padding(horizontal = 8.dp, vertical = 2.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     InsulinCategoryFilter.entries.forEach { category ->
@@ -180,34 +181,19 @@ fun InsulinHistoryContent(
                             InsulinCategoryFilter.MEAL -> stringResource(id = R.string.insulin_category_meal)
                             InsulinCategoryFilter.UNCATEGORIZED -> stringResource(id = R.string.insulin_category_uncategorized)
                         }
-                        val isChecked = uiState.selectedCategories.contains(category)
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.clickable {
-                                val newCategories = if (isChecked) {
+                        val isSelected = uiState.selectedCategories.contains(category)
+                        FilterChip(
+                            selected = isSelected,
+                            onClick = {
+                                val newCategories = if (isSelected) {
                                     uiState.selectedCategories - category
                                 } else {
                                     uiState.selectedCategories + category
                                 }
                                 onSetFilters(newCategories, uiState.selectedStatuses)
-                            }
-                        ) {
-                            Checkbox(
-                                checked = isChecked,
-                                onCheckedChange = { checked ->
-                                    val newCategories = if (checked) {
-                                        uiState.selectedCategories + category
-                                    } else {
-                                        uiState.selectedCategories - category
-                                    }
-                                    onSetFilters(newCategories, uiState.selectedStatuses)
-                                }
-                            )
-                            Text(
-                                text = label,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
+                            },
+                            label = { Text(text = label) }
+                        )
                     }
                 }
             }

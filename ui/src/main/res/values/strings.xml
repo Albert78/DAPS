@@ -495,10 +495,10 @@
     <string name="insulin_history_add_manual_time_label">Zeit der Verabreichung</string>
     <string name="delete_insulin_title">Insulin-Eintrag löschen</string>
     <string name="delete_insulin_message">Nach dem Löschen wird der Algorithmus die Dosis nicht mehr berücksichtigen.\nMöchtest du diesen Insulin-Eintrag wirklich löschen?</string>
-    <string name="insulin_category_correction">Korr.</string>
-    <string name="insulin_category_basal">Bas.</string>
-    <string name="insulin_category_meal">Mahlz.</string>
-    <string name="insulin_category_uncategorized">Ohne Kat.</string>
+    <string name="insulin_category_correction">Korrektur</string>
+    <string name="insulin_category_basal">Basal</string>
+    <string name="insulin_category_meal">Mahlzeit</string>
+    <string name="insulin_category_uncategorized">Ohne Kategorie</string>
     <string name="insulin_status_confirmed">Bestätigt</string>
     <string name="insulin_history_filter_title">Filter</string>
     <string name="insulin_history_filter_category_section">Kategorie</string>
