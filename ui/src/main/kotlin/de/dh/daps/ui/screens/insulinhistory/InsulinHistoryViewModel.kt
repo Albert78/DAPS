@@ -19,10 +19,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 enum class InsulinCategoryFilter {
-    BASAL, CORRECTION, MEAL
+    BASAL, CORRECTION, MEAL, UNCATEGORIZED
 }
 
-val DEFAULT_INSULIN_CATEGORY_FILTERS = setOf(InsulinCategoryFilter.CORRECTION, InsulinCategoryFilter.MEAL)
+val DEFAULT_INSULIN_CATEGORY_FILTERS = setOf(InsulinCategoryFilter.CORRECTION, InsulinCategoryFilter.MEAL, InsulinCategoryFilter.UNCATEGORIZED)
 
 data class InsulinHistoryUiState(
     val insulinEntries: List<InsulinApplication> = emptyList(),
@@ -66,12 +66,14 @@ class InsulinHistoryViewModel(
     ) { entries, types, defaultType, categories, statuses ->
         val sortedEntries = entries.sortedByDescending { it.timestamp }
         val filteredEntries = sortedEntries.filter { application ->
+            val isUncategorized = !application.basal && !application.correction && !application.meal
             val matchesCategory = if (categories.isEmpty()) {
                 false
             } else {
                 (categories.contains(InsulinCategoryFilter.BASAL) && application.basal) ||
                 (categories.contains(InsulinCategoryFilter.CORRECTION) && application.correction) ||
-                (categories.contains(InsulinCategoryFilter.MEAL) && application.meal)
+                (categories.contains(InsulinCategoryFilter.MEAL) && application.meal) ||
+                (categories.contains(InsulinCategoryFilter.UNCATEGORIZED) && isUncategorized)
             }
             val matchesStatus = if (statuses.isEmpty() || statuses.size == InsulinStatus.entries.size) {
                 true

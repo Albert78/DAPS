@@ -3,6 +3,7 @@ package de.dh.daps.ui.screens.insulinhistory
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -167,6 +168,7 @@ fun InsulinHistoryContent(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
                         .padding(horizontal = 8.dp, vertical = 2.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
@@ -176,6 +178,7 @@ fun InsulinHistoryContent(
                             InsulinCategoryFilter.BASAL -> stringResource(id = R.string.insulin_category_basal)
                             InsulinCategoryFilter.CORRECTION -> stringResource(id = R.string.insulin_category_correction)
                             InsulinCategoryFilter.MEAL -> stringResource(id = R.string.insulin_category_meal)
+                            InsulinCategoryFilter.UNCATEGORIZED -> stringResource(id = R.string.insulin_category_uncategorized)
                         }
                         val isChecked = uiState.selectedCategories.contains(category)
                         Row(
@@ -511,6 +514,7 @@ fun FilterDialog(
                         InsulinCategoryFilter.BASAL -> stringResource(id = R.string.insulin_category_basal)
                         InsulinCategoryFilter.CORRECTION -> stringResource(id = R.string.insulin_category_correction)
                         InsulinCategoryFilter.MEAL -> stringResource(id = R.string.insulin_category_meal)
+                        InsulinCategoryFilter.UNCATEGORIZED -> stringResource(id = R.string.insulin_category_uncategorized)
                     }
                     val isChecked = tempCategories.contains(category)
                     Row(
