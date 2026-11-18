@@ -31,13 +31,15 @@ And in dark theme:
 ![Screenshots-Dark](docs/images/collage-dark.png)
 
 DAPS is right for you if:
-- If you know your way around diabetes and know what you're doing
-- You are annoyed that your AID system keeps beeping wildly even though you've long known you have low blood sugar, but the beeping can't be turned off
-- Your AID system only provides very limited options to temporarily adjust insulin dosage (e.g., during sports, illness, temperature fluctuations, or stress)
+- You are looking for a tool that provides exactly the features you need for everyday life right where you need them
+- You know your way around your diabetes and know what you're doing
 - You repeatedly feel "I could have handled this situation better myself", but your AID system doesn't really let you
 - You like to eat pizza, but your AID system is not flexible enough to plan insulin delivery for it
 - You've ever forgotten a meal or ate less, more, or differently than planned, and your AID system stubbornly delivers the original insulin plan without letting you stop or change it afterwards
+- You are also annoyed that your AID system keeps beeping wildly even though you've long known you are in the low range – but the beeping simply can't be muted
+- Your AID system only provides very limited options to temporarily adjust the insulin dosage (e.g., during sports, illness, temperature fluctuations, or stress)
 - You frequently want to switch between different situations (sport – office – etc.)
+- You need a replacement for the DBLG1 with the Dana i pump with Dexcom
 - You are looking for a beautiful UI :-)
 
 ## ✨ What can DAPS do?
@@ -57,13 +59,34 @@ DAPS does the "normal stuff" really well (blood glucose display, Manual Mode ("O
 - Additional CGM and pump drivers
 
 ## ⚖️ Comparison with AAPS
-The large open-source project AAPS is very powerful and can do just about anything you can imagine. DAPS, on the other hand, is more streamlined
-and provides key features exactly where you need them. The goal is to have the right features at your fingertips when you need them.
+### General
+The large open-source project AAPS is very powerful and can do just about anything you can imagine.
+DAPS, on the other hand, is more streamlined and provides key features for everyday life exactly where you need them.
+### Extensive differences in data model and handling
+For example, we have a different way of handling the insulin profile. We also store basal, ISF, and IC values there,
+but target and low blood glucose thresholds are stored separately. The profile relates to the body state and changes with it. Target and
+low values, however, are a self-set goal depending on the situation. Therefore, we separate the insulin action profile from the
+definition of blood glucose target values. For DAPS, a single insulin action profile is usually sufficient (or perhaps one additional profile for multi-day
+hikes or summer when insulin acts differently due to temperature). All other
+temporary fluctuations (sports, illness, stress, ...) are simply adjusted as an insulin adjustment factor via quick settings,
+just like other temporary adjustments (target values, notification profile), and can be saved together as a quick setting, retrieved, and scheduled (cycling, work, night, discreet, ...).
+This is just one example of a small but important difference that makes daily handling easier.
+### New calculation algorithm
+The actual calculation algorithm was also developed from scratch and is significantly more lightweight
+yet powerful. It is optimized for both memory and computation time and is based on a prediction model that
+takes blood glucose trends, ingested food, and insulin doses into account.
+### Plugin interface
+Like AAPS, we have an interface for insulin pump plugins. Additionally, we have an interface for direct integration
+of the CGM driver so that no additional apps will be required in the future. Currently, however, we only have the standard interface to xDrip or
+Juggluco in the app, so at the moment we still rely on xDrip or Juggluco to provide the values.
 
-## 🚫 What is DAPS not?
-It is not quite finished yet, but getting there step by step. It is currently in the alpha phase. However, it will not turn into an all-in-one bloated
+## 🚫 What is DAPS not / what can't it do?
+It is not quite finished yet, but getting there step by step. It is currently in the beta phase. However, it will not turn into an all-in-one bloated
 monster; decisions are also made against certain features. You do, however, have the opportunity to influence these decisions to a limited extent –
-feel free to join my [Discord Server](https://discord.gg/d3KPpgJ5f).
+feel free to drop by my [Discord Server](https://discord.gg/d3KPpgJ5f).
+The set of supported plugins is currently limited to the CGM receiver plugin (receiving values via xDrip or Juggluco)
+and the driver for the Dana-i pump. The Omnipod Dash driver is not finished yet. Reporting features to Nightscout etc. are also not yet
+implemented.
 
 ## ⭐ Please......
 Leave a star for this project to show me that you like it. You wouldn't believe how much work goes into making a system feel "polished" and enjoyable to use. And it's immensely encouraging when people like it. There is also a donation button on the side, but that's completely optional.
@@ -135,14 +158,16 @@ Und im dunklen Theme:
 ![Screenshots-Dark](docs/images/collage-dark.png)
 
 DAPS ist das richtige für dich, wenn
+- Du ein Tool suchst, das für den Alltag genau die Funktionen dort bereithält, wo man sie braucht
 - Du dich auskennst mit deinem Diabetes und weißt, was du tust
-- Dich auch nervt, dass dein AID-System wild rumpiept, obwohl du längst weißt, dass du im Niedrigbereich bist – das Piepen aber einfach nicht 
-  stummgeschaltet werden kann
-- Dein AID-System nur sehr eingeschränkt die Insulindosis temporär anpassen kann (z.B. bei Sport, Krankheit, Temperaturschwankungen oder bei Stress)
 - Du immer wieder den Eindruck hast, „Diese Situation hätte ich jetzt selbst besser hinbekommen“, dein AID-System lässt dich aber nicht so richtig
 - Du gerne mal eine Pizza isst, dein AID-System aber nicht flexibel genug ist, die Insulingaben dafür zu planen
 - Du schon mal eine Mahlzeit vergessen hast oder weniger oder mehr oder anders gegessen hast als geplant und dein AID-System den ursprünglichen Insulinplan stumpf abgibt, ohne dass du es nachträglich stoppen oder ändern kannst
+- Dich auch nervt, dass dein AID-System wild rumpiept, obwohl du längst weißt, dass du im Niedrigbereich bist – das Piepen aber einfach nicht
+  stummgeschaltet werden kann
+- Dein AID-System nur sehr eingeschränkt die Insulindosis temporär anpassen kann (z.B. bei Sport, Krankheit, Temperaturschwankungen oder bei Stress)
 - Du öfter zwischen verschiedenen Situationen wechseln möchtest (Sport – Büro – etc.)
+- Du einen Ersatz für den DBLG1 mit der Dana i pumpe und dem Dexcom-System brauchst
 - Du eine wunderschöne UI suchst :-)
 
 ## ✨ Was kann DAPS?
@@ -163,13 +188,35 @@ Bolusrechner mit diversen Empfehlungen, die üblichen Insulin- und Profileinstel
 - Weitere CGM- und Pumpentreiber
 
 ## ⚖️ Vergleich mit AAPS
-Das große Open-Source-Projekt AAPS ist sehr leistungsstark und kann so gut wie alles, was man sich vorstellen kann. DAPS hingegen ist übersichtlicher
-und bietet wichtige Funktionen genau dort, wo man sie braucht. Die Zielsetzung ist es, die richtigen Funktionen dann zur Hand zu haben, wenn man sie braucht.
+### Allgemein
+Das große Open-Source-Projekt AAPS ist sehr leistungsstark und kann so gut wie alles, was man sich vorstellen kann.
+DAPS hingegen ist übersichtlicher und bietet wichtige Funktionen für den Alltag genau dort, wo man sie braucht.
+### Umfangreiche Unterschiede im Datenmodell und Umgang
+Zum Beispiel haben wir eine andere Art, mit dem Insulinprofil umzugehen. Wir speichern auch die Basal-, ISF- IC-Werte dort ab,
+Ziel- und Niedrigwert legen wir aber separat davon ab. Das Profil hat Bezug zum Körperzustand und ändert sich mit ihm. Ziel- und
+Niedrigwert sind aber eine selbstgesteckte Zielgröße, die von der Situation abhängt. Daher trennen wir Insulin-Wirkprofil und die
+Festlegung der Blutzucker-Werte. Für DAPS genügt daher ein einziges Insulin-Wirkprofil (oder vielleicht noch eins für tagelange
+Wanderungen oder für den Sommer, wenn das Insulin aufgrund der Temperatur anders wirkt). Alle anderen
+temporären Schwankungen (Sport, Krankheit, Stress, ...) werden einfach über die Schnelleinstellungen als Insulin-Anpassungsfaktor
+eingestellt, genau wie andere temporäre Anpassungen (Zielwerte, Benachrichtigungsprofil) und können als Schnelleinstellung
+gemeinsam gespeichert, abgerufen und zeitlich geplant werden (Fahrradfahren, Arbeit, Nacht, Diskret, ...).
+Das ist nur ein Beispiel für eine kleine, aber wichtige Abweichung, die den täglichen Umgang erleichtert.
+### Neuer Berechnungsalgorithmus
+Auch der eigentliche Berechnungsalgorithmus wurde von Grund auf neu entwickelt und ist wesentlich leichtgewichtiger
+und trotzdem leistungsfähig. Er ist sowohl Speicher- als auch Rechenzeit-optimiert und basiert auf einem Vorhersagemodell, das
+den Blutzuckerverlauf, die eingenommene Nahrung und die Insulingaben berücksichtigt.
+### Plugin-Schnittstelle
+Wir haben wie auch AAPS eine Schnittstelle für Insulinpumpen-Plugins. Außerdem haben wir eine Schnittstelle für eine direkte Integration
+des CGM-Treibers, so dass man später keine weiteren Apps benötigen wird. Aktuell haben wir aber nur die Standardschnittstelle zu xDrip oder
+Juggluco in der App, so dass wir im Moment noch darauf angewiesen sind, dass xDrip oder Juggluco die Werte liefern.
 
-## 🚫 Was ist DAPS nicht?
-Es ist noch nicht ganz fertig, wird aber Schritt für Schritt fertiger. Es befindet sich noch in der Alpha-Phase. Es wird sich aber nicht zur
+## 🚫 Was ist/kann DAPS nicht?
+Es ist noch nicht ganz fertig, wird aber Schritt für Schritt fertiger. Es befindet sich noch in der Beta-Phase. Es wird sich aber nicht zur
 eierlegenden Wollmilchsau entwickeln, es werden auch Entscheidungen gegen bestimmte Features getroffen. Du hast allerdings die Möglichkeit,
 diese Entscheidungen begrenzt zu beeinflussen – schau einfach auf meinem [Discord-Server](https://discord.gg/d3KPpgJ5f) vorbei.
+Die Menge der unterstützten Plugins ist im Moment noch beschränkt auf das CGM-Receiver-Plugin (Werte per xDrip oder Juggluco empfangen)
+und den Treiber für die Dana i Pumpe. Der Omnipod Dash ist noch nicht fertig. Auch Reporting-Funktionen an Nightscout etc. sind noch nicht
+implementiert.
 
 ## ⭐ Bitte......
 Lass einen Stern für dieses Projekt da, um mir zu zeigen, dass es dir gefällt. Du glaubst nicht, wie viel Arbeit es macht, ein System „rund“ zu machen,
