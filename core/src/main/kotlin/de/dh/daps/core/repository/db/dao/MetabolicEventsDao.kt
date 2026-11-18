@@ -50,6 +50,9 @@ interface MetabolicEventsDao {
     fun observeAllMeals(): Flow<List<MealEntity>>
 
     @Query("SELECT * FROM meal WHERE timestamp >= :since ORDER BY timestamp ASC")
+    fun observeMealsSince(since: Long): Flow<List<MealEntity>>
+
+    @Query("SELECT * FROM meal WHERE timestamp >= :since ORDER BY timestamp ASC")
     suspend fun getMealsSince(since: Long): List<MealEntity>
 
     @Query("SELECT * FROM meal WHERE id = :id")
@@ -118,6 +121,9 @@ interface MetabolicEventsDao {
     fun observeAllInsulinApplications(): Flow<List<InsulinEntity>>
 
     @Query("SELECT * FROM insulin WHERE timestamp >= :since ORDER BY timestamp ASC")
+    fun observeInsulinApplicationsSince(since: Long): Flow<List<InsulinEntity>>
+
+    @Query("SELECT * FROM insulin WHERE timestamp >= :since ORDER BY timestamp ASC")
     suspend fun getInsulinApplicationsSince(since: Long): List<InsulinEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -151,6 +157,9 @@ interface MetabolicEventsDao {
     suspend fun deleteMealsInRange(from: Long, to: Long)
 
     // Deferred Bolus
+    @Query("SELECT * FROM deferred_bolus ORDER BY timestamp ASC")
+    fun observeAllDeferredBoluses(): Flow<List<DeferredBolusEntity>>
+
     @Query("SELECT * FROM deferred_bolus ORDER BY timestamp ASC")
     suspend fun getAllDeferredBoluses(): List<DeferredBolusEntity>
 

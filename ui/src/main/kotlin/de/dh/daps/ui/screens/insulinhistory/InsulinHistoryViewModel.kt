@@ -58,7 +58,7 @@ class InsulinHistoryViewModel(
     }
 
     val uiState: StateFlow<InsulinHistoryUiState> = combine(
-        treatmentRepository.observeInsulinApplications(includeCancelled = true),
+        treatmentRepository.observeFullInsulinApplications(includeCancelled = true),
         _insulinTypes,
         _defaultInsulinType,
         _selectedCategories,

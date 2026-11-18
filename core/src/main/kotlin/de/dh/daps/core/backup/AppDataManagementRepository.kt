@@ -340,7 +340,6 @@ class AppDataManagementRepositoryImpl(
             }
 
             // Sync in-memory state across repositories after importing database
-            treatmentRepository.load()
             therapyRepository.clearCache()
             glucoseRepository?.initialize()
 
@@ -359,7 +358,6 @@ class AppDataManagementRepositoryImpl(
 
     override suspend fun clearAllData() = withContext(Dispatchers.IO) {
         wipeDatabaseInternal()
-        treatmentRepository.load()
         therapyRepository.clearCache()
         glucoseRepository?.initialize()
         Unit
@@ -368,7 +366,6 @@ class AppDataManagementRepositoryImpl(
     override suspend fun resetToDefaultData() = withContext(Dispatchers.IO) {
         wipeDatabaseInternal()
 
-        treatmentRepository.load()
         therapyRepository.clearCache()
         glucoseRepository?.initialize()
 
@@ -381,7 +378,6 @@ class AppDataManagementRepositoryImpl(
         )
 
         // Reload in-memory state after initialization
-        treatmentRepository.load()
         therapyRepository.clearCache()
         glucoseRepository?.initialize()
         Unit

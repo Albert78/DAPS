@@ -22,7 +22,7 @@ class MealsViewModel(
 
     private val treatmentRepository = registry.treatmentRepository
 
-    val uiState: StateFlow<MealsUiState> = treatmentRepository.observeMeals()
+    val uiState: StateFlow<MealsUiState> = treatmentRepository.observeFullMeals()
         .map { meals ->
             MealsUiState(
                 meals = meals.sortedByDescending { it.timestamp },

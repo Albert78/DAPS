@@ -27,8 +27,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlin.time.Duration
 
 /**
@@ -37,19 +35,13 @@ import kotlin.time.Duration
  */
 class TreatmentRepository(
     /**
-     * Size of the in-memory cache. Entries older than this will be removed from RAM during [prune].
-     * Note: This does not affect persistence in the database.
+     * Size of the in-memory caches. This does not affect persistence in the database.
      */
     val historySize: Minutes,
     appDatabase: AppDatabase,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 ) {
     private val metabolicEventsDao: MetabolicEventsDao = appDatabase.metabolicEventsDao()
-    private val mutex = Mutex()
-
-    private var mealsHistory: MutableList<MealEntry> = mutableListOf()
-    private var insulinHistory: MutableList<InsulinApplication> = mutableListOf()
-    private var deferredBoluses: MutableList<DeferredBolus> = mutableListOf()
 
     val mealTypesMapState: StateFlow<Map<String, MealType>> = metabolicEventsDao.observeAllMealTypes()
         .map { entities ->
@@ -75,22 +67,67 @@ class TreatmentRepository(
             initialValue = emptyMap()
         )
 
-    fun observeMeals(): Flow<List<MealEntry>> = combine(
-        metabolicEventsDao.observeAllMeals(),
+    val mealsState: StateFlow<List<MealEntry>> = combine(
+        metabolicEventsDao.observeMealsSince(historyStart().ms),
         mealTypesMapState
     ) { entities, mealTypesMap ->
         entities.mapNotNull { entity ->
             mealTypesMap[entity.meal_type_id]?.let { type -> entity.toModel(type) }
         }
+    }.stateIn(
+        scope = scope,
+        started = SharingStarted.Eagerly,
+        initialValue = emptyList()
+    )
+
+    val insulinApplicationsState: StateFlow<List<InsulinApplication>> = combine(
+        metabolicEventsDao.observeInsulinApplicationsSince(historyStart().ms),
+        insulinTypesMapState
+    ) { entities, insulinTypesMap ->
+        entities.mapNotNull { entity ->
+            insulinTypesMap[entity.insulin_type_id]?.let { type -> entity.toModel(type) }
+        }
+    }.stateIn(
+        scope = scope,
+        started = SharingStarted.Eagerly,
+        initialValue = emptyList()
+    )
+
+    val deferredBolusesState: StateFlow<List<DeferredBolus>> = metabolicEventsDao.observeAllDeferredBoluses()
+        .map { entities ->
+            entities.map { it.toModel() }.sortedBy { it.timestamp }
+        }
+        .stateIn(
+            scope = scope,
+            started = SharingStarted.Eagerly,
+            initialValue = emptyList()
+        )
+
+    fun observeMeals(): Flow<List<MealEntry>> = mealsState
+
+    fun observeInsulinApplications(includeCancelled: Boolean = false): Flow<List<InsulinApplication>> =
+        insulinApplicationsState.map { list ->
+            if (includeCancelled) list
+            else list.filter { it.status != InsulinStatus.Cancelled && it.status != InsulinStatus.Invalidated }
+        }
+
+    fun observeFullMeals(): Flow<List<MealEntry>> = combine(
+        metabolicEventsDao.observeAllMeals(),
+        mealTypesMapState
+    ) { entities, mealTypesMap ->
+        entities.mapNotNull { entity ->
+            mealTypesMap[entity.meal_type_id]?.let { type -> entity.toModel(type) }
+        }.sortedBy { it.timestamp }
     }
 
-    fun observeInsulinApplications(includeCancelled: Boolean = false): Flow<List<InsulinApplication>> = combine(
+    fun observeFullInsulinApplications(includeCancelled: Boolean = false): Flow<List<InsulinApplication>> = combine(
         metabolicEventsDao.observeAllInsulinApplications(),
         insulinTypesMapState
     ) { entities, insulinTypesMap ->
         entities.mapNotNull { entity ->
             insulinTypesMap[entity.insulin_type_id]?.let { type -> entity.toModel(type) }
         }.filter { includeCancelled || (it.status != InsulinStatus.Cancelled && it.status != InsulinStatus.Invalidated) }
+            .sortedBy { it.timestamp }
     }
 
     /**
@@ -98,68 +135,7 @@ class TreatmentRepository(
      */
     fun historyStart(): Timestamp = Timestamp.now().minus(historySize)
 
-    /**
-     * Loads the history from the database into the in-memory cache.
-     */
-    suspend fun load() = mutex.withLock {
-        val historyStart = Timestamp.now() - historySize
 
-        // Load Meal Types Map
-        val mealTypesMap = getMealTypesMap()
-
-        // Load Meals
-        val mealEntities = metabolicEventsDao.getMealsSince(historyStart.ms)
-        mealsHistory = mealEntities.mapNotNull { entity ->
-            val type = mealTypesMap[entity.meal_type_id]
-            type?.let { entity.toModel(it) }
-        }.toMutableList()
-        mealsHistory.sortBy { it.timestamp }
-
-        // Load Insulin Types Map
-        val insulinTypesMap = getInsulinTypesMap()
-
-        // Load Insulin
-        val insulinEntities = metabolicEventsDao.getInsulinApplicationsSince(historyStart.ms)
-        insulinHistory = insulinEntities.mapNotNull { entity ->
-            val type = insulinTypesMap[entity.insulin_type_id]
-            type?.let { entity.toModel(it) }
-        }.toMutableList()
-        insulinHistory.sortBy { it.timestamp }
-
-        // Load Deferred Boluses
-        deferredBoluses = metabolicEventsDao.getAllDeferredBoluses()
-            .map { it.toModel() }
-            .toMutableList()
-        deferredBoluses.sortBy { it.timestamp }
-    }
-
-    /**
-     * Removes entries from the in-memory cache that are older than the history size.
-     */
-    suspend fun prune() = mutex.withLock {
-        val historyStart = historyStart()
-        mealsHistory.removeIf { it.timestamp < historyStart }
-        insulinHistory.removeIf { it.timestamp < historyStart }
-        deferredBoluses.removeIf { it.timestamp < historyStart }
-    }
-
-    private suspend fun getMealTypesMap(): Map<String, MealType> {
-        val current = mealTypesMapState.value
-        if (current.isNotEmpty()) return current
-        return metabolicEventsDao.getAllMealTypes()
-            .map { it.toModel() }
-            .sortedWith(compareBy({ it.sortOrder }, { it.name }))
-            .associateBy { it.id }
-    }
-
-    private suspend fun getInsulinTypesMap(): Map<String, InsulinType> {
-        val current = insulinTypesMapState.value
-        if (current.isNotEmpty()) return current
-        return metabolicEventsDao.getAllInsulinTypes()
-            .map { it.toModel() }
-            .sortedBy { it.name }
-            .associateBy { it.id }
-    }
 
     /**
      * Merges a range of insulin history from the pump.
@@ -171,12 +147,15 @@ class TreatmentRepository(
         history: InsulinHistory,
         insulinType: InsulinType,
         bolusDeliveryDurationPerUnit: Duration
-    ): Timestamp? = mutex.withLock {
+    ): Timestamp? {
         val from = history.from
         val to = history.to
-        val historyStart = historyStart()
 
-        val typesMap = getInsulinTypesMap()
+        val typesMap = insulinTypesMapState.value.ifEmpty {
+            metabolicEventsDao.getAllInsulinTypes()
+                .map { it.toModel() }
+                .associateBy { it.id }
+        }
 
         // Load existing pump entries in range (sorted by timestamp)
         val existingEntities = metabolicEventsDao.getInsulinApplicationsSince((from - Minutes(5)).ms)
@@ -350,43 +329,18 @@ class TreatmentRepository(
             }
         }
 
-        // 5. Update in-memory cache
-        if (to >= historyStart) {
-            val updatedOrInserted = updatedApplications + newApplications
-            val processedIds = (updatedOrInserted + cancelledApplications).map { it.id }.toSet()
-
-            insulinHistory.removeIf { processedIds.contains(it.id) }
-
-            insulinHistory.addAll(updatedOrInserted.filter { it.timestamp >= historyStart })
-            insulinHistory.addAll(cancelledApplications.filter { it.timestamp >= historyStart })
-            insulinHistory.sortBy { it.timestamp }
-        }
-
-        // 6. Calculate next requested history start timestamp for pump
-        val oldestScheduledTimestamp = insulinHistory
+        // 5. Calculate next requested history start timestamp for pump
+        val oldestScheduledTimestamp = insulinApplicationsState.value
             .filter { it.status == InsulinStatus.Scheduled }
             .minOfOrNull { it.timestamp }
 
-        return@withLock oldestScheduledTimestamp?.minusMinutes(15)
+        return oldestScheduledTimestamp?.minusMinutes(15)
     }
 
     /**
-     * Adds a new meal entry or updates an existing one in the cache and database.
+     * Adds a new meal entry or updates an existing one in the database.
      */
-    suspend fun addMealEntry(mealEntry: MealEntry) = mutex.withLock {
-        val historyStart = historyStart()
-        if (mealEntry.timestamp >= historyStart) {
-            // If it's an update, remove the old one by ID
-            if (mealEntry.id != ID_UNDEFINED) {
-                mealsHistory.removeIf { it.id == mealEntry.id }
-            }
-            // Also maintain the "unique per timestamp" rule for safety
-            mealsHistory.removeIf { it.timestamp == mealEntry.timestamp }
-
-            mealsHistory.add(mealEntry)
-            mealsHistory.sortBy { it.timestamp }
-        }
-
+    suspend fun addMealEntry(mealEntry: MealEntry) {
         if (mealEntry.id != ID_UNDEFINED) {
             metabolicEventsDao.updateMeal(mealEntry.toEntity())
         } else {
@@ -399,40 +353,29 @@ class TreatmentRepository(
     }
 
     /**
-     * Deletes a meal entry from the cache and database.
+     * Deletes a meal entry from the database.
      */
-    suspend fun removeMealEntry(mealEntry: MealEntry) = mutex.withLock {
-        mealsHistory.remove(mealEntry)
+    suspend fun removeMealEntry(mealEntry: MealEntry) {
         metabolicEventsDao.deleteMeal(mealEntry.id)
     }
 
     /**
      * Returns a specific meal entry by ID.
      */
-    suspend fun getMeal(id: Long): MealEntry? = mutex.withLock {
-        val inMemory = mealsHistory.find { it.id == id }
-        if (inMemory != null) return@withLock inMemory
+    suspend fun getMeal(id: Long): MealEntry? {
+        val inMemory = mealsState.value.find { it.id == id }
+        if (inMemory != null) return inMemory
 
-        val entity = metabolicEventsDao.getMealById(id) ?: return@withLock null
-        val mealTypesMap = getMealTypesMap()
-        val type = mealTypesMap[entity.meal_type_id]
-        type?.let { entity.toModel(it) }
+        val entity = metabolicEventsDao.getMealById(id) ?: return null
+        val mealType = mealTypesMapState.value[entity.meal_type_id]
+            ?: metabolicEventsDao.getMealTypeById(entity.meal_type_id)?.toModel()
+        return mealType?.let { entity.toModel(it) }
     }
 
     /**
-     * Adds a new insulin application or updates an existing one in the cache and database.
+     * Adds a new insulin application or updates an existing one in the database.
      */
-    suspend fun addInsulinApplication(insulinApplication: InsulinApplication) = mutex.withLock {
-        val historyStart = historyStart()
-        if (insulinApplication.timestamp >= historyStart) {
-            if (insulinApplication.id != 0L) {
-                insulinHistory.removeIf { it.id == insulinApplication.id }
-            }
-            insulinHistory.removeIf { it.timestamp == insulinApplication.timestamp && it.origin == insulinApplication.origin }
-            insulinHistory.add(insulinApplication)
-            insulinHistory.sortBy { it.timestamp }
-        }
-
+    suspend fun addInsulinApplication(insulinApplication: InsulinApplication) {
         if (insulinApplication.id != 0L) {
             metabolicEventsDao.updateInsulinApplication(insulinApplication.toEntity())
         } else {
@@ -449,76 +392,70 @@ class TreatmentRepository(
     }
 
     /**
-     * Updates an existing insulin application in the cache and database.
+     * Updates an existing insulin application in the database.
      */
-    suspend fun updateInsulinApplication(insulinApplication: InsulinApplication) = mutex.withLock {
-        val historyStart = historyStart()
-        if (insulinApplication.timestamp >= historyStart) {
-            insulinHistory.removeIf { it.id == insulinApplication.id }
-            insulinHistory.add(insulinApplication)
-            insulinHistory.sortBy { it.timestamp }
-        }
+    suspend fun updateInsulinApplication(insulinApplication: InsulinApplication) {
         metabolicEventsDao.updateInsulinApplication(insulinApplication.toEntity())
     }
 
     /**
-     * Deletes an insulin application from the cache and database.
+     * Deletes an insulin application from the database.
      */
-    suspend fun removeInsulinApplication(insulinApplication: InsulinApplication) = mutex.withLock {
-        insulinHistory.remove(insulinApplication)
+    suspend fun removeInsulinApplication(insulinApplication: InsulinApplication) {
         metabolicEventsDao.deleteInsulinApplication(insulinApplication.id)
     }
 
     /**
      * Updates the status of an existing insulin application (e.g. Setting it to Invalidated or Confirmed).
      */
-    suspend fun setInsulinApplicationStatus(id: Long, status: InsulinStatus): Boolean = mutex.withLock {
-        val index = insulinHistory.indexOfFirst { it.id == id }
-        if (index == -1) return@withLock false
-
-        val updated = insulinHistory[index].copy(status = status)
-        insulinHistory[index] = updated
-
+    suspend fun setInsulinApplicationStatus(id: Long, status: InsulinStatus): Boolean {
+        val application = insulinApplicationsState.value.find { it.id == id } ?: return false
+        val updated = application.copy(status = status)
         metabolicEventsDao.updateInsulinApplication(updated.toEntity())
-        return@withLock true
+        return true
     }
 
     /**
-     * Returns a flattened list of meal entries within the optional timestamp range from the cache.
+     * Returns a flattened list of meal entries within the optional timestamp range.
      */
-    suspend fun getMeals(from: Timestamp? = null, to: Timestamp? = null): List<MealEntry> = mutex.withLock {
-        return mealsHistory.filter { meal ->
-            (from == null || meal.timestamp >= from) && (to == null || meal.timestamp <= to)
-        }.toList()
+    suspend fun getMeals(from: Timestamp? = null, to: Timestamp? = null): List<MealEntry> {
+        val historyStart = historyStart()
+        return mealsState.value.filter { meal ->
+            meal.timestamp >= historyStart &&
+            (from == null || meal.timestamp >= from) &&
+            (to == null || meal.timestamp <= to)
+        }
     }
 
     /**
-     * Returns a flattened list of insulin applications within the optional timestamp range from the cache.
+     * Returns a flattened list of insulin applications within the optional timestamp range.
      */
     suspend fun getInsulinApplications(
         from: Timestamp? = null,
         to: Timestamp? = null,
         includeCancelled: Boolean = false
-    ): List<InsulinApplication> = mutex.withLock {
-        return insulinHistory.filter { insulin ->
+    ): List<InsulinApplication> {
+        val historyStart = historyStart()
+        return insulinApplicationsState.value.filter { insulin ->
+            insulin.timestamp >= historyStart &&
             (includeCancelled || (insulin.status != InsulinStatus.Cancelled && insulin.status != InsulinStatus.Invalidated)) &&
             (from == null || insulin.timestamp >= from) &&
             (to == null || insulin.timestamp <= to)
-        }.toList()
+        }
     }
 
     /**
-     * Returns a list of scheduled (unconfirmed) insulin applications from the cache.
+     * Returns a list of scheduled (unconfirmed) insulin applications.
      */
-    suspend fun getScheduledInsulinApplications(): List<InsulinApplication> = mutex.withLock {
-        return insulinHistory.filter { it.status == InsulinStatus.Scheduled }.toList()
+    suspend fun getScheduledInsulinApplications(): List<InsulinApplication> {
+        return insulinApplicationsState.value.filter { it.status == InsulinStatus.Scheduled }
     }
 
     /**
      * Returns a scheduled (unconfirmed) insulin application by its ID, if present.
      */
-    suspend fun getScheduledInsulinApplication(id: Long): InsulinApplication? = mutex.withLock {
-        return insulinHistory.find { it.id == id && it.status == InsulinStatus.Scheduled }
+    suspend fun getScheduledInsulinApplication(id: Long): InsulinApplication? {
+        return insulinApplicationsState.value.find { it.id == id && it.status == InsulinStatus.Scheduled }
     }
 
     /**
@@ -527,20 +464,16 @@ class TreatmentRepository(
     suspend fun updateScheduledBolusTimestamp(
         id: Long,
         timestamp: Timestamp
-    ): Boolean = mutex.withLock {
-        val application = insulinHistory.find {
+    ): Boolean {
+        val application = insulinApplicationsState.value.find {
             it.id == id && (it.status == InsulinStatus.Scheduled || it.status == InsulinStatus.Cancelled)
-        } ?: return@withLock false
+        } ?: return false
 
         val updated = application.copy(
             dose = application.dose.copy(timestamp = timestamp)
         )
-        insulinHistory.removeIf { it.id == id }
-        insulinHistory.add(updated)
-        insulinHistory.sortBy { it.timestamp }
-
         metabolicEventsDao.updateInsulinApplication(updated.toEntity())
-        return@withLock true
+        return true
     }
 
     /**
@@ -552,10 +485,10 @@ class TreatmentRepository(
         id: Long,
         timestamp: Timestamp,
         deliveredAmount: InsulinAmount
-    ): Boolean = mutex.withLock {
-        val application = insulinHistory.find {
+    ): Boolean {
+        val application = insulinApplicationsState.value.find {
             it.id == id && (it.status == InsulinStatus.Scheduled || it.status == InsulinStatus.Cancelled)
-        } ?: return@withLock false
+        } ?: return false
         val finalAmount = if (deliveredAmount > InsulinAmount.ZERO) deliveredAmount else application.dose.amount
         val finalTimestamp = if (timestamp.isValid()) timestamp else application.dose.timestamp
 
@@ -566,12 +499,8 @@ class TreatmentRepository(
             ),
             status = InsulinStatus.Confirmed
         )
-        insulinHistory.removeIf { it.id == id }
-        insulinHistory.add(updated)
-        insulinHistory.sortBy { it.timestamp }
-
         metabolicEventsDao.updateInsulinApplication(updated.toEntity())
-        return@withLock true
+        return true
     }
 
     /**
@@ -591,7 +520,11 @@ class TreatmentRepository(
      * Returns all available meal types.
      */
     suspend fun getAllMealTypes(): List<MealType> {
-        return getMealTypesMap().values.toList()
+        return mealTypesMapState.value.values.toList().ifEmpty {
+            metabolicEventsDao.getAllMealTypes()
+                .map { it.toModel() }
+                .sortedWith(compareBy({ it.sortOrder }, { it.name }))
+        }
     }
 
     /**
@@ -624,7 +557,11 @@ class TreatmentRepository(
      * Returns all available insulin types.
      */
     suspend fun getAllInsulinTypes(): List<InsulinType> {
-        return getInsulinTypesMap().values.toList()
+        return insulinTypesMapState.value.values.toList().ifEmpty {
+            metabolicEventsDao.getAllInsulinTypes()
+                .map { it.toModel() }
+                .sortedBy { it.name }
+        }
     }
 
     /**
@@ -662,54 +599,42 @@ class TreatmentRepository(
 
     // --- Deferred Boluses ---
 
-    suspend fun addDeferredBolus(deferredBolus: DeferredBolus) = mutex.withLock {
-        val historyStart = historyStart()
-        if (deferredBolus.timestamp >= historyStart) {
-            deferredBoluses.add(deferredBolus)
-            deferredBoluses.sortBy { it.timestamp }
-        }
+    suspend fun addDeferredBolus(deferredBolus: DeferredBolus) {
         val id = metabolicEventsDao.insertDeferredBolus(deferredBolus.toEntity())
         if (id != -1L) {
             deferredBolus.id = id
         }
     }
 
-    suspend fun getDeferredBoluses(): List<DeferredBolus> = mutex.withLock {
-        return@withLock deferredBoluses.toList()
+    suspend fun getDeferredBoluses(): List<DeferredBolus> {
+        return deferredBolusesState.value
     }
 
-    suspend fun purgeExpiredDeferredBoluses(now: Timestamp = Timestamp.now()) = mutex.withLock {
-        val expired = deferredBoluses.filter { deferredBolus ->
+    suspend fun purgeExpiredDeferredBoluses(now: Timestamp = Timestamp.now()) {
+        val expired = deferredBolusesState.value.filter { deferredBolus ->
             deferredBolus.timestamp < now &&
                 Minutes.timeDifference(deferredBolus.timestamp, now) > STALE_DEFERRED_BOLUS_THRESHOLD
         }
 
         if (expired.isNotEmpty()) {
             val idsToRemove = expired.map { it.id }.filter { it != ID_UNDEFINED }
-            deferredBoluses.removeAll(expired)
             if (idsToRemove.isNotEmpty()) {
                 metabolicEventsDao.deleteDeferredBoluses(idsToRemove)
             }
         }
     }
 
-    suspend fun updateDeferredBolus(deferredBolus: DeferredBolus) = mutex.withLock {
-        deferredBoluses.removeIf { it.id == deferredBolus.id }
-        deferredBoluses.add(deferredBolus)
-        deferredBoluses.sortBy { it.timestamp }
+    suspend fun updateDeferredBolus(deferredBolus: DeferredBolus) {
         metabolicEventsDao.updateDeferredBolus(deferredBolus.toEntity())
     }
 
-    suspend fun removeDeferredBolus(deferredBolus: DeferredBolus) = mutex.withLock {
-        deferredBoluses.removeIf { it.id == deferredBolus.id }
+    suspend fun removeDeferredBolus(deferredBolus: DeferredBolus) {
         metabolicEventsDao.deleteDeferredBolus(deferredBolus.id)
     }
 
-    suspend fun removeDeferredBoluses(deferredBolusesToRemove: Collection<DeferredBolus>) = mutex.withLock {
+    suspend fun removeDeferredBoluses(deferredBolusesToRemove: Collection<DeferredBolus>) {
         val idsToRemove = deferredBolusesToRemove.map { it.id }.filter { it != ID_UNDEFINED }
-        if (idsToRemove.isEmpty()) return@withLock
-
-        deferredBoluses.removeIf { bolus -> idsToRemove.contains(bolus.id) }
+        if (idsToRemove.isEmpty()) return
         metabolicEventsDao.deleteDeferredBoluses(idsToRemove)
     }
 
@@ -735,15 +660,8 @@ class TreatmentRepository(
         return application
     }
 
-    suspend fun addAdministeredInsulinToMeal(mealId: Long, amount: InsulinAmount) = mutex.withLock {
-        if (amount <= InsulinAmount.ZERO) return@withLock
-        val index = mealsHistory.indexOfFirst { it.id == mealId }
-        if (index != -1) {
-            val oldMeal = mealsHistory[index]
-            mealsHistory[index] = oldMeal.copy(
-                administeredInsulinAmount = oldMeal.administeredInsulinAmount + amount
-            )
-        }
+    suspend fun addAdministeredInsulinToMeal(mealId: Long, amount: InsulinAmount) {
+        if (amount <= InsulinAmount.ZERO) return
         metabolicEventsDao.addAdministeredInsulinToMeal(mealId, amount.iu)
     }
 }

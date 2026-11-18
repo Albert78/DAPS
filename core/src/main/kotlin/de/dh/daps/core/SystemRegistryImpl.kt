@@ -174,7 +174,6 @@ class SystemRegistryImpl(
                 }
 
                 // Reload caches after database setup
-                treatmentRepository.load()
                 therapyRepository.clearCache()
                 glucoseRepository.initialize()
 
@@ -212,7 +211,6 @@ class SystemRegistryImpl(
                 }
 
                 // 3. Reload in-memory state
-                treatmentRepository.load()
                 therapyRepository.clearCache()
                 glucoseRepository.initialize()
             }.also {
@@ -436,7 +434,6 @@ class SystemRegistryImpl(
             scope.launch(Dispatchers.Default) {
                 runCatching {
                     glucoseRepository.initialize()
-                    treatmentRepository.load()
                     val isDbInitialized = registryInstance.isDatabaseInitialized()
 
                     if (isDbInitialized) {
