@@ -29,6 +29,9 @@
     <string name="danai_bound_badge">Gebunden</string>
     <string name="danai_bound_btn_start_maintenance">Zur Wartung trennen</string>
     <string name="danai_bound_btn_unbind">Bindung verwerfen</string>
+    <string name="danai_bound_catheter_last_changed_label">Letzter Katheterwechsel</string>
+    <string name="cd_danai_bound_catheter_edit">Katheterwechsel-Datum bearbeiten</string>
+    <string name="danai_bound_catheter_dialog_title">Katheterwechsel bearbeiten</string>
 
     <!-- Maintenance Screen -->
     <string name="danai_maintenance_title">Wartungsmodus</string>

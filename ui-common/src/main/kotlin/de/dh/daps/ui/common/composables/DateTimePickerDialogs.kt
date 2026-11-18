@@ -51,6 +51,7 @@ fun DateTimePickerDialog(
     dialogTitle: String,
     initialDateTime: LocalDateTime,
     minDate: LocalDate? = null,
+    maxDate: LocalDate? = null,
     timeZoneId: ZoneId = ZoneId.systemDefault(),
     onDismissRequest: () -> Unit,
     onDateTimeSelected: (LocalDateTime) -> Unit,
@@ -66,6 +67,13 @@ fun DateTimePickerDialog(
             ?.toEpochMilli()
     }
 
+    val maxDateUtcMillis = remember(maxDate) {
+        maxDate
+            ?.atStartOfDay(ZoneId.of("UTC")) // Picker internally works with UTC
+            ?.toInstant()
+            ?.toEpochMilli()
+    }
+
     // Date State
     val datePickerState = rememberDatePickerState(
         // NOTE: Setting initialSelectedDateMillis makes the preview in Android Studio show error message:
@@ -76,11 +84,15 @@ fun DateTimePickerDialog(
             .toEpochMilli(),
         selectableDates = object : SelectableDates {
             override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                return minDateUtcMillis == null || utcTimeMillis >= minDateUtcMillis
+                val minOk = minDateUtcMillis == null || utcTimeMillis >= minDateUtcMillis
+                val maxOk = maxDateUtcMillis == null || utcTimeMillis <= maxDateUtcMillis
+                return minOk && maxOk
             }
 
             override fun isSelectableYear(year: Int): Boolean {
-                return year >= (minDate?.year ?: 0)
+                val minOk = minDate == null || year >= minDate.year
+                val maxOk = maxDate == null || year <= maxDate.year
+                return minOk && maxOk
             }
         }
     )
@@ -191,11 +203,19 @@ fun DatePickerDialog(
     initialDate: LocalDate,
     timeZoneId: ZoneId = ZoneId.systemDefault(),
     minDate: LocalDate? = null,
+    maxDate: LocalDate? = null,
     onDismissRequest: () -> Unit,
     onDateSelected: (LocalDate) -> Unit
 ) {
     val minDateUtcMillis = remember(minDate) {
         minDate
+            ?.atStartOfDay(ZoneId.of("UTC")) // Picker internally works with UTC
+            ?.toInstant()
+            ?.toEpochMilli()
+    }
+
+    val maxDateUtcMillis = remember(maxDate) {
+        maxDate
             ?.atStartOfDay(ZoneId.of("UTC")) // Picker internally works with UTC
             ?.toInstant()
             ?.toEpochMilli()
@@ -213,11 +233,15 @@ fun DatePickerDialog(
             .toEpochMilli(),
         selectableDates = object : SelectableDates {
             override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                return minDateUtcMillis == null || utcTimeMillis >= minDateUtcMillis
+                val minOk = minDateUtcMillis == null || utcTimeMillis >= minDateUtcMillis
+                val maxOk = maxDateUtcMillis == null || utcTimeMillis <= maxDateUtcMillis
+                return minOk && maxOk
             }
 
             override fun isSelectableYear(year: Int): Boolean {
-                return year >= (minDate?.year ?: 0)
+                val minOk = minDate == null || year >= minDate.year
+                val maxOk = maxDate == null || year <= maxDate.year
+                return minOk && maxOk
             }
         }
     )

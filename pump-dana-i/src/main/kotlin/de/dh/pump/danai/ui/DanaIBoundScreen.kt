@@ -12,11 +12,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Router
 import androidx.compose.material3.Badge
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,14 +40,20 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.dh.daps.common.device.state.DeviceLifecycleState
 import de.dh.daps.common.domain.model.data.Timestamp
+import de.dh.daps.common.domain.pump.PumpLifecycleState
+import de.dh.daps.ui.common.composables.DateTimePickerDialog
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.PrimaryButton
+import de.dh.daps.ui.common.shortDateTime
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.pump.dana.commands.options.DanaRsUserOptions
 import de.dh.pump.danai.DanaIInsulinPumpDriver
 import de.dh.pump.danai.R
 import de.dh.pump.danai.core.DanaIPumpAdapter
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 import kotlinx.coroutines.launch
 
 /**
@@ -71,8 +80,11 @@ fun DanaIBoundScreen(
     val pumpAdapter = activePump as? DanaIPumpAdapter
     val isMaintenanceActive = pumpAdapter?.connectionState?.collectAsStateWithLifecycle()?.value?.isMaintenanceMode ?: false
 
+    val pumpStatus by (pumpAdapter?.pumpStatus)?.collectAsStateWithLifecycle() ?: remember { mutableStateOf(null) }
+    val catheterLastChanged = (pumpStatus?.lifecycleState as? PumpLifecycleState.Durable)?.catheterLastChanged
+    val coroutineScope = rememberCoroutineScope()
+
     if (isMaintenanceActive) {
-        val coroutineScope = rememberCoroutineScope()
         DanaIMaintenanceScreen(
             onEndMaintenance = { resetCatheterWear ->
                 coroutineScope.launch {
@@ -92,6 +104,7 @@ fun DanaIBoundScreen(
             isLoadingOptions = isLoadingOptions,
             isSavingOptions = isSavingOptions,
             optionsError = optionsError,
+            catheterLastChanged = catheterLastChanged,
             onLoadOptions = { viewModel.loadUserOptions(driver) },
             onStartMaintenance = {
                 pumpAdapter?.setMaintenanceMode(true)
@@ -104,6 +117,11 @@ fun DanaIBoundScreen(
             onUnbindOnly = {
                 viewModel.unbind(driver) {
                     onDriverReset()
+                }
+            },
+            onSaveCatheterLastChanged = { newTimestamp ->
+                coroutineScope.launch {
+                    pumpAdapter?.saveCatheterLastChanged(newTimestamp)
                 }
             },
             modifier = modifier
@@ -126,9 +144,12 @@ fun DanaIBoundContent(
     onStartMaintenance: () -> Unit,
     onSaveAndUnbind: (DanaRsUserOptions?) -> Unit,
     onUnbindOnly: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    catheterLastChanged: Timestamp? = null,
+    onSaveCatheterLastChanged: ((Timestamp?) -> Unit)? = null
 ) {
     var showUnbindDialog by remember { mutableStateOf(false) }
+    var showCatheterDatePicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(showUnbindDialog) {
         if (showUnbindDialog) {
@@ -197,6 +218,48 @@ fun DanaIBoundContent(
 
             HorizontalDivider()
 
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CalendarToday,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Column {
+                        Text(
+                            text = stringResource(R.string.danai_bound_catheter_last_changed_label),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = shortDateTime(catheterLastChanged),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                IconButton(
+                    onClick = { showCatheterDatePicker = true }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = stringResource(R.string.cd_danai_bound_catheter_edit),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            HorizontalDivider()
+
             PrimaryButton(
                 onClick = onStartMaintenance,
                 modifier = Modifier.fillMaxWidth()
@@ -222,6 +285,39 @@ fun DanaIBoundContent(
                 Text(stringResource(R.string.danai_bound_btn_unbind))
             }
         }
+    }
+
+    if (showCatheterDatePicker) {
+        val now = LocalDateTime.now()
+        val minDateTime = now.minusDays(7)
+        val initialDateTime = remember(catheterLastChanged) {
+            catheterLastChanged?.let { ts ->
+                val ldt = LocalDateTime.ofInstant(Instant.ofEpochMilli(ts.ms), ZoneId.systemDefault())
+                when {
+                    ldt.isBefore(minDateTime) -> minDateTime
+                    ldt.isAfter(now) -> now
+                    else -> ldt
+                }
+            } ?: now
+        }
+
+        DateTimePickerDialog(
+            dialogTitle = stringResource(R.string.danai_bound_catheter_dialog_title),
+            initialDateTime = initialDateTime,
+            minDate = minDateTime.toLocalDate(),
+            maxDate = now.toLocalDate(),
+            onDismissRequest = { showCatheterDatePicker = false },
+            onDateTimeSelected = { selectedLdt ->
+                showCatheterDatePicker = false
+                val clampedLdt = when {
+                    selectedLdt.isBefore(minDateTime) -> minDateTime
+                    selectedLdt.isAfter(now) -> now
+                    else -> selectedLdt
+                }
+                val timestamp = Timestamp(clampedLdt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
+                onSaveCatheterLastChanged?.invoke(timestamp)
+            }
+        )
     }
 
     if (showUnbindDialog) {
@@ -254,6 +350,7 @@ private fun DanaIBoundContentPreview() {
             isLoadingOptions = false,
             isSavingOptions = false,
             optionsError = null,
+            catheterLastChanged = Timestamp(System.currentTimeMillis() - 86_400_000),
             onLoadOptions = {},
             onStartMaintenance = {},
             onSaveAndUnbind = {},
