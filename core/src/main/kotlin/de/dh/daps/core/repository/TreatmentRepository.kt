@@ -18,9 +18,15 @@ import de.dh.daps.core.repository.db.AppDatabase
 import de.dh.daps.core.repository.db.dao.MetabolicEventsDao
 import de.dh.daps.core.repository.db.mappers.toEntity
 import de.dh.daps.core.repository.db.mappers.toModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.time.Duration
@@ -35,7 +41,8 @@ class TreatmentRepository(
      * Note: This does not affect persistence in the database.
      */
     val historySize: Minutes,
-    appDatabase: AppDatabase
+    appDatabase: AppDatabase,
+    private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 ) {
     private val metabolicEventsDao: MetabolicEventsDao = appDatabase.metabolicEventsDao()
     private val mutex = Mutex()
@@ -43,28 +50,46 @@ class TreatmentRepository(
     private var mealsHistory: MutableList<MealEntry> = mutableListOf()
     private var insulinHistory: MutableList<InsulinApplication> = mutableListOf()
     private var deferredBoluses: MutableList<DeferredBolus> = mutableListOf()
-    private var mealTypes: List<MealType> = emptyList()
-    private var insulinTypes: List<InsulinType> = emptyList()
+
+    val mealTypesMapState: StateFlow<Map<String, MealType>> = metabolicEventsDao.observeAllMealTypes()
+        .map { entities ->
+            entities.map { it.toModel() }
+                .sortedWith(compareBy({ it.sortOrder }, { it.name }))
+                .associateBy { it.id }
+        }
+        .stateIn(
+            scope = scope,
+            started = SharingStarted.Eagerly,
+            initialValue = emptyMap()
+        )
+
+    val insulinTypesMapState: StateFlow<Map<String, InsulinType>> = metabolicEventsDao.observeAllInsulinTypes()
+        .map { list ->
+            list.map { it.toModel() }
+                .sortedBy { it.name }
+                .associateBy { it.id }
+        }
+        .stateIn(
+            scope = scope,
+            started = SharingStarted.Eagerly,
+            initialValue = emptyMap()
+        )
 
     fun observeMeals(): Flow<List<MealEntry>> = combine(
         metabolicEventsDao.observeAllMeals(),
-        observeMealTypes()
-    ) { entities, mealTypes ->
-        val mealTypesMap = mealTypes.associateBy { it.id }
+        mealTypesMapState
+    ) { entities, mealTypesMap ->
         entities.mapNotNull { entity ->
-            val type = mealTypesMap[entity.meal_type_id]
-            type?.let { entity.toModel(it) }
+            mealTypesMap[entity.meal_type_id]?.let { type -> entity.toModel(type) }
         }
     }
 
     fun observeInsulinApplications(includeCancelled: Boolean = false): Flow<List<InsulinApplication>> = combine(
         metabolicEventsDao.observeAllInsulinApplications(),
-        observeInsulinTypes()
-    ) { entities, insulinTypes ->
-        val insulinTypesMap = insulinTypes.associateBy { it.id }
+        insulinTypesMapState
+    ) { entities, insulinTypesMap ->
         entities.mapNotNull { entity ->
-            val type = insulinTypesMap[entity.insulin_type_id]
-            type?.let { entity.toModel(it) }
+            insulinTypesMap[entity.insulin_type_id]?.let { type -> entity.toModel(type) }
         }.filter { includeCancelled || (it.status != InsulinStatus.Cancelled && it.status != InsulinStatus.Invalidated) }
     }
 
@@ -79,11 +104,8 @@ class TreatmentRepository(
     suspend fun load() = mutex.withLock {
         val historyStart = Timestamp.now() - historySize
 
-        // Load Meal Types
-        mealTypes = metabolicEventsDao.getAllMealTypes()
-            .map { it.toModel() }
-            .sortedWith(compareBy({ it.sortOrder }, { it.name }))
-        val mealTypesMap = mealTypes.associateBy { it.id }
+        // Load Meal Types Map
+        val mealTypesMap = getMealTypesMap()
 
         // Load Meals
         val mealEntities = metabolicEventsDao.getMealsSince(historyStart.ms)
@@ -93,11 +115,8 @@ class TreatmentRepository(
         }.toMutableList()
         mealsHistory.sortBy { it.timestamp }
 
-        // Load Insulin Types
-        insulinTypes = metabolicEventsDao.getAllInsulinTypes()
-            .map { it.toModel() }
-            .sortedBy { it.name }
-        val insulinTypesMap = insulinTypes.associateBy { it.id }
+        // Load Insulin Types Map
+        val insulinTypesMap = getInsulinTypesMap()
 
         // Load Insulin
         val insulinEntities = metabolicEventsDao.getInsulinApplicationsSince(historyStart.ms)
@@ -125,21 +144,21 @@ class TreatmentRepository(
     }
 
     private suspend fun getMealTypesMap(): Map<String, MealType> {
-        if (mealTypes.isEmpty()) {
-            mealTypes = metabolicEventsDao.getAllMealTypes()
-                .map { it.toModel() }
-                .sortedWith(compareBy({ it.sortOrder }, { it.name }))
-        }
-        return mealTypes.associateBy { it.id }
+        val current = mealTypesMapState.value
+        if (current.isNotEmpty()) return current
+        return metabolicEventsDao.getAllMealTypes()
+            .map { it.toModel() }
+            .sortedWith(compareBy({ it.sortOrder }, { it.name }))
+            .associateBy { it.id }
     }
 
     private suspend fun getInsulinTypesMap(): Map<String, InsulinType> {
-        if (insulinTypes.isEmpty()) {
-            insulinTypes = metabolicEventsDao.getAllInsulinTypes()
-                .map { it.toModel() }
-                .sortedBy { it.name }
-        }
-        return insulinTypes.associateBy { it.id }
+        val current = insulinTypesMapState.value
+        if (current.isNotEmpty()) return current
+        return metabolicEventsDao.getAllInsulinTypes()
+            .map { it.toModel() }
+            .sortedBy { it.name }
+            .associateBy { it.id }
     }
 
     /**
@@ -566,44 +585,37 @@ class TreatmentRepository(
     /**
      * Observes all available meal types as a reactive stream.
      */
-    fun observeMealTypes(): Flow<List<MealType>> = metabolicEventsDao.observeAllMealTypes()
-        .map { entities -> entities.map { it.toModel() }.sortedWith(compareBy({ it.sortOrder }, { it.name })) }
+    fun observeMealTypes(): Flow<List<MealType>> = mealTypesMapState.map { it.values.toList() }
 
     /**
      * Returns all available meal types.
      */
-    suspend fun getAllMealTypes(): List<MealType> = mutex.withLock {
+    suspend fun getAllMealTypes(): List<MealType> {
         return getMealTypesMap().values.toList()
     }
 
     /**
-     * Inserts or updates a meal type in the database and updates the in-memory list.
+     * Inserts or updates a meal type in the database.
      */
-    suspend fun insertMealType(mealType: MealType) = mutex.withLock {
+    suspend fun insertMealType(mealType: MealType) {
         metabolicEventsDao.insertMealType(mealType.toEntity())
-        mealTypes = (mealTypes.filter { it.id != mealType.id } + mealType)
-            .sortedWith(compareBy({ it.sortOrder }, { it.name }))
     }
 
     /**
      * Updates the sort order of the provided meal types list and persists them to the database.
      */
-    suspend fun updateMealTypeOrders(orderedMealTypes: List<MealType>) = mutex.withLock {
+    suspend fun updateMealTypeOrders(orderedMealTypes: List<MealType>) {
         val updatedTypes = orderedMealTypes.mapIndexed { index, mealType ->
-            mealType.copy(sortOrder = index)
+            mealType.copy(sortOrder = index).toEntity()
         }
-        updatedTypes.forEach { type ->
-            metabolicEventsDao.insertMealType(type.toEntity())
-        }
-        mealTypes = updatedTypes
+        metabolicEventsDao.insertMealTypes(updatedTypes)
     }
 
     /**
-     * Deletes a meal type from the database and updates the in-memory list.
+     * Deletes a meal type from the database.
      */
-    suspend fun deleteMealType(mealType: MealType) = mutex.withLock {
+    suspend fun deleteMealType(mealType: MealType) {
         metabolicEventsDao.deleteMealType(mealType.id)
-        mealTypes = mealTypes.filter { it.id != mealType.id }
     }
 
     // --- Insulin Types ---
@@ -611,16 +623,14 @@ class TreatmentRepository(
     /**
      * Returns all available insulin types.
      */
-    suspend fun getAllInsulinTypes(): List<InsulinType> = mutex.withLock {
+    suspend fun getAllInsulinTypes(): List<InsulinType> {
         return getInsulinTypesMap().values.toList()
     }
 
     /**
      * Observes all available insulin types as a reactive stream.
      */
-    fun observeInsulinTypes(): Flow<List<InsulinType>> = metabolicEventsDao.observeAllInsulinTypes().map { list ->
-        list.map { it.toModel() }.sortedBy { it.name }
-    }
+    fun observeInsulinTypes(): Flow<List<InsulinType>> = insulinTypesMapState.map { it.values.toList() }
 
     /**
      * Observes IDs of insulin types currently referenced in insulin history.
@@ -637,19 +647,17 @@ class TreatmentRepository(
     }
 
     /**
-     * Inserts or updates an insulin type in the database and updates the in-memory list.
+     * Inserts or updates an insulin type in the database.
      */
-    suspend fun insertInsulinType(insulinType: InsulinType) = mutex.withLock {
+    suspend fun insertInsulinType(insulinType: InsulinType) {
         metabolicEventsDao.insertInsulinType(insulinType.toEntity())
-        insulinTypes = (insulinTypes.filter { it.id != insulinType.id } + insulinType).sortedBy { it.name }
     }
 
     /**
-     * Deletes an insulin type from the database and updates the in-memory list.
+     * Deletes an insulin type from the database.
      */
-    suspend fun deleteInsulinType(insulinType: InsulinType) = mutex.withLock {
+    suspend fun deleteInsulinType(insulinType: InsulinType) {
         metabolicEventsDao.deleteInsulinType(insulinType.id)
-        insulinTypes = insulinTypes.filter { it.id != insulinType.id }
     }
 
     // --- Deferred Boluses ---

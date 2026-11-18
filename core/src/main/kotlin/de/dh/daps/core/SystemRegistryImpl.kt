@@ -264,7 +264,8 @@ class SystemRegistryImpl(
             val alarmPlayerManager = AlarmPlayerManagerImpl(application)
             val treatmentRepository = TreatmentRepository(
                 historySize = Minutes.ofHours(METABOLIC_EVENTS_HISTORY_HOURS),
-                appDatabase = appDatabase
+                appDatabase = appDatabase,
+                scope = scope
             )
             val foodRepository = FoodRepository(appDatabase)
             val settingsRepository = SettingsRepository(appDatabase)
