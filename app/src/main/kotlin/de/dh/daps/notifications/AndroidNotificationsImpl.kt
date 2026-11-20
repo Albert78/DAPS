@@ -35,12 +35,16 @@ import de.dh.daps.ui.activities.RecommendationActivity
 import de.dh.daps.ui.activities.ReminderActivity
 import de.dh.daps.ui.common.descriptionResId
 import de.dh.daps.ui.common.formatCarbsValue
+import de.dh.daps.ui.common.formatInsulinValue
 import de.dh.daps.ui.common.titleResId
 import de.dh.daps.ui.screens.permissions.canPostNotifications
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import de.dh.daps.common.R as CommonR
 import de.dh.daps.ui.R as UiR
 
@@ -485,6 +489,56 @@ class AndroidNotificationsImpl(
         is ActiveAlarm.GlucoseAlarm -> getBgValueString(alarm.bgValue, unit, false) ?: ""
         is ActiveAlarm.CgmSignalLoss -> context.getString(UiR.string.aps_issue_stale_bg, alarm.minutes)
         is ActiveAlarm.PumpMaintenanceExceeded -> context.getString(UiR.string.alarm_type_pump_maintenance_exceeded_desc, alarm.minutes)
+        is ActiveAlarm.PumpLowInsulin -> {
+            val formatted = formatInsulinValue(alarm.amount, context)
+            context.getString(UiR.string.alarm_type_pump_low_insulin_desc, formatted)
+        }
+        is ActiveAlarm.PumpCatheterChangeWarn -> {
+            val dateStr = alarm.recommendedChangeDate?.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+            if (dateStr != null) {
+                context.getString(UiR.string.alarm_type_pump_catheter_change_warn_desc_with_date, dateStr)
+            } else {
+                context.getString(UiR.string.alarm_type_pump_catheter_change_warn_desc)
+            }
+        }
+        is ActiveAlarm.PumpCatheterChangeExpired -> {
+            val dateStr = alarm.recommendedChangeDate?.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+            if (dateStr != null) {
+                context.getString(UiR.string.alarm_type_pump_catheter_change_expired_desc_with_date, dateStr)
+            } else {
+                context.getString(UiR.string.alarm_type_pump_catheter_change_expired_desc)
+            }
+        }
+        is ActiveAlarm.PumpPatchChangeWarn -> {
+            val dateTimeStr = alarm.expirationTimestamp?.let { ts ->
+                if (ts.isValid()) {
+                    Instant.ofEpochMilli(ts.ms)
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDateTime()
+                        .format(DateTimeFormatter.ofPattern("dd.MM.yy, HH:mm"))
+                } else null
+            }
+            if (dateTimeStr != null) {
+                context.getString(UiR.string.alarm_type_pump_patch_change_warn_desc_with_date, dateTimeStr)
+            } else {
+                context.getString(UiR.string.alarm_type_pump_patch_change_warn_desc)
+            }
+        }
+        is ActiveAlarm.PumpPatchChangeExpired -> {
+            val dateTimeStr = alarm.expirationTimestamp?.let { ts ->
+                if (ts.isValid()) {
+                    Instant.ofEpochMilli(ts.ms)
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDateTime()
+                        .format(DateTimeFormatter.ofPattern("dd.MM.yy, HH:mm"))
+                } else null
+            }
+            if (dateTimeStr != null) {
+                context.getString(UiR.string.alarm_type_pump_patch_change_expired_desc_with_date, dateTimeStr)
+            } else {
+                context.getString(UiR.string.alarm_type_pump_patch_change_expired_desc)
+            }
+        }
         is ActiveAlarm.Generic -> alarm.type.descriptionResId?.let { context.getString(it) } ?: ""
     }
 

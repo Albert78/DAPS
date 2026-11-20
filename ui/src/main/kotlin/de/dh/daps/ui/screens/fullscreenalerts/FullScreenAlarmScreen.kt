@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -38,6 +39,9 @@ import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.descriptionResId
+import de.dh.daps.ui.common.formatInsulinValue
+import de.dh.daps.ui.common.shortDate
+import de.dh.daps.ui.common.shortDateTime
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.titleResId
 
@@ -278,9 +282,46 @@ fun getAlarmTypeTitle(alarm: ActiveAlarm): String = stringResource(id = alarm.ti
 
 @Composable
 fun getAlarmTypeDescription(alarm: ActiveAlarm): String? {
+    val context = LocalContext.current
     val desc = when (alarm) {
         is ActiveAlarm.CgmSignalLoss -> stringResource(id = R.string.aps_issue_stale_bg, alarm.minutes)
         is ActiveAlarm.PumpMaintenanceExceeded -> stringResource(id = R.string.alarm_type_pump_maintenance_exceeded_desc, alarm.minutes)
+        is ActiveAlarm.PumpLowInsulin -> {
+            val formattedInsulin = formatInsulinValue(alarm.amount, context)
+            stringResource(id = R.string.alarm_type_pump_low_insulin_desc, formattedInsulin)
+        }
+        is ActiveAlarm.PumpCatheterChangeWarn -> {
+            val dateStr = alarm.recommendedChangeDate?.let { shortDate(it) }
+            if (dateStr != null) {
+                stringResource(id = R.string.alarm_type_pump_catheter_change_warn_desc_with_date, dateStr)
+            } else {
+                stringResource(id = R.string.alarm_type_pump_catheter_change_warn_desc)
+            }
+        }
+        is ActiveAlarm.PumpCatheterChangeExpired -> {
+            val dateStr = alarm.recommendedChangeDate?.let { shortDate(it) }
+            if (dateStr != null) {
+                stringResource(id = R.string.alarm_type_pump_catheter_change_expired_desc_with_date, dateStr)
+            } else {
+                stringResource(id = R.string.alarm_type_pump_catheter_change_expired_desc)
+            }
+        }
+        is ActiveAlarm.PumpPatchChangeWarn -> {
+            val dateTimeStr = alarm.expirationTimestamp?.let { if (it.isValid()) shortDateTime(it) else null }
+            if (dateTimeStr != null) {
+                stringResource(id = R.string.alarm_type_pump_patch_change_warn_desc_with_date, dateTimeStr)
+            } else {
+                stringResource(id = R.string.alarm_type_pump_patch_change_warn_desc)
+            }
+        }
+        is ActiveAlarm.PumpPatchChangeExpired -> {
+            val dateTimeStr = alarm.expirationTimestamp?.let { if (it.isValid()) shortDateTime(it) else null }
+            if (dateTimeStr != null) {
+                stringResource(id = R.string.alarm_type_pump_patch_change_expired_desc_with_date, dateTimeStr)
+            } else {
+                stringResource(id = R.string.alarm_type_pump_patch_change_expired_desc)
+            }
+        }
         else -> alarm.descriptionResId?.let { stringResource(id = it) }
     }
     val title = getAlarmTypeTitle(alarm)

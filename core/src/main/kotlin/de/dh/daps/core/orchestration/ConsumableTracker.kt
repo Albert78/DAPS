@@ -64,7 +64,9 @@ class ConsumableTracker {
                 val expirationDate = lifecycleState.approximateCatheterExpiration
                 if (expirationDate != null) {
                     val warnTriggerDateTime = expirationDate.atTime(warningTime)
-                    if (currentZoneDateTime >= warnTriggerDateTime) {
+                    if (currentZoneDateTime.toLocalDate() > expirationDate) {
+                        newIssues.add(ApsIssue.Pump(PumpIssue.CatheterChangeExpired))
+                    } else if (currentZoneDateTime >= warnTriggerDateTime) {
                         newIssues.add(ApsIssue.Pump(PumpIssue.CatheterChangeWarn))
                     } else {
                         val warnMs = warnTriggerDateTime.atZone(zoneId).toInstant().toEpochMilli()
@@ -75,7 +77,9 @@ class ConsumableTracker {
                 }
             }
             is PumpLifecycleState.Patch -> {
-                if (lifecycleState.phase == PatchPhase.IN_GRACE_PERIOD || lifecycleState.phase == PatchPhase.EXPIRED) {
+                if (lifecycleState.phase == PatchPhase.EXPIRED || (lifecycleState.graceUntil.isValid() && effectiveNow >= lifecycleState.graceUntil)) {
+                    newIssues.add(ApsIssue.Pump(PumpIssue.PatchChangeExpired))
+                } else if (lifecycleState.phase == PatchPhase.IN_GRACE_PERIOD) {
                     newIssues.add(ApsIssue.Pump(PumpIssue.PatchChangeWarn))
                 } else if (lifecycleState.phase == PatchPhase.ACTIVE) {
                     val activeUntil = lifecycleState.activeUntil

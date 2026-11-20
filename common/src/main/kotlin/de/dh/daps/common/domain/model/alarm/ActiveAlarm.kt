@@ -1,6 +1,9 @@
 package de.dh.daps.common.domain.model.alarm
 
 import de.dh.daps.common.domain.model.data.BgValue
+import de.dh.daps.common.domain.model.data.Timestamp
+import de.dh.daps.common.domain.model.therapy.InsulinAmount
+import java.time.LocalDate
 
 /**
  * Represents an active instance of an alarm, encapsulating both its type and any runtime details (payload).
@@ -33,6 +36,42 @@ sealed interface ActiveAlarm {
 
     data class PumpMaintenanceExceeded(val minutes: Int) : ActiveAlarm {
         override val type = AlarmType.PUMP_MAINTENANCE_EXCEEDED
+    }
+
+    data class PumpLowInsulin(val amount: InsulinAmount) : ActiveAlarm {
+        override val type = AlarmType.PUMP_LOW_INSULIN
+    }
+
+    sealed interface CatheterChangeAlarm : ActiveAlarm {
+        val recommendedChangeDate: LocalDate?
+    }
+
+    data class PumpCatheterChangeWarn(
+        override val recommendedChangeDate: LocalDate?
+    ) : CatheterChangeAlarm {
+        override val type = AlarmType.PUMP_CATHETER_CHANGE_WARN
+    }
+
+    data class PumpCatheterChangeExpired(
+        override val recommendedChangeDate: LocalDate?
+    ) : CatheterChangeAlarm {
+        override val type = AlarmType.PUMP_CATHETER_CHANGE_EXPIRED
+    }
+
+    sealed interface PatchChangeAlarm : ActiveAlarm {
+        val expirationTimestamp: Timestamp?
+    }
+
+    data class PumpPatchChangeWarn(
+        override val expirationTimestamp: Timestamp?
+    ) : PatchChangeAlarm {
+        override val type = AlarmType.PUMP_PATCH_CHANGE_WARN
+    }
+
+    data class PumpPatchChangeExpired(
+        override val expirationTimestamp: Timestamp?
+    ) : PatchChangeAlarm {
+        override val type = AlarmType.PUMP_PATCH_CHANGE_EXPIRED
     }
 
     data class Generic(override val type: AlarmType) : ActiveAlarm

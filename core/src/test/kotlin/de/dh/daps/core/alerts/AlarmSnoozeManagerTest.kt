@@ -63,4 +63,20 @@ class AlarmSnoozeManagerTest {
         assertTrue(snoozeManager.isSnoozed(AlarmType.LOW_BG))
         assertFalse(snoozeManager.isSnoozed(AlarmType.HIGH_BG))
     }
+
+    @Test
+    fun `snoozing PUMP_CATHETER_CHANGE_EXPIRED automatically snoozes PUMP_CATHETER_CHANGE_WARN`() {
+        snoozeManager.snoozeAlarm(AlarmType.PUMP_CATHETER_CHANGE_EXPIRED, 15)
+
+        assertTrue(snoozeManager.isSnoozed(AlarmType.PUMP_CATHETER_CHANGE_EXPIRED))
+        assertTrue(snoozeManager.isSnoozed(AlarmType.PUMP_CATHETER_CHANGE_WARN))
+    }
+
+    @Test
+    fun `snoozing PUMP_PATCH_CHANGE_EXPIRED automatically snoozes PUMP_PATCH_CHANGE_WARN`() {
+        snoozeManager.snoozeAlarm(AlarmType.PUMP_PATCH_CHANGE_EXPIRED, 15)
+
+        assertTrue(snoozeManager.isSnoozed(AlarmType.PUMP_PATCH_CHANGE_EXPIRED))
+        assertTrue(snoozeManager.isSnoozed(AlarmType.PUMP_PATCH_CHANGE_WARN))
+    }
 }

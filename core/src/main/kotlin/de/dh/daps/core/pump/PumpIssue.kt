@@ -50,14 +50,24 @@ sealed interface PumpIssue {
     data object Expired : PumpIssue
 
     /**
-     * Catheter change is due or expired (durable pump).
+     * Catheter change is due (durable pump).
      */
     data object CatheterChangeWarn : PumpIssue
 
     /**
-     * Patch pod change is due or expired (patch pump).
+     * Catheter change is expired (durable pump).
+     */
+    data object CatheterChangeExpired : PumpIssue
+
+    /**
+     * Patch pod change is due (patch pump).
      */
     data object PatchChangeWarn : PumpIssue
+
+    /**
+     * Patch pod change is expired (patch pump).
+     */
+    data object PatchChangeExpired : PumpIssue
 
     /**
      * The pump connection is currently in driver maintenance mode.

@@ -13,6 +13,7 @@ import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.engine.ApsMode
 import de.dh.daps.common.domain.model.therapy.CurrentTherapySettings
+import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.common.domain.pump.InsulinPumpStatus
 import de.dh.daps.common.domain.pump.PumpLifecycleState
 import de.dh.daps.common.infrastructure.WakeupHandler
@@ -190,12 +191,14 @@ class AlarmEvaluator(
                         is PumpIssue.LowBattery -> activeSet.add(AlarmType.PUMP_LOW_BATTERY)
                         is PumpIssue.StaleBluetoothBond -> activeSet.add(AlarmType.PUMP_STALE_BOND)
                         is PumpIssue.CatheterChangeWarn -> activeSet.add(AlarmType.PUMP_CATHETER_CHANGE_WARN)
+                        is PumpIssue.CatheterChangeExpired -> activeSet.add(AlarmType.PUMP_CATHETER_CHANGE_EXPIRED)
                         is PumpIssue.PatchChangeWarn -> activeSet.add(AlarmType.PUMP_PATCH_CHANGE_WARN)
+                        is PumpIssue.PatchChangeExpired -> activeSet.add(AlarmType.PUMP_PATCH_CHANGE_EXPIRED)
                         is PumpIssue.Expired -> {
                             if (input.pumpStatus?.lifecycleState is PumpLifecycleState.Durable) {
-                                activeSet.add(AlarmType.PUMP_CATHETER_CHANGE_WARN)
+                                activeSet.add(AlarmType.PUMP_CATHETER_CHANGE_EXPIRED)
                             } else {
-                                activeSet.add(AlarmType.PUMP_PATCH_CHANGE_WARN)
+                                activeSet.add(AlarmType.PUMP_PATCH_CHANGE_EXPIRED)
                             }
                         }
                         is PumpIssue.Maintenance -> {
@@ -312,6 +315,27 @@ class AlarmEvaluator(
                 ((Timestamp.now().ms - it.since.ms) / 60_000L).toInt()
             } ?: 15
             ActiveAlarm.PumpMaintenanceExceeded(minutes)
+        }
+        AlarmType.PUMP_LOW_INSULIN -> {
+            val amount = input.pumpStatus?.reservoirRemainingUnits ?: InsulinAmount.ZERO
+            ActiveAlarm.PumpLowInsulin(amount)
+        }
+        AlarmType.PUMP_CATHETER_CHANGE_WARN -> {
+            val date = (input.pumpStatus?.lifecycleState as? PumpLifecycleState.Durable)?.approximateCatheterExpiration
+            ActiveAlarm.PumpCatheterChangeWarn(date)
+        }
+        AlarmType.PUMP_CATHETER_CHANGE_EXPIRED -> {
+            val date = (input.pumpStatus?.lifecycleState as? PumpLifecycleState.Durable)?.approximateCatheterExpiration
+            ActiveAlarm.PumpCatheterChangeExpired(date)
+        }
+        AlarmType.PUMP_PATCH_CHANGE_WARN -> {
+            val ts = (input.pumpStatus?.lifecycleState as? PumpLifecycleState.Patch)?.activeUntil
+            ActiveAlarm.PumpPatchChangeWarn(ts)
+        }
+        AlarmType.PUMP_PATCH_CHANGE_EXPIRED -> {
+            val patchState = input.pumpStatus?.lifecycleState as? PumpLifecycleState.Patch
+            val ts = patchState?.let { if (it.graceUntil.isValid()) it.graceUntil else it.activeUntil }
+            ActiveAlarm.PumpPatchChangeExpired(ts)
         }
         else -> ActiveAlarm.Generic(type)
     }

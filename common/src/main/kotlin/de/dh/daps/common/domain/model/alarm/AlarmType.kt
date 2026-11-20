@@ -47,9 +47,18 @@ enum class AlarmType(
         defaultSeverity = AlarmSeverity.WARNING,
         category = AlarmCategory.PUMP
     ),
+    PUMP_CATHETER_CHANGE_EXPIRED(
+        defaultSeverity = AlarmSeverity.CRITICAL,
+        category = AlarmCategory.PUMP
+    ),
     PUMP_PATCH_CHANGE_WARN(
         defaultSeverity = AlarmSeverity.WARNING,
         category = AlarmCategory.PUMP
+    ),
+    PUMP_PATCH_CHANGE_EXPIRED(
+        defaultSeverity = AlarmSeverity.CRITICAL,
+        category = AlarmCategory.PUMP,
+        isSafetyCritical = true
     ),
     PUMP_MAINTENANCE_EXCEEDED(
         defaultSeverity = AlarmSeverity.CRITICAL,
@@ -91,12 +100,14 @@ enum class AlarmType(
     );
 
     /**
-     * Set of lower-severity alarms that are subsumed when this alarm is snoozed.
+     * Set of lower-severity alarms that are subsumed when this alarm is active or snoozed.
      * For example, snoozing [CRITICAL_LOW_BG] also snoozes [LOW_BG].
      */
     val subsumedAlarms: Set<AlarmType>
         get() = when (this) {
             CRITICAL_LOW_BG -> setOf(LOW_BG)
+            PUMP_CATHETER_CHANGE_EXPIRED -> setOf(PUMP_CATHETER_CHANGE_WARN)
+            PUMP_PATCH_CHANGE_EXPIRED -> setOf(PUMP_PATCH_CHANGE_WARN)
             else -> emptySet()
         }
 }

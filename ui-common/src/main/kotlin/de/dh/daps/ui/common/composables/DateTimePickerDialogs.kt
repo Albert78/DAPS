@@ -76,8 +76,6 @@ fun DateTimePickerDialog(
 
     // Date State
     val datePickerState = rememberDatePickerState(
-        // NOTE: Setting initialSelectedDateMillis makes the preview in Android Studio show error message:
-        // Cannot invoke "java.util.Locale.toLanguageTag()" because "locale" is null
         initialSelectedDateMillis = initialDateTime
             .atZone(timeZoneId)
             .toInstant()
