@@ -98,7 +98,7 @@ fun time(time: LocalTime): String {
  * Composable UI function.
  * Returns the localized time unit label (e.g. "Uhr" in German or empty/unit label in English).
  *
- * @example "Uhr" / ""
+ * @example timeUnitLabel() -> "Uhr" / ""
  */
 @Composable
 fun timeUnitLabel(): String {
@@ -275,6 +275,7 @@ fun formatShortDateTime(dateTime: LocalDateTime, context: Context): String {
  * Formats a nullable [Timestamp] as a short date-time string using the localized pattern from string resources.
  *
  * @example formatShortDateTime(timestamp, context) -> "14.11.26, 14:30"
+ * @example formatShortDateTime(null, context) -> "-"
  */
 fun formatShortDateTime(timestamp: Timestamp?, context: Context, default: String = "-"): String {
     return if (timestamp != null && timestamp.isValid()) {
@@ -365,6 +366,9 @@ fun formatShortDate(date: LocalDate, context: Context): String {
 /**
  * Non-Composable / Backend function.
  * Formats a nullable [LocalDate] as a short date string using the localized pattern from string resources.
+ *
+ * @example formatShortDate(date, context) -> "14.11.26"
+ * @example formatShortDate(null, context) -> "-"
  */
 fun formatShortDate(date: LocalDate?, context: Context, default: String = "-"): String {
     return date?.let { formatShortDate(it, context) } ?: default
@@ -689,7 +693,8 @@ fun timeDuration(minutes: Minutes): String {
  * Composable UI function.
  * Returns the localized unit label for blood glucose (e.g. "mg/dL" or "mmol/L").
  *
- * @example "mg/dL"
+ * @example glucoseUnitLabel(GlucoseUnit.MG_DL) -> "mg/dL"
+ * @example glucoseUnitLabel(GlucoseUnit.MMOL) -> "mmol/L"
  */
 @Composable
 fun glucoseUnitLabel(unit: GlucoseUnit = LocalGlucoseUnit.current): String {
@@ -703,7 +708,8 @@ fun glucoseUnitLabel(unit: GlucoseUnit = LocalGlucoseUnit.current): String {
  * Composable UI function.
  * Returns the localized unit label for Insulin Sensitivity Factor (ISF) (e.g. "mg/dL/IU" or "mmol/L/IU").
  *
- * @example "mg/dL/IU"
+ * @example isfUnitLabel(GlucoseUnit.MG_DL) -> "mg/dL/IU" / "mg/dL/I.E."
+ * @example isfUnitLabel(GlucoseUnit.MMOL) -> "mmol/L/IU" / "mmol/L/I.E."
  */
 @Composable
 fun isfUnitLabel(unit: GlucoseUnit = LocalGlucoseUnit.current): String {
@@ -787,6 +793,9 @@ fun glucoseValue(
 /**
  * Non-Composable / Backend function.
  * Returns the localized unit label for blood glucose (e.g. "mg/dL" or "mmol/L").
+ *
+ * @example glucoseUnitLabel(GlucoseUnit.MG_DL, context) -> "mg/dL"
+ * @example glucoseUnitLabel(GlucoseUnit.MMOL, context) -> "mmol/L"
  */
 fun glucoseUnitLabel(unit: GlucoseUnit, context: Context): String {
     val resId = when (unit) {
@@ -800,7 +809,9 @@ fun glucoseUnitLabel(unit: GlucoseUnit, context: Context): String {
  * Non-Composable / Backend function.
  * Formats a [BgValue] with optional unit label using a [Context].
  *
- * @example glucoseValue(BgValue.fromMgDl(120), context, withUnit = true) -> "120 mg/dl"
+ * @example glucoseValue(BgValue.fromMgDl(120), context) -> "120"
+ * @example glucoseValue(BgValue.fromMgDl(120), context, withUnit = true) -> "120 mg/dL"
+ * @example glucoseValue(null, context) -> "-"
  */
 fun glucoseValue(
     value: BgValue?,
@@ -888,7 +899,7 @@ fun crValue(value: Double?, default: String = "-", withUnit: Boolean = true): St
  * Non-Composable / Backend function.
  * Returns the unit label for insulin ("IU" / "I.E.").
  *
- * @example "IU" / "I.E."
+ * @example formatInsulinUnitLabel(resources) -> "IU" / "I.E."
  */
 fun formatInsulinUnitLabel(resources: Resources): String {
     return resources.getString(CommonR.string.insulin_unit)
@@ -898,7 +909,7 @@ fun formatInsulinUnitLabel(resources: Resources): String {
  * Non-Composable / Backend function.
  * Returns the unit label for insulin ("IU" / "I.E.").
  *
- * @example "IU" / "I.E."
+ * @example formatInsulinUnitLabel(context) -> "IU" / "I.E."
  */
 fun formatInsulinUnitLabel(context: Context): String = formatInsulinUnitLabel(context.resources)
 
@@ -972,7 +983,7 @@ fun formatInsulinValue(
  * Composable UI function.
  * Returns the unit label for insulin ("IU" / "I.E.") in Compose UI components.
  *
- * @example "IU" / "I.E."
+ * @example insulinUnitLabel() -> "IU" / "I.E."
  */
 @Composable
 fun insulinUnitLabel(): String {
@@ -1012,6 +1023,8 @@ const val INSULIN_STEP_SIZE = 0.1
 /**
  * Creates a [SteppingStrategy] tailored for insulin amounts, using [ModuloSteppingStrategy]
  * with the standard [INSULIN_STEP_SIZE] (0.1 IU) by default.
+ *
+ * @example insulinSteppingStrategy() -> ModuloSteppingStrategy(step = 0.1)
  */
 fun insulinSteppingStrategy(step: Double = INSULIN_STEP_SIZE): SteppingStrategy = ModuloSteppingStrategy(step)
 
@@ -1019,7 +1032,7 @@ fun insulinSteppingStrategy(step: Double = INSULIN_STEP_SIZE): SteppingStrategy 
  * Non-Composable / Backend function.
  * Returns the unit label for grams ("g").
  *
- * @example "g"
+ * @example formatCarbsGramsUnitLabel(resources) -> "g"
  */
 fun formatCarbsGramsUnitLabel(resources: Resources): String {
     return resources.getString(CommonR.string.unit_g)
@@ -1029,7 +1042,7 @@ fun formatCarbsGramsUnitLabel(resources: Resources): String {
  * Non-Composable / Backend function.
  * Returns the unit label for grams ("g").
  *
- * @example "g"
+ * @example formatCarbsGramsUnitLabel(context) -> "g"
  */
 fun formatCarbsGramsUnitLabel(context: Context): String = formatCarbsGramsUnitLabel(context.resources)
 
@@ -1037,7 +1050,7 @@ fun formatCarbsGramsUnitLabel(context: Context): String = formatCarbsGramsUnitLa
  * Non-Composable / Backend function.
  * Returns the unit label for carbohydrate units ("KE").
  *
- * @example "KE"
+ * @example formatCarbsKeUnitLabel(resources) -> "KE"
  */
 fun formatCarbsKeUnitLabel(resources: Resources): String {
     return resources.getString(CommonR.string.unit_ke)
@@ -1047,7 +1060,7 @@ fun formatCarbsKeUnitLabel(resources: Resources): String {
  * Non-Composable / Backend function.
  * Returns the unit label for carbohydrate units ("KE").
  *
- * @example "KE"
+ * @example formatCarbsKeUnitLabel(context) -> "KE"
  */
 fun formatCarbsKeUnitLabel(context: Context): String = formatCarbsKeUnitLabel(context.resources)
 
@@ -1180,7 +1193,8 @@ fun formatCarbsKeValue(
  * Composable UI function.
  * Returns the unit label for the configured or provided [CarbsUnit] in Compose UI components.
  *
- * @example "g" (for CarbsUnit.GRAMS) or "KE" (for CarbsUnit.KE)
+ * @example carbsUnitLabel(CarbsUnit.GRAMS) -> "g"
+ * @example carbsUnitLabel(CarbsUnit.KE) -> "KE"
  */
 @Composable
 fun carbsUnitLabel(unit: CarbsUnit = LocalCarbsUnit.current): String {
@@ -1222,7 +1236,7 @@ fun carbsValue(
  * Composable UI function.
  * Returns the unit label for KE ("KE") in Compose UI components.
  *
- * @example "KE"
+ * @example carbsKeUnitLabel() -> "KE"
  */
 @Composable
 fun carbsKeUnitLabel(): String {
@@ -1252,7 +1266,7 @@ fun carbsKeValue(value: Double?, default: String = "-", withUnit: Boolean = true
  * Composable UI function.
  * Returns the unit label for grams ("g") in Compose UI components.
  *
- * @example "g"
+ * @example carbsGramsUnitLabel() -> "g"
  */
 @Composable
 fun carbsGramsUnitLabel(): String {
@@ -1285,6 +1299,8 @@ const val CARBS_KE_STEP_SIZE = 0.5
 /**
  * Creates a [SteppingStrategy] tailored for carbohydrate units (KE), using [ModuloSteppingStrategy]
  * with the standard [CARBS_KE_STEP_SIZE] (0.5 KE) by default.
+ *
+ * @example carbsKeSteppingStrategy() -> ModuloSteppingStrategy(step = 0.5)
  */
 fun carbsKeSteppingStrategy(step: Double = CARBS_KE_STEP_SIZE): SteppingStrategy = ModuloSteppingStrategy(step)
 
@@ -1296,5 +1312,7 @@ const val CARBS_GRAMS_STEP_SIZE = 5.0
 /**
  * Creates a [SteppingStrategy] tailored for carbohydrate grams, using [ModuloSteppingStrategy]
  * with the standard [CARBS_GRAMS_STEP_SIZE] (5.0 g) by default.
+ *
+ * @example carbsGramsSteppingStrategy() -> ModuloSteppingStrategy(step = 5.0)
  */
 fun carbsGramsSteppingStrategy(step: Double = CARBS_GRAMS_STEP_SIZE): SteppingStrategy = ModuloSteppingStrategy(step)
