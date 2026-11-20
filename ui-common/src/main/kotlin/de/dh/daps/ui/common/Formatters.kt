@@ -72,6 +72,39 @@ fun rememberAppFormatters(): AppFormatters {
 /////////////////////////////////////////////// Time ///////////////////////////////////////////////
 
 /**
+ * # Naming & Architecture Conventions for Time Formatters
+ *
+ * All time and date formatting functions in this file follow a strict systematic naming scheme:
+ *
+ * ## 1. Execution Context (UI vs. Backend)
+ * - **@Composable functions:** Use concise, natural names (e.g., `time()`, `shortDate()`, `relativeTimeAgo()`).
+ * - **Non-Composable / Backend functions (taking `Context`/`Resources`):** Prefixed with `format...`
+ *   (e.g., `formatShortDate()`, `formatRelativeTimeAgo()`).
+ *
+ * ## 2. Information Scope (Target Types)
+ * - `time...`     -> Pure Time ("14:30")
+ * - `date...`     -> Pure Date ("14.11.2026")
+ * - `dateTime...` -> Combined Date & Time ("14.11.2026, 14:30")
+ *
+ * ## 3. Detail Level / Length
+ * - `short...` -> Compact representation for lists, cards, and top bars (e.g., `shortDate`, `shortDateTime`).
+ * - `long...`  -> Detailed representation for dialogs, details, and reports (e.g., `longDate`, `longDateTime`).
+ *
+ * ## 4. Relative Time & Directions
+ * - `relativeTime...`        -> Automatic direction detection (past or future).
+ * - `relativeTimeAgo...`     -> Explicit past ("vor 5 Min.", "gestern").
+ * - `relativeTimeUntil...`   -> Explicit future ("in 5 Min.", "morgen").
+ * - `relativeTimeMinutes...` -> Signed offset ("-10 Min.", "Jetzt", "+15 Min.").
+ * - `timeDuration...`        -> Duration / Time window ("innerhalb von 30 Min.").
+ *
+ * ## 5. Parameter Conventions
+ * - Overloading is used for input types (`Timestamp`, `LocalDate`, `LocalDateTime`, `Long`, etc.).
+ * - `withUnit: Boolean = false` -> Appends unit suffixes (e.g., "Uhr").
+ * - `daysOnly: Boolean = false` -> Suppresses sub-day granularity (hours/minutes).
+ * - `default: String = "-"`     -> Standard fallback for nullable or invalid timestamps.
+ */
+
+/**
  * Non-Composable / Backend function.
  * Formats a [Timestamp] as a time string ("HH:mm").
  *
