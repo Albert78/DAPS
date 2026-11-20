@@ -32,7 +32,7 @@ import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.ui.common.deltaValue
 import de.dh.daps.ui.common.glucoseValue
-import de.dh.daps.ui.common.shortRelativeTimeAgo
+import de.dh.daps.ui.common.relativeTimeAgo
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.ExtendedTheme
 import kotlinx.coroutines.delay
@@ -61,7 +61,7 @@ fun CurrentBgViewSquare(
         }
     }
 
-    val timeAgoText = if (diffMs != null) shortRelativeTimeAgo(diffMs!!) else ""
+    val timeAgoText = if (diffMs != null) relativeTimeAgo(diffMs!!) else ""
 
     val bgText = glucoseValue(currentBgValue?.bgValue, default = "?")
 

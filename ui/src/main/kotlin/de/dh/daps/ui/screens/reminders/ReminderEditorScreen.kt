@@ -58,8 +58,8 @@ import de.dh.daps.ui.common.composables.DateTimePickerDialog
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.ScreenTitle
+import de.dh.daps.ui.common.relativeTimeUntil
 import de.dh.daps.ui.common.shortDateTime
-import de.dh.daps.ui.common.shortRelativeTimeUntil
 import de.dh.daps.ui.common.theme.AppPreview
 import java.time.Instant
 import java.time.LocalDate
@@ -231,7 +231,7 @@ fun ReminderEditorContent(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             val formattedTime = shortDateTime(uiState.reminderTimestamp)
-                            val relativeTime = shortRelativeTimeUntil(uiState.reminderTimestamp)
+                            val relativeTime = relativeTimeUntil(uiState.reminderTimestamp)
 
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,

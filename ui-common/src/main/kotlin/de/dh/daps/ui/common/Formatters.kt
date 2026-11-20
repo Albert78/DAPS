@@ -263,9 +263,9 @@ fun shortDateTime(timestamp: Timestamp?, default: String = "-"): String {
  * Non-Composable / Backend function.
  * Formats a [LocalDateTime] as a short date-time string using the localized pattern from string resources.
  *
- * @example shortDateTime(dateTime, context) -> "14.11.26, 14:30"
+ * @example formatShortDateTime(dateTime, context) -> "14.11.26, 14:30"
  */
-fun shortDateTime(dateTime: LocalDateTime, context: Context): String {
+fun formatShortDateTime(dateTime: LocalDateTime, context: Context): String {
     val pattern = context.getString(CommonR.string.short_date_time_format)
     return dateTime.format(DateTimeFormatter.ofPattern(pattern, Locale.getDefault()))
 }
@@ -274,14 +274,14 @@ fun shortDateTime(dateTime: LocalDateTime, context: Context): String {
  * Non-Composable / Backend function.
  * Formats a nullable [Timestamp] as a short date-time string using the localized pattern from string resources.
  *
- * @example shortDateTime(timestamp, context) -> "14.11.26, 14:30"
+ * @example formatShortDateTime(timestamp, context) -> "14.11.26, 14:30"
  */
-fun shortDateTime(timestamp: Timestamp?, context: Context, default: String = "-"): String {
+fun formatShortDateTime(timestamp: Timestamp?, context: Context, default: String = "-"): String {
     return if (timestamp != null && timestamp.isValid()) {
         val ldt = Instant.ofEpochMilli(timestamp.ms)
             .atZone(ZoneId.systemDefault())
             .toLocalDateTime()
-        shortDateTime(ldt, context)
+        formatShortDateTime(ldt, context)
     } else default
 }
 
@@ -355,9 +355,9 @@ fun shortDate(date: LocalDate?, default: String = "-"): String {
  * Non-Composable / Backend function.
  * Formats a [LocalDate] as a short date string using the localized pattern from string resources.
  *
- * @example shortDate(date, context) -> "14.11.26"
+ * @example formatShortDate(date, context) -> "14.11.26"
  */
-fun shortDate(date: LocalDate, context: Context): String {
+fun formatShortDate(date: LocalDate, context: Context): String {
     val pattern = context.getString(CommonR.string.short_date_format)
     return date.format(DateTimeFormatter.ofPattern(pattern, Locale.getDefault()))
 }
@@ -366,8 +366,8 @@ fun shortDate(date: LocalDate, context: Context): String {
  * Non-Composable / Backend function.
  * Formats a nullable [LocalDate] as a short date string using the localized pattern from string resources.
  */
-fun shortDate(date: LocalDate?, context: Context, default: String = "-"): String {
-    return date?.let { shortDate(it, context) } ?: default
+fun formatShortDate(date: LocalDate?, context: Context, default: String = "-"): String {
+    return date?.let { formatShortDate(it, context) } ?: default
 }
 
 /////////////////////////////////////////////// Time ago //////////////////////////////////////
@@ -377,14 +377,14 @@ fun shortDate(date: LocalDate?, context: Context, default: String = "-"): String
  * Formats a millisecond time difference into a relative past time description.
  *
  * @param daysOnly If true, skips sub-day time resolutions (hours, minutes, seconds) and formats as days ("heute", "gestern", "vor 3 Tagen").
- * @example shortRelativeTimeAgo(3000) -> "Gerade eben" / "just now"
- * @example shortRelativeTimeAgo(300000) -> "vor 5 Min." / "5 min ago"
- * @example shortRelativeTimeAgo(7200000) -> "vor 2 Std." / "2 h ago"
- * @example shortRelativeTimeAgo(86400000) -> "gestern" / "yesterday"
- * @example shortRelativeTimeAgo(259200000) -> "vor 3 Tagen" / "3 days ago"
+ * @example relativeTimeAgo(3000) -> "Gerade eben" / "just now"
+ * @example relativeTimeAgo(300000) -> "vor 5 Min." / "5 min ago"
+ * @example relativeTimeAgo(7200000) -> "vor 2 Std." / "2 h ago"
+ * @example relativeTimeAgo(86400000) -> "gestern" / "yesterday"
+ * @example relativeTimeAgo(259200000) -> "vor 3 Tagen" / "3 days ago"
  */
 @Composable
-fun shortRelativeTimeAgo(diffMs: Long, daysOnly: Boolean = false): String {
+fun relativeTimeAgo(diffMs: Long, daysOnly: Boolean = false): String {
     val diffSec = diffMs / 1000
     val diffMin = diffMs / 60000
     val diffHours = diffMin / 60
@@ -403,12 +403,12 @@ fun shortRelativeTimeAgo(diffMs: Long, daysOnly: Boolean = false): String {
  * Composable UI function.
  * Formats a past [Timestamp] into a relative past time description.
  *
- * @example shortRelativeTimeAgo(timestamp) -> "vor 5 Min." / "5 min ago"
+ * @example relativeTimeAgo(timestamp) -> "vor 5 Min." / "5 min ago"
  */
 @Composable
-fun shortRelativeTimeAgo(timestamp: Timestamp, daysOnly: Boolean = false): String {
+fun relativeTimeAgo(timestamp: Timestamp, daysOnly: Boolean = false): String {
     val diffMs = System.currentTimeMillis() - timestamp.ms
-    return shortRelativeTimeAgo(diffMs, daysOnly = daysOnly)
+    return relativeTimeAgo(diffMs, daysOnly = daysOnly)
 }
 
 /**
@@ -416,13 +416,13 @@ fun shortRelativeTimeAgo(timestamp: Timestamp, daysOnly: Boolean = false): Strin
  * Formats a millisecond time difference into a relative future time description.
  *
  * @param daysOnly If true, skips sub-day time resolutions (hours, minutes, seconds) and formats as days ("heute", "morgen", "in 3 Tagen").
- * @example shortRelativeTimeUntil(300000) -> "in 5 Min." / "in 5 min"
- * @example shortRelativeTimeUntil(7200000) -> "in 2 Std." / "in 2 h"
- * @example shortRelativeTimeUntil(86400000) -> "morgen" / "tomorrow"
- * @example shortRelativeTimeUntil(259200000) -> "in 3 Tagen" / "in 3 days"
+ * @example relativeTimeUntil(300000) -> "in 5 Min." / "in 5 min"
+ * @example relativeTimeUntil(7200000) -> "in 2 Std." / "in 2 h"
+ * @example relativeTimeUntil(86400000) -> "morgen" / "tomorrow"
+ * @example relativeTimeUntil(259200000) -> "in 3 Tagen" / "in 3 days"
  */
 @Composable
-fun shortRelativeTimeUntil(diffMs: Long, daysOnly: Boolean = false): String {
+fun relativeTimeUntil(diffMs: Long, daysOnly: Boolean = false): String {
     val diffSec = diffMs / 1000
     val diffMin = diffMs / 60000
     val diffHours = diffMin / 60
@@ -441,28 +441,28 @@ fun shortRelativeTimeUntil(diffMs: Long, daysOnly: Boolean = false): String {
  * Composable UI function.
  * Formats a future [Timestamp] into a relative future time description.
  *
- * @example shortRelativeTimeUntil(timestamp) -> "in 5 Min." / "in 5 min"
+ * @example relativeTimeUntil(timestamp) -> "in 5 Min." / "in 5 min"
  */
 @Composable
-fun shortRelativeTimeUntil(timestamp: Timestamp, daysOnly: Boolean = false): String {
+fun relativeTimeUntil(timestamp: Timestamp, daysOnly: Boolean = false): String {
     val diffMs = timestamp.ms - System.currentTimeMillis()
-    return shortRelativeTimeUntil(diffMs, daysOnly = daysOnly)
+    return relativeTimeUntil(diffMs, daysOnly = daysOnly)
 }
 
 /**
  * Composable UI function.
  * Formats a [Timestamp] into a relative time description (past or future automatically).
  *
- * @example shortRelativeTime(pastTimestamp) -> "vor 5 Min." / "5 min ago"
- * @example shortRelativeTime(futureTimestamp) -> "in 5 Min." / "in 5 min"
+ * @example relativeTime(pastTimestamp) -> "vor 5 Min." / "5 min ago"
+ * @example relativeTime(futureTimestamp) -> "in 5 Min." / "in 5 min"
  */
 @Composable
-fun shortRelativeTime(timestamp: Timestamp): String {
+fun relativeTime(timestamp: Timestamp): String {
     val now = System.currentTimeMillis()
     return if (timestamp.ms < now) {
-        shortRelativeTimeAgo(timestamp)
+        relativeTimeAgo(timestamp)
     } else {
-        shortRelativeTimeUntil(timestamp)
+        relativeTimeUntil(timestamp)
     }
 }
 
@@ -470,12 +470,12 @@ fun shortRelativeTime(timestamp: Timestamp): String {
  * Composable UI function.
  * Formats a [LocalDate] into a relative date description ("heute", "morgen", "gestern", "in 3 Tagen", "vor 3 Tagen").
  *
- * @example shortRelativeTime(today) -> "heute"
- * @example shortRelativeTime(tomorrow) -> "morgen"
- * @example shortRelativeTime(yesterday) -> "gestern"
+ * @example relativeTime(today) -> "heute"
+ * @example relativeTime(tomorrow) -> "morgen"
+ * @example relativeTime(yesterday) -> "gestern"
  */
 @Composable
-fun shortRelativeTime(date: LocalDate): String {
+fun relativeTime(date: LocalDate): String {
     val today = LocalDate.now()
     val daysDiff = ChronoUnit.DAYS.between(today, date)
     return if (daysDiff < 0) {
@@ -500,13 +500,13 @@ fun shortRelativeTime(date: LocalDate): String {
  * Formats an [ExpirationDate] into a relative time description (past or future automatically).
  * For [ExpirationDate.Approximate], only the calendar day offset is formatted ("heute", "morgen", "in 3 Tagen", etc.).
  *
- * @example shortRelativeTime(expirationDate) -> "vor 2 Std." / "in 3 Tagen" / "heute"
+ * @example relativeTime(expirationDate) -> "vor 2 Std." / "in 3 Tagen" / "heute"
  */
 @Composable
-fun shortRelativeTime(expirationDate: ExpirationDate): String {
+fun relativeTime(expirationDate: ExpirationDate): String {
     return when (expirationDate) {
-        is ExpirationDate.Hard -> shortRelativeTime(expirationDate.dateTime)
-        is ExpirationDate.Approximate -> shortRelativeTime(expirationDate.date)
+        is ExpirationDate.Hard -> relativeTime(expirationDate.dateTime)
+        is ExpirationDate.Approximate -> relativeTime(expirationDate.date)
     }
 }
 
@@ -515,13 +515,13 @@ fun shortRelativeTime(expirationDate: ExpirationDate): String {
  * Formats a millisecond time difference into a relative past time description using a [Context].
  *
  * @param daysOnly If true, skips sub-day time resolutions (hours, minutes, seconds) and formats as days ("heute", "gestern", "vor 3 Tagen").
- * @example shortRelativeTimeAgo(3000, context) -> "Gerade eben" / "just now"
- * @example shortRelativeTimeAgo(300000, context) -> "vor 5 Min." / "5 min ago"
- * @example shortRelativeTimeAgo(7200000, context) -> "vor 2 Std." / "2 h ago"
- * @example shortRelativeTimeAgo(86400000, context) -> "gestern" / "yesterday"
- * @example shortRelativeTimeAgo(259200000, context) -> "vor 3 Tagen" / "3 days ago"
+ * @example formatRelativeTimeAgo(3000, context) -> "Gerade eben" / "just now"
+ * @example formatRelativeTimeAgo(300000, context) -> "vor 5 Min." / "5 min ago"
+ * @example formatRelativeTimeAgo(7200000, context) -> "vor 2 Std." / "2 h ago"
+ * @example formatRelativeTimeAgo(86400000, context) -> "gestern" / "yesterday"
+ * @example formatRelativeTimeAgo(259200000, context) -> "vor 3 Tagen" / "3 days ago"
  */
-fun shortRelativeTimeAgo(diffMs: Long, context: Context, daysOnly: Boolean = false): String {
+fun formatRelativeTimeAgo(diffMs: Long, context: Context, daysOnly: Boolean = false): String {
     val diffSec = diffMs / 1000
     val diffMin = diffMs / 60000
     val diffHours = diffMin / 60
@@ -546,11 +546,11 @@ fun shortRelativeTimeAgo(diffMs: Long, context: Context, daysOnly: Boolean = fal
  * Non-Composable / Backend function.
  * Formats a past [Timestamp] into a relative past time description using a [Context].
  *
- * @example shortRelativeTimeAgo(timestamp, context) -> "vor 5 Min." / "5 min ago"
+ * @example formatRelativeTimeAgo(timestamp, context) -> "vor 5 Min." / "5 min ago"
  */
-fun shortRelativeTimeAgo(timestamp: Timestamp, context: Context, daysOnly: Boolean = false): String {
+fun formatRelativeTimeAgo(timestamp: Timestamp, context: Context, daysOnly: Boolean = false): String {
     val diffMs = System.currentTimeMillis() - timestamp.ms
-    return shortRelativeTimeAgo(diffMs, context, daysOnly = daysOnly)
+    return formatRelativeTimeAgo(diffMs, context, daysOnly = daysOnly)
 }
 
 /**
@@ -558,12 +558,12 @@ fun shortRelativeTimeAgo(timestamp: Timestamp, context: Context, daysOnly: Boole
  * Formats a millisecond time difference into a relative future time description using a [Context].
  *
  * @param daysOnly If true, skips sub-day time resolutions (hours, minutes, seconds) and formats as days ("heute", "morgen", "in 3 Tagen").
- * @example shortRelativeTimeUntil(300000, context) -> "in 5 Min." / "in 5 min"
- * @example shortRelativeTimeUntil(7200000, context) -> "in 2 Std." / "in 2 h"
- * @example shortRelativeTimeUntil(86400000, context) -> "morgen" / "tomorrow"
- * @example shortRelativeTimeUntil(259200000, context) -> "in 3 Tagen" / "in 3 days"
+ * @example formatRelativeTimeUntil(300000, context) -> "in 5 Min." / "in 5 min"
+ * @example formatRelativeTimeUntil(7200000, context) -> "in 2 Std." / "in 2 h"
+ * @example formatRelativeTimeUntil(86400000, context) -> "morgen" / "tomorrow"
+ * @example formatRelativeTimeUntil(259200000, context) -> "in 3 Tagen" / "in 3 days"
  */
-fun shortRelativeTimeUntil(diffMs: Long, context: Context, daysOnly: Boolean = false): String {
+fun formatRelativeTimeUntil(diffMs: Long, context: Context, daysOnly: Boolean = false): String {
     val diffSec = diffMs / 1000
     val diffMin = diffMs / 60000
     val diffHours = diffMin / 60
@@ -588,26 +588,26 @@ fun shortRelativeTimeUntil(diffMs: Long, context: Context, daysOnly: Boolean = f
  * Non-Composable / Backend function.
  * Formats a future [Timestamp] into a relative future time description using a [Context].
  *
- * @example shortRelativeTimeUntil(timestamp, context) -> "in 5 Min." / "in 5 min"
+ * @example formatRelativeTimeUntil(timestamp, context) -> "in 5 Min." / "in 5 min"
  */
-fun shortRelativeTimeUntil(timestamp: Timestamp, context: Context, daysOnly: Boolean = false): String {
+fun formatRelativeTimeUntil(timestamp: Timestamp, context: Context, daysOnly: Boolean = false): String {
     val diffMs = timestamp.ms - System.currentTimeMillis()
-    return shortRelativeTimeUntil(diffMs, context, daysOnly = daysOnly)
+    return formatRelativeTimeUntil(diffMs, context, daysOnly = daysOnly)
 }
 
 /**
  * Non-Composable / Backend function.
  * Formats a [Timestamp] into a relative time description (past or future automatically) using a [Context].
  *
- * @example shortRelativeTime(pastTimestamp, context) -> "vor 5 Min." / "5 min ago"
- * @example shortRelativeTime(futureTimestamp, context) -> "in 5 Min." / "in 5 min"
+ * @example formatRelativeTime(pastTimestamp, context) -> "vor 5 Min." / "5 min ago"
+ * @example formatRelativeTime(futureTimestamp, context) -> "in 5 Min." / "in 5 min"
  */
-fun shortRelativeTime(timestamp: Timestamp, context: Context): String {
+fun formatRelativeTime(timestamp: Timestamp, context: Context): String {
     val now = System.currentTimeMillis()
     return if (timestamp.ms < now) {
-        shortRelativeTimeAgo(timestamp, context)
+        formatRelativeTimeAgo(timestamp, context)
     } else {
-        shortRelativeTimeUntil(timestamp, context)
+        formatRelativeTimeUntil(timestamp, context)
     }
 }
 
@@ -615,11 +615,11 @@ fun shortRelativeTime(timestamp: Timestamp, context: Context): String {
  * Non-Composable / Backend function.
  * Formats a [LocalDate] into a relative date description ("heute", "morgen", "gestern", "in 3 Tagen", "vor 3 Tagen") using a [Context].
  *
- * @example shortRelativeTime(today, context) -> "heute"
- * @example shortRelativeTime(tomorrow, context) -> "morgen"
- * @example shortRelativeTime(yesterday, context) -> "gestern"
+ * @example formatRelativeTime(today, context) -> "heute"
+ * @example formatRelativeTime(tomorrow, context) -> "morgen"
+ * @example formatRelativeTime(yesterday, context) -> "gestern"
  */
-fun shortRelativeTime(date: LocalDate, context: Context): String {
+fun formatRelativeTime(date: LocalDate, context: Context): String {
     val today = LocalDate.now()
     val daysDiff = ChronoUnit.DAYS.between(today, date)
     return if (daysDiff < 0) {
@@ -664,11 +664,11 @@ fun relativeTimeMinutes(minutes: Int): String {
  * Composable UI function.
  * Formats a duration in [Minutes] into a descriptive "within X" string.
  *
- * @example withinTimeDescription(Minutes(30)) -> "innerhalb von 30 Min." / "within 30 min"
- * @example withinTimeDescription(Minutes(90)) -> "innerhalb von 1 Std. 30 Min." / "within 1 h 30 min"
+ * @example timeDuration(Minutes(30)) -> "innerhalb von 30 Min." / "within 30 min"
+ * @example timeDuration(Minutes(90)) -> "innerhalb von 1 Std. 30 Min." / "within 1 h 30 min"
  */
 @Composable
-fun withinTimeDescription(minutes: Minutes): String {
+fun timeDuration(minutes: Minutes): String {
     val m = minutes.value.toInt()
     if (m <= 0) return stringResource(CommonR.string.within_time_just_now)
     val hours = m / 60

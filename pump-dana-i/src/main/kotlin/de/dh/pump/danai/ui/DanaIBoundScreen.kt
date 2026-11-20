@@ -51,10 +51,10 @@ import de.dh.pump.dana.commands.options.DanaRsUserOptions
 import de.dh.pump.danai.DanaIInsulinPumpDriver
 import de.dh.pump.danai.R
 import de.dh.pump.danai.core.DanaIPumpAdapter
+import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
-import kotlinx.coroutines.launch
 
 /**
  * Stateful screen container for an already bound Dana-i insulin pump.

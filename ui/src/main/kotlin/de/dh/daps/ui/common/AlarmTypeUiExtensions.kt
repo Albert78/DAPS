@@ -113,7 +113,7 @@ fun ActiveAlarm.getFormattedDescription(
         context.getString(R.string.alarm_type_pump_low_insulin_desc, formattedAmount)
     }
     is ActiveAlarm.PumpCatheterChangeWarn -> {
-        val dateStr = recommendedChangeDate?.let { shortRelativeTime(it, context) }
+        val dateStr = recommendedChangeDate?.let { formatRelativeTime(it, context) }
         if (dateStr != null) {
             context.getString(R.string.alarm_type_pump_catheter_change_warn_desc_with_date, dateStr)
         } else {
@@ -121,7 +121,7 @@ fun ActiveAlarm.getFormattedDescription(
         }
     }
     is ActiveAlarm.PumpCatheterChangeExpired -> {
-        val dateStr = recommendedChangeDate?.let { shortRelativeTime(it, context) }
+        val dateStr = recommendedChangeDate?.let { formatRelativeTime(it, context) }
         if (dateStr != null) {
             context.getString(R.string.alarm_type_pump_catheter_change_expired_desc_with_date, dateStr)
         } else {
@@ -129,7 +129,7 @@ fun ActiveAlarm.getFormattedDescription(
         }
     }
     is ActiveAlarm.PumpPatchChangeWarn -> {
-        val dateTimeStr = expirationTimestamp?.let { if (it.isValid()) shortDateTime(it, context) else null }
+        val dateTimeStr = expirationTimestamp?.let { if (it.isValid()) formatShortDateTime(it, context) else null }
         if (dateTimeStr != null) {
             context.getString(R.string.alarm_type_pump_patch_change_warn_desc_with_date, dateTimeStr)
         } else {
@@ -141,9 +141,9 @@ fun ActiveAlarm.getFormattedDescription(
             if (timestamp.isValid()) {
                 val expDate = Instant.ofEpochMilli(timestamp.ms).atZone(ZoneId.systemDefault()).toLocalDate()
                 if (expDate == LocalDate.now()) {
-                    shortRelativeTimeAgo(timestamp, context)
+                    formatRelativeTimeAgo(timestamp, context)
                 } else {
-                    shortRelativeTime(expDate, context)
+                    formatRelativeTime(expDate, context)
                 }
             } else null
         }

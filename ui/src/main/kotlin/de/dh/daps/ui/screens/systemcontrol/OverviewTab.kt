@@ -61,9 +61,9 @@ import de.dh.daps.ui.common.glucoseUnitLabel
 import de.dh.daps.ui.common.icons.Icon_Warning
 import de.dh.daps.ui.common.insulinValue
 import de.dh.daps.ui.common.pluralStringResourceZero
+import de.dh.daps.ui.common.relativeTime
 import de.dh.daps.ui.common.shortDate
 import de.dh.daps.ui.common.shortDateTime
-import de.dh.daps.ui.common.shortRelativeTime
 import de.dh.daps.ui.common.smartTime
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.ExtendedTheme
@@ -707,11 +707,11 @@ private fun <T> StatusMetricText(
     }
     val relativeTime = when (val v = metric.value) {
         is Timestamp -> if (v.isValid()) {
-            val rel = shortRelativeTime(v)
+            val rel = relativeTime(v)
             if (rel.isNotEmpty()) "($rel)" else null
         } else null
         is ExpirationDate -> {
-            val rel = shortRelativeTime(v)
+            val rel = relativeTime(v)
             if (rel.isNotEmpty()) "($rel)" else null
         }
         else -> null

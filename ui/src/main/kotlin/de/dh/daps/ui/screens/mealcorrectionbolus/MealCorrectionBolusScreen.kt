@@ -87,7 +87,7 @@ import de.dh.daps.ui.common.isfValue
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.ExtendedTheme
 import de.dh.daps.ui.common.time
-import de.dh.daps.ui.common.withinTimeDescription
+import de.dh.daps.ui.common.timeDuration
 import de.dh.daps.ui.controls.meal.BolusPlanEditorDialog
 import de.dh.daps.ui.controls.meal.PlannedBolusUiModel
 import kotlin.math.abs
@@ -745,7 +745,7 @@ fun InsulinPlanCard(
 
                         val lastOffset = plan.lastOrNull()?.timeFromNow ?: Minutes(0)
                         append(" (")
-                        append(withinTimeDescription(lastOffset))
+                        append(timeDuration(lastOffset))
                         append(")")
                     }
                 }

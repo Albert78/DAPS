@@ -33,11 +33,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.data.BgReading
 import de.dh.daps.common.domain.model.data.BgReadingsInterval
 import de.dh.daps.common.domain.model.data.BgSampleKind
 import de.dh.daps.common.domain.model.data.BgValue
+import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
@@ -47,8 +47,8 @@ import de.dh.daps.ui.common.icons.Icon_Cgm_Sensor
 import de.dh.daps.ui.common.icons.Icon_Next
 import de.dh.daps.ui.common.icons.Icon_Previous
 import de.dh.daps.ui.common.readingsInterval
+import de.dh.daps.ui.common.relativeTime
 import de.dh.daps.ui.common.shortDateTime
-import de.dh.daps.ui.common.shortRelativeTime
 import de.dh.daps.ui.common.smartTime
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.ExtendedTheme
@@ -284,14 +284,14 @@ fun SourceOverviewCard(
                         notAvailableText
                     }
                     val startDateRel = if (uiState.startDate != null && uiState.startDate.isValid()) {
-                        val rel = shortRelativeTime(uiState.startDate)
+                        val rel = relativeTime(uiState.startDate)
                         if (rel.isNotEmpty()) "($rel)" else null
                     } else {
                         null
                     }
 
                     val (expDateText, expDateRel) = if (uiState.expiration != null) {
-                        val rel = shortRelativeTime(uiState.expiration)
+                        val rel = relativeTime(uiState.expiration)
                         shortDateTime(uiState.expiration) to (if (rel.isNotEmpty()) "($rel)" else null)
                     } else {
                         notAvailableText to null
@@ -382,7 +382,7 @@ fun SourceOverviewCard(
                     }
 
                     val lastRelativeTime = if (lastReading != null && lastReading.timestamp.isValid()) {
-                        shortRelativeTime(lastReading.timestamp)
+                        relativeTime(lastReading.timestamp)
                     } else {
                         null
                     }
@@ -433,7 +433,7 @@ fun SourceOverviewCard(
 
                                 val nextRelativeTime = when {
                                     isPast -> null
-                                    nextPred != null && nextPred.isValid() -> shortRelativeTime(nextPred)
+                                    nextPred != null && nextPred.isValid() -> relativeTime(nextPred)
                                     else -> null
                                 }
 

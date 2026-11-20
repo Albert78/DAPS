@@ -64,9 +64,9 @@ import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.icons.Icon_Pump_Device
 import de.dh.daps.ui.common.icons.PumpReservoir
 import de.dh.daps.ui.common.insulinValue
+import de.dh.daps.ui.common.relativeTime
 import de.dh.daps.ui.common.shortDate
 import de.dh.daps.ui.common.shortDateTime
-import de.dh.daps.ui.common.shortRelativeTime
 import de.dh.daps.ui.common.smartTime
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.ExtendedTheme
@@ -372,7 +372,7 @@ fun PumpOverviewCard(
                     }
 
                     val lastConnRelativeText = if (lastConnTimestamp.isValid()) {
-                        val rel = shortRelativeTime(lastConnTimestamp)
+                        val rel = relativeTime(lastConnTimestamp)
                         if (rel.isNotEmpty()) "($rel)" else null
                     } else {
                         null
@@ -614,7 +614,7 @@ fun PatchPumpLifecycleSection(
                                 overflow = TextOverflow.Ellipsis
                             )
                             if (state.activeUntil.isValid()) {
-                                val rel = shortRelativeTime(state.activeUntil)
+                                val rel = relativeTime(state.activeUntil)
                                 if (rel.isNotEmpty()) {
                                     Text(
                                         text = "($rel)",
@@ -644,7 +644,7 @@ fun PatchPumpLifecycleSection(
                                     maxLines = 2,
                                     overflow = TextOverflow.Ellipsis
                                 )
-                                val graceRel = shortRelativeTime(state.graceUntil)
+                                val graceRel = relativeTime(state.graceUntil)
                                 if (graceRel.isNotEmpty()) {
                                     Text(
                                         text = "($graceRel)",
@@ -745,7 +745,7 @@ fun DurablePumpLifecycleSection(
                                     maxLines = 2,
                                     overflow = TextOverflow.Ellipsis
                                 )
-                                val rel = shortRelativeTime(ExpirationDate.Approximate(exp))
+                                val rel = relativeTime(ExpirationDate.Approximate(exp))
                                 if (rel.isNotEmpty()) {
                                     Text(
                                         text = "($rel)",
@@ -842,7 +842,7 @@ fun DurablePumpLifecycleSection(
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis
                         )
-                        val rel = shortRelativeTime(estimatedReservoirRunout)
+                        val rel = relativeTime(estimatedReservoirRunout)
                         if (rel.isNotEmpty()) {
                             Text(
                                 text = "($rel)",
@@ -966,7 +966,7 @@ fun PumpTechnicalStatusCard(
                     val scheduledTime = syncStatus.nextScheduledWakeup ?: nextWakeupTime
                     if (scheduledTime != null && scheduledTime.isValid()) {
                         val formattedTime = smartTime(scheduledTime)
-                        val relText = shortRelativeTime(scheduledTime)
+                        val relText = relativeTime(scheduledTime)
                         val fullText = if (relText.isNotEmpty()) "$formattedTime ($relText)" else formattedTime
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
@@ -1021,7 +1021,7 @@ fun PumpTechnicalStatusCard(
                     )
                     if (syncStatus.nextAttemptAt.isValid()) {
                         val formattedNext = smartTime(syncStatus.nextAttemptAt)
-                        val relNext = shortRelativeTime(syncStatus.nextAttemptAt)
+                        val relNext = relativeTime(syncStatus.nextAttemptAt)
                         val fullNext = if (relNext.isNotEmpty()) "$formattedNext ($relNext)" else formattedNext
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
@@ -1034,7 +1034,7 @@ fun PumpTechnicalStatusCard(
                 is PumpSyncStatus.Error -> {
                     val sinceText = if (syncStatus.errorSince.isValid()) {
                         val smartT = smartTime(syncStatus.errorSince)
-                        val relT = shortRelativeTime(syncStatus.errorSince)
+                        val relT = relativeTime(syncStatus.errorSince)
                         if (relT.isNotEmpty()) "$smartT ($relT)" else smartT
                     } else null
 

@@ -37,7 +37,7 @@ import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.deltaValue
 import de.dh.daps.ui.common.glucoseValue
-import de.dh.daps.ui.common.shortRelativeTimeAgo
+import de.dh.daps.ui.common.relativeTimeAgo
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.ExtendedTheme
 import kotlinx.coroutines.delay
@@ -147,7 +147,7 @@ fun CurrentBgView(
                 ),
                 color = textColor
             )
-            val timeAgoText = if (diffMs != null) shortRelativeTimeAgo(diffMs!!) else ""
+            val timeAgoText = if (diffMs != null) relativeTimeAgo(diffMs!!) else ""
             Text(
                 text = timeAgoText,
                 style = MaterialTheme.typography.bodySmall,

@@ -59,7 +59,7 @@ import de.dh.daps.ui.common.glucoseValue
 import de.dh.daps.ui.common.icons.CarbsBlood
 import de.dh.daps.ui.common.icons.InsulinBlood
 import de.dh.daps.ui.common.insulinValue
-import de.dh.daps.ui.common.shortRelativeTimeAgo
+import de.dh.daps.ui.common.relativeTimeAgo
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.ColorCarbs
 import de.dh.daps.ui.common.theme.ColorInsulin
@@ -97,7 +97,7 @@ fun CurrentStateView(
         }
     }
 
-    val timeAgoText = if (diffMs != null) shortRelativeTimeAgo(diffMs!!) else ""
+    val timeAgoText = if (diffMs != null) relativeTimeAgo(diffMs!!) else ""
 
     val bgText = glucoseValue(currentBgValue?.bgValue, default = "?")
 

@@ -63,8 +63,8 @@ import de.dh.daps.ui.common.icons.Icon_Plugin
 import de.dh.daps.ui.common.icons.Icon_Pump_Device
 import de.dh.daps.ui.common.icons.Icon_Reminders
 import de.dh.daps.ui.common.icons.Icon_Screen_Back
+import de.dh.daps.ui.common.relativeTimeUntil
 import de.dh.daps.ui.common.shortDateTime
-import de.dh.daps.ui.common.shortRelativeTimeUntil
 import de.dh.daps.ui.common.theme.AppPreview
 import kotlinx.coroutines.launch
 import de.dh.daps.common.R as CommonR
@@ -284,7 +284,7 @@ fun ReminderCard(
 
     val titleText = reminder.title.ifBlank { stringResource(CommonR.string.notification_reminder_title) }
     val formattedTime = shortDateTime(reminder.reminderTimestamp)
-    val relativeTime = shortRelativeTimeUntil(reminder.reminderTimestamp)
+    val relativeTime = relativeTimeUntil(reminder.reminderTimestamp)
 
     FramedCard(
         modifier = Modifier
