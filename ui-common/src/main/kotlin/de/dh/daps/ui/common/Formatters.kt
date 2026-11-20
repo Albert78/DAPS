@@ -511,6 +511,139 @@ fun shortRelativeTime(expirationDate: ExpirationDate): String {
 }
 
 /**
+ * Non-Composable / Backend function.
+ * Formats a millisecond time difference into a relative past time description using a [Context].
+ *
+ * @param daysOnly If true, skips sub-day time resolutions (hours, minutes, seconds) and formats as days ("heute", "gestern", "vor 3 Tagen").
+ * @example shortRelativeTimeAgo(3000, context) -> "Gerade eben" / "just now"
+ * @example shortRelativeTimeAgo(300000, context) -> "vor 5 Min." / "5 min ago"
+ * @example shortRelativeTimeAgo(7200000, context) -> "vor 2 Std." / "2 h ago"
+ * @example shortRelativeTimeAgo(86400000, context) -> "gestern" / "yesterday"
+ * @example shortRelativeTimeAgo(259200000, context) -> "vor 3 Tagen" / "3 days ago"
+ */
+fun shortRelativeTimeAgo(diffMs: Long, context: Context, daysOnly: Boolean = false): String {
+    val diffSec = diffMs / 1000
+    val diffMin = diffMs / 60000
+    val diffHours = diffMin / 60
+    val diffDays = diffHours / 24
+    return when {
+        !daysOnly && diffSec < 5 -> context.getString(CommonR.string.time_ago_just_now)
+        !daysOnly && diffSec < 61 -> context.getString(CommonR.string.time_ago_seconds_ago, diffSec)
+        !daysOnly && diffMin < 1 -> context.getString(CommonR.string.time_ago_just_now)
+        !daysOnly && diffMin < 91 -> context.getString(CommonR.string.time_ago_minutes_ago, diffMin)
+        !daysOnly && diffHours < 24 -> context.getString(CommonR.string.time_ago_hours_ago, diffHours)
+        else -> DisplayTextUtils.getQuantityStringZero(
+            context.resources,
+            CommonR.plurals.time_ago_days,
+            CommonR.string.time_today,
+            diffDays.toInt(),
+            diffDays
+        )
+    }
+}
+
+/**
+ * Non-Composable / Backend function.
+ * Formats a past [Timestamp] into a relative past time description using a [Context].
+ *
+ * @example shortRelativeTimeAgo(timestamp, context) -> "vor 5 Min." / "5 min ago"
+ */
+fun shortRelativeTimeAgo(timestamp: Timestamp, context: Context, daysOnly: Boolean = false): String {
+    val diffMs = System.currentTimeMillis() - timestamp.ms
+    return shortRelativeTimeAgo(diffMs, context, daysOnly = daysOnly)
+}
+
+/**
+ * Non-Composable / Backend function.
+ * Formats a millisecond time difference into a relative future time description using a [Context].
+ *
+ * @param daysOnly If true, skips sub-day time resolutions (hours, minutes, seconds) and formats as days ("heute", "morgen", "in 3 Tagen").
+ * @example shortRelativeTimeUntil(300000, context) -> "in 5 Min." / "in 5 min"
+ * @example shortRelativeTimeUntil(7200000, context) -> "in 2 Std." / "in 2 h"
+ * @example shortRelativeTimeUntil(86400000, context) -> "morgen" / "tomorrow"
+ * @example shortRelativeTimeUntil(259200000, context) -> "in 3 Tagen" / "in 3 days"
+ */
+fun shortRelativeTimeUntil(diffMs: Long, context: Context, daysOnly: Boolean = false): String {
+    val diffSec = diffMs / 1000
+    val diffMin = diffMs / 60000
+    val diffHours = diffMin / 60
+    val diffDays = diffHours / 24
+    return when {
+        !daysOnly && diffSec < 5 -> context.getString(CommonR.string.time_until_just_now)
+        !daysOnly && diffSec < 61 -> context.getString(CommonR.string.time_until_seconds, diffSec)
+        !daysOnly && diffMin < 1 -> context.getString(CommonR.string.time_until_just_now)
+        !daysOnly && diffMin < 91 -> context.getString(CommonR.string.time_until_minutes, diffMin)
+        !daysOnly && diffHours < 24 -> context.getString(CommonR.string.time_until_hours, diffHours)
+        else -> DisplayTextUtils.getQuantityStringZero(
+            context.resources,
+            CommonR.plurals.time_until_days,
+            CommonR.string.time_today,
+            diffDays.toInt(),
+            diffDays
+        )
+    }
+}
+
+/**
+ * Non-Composable / Backend function.
+ * Formats a future [Timestamp] into a relative future time description using a [Context].
+ *
+ * @example shortRelativeTimeUntil(timestamp, context) -> "in 5 Min." / "in 5 min"
+ */
+fun shortRelativeTimeUntil(timestamp: Timestamp, context: Context, daysOnly: Boolean = false): String {
+    val diffMs = timestamp.ms - System.currentTimeMillis()
+    return shortRelativeTimeUntil(diffMs, context, daysOnly = daysOnly)
+}
+
+/**
+ * Non-Composable / Backend function.
+ * Formats a [Timestamp] into a relative time description (past or future automatically) using a [Context].
+ *
+ * @example shortRelativeTime(pastTimestamp, context) -> "vor 5 Min." / "5 min ago"
+ * @example shortRelativeTime(futureTimestamp, context) -> "in 5 Min." / "in 5 min"
+ */
+fun shortRelativeTime(timestamp: Timestamp, context: Context): String {
+    val now = System.currentTimeMillis()
+    return if (timestamp.ms < now) {
+        shortRelativeTimeAgo(timestamp, context)
+    } else {
+        shortRelativeTimeUntil(timestamp, context)
+    }
+}
+
+/**
+ * Non-Composable / Backend function.
+ * Formats a [LocalDate] into a relative date description ("heute", "morgen", "gestern", "in 3 Tagen", "vor 3 Tagen") using a [Context].
+ *
+ * @example shortRelativeTime(today, context) -> "heute"
+ * @example shortRelativeTime(tomorrow, context) -> "morgen"
+ * @example shortRelativeTime(yesterday, context) -> "gestern"
+ */
+fun shortRelativeTime(date: LocalDate, context: Context): String {
+    val today = LocalDate.now()
+    val daysDiff = ChronoUnit.DAYS.between(today, date)
+    return if (daysDiff < 0) {
+        val quantity = (-daysDiff).toInt()
+        DisplayTextUtils.getQuantityStringZero(
+            context.resources,
+            CommonR.plurals.time_ago_days,
+            CommonR.string.time_today,
+            quantity,
+            quantity
+        )
+    } else {
+        val quantity = daysDiff.toInt()
+        DisplayTextUtils.getQuantityStringZero(
+            context.resources,
+            CommonR.plurals.time_until_days,
+            CommonR.string.time_today,
+            quantity,
+            quantity
+        )
+    }
+}
+
+/**
  * Composable UI function.
  * Formats a signed minute offset into a relative time description.
  *

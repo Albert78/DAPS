@@ -6,6 +6,9 @@ import de.dh.daps.common.domain.model.alarm.ActiveAlarm
 import de.dh.daps.common.domain.model.alarm.AlarmType
 import de.dh.daps.common.domain.model.data.GlucoseUnit
 import de.dh.daps.ui.R
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 
 /**
  * Returns the string resource ID for the title of the given [AlarmType].
@@ -110,7 +113,7 @@ fun ActiveAlarm.getFormattedDescription(
         context.getString(R.string.alarm_type_pump_low_insulin_desc, formattedAmount)
     }
     is ActiveAlarm.PumpCatheterChangeWarn -> {
-        val dateStr = recommendedChangeDate?.let { shortDate(it, context) }
+        val dateStr = recommendedChangeDate?.let { shortRelativeTime(it, context) }
         if (dateStr != null) {
             context.getString(R.string.alarm_type_pump_catheter_change_warn_desc_with_date, dateStr)
         } else {
@@ -118,7 +121,7 @@ fun ActiveAlarm.getFormattedDescription(
         }
     }
     is ActiveAlarm.PumpCatheterChangeExpired -> {
-        val dateStr = recommendedChangeDate?.let { shortDate(it, context) }
+        val dateStr = recommendedChangeDate?.let { shortRelativeTime(it, context) }
         if (dateStr != null) {
             context.getString(R.string.alarm_type_pump_catheter_change_expired_desc_with_date, dateStr)
         } else {
@@ -134,7 +137,16 @@ fun ActiveAlarm.getFormattedDescription(
         }
     }
     is ActiveAlarm.PumpPatchChangeExpired -> {
-        val dateTimeStr = expirationTimestamp?.let { if (it.isValid()) shortDateTime(it, context) else null }
+        val dateTimeStr = expirationTimestamp?.let { timestamp ->
+            if (timestamp.isValid()) {
+                val expDate = Instant.ofEpochMilli(timestamp.ms).atZone(ZoneId.systemDefault()).toLocalDate()
+                if (expDate == LocalDate.now()) {
+                    shortRelativeTimeAgo(timestamp, context)
+                } else {
+                    shortRelativeTime(expDate, context)
+                }
+            } else null
+        }
         if (dateTimeStr != null) {
             context.getString(R.string.alarm_type_pump_patch_change_expired_desc_with_date, dateTimeStr)
         } else {
