@@ -58,8 +58,8 @@ import de.dh.daps.ui.common.composables.DateTimePickerDialog
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.ScreenTitle
-import de.dh.daps.ui.common.relativeTimeUntil
-import de.dh.daps.ui.common.shortDateTime
+import de.dh.daps.ui.common.formatters.relativeTimeUntil
+import de.dh.daps.ui.common.formatters.shortDateTime
 import de.dh.daps.ui.common.theme.AppPreview
 import java.time.Instant
 import java.time.LocalDate

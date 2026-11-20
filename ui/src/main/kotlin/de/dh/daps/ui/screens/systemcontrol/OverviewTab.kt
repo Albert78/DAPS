@@ -54,17 +54,17 @@ import de.dh.daps.core.glucosesource.GlucoseSourceIssue
 import de.dh.daps.core.orchestration.ApsIssue
 import de.dh.daps.core.pump.PumpIssue
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.LocalGlucoseUnit
+import de.dh.daps.ui.common.formatters.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.FramedCard
-import de.dh.daps.ui.common.glucoseUnitLabel
+import de.dh.daps.ui.common.formatters.glucoseUnitLabel
 import de.dh.daps.ui.common.icons.Icon_Warning
-import de.dh.daps.ui.common.insulinValue
-import de.dh.daps.ui.common.pluralStringResourceZero
-import de.dh.daps.ui.common.relativeTime
-import de.dh.daps.ui.common.shortDate
-import de.dh.daps.ui.common.shortDateTime
-import de.dh.daps.ui.common.smartTime
+import de.dh.daps.ui.common.formatters.insulinValue
+import de.dh.daps.ui.common.formatters.pluralStringResourceZero
+import de.dh.daps.ui.common.formatters.relativeTime
+import de.dh.daps.ui.common.formatters.shortDate
+import de.dh.daps.ui.common.formatters.shortDateTime
+import de.dh.daps.ui.common.formatters.smartTime
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.ExtendedTheme
 

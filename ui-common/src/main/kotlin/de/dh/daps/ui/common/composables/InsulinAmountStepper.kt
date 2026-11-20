@@ -7,8 +7,8 @@ import androidx.compose.ui.graphics.Color
 import de.dh.daps.common.BOLUS_MAX
 import de.dh.daps.ui.common.SteppingStrategy
 import de.dh.daps.ui.common.ValueDisplayStrategy
-import de.dh.daps.ui.common.insulinSteppingStrategy
-import de.dh.daps.ui.common.insulinUnitLabel
+import de.dh.daps.ui.common.formatters.insulinSteppingStrategy
+import de.dh.daps.ui.common.formatters.insulinUnitLabel
 import java.util.Locale
 import kotlin.math.round
 

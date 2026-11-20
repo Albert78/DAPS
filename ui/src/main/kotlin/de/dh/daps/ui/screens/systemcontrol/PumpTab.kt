@@ -63,11 +63,11 @@ import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.icons.Icon_Pump_Device
 import de.dh.daps.ui.common.icons.PumpReservoir
-import de.dh.daps.ui.common.insulinValue
-import de.dh.daps.ui.common.relativeTime
-import de.dh.daps.ui.common.shortDate
-import de.dh.daps.ui.common.shortDateTime
-import de.dh.daps.ui.common.smartTime
+import de.dh.daps.ui.common.formatters.insulinValue
+import de.dh.daps.ui.common.formatters.relativeTime
+import de.dh.daps.ui.common.formatters.shortDate
+import de.dh.daps.ui.common.formatters.shortDateTime
+import de.dh.daps.ui.common.formatters.smartTime
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.ExtendedTheme
 import java.time.LocalDate

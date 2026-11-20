@@ -7,11 +7,11 @@ import androidx.compose.ui.graphics.Color
 import de.dh.daps.common.CARBS_GRAMS_MAX
 import de.dh.daps.common.CARBS_GRAMS_MIN
 import de.dh.daps.common.domain.model.data.CarbsUnit
-import de.dh.daps.ui.common.LocalCarbsUnit
+import de.dh.daps.ui.common.formatters.LocalCarbsUnit
 import de.dh.daps.ui.common.ValueDisplayStrategy
-import de.dh.daps.ui.common.carbsGramsSteppingStrategy
-import de.dh.daps.ui.common.carbsKeSteppingStrategy
-import de.dh.daps.ui.common.carbsUnitLabel
+import de.dh.daps.ui.common.formatters.carbsGramsSteppingStrategy
+import de.dh.daps.ui.common.formatters.carbsKeSteppingStrategy
+import de.dh.daps.ui.common.formatters.carbsUnitLabel
 import java.util.Locale
 import kotlin.math.round
 

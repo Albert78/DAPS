@@ -98,7 +98,7 @@ import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.BlueA200
 import de.dh.daps.ui.common.composables.DeepOrangeA700
 import de.dh.daps.ui.common.composables.RedA700
-import de.dh.daps.ui.common.glucoseUnitLabel
+import de.dh.daps.ui.common.formatters.glucoseUnitLabel
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.ColorCarbs
 import de.dh.daps.ui.common.theme.ColorInsulin

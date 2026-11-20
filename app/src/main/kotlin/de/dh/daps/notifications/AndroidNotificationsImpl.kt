@@ -33,7 +33,7 @@ import de.dh.daps.ui.activities.AlarmActivity
 import de.dh.daps.ui.activities.MainActivity
 import de.dh.daps.ui.activities.RecommendationActivity
 import de.dh.daps.ui.activities.ReminderActivity
-import de.dh.daps.ui.common.formatCarbsValue
+import de.dh.daps.ui.common.formatters.formatCarbsValue
 import de.dh.daps.ui.common.getFormattedDescription
 import de.dh.daps.ui.common.titleResId
 import de.dh.daps.ui.screens.permissions.canPostNotifications

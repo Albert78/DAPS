@@ -21,10 +21,10 @@ import de.dh.daps.common.ID_MEAL_STANDARD
 import de.dh.daps.common.domain.model.therapy.MealType
 import de.dh.daps.plugin.simbody.BodyModel
 import de.dh.daps.plugin.simbody.R
-import de.dh.daps.ui.common.carbsUnitLabel
 import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.CarbsValueStepper
 import de.dh.daps.ui.common.composables.FoodTypeSelector
+import de.dh.daps.ui.common.formatters.carbsUnitLabel
 import de.dh.daps.ui.common.theme.AppPreview
 
 @Composable

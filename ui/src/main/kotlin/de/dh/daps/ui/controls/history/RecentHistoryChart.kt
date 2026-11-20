@@ -64,7 +64,7 @@ import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.common.domain.model.therapy.MealEntry
 import de.dh.daps.common.domain.model.therapy.MealType
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.glucoseUnitLabel
+import de.dh.daps.ui.common.formatters.glucoseUnitLabel
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.ColorBg
 import de.dh.daps.ui.common.theme.ColorCarbs

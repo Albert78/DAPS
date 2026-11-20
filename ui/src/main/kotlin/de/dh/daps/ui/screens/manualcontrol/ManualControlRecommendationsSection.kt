@@ -41,7 +41,7 @@ import de.dh.daps.common.domain.model.therapy.getDefaultStandardMealType
 import de.dh.daps.core.orchestration.ActiveRecommendations
 import de.dh.daps.core.orchestration.ApsRecommendation
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.carbsValue
+import de.dh.daps.ui.common.formatters.carbsValue
 import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.SecondaryButton
 import de.dh.daps.ui.common.executeRecommendationAction

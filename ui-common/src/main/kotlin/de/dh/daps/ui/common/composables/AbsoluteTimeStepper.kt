@@ -27,7 +27,7 @@ import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.ui.common.icons.Icon_Minus
 import de.dh.daps.ui.common.icons.Icon_Plus
 import de.dh.daps.ui.common.theme.AppPreview
-import de.dh.daps.ui.common.time
+import de.dh.daps.ui.common.formatters.time
 
 @Composable
 fun AbsoluteTimeStepper(

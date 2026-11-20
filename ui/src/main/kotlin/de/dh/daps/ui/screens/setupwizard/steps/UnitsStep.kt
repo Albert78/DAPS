@@ -31,10 +31,10 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.common.domain.model.data.CarbsUnit
 import de.dh.daps.common.domain.model.data.GlucoseUnit
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.carbsUnitLabel
+import de.dh.daps.ui.common.formatters.carbsUnitLabel
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.contentScrollIndicator
-import de.dh.daps.ui.common.glucoseUnitLabel
+import de.dh.daps.ui.common.formatters.glucoseUnitLabel
 import de.dh.daps.ui.common.icons.Icon_Carbs_Unit
 import de.dh.daps.ui.common.icons.Icon_Glucose_Unit
 import de.dh.daps.ui.common.theme.AppPreview

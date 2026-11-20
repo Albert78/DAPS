@@ -31,8 +31,8 @@ import de.dh.daps.common.domain.model.therapy.InsulinProfile
 import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.common.domain.model.therapy.ProfileInsulinSetting
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.LocalCarbsUnit
-import de.dh.daps.ui.common.LocalGlucoseUnit
+import de.dh.daps.ui.common.formatters.LocalCarbsUnit
+import de.dh.daps.ui.common.formatters.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.LoadingScreen
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.screens.insulintypes.InsulinTypeEditorUiState

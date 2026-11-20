@@ -1,6 +1,5 @@
 package de.dh.daps.ui.screens.dashboard
 
-import android.content.Intent
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -67,9 +66,9 @@ import de.dh.daps.core.orchestration.ActiveRecommendations
 import de.dh.daps.core.orchestration.ApsRecommendation
 import de.dh.daps.ui.R
 import de.dh.daps.ui.activities.AlarmActivity
-import de.dh.daps.ui.common.LocalCarbsUnit
-import de.dh.daps.ui.common.LocalGlucoseUnit
-import de.dh.daps.ui.common.carbsValue
+import de.dh.daps.ui.common.formatters.LocalCarbsUnit
+import de.dh.daps.ui.common.formatters.LocalGlucoseUnit
+import de.dh.daps.ui.common.formatters.carbsValue
 import de.dh.daps.ui.common.composables.ExpandableInfoCard
 import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.PrimaryButton

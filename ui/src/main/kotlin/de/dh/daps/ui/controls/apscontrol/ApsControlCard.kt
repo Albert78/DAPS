@@ -47,7 +47,7 @@ import de.dh.daps.ui.common.ConfigurableDisplayStrategy
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.PrimaryButton
-import de.dh.daps.ui.common.glucoseValue
+import de.dh.daps.ui.common.formatters.glucoseValue
 import de.dh.daps.ui.common.icons.Icon_Alarms
 import de.dh.daps.ui.common.icons.Icon_Insulin_Adjustment
 import de.dh.daps.ui.common.icons.Icon_Insulin_Profile

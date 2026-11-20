@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import de.dh.daps.core.orchestration.ApsRecommendation
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.formatters.carbsValue
+import de.dh.daps.ui.common.formatters.timeWithUnit
 
 /**
  * Returns the formatted detail text for a bolus recommendation depending on whether

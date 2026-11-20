@@ -26,13 +26,13 @@ import de.dh.daps.common.domain.model.data.BgSampleKind
 import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.common.domain.model.therapy.InsulinAmount
-import de.dh.daps.ui.common.carbsValue
-import de.dh.daps.ui.common.glucoseUnitLabel
-import de.dh.daps.ui.common.glucoseValue
-import de.dh.daps.ui.common.insulinValue
+import de.dh.daps.ui.common.formatters.carbsValue
+import de.dh.daps.ui.common.formatters.glucoseUnitLabel
+import de.dh.daps.ui.common.formatters.glucoseValue
+import de.dh.daps.ui.common.formatters.insulinValue
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.ExtendedTheme
-import de.dh.daps.ui.common.time
+import de.dh.daps.ui.common.formatters.time
 import de.dh.daps.common.R as CommonR
 
 @Composable

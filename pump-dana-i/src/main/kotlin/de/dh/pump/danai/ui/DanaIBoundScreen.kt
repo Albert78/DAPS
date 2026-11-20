@@ -45,7 +45,7 @@ import de.dh.daps.ui.common.composables.DateTimePickerDialog
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.PrimaryButton
-import de.dh.daps.ui.common.shortDateTime
+import de.dh.daps.ui.common.formatters.shortDateTime
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.pump.dana.commands.options.DanaRsUserOptions
 import de.dh.pump.danai.DanaIInsulinPumpDriver

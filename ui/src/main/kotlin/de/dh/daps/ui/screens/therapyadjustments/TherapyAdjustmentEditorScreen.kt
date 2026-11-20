@@ -58,7 +58,7 @@ import de.dh.daps.common.domain.model.alarm.AlertProfile
 import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.ConfigurableDisplayStrategy
-import de.dh.daps.ui.common.LocalGlucoseUnit
+import de.dh.daps.ui.common.formatters.LocalGlucoseUnit
 import de.dh.daps.ui.common.ModuloSteppingStrategy
 import de.dh.daps.ui.common.ValueDisplayStrategy
 import de.dh.daps.ui.common.composables.AppAlertDialog
@@ -66,8 +66,8 @@ import de.dh.daps.ui.common.composables.EditableValueStepper
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
-import de.dh.daps.ui.common.glucoseUnitLabel
-import de.dh.daps.ui.common.glucoseValue
+import de.dh.daps.ui.common.formatters.glucoseUnitLabel
+import de.dh.daps.ui.common.formatters.glucoseValue
 import de.dh.daps.ui.common.icons.Icon_Alarms
 import de.dh.daps.ui.common.icons.Icon_Edit
 import de.dh.daps.ui.common.icons.Icon_Insulin_Adjustment

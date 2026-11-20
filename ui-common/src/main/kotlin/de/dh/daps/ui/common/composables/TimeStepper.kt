@@ -26,7 +26,7 @@ import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.ui.common.icons.Icon_Minus
 import de.dh.daps.ui.common.icons.Icon_Plus
-import de.dh.daps.ui.common.relativeTimeMinutes
+import de.dh.daps.ui.common.formatters.relativeTimeMinutes
 import de.dh.daps.ui.common.theme.AppPreview
 import kotlin.math.abs
 import kotlin.math.round

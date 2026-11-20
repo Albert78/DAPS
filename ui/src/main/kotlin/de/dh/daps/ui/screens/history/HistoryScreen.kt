@@ -34,8 +34,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.LocalCarbsUnit
-import de.dh.daps.ui.common.LocalGlucoseUnit
+import de.dh.daps.ui.common.formatters.LocalCarbsUnit
+import de.dh.daps.ui.common.formatters.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.screenTitle
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.controls.history.BgHistoryChartOrDefault

@@ -86,7 +86,7 @@ import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.animateScrollToItemFast
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
-import de.dh.daps.ui.common.insulinValue
+import de.dh.daps.ui.common.formatters.insulinValue
 import de.dh.daps.ui.common.theme.AppPreview
 import kotlinx.coroutines.launch
 import java.time.Instant

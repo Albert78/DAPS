@@ -31,15 +31,15 @@ import de.dh.daps.common.domain.model.data.Minutes
 import de.dh.daps.plugin.simbody.BodyModel
 import de.dh.daps.plugin.simbody.R
 import de.dh.daps.plugin.simbody.model.BodyProfile
-import de.dh.daps.ui.common.carbsUnitLabel
-import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.PrimaryButton
-import de.dh.daps.ui.common.crValue
-import de.dh.daps.ui.common.glucoseUnitLabel
-import de.dh.daps.ui.common.insulinValue
-import de.dh.daps.ui.common.isfUnitLabel
+import de.dh.daps.ui.common.formatters.carbsUnitLabel
+import de.dh.daps.ui.common.formatters.carbsValue
+import de.dh.daps.ui.common.formatters.crValue
+import de.dh.daps.ui.common.formatters.glucoseUnitLabel
+import de.dh.daps.ui.common.formatters.insulinValue
+import de.dh.daps.ui.common.formatters.isfUnitLabel
 import de.dh.daps.ui.common.theme.AppPreview
 import java.util.Locale
 

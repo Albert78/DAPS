@@ -44,12 +44,12 @@ import androidx.compose.ui.unit.dp
 import de.dh.daps.plugin.simbody.BodyModel
 import de.dh.daps.plugin.simbody.R
 import de.dh.daps.plugin.simbody.ui.components.SimBodyEatMealDialog
-import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.PrimaryButton
-import de.dh.daps.ui.common.glucoseUnitLabel
-import de.dh.daps.ui.common.insulinValue
+import de.dh.daps.ui.common.formatters.carbsValue
+import de.dh.daps.ui.common.formatters.glucoseUnitLabel
+import de.dh.daps.ui.common.formatters.insulinValue
 import java.util.Locale
 import de.dh.daps.common.R as CommonR
 

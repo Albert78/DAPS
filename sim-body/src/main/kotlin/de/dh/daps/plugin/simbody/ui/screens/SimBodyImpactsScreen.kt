@@ -33,7 +33,7 @@ import de.dh.daps.plugin.simbody.DEFAULT_SIM_BODY_PROFILE
 import de.dh.daps.plugin.simbody.Impacts
 import de.dh.daps.plugin.simbody.R
 import de.dh.daps.ui.common.composables.FramedCard
-import de.dh.daps.ui.common.glucoseUnitLabel
+import de.dh.daps.ui.common.formatters.glucoseUnitLabel
 import de.dh.daps.ui.common.theme.AppPreview
 import java.text.SimpleDateFormat
 import java.util.Date

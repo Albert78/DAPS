@@ -66,7 +66,7 @@ import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.ImageCaptionWithSwitch
 import de.dh.daps.ui.common.composables.NormalTextButton
 import de.dh.daps.ui.common.composables.contentScrollIndicator
-import de.dh.daps.ui.common.insulinValue
+import de.dh.daps.ui.common.formatters.insulinValue
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.treatmentlock.TreatmentLockScreen
 import de.dh.daps.ui.common.treatmentlock.TreatmentLockViewModel

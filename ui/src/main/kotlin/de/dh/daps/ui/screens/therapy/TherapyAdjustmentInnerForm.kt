@@ -60,8 +60,8 @@ import de.dh.daps.ui.common.ModuloSteppingStrategy
 import de.dh.daps.ui.common.composables.EditableValueStepper
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.StepperDefaults
-import de.dh.daps.ui.common.glucoseUnitLabel
-import de.dh.daps.ui.common.glucoseValue
+import de.dh.daps.ui.common.formatters.glucoseUnitLabel
+import de.dh.daps.ui.common.formatters.glucoseValue
 import de.dh.daps.ui.common.icons.Icon_Alarms
 import de.dh.daps.ui.common.icons.Icon_Edit
 import de.dh.daps.ui.common.icons.Icon_Insulin_Adjustment

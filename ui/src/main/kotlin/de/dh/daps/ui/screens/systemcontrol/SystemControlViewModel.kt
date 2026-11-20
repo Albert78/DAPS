@@ -40,7 +40,7 @@ import de.dh.daps.common.domain.pump.PumpHardwareInformation
 import de.dh.daps.common.domain.pump.PumpLifecycleState
 import de.dh.daps.common.domain.pump.PumpReplaceableComponent
 import de.dh.daps.common.ui.UiText
-import de.dh.daps.ui.common.formatInsulinValue
+import de.dh.daps.ui.common.formatters.formatInsulinValue
 import de.dh.daps.core.SystemRegistry
 import de.dh.daps.core.orchestration.ApsIssue
 import de.dh.daps.core.pump.BolusJob

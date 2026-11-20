@@ -56,10 +56,10 @@ import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.composables.StepperDefaults
 import de.dh.daps.ui.common.composables.TimeStepper
 import de.dh.daps.ui.common.composables.contentScrollIndicator
-import de.dh.daps.ui.common.insulinValue
+import de.dh.daps.ui.common.formatters.insulinValue
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.ExtendedTheme
-import de.dh.daps.ui.common.time
+import de.dh.daps.ui.common.formatters.time
 import kotlinx.coroutines.delay
 import kotlin.math.round
 import de.dh.daps.common.R as CommonR

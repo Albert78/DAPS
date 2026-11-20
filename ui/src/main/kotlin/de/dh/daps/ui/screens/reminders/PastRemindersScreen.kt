@@ -56,7 +56,7 @@ import de.dh.daps.ui.common.icons.Icon_Plugin
 import de.dh.daps.ui.common.icons.Icon_Pump_Device
 import de.dh.daps.ui.common.icons.Icon_Reminders
 import de.dh.daps.ui.common.icons.Icon_Screen_Back
-import de.dh.daps.ui.common.shortDateTime
+import de.dh.daps.ui.common.formatters.shortDateTime
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.common.R as CommonR
 

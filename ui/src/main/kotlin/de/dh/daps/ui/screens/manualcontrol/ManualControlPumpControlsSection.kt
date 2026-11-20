@@ -48,10 +48,10 @@ import de.dh.daps.ui.common.composables.PrimaryButton
 import de.dh.daps.ui.common.icons.Icon_Basal
 import de.dh.daps.ui.common.icons.Icon_Temp_Basal
 import de.dh.daps.ui.common.icons.Syringe
-import de.dh.daps.ui.common.insulinValue
+import de.dh.daps.ui.common.formatters.insulinValue
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.SoftRed
-import de.dh.daps.ui.common.timeWithUnit
+import de.dh.daps.ui.common.formatters.timeWithUnit
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale

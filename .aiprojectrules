@@ -30,7 +30,7 @@
 ## Unit Handling and Formatting
 
 ### Glucose Units, ISF and CR
-- **Central Formatting**: Always use the central formatting functions defined in `Formatters.kt` to display blood glucose values, ISF (Insulin Sensitivity Factor), and CR (Carb Ratio).
+- **Central Formatting**: Always use the central formatting functions defined in `DateTimeFormatters.kt`, `TherapyFormatters.kt`, and `PluralFormatters.kt` to display blood glucose values, ISF (Insulin Sensitivity Factor), CR (Carb Ratio), timestamps, and plural strings.
 - **CompositionLocal**: In Composables, access the user's preferred glucose unit via `LocalGlucoseUnit.current`.
 - **Standard Functions**:
     - Use `glucoseValue(value, withUnit = ...)` for BG values.

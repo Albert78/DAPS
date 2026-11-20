@@ -3,7 +3,7 @@ package de.dh.daps.ui.screens.permissions
 import android.content.res.Resources
 import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.DisplayTextUtils
+import de.dh.daps.ui.common.formatters.getQuantityStringZero
 
 sealed class PermissionStatus {
     /**
@@ -77,7 +77,7 @@ data class PermissionsUiModel(
                 pluginPermissions
             )
 
-            val permissionsText = DisplayTextUtils.getQuantityStringZero(
+            val permissionsText = getQuantityStringZero(
                 resources,
                 R.plurals.permissions_activity_start_permissions_missing,
                 R.string.permissions_activity_start_all_permissions_granted,

@@ -34,7 +34,7 @@ import de.dh.daps.core.orchestration.ActiveRecommendations
 import de.dh.daps.core.orchestration.ApsRecommendation
 import de.dh.daps.ui.common.composables.NormalButton
 import de.dh.daps.ui.common.composables.PrimaryButton
-import de.dh.daps.ui.common.formatCarbsValue
+import de.dh.daps.ui.common.formatters.formatCarbsValue
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.common.R as CommonR
 import de.dh.daps.ui.R as UiR

@@ -35,9 +35,9 @@ import de.dh.daps.common.domain.model.data.BgValue
 import de.dh.daps.common.domain.model.data.GlucoseUnit
 import de.dh.daps.common.domain.model.data.Timestamp
 import de.dh.daps.ui.common.composables.AppColorBlue
-import de.dh.daps.ui.common.deltaValue
-import de.dh.daps.ui.common.glucoseValue
-import de.dh.daps.ui.common.relativeTimeAgo
+import de.dh.daps.ui.common.formatters.deltaValue
+import de.dh.daps.ui.common.formatters.glucoseValue
+import de.dh.daps.ui.common.formatters.relativeTimeAgo
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.common.theme.ExtendedTheme
 import kotlinx.coroutines.delay

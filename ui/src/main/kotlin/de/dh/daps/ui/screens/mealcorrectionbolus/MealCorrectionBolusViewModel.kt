@@ -26,7 +26,7 @@ import de.dh.daps.core.aps.BolusCalculationMath
 import de.dh.daps.core.aps.BolusProjections
 import de.dh.daps.core.aps.MealBolusContext
 import de.dh.daps.core.therapy.TreatmentLock
-import de.dh.daps.ui.common.time
+import de.dh.daps.ui.common.formatters.time
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

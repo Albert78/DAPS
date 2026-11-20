@@ -42,14 +42,14 @@ import de.dh.daps.common.ui.UiText
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.PrimaryButton
-import de.dh.daps.ui.common.glucoseValue
+import de.dh.daps.ui.common.formatters.glucoseValue
 import de.dh.daps.ui.common.icons.Icon_Cgm_Sensor
 import de.dh.daps.ui.common.icons.Icon_Next
 import de.dh.daps.ui.common.icons.Icon_Previous
-import de.dh.daps.ui.common.readingsInterval
-import de.dh.daps.ui.common.relativeTime
-import de.dh.daps.ui.common.shortDateTime
-import de.dh.daps.ui.common.smartTime
+import de.dh.daps.ui.common.formatters.readingsInterval
+import de.dh.daps.ui.common.formatters.relativeTime
+import de.dh.daps.ui.common.formatters.shortDateTime
+import de.dh.daps.ui.common.formatters.smartTime
 import de.dh.daps.ui.common.theme.AppTheme
 import de.dh.daps.ui.common.theme.ExtendedTheme
 

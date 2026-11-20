@@ -13,13 +13,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import de.dh.daps.common.domain.model.data.CarbsUnit
 import de.dh.daps.common.domain.model.data.GlucoseUnit
-import de.dh.daps.ui.common.LocalAppFormatters
-import de.dh.daps.ui.common.LocalCarbsUnit
-import de.dh.daps.ui.common.LocalGlucoseUnit
+import de.dh.daps.ui.common.formatters.LocalAppFormatters
+import de.dh.daps.ui.common.formatters.LocalCarbsUnit
+import de.dh.daps.ui.common.formatters.LocalGlucoseUnit
 import de.dh.daps.ui.common.composables.AppColorBlue
 import de.dh.daps.ui.common.composables.LightGreenA700
 import de.dh.daps.ui.common.composables.Yellow
-import de.dh.daps.ui.common.rememberAppFormatters
+import de.dh.daps.ui.common.formatters.rememberAppFormatters
 
 @Immutable
 data class StatusColors(

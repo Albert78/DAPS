@@ -84,7 +84,7 @@ import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.common.domain.model.therapy.ProfileInsulinSetting
 import de.dh.daps.ui.R
 import de.dh.daps.ui.common.DefaultSteppingStrategy
-import de.dh.daps.ui.common.LocalGlucoseUnit
+import de.dh.daps.ui.common.formatters.LocalGlucoseUnit
 import de.dh.daps.ui.common.ValueDisplayStrategy
 import de.dh.daps.ui.common.composables.AppAlertDialog
 import de.dh.daps.ui.common.composables.EditableValueStepper
@@ -94,7 +94,7 @@ import de.dh.daps.ui.common.composables.StepperDefaults
 import de.dh.daps.ui.common.composables.TimeHourSelector
 import de.dh.daps.ui.common.composables.contentScrollIndicator
 import de.dh.daps.ui.common.composables.screenTitle
-import de.dh.daps.ui.common.isfUnitLabel
+import de.dh.daps.ui.common.formatters.isfUnitLabel
 import de.dh.daps.ui.common.theme.AppPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

@@ -34,9 +34,9 @@ import de.dh.daps.common.domain.model.therapy.InsulinAmount
 import de.dh.daps.plugin.simbody.BodyModel
 import de.dh.daps.plugin.simbody.DEFAULT_SIM_BODY_PROFILE
 import de.dh.daps.plugin.simbody.R
-import de.dh.daps.ui.common.carbsValue
 import de.dh.daps.ui.common.composables.NormalButton
-import de.dh.daps.ui.common.insulinValue
+import de.dh.daps.ui.common.formatters.carbsValue
+import de.dh.daps.ui.common.formatters.insulinValue
 import de.dh.daps.ui.common.theme.AppPreview
 import java.text.SimpleDateFormat
 import java.util.Date

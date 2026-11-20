@@ -6,6 +6,11 @@ import de.dh.daps.common.domain.model.alarm.ActiveAlarm
 import de.dh.daps.common.domain.model.alarm.AlarmType
 import de.dh.daps.common.domain.model.data.GlucoseUnit
 import de.dh.daps.ui.R
+import de.dh.daps.ui.common.formatters.formatInsulinValue
+import de.dh.daps.ui.common.formatters.formatRelativeTime
+import de.dh.daps.ui.common.formatters.formatRelativeTimeAgo
+import de.dh.daps.ui.common.formatters.formatShortDateTime
+import de.dh.daps.ui.common.formatters.glucoseValue
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -129,7 +134,10 @@ fun ActiveAlarm.getFormattedDescription(
         }
     }
     is ActiveAlarm.PumpPatchChangeWarn -> {
-        val dateTimeStr = expirationTimestamp?.let { if (it.isValid()) formatShortDateTime(it, context) else null }
+        val dateTimeStr = expirationTimestamp?.let { if (it.isValid()) formatShortDateTime(
+            it,
+            context
+        ) else null }
         if (dateTimeStr != null) {
             context.getString(R.string.alarm_type_pump_patch_change_warn_desc_with_date, dateTimeStr)
         } else {

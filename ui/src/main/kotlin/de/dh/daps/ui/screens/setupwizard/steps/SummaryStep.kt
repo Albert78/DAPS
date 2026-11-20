@@ -35,10 +35,10 @@ import de.dh.daps.common.domain.model.therapy.InsulinProfile
 import de.dh.daps.common.domain.model.therapy.InsulinType
 import de.dh.daps.common.domain.model.therapy.ProfileInsulinSetting
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.carbsUnitLabel
+import de.dh.daps.ui.common.formatters.carbsUnitLabel
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.contentScrollIndicator
-import de.dh.daps.ui.common.glucoseUnitLabel
+import de.dh.daps.ui.common.formatters.glucoseUnitLabel
 import de.dh.daps.ui.common.theme.AppPreview
 import de.dh.daps.ui.screens.setupwizard.SetupWizardUiState
 import de.dh.daps.ui.screens.setupwizard.components.SetupStepScaffold

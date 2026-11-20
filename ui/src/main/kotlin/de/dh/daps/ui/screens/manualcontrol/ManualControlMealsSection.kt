@@ -31,11 +31,11 @@ import de.dh.daps.common.domain.model.therapy.MealEntry
 import de.dh.daps.common.domain.model.therapy.getDefaultSlowMealType
 import de.dh.daps.common.domain.model.therapy.getDefaultStandardMealType
 import de.dh.daps.ui.R
-import de.dh.daps.ui.common.carbsValue
+import de.dh.daps.ui.common.formatters.carbsValue
 import de.dh.daps.ui.common.composables.FramedCard
 import de.dh.daps.ui.common.composables.MealTypeIcon
 import de.dh.daps.ui.common.theme.AppPreview
-import de.dh.daps.ui.common.timeWithUnit
+import de.dh.daps.ui.common.formatters.timeWithUnit
 
 @Composable
 fun ManualControlMealsSection(
