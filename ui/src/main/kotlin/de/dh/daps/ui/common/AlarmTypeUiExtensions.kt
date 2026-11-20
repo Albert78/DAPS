@@ -1,8 +1,10 @@
 package de.dh.daps.ui.common
 
+import android.content.Context
 import androidx.annotation.StringRes
 import de.dh.daps.common.domain.model.alarm.ActiveAlarm
 import de.dh.daps.common.domain.model.alarm.AlarmType
+import de.dh.daps.common.domain.model.data.GlucoseUnit
 import de.dh.daps.ui.R
 
 /**
@@ -77,3 +79,67 @@ val ActiveAlarm.titleResId: Int
 @get:StringRes
 val ActiveAlarm.descriptionResId: Int?
     get() = type.descriptionResId
+
+/**
+ * Returns the localized formatted description text for the given [ActiveAlarm],
+ * resolving any dynamic payload details (such as remaining insulin amount, expiration dates,
+ * or stale duration).
+ *
+ * @param context The Android [Context] used to resolve string resources.
+ * @param includeGlucoseValue Whether to format glucose alarms into a text description (e.g. for notifications).
+ * @param unit Glucose unit used when formatting glucose alarms.
+ */
+fun ActiveAlarm.getFormattedDescription(
+    context: Context,
+    includeGlucoseValue: Boolean = false,
+    unit: GlucoseUnit = GlucoseUnit.MG_DL
+): String? = when (this) {
+    is ActiveAlarm.GlucoseAlarm -> {
+        if (includeGlucoseValue && bgValue.isValid()) {
+            glucoseValue(bgValue, context, unit = unit, withUnit = true)
+        } else null
+    }
+    is ActiveAlarm.CgmSignalLoss -> {
+        context.getString(R.string.aps_issue_stale_bg, minutes)
+    }
+    is ActiveAlarm.PumpMaintenanceExceeded -> {
+        context.getString(R.string.alarm_type_pump_maintenance_exceeded_desc, minutes)
+    }
+    is ActiveAlarm.PumpLowInsulin -> {
+        val formattedAmount = formatInsulinValue(amount, context)
+        context.getString(R.string.alarm_type_pump_low_insulin_desc, formattedAmount)
+    }
+    is ActiveAlarm.PumpCatheterChangeWarn -> {
+        val dateStr = recommendedChangeDate?.let { shortDate(it, context) }
+        if (dateStr != null) {
+            context.getString(R.string.alarm_type_pump_catheter_change_warn_desc_with_date, dateStr)
+        } else {
+            context.getString(R.string.alarm_type_pump_catheter_change_warn_desc)
+        }
+    }
+    is ActiveAlarm.PumpCatheterChangeExpired -> {
+        val dateStr = recommendedChangeDate?.let { shortDate(it, context) }
+        if (dateStr != null) {
+            context.getString(R.string.alarm_type_pump_catheter_change_expired_desc_with_date, dateStr)
+        } else {
+            context.getString(R.string.alarm_type_pump_catheter_change_expired_desc)
+        }
+    }
+    is ActiveAlarm.PumpPatchChangeWarn -> {
+        val dateTimeStr = expirationTimestamp?.let { if (it.isValid()) shortDateTime(it, context) else null }
+        if (dateTimeStr != null) {
+            context.getString(R.string.alarm_type_pump_patch_change_warn_desc_with_date, dateTimeStr)
+        } else {
+            context.getString(R.string.alarm_type_pump_patch_change_warn_desc)
+        }
+    }
+    is ActiveAlarm.PumpPatchChangeExpired -> {
+        val dateTimeStr = expirationTimestamp?.let { if (it.isValid()) shortDateTime(it, context) else null }
+        if (dateTimeStr != null) {
+            context.getString(R.string.alarm_type_pump_patch_change_expired_desc_with_date, dateTimeStr)
+        } else {
+            context.getString(R.string.alarm_type_pump_patch_change_expired_desc)
+        }
+    }
+    else -> descriptionResId?.let { context.getString(it) }
+}

@@ -259,6 +259,32 @@ fun shortDateTime(timestamp: Timestamp?, default: String = "-"): String {
     } else default
 }
 
+/**
+ * Non-Composable / Backend function.
+ * Formats a [LocalDateTime] as a short date-time string using the localized pattern from string resources.
+ *
+ * @example shortDateTime(dateTime, context) -> "14.11.26, 14:30"
+ */
+fun shortDateTime(dateTime: LocalDateTime, context: Context): String {
+    val pattern = context.getString(CommonR.string.short_date_time_format)
+    return dateTime.format(DateTimeFormatter.ofPattern(pattern, Locale.getDefault()))
+}
+
+/**
+ * Non-Composable / Backend function.
+ * Formats a nullable [Timestamp] as a short date-time string using the localized pattern from string resources.
+ *
+ * @example shortDateTime(timestamp, context) -> "14.11.26, 14:30"
+ */
+fun shortDateTime(timestamp: Timestamp?, context: Context, default: String = "-"): String {
+    return if (timestamp != null && timestamp.isValid()) {
+        val ldt = Instant.ofEpochMilli(timestamp.ms)
+            .atZone(ZoneId.systemDefault())
+            .toLocalDateTime()
+        shortDateTime(ldt, context)
+    } else default
+}
+
 /////////////////////////////////////////////// Long date //////////////////////////////////////
 
 /**
@@ -323,6 +349,25 @@ fun shortDate(date: LocalDate?, default: String = "-"): String {
     return date?.let {
         shortDate(date)
     } ?: default
+}
+
+/**
+ * Non-Composable / Backend function.
+ * Formats a [LocalDate] as a short date string using the localized pattern from string resources.
+ *
+ * @example shortDate(date, context) -> "14.11.26"
+ */
+fun shortDate(date: LocalDate, context: Context): String {
+    val pattern = context.getString(CommonR.string.short_date_format)
+    return date.format(DateTimeFormatter.ofPattern(pattern, Locale.getDefault()))
+}
+
+/**
+ * Non-Composable / Backend function.
+ * Formats a nullable [LocalDate] as a short date string using the localized pattern from string resources.
+ */
+fun shortDate(date: LocalDate?, context: Context, default: String = "-"): String {
+    return date?.let { shortDate(it, context) } ?: default
 }
 
 /////////////////////////////////////////////// Time ago //////////////////////////////////////
@@ -603,6 +648,38 @@ fun glucoseValue(
     val valStr = value.toString(unit)
     return if (withUnit) {
         "$valStr$NBSP${glucoseUnitLabel(unit)}"
+    } else valStr
+}
+
+/**
+ * Non-Composable / Backend function.
+ * Returns the localized unit label for blood glucose (e.g. "mg/dL" or "mmol/L").
+ */
+fun glucoseUnitLabel(unit: GlucoseUnit, context: Context): String {
+    val resId = when (unit) {
+        GlucoseUnit.MG_DL -> CommonR.string.glucose_unit_mgdl
+        GlucoseUnit.MMOL -> CommonR.string.glucose_unit_mmol
+    }
+    return context.getString(resId)
+}
+
+/**
+ * Non-Composable / Backend function.
+ * Formats a [BgValue] with optional unit label using a [Context].
+ *
+ * @example glucoseValue(BgValue.fromMgDl(120), context, withUnit = true) -> "120 mg/dl"
+ */
+fun glucoseValue(
+    value: BgValue?,
+    context: Context,
+    unit: GlucoseUnit = GlucoseUnit.MG_DL,
+    default: String = "-",
+    withUnit: Boolean = false
+): String {
+    if (value == null || value.isInvalid()) return default
+    val valStr = value.toString(unit)
+    return if (withUnit) {
+        "$valStr$NBSP${glucoseUnitLabel(unit, context)}"
     } else valStr
 }
 
